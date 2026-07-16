@@ -1,0 +1,117 @@
+# HQ-9
+# wikipedia revision: 2026-07-15T16:55:40Z
+
+The HQ-9 (simplified Chinese: 红旗-9; traditional Chinese: 紅旗-9; pinyin: Hóng Qí-9; lit. 'Red Flag-9'; NATO reporting name: CH-SA-9.) is a long-range semi-active radar homing (SARH) surface-to-air missile (SAM) developed by the People's Republic of China. The naval variant is the HHQ-9 (simplified Chinese: 海红旗-9; traditional Chinese: 海紅旗-9; pinyin: Hǎi Hóng Qí-9; lit. 'Sea Red Flag-9'). The HQ-9 and its export variants are developed by China Aerospace Science and Industry Corporation (CASIC).
+
+
+== Description ==
+
+The HQ-9 development program started in the 1970s, with full-scale development beginning in the late-1980s.
+According to Western analysts, the HQ-9 is "equivalent" to or a derivative of the Russian S-300, which China started importing in 1993. Justin Bronk of the Royal United Services Institute describes the missile as a "hybrid design based on the Russian SA-20 but with radar, seeker head and C2 elements heavily influenced by American and Israeli technology."
+The missile uses track-via-missile (TVM) guidance combining inertial guidance, mid-course uplink, and terminal active radar. The TVM used on earlier missiles may have  been developed from a United States MIM-104 Patriot missile purchased from Israel or Germany.
+According to a 2001 article from Defence International, the HQ-9 is 6.8 m. long with a mass of nearly two tons. The diameters of the first and second stages are 700 mm and 560 mm, respectively. The warhead mass is 180 kg, and the maximum speed is Mach 4.2. The HQ-9 may use fire-control radars from other Chinese SAM systems.
+
+
+== Variants ==
+
+Air defense
+HQ-9 — Original variant. NATO reporting name: CH-SA-9.
+
+HHQ-9 — Naval surface-launched variant. NATO reporting name is CH-SA-N-9.
+HQ-9A — Improved version, first tested in 1999 and service entry in 2001.
+HQ-9B — Improved version with a range of up to 260 km and added passive infrared seeker. Reportedly tested in February 2006. NATO reporting name is CH-SA-21.
+HHQ-9B — Naval surface-launched variant of HQ-9B; NATO reporting name is CH-SA-N-21.
+HQ-9C — Improved ground-based missile system, can intercept ballistic missile targets at their terminal phases. It also has slimmer missiles compared to the regular HQ-9, with each vehicle capable of carrying eight interceptors.
+HHQ-9C — Naval surface-launched variant of the HQ-9C.
+Ballistic missile defense and anti-satellite
+HQ-19 (NATO reporting name: CH-AB-2) – Anti-ballistic missile variant, reportedly designed to counter medium-range ballistic missiles. It targets ballistic missiles in their midcourse and terminal phases, and it is comparable to the US THAAD. The missile may have "begun preliminary operations" by 2018.
+Export
+FD-2000 (Chinese: 防盾-2000; pinyin: Fáng Dùn-2000; lit. 'Defense Shield-2000') – Export variant with a range of 125 km. May be fitted with YLC-20 passive radar against stealthy targets. May use the HT-233 target-acquisition radar, Type 120 low-altitude search radar, and Type 305A AESA search radar.
+FD-2000B – Export variant with a range of 250 km.
+HQ-9P – Custom variant for the Pakistan Army's Army Air Defence Command. Range of 125 km for interception against aircraft and around 25 km against cruise missiles.
+
+
+== Foreign interest ==
+
+
+=== Turkey ===
+The HQ-9 was a contender in Turkey's T-LORAMIDS program, and it was reportedly selected as the winner in September 2013. The United States responded by blocking funds to integrate the Chinese system into NATO defenses. However, through 2013 there was no confirmation that the deal had been finalized. In February 2015, the Grand National Assembly of Turkey was informed by the Ministry of National Defence that the evaluation of bids was complete and that the chosen system would be used by Turkey without integration with NATO; the system was not explicitly named. However, other Turkish officials reported that no winner had been selected. Later in the month, Turkish officials revealed that negotiations were ongoing with multiple bidders; the Chinese bid had not yet satisfied requirements concerning technology transfer. In March 2015, a China Daily article reported that it was "well-known that the Chinese FD-2000 system, a HQ-9 model for export, was chosen for the contract with Turkey in 2013" based on comments made by a CPMIEC representative at the 2015 Langkawi International Maritime and Aerospace Exhibition; the article was misleadingly called "Missile sale to Turkey confirmed." In November 2015, Turkey confirmed it would not purchase the HQ-9, opting for an indigenously developed system instead.
+
+
+=== Iran ===
+In late 2025, after the Twelve-Day War in June, a member of the Islamic Consultative Assembly claimed that Iran had received the HQ-9. In July, the Chinese embassy to Israel denied that China was supplying Iran with surface-to-air missiles. Reports of the HQ-9 in Iranian service may be Iranian disinformation.
+
+
+== Operating history ==
+
+
+=== China ===
+China has deployed HQ-9s near or in disputed territory. Missiles were deployed in July 2015 to Hotan in Xinjiang, close to Kashmir across the Line of Actual Control, and in February 2016 to Woody Island in the disputed South China Sea.
+The naval variant, the HHQ-9, was deployed by the PLAN by 2009. It was first carried by the Type 052C destroyer.
+
+
+=== Pakistan ===
+The Pakistan Army operates the HQ-9/P variant. Negotiations for the purchase of the HQ-9 and HQ-16 by Pakistan began in early 2015. The system officially entered service on October 14, 2021. The HQ-9/P's first combat use was during the 2025 India–Pakistan conflict.
+
+
+=== Egypt ===
+It was reported that Egypt had acquired HQ-9B systems in mid-2025 by the Middle East Monitor, and in December 2025, it was reported that the Egyptians had deployed the system as part of an A2/AD system in the Sinai near Israel in a major move to boost aerial defenses not done since 1979.
+
+
+== Operators ==
+
+ Azerbaijan
+Azerbaijan received a Chinese FD-2000B (HQ-9B) air-defense system as of November 2025.
+ China
+People's Liberation Army Air Force - 196 HQ-9, 96 HQ-9B as of 2024
+People's Liberation Army Navy
+ Egypt
+Egyptian Air Defense Forces - In 2025, Middle East Monitor reported that, according to Israeli media, Egypt had received the HQ-9B.
+ Pakistan
+Pakistan Army: HQ-9P
+Pakistan Air Force: (HQ-9BE
+ Turkmenistan
+Turkmen Air Force
+ Uzbekistan
+Uzbekistan Air and Air Defence Forces
+
+
+== Gallery ==
+
+
+== See also ==
+Surface-to-air missile
+Similar systems
+HQ-22
+Terminal High Altitude Area Defense
+MIM-104 Patriot
+S-300 (missile)
+Medium Extended Air Defense System
+Project Kusha
+Aster
+David's Sling
+Barak 8
+L-SAM
+Related lists
+List of missiles
+List of surface-to-air missiles
+Comparison of anti-ballistic missile systems
+
+
+== References ==
+
+
+=== Citations ===
+
+
+=== Sources ===
+
+
+== External links ==
+HQ-9 missile launch photos, Chinese Air Force Archived 10 April 2016 at the Wayback Machine AirForceWorld.com
+FD-2000 long range air defense missile system(Army recognition) Archived 5 October 2013 at the Wayback Machine
+HQ-9 medium-to-long range air defense missile system(Army recognition)
+HQ-9 / FT-2000 SAM Sinodefence
+Naval HQ-9 SAM Sinodefence
+HQ-9 Missilethreat.com
+China Offers FD-2000 / HQ-9, FK-1000 and FL-3000N Missile Systems to Thailand 6 November 2013

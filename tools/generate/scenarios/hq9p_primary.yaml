@@ -1,0 +1,210 @@
+# ============================================================================
+# SCENARIO SPEC  —  this is the file you configure.
+# ============================================================================
+# The generator reads this + the gathered real material (corpus/raw/) and emits
+# a FROZEN, messy corpus into corpus/scenarios/hq9p_primary/ that the rest of the
+# system ingests cold. Edit this YAML to retune the demo; copy it to make a new
+# scenario (multi-scenario = multiple specs -> multiple frozen folders).
+#
+# Design rules baked in (from artifacts/C + artifacts/spine):
+#   * Generator emits RAW docs only (text/records/captions) — never clean ontology
+#     fields. The pipeline earns extraction. `asserts:` below is GENERATION INTENT,
+#     used to render the doc and to build the answer key; it is NOT written into the
+#     frozen doc.
+#   * Messiness is seeded from REAL specimens (templates in corpus/raw/), applied as
+#     named operators — not "make it messy". Every operator is reportable.
+#   * `ground_truth` is the answer key (eval only), never fed to the pipeline.
+# ============================================================================
+
+meta:
+  name: hq9p_primary
+  subject: "Pakistan HQ-9/P (enriched with China HQ-9)"
+  corpus_size_target: 14
+  # Corpus supports BOTH candidate observables; pick which the demo fires.
+  observable:
+    primary: basing_crossing            # a basing node crosses probable -> confirmed
+    also_supported: sustainment_tender  # a 'spares' tender implies induction
+  seed_note: "Keep the generator blind to the ontology. Also leave ≥1 real uncurated doc from corpus/raw in the mix."
+
+# ---------------------------------------------------------------------------
+# GROUND TRUTH  (answer key — eval only, never ingested)
+# The frozen corpus must let the pipeline reconstruct this, with these statuses.
+# ---------------------------------------------------------------------------
+ground_truth:
+  nodes:
+    - {id: mfr_casic,    type: manufacturer,       name: "China Aerospace Science & Industry Corp (CASIC)", export_agent: "CPMIEC"}
+    - {id: comp_ht233,   type: radar_command_node, name: "HT-233 engagement radar", chokepoint: true, why: "sole supplier on the critical path (single-source in-degree)"}
+    - {id: comp_missile, type: component,          name: "HQ-9-family interceptor"}
+    - {id: var_hq9p,     type: variant,            name: "HQ-9/P",  branch: "Pakistan Army"}
+    - {id: var_hq9be,    type: variant,            name: "HQ-9BE",  branch: "Pakistan Air Force"}
+    - {id: import_2021,  type: contract_import,    name: "China→Pakistan HQ-9/P transfer", status: confirmed, evidence_date: "2021"}
+    - {id: unit_paad,    type: unit,               name: "Pakistan Army Air Defence (HQ-9/P)", status: confirmed, evidence_date: "2021-10-14"}
+    - {id: site_karachi, type: basing_site,        name: "Karachi (geolocated)", status: confirmed, confirmed_by: imagery, evidence_date: "2022"}
+    - {id: site_second,  type: basing_site,        name: "second/relocated site", status: probable, note: "single hedged source"}
+    - {id: sustain_spares, type: sustenance_node,  name: "spares/maintenance tender", status: probable, note: "tender implies induction, never confirms"}
+  edges:
+    - {rel: manufactures,     from: mfr_casic,    to: var_hq9p,     status: confirmed, freshness: durable}
+    - {rel: supplies-component, from: comp_ht233, to: var_hq9p,     status: confirmed, freshness: durable, chokepoint: true}
+    - {rel: supplies-component, from: comp_missile, to: var_hq9p,   status: confirmed, freshness: durable}
+    - {rel: variant-of,       from: var_hq9p,     to: "HQ-9",       status: confirmed, freshness: durable}
+    - {rel: variant-of,       from: var_hq9be,    to: "HQ-9",       status: confirmed, freshness: durable}
+    - {rel: imported-by,      from: import_2021,  to: unit_paad,    status: confirmed, freshness: durable}
+    - {rel: inducted-into,    from: var_hq9p,     to: unit_paad,    status: confirmed, evidence_date: "2021-10-14"}
+    - {rel: based-at,         from: unit_paad,    to: site_karachi, status: confirmed, confirmed_by: imagery, freshness: perishable}
+    - {rel: based-at,         from: unit_paad,    to: site_second,  status: probable,  freshness: perishable}
+    - {rel: sustained-by,     from: unit_paad,    to: sustain_spares, status: probable, freshness: perishable}
+
+worked_query:
+  text: "Trace the HQ-9/P battery at Karachi back to its component supplier and name the chokepoint."
+  expected_path: [site_karachi, unit_paad, import_2021, mfr_casic, comp_ht233]
+  expected_answer: "Chokepoint = HT-233 engagement radar (sole supplier on the critical path)."
+  must: "cite the exact source at every hop; separate observed (basing, imagery) from inferred (chokepoint)."
+
+# ---------------------------------------------------------------------------
+# DOCUMENTS  (what gets emitted into the frozen corpus)
+#   template: path under corpus/raw/ whose real FORMAT+messiness to imitate.
+#             If it's still `needs_*` in the manifest, generator falls back to the
+#             catalogued format sample in artifacts/md/05-data-scoping-C.md §2/§6.
+#   asserts:  generation intent (hidden from pipeline) — the claim(s) the raw doc implies.
+#   messy:    named corruption operators, each traceable to a real source of that mess.
+# ---------------------------------------------------------------------------
+documents:
+  - id: d01_sipri_transfer
+    source_class: arms_transfer
+    template: corpus/raw/arms_transfer/sipri_transfers.*   # needs_manual_export
+    date: "2021"
+    asserts: ["import_2021 confirmed: China supplied HQ-9/P SAM system to Pakistan"]
+    messy: [hs_code_absent, analyst_coded_row, value_in_comments]
+    flex: [corroborated]
+
+  - id: d02_ispr_induction
+    source_class: official
+    template: corpus/raw/official/ispr_hq9p_induction.*    # needs_residential_ip
+    date: "2021-10-14"
+    asserts: ["var_hq9p inducted-into unit_paad on 2021-10-14; HIMADS; range >100km; CLIAD"]
+    messy: [service_nickname_HIMADS, euphemistic_framing]
+    flex: [corroborated]
+
+  - id: d03_quwa_analysis
+    source_class: trade_media
+    template: corpus/raw/trade_media/quwa_hq9p.text.txt
+    date: "2021-10"
+    asserts: ["corroborates induction; refers to the system as FD-2000 (export alias)"]
+    messy: [alias_FD2000, hedged_battery_counts]
+    flex: [corroborated, alias_merge_trap]
+
+  - id: d04_armyrec_ranges
+    source_class: trade_media
+    template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
+    date: "2021-10"
+    asserts: ["var_hq9p (Army, ~125km) vs var_hq9be (PAF, ~260km) — one import, two branches"]
+    messy: [estimated_ranges, variant_fork]
+    flex: [alias_merge_trap]
+
+  - id: d05_customs_manifest
+    source_class: customs
+    template: corpus/raw/templates/importyeti_customs_template.*  # needs_manual
+    date: "2020-11"
+    asserts: ["comp_ht233 / radar RF parts imported (component tier)"]
+    messy: [hs_code_8526_bland, front_company_consignee, transliteration_variance, missing_values]
+    flex: []          # supply-chain depth (component -> chokepoint hop)
+
+  - id: d06_spares_tender
+    source_class: procurement
+    template: corpus/raw/templates/india_mtd_tender_template.pdf
+    date: "2023-02"
+    asserts: ["sustain_spares probable: a 'spares' tender IMPLIES an inducted system"]
+    messy: [as_per_annexure_pointer, lot_numbers, redactions, bureaucratic_phrasing]
+    flex: [single_source]     # + drives the sustainment_tender observable
+
+  - id: d07_sat_confirm_karachi
+    source_class: imagery
+    template: corpus/raw/imagery/googleearth_karachi_site.*   # needs_manual
+    date: "2022-03"
+    asserts: ["site_karachi based-at CONFIRMED: launchers/petal-pad visible (VLM site-typing)"]
+    messy: [capture_time_ne_event_time, low_res_footprint]
+    flex: []          # this is the item that crosses the basing node probable->confirmed (observable)
+
+  - id: d08_social_sighting
+    source_class: social
+    template: corpus/raw/social/x_osint_sightings.*          # needs_manual
+    date: "2025-05"
+    asserts: ["site_karachi active — convoy/launcher sighting (probable, low-provenance lead)"]
+    messy: [slang, colloquial_placename, relative_time, no_coords, hype]
+    flex: [contradiction]     # contradicts d09 official 'routine'
+
+  - id: d09_official_routine
+    source_class: official
+    template: corpus/raw/official/ispr_hq9p_induction.*      # reuse official format
+    date: "2025-05"
+    asserts: ["official framing: activity is a 'routine exercise' (contradicts d08 sighting)"]
+    messy: [euphemism, omission]
+    flex: [contradiction]
+
+  - id: d10_sat_cloud_gap
+    source_class: imagery
+    template: corpus/raw/imagery/sentinel2_karachi_site.*    # needs_credentials
+    date: "2025-05"
+    asserts: ["95% cloud over site_karachi — cannot confirm launcher count / tail numbers"]
+    messy: [cloud_occlusion, stale_capture]
+    flex: [gap_insufficient_evidence]
+
+  - id: d11_recycled_image
+    source_class: social
+    template: corpus/raw/social/x_osint_sightings.*          # needs_manual
+    date: "2025-05"
+    asserts: ["a 2019 parade photo reposted as a NEW 2025 deployment (real image, false context)"]
+    messy: [miscaptioned_recycled_image, first_seen_2019]
+    flex: [planted_tooclean]
+  - id: d12_reshare_a
+    source_class: social
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05"
+    asserts: ["near-identical repost of d11 (manufactured independence)"]
+    messy: [near_duplicate, tight_time_window]
+    flex: [planted_tooclean]
+  - id: d13_reshare_b
+    source_class: social
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05"
+    asserts: ["near-identical repost of d11 (manufactured independence)"]
+    messy: [near_duplicate, tight_time_window]
+    flex: [planted_tooclean]
+
+  - id: d14_stale_holding
+    source_class: reference
+    template: corpus/raw/reference/nti_china_missile.pdf
+    date: "2016"
+    asserts: ["a China HQ-9 holding sourced only to 2016/2019 imagery, no recent corroboration"]
+    messy: [dated_fact_printed_as_current, no_recent_source]
+    flex: [freshness_stale]
+
+# ---------------------------------------------------------------------------
+# FLEXES  (the six graded moments + freshness + observable) -> expected behavior
+# The generator ensures each flex has seed material; the eval checks the behavior.
+# ---------------------------------------------------------------------------
+flexes:
+  corroborated:
+    docs: [d01_sipri_transfer, d02_ispr_induction, d03_quwa_analysis]
+    expect: "induction promoted to CONFIRMED on ≥2 independent credible sources."
+  single_source:
+    docs: [d06_spares_tender]
+    expect: "sustain_spares stays PROBABLE (single source; tender implies, never confirms)."
+  contradiction:
+    docs: [d08_social_sighting, d09_official_routine]
+    expect: "edge flagged CONTRADICTED; surfaced, not silently resolved."
+  planted_tooclean:
+    docs: [d11_recycled_image, d12_reshare_a, d13_reshare_b]
+    expect: "coordinated-inauthenticity + provenance (first-seen 2019) OVERRIDE the corroboration count; not confirmed."
+  gap_insufficient_evidence:
+    docs: [d10_sat_cloud_gap]
+    expect: "'insufficient evidence to assess' — names what's missing + when next coverage is due."
+  alias_merge_trap:
+    docs: [d03_quwa_analysis, d04_armyrec_ranges]
+    expect: "FD-2000↔HQ-9 auto-resolves; FD-2000 vs FT-2000 lands in the HITL band (do NOT auto-merge)."
+  freshness_stale:
+    docs: [d14_stale_holding]
+    expect: "shows Confirmed-as-of-2016 -> Probable(stale); never silently 'confirmed' today."
+  observable_basing_crossing:
+    trigger_doc: d07_sat_confirm_karachi
+    expect: "when the imagery arrives, site_karachi crosses PROBABLE->CONFIRMED -> alert -> analyst disposition."

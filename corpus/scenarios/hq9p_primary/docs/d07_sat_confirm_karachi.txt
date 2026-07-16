@@ -1,0 +1,5 @@
+[IMAGERY | 2022-03]  (STUB — replace via render_document)
+intent (hidden from pipeline): site_karachi based-at CONFIRMED: launchers/petal-pad visible (VLM site-typing)
+messiness to apply: capture_time_ne_event_time, low_res_footprint
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

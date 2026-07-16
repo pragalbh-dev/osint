@@ -1,0 +1,397 @@
+HQ-9 Long-Range Air Defence System - Quwa
+Skip to content
+About
+Advertise
+Contact
+LOGIN
+QUWA PLUS
+QUWA PRO
+SPONSOR & ADVERTISE ON QUWA
+ABOUT QUWA
+Defence Uncut
+Pakistan Defence News
+Turkish Defence News
+Indian Defence News
+China Military News
+Search
+Quwa
+LOGIN
+QUWA PLUS
+QUWA PRO
+SPONSOR & ADVERTISE ON QUWA
+ABOUT QUWA
+Categories
+DEFENCE UNCUT
+PAKISTAN DEFENCE NEWS
+TURKISH DEFENCE NEWS
+INDIAN DEFENCE NEWS
+CHINA MILITARY NEWS
+Sign In
+Home
+›
+Pakistan
+›
+Pakistan Air Defence Systems
+›
+HQ-9 Long-Range Air Defence System
+Pakistan Air Defence Systems
+HQ-9 Long-Range Air Defence System
+The HQ-9 is China's long-range surface-to-air missile (SAM) system, operated by Pakistan as the HQ-9/P — the country's only strategic-tier air defence system. Combat-proven during the May 2025 India-Pakistan conflict, the HQ-9/P provides the Pakistan Army and Pakistan Air Force with long-range area air defence capability.
+By
+Quwa Team
+·
+May 14, 2026
+·
+10 min read
+Share:
+The HQ-9 (红旗-9, ‘Red Flag-9’) is a Chinese long-range surface-to-air missile (SAM) system developed by the China Aerospace Science and Industry Corporation (CASIC). Pakistan operates two variants: the Pakistan Army’s HQ-9/P and the Pakistan Air Force’s HQ-9BE — making the HQ-9 family Pakistan’s only strategic-tier ground-based air defence system.
+The HQ-9/P entered service on 14 October 2021 and was
+combat-proven during the May 2025 India-Pakistan conflict
+— the first confirmed operational use of any HQ-9 variant. Export variants marketed by CASIC include the FD-2000 (baseline export) and FD-2000B (enhanced export, 250 km range).
+The HQ-9 sits at the top of
+Pakistan’s layered air defence architecture
+, providing a high-to-medium-altitude air defence (HIMAD) umbrella under which shorter-range systems — including the
+LY-80/HQ-16
+,
+FM-90
+, and
+Spada 2000-Plus
+— operate.
+Move earlier than the market does.
+Get procurement-focused reporting, market signals, and exhibition intelligence built for teams tracking Pakistan’s defence industry and adjacent regional opportunities.
+Join Pro — $149.99/year
+→
+HQ-9 / FD-2000 Specifications
+Parameter
+HQ-9 (PLA baseline)
+HQ-9/P (Pakistan Army)
+HQ-9BE (Pakistan Air Force)
+FD-2000 (export)
+Type
+Long-range SAM / ABM
+Long-range SAM
+Extended-range SAM
+Export SAM
+Developer
+CASIC
+CASIC (Pakistan-specific)
+CASIC (enhanced export)
+CASIC
+Range (aircraft)
+120 km
+~125 km
+260–280 km
+125 km
+Range (cruise missiles)
+—
+~25 km
+TBC
+~25 km
+Altitude
+27 km; 50 km (HQ-9B)
+TBC
+Up to 50 km
+27 km
+Missile Speed
+Mach 4.2
+Mach 4+
+Mach 4+
+Mach 4.2
+Reaction time
+~12–15 sec
+TBC
+TBC
+~12–15 sec
+Missile Length
+6.8 m
+6.8 m
+6.8 m
+6.8 m
+Missile Diameter
+700 mm (1st) / 560 mm (2nd)
+Similar
+Similar
+Similar
+Missile Weight
+~2,000 kg
+~2,000 kg
+~2,000 kg
+~2,000 kg
+Warhead
+180 kg
+180 kg
+180 kg
+180 kg
+Guidance
+TVM (inertial + uplink + terminal active radar)
+TVM / SARH
+ARH
+TVM
+Launcher
+4-round TEL
+4-round TEL
+4-round TEL
+4-round TEL
+Operator
+PLA Air Force / Navy
+Pakistan Army
+Pakistan Air Force
+Turkmenistan; Uzbekistan; Morocco; Azerbaijan
+Status
+Operational since 2001
+Operational Oct 2021; combat-proven May 2025
+Operational (post-2021)
+Operational
+Development Heritage
+The HQ-9 programme began in the 1970s, with full-scale development commencing in the late 1980s. Western analysts generally assess the HQ-9 as a hybrid design. Justin Bronk of the
+Royal United Services Institute (RUSI)
+has described it as a hybrid based on the Russian SA-20 but with radar, seeker, and C2 elements heavily influenced by American and Israeli technology. China began importing the Russian S-300 system in 1993, and the HQ-9’s track-via-missile (TVM) guidance — combining inertial mid-course guidance, mid-course uplink, and terminal active radar — may have been developed from US MIM-104 Patriot technology reportedly acquired through third-party transfers. The
+Stockholm International Peace Research Institute (SIPRI)
+has tracked Chinese SAM imports and technology transfers extensively in its arms transfer database.
+HQ-9 Variant Tree
+Variant
+Type
+Key Upgrade
+Range
+Operators
+HQ-9
+Original ground-launched
+Baseline
+120 km
+PLA Air Force
+HHQ-9
+Naval surface-launched
+Ship integration (Type 052C)
+120 km
+PLA Navy
+HQ-9A
+Improved
+Service entry 2001
+~125 km
+PLA Air Force
+HQ-9B
+Enhanced
+260 km range; passive IR seeker added
+260 km
+PLA; Egypt
+HHQ-9B
+Naval HQ-9B
+Ship-based
+260 km
+PLA Navy
+HQ-9C
+BMD-capable
+Terminal-phase BMD; slimmer missile, 8 per TEL
+TBC
+PLA
+HQ-9/P
+Pakistan Army custom
+Pakistan-specific variant
+~125 km (aircraft); ~25 km (cruise missiles)
+Pakistan Army
+HQ-9BE
+Pakistan Air Force extended
+Extended-range, ARH seeker
+260–280 km
+Pakistan Air Force
+FD-2000
+Export baseline
+Export designation
+125 km
+Turkmenistan; Uzbekistan
+FD-2000B
+Enhanced export
+Extended range
+250 km
+Morocco; Azerbaijan
+HQ-9/P: Pakistan Army’s Variant
+Pakistan’s negotiations for the HQ-9 began in early 2015, alongside discussions for the HQ-16 medium-range system. The HQ-9/P officially entered Pakistan Army service on 14 October 2021, making Pakistan the first country outside China to operationally deploy the system.
+The HQ-9/P is configured for Pakistan’s specific threat environment. Its stated capabilities include interception of aircraft at approximately 125 km range and cruise missiles at approximately 25 km. The ‘P’ suffix denotes Pakistan-specific adaptations — though the precise nature of these modifications has not been publicly disclosed.
+The HQ-9/P was
+employed during the May 2025 India-Pakistan conflict
+— the first confirmed combat use of any HQ-9 variant. The operational deployment confirmed that the system had achieved full operational capability and was integrated into Pakistan’s real-time air defence command-and-control architecture.
+HQ-9BE: Pakistan Air Force’s Extended-Range Variant
+The Pakistan Air Force operates the HQ-9BE — an extended-range variant with a stated range of 260–280 km. As Quwa has
+noted in its analysis of Pakistan’s air defence posture
+, the PAF’s HQ-9BE and the PA’s HQ-9/P together form Pakistan’s long-range SAM backbone.
+The HQ-9BE leverages active radar-homing (ARH) for terminal guidance — a more modern architecture than the semi-active radar-homing (SARH) used by some earlier HQ-9 variants. The ARH seeker allows the missile to autonomously acquire and track the target in its terminal phase, reducing the fire-control radar’s exposure time and enabling simultaneous engagement of multiple targets.
+The PAF’s procurement of the HQ-9BE appears to have been driven by the need for strategic air defence of air bases, population centres, and other high-value assets. Its 260–280 km range enables the PAF to engage high-flying aircraft, standoff jammers, and ISR platforms at considerable distances from defended sites.
+FD-2000 and FD-2000B: Export Designations
+The FD-2000 (防盾-2000, ‘Defence Shield-2000’) is the standard export designation for the HQ-9 system. The FD-2000 has a range of 125 km, a reaction time of approximately 12–15 seconds from target detection to missile launch, and uses the HT-233 target-acquisition radar, Type 120 low-altitude search radar, and Type 305A AESA search radar. An optional YLC-20 passive radar can be fitted for detection of stealth aircraft. The FD-2000B is the enhanced export variant with a range of 250 km. Morocco, Azerbaijan, and potentially other buyers have received or ordered the FD-2000B.
+It is important to note that Pakistan’s HQ-9/P is not simply an FD-2000. The ‘P’ suffix indicates a Pakistan-specific configuration that may differ in radar integration, command-and-control architecture, or seeker configuration. Similarly, the PAF’s HQ-9BE is a distinct enhanced variant, not a rebadged FD-2000B.
+Quwa Assessment: The HQ-9 in Pakistan’s Threat Environment
+As Quwa has
+analyzed in detail
+, Pakistan’s HQ-9/P and HQ-9BE were procured for deterrence — but not for active, high-intensity warfighting. They were designed to stop isolated incursions, not absorb or defeat large-scale, multi-axis missile salvos combining BrahMos, SCALP, Nirbhay, loitering munitions, and rocket-powered surface-to-surface missiles.
+Range Was the Wrong Priority
+Pakistan chose the HQ-9/P (125 km) and HQ-9BE (260–280 km) for their range, establishing air defence reach across its territorial footprint. However, as Quwa has argued, Pakistan’s problem is not range; it is reaction time. Pakistan’s critical political, economic, and military centres — Lahore, Sialkot, Rawalpindi, Karachi — all lie within 200–250 km of the international border, well within the reach of BrahMos, Nirbhay, and SCALP.
+The Anti-Cruise-Missile Limitation
+The HQ-9/P’s stated specifications are revealing: 125 km range against aircraft, but only approximately 25 km against cruise missiles. This disparity confirms that the S-300-derived architecture — optimized for high-altitude, high-flying threats — is not well-suited to engaging low-flying, manoeuvrable cruise missiles that exploit terrain masking and the radar horizon.
+The Inventory Depth Problem
+Each HQ-9 TEL carries four missiles. Against a salvo of 20–30 cruise missiles on a single axis — a realistic scenario based on India’s demonstrated doctrine — the mathematics of engagement rapidly become unfavourable. Reload cycles, fire-control radar saturation, and the kinematic limits of a single battery all constrain the system’s ability to absorb successive waves.
+What Should Pakistan Do About Its HQ-9 Fleet?
+The HQ-9/P and HQ-9BE are sunk costs — they will remain in service for decades. As Quwa has
+outlined in its air defence blueprint analysis
+, the priority is to maximize the existing investment while transitioning toward an architecture better suited to the cruise missile threat — exemplified by the
+CAMM-ER
+already in Pakistan Navy service and indigenous programmes like the
+LoMADS
+.
+HQ-9 vs S-400: Why Pakistan Chose the HQ-9
+The S-400, developed by Russia’s
+Almaz-Antey
+, is generally assessed as the superior system in raw performance — particularly in range (up to 400 km with the 40N6 missile). However, Russia’s relationship with India — which has purchased five S-400 regiments — creates a fundamental strategic problem. The HQ-9, by contrast, comes from China —
+Pakistan’s most reliable defence partner
+. The supply chain is secure, spare parts are guaranteed, and financial terms are favourable.
+Radar and Fire-Control Architecture
+The HQ-9 system employs a multi-radar architecture. The FD-2000 export variant uses the HT-233 target-acquisition radar alongside the Type 120 low-altitude search radar and the Type 305A AESA search radar. An optional YLC-20 passive radar may be fitted for stealth aircraft detection. A typical battery consists of a search radar, fire-control/tracking radar, command vehicle, and multiple four-round TELs.
+Global Operators and the Iran War Context
+The HQ-9 family is now the most widely exported Chinese long-range SAM. Beyond Pakistan, Uzbekistan and Turkmenistan operate the FD-2000. Morocco and Azerbaijan have received the FD-2000B. Egypt reportedly acquired the HQ-9B in 2025. Pakistan’s combat use of the HQ-9/P in May 2025, combined with Egyptian and Azerbaijani procurement, has made the HQ-9 the most combat-relevant Chinese SAM system worldwide.
+Quwa Pro
+Spot Pakistan’s Next Procurement Opportunities Earlier
+Market Intelligence for industry professionals: procurement signals, vendor activity, capability gaps, and industrial shifts across Pakistan and adjacent defence markets.
+Subscribe to Pro — $149.99/year
+→
+Get the free Pro dispatch
+Your email
+Subscribe
+Free. No spam. Unsubscribe in one click.
+Featured & Trusted By
+Frequently Asked Questions About the HQ-9
+What is the range of the HQ-9?
+The baseline HQ-9 has a range of 120 km against aircraft. The HQ-9B extends this to 260 km. Pakistan’s HQ-9/P has a range of approximately 125 km against aircraft and 25 km against cruise missiles. The PAF’s HQ-9BE has a range of 260–280 km.
+How many HQ-9 systems does Pakistan have?
+Pakistan has not publicly disclosed the exact number of HQ-9 batteries in service. Both the Pakistan Army (HQ-9/P) and Pakistan Air Force (HQ-9BE) operate the system. Based on publicly available information, Pakistan likely operates a small number of batteries concentrated at strategic sites — sufficient for deterrence but not for territorial-wide coverage. The exact regiment and battery count remains classified.
+Can the HQ-9 intercept BrahMos?
+The HQ-9/P has a stated anti-cruise missile engagement range of approximately 25 km. The BrahMos is a supersonic cruise missile (Mach 2.8–3.0) that typically flies a sea-skimming or terrain-following profile at low altitude. Against a low-flying BrahMos, the HQ-9/P’s engagement window would be extremely narrow — limited by radar horizon constraints and the reaction time required to detect, track, and engage a Mach 3 target. The HQ-9BE, with its ARH seeker and higher altitude capability, may offer better performance against BrahMos at higher altitudes. However, as Quwa has
+argued
+, dedicated anti-cruise missile systems like the
+CAMM-ER
+are better suited to the low-altitude cruise missile threat.
+What is the FD-2000 reaction time?
+The FD-2000 has a reaction time of approximately 12–15 seconds from target detection to missile launch. This includes radar acquisition, threat classification, fire-control solution computation, and launch command. In practice, reaction time depends on the battery’s operational readiness state — a battery on high alert with radars active will respond faster than one transitioning from march order.
+Does Pakistan have the HQ-9?
+Pakistan operates two variants: the Pakistan Army’s HQ-9/P (entered service in October 2021) and the Pakistan Air Force’s HQ-9BE (extended-range). Both were
+employed during the May 2025 conflict
+.
+How does the HQ-9 compare to the S-400?
+The S-400 has a superior range (up to 400 km) and altitude ceiling. Pakistan chose the HQ-9 for strategic supply-chain reasons — China is Pakistan’s most reliable defence partner, while Russia supplies India’s S-400 fleet.
+Has the HQ-9 been used in combat?
+The HQ-9/P was used by Pakistan during the
+May 2025 India-Pakistan conflict
+— the first confirmed combat employment of any HQ-9 variant.
+What is the difference between HQ-9 and FD-2000?
+The FD-2000 is the standard export designation (125 km range). The FD-2000B is the enhanced export (250 km). Pakistan’s HQ-9/P is a separate Pakistan-specific variant, not a rebadged FD-2000.
+Related Profiles and Analysis
+Pakistan Air Defence System
+— Overview of Pakistan’s layered IADS architecture.
+LY-80 / HQ-16 Medium-Range Air Defence System
+— Pakistan’s medium-range tier.
+HQ-7 / FM-90 Short-Range Air Defence System
+— Pakistan’s ESHORAD tier.
+MBDA CAMM-ER / Albatros-NG Air Defence System
+— The anti-cruise-missile benchmark.
+GIDS LoMADS Air Defence System
+— Indigenous MRAD programme.
+GIDS FAAZ-SL (E-SHORADS) Air Defence System
+— Indigenous SHORAD.
+RBS 70 VSHORAD Air Defence System
+— Pakistan’s VSHORAD tier.
+Reaction, Not Range: How Pakistan’s Air Defence Must Evolve
+— Quwa’s flagship IADS analysis.
+The Blueprint for Pakistan’s Future-Proof Air Defence System
+— Post-conflict IADS modernization roadmap.
+Related reading
+‹
+›
+Pakistan Market Intelligence
+Will Pakistan’s Current Counterinsurgency Needs Drive New Army Aviation Acquisitions?
+Please log in or subscribe to complete the article. Login
+Read
+→
+Pakistan Market Intelligence
+Ukraine’s Lima and the Convergence of Electronic and Cyber Warfare: What It Signals for Pakistan
+Ukraine's Lima electronic warfare system attacks the satellite navigation behind Russia's precision weapons, fusing jamming, spoofing, and a cyber-style data-corruption layer that…
+Read
+→
+Pakistan Market Intelligence
+The Pakistan Air Force’s Next Procurement Cycle Starts in 2030 – Why Vendors Need to Prepare
+Please log in or subscribe to complete the article. Login
+Read
+→
+Pakistan Market Intelligence
+Unpacking Pakistan Air Force High-Energy Laser (HEL) Requirements: Scale, Power Class, and Likely Suppliers
+Just as loitering munitions, swarming drones, and other unmanned aerial systems (UAS) advance in capabilities and proliferate to adversaries on both the…
+Read
+→
+EMEA Market Intelligence
+Cheaper, Faster, Deadlier: The New Class of Warships Taking Over Global Oceans
+Billion-dollar delays are forcing global navies to ditch custom megaships. Inside the strategic pivot to low-cost frigates reshaping the global market.
+Read
+→
+Pakistan Market Intelligence
+Where One-Way Attack & Loitering Munition Designs Are Converging
+Please log in or subscribe to complete the article. Login
+Read
+→
+Pakistan Market Intelligence
+Why Pakistan Is Turning to Private Firms to Build Its Drones
+Please log in or subscribe to complete the article. Login
+Read
+→
+Quwa Team
+Contributing writer at Quwa.
+VIEW ALL POSTS
+|
+Related Articles
+Pakistan Air Defence Systems
+MBDA CAMM-ER / Albatros-NG Naval Air Defence System
+The MBDA CAMM-ER (Common Anti-air Modular Missile — Extended Range) is a latest-generation European air defence missile with active radar-homing...
+May 14, 2026
+Pakistan Air Defence Systems
+Anza MANPADS Family
+The Anza is Pakistan's indigenous man-portable air defence system (MANPADS) family, produced by KRL and marketed by GIDS. Combat-proven during...
+May 14, 2026
+Pakistan Air Defence Systems
+RBS 70 VSHORAD Air Defence System
+The RBS 70 is a Swedish man-portable short-range air defence system manufactured by Saab Bofors Dynamics. The Pakistan Army operates...
+May 14, 2026
+Pakistan Air Defence Systems
+GIDS LoMADS Air Defence System
+The LoMADS (Low-to-Medium Altitude Air Defence System) is an indigenous medium-to-long-range surface-to-air missile system under development by Pakistan's GIDS/NESCOM. With...
+May 14, 2026
+Defense news and analysis focused on Pakistan and the wider Muslim world.
+Categories
+Login
+Quwa Plus
+Quwa Pro
+Sponsor & Advertise on Quwa
+About Quwa
+Company
+Army
+Air Force
+Navy
+Drones
+Market Intelligence
+Defence Industry
+Follow Us
+© 2026 Quwa.
+All rights reserved.
+Privacy Policy
+Terms of Service
+Cookie Policy
+🔒
+We Value Your Privacy
+We use cookies to enhance your browsing experience, analyze site traffic, and understand where our audience comes from. You can choose which cookies you allow below.
+Privacy Policy →
+Essential
+Required
+These cookies are necessary for the website to function and cannot be disabled.
+Analytics
+These cookies help us understand how visitors interact with our content.
+Marketing & Attribution
+These cookies track which content and campaigns led you to subscribe.
+Reject All
+Accept All
+Manage Cookies
+Save Preferences

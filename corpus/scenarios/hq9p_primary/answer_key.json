@@ -1,0 +1,212 @@
+{
+  "ground_truth": {
+    "nodes": [
+      {
+        "id": "mfr_casic",
+        "type": "manufacturer",
+        "name": "China Aerospace Science & Industry Corp (CASIC)",
+        "export_agent": "CPMIEC"
+      },
+      {
+        "id": "comp_ht233",
+        "type": "radar_command_node",
+        "name": "HT-233 engagement radar",
+        "chokepoint": true,
+        "why": "sole supplier on the critical path (single-source in-degree)"
+      },
+      {
+        "id": "comp_missile",
+        "type": "component",
+        "name": "HQ-9-family interceptor"
+      },
+      {
+        "id": "var_hq9p",
+        "type": "variant",
+        "name": "HQ-9/P",
+        "branch": "Pakistan Army"
+      },
+      {
+        "id": "var_hq9be",
+        "type": "variant",
+        "name": "HQ-9BE",
+        "branch": "Pakistan Air Force"
+      },
+      {
+        "id": "import_2021",
+        "type": "contract_import",
+        "name": "China→Pakistan HQ-9/P transfer",
+        "status": "confirmed",
+        "evidence_date": "2021"
+      },
+      {
+        "id": "unit_paad",
+        "type": "unit",
+        "name": "Pakistan Army Air Defence (HQ-9/P)",
+        "status": "confirmed",
+        "evidence_date": "2021-10-14"
+      },
+      {
+        "id": "site_karachi",
+        "type": "basing_site",
+        "name": "Karachi (geolocated)",
+        "status": "confirmed",
+        "confirmed_by": "imagery",
+        "evidence_date": "2022"
+      },
+      {
+        "id": "site_second",
+        "type": "basing_site",
+        "name": "second/relocated site",
+        "status": "probable",
+        "note": "single hedged source"
+      },
+      {
+        "id": "sustain_spares",
+        "type": "sustenance_node",
+        "name": "spares/maintenance tender",
+        "status": "probable",
+        "note": "tender implies induction, never confirms"
+      }
+    ],
+    "edges": [
+      {
+        "rel": "manufactures",
+        "from": "mfr_casic",
+        "to": "var_hq9p",
+        "status": "confirmed",
+        "freshness": "durable"
+      },
+      {
+        "rel": "supplies-component",
+        "from": "comp_ht233",
+        "to": "var_hq9p",
+        "status": "confirmed",
+        "freshness": "durable",
+        "chokepoint": true
+      },
+      {
+        "rel": "supplies-component",
+        "from": "comp_missile",
+        "to": "var_hq9p",
+        "status": "confirmed",
+        "freshness": "durable"
+      },
+      {
+        "rel": "variant-of",
+        "from": "var_hq9p",
+        "to": "HQ-9",
+        "status": "confirmed",
+        "freshness": "durable"
+      },
+      {
+        "rel": "variant-of",
+        "from": "var_hq9be",
+        "to": "HQ-9",
+        "status": "confirmed",
+        "freshness": "durable"
+      },
+      {
+        "rel": "imported-by",
+        "from": "import_2021",
+        "to": "unit_paad",
+        "status": "confirmed",
+        "freshness": "durable"
+      },
+      {
+        "rel": "inducted-into",
+        "from": "var_hq9p",
+        "to": "unit_paad",
+        "status": "confirmed",
+        "evidence_date": "2021-10-14"
+      },
+      {
+        "rel": "based-at",
+        "from": "unit_paad",
+        "to": "site_karachi",
+        "status": "confirmed",
+        "confirmed_by": "imagery",
+        "freshness": "perishable"
+      },
+      {
+        "rel": "based-at",
+        "from": "unit_paad",
+        "to": "site_second",
+        "status": "probable",
+        "freshness": "perishable"
+      },
+      {
+        "rel": "sustained-by",
+        "from": "unit_paad",
+        "to": "sustain_spares",
+        "status": "probable",
+        "freshness": "perishable"
+      }
+    ]
+  },
+  "worked_query": {
+    "text": "Trace the HQ-9/P battery at Karachi back to its component supplier and name the chokepoint.",
+    "expected_path": [
+      "site_karachi",
+      "unit_paad",
+      "import_2021",
+      "mfr_casic",
+      "comp_ht233"
+    ],
+    "expected_answer": "Chokepoint = HT-233 engagement radar (sole supplier on the critical path).",
+    "must": "cite the exact source at every hop; separate observed (basing, imagery) from inferred (chokepoint)."
+  },
+  "flexes": {
+    "corroborated": {
+      "docs": [
+        "d01_sipri_transfer",
+        "d02_ispr_induction",
+        "d03_quwa_analysis"
+      ],
+      "expect": "induction promoted to CONFIRMED on ≥2 independent credible sources."
+    },
+    "single_source": {
+      "docs": [
+        "d06_spares_tender"
+      ],
+      "expect": "sustain_spares stays PROBABLE (single source; tender implies, never confirms)."
+    },
+    "contradiction": {
+      "docs": [
+        "d08_social_sighting",
+        "d09_official_routine"
+      ],
+      "expect": "edge flagged CONTRADICTED; surfaced, not silently resolved."
+    },
+    "planted_tooclean": {
+      "docs": [
+        "d11_recycled_image",
+        "d12_reshare_a",
+        "d13_reshare_b"
+      ],
+      "expect": "coordinated-inauthenticity + provenance (first-seen 2019) OVERRIDE the corroboration count; not confirmed."
+    },
+    "gap_insufficient_evidence": {
+      "docs": [
+        "d10_sat_cloud_gap"
+      ],
+      "expect": "'insufficient evidence to assess' — names what's missing + when next coverage is due."
+    },
+    "alias_merge_trap": {
+      "docs": [
+        "d03_quwa_analysis",
+        "d04_armyrec_ranges"
+      ],
+      "expect": "FD-2000↔HQ-9 auto-resolves; FD-2000 vs FT-2000 lands in the HITL band (do NOT auto-merge)."
+    },
+    "freshness_stale": {
+      "docs": [
+        "d14_stale_holding"
+      ],
+      "expect": "shows Confirmed-as-of-2016 -> Probable(stale); never silently 'confirmed' today."
+    },
+    "observable_basing_crossing": {
+      "trigger_doc": "d07_sat_confirm_karachi",
+      "expect": "when the imagery arrives, site_karachi crosses PROBABLE->CONFIRMED -> alert -> analyst disposition."
+    }
+  }
+}

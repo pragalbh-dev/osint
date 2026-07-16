@@ -1,0 +1,5 @@
+[OFFICIAL | 2021-10-14]  (STUB — replace via render_document)
+intent (hidden from pipeline): var_hq9p inducted-into unit_paad on 2021-10-14; HIMADS; range >100km; CLIAD
+messiness to apply: service_nickname_HIMADS, euphemistic_framing
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

@@ -1,0 +1,5 @@
+[SOCIAL | 2025-05]  (STUB — replace via render_document)
+intent (hidden from pipeline): site_karachi active — convoy/launcher sighting (probable, low-provenance lead)
+messiness to apply: slang, colloquial_placename, relative_time, no_coords, hype
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

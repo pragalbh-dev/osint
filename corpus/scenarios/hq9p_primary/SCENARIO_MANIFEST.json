@@ -1,0 +1,70 @@
+{
+  "name": "hq9p_primary",
+  "n_docs": 14,
+  "observable": {
+    "primary": "basing_crossing",
+    "also_supported": "sustainment_tender"
+  },
+  "template_gaps": [
+    {
+      "doc": "d01_sipri_transfer",
+      "template": "corpus/raw/arms_transfer/sipri_transfers.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d02_ispr_induction",
+      "template": "corpus/raw/official/ispr_hq9p_induction.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d05_customs_manifest",
+      "template": "corpus/raw/templates/importyeti_customs_template.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d06_spares_tender",
+      "template": "corpus/raw/templates/india_mtd_tender_template.pdf",
+      "status": "binary_only:india_mtd_tender_template.pdf"
+    },
+    {
+      "doc": "d07_sat_confirm_karachi",
+      "template": "corpus/raw/imagery/googleearth_karachi_site.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d08_social_sighting",
+      "template": "corpus/raw/social/x_osint_sightings.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d09_official_routine",
+      "template": "corpus/raw/official/ispr_hq9p_induction.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d10_sat_cloud_gap",
+      "template": "corpus/raw/imagery/sentinel2_karachi_site.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d11_recycled_image",
+      "template": "corpus/raw/social/x_osint_sightings.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d12_reshare_a",
+      "template": "corpus/raw/social/x_osint_sightings.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d13_reshare_b",
+      "template": "corpus/raw/social/x_osint_sightings.*",
+      "status": "missing"
+    },
+    {
+      "doc": "d14_stale_holding",
+      "template": "corpus/raw/reference/nti_china_missile.pdf",
+      "status": "binary_only:nti_china_missile.pdf"
+    }
+  ]
+}
