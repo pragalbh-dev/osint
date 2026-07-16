@@ -135,7 +135,7 @@ documents:
 
   - id: d09_official_routine
     source_class: official
-    template: corpus/raw/official/ispr_hq9p_induction.*      # reuse official format
+    template: corpus/raw/official/official_routine_framing.* # real "routine training" euphemism specimen
     date: "2025-05"
     asserts: ["official framing: activity is a 'routine exercise' (contradicts d08 sighting)"]
     messy: [euphemism, omission]

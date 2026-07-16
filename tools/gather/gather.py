@@ -169,13 +169,47 @@ def gather_one(src: dict) -> dict:
     return base
 
 
+def reconcile() -> int:
+    """Flip manifest rows to ok for any source whose file was dropped in by hand
+    (or by a helper) into corpus/raw/<source_class>/<id>.*."""
+    cfg = yaml.safe_load(SOURCES_YAML.read_text(encoding="utf-8"))
+    rows = load_manifest()
+    changed = 0
+    for s in cfg["sources"]:
+        sid, sc = s["id"], s["source_class"]
+        d = RAW / sc
+        cands = [p for p in sorted(d.glob(f"{sid}.*"))
+                 if not p.name.endswith(".text.txt")] if d.exists() else []
+        if not cands:
+            continue
+        if rows.get(sid, {}).get("status") == "ok" and rows[sid].get("path"):
+            continue
+        p = cands[0]
+        data = p.read_bytes()
+        rows[sid] = {**rows.get(sid, {}), "id": sid, "subjects": s.get("subjects", []),
+                     "source_class": sc, "method": s["method"], "url": s.get("url", ""),
+                     "fetched_at": now_iso(), "status": "ok",
+                     "path": str(p.relative_to(ROOT)), "sha256": sha256(data),
+                     "bytes": len(data), "note": "reconciled from dropped file"}
+        changed += 1
+        print(f"  ✓ reconciled {sid} <- {p.relative_to(ROOT)}")
+    write_manifest(list(rows.values()))
+    print(f"reconciled {changed} source(s).")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--only", nargs="*", help="source ids to gather")
     ap.add_argument("--subject", help="only sources touching this subject id")
     ap.add_argument("--force", action="store_true", help="re-fetch even if already ok")
     ap.add_argument("--list", action="store_true", help="print plan, fetch nothing")
+    ap.add_argument("--reconcile", action="store_true",
+                    help="mark ok any source with a dropped-in file under corpus/raw/")
     args = ap.parse_args()
+
+    if args.reconcile:
+        return reconcile()
 
     cfg = yaml.safe_load(SOURCES_YAML.read_text(encoding="utf-8"))
     sources = cfg["sources"]

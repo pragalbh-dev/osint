@@ -1,5 +1,59 @@
-[CUSTOMS | 2020-11]  (STUB — replace via render_document)
-intent (hidden from pipeline): comp_ht233 / radar RF parts imported (component tier)
-messiness to apply: hs_code_8526_bland, front_company_consignee, transliteration_variance, missing_values
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+BOL Number:        HLCUKR2039817
+Consignee:         Al-Barakat Trading & General Services (Pvt) Ltd
+Notify Party:      Bureau of Supplies, National Logistics Cell -- c/o same address
+Shipper:           China Xinshidai Shipbuilding & Electromech Import/Export Corp
+Shipper Country:   China
+
+Product Description (as shown, cleaned form):
+  "ELECTRICAL APPARATUS FOR LINE TELEPHONY LINE TELEGRAPHY PARTS THEREOF -- RADIO
+   TRANSCEIVER MODULE ASSY / RF SUB-UNIT SPARE COMPONENTS -- MODEL: HT-233 (QTY VARIES
+   PER CTN) -- FOR INDUSTRIAL COMMUNICATION USE -- SAID TO CONTAIN: CIRCUIT BOARD, WAVEGUIDE
+   FLANGE, T/R MODULE, MISC HARDWARE -- N.O.S."
+
+HS Code:           8526.91
+Weight:            gross wt not stated / net 4,120 kg (per packing list attach.)
+Quantity:          38 CTN (Cartons), 6 PLT (Pallets)
+Port of Loading:   XINGANG (TIANJIN) - CN 35141
+Port of Unlading:  Karachi (KICT Terminal) - PK 45500
+Arrival Date:      11/xx/2020 (day illeg. on manifest scan)
+Departure Date:    not explicitly stated on rendered view
+Carrier:           Hyundai Merchant Marine / partner vessel-share arrangement
+Vessel Name:       HYUNDAI FORTUNE (also seen as "HYUNDAI FORTUNA" in agent's covering letter)
+Vessel IMO:        9187339
+Container:         HLXU7742210, 40ft HC (1 of 2 — second container CMAU4498821 not on this row)
+Voyage:            0EW4N
+
+=== B. RAW EMBEDDED PAYLOAD FIELDS (verbatim, broker worksheet) ===
+
+field: consignee_name       val: "AL BARAKAT TRADG & GEN SERV(PVT)LTD"
+field: consignee_addr       val: "OFFICE # 4, 2ND FLR, HASSAN ARCADE, SHAHRAH-E-FAISAL, KHI"
+field: consignee_altname    val: "AL-BARKAT TRADING CO" (per B/L rider, spelling variance)
+field: ntfy_party           val: "NLC BOS -- FOR ONWARD DELIVERY, ATTN: STORES OFFICER (AIR DEFENCE WING)"
+field: shipper_name         val: "CHINA XINSHIDAI SHIPBUILDING & ELECTROMECH I/E CORP"
+field: shipper_altname      val: "CN XIN SHI DAI S/B ELECTROMECH IMP EXP CO" (chb translit)
+field: shipper_addr         val: "RM 1108, XINSHIDAI BLDG, HEPING RD, TIANJIN, PRC"
+field: hs_declared          val: "8526.91.00 - RADAR APPARATUS AND PARTS THEREOF, N.E.S."
+field: hs_alt_seen          val: "8526.91" / "8526" (broker split usage across cartons — not consistent)
+field: item_desc_raw        val: "RF MODULE H/T-233 X LOT, ANTENNA FEED PARTS, WAVEGUIDE SECTION,
+                                   TR MODULE PCB ASSY, SPARE - FOR RADAR SYS (SEE INV #)"
+field: end_use_stmt         val: "CIVIL TELECOM MAINTENANCE" [as declared by shipper -- unverifiable
+                                   against invoice line items, which ref. "HT-233 fire control radar,
+                                   sub-assembly"]
+field: invoice_no           val: XSD-2020-4471
+field: invoice_qty_line3    val: "H/T233 RF FRONT-END UNIT ... 6 SETS"
+field: invoice_qty_line7    val: "WAVEGUIDE FLANGE ASSY (SPARE) ... 24 PCS"
+field: invoice_qty_line9    val: "MISC HARDWARE KIT ... N/A QTY" [blank on scanned copy]
+field: value_decl           val: USD 118,[illeg — figure cut off in scan]
+field: currency              val: USD
+field: net_weight_kg        val: 4120
+field: gross_weight_kg      val: n/a
+field: packing_list_ref     val: PL-4471-A (attached, partial only — pgs 2,3 missing)
+field: broker_name          val: "M/S TRUSTLINE CLEARING AGENCY, KHI"
+field: broker_ref           val: TCA/2020/1187
+field: hs_code_prior_row    val: 8526.10 [struck through, corrected by hand to 8526.91]
+field: remarks              val: "CONSIGNEE ADDR PER LC DIFFERS FROM CNIC-REG ADDR ON FILE — REFER
+                                   IMPORT LICENSE NO. ***/2020 (NUMBER NOT LEGIBLE ON COPY HELD)"
+field: end_consignee_flag   val: null
+field: gsp_cert             val: not provided
+field: prior_shpmt_xref     val: "SEE ALSO HLCUKR2019402 (SAME CONSIGNEE, JUL2020, HT-233 LOT
+                                   CONT'D)"

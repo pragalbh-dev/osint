@@ -1,5 +1,47 @@
-[IMAGERY | 2022-03]  (STUB — replace via render_document)
-intent (hidden from pipeline): site_karachi based-at CONFIRMED: launchers/petal-pad visible (VLM site-typing)
-messiness to apply: capture_time_ne_event_time, low_res_footprint
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+COLLECTION: COMMERCIAL EO SATELLITE — ARCHIVE TASKING
+PRODUCT ID: SIH-2022-0071-K
+SENSOR: SI-VHR-1 (optical, pan-sharpened)
+NOMINAL GSD: 0.50m (pan), 2.0m (MS) — resampled product 0.5m
+
+ACQ DATE/TIME (UTC): 2022-03-14 / 06:41:22Z
+IMAGE PROCESSING DATE: 2022-03-19
+SCENE ID: SIH20220314T064122_K_R1C2
+CLOUD COVER: 8%
+SUN ELEV: 41.2 deg / AZ 132.6 deg
+OFF-NADIR: 27.4 deg (left-looking)
+
+AOI: KARACHI METRO / COASTAL BELT, SINDH PROVINCE, PAKISTAN
+AOI CENTER (approx, WGS84): 24.89N, 66.98E
+FRAME SIZE: 4.1km x 3.6km
+
+---
+
+ANNOTATION LAYER (analyst overlay, generated 2022-03-21, v1)
+
+Chip 1 of 3 — full frame context, downsampled preview (res degraded ~2.0m for release copy; native 0.5m held in archive)
+
+Chip 2 of 3 — subframe A, center 24.887N 66.976E
+- Cleared hardstand, hexagonal/petal-shaped revetment layout consistent w/ SAM battery dispersal pattern. 6x radial spurs off central hub, spur length approx 18-22m each, compatible with TEL parking bays.
+- 4x elongated rectangular objects on northern spurs, dims approx 8.5m x 3.2m — signature consistent w/ large tracked/wheeled TEL-class vehicle, erector arm not resolved at this res (imagery below native, some smear from off-nadir look angle + light haze).
+- 1x object, central pad, boxy, ~5m x 5m, possible engagement radar or fire-control shelter (NOT resolved to type — antenna face orientation unclear).
+- Access road tracks visible connecting pad to perimeter berm; berm shadow consistent w/ earthen revetment approx 2.5m height (shadow-length estimate, sun elev 41 deg).
+- Note: object counts should be treated as approximate — 2 candidate TEL contacts partially occluded by netting/shadow overlap on eastern spur, could be 1 or 2 vehicles.
+
+Chip 3 of 3 — subframe B, center 24.892N 66.981E
+- Secondary revetment cluster, smaller radius, possible support/reload area or unrelated construction laydown — low confidence, ambiguous at this resolution.
+- Vehicle-sized shadows along access track, count indeterminate.
+
+---
+
+SITE TYPING (VLM auto-classifier, run 2022-03-21, model rev 4.2):
+- classifier output: "SAM_BATTERY_SITE — HIGH" (petal/hub revetment geometry, radial TEL bays, central engagement-radar pad) — matches training signature for long-range SAM garrison, style consistent w/ S-300/HQ-9 family dispersal doctrine (petal-pad).
+- confidence flag: MEDIUM-HIGH (geometry strong match; vehicle-type confirmation LOW due to sub-optimal GSD for this range — recommend re-task at nadir, <20cm GSD if tasking window permits)
+- prior imagery on file for this pad: 2021-11-02 (partial cloud, pad visible but bare/no deployed hardware); 2022-01-09 (hardstand construction complete, no TELs present)
+- change detection vs 2022-01-09 baseline: POSITIVE — new returns on northern and eastern spurs not present in Jan baseline.
+
+---
+
+ANALYST REMARKS (freeform, unreviewed):
+possible HQ-9P bty consistent with reported PAF/Army AD deployment near Karachi approaches — cf open-source reporting on Pak acquisition of HQ-9P (export variant, CH-SA-9 reporting name) for coastal/point air defense of Karachi harbor + associated infra. caveat — imagery acquired 14 Mar but tasking request was for 09 Mar window, satellite revisit slipped due to competing collection priority, so treat "current as of" date as capture date not request date. also note downlinked product came through at lower res than contracted (partial sensor binning applied upstream, vendor says correction pass pending) — pad/hub geometry still diagnostic for site-type call even at degraded res, but individual TEL hull ID not achievable this pass. recommend follow-up VHR tasking + SIGINT cross-check (engagement radar emissions) before upgrading confidence past MEDIUM-HIGH.
+
+END PRODUCT SIH-2022-0071-K

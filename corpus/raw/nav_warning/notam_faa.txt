@@ -1,0 +1,57 @@
+# SOURCES (verbatim raw NOTAM strings, reproduced as found; access date 2026-07-16):
+#  [1] https://code7700.com/notams.htm  (aviation safety analysis site; MH17 case study)
+#  [2] https://en.wikipedia.org/wiki/NOTAM  (Wikipedia, "NOTAM" article, ICAO-format example)
+#  [3] https://notams.aim.faa.gov/FNSAirportOpsScenarios.pdf  (FAA AJV-2, "Federal NOTAM System
+#      Airport Operations Scenarios incl. AIXM 5.1 Sample Messages", issued Dec 2010, sec 24.1,
+#      p.163 -- examples there are captioned "Source: US NOTAM Repository")
+#  [4] https://pibs.nats.co.uk/operational/pibs/pib5.shtml  (NATS UK Preflight Information
+#      Bulletin, live/current at access date)
+#
+# Items 1-2 are full ICAO-format strings (Q)/A)/B)/C)/E) fields as requested). Items 3-4 are
+# additional real raw NOTAM material in other authentic formats (US domestic/FDC style; NATS
+# bulletin decode style), kept for extra messiness/format diversity -- flag clearly if only the
+# strict ICAO Q-line format is wanted for this corpus slice.
+
+# --- [1] Real historical NOTAM: Ukraine established this temporary restricted area over the
+# Dnipropetrovsk FIR amid the 2014 conflict; Malaysia Airlines MH17 was shot down by a Buk
+# surface-to-air missile near/beneath this restricted airspace on 2014-07-17. Widely cited in
+# post-crash aviation-safety analysis of the NOTAM/airspace-warning failure. ---
+A1492/14 NOTAM
+Q) UKDV/QRTCA/IV/BO /W /260/320/4822N03807E095
+A) UKDV
+B) 1407141800 C) 1408142359EST
+E) TEMPO RESTRICTED AREA INSTALLED WITHIN FIR DNIPROPETROVSK
+BOUNDED BY COORDINATES : 495355N 0380155E 485213N 0372209E 480122N
+0370253E 471352N 0365856E 465018N 0374325E 465900N 0382000E
+470642N 0381324E
+THEN ALONG STATE BOUNDARY UNTIL POINT 495355N 0380155E.
+RESTRICTION NOT APPLIED FOR FLIGHTS OF STATE ACFT OF UKRAINE.
+F) FL 260 G) FL 320
+
+# --- [2] Canonical published ICAO-format NOTAM example (taxiway closure, London Heathrow /
+# EGLL), reproduced verbatim from the Wikipedia "NOTAM" article. ---
+A1234/06 NOTAMR A1212/06
+Q) EGTT/QMXLC/IV/NBO/A/000/999/5129N00028W005
+A) EGLL
+B) 0609050500
+C) 0704300500
+E) DUE WIP TWY B SOUTH CLSD BTN 'F' AND 'R'. TWY 'R' CLSD BTN 'A' AND 'B' AND DIVERTED VIA NEW GREEN CL AND BLUE EDGE LGT. CTN ADZ
+
+# --- [3] Real runway-closure NOTAMs, US domestic/FDC format (pre-ICAO-transition style),
+# reproduced from an official FAA training document; that document cites these as
+# "Source: US NOTAM Repository". ---
+!SFF 10/002 SFF RWY 3L/21R CLSD EXC 15 MIN PPR 132.5 WEF 0810061600-0810062000
+!DCA 10/069 3W3 RWY 10/28 CLSD TRANSIENT AIRCRAFT
+!SEA 10/060 SEA RWY 16R/34L CLSD EXC FLIGHT CHECK
+!LWC 10/015 LWC RWY 19 CLSD TKOF WEF 0810251500-0810252000
+
+# --- [4] Live/current UK Ministry of Defence danger-area (military live-firing training area)
+# NOTAMs, as published in the NATS Preflight Information Bulletin at access date. NATS renders
+# these in its own bulletin decode (Q-line plus LOWER/UPPER/FROM/TO/SCHEDULE fields) rather than
+# strict ICAO A)/B)/C) lettering. ---
+D2637/26  Q) EGTT/QRDCA/IV/BO/W/000/075/5230N00046E005  DANGER AREA EGD208 STANFORD ACTIVATED  LOWER: SFC  UPPER: 7500FT AMSL  FROM: 30 JUN 2026 09:00  TO: 17 JUL 2026 16:00  SCHEDULE: MON-FRI 0900-1600
+D2696/26  Q) EGTT/QRDCA/IV/BO/W/000/045/5038N00404W003  DANGER AREA EGD011B WILLSWORTHY ACTIVATED
+D2651/26  Q) EGTT/QRDCA/IV/BO/W/000/120/5153N00113W002  DANGER AREA EGD129 (WESTON-ON-THE-GREEN) ACTIVATED
+D2783/26  Q) EGTT/QRDCA/IV/BO/W/000/032/5119N00206W004  DANGER AREA EGD148 KEEVIL ACTIVATED
+D2723/26  Q) EGTT/QRDCA/IV/BO/W/000/015/5305N00041W001  DANGER AREA EGD305 BECKINGHAM ACTIVATED
+D2761/26  Q) EGTT/QRDCA/IV/BO/W/000/010/5402N00101W001  DANGER AREA EDG410 STRENSALL ACTIVATED

@@ -1,5 +1,52 @@
-[IMAGERY | 2025-05]  (STUB — replace via render_document)
-intent (hidden from pipeline): 95% cloud over site_karachi — cannot confirm launcher count / tail numbers
-messiness to apply: cloud_occlusion, stale_capture
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+IMAGERY ANALYSIS REPORT
+CLASSIFICATION: UNCLASSIFIED // FOR TEST USE ONLY
+
+REPORT NO: IA-2025-1142-KHI
+TITLE: Suspected Air Defense Deployment Area, Karachi Coastal Sector
+COLLECTION WINDOW: 2025-05-06 / 2025-05-19
+SENSOR: Multispectral EO, commercial SSO platform (30-60cm class)
+AOI CENTER: approx. 24.89N / 66.99E (site designator: SITE_KARACHI)
+
+1. COLLECTION SUMMARY
+
+Tasking requested repeat coverage of the previously identified HQ-9P (export variant, CH-SA-9 family) battery footprint on the western perimeter of the Karachi coastal air defense belt, following reporting of possible battalion-level reposition activity in the sector during Q1 2025. Five collection attempts were scheduled across the window; four passes returned unusable product due to persistent cloud cover across the AOI. The single partially usable pass (2025-05-14, 06:41Z) recorded approximately 95% cloud fraction over the target polygon, with only transient breaks visible along the northeast tree line and a fragment of access road approximately 400m from the suspected launcher revetments. No unobstructed look at the central pad cluster was obtained during the window.
+
+Most recent unobstructed reference imagery of this location in analyst archive remains the 2024-11-02 collect (image ref KHI-24-0934), now approximately 6.5 months stale relative to current reporting date. Site configuration assessed below is therefore a composite of the stale November baseline and the limited cloud-break fragments from the current window; confidence in current-state assessment is degraded accordingly.
+
+2. SITE DESCRIPTION (BASELINE, 2024-11-02 REFERENCE)
+
+The site comprises a hardened compound approximately 1.1 km x 0.8 km, consistent with prior HQ-9/HQ-9P battalion fire-unit layouts observed elsewhere in Pakistan Army Air Defence Command holdings. Baseline imagery showed:
+
+- Central engagement radar pad, revetted, orientation consistent with HT-233 (or derivative) engagement radar footprint
+- Six launcher hardstands arranged in two arcs of three, consistent with TEL (transporter erector launcher) parking for 4-round canisterized rounds
+- Support area with 3-4 soft-skin vehicles and one probable command post shelter
+- Perimeter berm and single access road tying into Hub Road corridor
+
+Launcher count and tail-number markings were legible in the November baseline but are explicitly NOT reconfirmed by the current window's imagery.
+
+3. CURRENT WINDOW OBSERVATIONS (2025-05-14 PASS)
+
+Approximately 95% of the AOI was cloud-obscured at time of collection. Visible fragments (see annotated chip 05-14A, 05-14B) show:
+
+- Partial rooftop of what is assessed as the support/CP shelter, consistent in outline with baseline
+- A linear shadow feature along the northeast berm, possibly a parked vehicle or debris; too small and too fragmentary against cloud edge to classify
+- No visibility on the central radar pad or the launcher hardstand arcs; both fall entirely under the dense cloud mass in this pass
+
+Launcher count cannot be confirmed for the current window. Tail-number or hull-marking discrimination is not possible at this cloud fraction and was not attempted for scoring. Analysts should not carry forward the six-launcher baseline count as a current-confirmed figure; it is carried as a last-known configuration only, dated to the stale November reference.
+
+4. COLLECTION GAPS / TASKING NOTES
+
+- Passes 2025-05-06, 05-08, 05-11, 05-17 all returned >90% cloud fraction over SITE_KARACHI polygon; discarded as non-actionable.
+- Monsoon pre-season cloud persistence over the coastal Karachi belt is a recurring seasonal collection constraint for this AOI; historical pass success rate for May window in prior years is noted as low in tasking archive.
+- Recommend re-tasking with SAR complement (current program does not hold SAR access for this AOI as of report date) to bridge optical gap until cloud conditions improve, expected no earlier than late June per seasonal pattern.
+- Next optical window with improved cloud probability per collection planning tool: 2025-06-02 onward.
+
+5. ASSESSED CONFIDENCE
+
+Site occupancy: LOW-MODERATE confidence, based on stale (6.5-month) baseline plus partial CP-shelter fragment match in current pass.
+Launcher count / tail numbers: NOT ASSESSABLE this cycle — cloud-limited.
+Overall geolocation confidence: HIGH (fixed installation, previously confirmed coordinates).
+
+Analyst chip references attached: 05-14A.jpg, 05-14B.jpg, KHI-24-0934_baseline.jpg (archival).
+
+END REPORT

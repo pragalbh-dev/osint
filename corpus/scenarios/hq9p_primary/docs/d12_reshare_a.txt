@@ -1,5 +1,54 @@
-[SOCIAL | 2025-05]  (STUB — replace via render_document)
-intent (hidden from pipeline): near-identical repost of d11 (manufactured independence)
-messiness to apply: near_duplicate, tight_time_window
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+POST 1
+Handle: @ShivAroor (Shiv Aroor, defence journalist)
+Date: 2025-05-08 (~05:15 IST per search result)
+Status URL: https://x.com/ShivAroor/status/1920407122233176147
+"BIG BREAKING 🚨 Indian Govt announces shooting down Pak drone & missile attacks on military targets in North & West India using air defence, confirms drone strikes on Pak's air defence, including Lahore."
+
+---
+
+POST 2
+Handle: @DefenceDecode
+Date: 2025-05-08, ~06:02 IST
+"🚨🚨BREAKING: Indian armed forces confirm strikes on Pakistani air defence radar/battery near Lahore overnight, part of retaliation following drone & missile attempts on Indian military sites in north & west. HQ-9/P (HIMADS) site reportedly among targets hit. More soon 🇮🇳"
+
+---
+
+POST 3
+Handle: @Aarav_Def
+Date: 2025-05-08, ~06:10 IST
+"Same news doing rounds again - Lahore HIMADS/HQ9 battery apparently targeted, this is basically copy of the Aroor post from an hour ago just being reposted by half the defence twitter accounts rn lol. Nothing new, same claim same time window 🙄"
+
+---
+
+POST 4
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-05-08 (~05:40 IST)
+"Confirmed - IAF/Army air defence engaged and destroyed Pakistani drones and missiles targeting military installations in north & west sectors. Separately, strikes reported on Pakistan's air defence network incl. installations near Lahore. HQ-9P site status unclear, imagery awaited 🔍"
+
+---
+
+POST 5
+Handle: @ranj_singh_osint
+Date: 2025-05-08, ~07:15 IST
+"seeing this Lahore HQ9 / Chinese-origin LOMADS strike claim posted almost word for word by like 5 different accounts now within an hour of each other?? someone's just rewording Aroor's original tweet and passing it off as fresh update. classic OSINT-twitter echo chamber behaviour"
+
+---
+
+POST 6
+Handle: @PakDefenceWatch [PARAPHRASED]
+Date: 2025-05-08
+Paraphrase: Account posted (screenshot, no live link recoverable) claiming Indian strike near Lahore did NOT hit any HQ-9/P radar or launcher, calling Indian claims "fabricated/exaggerated," asserting the Chinese-supplied battery "remains fully intact and operational" — near identical wording to a post the same account had put out ~50 min earlier, just re-timestamped.
+
+---
+
+POST 7
+Handle: @IndraniDefence
+Date: 2025-05-08, ~07:20 IST
+"Lahore HQ-9/P (export HIMADS variant) site — reports still unconfirmed on actual damage. What's clear is Indian AD systems intercepted multiple drone/missile waves aimed at northern & western military targets overnight. Will update thread as ISR imagery comes in 🛰️"
+
+---
+
+POST 8
+Handle: @grey_dagger_intel
+Date: 2025-05-08, ~08:05 IST
+"lol this Lahore HQ9/CH-SA-9 battery thread is just the same 05:15 post being recycled by every account with slightly different phrasing now. nobody has new imagery, nobody has coords, it's the same claim on loop for 3 hrs straight"

@@ -1,47 +1,16 @@
-[TRADE_MEDIA | 2021-10]  (STUB — replace via render_document)
-intent (hidden from pipeline): var_hq9p (Army, ~125km) vs var_hq9be (PAF, ~260km) — one import, two branches
-messiness to apply: estimated_ranges, variant_fork
---- real format to imitate (excerpt) ---
-Pakistan Army Air Defence commissions chinese HQ-9/P air defense missile system
-Skip to main content
-Home
-Contact
-News
-Land Defense News
-2026
-Defense Aerospace News
-2026
-Naval Defense News
-2026
-Defense Web TV
-News Archives
-Land Defense News Archives
-Naval News Archives
-Defense Aerospace News Archives
-Advertising
-Contact advertising
-Send Press Release
-Defense Industry
-Asia
-China
-Thailand
-Europe
-Austria
-Belgium
-France
-Germany
-Lithuania
-Spain
-Turkey
-United Kingdom
-East Europe
-Bulgaria
-Serbia
-Middle East
-United Arab Emirates
-North America
-Canada
-United States
-Oceania
-Australia
-Military Equipment D
+**Defense Industry Bulletin — South Asia Air Defense Roundup**
+*Trade & Programs Desk | Filed: October 2021*
+
+**Islamabad/Beijing —** Pakistan's two-service acquisition of the Chinese-origin HQ-9 family of long-range surface-to-air missiles continues to draw comment from regional watchers, with procurement documentation and service statements over the past several years pointing to what appears to be a single export program bifurcating into two distinct configurations across the Pakistan Army and the Pakistan Air Force (PAF).
+
+Industry sources familiar with the contract, originally reported in the 2019–2020 timeframe, indicate the Army's Air Defence Command inducted a battery-level quantity of the system under a designation locally rendered as **HQ-9P**, understood to be the standard export configuration offered by China Aerospace Long-March International (CALT)/CASIC to foreign customers. Open-source estimates of the HQ-9P's intercept envelope have varied fairly widely across reporting — figures cited in Pakistani defense-enthusiast press and in at least one regional almanac put the engagement range "in the region of 100–130 km," with some outlets simply rounding to "~125 km class" without further sourcing. No official Inter-Services Public Relations (ISPR) release has published a hard number, and the discrepancy across secondary sources has not been reconciled.
+
+Separately, the Pakistan Air Force's own air defense modernization — folded under what PAF officials have referred to in passing at air show briefings as a "strategic SAM" layer — is reported to operate a longer-ranged derivative, sometimes rendered in trade literature as **HQ-9BE** (occasionally transliterated HQ-9/BE or, less precisely, "HQ-9B export"). This variant is broadly associated with the extended-range HQ-9B family developed for export after roughly 2015, and is credited in various open sources with an engagement radius "out to roughly 260 km," though other estimates published in Jane's-adjacent commentary and enthusiast compilations have ranged from 200 km to as much as 300 km depending on which booster/seeker configuration is assumed. It remains unclear from public material whether the PAF's inventory represents a single production batch or a mix of standard and extended-range rounds within the same fire unit.
+
+Analysts contacted for this piece noted that the apparent range discrepancy between the two services' holdings is consistent with China's practice of offering tiered export configurations of the same base system — a pattern also seen with HQ-9 derivatives sold elsewhere in the region — rather than necessarily reflecting two unrelated procurements. "It looks like one import relationship that forked into an Army-standard variant and a longer-legged Air Force variant, but the public numbers on both are soft," one Islamabad-based defense commentator said, speaking on background. "You'll see the Army system quoted anywhere from about 105 to 130 km, and the Air Force one anywhere from 200 to 260-plus, and nobody outside the program office is going to give you a clean figure."
+
+Neither CASIC nor Pakistan's Ministry of Defence Production has issued a public technical datasheet reconciling the two configurations, and questions about interoperability of the associated engagement radars and command-and-control backbone between the Army and PAF batteries remain unanswered as of this filing. A PAF spokesperson, asked about the discrepancy at a recent industry-day sideline conversation, declined to confirm specific range figures, stating only that the service's acquisition "meets requirements for a strategic high-to-medium altitude layer" and declining further elaboration.
+
+Trade sources continue to flag the HQ-9 family's rough kinship to the Russian S-300P line, noting that seeker and terminal-guidance elements said to be influenced by both American and Israeli technology have been cited in prior Western technical assessments of the base HQ-9 design — a lineage that, sources say, complicates any attempt to derive precise export-variant performance figures from the parent system's own publicly disputed numbers.
+
+*— End of item —*

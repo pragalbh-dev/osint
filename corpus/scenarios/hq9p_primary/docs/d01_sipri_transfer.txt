@@ -1,5 +1,37 @@
-[ARMS_TRANSFER | 2021]  (STUB — replace via render_document)
-intent (hidden from pipeline): import_2021 confirmed: China supplied HQ-9/P SAM system to Pakistan
-messiness to apply: hs_code_absent, analyst_coded_row, value_in_comments
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+DEFENCE JOURNAL ANALYTICAL DESK — WEEKLY PROCUREMENT TRACKER
+Vol. 14, Issue 33 — covering reporting period 21–27 Jun 2021
+
+REGIONAL AIR DEFENCE PROCUREMENT: SOUTH ASIA
+
+Row ref: SA-2021-0119 (analyst-coded; not a verbatim registry export)
+Supplier state........... China
+Recipient state.......... Pakistan
+Ordering party............ Pakistan Air Force / Air Defence Command
+Designation(s) reported... HQ-9P (export variant of HQ-9; also rendered "HQ-9/P", "FD-2000" in some vendor literature though PAF procurement is understood to be the HQ-9P land-mobile config, not the FD-2000 export shell)
+Associated systems........ engagement radar (Type 305B/HT-233 derivative, exact export designator unconfirmed), TEL, command vehicle — bundled as system-level transfer, not itemised missile-round count
+Status as of this issue... deliveries reported ongoing/complete within 2021 window; PAF induction statements (unofficial, veteran-linked social accounts) place unit as operational at at least one western-sector site
+HS/customs code........... n/a — government-to-government defence transfer, no customs schedule code available in open filings
+Contract vehicle.......... not disclosed (assumed FMS-equivalent G2G arrangement per CASIC export practice; no contract number sighted)
+Confidence coding......... B2 (multiple independent secondary sources, no primary documentary sighting)
+
+--- narrative ---
+
+Continuing coverage of the PAF's long-range SAM layer: three independent defence-press items this cycle (two South Asian, one Gulf-based aggregator) reiterate that the HQ-9/P battery order placed with China several years prior has now been delivered and, per one item, "declared operational" along a forward air-defence belt. None of the three outlets sight a contract document; all trace back, directly or indirectly, to the SIPRI Arms Transfers Database's running entry for this transfer, which analysts continue to treat as the reference tracker of record even though the underlying TIV line was not independently re-verified for this issue.
+
+One contributor forwarded a translated procurement-adjacent trade note (origin: regional customs-adjacent bulletin, unverified provenance) that put a rough figure on the deal — see comment thread appended below — but the figure could not be cross-checked against any customs schedule, since long-range SAM systems of this class typically move under end-user-certificate G2G channels rather than commercial HS-coded freight, and no bill of lading or tariff line was located for this row.
+
+Analyst note appended to row: treat unit count and battery number as indicative only pending a cleaner primary sighting; the "HQ-9/P" designator itself is the exporter's export-market naming and should not be conflated with the PLA's domestic HQ-9 baseline or the shipborne HHQ-9 variant, which are unrelated to this transfer.
+
+--- comment thread (archived, lightly reformatted) ---
+
+> re: SA-2021-0119 — anyone got a hard number on this? asking for a slide deck, not citing further
+
+>> per the translated bulletin mentioned above, informal trade-value chatter puts the package (missiles + radar + TEL package, undisclosed battery count) somewhere in the "USD 500–600 million class" range — this is NOT an official figure, no source document attached, flagging as rumor-tier until better sourcing turns up
+
+>>> worth noting SIPRI's own aggregate fact sheet for the period lists South Asian SAM transfers only in TIV terms, not USD, so the $500–600m figure above is not directly reconcilable with any TIV line even if the underlying transfer is the same one
+
+>>>> agreed — keeping row status at B2 confidence, revisit next quarter if PAF publishes anything official (unlikely)
+
+--- end row ---
+
+Next scheduled review: Q3 2021 cycle. Analysts compiling the following issue should re-check PAF public-affairs releases and any fresh CASIC export-brochure appearances before upgrading confidence coding on SA-2021-0119.

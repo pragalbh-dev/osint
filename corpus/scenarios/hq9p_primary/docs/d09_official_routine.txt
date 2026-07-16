@@ -1,5 +1,46 @@
-[OFFICIAL | 2025-05]  (STUB — replace via render_document)
-intent (hidden from pipeline): official framing: activity is a 'routine exercise' (contradicts d08 sighting)
-messiness to apply: euphemism, omission
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+PRESS RELEASE
+No PR-114/2025
+For immediate release
+
+ISPR
+
+Rawalpindi – May 12, 2025
+
+Air Defence Command carries out routine training activity
+
+As part of the Pakistan Army's regular annual training calendar, Army Air Defence Command today conducted a scheduled training activity involving long-range air defence assets in the central air defence sector. The activity, planned well in advance under the current training cycle, was aimed at evaluating crew proficiency, system readiness and standard operating procedures of deployed air defence units.
+
+The exercise involved routine deployment and repositioning of ground-based air defence elements, radar activation drills, and simulated engagement sequences conducted strictly within a designated and pre-notified training area. All activities were carried out in accordance with standard peacetime training protocols and applicable air-space coordination procedures.
+
+Troops and technical crews of Air Defence Command displayed a high level of professionalism during the drills. The Air Officer Commanding of the concerned Air Defence Group appreciated the training standards and operational readiness of participating units and reiterated that such periodic exercises are a routine and continuing feature of the armed forces' training regime, aimed solely at maintaining defensive preparedness.
+
+It is reiterated that the training activity was of a routine nature, planned within the normal training cycle, and carries no bearing on the regional security situation. Reports circulating on certain social media platforms alluding to unusual troop or equipment movement in the area are speculative and not reflective of facts on the ground.
+
+-Ends-
+
+For further information, contact:
+Director, ISPR Media Wing
+Rawalpindi, Pakistan
+
+---
+
+DEFENCE NOTICE TO AIRMEN (D-NOTAM)
+Ser: DGCA/AIS/0511-25
+Issued by: Pakistan Civil Aviation Authority, Aeronautical Information Services
+
+1. Temporary Restricted Area established as follows:
+   Centre point: approx. 31°N / 71°E, radius 45 NM
+   Vertical limits: SFC to FL450
+   Validity: 1200Z 10 MAY 2025 to 1800Z 14 MAY 2025 (daily active window 0300Z–1200Z)
+
+2. Reason: Military training activity. Civil aircraft advised to remain clear of the designated area during active periods or contact area control for coordination. Activity is part of a routine training schedule and does not affect scheduled civil air traffic beyond the notified corridor.
+
+3. This restriction is issued for flight safety purposes only.
+
+END OF NOTAM
+
+---
+
+Editorial, Daily Ittehad (Urdu-language regional daily), May 13 2025, p. 4 [translated excerpt, unofficial]
+
+... residents of the cantonment area reported hearing heavy vehicle movement past midnight on the 9th and again on the 10th, along with what several described as tall canister-like objects under tarpaulin being moved along the bypass road. Local authorities, when contacted, described the movement as "nothing unusual — routine logistics in support of an ongoing training activity." No further details were provided, and requests for clarification on the nature of the equipment were not answered. Similar movement was reported near the same stretch of road in November of last year, though officials at the time likewise declined to elaborate, describing it only as "administrative movement of stores."
