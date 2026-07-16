@@ -1,5 +1,45 @@
-[SOCIAL | 2025-05]  (STUB — replace via render_document)
-intent (hidden from pipeline): a 2019 parade photo reposted as a NEW 2025 deployment (real image, false context)
-messiness to apply: miscaptioned_recycled_image, first_seen_2019
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+🧵HQ-9/P LDHI SAM SITE — PANO update
+
+pic from Karachi coastal belt SAM battery, TEL erector-launcher position, camo netting up, radar mast visible in bg. this is the same LDHI system Pakistan showcased before but seeing it "active" again amid current posture is notable 👇
+
+[image attached]
+
+---
+
+RT @DefenceAviaPk: HQ-9/P battery reportedly repositioned near Lahore sector following the drone/missile exchange overnight. Visual below appears to show TELs deployed in firing config.
+
+Quote: "Pakistan's long range SAM shield getting activated 🇵🇰🚀 #HQ9 #PakistanArmy #AirDefence"
+
+(same photo circulating since this morning, multiple accounts posting it as "just in")
+
+---
+
+Anon OSINT-forum quote, thread "HQ-9P activity near Lahore/Sialkot corridor - May 2025":
+
+"guys the pic going around of the HQ9 TELs lined up with soldiers saluting next to launcher — that's from a parade, not a live deployment. compare the shadow angle and the flag arrangement in bg, this is the same frame that was floating around back in 2019 after the Yaum-e-Difa/Defence Day flypast coverage. someone cropped out the parade stands and it's being reposted today captioned like it's fresh redeployment footage from this week. classic recycle job, seen this same jpg hash before"
+
+reply: "lol yeah I remember this exact image from 2019 twitter, pretty sure it's Karachi Defence Day static display not an active battery shot"
+
+reply2: "doesnt mean HQ9P isnt actually deployed rn, just that THIS specific pic isnt evidence of it. there's separate low-res sat crops from yday showing probable TEL revetments near a known site that are more credible"
+
+---
+
+POST (handle redacted, small follower OSINT acct)
+"🚨HQ-9/P LRSAM seen deployed guarding Pak airspace🚨 (pic below, taken today near Lahore) — Pakistan's Chinese-made long range air defence umbrella activated amid tensions w/ India"
+[same widely-circulated TEL photo, soldiers standing at attention beside launcher, banners partially visible at frame edge]
+
+quote-tweet reply: "this photo is from the 2019 parade lol, reverse image search pulls it up instantly, stop reposting old pics as breaking"
+
+---
+
+POST
+Handle: @PakDefenceWatch
+Date: 2025-05-09
+"Confirmed HQ9/P batteries active in the Lahore-Sialkot belt post Op Sindoor exchange, complementing Chinese-origin LY-80 & HQ-16 coverage. Some of the imagery floating on TL is old (2019 parade era) but ground reporting + radar emissions consistent w/ live HIMADS posture rn"
+
+---
+
+reply thread continuation:
+"can someone post the ACTUAL current pic not the recycled parade one, everyone keeps using the same launcher-with-soldiers photo since this morning smh"
+
+"^ that image has been on pakistani mil fb pages since like 2019, it's Yaum e Difa footage, ppl need to stop treating it as todays deployment confirmation"

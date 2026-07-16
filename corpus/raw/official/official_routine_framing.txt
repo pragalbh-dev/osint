@@ -1,0 +1,122 @@
+================================================================================
+PROVENANCE
+================================================================================
+Purpose: A short REAL example of official "routine exercise / routine
+activity" euphemistic framing, for use as a contradiction template in the
+Pakistan HQ-9/P OSINT corpus (i.e., official language that downplays/normalizes
+a militarily or strategically significant act by labeling it "routine").
+Access date for all sources below: 2026-07-16.
+
+Two independent, real, dated examples are given: one Pakistani (ISPR), one
+Chinese (PLA Eastern Theater Command). Both are contemporaneous (April 2026)
+and both use "routine" as the operative framing word for an act that
+outside commentary treated as strategically notable.
+================================================================================
+
+--------------------------------------------------------------------------------
+EXAMPLE 1 — Pakistan: ISPR on the Fateh-II (Fatah-II) missile training launch
+--------------------------------------------------------------------------------
+Event date : 28 April 2026
+Actor      : Pakistan Army Rocket Force Command (ARFC); statement issued by
+             Inter-Services Public Relations (ISPR)
+System     : Fateh-II / Fatah-II, a ~400 km-range supersonic guided
+             surface-to-surface missile developed by NESCOM
+
+Sources (accessed 2026-07-16):
+  [P1] Dunya News, "Pakistan conducts successful Fateh-II missile training
+       launch, ISPR confirms"
+       https://dunyanews.tv/en/Pakistan/948539-pakistan-conducts-successful-fatehii-missile-training-launch-ispr-co
+       (fetched directly)
+  [P2] Dawn, "Pakistan successfully conducts training launch of Fateh-II
+       missile system: ISPR", 28 Apr 2026
+       https://www.dawn.com/news/1995779
+       (direct fetch returned HTTP 525; content not independently re-verified
+       beyond P1/P3/P4)
+  [P3] Radio Pakistan (state broadcaster), "Army Rocket Force Command
+       conducts successful training launch of Fateh-II Missile System",
+       28-04-2026
+       https://www.radio.gov.pk/28-04-2026/army-rocket-force-command-conducts-successful-training-launch-of-fateh-ii-missile-system
+       (URL located via search; not independently fetched, listed for
+       corroboration/cross-check)
+  [P4] Business Recorder, "Pakistan conducts successful training launch of
+       advanced Fateh-II missile: ISPR"
+       https://www.brecorder.com/news/40418658/pakistan-conducts-successful-training-launch-of-advanced-fateh-ii-missile-ispr
+       (URL located via search; not independently fetched, listed for
+       corroboration/cross-check)
+
+[VERBATIM - HIGH CONFIDENCE — direct quote per P1, attributed to ISPR]
+"[The launch was conducted as] routine training aimed at maintaining
+operational readiness while assessing the performance of newly integrated
+systems."
+
+[PARAPHRASE — per P1]
+The training launch focused on multiple objectives, including the training of
+troops, validation of key technical parameters, and evaluation of various
+sub-systems. It was witnessed by senior officers of the Strategic Plans
+Division, Army Rocket Force Command, and by Pakistan Army scientists and
+engineers.
+
+NOTE ON FRAMING: A ~400 km-range, NESCOM-developed, nuclear-capable-class
+surface-to-surface missile test — witnessed by the Strategic Plans Division,
+which administers Pakistan's nuclear/strategic forces — is characterized in
+the official statement purely as "routine training," with no reference to any
+strategic signaling, deterrence messaging, or external context. This is the
+canonical "routine" euphemism pattern: strategically significant activity
+described in bureaucratic, deflationary, training-cycle language.
+
+--------------------------------------------------------------------------------
+EXAMPLE 2 — China: PLA Eastern Theater Command on East China Sea joint drills
+--------------------------------------------------------------------------------
+Event date  : on/around 18-19 April 2026, following a Japan Maritime
+              Self-Defense Force (MSDF) transit of the Taiwan Strait
+Actor       : PLA Eastern Theater Command
+Spokesperson: Senior Colonel Xu Chenghua
+
+Sources (accessed 2026-07-16):
+  [C1] The Japan Times, "Chinese military holds joint drills in East China
+       Sea after MSDF's Taiwan Strait transit", 18 Apr 2026
+       https://www.japantimes.co.jp/news/2026/04/18/asia-pacific/china-east-china-sea-military-exercises/
+       (direct fetch returned HTTP 403; quote below obtained via
+       search-engine snippet synthesis of this article, not independently
+       re-verified against the raw page)
+  [C2] Global Times, "PLA announces vessel formation transit of Yokoate
+       Waterway for Western Pacific training; move serves as deterrent to
+       hostile forces: Chinese expert", 19 Apr 2026
+       https://www.globaltimes.cn/page/202604/1359288.shtml
+       (fetched directly; attributes a closely related "routine training ...
+       annual plan" quote to the same spokesperson, Senior Colonel Xu
+       Chenghua, regarding a vessel transit of the Yokoate Waterway in the
+       same period — treat as corroborating but note this may be a distinct,
+       adjacent statement rather than the identical sentence reported by C1)
+
+[VERBATIM - HIGH CONFIDENCE, per C1 search-derived rendering]
+"[This is] a routine arrangement organized in accordance with the annual
+plan, aiming at testing the joint operations capabilities."
+
+[VERBATIM - HIGH CONFIDENCE, per C2, directly fetched, same spokesperson,
+closely related statement]
+"This is a routine training organized in accordance with the annual plan."
+-- Senior Colonel Xu Chenghua, PLA Eastern Theater Command spokesperson
+
+NOTE ON FRAMING: Both statements were issued in the immediate aftermath of a
+Japanese naval transit of the Taiwan Strait, in a context international press
+(Japan Times) framed as a reactive show of force. The PLA spokesperson's
+language nonetheless frames the activity as pre-scheduled, annual, and
+apolitical ("routine ... annual plan"), i.e. the same euphemistic pattern as
+Example 1: significant/reactive military activity described as
+administratively unremarkable.
+
+================================================================================
+CAVEATS FOR DOWNSTREAM USE
+================================================================================
+1. Example 1 (P1) was fetched directly from Dunya News; the ISPR original
+   press release page was not located/fetched independently for this file.
+2. Example 2's C1 quote (Japan Times) could not be directly fetched (HTTP
+   403) and is reported here via search-engine snippet synthesis; C2 (Global
+   Times) was fetched directly and gives a closely matching but not
+   necessarily identical sentence from the same spokesperson. Treat C1's
+   exact wording as lower-confidence than C2's until the Japan Times page can
+   be independently re-fetched.
+3. Neither example is the HQ-9/P induction release itself — both are
+   separate, later instances of the broader "routine" framing pattern,
+   included per task instructions as a general contradiction template.

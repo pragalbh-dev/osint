@@ -1,0 +1,312 @@
+================================================================================
+PROVENANCE
+================================================================================
+Compiled            : 2026-07-16
+Access date (all URLs below tested/fetched this session): 2026-07-16
+
+TARGET SOURCE (could not be queried directly — see note):
+  https://armstransfers.sipri.org/ArmsTransfer/TransferRegister
+  https://armstransfers.sipri.org/ArmsTransfer/TransferData/transferResults
+
+  This session reverse-engineered the Trade Register's client-side app
+  (Svelte SPA, bundle at https://armstransfers.sipri.org/build/bundle.js) to
+  find its backend: https://atbackend.sipri.org, with the row-query/export
+  endpoint at POST /trades/trade-register-csv/ (and /trades/search). Every
+  call to that backend — even country-list lookups — returned:
+    {"message":"Full authentication is required to access this resource",
+     "httpStatus":"UNAUTHORIZED"}
+  i.e. the live Trade Register requires a logged-in SIPRI account for
+  row-level query/export; it is not fetchable anonymously from this
+  environment. No SIPRI login credentials were available this session.
+
+WHAT THIS FILE IS INSTEAD:
+  Because the live DB could not be queried, the rows below were assembled
+  from (a) SIPRI's own aggregate Fact Sheet, and (b) multiple independent,
+  quotable, dated open-source reports that themselves discuss these two
+  transfers (SIPRI is explicitly cited by several as the tracking authority,
+  but none of them reproduce a full SIPRI Trade Register row verbatim).
+  Numeric fields that no open source could corroborate are marked
+  [unverified] per instructions — nothing below is invented.
+
+SOURCES USED (fetched this session, 2026-07-16):
+  - SIPRI Fact Sheet, "Trends in International Arms Transfers, 2025" (Mar 2026):
+    https://www.sipri.org/sites/default/files/2026-03/fs_2603_at_2025.pdf
+    (aggregate trend figures only — Pakistan 80% of imports from China in
+    2021-25, up from 73% in 2016-20; China's arms exports 61% to Pakistan
+    alone — no HQ-9/S-400 system-level line items in this document)
+  - SIPRI sources-and-methods page:
+    https://www.sipri.org/databases/armstransfers/sources-and-methods
+  - CSIS Missile Threat, S-400 Triumf:
+    https://missilethreat.csis.org/defsys/s-400-triumf/
+    [local copy: corpus/raw/reference/csis_missilethreat_s400.text.txt]
+  - Wikipedia, "S-400 missile system", rev. 2026-07-07T20:50:01Z:
+    https://en.wikipedia.org/wiki/S-400_missile_system
+    [local copy: corpus/raw/reference/wikipedia_s400.txt]
+  - Wikipedia, "HQ-9":
+    https://en.wikipedia.org/wiki/HQ-9
+    [local copy: corpus/raw/reference/wikipedia_hq9.txt]
+  - Quwa, "HQ-9 Long-Range Air Defence System" (updated 14 May 2026):
+    https://quwa.org/pakistan/air-defence-pk/hq-9-long-range-air-defence-system/
+    [local copy: corpus/raw/trade_media/quwa_hq9p.text.txt]
+  - Army Recognition, "Pakistan Army Air Defence commissions chinese HQ-9/P
+    air defense missile system" (quotes the ISPR communique directly), 2021:
+    https://armyrecognition.com/archives/archives-land-defense/land-defense-2021/pakistan-army-inducts-chinese-hq-9-p-air-defence-system
+    [local copy: corpus/raw/trade_media/army_recognition_hq9p.text.txt]
+  - ISPR press release, 14 Oct 2021, reconstructed from secondary sources
+    (ISPR's own site 403-blocked this session — see file for full method):
+    [local copy: corpus/raw/official/ispr_hq9p_induction.txt]
+  - Army Recognition, "Russia has sold six battalions of S-400 surface-to-air
+    defense missile systems to China" (2015):
+    https://www.armyrecognition.com/news/army-news/2015/russia-has-sold-six-battalions-of-s-400-surface-to-air-defense-missile-systems-to-china-2501141
+  - Andrew S. Erickson, "Confirmed: China to Receive 4-6 Battalions of
+    Russian S-400..." (13 Apr 2015, summarizing Reuters/Jane's reporting of
+    the Rosoboronexport CEO's confirmation):
+    https://www.andrewerickson.com/2015/04/confirmed-china-to-receive-4-6-battalions-of-russian-s-400-air-defense-missile-system-in-2017/
+  - The Diplomat, regiment-by-regiment delivery series:
+    https://thediplomat.com/2018/04/russia-delivers-1st-s-400-missile-defense-regiment-to-china/
+    https://thediplomat.com/2018/05/russia-completes-delivery-of-1st-s-400-missile-defense-regiment-to-china/
+    https://thediplomat.com/2018/07/chinas-military-accepts-first-s-400-missile-air-defense-regiment-from-russia/
+    https://thediplomat.com/2019/04/russia-to-begin-delivery-of-chinas-second-s-400-air-defense-system-regiment-in-july/
+    https://thediplomat.com/2019/07/russia-kicks-off-delivery-of-chinas-second-s-400-air-defense-regiment/
+    https://thediplomat.com/2020/02/russia-completes-delivery-of-second-s-400-regiment-to-china/
+  - TASS, "Russia completes delivery of second S-400 missile system
+    regimental set to China - source" (attributed to an unnamed
+    "military-diplomatic source"; TASS itself flags no official confirmation):
+    https://tass.com/world/1113113
+  - Global Defense Corp, "China delivers HQ-9BE surface-to-air missile
+    systems to Pakistan" (19 Aug 2025):
+    https://www.globaldefensecorp.com/2025/08/19/china-delivers-hq-9be-surface-to-air-missile-systems-to-pakistan/
+  - trishul-trident (blog), "HQ-9P/FD-2000 HIMADS Of Pakistan Army Detailed"
+    (Oct 2021) — sole source for an unconfirmed "2 batteries" claim, flagged
+    as such below, NOT treated as a corroborated figure:
+    http://trishul-trident.blogspot.com/2021/10/hq-9pfd-2000-himads-of-pakistan-army.html
+
+>>> NOTE REQUIRED BY TASK: figures to be re-verified against the live SIPRI
+    DB before use. Everything in this file is a best-effort reconstruction
+    from secondary/tertiary open sources, not a transcript of an actual
+    SIPRI Trade Register export. Quantities not corroborated by at least one
+    citable source are marked [unverified] rather than estimated. <<<
+
+Row schema (SIPRI Trade Register columns, reproduced verbatim):
+  Recipient | Supplier | No. ordered | Weapon designation | Weapon description
+  | Year of order | Year(s) of delivery | No. delivered/produced | Comments
+================================================================================
+
+
+================================================================================
+TRANSFER 1 of 2 — China -> Pakistan, HQ-9/P (HQ-9BE) SAM system
+================================================================================
+
+--- ROW 1 (launcher / system) -------------------------------------------------
+Recipient             : Pakistan
+Supplier               : China
+No. ordered            : [unverified] — neither government has publicly
+                          disclosed contract quantities. Quwa (2026): "Pakistan
+                          has not publicly disclosed the exact number of HQ-9
+                          batteries in service... The exact regiment and
+                          battery count remains classified." One open-source
+                          blog (trishul-trident.blogspot.com, Oct 2021, NOT
+                          independently corroborated) claims 2 Army batteries
+                          x 4 TELs = 8 launchers — reproduced here only as a
+                          flagged, unconfirmed data point, not a verified figure.
+Weapon designation      : HQ-9/P (Pakistan Army variant); HQ-9BE (Pakistan Air
+                          Force extended-range variant). CASIC's generic export
+                          designation for the underlying system is FD-2000
+                          (NOT the same system as the FT-2000 anti-radiation
+                          variant — a known false-merge in some trackers, e.g.
+                          FAS). Chinese domestic designation: HQ-9 / Hongqi-9
+                          (红旗-9).
+Weapon description      : Mobile long-range/high-to-medium-altitude SAM system.
+                          4-round transporter-erector-launcher (TEL) per Quwa's
+                          spec table; HT-233 target-acquisition/engagement
+                          radar (FD-2000 export baseline) + Type 120
+                          low-altitude search radar + Type 305A AESA search
+                          radar (Quwa); optional YLC-20 passive radar for
+                          stealth-aircraft detection. Pakistan Army HQ-9/P:
+                          ~125 km vs aircraft, ~25 km vs cruise missiles.
+                          Pakistan Air Force HQ-9BE: 260-280 km, active
+                          radar-homing (ARH) terminal guidance (Quwa).
+Year of order           : [unverified] — Wikipedia/Quwa both state
+                          "negotiations for the purchase of the HQ-9 and HQ-16
+                          by Pakistan began in early 2015," alongside HQ-16
+                          talks; no publicly disclosed contract-signature date
+                          found for the HQ-9/HQ-9BE side of that negotiation.
+Year(s) of delivery     : [unverified as physical-delivery dates] — the only
+                          firmly dated public milestones are IN-SERVICE /
+                          OPERATIONAL announcements, not shipment dates:
+                            - Pakistan Army HQ-9/P: publicly commissioned/
+                              inducted 14 Oct 2021 (ISPR press release, Army
+                              Air Defence Centre, Karachi).
+                            - Pakistan Air Force HQ-9BE: reported operational
+                              by 19 Aug 2025 (Global Defense Corp); no more
+                              precise delivery year located in sources
+                              reviewed.
+No. delivered/produced  : [unverified] — see No. ordered note above; same
+                          "2 batteries" blog claim applies, same caveat.
+Comments                : ISPR communique, 14 Oct 2021, quoted directly by
+                          Army Recognition ("the official communique read")
+                          and corroborated by multiple secondary outlets:
+                          "Induction of HIMADS will significantly enhance
+                          Comprehensive Layered Integrated Air Defence
+                          (CLIAD) shield of aerial frontiers of Pakistan as
+                          the system is fully integrated through a well-knit
+                          Digitised System on its inventory." / "Capable of
+                          intercepting multiple air targets including
+                          aircrafts, cruise missiles and Beyond Visual Range
+                          Weapons at ranges over 100 kilometers with Single
+                          Shot Kill Probability, HQ-9/P is considered as a
+                          strategic long range Surface to Air Missile (SAM)."
+                          Ceremony attended by COAS Gen Qamar Javed Bajwa;
+                          Pakistan is the first HQ-9 operator outside China
+                          (Quwa). Both HQ-9/P and HQ-9BE were combat-employed
+                          in the May 2025 India-Pakistan conflict — the first
+                          confirmed combat use of any HQ-9 variant (Quwa,
+                          Wikipedia, multiple trade press). Local service
+                          nickname: HIMADS (High-to-Medium Air Defence
+                          System). SIPRI is cited by Quwa as having "tracked
+                          Chinese SAM imports and technology transfers
+                          extensively in its arms transfer database," but the
+                          live DB entry itself was not accessible this
+                          session (see provenance header) — treat all
+                          quantities above as pending re-verification.
+
+--- ROW 2 (interceptor missiles) ----------------------------------------------
+Recipient             : Pakistan
+Supplier               : China
+No. ordered            : [unverified]
+Weapon designation      : [unverified] — no open source reviewed gives a
+                          distinct export/Pakistan-specific missile-round
+                          designation separate from the system name. Quwa's
+                          spec table lists generic HQ-9-family missile
+                          characteristics (~6.8 m length, ~2,000 kg weight,
+                          180 kg warhead, Mach 4+) without a Pakistan-specific
+                          round name.
+Weapon description      : SAM (interceptor missile for HQ-9/P / HQ-9BE TELs);
+                          4 missiles per TEL (Quwa).
+Year of order           : [unverified] (presumed same underlying, undisclosed
+                          contract as Row 1)
+Year(s) of delivery     : [unverified]
+No. delivered/produced  : [unverified]
+Comments                : No open-source reporting reviewed this session
+                          separately quantifies missile rounds (as distinct
+                          from launchers/systems) for this transfer, unlike
+                          e.g. some public reporting on India's S-400 buy. If
+                          the live SIPRI Trade Register carries this transfer
+                          as two line items (system vs missiles, per the
+                          Register's usual convention), those figures were
+                          not accessible this session (auth-gated backend —
+                          see provenance header) and must be pulled from the
+                          live DB to fill this row.
+
+
+================================================================================
+TRANSFER 2 of 2 — Russia -> China, S-400 Triumf (SA-21 Growler) SAM system
+================================================================================
+
+--- ROW 1 (launcher / system) -------------------------------------------------
+Recipient              : China
+Supplier                : Russia
+No. ordered             : Widely reported as 6 battalions (~3 regimental sets)
+                          — CSIS Missile Threat ("In 2015, China signed an
+                          agreement with Russia to purchase six battalions of
+                          the system"); Army Recognition 2015 headline
+                          ("Russia has sold six battalions of S-400... to
+                          China"); Erickson/Jane's-Reuters summary (13 Apr
+                          2015) reports "4-6 battalions." CONFLICTING REPORT:
+                          TASS (Dec 2019/Jan 2020, citing an unnamed
+                          "military-diplomatic source," not officially
+                          confirmed) frames the original 2014 agreement as
+                          covering "two regimental sets of S-400" (each
+                          described by TASS as "consisting of two divisions
+                          [divizions/battalions] of launch devices..." i.e.
+                          ~4 battalions total) — this does not reconcile
+                          cleanly with the "6 battalions" figure above.
+                          [unverified] which figure/unit SIPRI itself codes
+                          in "No. ordered" for this row.
+Weapon designation       : S-400 Triumf (Russian: С-400 Триумф; NATO reporting
+                          name SA-21 Growler); formerly S-300PMU-3.
+Weapon description       : Mobile long-range/high-altitude SAM system. TELs:
+                          5P85TE2 (self-propelled) / 5P85SE2 (trailer, towed
+                          by BAZ-64022/MAZ-543M); radars: 91N6E acquisition
+                          ("Big Bird", ~340 km declared range per Wikipedia),
+                          92N6E multi-function engagement radar, 96L6E
+                          detector; C2: 55K6E command post under the 30K6E
+                          administration system. Longest-range interceptor
+                          (40N6) purported range ~400 km (Wikipedia).
+Year of order            : 2014 — Russian President Putin authorized the sale
+                          in March 2014 (Wikipedia); contract publicly
+                          confirmed by the Rosoboronexport CEO on 13 Apr 2015
+                          (Erickson, citing Reuters/Jane's; Wikipedia gives
+                          contract-signing as "September 2014"). Estimated
+                          value ~US$3 billion (Army Recognition 2015;
+                          Erickson/Jane's-Reuters; Airforce Technology 2015).
+Year(s) of delivery      : 2018-2019 confirmed for the first two regimental
+                          sets:
+                            - 1st regimental set: deliveries began Jan 2018,
+                              completed/handover ~May 2018 (The Diplomat,
+                              Apr/May/Jul 2018 pieces; China test-fired the
+                              system in early Aug 2018).
+                            - 2nd regimental set: delivery began ~Jul 2019,
+                              handover certificate reportedly signed in China
+                              Dec 2019 (The Diplomat Feb 2020; TASS, citing an
+                              unconfirmed military-diplomatic source).
+                          Status of any further regimental sets beyond these
+                          two: [unverified] — Wikipedia states "Deliveries
+                          were reportedly postponed after the delivery of two
+                          S-400 units" and no source reviewed this session
+                          confirms delivery of a 3rd set through 2026.
+No. delivered/produced   : 2 regimental sets (~4 battalions) confirmed
+                          delivered by early 2020 per the sources above.
+                          Delivery status of the remainder of the original
+                          order (if the true order was 6 battalions rather
+                          than the ~4 TASS describes) is [unverified].
+Comments                 : Deal negotiated/announced as government-to-
+                          government (Rosoboronexport); first foreign S-400
+                          sale, ahead of Turkey (2017) and India (2018).
+                          Strategic rationale reported: extends coverage over
+                          the Taiwan Strait and Senkaku/Diaoyu Islands
+                          dispute area (Wikipedia, citing contemporary
+                          reporting). China test-fired the system for the
+                          first time in early August 2018 (Wikipedia). SIPRI
+                          Arms Transfers Database is the standard citation
+                          for this deal across the secondary literature
+                          (CSIS Missile Threat, RUSI Bronk 2020, multiple
+                          trade press) but its row-level entry could not be
+                          queried directly this session (auth-gated backend —
+                          see provenance header).
+
+--- ROW 2 (interceptor missiles) ----------------------------------------------
+Recipient              : China
+Supplier                : Russia
+No. ordered             : [unverified] — no source reviewed gives a separate
+                          missile-round order quantity distinct from the
+                          battalion/regimental-set counts in Row 1.
+Weapon designation       : Not specified by name in the one source that gives
+                          a missile count (TASS, below); the S-400 family's
+                          documented interceptor rounds are 48N6E/48N6E2/
+                          48N6E3/48N6DM (long/medium-range) and 9M96E/9M96E2
+                          (medium-range), plus the longer-ranged 40N6E
+                          (Wikipedia) — which specific type(s) were in the
+                          China shipments is [unverified].
+Weapon description       : SAM (interceptor missiles for the S-400 system).
+Year of order            : 2014 (same underlying contract as Row 1).
+Year(s) of delivery      : 2018-2019 (same delivery windows as Row 1).
+No. delivered/produced   : "More than 120 advanced anti-aircraft guided
+                          missiles of two types" reported delivered with the
+                          2nd regimental set alone (TASS, Dec 2019/Jan 2020,
+                          citing an unnamed "military-diplomatic source";
+                          TASS explicitly notes it "does not have an official
+                          confirmation of the information provided"). No
+                          equivalent missile count located for the 1st
+                          regimental set (2018) in sources reviewed this
+                          session; cumulative total across both sets is
+                          therefore [unverified].
+Comments                 : This is the single most specific quantitative
+                          data point found this session for either transfer,
+                          and it is explicitly sourced to an unconfirmed,
+                          unnamed source by TASS itself — flagged accordingly,
+                          not upgraded to "confirmed" status here.
+
+================================================================================
+END OF FILE
+================================================================================

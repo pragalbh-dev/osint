@@ -1,0 +1,138 @@
+================================================================================
+PROVENANCE
+================================================================================
+Subject   : ISPR press release on the HQ-9/P (HIMADS) induction/commissioning
+            ceremony, Army Air Defence Centre, Karachi.
+Event date: 14 October 2021 (Thursday)
+Release id: Referenced elsewhere as "Press Release No 170/2021" — see ISPR's
+            own YouTube upload title, "Press Release No 170/2021, COAS Visited
+            Army Air Defence Centre - 14 Oct 2021 | ISPR"
+            (https://www.youtube.com/watch?v=8ioisdhoVsU). This numbering is
+            NOT independently confirmed against the primary HTML/PDF and is
+            reproduced here only as a pointer, not a verified fact.
+
+PRIMARY SOURCE (attempted, blocked):
+  https://www.ispr.gov.pk/press-release-detail.php?id=6290
+  Access attempts, 2026-07-16:
+    - https://www.ispr.gov.pk/press-release-detail.php?id=6290  -> HTTP 403 Forbidden
+    - http://www.ispr.gov.pk/press-release-detail.php?id=6290   -> HTTP 403 Forbidden
+    - https://ispr.gov.pk/press-release-detail?id=6290          -> HTTP 403 Forbidden
+    - web.archive.org mirror                                    -> fetch tool refuses this host
+    - archive.ph mirror                                         -> fetch tool refuses this host
+  ISPR blocked this session's fetch client on every path tried. The release
+  could not be retrieved directly. Everything below the divider is therefore a
+  RECONSTRUCTION from secondary sources that themselves quote or closely
+  paraphrase the same ISPR release, not a scrape of the ISPR page itself.
+
+SECONDARY SOURCES USED FOR RECONSTRUCTION (all accessed 2026-07-16):
+  [S1] Dawn, "New air defence system commissioned into army", 15 Oct 2021
+       https://www.dawn.com/news/1652071
+       (fetched directly; full body text obtained — this is the strongest
+       single source, reads as a near-verbatim rendering of the ISPR release
+       in Dawn's house style)
+  [S2] Dawn, "Pak-China strategic partnership, defence collaboration key to
+       region's stability: COAS Bajwa", 15 Oct 2021
+       https://www.dawn.com/news/1651998
+       (content obtained via search-engine snippet synthesis; direct fetch
+       returned HTTP 525)
+  [S3] Army Recognition, "Pakistan Army inducts Chinese-made HQ-9/P air
+       defence system", 20 Oct 2021
+       https://armyrecognition.com/archives/archives-land-defense/land-defense-2021/pakistan-army-inducts-chinese-hq-9-p-air-defence-system
+       (fetched directly; explicitly quotes "the official communiqué")
+  [S4] The Express Tribune, "Army inducts HQ-9/P air-defence system", 15 Oct
+       2021
+       https://tribune.com.pk/story/2324827/army-inducts-hq-9p-air-defence-system
+       (content obtained via search-engine snippet synthesis; direct fetch
+       returned HTTP 403)
+  [S5] DefenceHub forum thread summarizing Jane's Defence Weekly's account of
+       "a 14 October press release issued by Inter Services Public Relations
+       (ISPR)"
+       https://defencehub.live/threads/pakistan-army-commissions-hq-9-p-air-defence-system.10225/
+       (fetched directly; underlying Jane's article at
+       https://www.janes.com/osint-insights/defence-news/weapons/pakistan-army-commissions-hq-9p-air-defence-system
+       was not independently fetched — likely paywalled)
+  [S6] Quwa, "Pakistan Army Inducts HQ-9/P Long-Range Surface-to-Air Missile
+       System"
+       https://quwa.org/quwa-premium-excerpt/pakistan-army-inducts-hq-9-p-long-range-surface-to-air-missile-system-2/
+       (content obtained via search-engine snippet synthesis; direct fetch of
+       a different Quwa URL returned HTTP 404)
+
+METHOD / CONFIDENCE MARKING:
+  Passages below are tagged:
+    [VERBATIM - HIGH CONFIDENCE]  = reproduced with matching wording (incl.
+       distinctive Pakistani-English usage, e.g. "aircrafts") across 2 or
+       more independent secondary sources, and/or explicitly presented by the
+       citing outlet inside quotation marks as a direct quote of the ISPR
+       communique.
+    [PARAPHRASE]                  = the underlying fact is corroborated across
+       sources, but the exact original ISPR sentence structure/wording is not
+       independently confirmed (sources report it third-person / in their own
+       words, with only isolated words or short phrases in quotes).
+  This is a best-effort reconstruction, not a primary-source transcript.
+  British/Pakistani-English spellings (e.g. "Digitised") are preserved where
+  attested; do not "correct" them if reusing this text.
+================================================================================
+
+================================================================================
+RECONSTRUCTED TEXT — ISPR PRESS RELEASE, 14 OCTOBER 2021
+================================================================================
+
+[PARAPHRASE — lede/dateline, per S1]
+KARACHI: General Qamar Javed Bajwa, Chief of the Army Staff (COAS), visited
+the Army Air Defence Centre Karachi on Thursday, 14 October 2021. On arrival,
+the COAS laid a floral wreath at the Shuhada monument.
+
+[PARAPHRASE — per S1, S3]
+He later witnessed the commissioning of the state-of-the-art, Chinese-origin
+HQ-9/P HIMADS (High to Medium Air Defence System) into Pakistan Army Air
+Defence. Lieutenant General Hamood-uz-Zaman Khan, Commander Army Air Defence
+Command, briefed the COAS on the strategic weapon system.
+
+[VERBATIM - HIGH CONFIDENCE — quoted by Army Recognition (S3) as "the
+official communiqué read"; corroborated in substance by S1, S4, S6]
+"Induction of HIMADS will significantly enhance Comprehensive Layered
+Integrated Air Defence (CLIAD) shield of aerial frontiers of Pakistan as the
+system is fully integrated through a well-knit Digitised System on its
+inventory."
+
+[VERBATIM - HIGH CONFIDENCE — matching wording and clause order across S5 and
+an independent search-derived rendering, including the distinctive Pakistani-
+English plural "aircrafts"]
+"Capable of intercepting multiple air targets including aircrafts, cruise
+missiles and Beyond Visual Range Weapons at ranges over 100 kilometers with
+Single Shot Kill Probability, HQ-9/P is considered as a strategic long range
+Surface to Air Missile (SAM) with remarkable flexibility and precision."
+
+[PARAPHRASE — COAS remarks on air defence, per S1, S4]
+The COAS said that induction of high-tech systems will make Pakistan's air
+defence
+[VERBATIM word/phrase — quoted identically in S1 and S4]
+"impenetrable in the emerging threat scenario."
+
+[PARAPHRASE, with one quoted word — per S1]
+He said exemplary synergy between Pakistan Air Force and Pakistan Army Air
+Defence makes the country's air defence "impregnable."
+
+[VERBATIM - HIGH CONFIDENCE — quoted identically in S2 and S4]
+"The strategic partnership and defence collaboration between Pakistan and
+China is a factor of stability in the region."
+
+[PARAPHRASE — closing line, per S1]
+Senior officials from China were also present on the occasion.
+
+================================================================================
+END OF RECONSTRUCTION
+================================================================================
+
+CAVEATS FOR DOWNSTREAM USE:
+1. This file is NOT a verified copy of the ISPR HTML/PDF. It is a
+   cross-referenced reconstruction assembled because ispr.gov.pk returned
+   HTTP 403 to this fetch client on every attempted URL/protocol variant, and
+   web archive mirrors (web.archive.org, archive.ph) were unreachable from
+   this tool environment.
+2. Paragraph order above is inferred from the most complete single secondary
+   rendering (S1, Dawn) and may not match the original ISPR paragraph order.
+3. If/when direct access to ispr.gov.pk is available, re-fetch
+   https://www.ispr.gov.pk/press-release-detail.php?id=6290 and replace this
+   file's body with the true primary-source text, keeping this provenance
+   header (updated) for the record.

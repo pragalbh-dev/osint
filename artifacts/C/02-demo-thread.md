@@ -35,9 +35,18 @@ Scenario numbers refer to `../md/05-data-scoping-C.md` §5.
 5. **Freshness / stale** — a node confirmed from 2019/2016 imagery with no recent source shows as
    *confirmed-as-of-DATE / coverage-lapsed → probable (stale)*; a query flags degraded coverage. Proves
    adaptation to sources closing.
-6. **The observable** *(one, wired end-to-end)* — a tripwire on "a new/relocated basing node crossing into
-   confirmed" (or a sustainment-tender signal implying induction) fires → alert → analyst disposition.
-   Proves the monitoring idea.
+6. **The observable — LOCKED (Q1): a basing/occupancy STATE-CHANGE tripwire on the perishable `based-at`
+   edge**, scoped to the documented **HQ-9B Rawalpindi→Rahwali (2025) relocation** for one named fire-unit.
+   The full monitoring+credibility loop on the frozen corpus: (a) 2021 imagery = occupied@Rawalpindi
+   (garrison half-life); (b) a single 2025 pass = occupied@Rahwali resolves only to **probable** because
+   `decoy_risk_flag` caps a single-pass signature match; (c) a second discipline-independent + cross-interest
+   origin (repeat pass OR ELINT emitter-active OR a non-aligned statement) with a clean decoy check lifts it
+   to **confirmed**; (d) `supersedes` — matched on resolved unit×site instance, not designator — retires the
+   stale Rawalpindi position, whose `based-at` auto-degrades to **stale** under the field/garrison half-life.
+   Proves perishable-freshness decay + the decoy→probable cap + the ≥2-independent confirmed gate +
+   supersedes-vs-contradicts, all at once. *(Secondary observables, probable-only paths: a follow-on
+   interceptor order via `replenishes` confirming continued resupply dependence; a spares tender →
+   "probable induction" showing the criterion-7 confidence ceiling.)*
 
 ### Visualisation for the thread
 A **confidence-coded geospatial layer** (basing sites, confirmed/probable/stale visually distinct) plus a
@@ -51,10 +60,12 @@ half-done (`../spine/07-monitoring-retrieval-viz.md`).
   geolocations per `../md/05-data-scoping-C.md` §2.6).
 - **How the run is driven on the call** — scripted worked query vs live free-form Q&A. Leaning: one
   scripted worked query that always runs, plus headroom for a live follow-up.
-- **Which observable** (basing-crossing-to-confirmed vs sustainment-tender-implies-induction) — decide
-  when the corpus is assembled.
+- **Which single sustainment node** to build (shared with `01-materiality-ontology.md`) — Interceptor
+  Stockpile (most observable via follow-on orders) vs Tech-Data Authority (highest-leverage "invisible
+  dependency" story). This decides which secondary observable is live.
 - **Order of the flexes** in the live narrative (leaning: worked query → confirmed/probable → insufficient
-  evidence → M4 override → HITL merge → freshness).
+  evidence → M4 override → HITL merge → freshness → the Rawalpindi→Rahwali observable).
+- *(Resolved: the primary observable → locked (Q1) above.)*
 
 ## Research directions
 - None new here — this doc consumes the spine + `01-materiality-ontology.md` + the data scoping. Revisit

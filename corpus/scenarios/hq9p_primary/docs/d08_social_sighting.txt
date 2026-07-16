@@ -1,5 +1,33 @@
-[SOCIAL | 2025-05]  (STUB — replace via render_document)
-intent (hidden from pipeline): site_karachi active — convoy/launcher sighting (probable, low-provenance lead)
-messiness to apply: slang, colloquial_placename, relative_time, no_coords, hype
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+POST 3
+Handle: @Wolfie_ISR (OSINT tracker acct)
+Date: 2025-05-09 (~2 days ago from when this was screenshotted, going by replies)
+Verbatim:
+"ok so this clip goin around of a HQ-9P TEL + support convoy near Karachi cant 100% confirm location tbh no coords on the video just vibes n a water tower in bg. plate blurred. if real thats their southern IADS umbrella waking up around the port. take with pinch of salt 🧂 unverified af but multiple ppl reposting same 12sec clip"
+
+---
+POST 4
+Handle: @DefenceDekhoPK
+Date: 2025-05-09
+Verbatim:
+"Bhai log Karachi wale side pe kuch bara move ho raha hai 👀 launcher jaisa dikh raha convoy, army escort ke sath, night time footage thora grainy hai. HQ9 ho sakta hai ya phir kuch aur air defence asset. confirm nahi kar sakta but locals saying dekha unhon ne highway ke qareeb"
+
+---
+POST 5
+Handle: @IndPacWatcher
+Date: 2025-05-09 (~36 hrs after initial clip surfaced)
+Verbatim:
+"Interesting one for the tracking folks — unverified vid claims to show a HQ-9/P style TEL (or similar road-mobile SAM erector) rolling through outskirts near Karachi port area, flanked by a couple of escort vehicles. No geolocation confirmed, poster didn't drop a pin, just says 'near the port side, that big road.' If legit this would be consistent w/ Pak reinforcing southern air defence coverage post-Sindoor. Treat as LOW CONFIDENCE single-source until second angle emerges. 🧵"
+
+---
+POST 6
+Handle: @gharwaliintel (semi-satirical/meme acct, occasionally has real leads)
+Date: 2025-05-10
+Verbatim:
+"yarrr twitter is losing it over this "Karachi HQ9 convoy" clip again 💀 ppl saying its live ppl saying its old stock footage from some drill last year, nobody knows man. no coordinates, no timestamp, just shaky cam and a guy breathing heavy behind the camera lol. still — if even half true thats a MASSIVE deal for the whole Sindh air defence picture rn"
+
+---
+POST 7
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-05-10
+Verbatim:
+"Multiple unverified clips (not geolocated, no coords given) circulating claiming to show HQ-9P launcher + escort convoy movement in the greater Karachi belt, ppl calling it activity near "the port road." Cannot confirm authenticity or recency of footage independently. Filing under low-confidence / single-source until corroborated. 🚨👀"

@@ -92,5 +92,6 @@ signature rebuttal. C's signature rebuttal: *"how do you know that node is real 
 | `05-hitl-and-triage.md` | HITL control points, the adjudication service, triage routing |
 | `06-adaptation.md` | learning loop, trace logging, adversary-methods (research), roadmap |
 | `07-monitoring-retrieval-viz.md` | observables/tripwires, multi-hop cited QnA, visualisation |
+| `08-detailed-design.md` | **PROPOSED** — concrete resolutions to every open question in 01–07 + the B-extensibility contract + schemas/formulas; pending ratification |
 
 Use-case C specifics live in `../C/`. Real-world data scoping for C is in `../md/05-data-scoping-C.md`.

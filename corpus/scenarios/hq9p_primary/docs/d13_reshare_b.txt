@@ -1,5 +1,69 @@
-[SOCIAL | 2025-05]  (STUB — replace via render_document)
-intent (hidden from pipeline): near-identical repost of d11 (manufactured independence)
-messiness to apply: near_duplicate, tight_time_window
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+POST 1
+Handle: @ShivAroor (Shiv Aroor, defence journalist)
+Date: 2025-05-08 (~05:15 IST per search result)
+Status URL: https://x.com/ShivAroor/status/1920407122233176147
+Verbatim:
+"BIG BREAKING 🚨 Indian Govt announces shooting down Pak drone & missile attacks on military
+targets in North & West India using air defence, confirms drone strikes on Pak's air defence,
+including Lahore."
+
+---
+POST 2
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-05-08 (~06:40 IST)
+Status URL: https://x.com/SushantNMehta/status/1920421887610441730
+Verbatim:
+"Reports of Lahore HQ-9/P (HIMADS) battery hit confirm what everyone's been saying for years —
+this "indigenous" Pak air defence upgrade was never anything but a repainted Chinese system lol.
+Same radar, same TEL, just a new coat of paint and a new name for the brochure 🙄"
+
+---
+POST 3
+Handle: @Rj_Detres (open-source tracker)
+Date: 2025-05-08 (~09:12 GMT+5)
+Status URL: https://x.com/Rj_Detres/status/1920458834221219840
+Verbatim:
+"pretty sure this whole HQ9/P "HIMADS" naming thing was always cope — Pak MoD kept calling it
+a locally-integrated system in press briefings but its literally the CASIC HQ-9 export config,
+same as what China's sold elsewhere. Lahore strike just made that obvious to everyone again"
+
+---
+POST 4
+Handle: @ShivAroor (Shiv Aroor, defence journalist)
+Date: 2025-05-08 (~11:50 IST — reposted with added line, near-identical to earlier 05:15 post)
+Status URL: https://x.com/ShivAroor/status/1920481902377189381
+Verbatim:
+"UPDATE 🚨 Indian Govt announces shooting down Pak drone & missile attacks on military targets
+in North & West India using air defence, confirms drone strikes on Pak's air defence, including
+Lahore. (repeating this bc some of you missed it this morning)"
+
+---
+POST 5
+Handle: @IndoPacDefWatch (aggregator account)
+Date: 2025-05-08 (~13:05 IST)
+Status URL: https://x.com/IndoPacDefWatch/status/1920499213340876801
+Verbatim:
+"lol @ShivAroor basically just reposted his own 5am breaking tweet word for word 6 hrs later,
+guess the Lahore HQ-9/P site news needed a second lap. anyway can confirm chatter matches —
+site near Lahore cant just be "Pakistan's own HIMAD" when its the same HQ-9P shell CASIC
+exports to everyone"
+
+---
+POST 6
+Handle: @PakDefenseWire (unverified aggregator)
+Date: 2025-05-08 (~14:20 PKT)
+Status URL: [unrecoverable — paraphrase only]
+Verbatim: [PARAPHRASED]
+Account pushed back hard on the "repainted Chinese system" framing, insisting the HIMADS
+designation reflects genuine Pakistani integration work and isn't just a rebadge of the HQ-9/P,
+without addressing the radar/TEL commonality points raised earlier in the thread.
+
+---
+POST 7
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-05-08 (~15:47 IST, quote-reply to Post 6)
+Status URL: https://x.com/SushantNMehta/status/1920534771029487617
+Verbatim:
+"'genuine integration work' is doing A LOT of lifting there my friend. call it HIMADS, call it
+HQ-9/P, call it whatever — its the same CASIC red flag 9 seeker + SARH guidance under a new
+sticker. Lahore battery today proved it, again, just like everyone already knew"

@@ -23,8 +23,10 @@ from __future__ import annotations
 import argparse
 import glob
 import json
+import os
 import pathlib
 import sys
+from functools import lru_cache
 
 import yaml
 
@@ -32,6 +34,9 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 RAW = ROOT / "corpus" / "raw"
 MANIFEST = RAW / "manifest.jsonl"
 TEMPLATE_SNIPPET_CHARS = 2500
+
+MODEL = "claude-sonnet-5"   # user chose "use sonnet"
+GEN_MAX_TOKENS = 2000
 
 
 def load_manifest() -> dict[str, dict]:
@@ -89,28 +94,103 @@ def alias_ground_truth() -> str:
     return p.read_text(encoding="utf-8", errors="ignore") if p.exists() else ""
 
 
-def render_document(doc: dict, template_text: str | None, aliases: str) -> str:
-    """<<< WIRE YOUR MODEL HERE >>>
+def _api_key() -> str | None:
+    """CLAUDE_API_KEY from the environment or the repo-root .env."""
+    key = os.environ.get("CLAUDE_API_KEY")
+    if key:
+        return key
+    envf = ROOT / ".env"
+    if envf.exists():
+        for line in envf.read_text(encoding="utf-8").splitlines():
+            if line.startswith("CLAUDE_API_KEY="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    return None
 
-    Replace the deterministic stub below with an LLM call, e.g.:
 
-        prompt = build_prompt(asserts=doc['asserts'], template=template_text,
-                              messy=doc['messy'], aliases=aliases,
-                              source_class=doc['source_class'], date=doc['date'])
-        return llm(prompt)            # anthropic / openai / local — your choice + keys
+@lru_cache(maxsize=1)
+def _client():
+    key = _api_key()
+    if not key:
+        return None
+    import anthropic
+    return anthropic.Anthropic(api_key=key)
 
-    The stub keeps the skeleton runnable and shows the exact structure the model
-    should fill: real format on top, intent implied, messiness named — no clean
-    ontology fields.
-    """
+
+def _strip_fences(text: str) -> str:
+    t = text.strip()
+    if t.startswith("```"):
+        t = t.split("\n", 1)[-1] if "\n" in t else t
+        if t.rstrip().endswith("```"):
+            t = t.rstrip()[:-3]
+    return t.strip()
+
+
+def _stub(doc: dict, template_text: str | None) -> str:
     tmpl = (template_text or "(template not yet gathered — fall back to the real "
             "format sample in artifacts/md/05-data-scoping-C.md §2/§6)")
     return (
-        f"[{doc['source_class'].upper()} | {doc['date']}]  (STUB — replace via render_document)\n"
+        f"[{doc['source_class'].upper()} | {doc['date']}]  (STUB — no API key found)\n"
         f"intent (hidden from pipeline): {'; '.join(doc['asserts'])}\n"
         f"messiness to apply: {', '.join(doc.get('messy', []) or ['—'])}\n"
         f"--- real format to imitate (excerpt) ---\n{tmpl[:600].strip()}\n"
     )
+
+
+def render_document(doc: dict, template_text: str | None, aliases: str) -> str:
+    """Generate ONE raw, messy corpus document via Claude Sonnet.
+
+    Keeps the generator BLIND to the ontology: the model is told the natural
+    facts to *imply* and the messiness to apply, and emits only raw document
+    text — never clean schema fields. Falls back to a deterministic stub if no
+    API key is present, so the skeleton still runs offline.
+    """
+    client = _client()
+    if client is None:
+        return _stub(doc, template_text)
+
+    tmpl = (template_text
+            or f"(no real specimen gathered yet — invent a plausible, real-looking "
+               f"{doc['source_class']} artifact format)")
+    asserts = "\n".join("- " + a for a in doc["asserts"])
+    messy = ", ".join(doc.get("messy") or ["ordinary real-world noise"])
+    prompt = (
+        "You are generating ONE realistic open-source document for a defense-OSINT "
+        "TEST corpus about Pakistan's HQ-9/P long-range surface-to-air missile system "
+        "(a Chinese export). This is synthetic data for testing an extraction pipeline.\n\n"
+        f"Emit ONLY the raw document text — the exact artifact a real "
+        f"'{doc['source_class']}' source would produce, in that real format. Do NOT "
+        "output any clean structured or ontology fields, JSON, analyst headers like "
+        "'Entities:', or commentary — the downstream pipeline must extract everything "
+        "itself. No preamble, no explanation, no markdown code fences.\n\n"
+        f"Dateline / as-of date: {doc['date']}.\n\n"
+        "The document must naturally IMPLY these facts (never state them as tidy fields):\n"
+        f"{asserts}\n\n"
+        "Apply these real-world messiness patterns — authentic, not caricatured:\n"
+        f"{messy}\n\n"
+        "Below is a real specimen to imitate for FORMAT, tone, and noise (copy its "
+        "shape, NOT its entities). IMPORTANT: the specimen may be wrapped in a "
+        "collector's provenance header, source-URL list, bracketed flags like "
+        "[unverified] / [PARAPHRASED], or 'Notes:' analyst commentary — that wrapper "
+        "belongs to whoever gathered it, NOT to the artifact. Reproduce ONLY the raw "
+        "artifact(s) themselves: no provenance block, no source-URL list, no bracketed "
+        "editorial flags, no 'Notes:' lines, no analytic commentary about the artifact. "
+        "If the specimen is a feed of several items (e.g. social posts), emit a "
+        "comparable raw feed — the items only, exactly as they'd appear in the wild.\n---\n"
+        f"{tmpl[:1800]}\n---\n\n"
+        "Where entity names appear, use realistic naming variance from this ground-truth "
+        "alias set as appropriate (transliterations, export vs domestic designators, "
+        "radar-vs-system names):\n"
+        f"{aliases[:1200]}\n\n"
+        "Output only the document."
+    )
+    msg = client.messages.create(
+        model=MODEL,
+        max_tokens=GEN_MAX_TOKENS,
+        thinking={"type": "disabled"},
+        messages=[{"role": "user", "content": prompt}],
+    )
+    text = "".join(b.text for b in msg.content if b.type == "text")
+    return _strip_fences(text)
 
 
 def main() -> int:

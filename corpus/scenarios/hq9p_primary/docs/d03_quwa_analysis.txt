@@ -1,43 +1,28 @@
-[TRADE_MEDIA | 2021-10]  (STUB — replace via render_document)
-intent (hidden from pipeline): corroborates induction; refers to the system as FD-2000 (export alias)
-messiness to apply: alias_FD2000, hedged_battery_counts
---- real format to imitate (excerpt) ---
-HQ-9 Long-Range Air Defence System - Quwa
-Skip to content
-About
-Advertise
-Contact
-LOGIN
-QUWA PLUS
-QUWA PRO
-SPONSOR & ADVERTISE ON QUWA
-ABOUT QUWA
-Defence Uncut
-Pakistan Defence News
-Turkish Defence News
-Indian Defence News
-China Military News
-Search
-Quwa
-LOGIN
-QUWA PLUS
-QUWA PRO
-SPONSOR & ADVERTISE ON QUWA
-ABOUT QUWA
-Categories
-DEFENCE UNCUT
-PAKISTAN DEFENCE NEWS
-TURKISH DEFENCE NEWS
-INDIAN DEFENCE NEWS
-CHINA MILITARY NEWS
-Sign In
-Home
-›
-Pakistan
-›
-Pakistan Air Defence Systems
-›
-HQ-9 Long-Range Air Defence System
-Pakistan Air Defence Systems
-HQ-9 Long-Range Air Defence System
-The HQ-9 is China
+HQ-9/P Long-Range Air Defence System - Global Defence Trade Review
+
+DEFENCE PROCUREMENT & INDUSTRY MONITOR
+Issue: October 2021 | Air Defence & C4ISR Desk
+
+Pakistan Fields Chinese-Origin Long-Range SAM Battery; System Marketed Regionally Under FD-2000 Export Designation
+
+Islamabad/Beijing — Trade and open-source reporting through October indicates the Pakistan Army has begun operational induction of a long-range surface-to-air missile system sourced from China Aerospace Science and Industry Corporation (CASIC), locally designated HQ-9/P. The system corresponds to the export configuration CASIC has offered internationally as the FD-2000, and industry sources contacted for this report continue to use the FD-2000 branding interchangeably with HQ-9/P when discussing the Pakistani contract, reflecting the same ambiguity seen in earlier Turkish and Turkmen procurement discussions involving the same product line.
+
+Pakistani defence-industry contacts, speaking on background, described the induction as the culmination of a procurement effort that has been reported in regional trade press since at least 2017-2018, when Pakistan was first linked to interest in a strategic-tier, high-to-medium altitude air defence (HIMAD) capability to backstop shorter-range Chinese-origin systems already in Army and PAF inventories. One Karachi-based defence commentator noted, "what's being called HQ-9/P here is essentially the same FD-2000 package CASIC has been pitching at IDEAS and other regional expos for years — the naming just depends on who's writing the brochure."
+
+Battery and Fire-Unit Numbers Remain Unclear
+
+Precise unit-level details remain difficult to pin down from open sources. Estimates circulating among regional trade analysts of the number of firing batteries associated with this initial induction have ranged from as few as two to as many as four or five, depending on how "battery" is defined against the launcher-to-engagement-radar ratio used in CASIC's export configuration. A South Asian defence-industry newsletter circulated in early October put the figure at "reportedly three to four battalions or battery-equivalents," while a separate Gulf-based trade briefing suggested a more conservative reading of "at least one operational battery, with further battalions expected to follow in phases through the mid-2020s." Neither figure could be independently confirmed against manufacturer or Ministry of Defence Production disclosures, and this publication is not treating either count as authoritative pending further corroboration.
+
+What can be stated with more confidence is that the system's public unveiling and reported operational status align with a mid-October 2021 timeframe, consistent with several regional outlets' references to a 14 October date for entry into service, though official Pakistani statements to date have been characteristically sparse on specifics — consistent with past practice around sensitive strategic-systems announcements.
+
+Industry Context
+
+CASIC continues to market the underlying product family internationally through at least two configurations: a baseline export variant generally referred to as FD-2000, and a longer-range derivative sometimes cited as FD-2000B, said to extend engagement range beyond the baseline figure quoted for regional customers. It remains unclear from available trade literature which specific configuration underlies the Pakistani HQ-9/P designation, though several analysts contacted for this piece assess the Pakistan Army variant as broadly comparable to the baseline FD-2000 rather than the extended-range derivative, pending further open-source confirmation.
+
+The induction slots into Pakistan's broader layered air defence architecture, sitting above medium-range systems such as the LY-80/HQ-16 family already fielded by the PAF, and is expected — per multiple regional trade sources — to be integrated with existing Pakistani air-defence C2 networks, though integration timelines and specific radar fits associated with the Pakistani battery configuration have not been disclosed publicly.
+
+Market watchers note that Pakistan's move follows a broader regional pattern of CASIC's HQ-9/FD-2000 family finding traction among buyers seeking a strategic-tier alternative to Russian S-300/S-400-class systems or Western Patriot-class options, at a comparatively lower unit cost and without the political conditions sometimes attached to Western sales.
+
+This report will be updated as further details on battery counts, radar fits, and integration status become available through subsequent trade disclosures.
+
+— Compiled for subscribers of the Defence Procurement & Industry Monitor, Air Defence & C4ISR Desk. Reproduction restricted to licensed subscribers.

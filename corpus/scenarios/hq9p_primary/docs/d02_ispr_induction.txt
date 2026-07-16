@@ -1,5 +1,30 @@
-[OFFICIAL | 2021-10-14]  (STUB — replace via render_document)
-intent (hidden from pipeline): var_hq9p inducted-into unit_paad on 2021-10-14; HIMADS; range >100km; CLIAD
-messiness to apply: service_nickname_HIMADS, euphemistic_framing
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+PRESS RELEASE
+
+FOR IMMEDIATE RELEASE
+No. ISPR/PR-2021/1470-14Oct
+Rawalpindi — 14 October 2021
+
+**HIGH TO MEDIUM AIR DEFENCE SYSTEM COMMISSIONED INTO PAKISTAN ARMY AIR DEFENCE**
+
+Rawalpindi: A formal commissioning ceremony was held today at Army Air Defence Centre, Karachi, to induct a state-of-the-art High to Medium Air Defence System (HIMADS) into the Pakistan Army's Air Defence arm, further strengthening the country's layered air defence architecture against evolving aerial threats.
+
+Chief of the Army Staff (COAS) General Qamar Javed Bajwa was the chief guest at the ceremony. On arrival at Army Air Defence Centre, the COAS was received by Commandant Army Air Defence Centre and other senior officers. A smartly turned out contingent presented the Guard of Honour.
+
+The COAS was given a detailed briefing on the operational profile, employment philosophy and technical parameters of the newly inducted system, which is capable of engaging aerial targets at long stand-off ranges in excess of 100 kilometres, providing an additional protective umbrella over strategically important areas and high value assets.
+
+Speaking on the occasion, COAS said that the induction of this modern air defence capability is a manifestation of Pakistan Army's continued resolve to keep pace with contemporary aerial threats and to ensure a credible, layered air defence (CLIAD) posture commensurate with the evolving regional security environment. He said that acquisition of niche technologies remains an ongoing process and Pakistan's air defence architecture is being progressively upgraded through indigenous effort as well as collaborative arrangements with friendly countries so as to safeguard the motherland against all forms of aerial aggression.
+
+The COAS lauded the professionalism of officers and men of Army Air Defence for having successfully absorbed the new system into service in a record time frame, and reiterated the resolve of Pakistan Army to defend the aerial frontiers of the country under all circumstances.
+
+Later, the COAS witnessed a live demonstration of the system's capabilities and was briefed on its integration within the overall air defence network. The COAS also interacted with troops and complimented them on their dedication and hard work.
+
+The ceremony was attended by senior military officers, veterans of Army Air Defence and families of shaheeds and ghazis.
+
+---
+
+**ISPR Directorate**
+Inter Services Public Relations
+General Headquarters, Rawalpindi
+
+---
+*Photographs and video coverage of the event have been shared with media organizations and are available through official ISPR channels.*

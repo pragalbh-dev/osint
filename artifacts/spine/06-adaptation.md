@@ -24,7 +24,13 @@ even though nothing crashed. When it can't see, it says so — the non-negotiabl
 ### Learning-loop mechanisms (implement one for the demo, roadmap the rest)
 - **Growing alias table** — HITL merge/split decisions written back so the same case auto-resolves next
   time (`03-resolution.md`). *(Recommended demo mechanism — cheap and visible.)*
-- **Credibility-weight updates** — from confirmed/refuted history.
+- **Credibility-weight updates / dynamic per-source rating** — a source's `track_record` factor moves
+  on its confirmed/refuted history, so reliability is *earned over time*, not fixed. **Roadmap
+  (four-more-weeks), but the recommended *next* extension if time allows** — the seam is already
+  pre-wired: the `track_record` factor exists in the resolver rubric (`04-credibility.md`, `08` §3.4)
+  at a neutral prior, and the decision log already records the confirmed/refuted history it consumes.
+  So it's a bolt-on, not a rebuild. (This is also the stronger answer to "isn't your source-tiering
+  just hardcoded?" — the demo shows a configurable factor rubric; this shows it learning.)
 - **Tripwire-threshold tuning** — from alert dispositions (`07-monitoring-retrieval-viz.md`).
 - **Resolution-threshold tuning** — from merge accept/reject rates.
 - **New deception-pattern detectors** — added as checks when a pattern is discovered.

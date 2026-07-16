@@ -1,0 +1,129 @@
+[HEADER]
+These are real-post phrasings gathered via web search on 2026-07-16 (X/Twitter has no free API,
+so posts were surfaced via web-search snippets, news-embedded tweet cards, and OSINT-forum quotes
+rather than a live timeline pull). Source URLs are given where the underlying x.com/status link
+was recoverable from search results. Text is copied verbatim from what web search / embeds
+returned, including emoji, punctuation, capitalization, and typos — NOT sanitized or normalized.
+Two entries are marked [PARAPHRASED] where only a paraphrase/description of the original post
+was recoverable (exact original caption text could not be independently re-verified from a live
+X page — X blocks unauthenticated scraping/archive access for these specific posts).
+Context: 2025 India-Pakistan conflict (Operation Sindoor, 7-10 May 2025) and surrounding tensions,
+centered on Pakistan's HQ-9/P (HIMADS) long-range SAM system.
+Do not sanitize downstream — messiness (hype caps, missing coords, relative time, colloquial
+place names, slang, emoji) is intentionally preserved as OSINT-sighting-style training/eval material.
+[/HEADER]
+
+---
+POST 1
+Handle: @ShivAroor (Shiv Aroor, defence journalist)
+Date: 2025-05-08 (~05:15 IST per search result)
+Status URL: https://x.com/ShivAroor/status/1920407122233176147
+Verbatim (REAL, via search snippet/embed):
+"BIG BREAKING 🚨 Indian Govt announces shooting down Pak drone & missile attacks on military
+targets in North & West India using air defence, confirms drone strikes on Pak's air defence,
+including Lahore."
+Notes: no coordinates, relative/approx time only, breaking-news hype caps + emoji. Lahore HQ-9/P
+site is the referent though not named explicitly as "HQ-9" in this specific post.
+
+---
+POST 2
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-05-08 (same news cycle as above)
+Status URL: https://x.com/SushantNMehta/status/1920432766216216596
+Verbatim (REAL, via search snippet/embed):
+"Pakistan's Chinese Air Defence System HQ 9 has failed miserably & was destroyed in Lahore by
+India. There are reports of Rawalpindi stadium being hit as well & PSL has been shifted entirely
+to Karachi. They messed with us last night & we annihilated them again. Jai Hind 🇮🇳"
+Notes: "HQ 9" no hyphen (transliteration/typing variance), hedge word "reports of" mixed with
+unhedged "failed miserably", nationalistic sign-off emoji, no coords, colloquial "last night".
+
+---
+POST 3
+Handle: @Mark99xm ("Choice of Inevitability")
+Date: on/around 2025-05-08 (Lahore Cantt drone attack date referenced in-post)
+Status URL: https://x.com/Mark99xm/status/1924736911916093934
+Verbatim (REAL, via search snippet/embed):
+"Wreckage of an HQ-16 SAM in Pakistan, likely expended during the drone attack on Lahore Cantt on
+8th May in which an HQ-9 Air-defence system Mobile command post was liquidated."
+Notes: hedge word "likely", colloquial "Lahore Cantt" (not full "Cantonment"), no coordinates,
+mixes adjacent system (HQ-16) into an HQ-9 sighting/damage claim -- classic entity-mix messiness.
+
+---
+POST 4
+Handle: @Lone_wolf110
+Date: 2025-05-08 (per EurAsian Times article quoting the post)
+Status URL: not recovered directly (quoted via https://www.eurasiantimes.com/pakistans-chinese-origin-hq-9-decimated-in-fresh-attacks/)
+Verbatim (REAL, as quoted by EurAsian Times):
+"Wreckage of a Pakistani LY-80 (HQ-16) SAM reportedly found in the outskirts of Gujranwala."
+Notes: hedge "reportedly", colloquial "outskirts of Gujranwala" (no coords), adjacent-system
+(LY-80/HQ-16) chatter that surrounds HQ-9 reporting in the same news cycle.
+
+---
+POST 5
+Handle: @Mrcool63040811
+Date: not confirmed (search snippet did not surface a timestamp; likely early-mid 2025 based on
+status-ID ordering relative to dated May 2025 posts above, but NOT independently verified -- treat
+as approximate)
+Status URL: https://x.com/Mrcool63040811/status/1890708806302060885
+Verbatim (REAL, via search snippet/embed; posted in reply to @pir34):
+"@pir34 LD-JP radar is smaller than the YLC-8 radar. That radar in the satellite imagery is bigger
+than the LD-JP radar. In multiple PR videos PAF showed YLC-8. LD-JP radar of PA HQ-9👇"
+Notes: technical OSINT-thread register (radar-ID dispute), abbreviations without expansion
+("PA HQ-9" = Pakistan Army HQ-9), emoji pointing to an attached image, no coordinates, references
+satellite imagery informally rather than citing a source.
+
+---
+POST 6 [PARAPHRASED]
+Handle: @Mrcool63040811
+Date: reported as ~August 2024 (per secondary summary; original tweet text not independently
+re-verified -- this is the post that first publicly geolocated an HQ-9 system at Karachi
+Cantonment per multiple secondary write-ups)
+Status URL (referenced, unconfirmed live): https://x.com/Mrcool63040811/status/1825213107536621955
+Paraphrase (NOT verbatim -- flagged): "Recent satellite imagery analysis has confirmed the
+deployment of a Chinese-manufactured HQ-9 air defense system at the Karachi Cantonment" --
+this is a paraphrase reconstructed from secondary description, not the original tweet's exact
+wording/casing/punctuation.
+
+---
+POST 7 [PARAPHRASED]
+Handle: unnamed Pakistan Army Air Defence officer (real incident, handle deliberately not
+reproduced/is not an OSINT tracker account -- this is the compromising post itself, not a tracker's
+repost of it)
+Date: reported as pre-strike, prior to 2025-05-11 (the Karachi HQ-9 unit was struck 11 May 2025)
+Source (secondary reporting, not the original post): https://idrw.org/tom-cooper-reveals-how-pakistani-air-defence-officers-social-media-post-led-to-destruction-of-hq-9-unit-in-karachi/
+Paraphrase (NOT verbatim -- flagged): officer posted personal photos of himself with the HQ-9
+system visible in the background, geolocatable to the Hafta Bazaar Ground area, Steel Town,
+Karachi (approx. 24°52'09"N 67°20'20"E per secondary reporting) -- no caption text survives in
+secondary write-ups, only the fact and consequence (Indian OSINT geolocation -> 11 May 2025
+SkyStriker loitering-munition strike per Tom Cooper's analysis) are documented.
+Notes: included because this IS the canonical real "site_karachi active / convoy-launcher
+sighting via careless social media" event referenced by the scenario stub
+(corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt) -- kept here as the format/behavior
+template even though exact caption text is unrecoverable.
+
+---
+ADDITIONAL REAL CONTEXT POST (same OSINT-account family named in the task, different specific
+target -- kept as a genre/style reference for @detresfa_'s phrasing on this exact conflict, since
+no HQ-9-specific @detresfa_ post surfaced in search)
+Handle: @detresfa_ (Damien Symon)
+Date: on/around 2025-05-2x (imagery dated after strikes; exact post date not confirmed from
+snippet alone)
+Status URL: https://x.com/detresfa_/status/1921506114182545738
+Verbatim (REAL, via search snippet/embed):
+"Imagery released by a Chinese satellite firm (MIZAZVISION) helps spotlight damage at Pakistan's
+Nur Khan Airbase - the Indian Air Force precision strike appears to have focused on disabling
+infrastructure & ground support vehicles present on site at the time"
+Notes: real imagery-analyst register, hedge "appears to have", no coordinates in the post text
+itself (imagery does the work), same conflict/campaign as the HQ-9 site strikes -- included to
+document the genre/handle even though the target here is an airbase, not an HQ-9 TEL/launcher.
+
+---
+Sources consulted (search + embeds, accessed 2026-07-16):
+- https://x.com/ShivAroor/status/1920407122233176147
+- https://x.com/SushantNMehta/status/1920432766216216596
+- https://x.com/Mark99xm/status/1924736911916093934
+- https://www.eurasiantimes.com/pakistans-chinese-origin-hq-9-decimated-in-fresh-attacks/ (quotes @Lone_wolf110)
+- https://x.com/Mrcool63040811/status/1890708806302060885
+- https://x.com/Mrcool63040811/status/1825213107536621955 (referenced only; secondary description used)
+- https://idrw.org/tom-cooper-reveals-how-pakistani-air-defence-officers-social-media-post-led-to-destruction-of-hq-9-unit-in-karachi/
+- https://x.com/detresfa_/status/1921506114182545738

@@ -1,5 +1,50 @@
-[PROCUREMENT | 2023-02]  (STUB — replace via render_document)
-intent (hidden from pipeline): sustain_spares probable: a 'spares' tender IMPLIES an inducted system
-messiness to apply: as_per_annexure_pointer, lot_numbers, redactions, bureaucratic_phrasing
---- real format to imitate (excerpt) ---
-(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)
+GOVERNMENT OF PAKISTAN
+MINISTRY OF DEFENCE PRODUCTION
+AIR HEADQUARTERS — DIRECTORATE OF PROCUREMENT (AIR DEFENCE SYSTEMS)
+
+TENDER ENQUIRY / REQUEST FOR QUOTATION
+
+TE No: AHQ/DP-ADS/2023/RFQ-0217
+Dated: 09 February 2023
+Subject: PROCUREMENT OF SPARES, TEST EQUIPMENT & MAINTENANCE SUPPORT ITEMS FOR LONG-RANGE AIR DEFENCE WEAPON SYSTEM (REF ANNEXURE-A)
+
+1.	Sealed quotations are invited from OEM-authorized/approved vendors and their local representatives for supply of spares/consumables/test sets pertaining to the equipment listed at Annexure-A (List of Items, Lot-wise), in accordance with the terms and conditions enumerated hereunder and as further elaborated in the annexures appended to this tender.
+
+2.	Bidders are advised that item nomenclature, quantities, technical particulars and applicable lot numbers are NOT reproduced in the body of this tender for reasons of operational security and shall be furnished only to short-listed/registered vendors upon execution of the requisite Non-Disclosure Undertaking (NDU) as per Annexure-C. Reference to "the System" or "the Equipment" throughout this document pertains to the long-range surface-to-air weapon system currently held on the inventory of a designated Air Defence formation, further particulars of which are as per Annexure-A and shall not be construed as a public specification.
+
+3.	LOT STRUCTURE
+
+	Lot No. 01 – Missile Round Sub-Assemblies (Guidance Section) – [REDACTED – see Annexure-A, Part I]
+	Lot No. 02 – Launcher/TEL Hydraulic & Electro-Mechanical Spares – as per Annexure-A, Part II
+	Lot No. 03 – Engagement Radar (Illuminating/Guidance Radar) LRUs and Test Benches – [REDACTED – see Annexure-A, Part III]
+	Lot No. 04 – Command & Control Console Spares, Cabling Harness Sets – as per Annexure-A, Part IV
+	Lot No. 05 – Ground Support Equipment, Calibration Jigs, Simulators – as per Annexure-A, Part V
+	Lot No. 06 – Search/Acquisition Radar Sub-System spares (associated system) – [REDACTED]
+
+	Note: Vendors may quote for one or more Lots. Composite quotes covering the full requirement of a Lot will be preferred, however, item-wise/split quotations shall also be considered on merit as per para 14 below.
+
+4.	SCOPE OF SUPPLY
+
+4.1	The scope covers supply of original/genuine spares, repair kits, consumables, calibration standards, and where applicable, Depot-level and Base-level maintenance support items for the System, presently deployed with an operational Air Defence Group, to sustain fleet serviceability during the currency of the contract and, subject to mutual agreement, for the subsequent AMC period.
+
+4.2	The exact make, model, part numbers and quantities against each Lot are as per Annexure-A (to be issued separately, marked "RESTRICTED", against signed receipt). Bidders not holding valid OEM authorization for the country of origin of the System will not be considered eligible; this office will not entertain queries seeking to identify the platform or its country of origin outside the established channel indicated at Annexure-B.
+
+4.3	It is clarified for the avoidance of doubt that this tender pertains to sustainment/life-support requirements of an already inducted weapon system and does NOT constitute, imply, or authorize any new acquisition, upgrade, or force-expansion proposal. Nothing in this document should be read as confirming the operational status, deployment location, or numbers of any platform.
+
+5.	ELIGIBILITY CRITERIA
+
+	(a)	Bidder should be the Original Equipment Manufacturer (OEM) or an entity holding a valid, current Letter of Authorization from the OEM for supply of the items under reference.
+	(b)	Bidder or its principal should have previously supplied similar spares/support equipment to an armed force of a friendly country, evidence whereof shall be submitted as per format at Annexure-D.
+	(c)	End-User Certificate (EUC) and Non-Re-Export Undertaking shall be furnished by the successful bidder prior to placement of order, as per format at Annexure-E.
+	(d)	Bidder shall submit an Integrity Pact duly signed, as per Annexure-F, without which the bid shall be summarily rejected.
+
+6.	The undersigned reserves the right to reject any or all quotations without assigning any reason, and to procure lesser or greater quantities than indicated against any Lot, keeping in view budgetary allocation and operational priority, at the sole discretion of the Competent Financial Authority.
+
+7.	COMMERCIAL TERMS
+
+	(i)	Prices to be quoted on DDP/CIP basis, Karachi/Nowshera Depot (specific consignee address as per Annexure-A), inclusive of all applicable duties/taxes or exemptions as admissible under the prevailing SRO applicable to Defence Services procurement.
+	(ii)	Payment terms: 90% against shipment documents through irrevocable Letter of Credit; balance 10% after receipt, inspection and acceptance at destination.
+	(iii)	Delivery period: as indicated Lot-wise in Annexure-A; delays beyond the stipulated period shall attract Liquidated Damages as per Annexure-G.
+	(iv)	Warranty: minimum 12 months from date of acceptance or as per OEM standard warranty, whichever is more beneficial to the Purchaser.
+
+8.

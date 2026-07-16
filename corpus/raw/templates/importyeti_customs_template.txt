@@ -1,0 +1,160 @@
+[HEADER]
+Source URL: https://www.importyeti.com/sample-us-bill-of-lading
+Access date: 2026-07-16
+Method: page fetched directly (curl, desktop UA); the site is a Next.js app and ships the full
+underlying bill-of-lading record as an embedded JSON payload in the page HTML in addition to the
+rendered "sample" table -- both are captured below verbatim. This is ImportYeti's own published
+"what a real BoL row looks like" example (US ocean import, sourced from CBP vessel-manifest FOIA
+data per 19 CFR 103.31), NOT a defence-related shipment -- it is captured purely as a real
+FORMAT + MESSINESS template (consignee, shipper, supplier country, product description, HS code,
+weight, ports, date), per instructions. Do not sanitize: garbled/OCR-like product description,
+inconsistent field completeness, and internal customs-broker shorthand are preserved as-is.
+[/HEADER]
+
+=== A. RENDERED / HUMAN-READABLE VIEW (as displayed on page) ===
+
+BOL Number:        MAEUF34083269
+Consignee:         The North Face A Division Of Vf Outdoor Llc
+Shipper:           Titas Sportswear Ind Limited
+Shipper Country:   Bangladesh
+Product Description (as shown, cleaned form):
+  "Readymade Garments Brand North Face Dryzzle Futurelight Jac Ket Sap Hdc Sap Tns Summit
+   Breithorn Hoodie Sap Retro Nuptse Jack" (95 cartons total)
+HS Code:           6210.20
+Weight:            897 kg
+Quantity:          95 CTN (Cartons)
+Port of Loading:   YANGSHAN - 57037
+Port of Unlading:  Long Beach, Ca - 2709
+Arrival Date:      01/30/2024
+Departure Date:    not explicitly stated on rendered view
+Carrier:           Maersk Lines, Inc. (SCAC: MAEU)
+Vessel Name:       Maersk Cardiff
+Vessel IMO:        9529255
+Container:         MRKU4981650, 40ft dry bulk (1 container)
+Voyage:            352N
+
+=== B. RAW EMBEDDED PAYLOAD FIELDS (verbatim from page source JSON, unmodified) ===
+
+company_name (consignee, full):      "The North Face A Division Of Vf Outdoor Llc"
+company_basename:                    "The North Face A Division Of Vf Outdoor"
+company_address:                     "1551 Wewatta St Denve R Co 80202 Usa Attn:Kevin Parrish Tel: 336-424-3995"
+  -- note: "Denve R Co" (broken word wrap in source scan, "Denver CO" garbled) -- preserved as-is
+company_link:                        /company/the-north-face-a-division-of-vf-outdoor
+company_country:                     United States (US)
+company_total_shipments:             20827
+company_shipments_12m:               1900
+company_china_concentration:         2.53
+company_contact_info:                phone_numbers: ["3364243995"]; emails: []
+company_contact_info_most_recent_found: 29/11/2024
+company_website:                     null
+
+supplier_name:                       "Titas Sportswear Ind Limited"
+supplier_basename:                   "Titas Sportswear Ind"
+supplier_address:                    "Plot # 7-20 Sector # 3 Cepz Chittagong Bangladesh"
+supplier_link:                       /supplier/titas-sportswear-ind
+supplier_country:                    Bangladesh (BD)
+supplier_total_shipments:            1190
+supplier_company_shipments_12m:      198
+supplier_contact_info_exists:        false
+supplier_website:                    null
+
+notify_party_name:                   "Carmichael International Services"
+notify_party_address:                "1200 Corporate Center Dr Suite 200 Monterey Park Ca 91754 Attn: Ruby Chan / Daney Chantim"
+notify_party_country_code:           US
+
+marks_&_numbers (cleaned):           "Outdoor"
+marks_&_numbers_raw:                 "Vf Outdoor Inc"
+
+shipping_port (origin):              YANGSHAN
+shipping_port_code:                  57037
+port_of_entry (destination):         Long Beach, Ca
+port_of_entry_code:                  2709
+place_of_receipt:                    Chittagong
+place_of_receipt_link:               /location/supplier/china/1796231-shanghai-shi
+  -- note: link slug says "shanghai-shi" even though place_of_receipt text says "Chittagong" --
+     internal site cross-reference mismatch, preserved as-is (real-world messiness)
+
+hs_code:                              621020
+hs_code_link:                        /hs-codes/621020-other-garments-of-the-type-described-in
+hs_code_description:                 "Other garments, of the type described in heading 6201"
+full_hs_code_description:            "Articles of apparel and clothing accessories, not knitted or
+                                      crocheted ; Garments, made up of fabrics of heading 5602,
+                                      5603, 5903, 5906 or 5907 ; Other garments, of the type
+                                      described in heading 6201"
+
+product_description (cleaned/dedup'd by site):
+  "Readymade Garments Brand North Face Dryzzle Futurelight Jac Ket Sap Hdc Sap Tns Summit
+   Breithorn Hoodie Sap Retro Nuptse Jack Sap Dle Tsl Tnf Dec Exp Dec Ontact Feb Shipping Bill Dec
+   Cust Daneyc Carmnet Rubyc Carmnet Relay Vessel Maersk Cardiff Summary Mrku Mlbd Summary"
+
+product_description_raw (this is the REAL raw manifest text -- badly re-wrapped/OCR-broken,
+kept fully verbatim, do not "fix" the spacing/casing):
+  "Readymade Garments Brand- Th E North Face Vf Id# V0001488 01 M Dryzzle Futurelight Jac Ket
+   Sap# Nf0A7Qb2Hdc, Po# 42 0031650100100 Sap# Nf0A7Qb2J K3, Po# 420031650100200 17 C Tns251 Pcs
+   2 Ctns33 Pcs M Summit Breithorn Hoodie Sap# Nf0A7Ut8I0P, Po# 420031649400 100 M 1996 Retro
+   Nuptse Jack Et Sap# Nf0A3C8Dle4, Po# 420 032730900100 4 Ctns43 Pcs 72 Ctns 686 Pcs Hs Code:
+   621020,620140, 95 Ctns 10 13 Pcs Inv No. Tsl/Tnf-8028 0572/2023 Date : Dec.10, 202 3 Exp No.
+   26000116/003076/20 23 Date : Dec.10, 2023 S.C Ontact No. 43000114301 Date : Feb.28, 2023
+   Shipping Bill No:C- 311605 Date : Dec.12, 2023 Cust Seal # L065375 -Fax: 213-250-0710
+   E: Daneyc @Carmnet.Com; Rubyc@Carmnet. Com Relay Vessel Maersk Cardiff 352N Container Summary
+   ------------------- ---------------- Mrku4981650 Mlbd0126185 40X9 6 95C Tn 11.433Cbm
+   897.330Kgs B/L Total Summary -------------- --------------------- 95Ctn 11.433Cbm 897.330Kgs"
+
+  -- note the raw string shows TWO HS codes ("621020,620140") even though the site surfaces only
+     "621020" as the canonical hs_code field -- a second/secondary HS code silently dropped in the
+     cleaned view. Also note broker fax/email dumped inline in the product-description free-text
+     field ("Fax: 213-250-0710 E: Daneyc@Carmnet.Com; Rubyc@Carmnet.Com") -- this is Carmichael
+     International Services (the notify party)'s contact info, leaking into the cargo-description
+     field because the manifest is effectively OCR'd/parsed from a scanned customs broker form.
+
+carrier_scac_code:                   "Maeu, Maersk Lines, Inc."
+vessel_name:                         Maersk Cardiff
+vessel_code (IMO):                   9529255
+vessel_country_code:                 SG
+vessel_url:                          /vessels/9529255
+voyage:                              352n
+estimated_arrival_date:              20240130   (YYYYMMDD, no separators)
+last_visit_foreign_port:             null
+
+teu:                                 1.5
+quantity:                            95
+quantity_unit:                       CTN
+weight:                              897           (kg, unit implied not labeled in raw field)
+containers_count:                    1
+container id:                        MRKU4981650
+container type:                      4EB0 ("Closed", "Dry Bulk Container", 40ft, 8ft-8ft 2.5in x 9ft 6in)
+load_status:                         L ("Loaded - The container has cargo and will be delivered locally")
+service_type:                        CY ("Container Yard")
+mark:                                "Vf Outdoor Inc"
+size:                                4000*906*802
+
+shipping_cost:                       1311
+shipping_rate:                       route "Asia,Pacific"; ticker "XSICFEUW"; booking_date
+                                      "2023-12-31"; value 1748
+cif:                                 0    (i.e. CIF value not populated on this record)
+us_clearing_district_name:           "Dallas/Ft. Worth Airport, Tx"
+us_clearing_district_code:           5501
+  -- note: "clearing district" is Dallas/Ft. Worth *Airport* even though this is an ocean B/L
+     discharged at Long Beach, CA -- another real internal inconsistency in the source data,
+     preserved as-is.
+internal_supplier:                   false
+alibaba_link:                        false
+tags:                                []
+
+=== C. FIELD-SET SUMMARY (for building a synthetic-from-real-template row) ===
+date | consignee (name+address, often truncated/garbled) | shipper/supplier (name+address+country)
+| notify party (name+address, sometimes a customs broker, not the real end-user) | shipping port
+(origin, +internal code) | port of entry (destination, +internal code) | place of receipt
+(can mismatch the shipping port in linked metadata) | HS code (+ site's own HS description,
+sometimes a second HS code appears only in the raw free-text and gets silently dropped from the
+canonical field) | product description -- BOTH a cleaned/dedup'd version AND a raw OCR-messy
+version with embedded broker fax/email/PO numbers/SAP codes/invoice numbers/customs seal numbers
+| quantity + unit (e.g. "95 CTN") | weight (kg, unit sometimes unlabeled) | carrier (name + SCAC
+code) | vessel name + IMO + flag country | voyage number | container id(s) + type + load status
++ service type | B/L number | estimated arrival date (YYYYMMDD, no separators) | shipping
+cost/rate (route, ticker, booking date, value) | CIF (sometimes "0"/blank) | US clearing district
+(can be geographically inconsistent with the actual port). Real messiness to imitate: broken word
+wrap ("Denve R Co"), inconsistent capitalization mid-word ("Jac Ket", "Ontact"), duplicate/second
+HS codes buried only in free text, notify-party contact info bleeding into the cargo-description
+field, internal metadata cross-links pointing to the wrong city/country, and a "clearing district"
+field that doesn't match the actual discharge port.
