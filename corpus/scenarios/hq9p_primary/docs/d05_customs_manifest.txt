@@ -1,0 +1,5 @@
+[CUSTOMS | 2020-11]  (STUB — replace via render_document)
+intent (hidden from pipeline): comp_ht233 / radar RF parts imported (component tier)
+messiness to apply: hs_code_8526_bland, front_company_consignee, transliteration_variance, missing_values
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

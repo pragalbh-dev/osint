@@ -1,0 +1,5 @@
+[SOCIAL | 2025-05]  (STUB — replace via render_document)
+intent (hidden from pipeline): a 2019 parade photo reposted as a NEW 2025 deployment (real image, false context)
+messiness to apply: miscaptioned_recycled_image, first_seen_2019
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

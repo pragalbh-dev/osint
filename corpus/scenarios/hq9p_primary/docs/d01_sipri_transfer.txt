@@ -1,0 +1,5 @@
+[ARMS_TRANSFER | 2021]  (STUB — replace via render_document)
+intent (hidden from pipeline): import_2021 confirmed: China supplied HQ-9/P SAM system to Pakistan
+messiness to apply: hs_code_absent, analyst_coded_row, value_in_comments
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

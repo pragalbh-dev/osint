@@ -1,0 +1,5 @@
+[IMAGERY | 2025-05]  (STUB — replace via render_document)
+intent (hidden from pipeline): 95% cloud over site_karachi — cannot confirm launcher count / tail numbers
+messiness to apply: cloud_occlusion, stale_capture
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

@@ -1,0 +1,5 @@
+[PROCUREMENT | 2023-02]  (STUB — replace via render_document)
+intent (hidden from pipeline): sustain_spares probable: a 'spares' tender IMPLIES an inducted system
+messiness to apply: as_per_annexure_pointer, lot_numbers, redactions, bureaucratic_phrasing
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

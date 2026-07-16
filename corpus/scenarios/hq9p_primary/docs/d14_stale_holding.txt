@@ -1,0 +1,5 @@
+[REFERENCE | 2016]  (STUB — replace via render_document)
+intent (hidden from pipeline): a China HQ-9 holding sourced only to 2016/2019 imagery, no recent corroboration
+messiness to apply: dated_fact_printed_as_current, no_recent_source
+--- real format to imitate (excerpt) ---
+(template not yet gathered — fall back to the real format sample in artifacts/md/05-data-scoping-C.md §2/§6)

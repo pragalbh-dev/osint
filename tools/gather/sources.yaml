@@ -1,0 +1,171 @@
+# Source registry for the Use Case C corpus gatherer.
+# Subject: Pakistan HQ-9/P (primary), enriched with China HQ-9, S-400 as adjacent ref.
+# Grounded in artifacts/md/05-data-scoping-C.md §2/§6.
+#
+# method values:
+#   wikipedia   - MediaWiki action API (plain-text extract + revision timestamp for freshness)
+#   auto_http   - plain GET with a browser UA (html or pdf, auto-detected)
+#   proxy       - real content exists & is free, but blocks datacenter IPs -> run on your machine
+#   creds       - free but needs an account / API key (e.g. Copernicus)
+#   manual      - copy-paste / desktop-tool / paid-teaser -> drop the file yourself
+#   download    - interactive export (SIPRI query form) -> export once, drop the file
+#
+# source_class drives corpus/raw/<source_class>/ layout AND feeds the credibility
+# model's source-class weighting (official > trade_media > social).
+
+subjects:
+  hq9p: "Pakistan HQ-9/P (primary subject)"
+  china_hq9: "China HQ-9 / HQ-9B (enrichment)"
+  ref_s400: "S-400 (adjacent reference)"
+
+sources:
+  # ---- reference / think-tank (fact + alias ground truth) ----
+  - id: wikipedia_hq9
+    subjects: [hq9p, china_hq9]
+    source_class: reference
+    method: wikipedia
+    title: "HQ-9"
+    notes: "Alias/variant ground truth (HQ-9/P, HQ-9BE, FD-2000, FT-2000, HHQ-9, HT-233, 红旗-9)."
+  - id: wikipedia_s400
+    subjects: [ref_s400]
+    source_class: reference
+    method: wikipedia
+    title: "S-400 missile system"
+    notes: "S-400 = SA-21 Growler = Triumf/Triumph/С-400; component designators (91N6/92N6/96L6, 48N6/40N6/9M96)."
+  - id: csis_missilethreat_s400
+    subjects: [ref_s400]
+    source_class: reference
+    method: auto_http
+    url: "https://missilethreat.csis.org/defsys/s-400-triumf/"
+    notes: "Reachable from datacenter IP (200)."
+  - id: csis_missilethreat_hq9
+    subjects: [china_hq9]
+    source_class: reference
+    method: auto_http
+    url: "https://missilethreat.csis.org/tag/hq-9/"
+  - id: csis_amti_woody
+    subjects: [china_hq9]
+    source_class: reference
+    method: auto_http
+    url: "https://amti.csis.org/woody-island/"
+    notes: "Dated, sourced HQ-9 satellite imagery analysis (freshness examples)."
+  - id: rand_rr1414
+    subjects: [china_hq9]
+    source_class: reference
+    method: auto_http
+    url: "https://www.rand.org/content/dam/rand/pubs/research_reports/RR1400/RR1414/RAND_RR1414.pdf"
+    notes: "Battalion counts / PLAAF SAM context (PDF)."
+  - id: rusi_bronk_iads
+    subjects: [china_hq9, ref_s400]
+    source_class: reference
+    method: auto_http
+    url: "https://static.rusi.org/20191118_iads_bronk_web_final.pdf"
+    notes: "Best single open doc on Russian+Chinese IADS (PDF)."
+  - id: nti_china_missile
+    subjects: [china_hq9]
+    source_class: reference
+    method: auto_http
+    url: "https://media.nti.org/pdfs/china_missile.pdf"
+    notes: "Dated chronology -> good freshness/stale-fact material (PDF)."
+
+  # ---- arms-transfer register (finished-system spine) ----
+  - id: sipri_transfers
+    subjects: [hq9p, ref_s400]
+    source_class: arms_transfer
+    method: download
+    url: "https://armstransfers.sipri.org/ArmsTransfer/TransferRegister"
+    notes: >
+      No clean API; run the register query (recipient=Pakistan supplier=China, and
+      recipient=China supplier=Russia), export RTF/CSV, drop into corpus/raw/arms_transfer/.
+
+  # ---- official / MoD ----
+  - id: ispr_hq9p_induction
+    subjects: [hq9p]
+    source_class: official
+    method: proxy
+    url: "https://www.ispr.gov.pk/press-release-detail?id=6339"
+    notes: "HQ-9/P induction PR (14 Oct 2021). ISPR 403s datacenter IPs -> run on your machine."
+  - id: pib_s400
+    subjects: [ref_s400]
+    source_class: official
+    method: proxy
+    url: "https://pib.gov.in/PressReleasePage.aspx?PRID=1777612"
+    notes: "India S-400 contract release (format template + adjacent ref). PIB bot-blocks datacenter IPs."
+
+  # ---- trade media / analyst ----
+  - id: quwa_hq9p
+    subjects: [hq9p]
+    source_class: trade_media
+    method: auto_http
+    url: "https://quwa.org/pakistan/air-defence-pk/hq-9-long-range-air-defence-system/"
+    notes: "Freemium; primer free. Rich Pakistan induction framing; uses FD-2000 alias."
+  - id: army_recognition_hq9p
+    subjects: [hq9p]
+    source_class: trade_media
+    method: auto_http
+    url: "https://armyrecognition.com/news/aerospace-news/2021/pakistan-army-air-defense-commissions-chinese-hq-9-p-air-defense-missile-system"
+    notes: "Ranges; HQ-9/P vs HQ-9BE."
+  - id: diplomat_s400
+    subjects: [ref_s400]
+    source_class: trade_media
+    method: proxy
+    url: "https://thediplomat.com/2018/07/chinas-military-accepts-first-s-400-missile-air-defense-regiment-from-russia/"
+    notes: "Regiment-by-regiment S-400 delivery timeline. Cloudflare 403s bots."
+
+  # ---- nav-warning / NOTAM (activity tempo + format templates) ----
+  - id: navarea_nga
+    subjects: [hq9p, china_hq9]
+    source_class: nav_warning
+    method: proxy
+    url: "https://msi.nga.mil/NavWarnings"
+    notes: "Free .txt; msi.nga.mil 503/403s datacenter IPs. Mirror: sealagom.com. Real messy uppercase strings."
+  - id: notam_faa
+    subjects: [hq9p, china_hq9]
+    source_class: nav_warning
+    method: manual
+    url: "https://notams.aim.faa.gov/notamSearch/"
+    notes: "JS app; use site/FNS API. Grab raw ICAO NOTAM strings as messiness templates."
+
+  # ---- imagery (non-text modality) ----
+  - id: sentinel2_karachi_site
+    subjects: [hq9p]
+    source_class: imagery
+    method: creds
+    url: "https://browser.dataspace.copernicus.eu/"
+    notes: "Free Copernicus account. Pull S-2 (10m) + a cloud-covered frame (for the insufficient-evidence flex) over the Karachi geolocation."
+  - id: googleearth_karachi_site
+    subjects: [hq9p]
+    source_class: imagery
+    method: manual
+    url: "https://www.google.com/earth/versions/"
+    notes: "Desktop; sub-meter historical frame of the site (launcher/vehicle resolution). Screenshot export."
+  - id: youtube_hq9_parade
+    subjects: [hq9p, china_hq9]
+    source_class: imagery
+    method: manual
+    url: "https://www.youtube.com/results?search_query=HQ-9+parade"
+    notes: "Clear ground-level TEL/HT-233 frames for the VLM equipment-ID step. (yt_dlp not installed here.)"
+
+  # ---- format/messiness templates (synthetic-from-real) ----
+  - id: india_mtd_tender_template
+    subjects: [hq9p]
+    source_class: templates
+    method: auto_http
+    url: "https://eprocure.gov.in/cppp/sites/default/files/standard_biddingdocs/MTD%20Goods%20NIC.pdf"
+    notes: "India Model Tender Doc -> bureaucratic 'as-per-Annexure' messiness template for the synthetic spares tender."
+  - id: importyeti_customs_template
+    subjects: [hq9p]
+    source_class: templates
+    method: manual
+    url: "https://www.importyeti.com/"
+    notes: "Grab a real US-ocean BoL row (consignee/shipper/HS/bland-description/ports) as the customs-manifest format template."
+
+  # ---- social (manual copy-paste) ----
+  - id: x_osint_sightings
+    subjects: [hq9p]
+    source_class: social
+    method: manual
+    url: "https://x.com"
+    notes: >
+      No free API. Copy real 2025 India-Pak HQ-9/P sighting posts from OSINT handles
+      (@detresfa_, @rajfortyseven, @AuroraIntel, @sentdefender). Keep slang/relative-times/colloquial names.

@@ -1,0 +1,47 @@
+[TRADE_MEDIA | 2021-10]  (STUB — replace via render_document)
+intent (hidden from pipeline): var_hq9p (Army, ~125km) vs var_hq9be (PAF, ~260km) — one import, two branches
+messiness to apply: estimated_ranges, variant_fork
+--- real format to imitate (excerpt) ---
+Pakistan Army Air Defence commissions chinese HQ-9/P air defense missile system
+Skip to main content
+Home
+Contact
+News
+Land Defense News
+2026
+Defense Aerospace News
+2026
+Naval Defense News
+2026
+Defense Web TV
+News Archives
+Land Defense News Archives
+Naval News Archives
+Defense Aerospace News Archives
+Advertising
+Contact advertising
+Send Press Release
+Defense Industry
+Asia
+China
+Thailand
+Europe
+Austria
+Belgium
+France
+Germany
+Lithuania
+Spain
+Turkey
+United Kingdom
+East Europe
+Bulgaria
+Serbia
+Middle East
+United Arab Emirates
+North America
+Canada
+United States
+Oceania
+Australia
+Military Equipment D

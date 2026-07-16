@@ -1,0 +1,134 @@
+S-400 Triumf | Missile Threat
+Skip to the content
+chevron-left
+facebook
+instagram
+linkedin
+twitter
+youtube
+chevron-right
+arrow-right
+close
+copy
+external-link
+link
+email
+minus
+plus
+print
+search
+Analysis
+Defense Systems
+Missiles of the World
+Resources
+About
+Search for:
+Search
+Defense Systems
+System Component:
+S-400 Triumf
+S-400 Triumf
+Last Updated
+July 6, 2021
+Associated Systems:
+Russian Air and Missile Defense
+The S-400 Triumf (NATO: SA-21 Growler)
+is a mobile, surface-to-air missile system (SAM) designed by Russia. It is capable of engaging aircraft, UAVs, cruise missiles, and has a terminal ballistic missile defense capability. It represents the fourth generation of long-range Russian SAMs, and the successor to the S-200 and S-300. The S-400’s mission set and capabilities are roughly comparable to the U.S. Patriot system. Unlike some Patriot interceptors today, however, the S-400 does not currently employ hit-to-kill ballistic missile defense technology. Russia is however developing a new interceptor, the 77N6, which is believed to employ hit to kill technology.
+S-400 Triumf at a Glance
+Originated from
+Russia
+Possessed by
+Russia
+Class
+Surface-to-Air Missile (SAM)
+Basing
+Mobile, ground-based
+Warhead
+143 kg high-explosive fragmentation (48N6), hit-to-kill (77N6)
+Range
+250-400 km, 60 km (ABM)
+Status
+Operational
+In Service
+2007-Present
+S-400. Photo: Russian Ministry of Defense
+S-400s. Photo: Wikimedia
+S-400. Photo: Russian Ministry of Defense
+S-400 Development
+Russia began developing the S-400 in 1993. Budget restrictions following the collapse of the Soviet Union, however, limited Russia’s ability to design an entirely new system. Between 70-80% of the technology employed by the initial S-400 design was taken and adapted from the S-300, including missile storage containers, launchers, and radars. The S-400 launchers were also designed to be compatible with S-300 interceptor variants.
+1
+Testing on the system began in late 1999 or early 2000 at Russia’s Kasputin Yar missile range.
+2
+The first S-400 systems became operational in 2007 and entered service with the First Air Defense Corps responsible for defending Moscow.
+3
+Specifications
+The S-400 primarily uses the 48N6 missile series. These missiles allow it to hit aerial targets at ranges up to 250 km and are capable of intercepting ballistic missiles across a 60 km radius, using in both cases a 143 kg high explosive fragmentation warhead.
+4
+Another missile series, the 77N6, is currently in testing. Unlike other Russian SAMs, the 77N6 missiles will use hit-to-kill technology (as do PAC-3 missiles) and are designed specifically to destroy ballistic missile warheads.
+5
+The final missile series used by the S-400 is the 40N6, a long range family that can extend the air defense capabilities of the system to 400 km.
+6
+The current deployment status of the 40N6 missile is unclear, and questions remain as to whether the S-400’s radar capabilities would allow the 40N6 make full use of its maximum range.
+Service History
+Since entering service, the S-400 has seen several high-profile deployments, augmenting S-300s already operational in several key areas. Notably, S-400 units are currently stationed in the Russian exclave of Kaliningrad, where it defends Russia’s significant military presence from aerial attack.
+7
+Besides Kaliningrad, the system was also deployed to Tartus, Syria in 2015, to guard Russian and Syrian naval and air assets.
+8
+Russia has also stationed S-400 units in Crimea to strengthen Russia’s position on the recently-annexed peninsula.
+9
+In addition to being deployed by Russian forces, the S-400 has also been exported to other countries. In 2015, China signed an agreement with Russia to purchase six battalions of the system. In 2016, India likewise contracted to purchase five battalions.
+10
+See a visualization of Russian S-400 deployments on the interactive map,
+The Russia-NATO A2AD Environment.
+Footnotes
+Christopher F. Foss, “S-400,” in Jane’s Land Warfare Platforms: Artillery and Air Defense, (London: IHS Global, 2016), 577.
+Ibid, 579.
+UPI, “S400 Missile System Ready to Defend Moscow,” May 23, 2007, http://www.spacewar.com/reports/S400_Missile_System_Ready_To_Defend_Moscow_999.html.
+Foss, 578.
+Ibid, 578.
+Ibid, 578.
+Reuters, “Russia rejects U.S. criticism of Kaliningrad missile deployment,” November 22, 2016, http://www.reuters.com/article/us-russia-missiles-kaliningrad-usa-idUSKBN13H1QF.
+Jonathan Marcus, “Russia S-400 Syria missile deployment sends robust signal,”
+BBC
+, December 1, 2015, http://www.bbc.com/news/world-europe-34976537.
+Dave Majumdar, “Russia’s Scary S-400 Air Defense System Is Now Protecting the Skies Above Crimea,”
+The National Interest
+, January 14, 2017, http://nationalinterest.org/blog/the-buzz/russias-scary-s-400-air-defense-system-now-protecting-the-19070.
+The Economic Times, “Russian S-400 Triumff gives India the edge against Pakistan, China,” October 17, 2016, http://economictimes.indiatimes.com/news/defence/russian-s-400-gives-india-an-edge-against-pakistan-china/articleshow/54893457.cms.
+Cite this Page
+Missile Defense Project, "S-400 Triumf,"
+Missile Threat
+, Center for Strategic and International Studies, May 4, 2017, last modified July 6, 2021, https://missilethreat.csis.org/defsys/s-400-triumf/.
+Copy
+Related
+Reports
+Solid Rocket Motors for Missile Defense: Challenges and Opportunities for Expanding the Industrial Base
+June 12, 2026
+Wes Rumbaugh
+and
+Tom Karako
+The reliance on missiles as weapons of choice, aggravated by the expenditure of key munitions in Operation Epic Fury, has created an urgent need to accelerate and scale the production of both offensive and defensive missiles. Using the industrial base for solid rocket motors (SRMs) and their subcomponents as a case study, the report identifies the key challenges and opportunities for scaling air and missile defense (AMD) interceptor supply chains.
+Events
+Report Rollout: Solid Rocket Motors for Missile Defense
+June 12, 2026
+Missile Defense Project
+On June 12, 2026, the CSIS Missile Defense Project is pleased to roll out its new report, Solid Rocket Motors for Missile Defense: Challenges and Opportunities for Expanding the Industrial Base.
+MissileDefense_white
+Missile Threat brings together a wide range of information and analyses relating to the proliferation of cruise and ballistic missiles around the world and the air and missile defense systems designed to defeat them. Missile Threat is a product of the
+Missile Defense Project
+at the Center for Strategic and International Studies.
+1616 Rhode Island Ave NW
+Washington, DC 20036
+Stay up-to-date with missile defense
+Newsletter
+The CSIS Missile Defense Project’s quarterly newsletter has info on the project’s latest publications, events, and missile defense news.
+Subscribe
+Subscribe
+Analysis
+Ongoing Projects
+Defense Systems
+Missiles of the World
+Resources
+About
+© 2026 Center for Strategic and International Studies. All rights reserved. |
+Privacy Policy
