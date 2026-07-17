@@ -1,0 +1,22 @@
+{
+  "_doc": "MONITOR seed: two views (before/after a relocation) → the expected Alert. F0's observe stub fires nothing; MONITOR implements the DSL evaluator and gates on `expected_alert`. The before→after shape (occupied@A → occupied@B) is frozen here.",
+  "before": {
+    "edges": [{"id": "e:unit_x:based-at:site_a", "type": "based-at", "source": "unit_x", "target": "site_a",
+               "edge_instance": "based-at:unit_x", "claim_ids": ["c-2021"]}]
+  },
+  "after": {
+    "edges": [
+      {"id": "e:unit_x:based-at:site_a", "type": "based-at", "source": "unit_x", "target": "site_a",
+       "edge_instance": "based-at:unit_x", "claim_ids": ["c-2021"], "superseded_by": "e:unit_x:based-at:site_b"},
+      {"id": "e:unit_x:based-at:site_b", "type": "based-at", "source": "unit_x", "target": "site_b",
+       "edge_instance": "based-at:unit_x", "claim_ids": ["c-2025"], "supersedes": "e:unit_x:based-at:site_a"}
+    ]
+  },
+  "expected_alert": {
+    "observable_id": "obs-relocation",
+    "subject": "unit_x",
+    "before": {"based-at": "site_a"},
+    "after": {"based-at": "site_b"},
+    "severity": "notify"
+  }
+}

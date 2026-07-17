@@ -1,0 +1,12 @@
+# Declarative tripwires (§3.8). The seeded relocation observable is the shape MONITOR evaluates; at F0
+# the observe stub fires nothing. match_on = resolved units/sites, NOT designator strings.
+observables:
+  - observable_id: obs-relocation
+    subject: lens-acme
+    trigger:
+      "on": occupancy_state_change      # quote: bare `on` is a YAML 1.1 boolean (parses to True)
+      edge_type: based-at
+      match_on: [resolved_unit, site_instance]
+      anchors_within_hops: 2
+    severity: notify
+    disposition: [real, noise, needs-more]

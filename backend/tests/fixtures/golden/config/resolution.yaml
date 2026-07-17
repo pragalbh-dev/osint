@@ -1,0 +1,13 @@
+# Merge scoring + bands + seeded alias table (§3.9). Numbers live here (gate G6). RESOLVE reads this.
+merge_weights:
+  attribute: 0.30
+  relational: 0.40
+  temporal_consistency: 0.15
+  source_asserted: 0.15
+bands:
+  auto_merge: 0.85
+  hitl_low: 0.55
+blocking_keys: [type, country]
+alias_table:
+  comp_gizmo: ["Gizmo radar", "Gizmo-R"]
+transliteration: {}

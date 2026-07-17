@@ -218,3 +218,42 @@ running end-to-end, *then* add depth on top. A working thin thread beats a broke
 Everything past the demo — extra observables, more learning mechanisms, scale features (cost-only relevance
 prefilter, resolution blocking, namespacing), B as a full layer — goes to the roadmap / "four more weeks"
 section of the design note, not the build.
+
+---
+
+## 6. Build decisions (appended per session; §8 of the master plan)
+
+### F0 — Foundation (choice · principle invoked · alternative rejected)
+- **Records `extra="forbid"`, config surfaces `extra="allow"`.** Principle 5 (traceability) + 9
+  (config-driven): a drifted record fails loudly; DATA-C may add config knobs without an F0-amendment.
+  Rejected: one permissive base for both (silent contract drift) / one strict base for both (every DATA-C
+  knob = an amendment). → `schemas/base.py`.
+- **No network/parse/clock/RNG in any pydantic validator; value objects are shapes + canonical slots
+  only.** Principle 4/11 + gate G1: a validator would fire Nominatim/parse on every `rebuild()` reload and
+  break purity. The normalization *adapters* are INGEST's, run once at extraction. A pure
+  `canonical_iso_bounds()` gives SCORE an offline freshness read. Rejected: on-instantiation geocoding
+  (breaks G1). → `schemas/values.py`.
+- **Two scores are separate objects (G5): `merge_confidence` on the same-as edge, `assertion_confidence`
+  in the confidence breakdown; `status` set only by the machine or an explicit override.** Principle 6
+  (confirmed ≠ probable). Rejected: a single pooled confidence number. → `schemas/view.py`, `pipeline.py`.
+- **Append-only enforced two ways: no mutating methods + SQLite `RAISE(ABORT)` triggers (G3).** Principle 5
+  + the immutability decision. Rejected: convention-only append-only (a raw UPDATE would slip through). →
+  `store/log.py`.
+- **Supersede/contradict matches on `resolved_ref.edge_instance`, not designator strings; sets structure
+  (`superseded_by`/`opposing`/flags), never `status` (SCORE reads the structure → stale).** Principle 6 +
+  the supersedes-vs-contradicts rule; keeps G5 clean. Rejected: supersede writing `status` directly. →
+  `view/supersede.py`.
+- **A subject is a lens parameter; no per-subject package (G10). Edge id = `e:{src}:{type}:{tgt}`.**
+  Principle 8 (build once, extend by spec). Rejected: a bespoke per-subject graph/table. → `view/lens.py`.
+- **`make test`/`lint`/`typecheck` are real; only the app targets are stubbed.** Acceptance requires
+  `make test` green (master §7). Reconciles F0.md scope #1's "all targets echo TODO".
+- **`PROGRESS.md` not edited in the F0 PR.** Master §2 Rule 4 (never in a PR; user maintains at merge)
+  overrides F0.md scope #10's "seed". Reconciliation, not a contract change.
+- **Rename the rebuild *module* to `view/pipeline.py` (function stays `rebuild`).** DX/testability: a
+  module and function sharing `chanakya.view.rebuild` made the module un-patchable via attribute access.
+
+**Design-doc tails to enrich (flagged per the working agreement):**
+- `plan/00-master-plan.md` §4.1 — add `tests/{view,store,config,schemas}` to F0's owned paths; note
+  `make test/lint` are real; note `Location` carries `geocode_candidates`+`proposed_alias` (closes the
+  PROGRESS "F0 location descriptor" reconciliation); note `rebuild()` module is `view/pipeline.py`.
+- `sessions/F0.md` — reconcile scope #1 (test/lint real) + #10 (PROGRESS not in the PR).
