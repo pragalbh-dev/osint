@@ -1,0 +1,92 @@
+PAKISTAN CUSTOMS
+Model Customs Collectorate (Appraisement) - Karachi
+Compilation of Bills of Entry / Import General Manifest Extracts
+Reference Batch: KHI-IGM-COMPIL-2017-03/0091
+Generated: 04-03-2017 for internal cross-check with FBR WeBOC database
+
+NOTE TO USERS: The following is an extract auto-compiled from IGM/GD records held on file
+across multiple filing cycles. Entries are re-surfaced where prior indexing was incomplete
+or where consignee name matched a flagged watch-string during the 2017 reconciliation sweep.
+Not all rows reflect current-cycle traffic.
+
+----------------------------------------------------------------------
+
+GD No:            KPPI-HC-0552231
+Filing Date:       11-03-2017
+IGM No/Line:       IGM-2017-0341 / Line 009
+Importer/Consignee: AIR HQ (PROCUREMENT WING), CHAKLALA
+Clearing Agent:     M/S NATIONAL FREIGHT & CLEARING AGENCY, KHI
+Shipper:            CHINA NATIONAL PRECISION MACHINERY IMPORT
+                    & EXPORT CORP (CPMIEC), BEIJING
+Country of Origin:  CHINA
+Port of Shipment:   XINGANG (TIANJIN)
+Port of Discharge:  KARACHI (KICT)
+B/L No:             COSU6118839410
+Vessel:              COSCO SHENZHEN  V.  118E
+Container No(s):     CBHU 771034 / 40' GP,  CBHU 771198 / 40' GP  (2x FCL)
+Gross Weight:        41,220 KGS
+No. of Packages:      2 CONTAINERS (breakbulk crated, 14 cases)
+HS Code:             8526.91.00
+Declared Description: "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY, FOR GROUND
+                    -BASED USE, SPARE AND ANCILL RY ITEMS, N.O.S. --- fwd per your
+                    fax dtd 19/08/2011 pls advise LC amendment status thx rgds S.Naeem"
+Declared Value (CIF): USD 6,140,000.00
+Remarks (system):    AS OF 19-08-2011 status: SHIPMENT CLEARED, DUTY EXEMPT (SRO 
+                    565(I)/2006 REF), BONDED TRANSIT TO NUR KHAN AFB VIA ROAD --- reportedly
+                    part of ongoing govt-to-govt supply arrangement, defence stores
+                    exemption applies
+
+----------------------------------------------------------------------
+
+GD No:            KPPI-HC-0552417
+Filing Date:       14-03-2017
+IGM No/Line:       IGM-2017-0349 / Line 002
+Importer/Consignee: DIRECTORATE GENERAL DEFENCE PURCHASE (AIR)
+Clearing Agent:     M/S NATIONAL FREIGHT & CLEARING AGENCY, KHI
+Shipper:            CPMIEC, BEIJING (c/o CHINA XINSHIDAI CO LTD, SUBCONTRACTOR)
+Country of Origin:  CHINA
+Port of Shipment:   XINGANG (TIANJIN)
+Port of Discharge:  KARACHI (KICT)
+B/L No:             COSU6142207765
+Vessel:              CSCL EAST CHINA SEA  V. 0027W
+Container No(s):     TGHU 552091 / 40' HC
+Gross Weight:        18,760 KGS
+No. of Packages:      1 CONTAINER (9 crates)
+HS Code:             8543.90.90
+Declared Descriptio n: "ELECTRICAL MACHINES & APPARATUS, PARTS N.E.S., TEST AND
+                    CALIBRATION EQUIPMENT FOR GROUND SUPPORT USE, ASSY KIT"
+Declared Value (CIF): USD 2,875,400.00
+Remarks (system):    LINK REF SEE GD KPPI-HC-0552231 SAME PROCUREMENT LOT / continuation
+                    consgt per DP contract Ref# DPA/AD/HQ9-ph2/2010, cleared prior cycle,
+                    reappears this compil due to WeBOC migration reindex batch#7
+
+----------------------------------------------------------------------
+
+GD No:            KPPI-HC-0552810
+Filing Date:       22-03-2017
+IGM No/Line:       IGM-2017-0361 / Line 014
+Importer/Consignee: M/S AIR WEAPONS COMPLEX (PVT) LTD, KAMRA
+Clearing Agent:     M/S UNITED BONDED CARRIERS
+Shipper:            CHINA AEROSPACE LONG-MARCH INTL TRADE CO
+Country of Origin:  CHINA
+Port of Shipment:   SHANGHAI
+Port of Discharge:  KARACHI (KICT)
+B/L No:             MSCUFI741190
+Vessel:              MSC ANNA  V. FI412A
+Container No(s):     MSCU 990417 / 40' GP
+Gross Weight:        9,430 KGS
+No. of Packages:      1 CONTAINER (6 crates)
+HS Code:             8529.10.90
+Declared Description: "PARTS SUITABLE FOR USE SOLELY OR PRINCIPALLY W/ TRANSMISSION
+                    APPARATUS, AERIAL/ANTENNA ASSY, UNASSEMBLED, FOR TELECOM GRND STN"
+Declared Value (CIF): USD 1,204,000.00
+Remarks (system):    DUTY: EXEMPT PER SRO 565(I)/2006. END-USE CERT ON FILE REF
+                    EUC/PAF/2016-1103. NO PRIOR LINKED GD FOUND.
+
+----------------------------------------------------------------------
+
+GD No:            KPPI-HC-0553022
+Filing Date:       27-03-2017
+IGM No/Line:       IGM-2017-0372 / Line 001
+Importer/Consignee: AIR HQ (PROCUREMENT WING), CHAKLALA
+Clearing Agent:     M/S NATIONAL FREIGHT & CLEARING A

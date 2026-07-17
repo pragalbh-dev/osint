@@ -1,20 +1,38 @@
 {
   "name": "hq9p_primary",
-  "n_docs": 14,
+  "n_docs": 24,
+  "rendered_this_run": 6,
   "observable": {
-    "primary": "basing_crossing",
-    "also_supported": "sustainment_tender"
-  },
-  "template_gaps": [
-    {
-      "doc": "d07_sat_confirm_karachi",
-      "template": "corpus/raw/imagery/googleearth_karachi_site.*",
-      "status": "missing"
+    "id": "basing_relocation",
+    "edge": "based-at",
+    "unit": "unit_hq9b",
+    "before": {
+      "site": "site_rawalpindi",
+      "state": "occupied",
+      "status": "confirmed",
+      "evidence_date": "2021"
     },
-    {
-      "doc": "d10_sat_cloud_gap",
-      "template": "corpus/raw/imagery/sentinel2_karachi_site.*",
-      "status": "missing"
-    }
-  ]
+    "trigger": "new occupancy indicator(s) at Rahwali for the same resolved unit x site instance in 2025",
+    "after_probable": {
+      "site": "site_rahwali",
+      "state": "occupied",
+      "status": "probable",
+      "cause": "single-pass signature match -> decoy_risk cap"
+    },
+    "after_confirmed": {
+      "site": "site_rahwali",
+      "state": "occupied",
+      "status": "confirmed",
+      "cause": "2nd discipline-independent + cross-interest signal, clean decoy check"
+    },
+    "supersedes": "matched on resolved unit x site instance (NOT designator) -> Rawalpindi based-at degrades to STALE",
+    "proves": "perishable-freshness decay + decoy->probable cap + >=2-independent confirmed gate + supersedes-vs-contradicts",
+    "seed_docs": [
+      "d17_rawalpindi_2021",
+      "d18_rahwali_pass1",
+      "d19_rahwali_confirm",
+      "d20_supersede_spoof"
+    ]
+  },
+  "errors": {}
 }

@@ -1,0 +1,16 @@
+JANE'S INTELLIGENCE REVIEW — CACHED RECORD (fetch: 2020-01-14 03:22 GMT)
+[paywall preview — subscriber content truncated at 200 words]
+
+Pakistan's HQ-9/P long-range SAM: order of battle and support-chain notes
+
+The Pakistan Army Air Defence Command's HQ-9/P battalions, reportedly fielded from around 2021 onward per open-source procurement chatter circulating since late 2019, remain the subject of limited independent verification. Islamabad has not officially confirmed contract values, though industry sources place the deal in the range of USD 500–600 million for an estimated four to six firing units, a figure that should be treated as unconfirmed pending customs or budget-document corroboration.
+
+The system, understood to be a direct export derivative of the PLA's HQ-9 (itself assessed by most Western analysts as drawing heavily on S-300PMU architecture), is believed to retain the HT-233 phased-array engagement radar as its primary fire-control sensor, functioning in a role broadly comparable to the 30N6E Flap Lid used with S-300 variants. The HT-233 is described in Chinese industry literature as capable of simultaneous tracking of approximately 100 targets and guidance support for up to 6 missiles against 6 targets, though independent test data corroborating these figures for the export configuration are not publicly available.
+
+Sub-assembly sourcing for the HT-233 remains only partially mapped in open literature. One traveling-wave-tube (TWT) amplifier module used in the radar's transmitter chain has been linked in Taiwanese trade-monitoring reports and a 2018 procurement-flagging bulletin to Nanjing Yuzhi Electronic Devices Co., a tier-3 microwave-component manufacturer previously cited in unrelated export-control advisories concerning dual-use RF hardware. Analysts caution this identification rests on a single shipping-manifest disclosure and has not been independently corroborated by a second source; other candidate sub-suppliers feeding the HT-233 production chain — variously reported as involved in power-supply modules, cooling assemblies, and signal-processing cards — remain unconfirmed and are not named in available reporting.
+
+The missile itself, believed to be broadly analogous to the HQ-9's domestic round with some seeker and datalink modifications for the export customer, has a publicly claimed maximum engagement range of 125–200 km depending on variant cited, with Pakistani MoD statements (where they exist) tending toward the lower end and Chinese marketing materials toward the upper. Actual achieved range against non-cooperative or low-RCS targets is, unsurprisingly, not addressed in open literature.
+
+Deployment locations are similarly murky. Satellite-imagery analysts have tentatively identified construction consistent with a battalion-level SAM site near…
+
+[record truncated — remainder requires active subscription; cached copy retrieved via third-party archive, timestamp partial]

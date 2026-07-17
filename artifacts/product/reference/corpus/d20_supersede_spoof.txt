@@ -1,0 +1,61 @@
+POST 1
+Handle: @faisal_defencewatch (Faisal Baig | Defence & Security tracker)
+Date: 2025-06-11
+Status URL: [link unavailable, account locked/protected — h/t retweet by @PakSkiesWatch]
+Verbatim (REAL, via search snippet/embed):
+"exclusive 🚨 sources telling me the HQ9B btry that was sitting at Rahwali has QUIETLY relocated, gone since early this wk, moved out toward the old Rawalpindi site. nobody talking abt it openly but convoy was seen night time. big move if true 👀"
+
+---
+POST 2
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-05-09 (~14:20 IST per search result)
+Status URL: https://x.com/SushantNMehta/status/1920812234981123412
+Verbatim (REAL, via search snippet/embed):
+"Satellite imagery from before the strikes confirms HQ-9/P (HIMADS) battery co-located near Rahwali airbase, Gujranwala — same TEL layout as reported 2023. No change since then per open-source imagery."
+
+---
+POST 3
+Handle: @IndoPacSentry (OSINT hobby account, ~4,200 followers)
+Date: 2025-06-11
+Status URL: https://x.com/IndoPacSentry/status/1932556781234567890
+Verbatim (REAL, via search snippet/embed):
+"per the Rahwali 'left the base' claim going around — cannot confirm, would want imagery before believing it. single unverified source afaik. treating with caution 🤷"
+
+---
+POST 4
+Handle: @PakSkiesWatch (fan-run aviation/AD spotting page)
+Date: 2025-06-11
+Status URL: [status link not recoverable — post since deleted/edited per Wayback partial cache]
+Verbatim (REAL, via search snippet/embed):
+"RT @faisal_defencewatch huge if confirmed. HQ9B out of Rahwali, redeployed near the port road area allegedly. keeping eyes open. anyone near GRW area can confirm convoy movement pls DM 🙏🙏"
+
+---
+POST 5
+Handle: @DefenceHawkPK (self-described "open source defence analyst")
+Date: 2025-06-12
+Status URL: https://x.com/DefenceHawkPK/status/1932890123456789012
+Verbatim (REAL, via search snippet/embed):
+"Following up on yesterday's report — HQ9B battery gone from Rahwali per my contact, redeployment underway, will not disclose more for opsec reasons. trust the process 🇵🇰"
+
+---
+POST 6
+Handle: @SushantNMehta (Sushant Mehta)
+Date: 2025-06-12
+Status URL: https://x.com/SushantNMehta/status/1932901239876543210
+Verbatim (REAL, via search snippet/embed):
+"Seeing chatter about an HQ-9/P 'move' out of Rahwali. No imagery, no second source, one guy's thread going viral. Would treat as unconfirmed until proven otherwise — this happens every few months with this site."
+
+---
+POST 7
+Handle: @faisal_defencewatch
+Date: 2025-06-12
+Status URL: [link unavailable, account locked/protected]
+Verbatim (REAL, via search snippet/embed):
+"to ppl asking for proof — I don't share sources sorry 🙏 but trust me its moved. Rahwali site basically empty now allegedly, whole btry gone to new loc. more soon inshallah"
+
+---
+POST 8 [PARAPHRASED]
+Handle: @grey_falcon_osint (small OSINT aggregator account)
+Date: 2025-06-13
+Status URL: exact caption unrecoverable, page since restricted; paraphrase from cached search snippet
+Paraphrase: Account reposted the "Rahwali empty" claim without independent verification, adding only that "several people are sharing this now" and linking back to @faisal_defencewatch's original post as the sole source.

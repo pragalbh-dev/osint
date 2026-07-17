@@ -1,0 +1,36 @@
+IMAGERY ANALYSIS SUMMARY — COMMERCIAL SATELLITE DERIVED
+Handling: OSINT / TEST — for pipeline validation use only
+Ref: IA-2025-0091
+
+Subject: Possible HQ-9B long-range SAM deployment signature, Rahwali area, Punjab
+
+1. Purpose
+
+This note assesses a candidate air defense signature identified on commercial satellite imagery in the vicinity of Rahwali cantonment, near the old Rawalpindi road junction east of the airbase perimeter. The intent is to flag the site for follow-on collection; it is not a confirmed order-of-battle change.
+
+2. Source imagery
+
+Single electro-optical pass, 2025-03, ~0.5m class commercial sensor, near-nadir, clear/light haze. No prior or subsequent collect of this specific site has been tasked or reviewed at the time of writing. This is a one-time look; no repeat pass has been scheduled to confirm persistence of the layout.
+
+3. Observations
+
+- A cluster of six erector-launcher-type vehicles, arranged in a loose fan pattern, roughly 300–400m from a raised earthen berm consistent with a fire-control radar pad. Exact spacing not measured; imagery resolution and oblique shadow angle limit confident vehicle count (5 or 6, uncertain).
+- One large phased-array-type radar signature, orientation approximately north-northeast, believed to be consistent with the HT-233 engagement radar associated with HQ-9/HQ-9B batteries, though the antenna face itself is not clearly resolved — assessment rests mainly on the vehicle silhouette and support-van layout.
+- Support vehicles (generator trucks, TEL support trailers) parked in a manner similar to previously reported HQ-9P deployment patterns elsewhere in Pakistan (cf. open-source reporting on Karachi-area coastal batteries, unverified).
+- No revetments or berthing hardstands visible; ground appears recently graded, suggesting the position may be temporary, a training deployment, or a springtime exercise setup rather than a permanent site.
+
+4. Assessment
+
+The configuration is assessed as likely representing an HQ-9B fire unit, possibly a battery-level deployment, based on a single collection event. Confidence in system variant identification (HQ-9 vs HQ-9B vs generic HQ-9P export configuration) is moderate at best; the export variant is reportedly designated HQ-9P in Pakistani service according to regional defense press, though PAF/GHQ statements have not confirmed a Rahwali-based unit publicly.
+
+It is worth noting this pattern closely resembles a vehicle layout published in a 2023 regional defense-industry roundup describing a "typical HQ-9 battery footprint" — the near-identical spacing and vehicle count in that earlier open-source graphic raises the possibility the present read is influenced by that reference set rather than independently derived ground truth. Analysts should treat the vehicle-count and radar-ID confidence accordingly.
+
+5. Gaps / follow-on requirements
+
+- No second collection discipline (SAR, additional EO pass, or ground reporting) has been applied to this location; the assessment rests entirely on the single 2025-03 pass described above.
+- Recommend tasking a repeat EO or SAR pass within 30 days to confirm whether the position persists, and to attempt clearer resolution of the engagement radar antenna face.
+- Recommend cross-check against any Pakistani MoD procurement statements or parliamentary defense-budget disclosures referencing Rahwali garrison air defense upgrades.
+- Analyst caveat: given the single-pass nature of this report, the site should not be treated as a confirmed HQ-9B emplacement pending independent corroboration.
+
+Prepared by: Imagery Analysis Cell (contract analyst, open-source tasking)
+Distribution: internal working file — not for onward release without further collection

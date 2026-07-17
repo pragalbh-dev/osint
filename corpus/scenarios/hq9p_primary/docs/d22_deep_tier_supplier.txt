@@ -1,0 +1,38 @@
+China's Air and Missile Defence Radar Industry: An Open-Source Structural Survey
+
+International Institute for Strategic Studies — Military Balance+ Background Paper
+March 2025
+
+Prepared for subscribers as supporting analysis to the 2025 Military Balance defence-industrial annex.
+
+1. Purpose and scope
+
+This paper maps, to the extent open sources permit, the industrial base behind China's principal long-range air-defence acquisition and engagement radars, with particular attention to the HT-233 engagement radar associated with the HQ-9 family and its export derivative, the HQ-9/P (in Pakistani service). It is a companion to earlier IISS notes on China's missile-industrial conglomerates (CASC/CASIC academy structures, 2021; 2023 update) and should be read alongside them. Where a supplier cannot be confirmed from open material, this is stated explicitly rather than inferred from marketing literature, defence-exhibition placards or secondary press repetition.
+
+2. The HT-233 attribution problem
+
+The HT-233 phased-array engagement radar, associated with HQ-9/HQ-9A/HQ-9B batteries and exported alongside the HQ-9P to Pakistan, is routinely described in open commentary — trade press, several national defence-ministry backgrounders, and at least two prior think-tank compilations reviewed for this study — as a product of China Precision Machinery Import-Export Corporation (CPMIEC). This attribution is not supportable on the evidence available to us. CPMIEC is, on its own public filings and on the record of its sanctions designations, an export and foreign-trade entity — it markets and contracts the sale of the HQ-9/P system as a package (missiles, launchers, radar, C2 vehicles) to foreign customers including Pakistan; it is not, so far as this survey could establish, a design bureau or a radar manufacturer in its own right. No open document reviewed — including Pakistani MoDP procurement summaries, Chinese defence-industry yearbooks available to the authors, or the export licensing record — identifies an actual production entity for the HT-233 array, T/R front end, or associated fire-control processing. The manufacturer of the HT-233 should therefore be treated as unconfirmed/unknown pending better sourcing. Analysts and journalists who state "CPMIEC makes the HT-233" are, in the assessment of this study, conflating the export/sales agent with the producing entity — an error this paper has observed repeated across at least three secondary sources between 2016 and 2024.
+
+3. A plausible, unconfirmed candidate: the 23rd Research Institute (BIRM)
+
+Absent a confirmed manufacturer, the most frequently suggested candidate among specialist open-source observers — never, to our knowledge, confirmed by an official Chinese or Pakistani statement — is CASIC's 23rd Research Institute, more commonly rendered in English-language literature as the Beijing Institute of Radio Measurement (BIRM, 北京无线电测量研究所). BIRM sits organisationally under CASIC's Second Academy (中国航天科工二院, the same parent academy responsible for HQ-9 system integration more broadly) as its principal in-house radar house, and would be a natural — though not demonstrated — home for HT-233 development given the Second Academy's overall systems lead on the HQ-9 line.
+
+BIRM's facility is generally located by open-source compilers on Yongding Road (永定路), Haidian District, in western Beijing — the same industrial corridor that hosts the wider Second Academy campus and several affiliated CASIC units. Some older gazetteer-style listings instead cite the unit by its historical "Mailbox" designator (信箱/代号) rather than a street address, a holdover from the classified-numbering convention used for Third Front-era defence facilities; we have not been able to reconcile these designators against a current facility register with confidence. Given the closed nature of Chinese defence-industrial disclosure, this attribution should be read as plausible rather than established — it rests on pattern-of-life reasoning (parent-academy radar specialisation, geographic co-location, prior BIRM associations with other CASIC/Second Academy radar programmes such as the JY- and YLC- series ground surveillance sets) rather than a documented contract or acknowledgement.
+
+4. Propulsion: a comparable attribution gap
+
+A parallel gap exists on the interceptor motor. CASIC's 4th Academy (中国航天科工四院, headquartered in the Xi'an area, itself a successor-organisation lineage traceable to the historic solid-rocket-motor design bureaus relocated inland under Third Front planning) is CASIC's principal solid-rocket-motor house and is accordingly the plausible supplier of the HQ-9/HQ-9P interceptor's boost motor. We treat this as unconfirmed: no export contract annex, end-user certificate summary, or Chinese-language industry yearbook entry reviewed for this study explicitly names the 4th Academy as the HQ-9 motor supplier, as distinct from its documented role supplying motors for other CASIC missile families (including several exported short- and medium-range systems). The academy's general profile — solid-propellant tactical and strategic motor production, decades of missile-motor deliveries to sister CASIC entities — makes it a reasonable inference, not a sourced fact.
+
+5. Deeper tiers: an acknowledged collection gap
+
+Below the radar-house and motor-house level, this study was unable to attribute, from open material, any of the following with confidence:
+
+ - the T/R module or MMIC foundry supplying the HT-233 array (candidates discussed informally by specialists include state microelectronics houses under CETC, but no HQ-9-specific linkage was found);
+ - the seeker-head manufacturer for the HQ-9/HQ-9P terminal-guidance package;
+ - the datalink/waveform supplier integrating the missile with the HT-233 fire-control loop and any networked battle-management layer.
+
+These represent a genuine collection gap rather than an absence of Chinese domestic capability; PLA and CASIC organisational charts at this level of granularity are not routinely disclosed, and the export configuration delivered to Pakistan (reportedly comprising an estimated four to six HQ-9/P battalions, believed to have entered service from approximately 2021 onward, with fielding locations reported in open press as including sites in Sindh and Punjab provinces) has not been the subject of a detailed unclassified teardown or technical-intelligence release that we could locate.
+
+6. Note on sourcing conventions used in this paper
+
+Throughout, "confirmed" is reserved for attribut

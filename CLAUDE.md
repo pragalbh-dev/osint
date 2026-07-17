@@ -77,6 +77,11 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 | `artifacts/*.pdf`, `artifacts/chat.txt` | Original source files (untouched) |
 | `artifacts/md/00-index.md` … `04-claude-chat.md` | Cleaned source material: brief, agent chats, planning notes |
 | `artifacts/md/05-data-scoping-C.md` | **Real-world data catalogue for C** — sources, access, alias tables, corpus + 6 graded scenarios |
+| `artifacts/md/06-preflight-audit.md` | **Pre-implementation audit** — prioritized gaps (doc↔data drift, buildability, demo/timeline risk) + the ordered "close before writing code" checklist. Read before starting the build |
+| `artifacts/md/07-stack.md` | **Stack (DECIDED) + deploy plan** — one choice per layer, EC2 + Cloudflare Tunnel hosting, both reviewer-deploy paths, clean-deploy strategy, build-stage sequencing |
+| `artifacts/md/14-multihop-retrieval-research.md` | **Retrieval research reference** — cited (2025–26) landscape for multi-hop KGQA + tool-calling best practices (agentic traversal vs GraphRAG/vector/Text2Cypher; embeddings; determinism); source-quality flagged |
+| `artifacts/md/13-location-normalization.md` | **Location precision spec + normalization system** — per-node-type precision (fire-unit→pad … design-authority→district), the ≥2-format corpus seeding, coord-canonicaliser + place-resolution design, the place gazetteer + distinct-from traps |
+| `config/places.yaml` | **Seed place gazetteer** (extensible config) — canonical place nodes + aliases + WGS84 coords (real/synthetic/approximate) + precision class; one alias withheld for the earned-merge demo |
 | `artifacts/md/questions.md` | Open-question scratchpad |
 | `artifacts/spine/00-overview.md` | Spine map + the four load-bearing ideas + gates + build order |
 | `artifacts/spine/01-graph-and-ontology.md` | One graph, bi-level model, designed-schema/discovered-instances, subjects-as-lenses |
@@ -87,11 +92,13 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 | `artifacts/spine/06-adaptation.md` | Freshness/coverage decay, learning loop, trace logging, roadmap |
 | `artifacts/spine/07-monitoring-retrieval-viz.md` | Observables/tripwires, cited multi-hop QnA agent, visualisation |
 | `artifacts/spine/08-detailed-design.md` | **PROPOSED** detailed design — resolves all spine open questions (store, schemas, formulas, thresholds) + B-extensibility contract; pending user ratification |
+| `artifacts/spine/09-retrieval-and-tools.md` | **Retrieval & tool surface (DECIDED)** — bounded ReAct multi-hop loop, ~7 `graph_*` tools, materiality precomputed in `rebuild()`, entailment citation validator, query taxonomy, hot-config / live-rebuild + user-defined observables. Research basis in `md/14` |
 | `artifacts/C/00-overview.md` | C scope, chosen subject, target queries, depth ladder, gates |
 | `artifacts/C/01-materiality-ontology.md` | What's *material*; C's concrete node/edge schema (HQ-9/P) |
 | `artifacts/C/02-demo-thread.md` | The one end-to-end worked thread + the demo flexes |
 | `artifacts/product/00-ux-brief.md` | **Product/UX brief** for the design collaborator — functional inventory (screens/panels), the trust-status visual-language problem, the hero demo flow, and open design questions. Non-technical, domain-explained |
 | `DECISIONS.md` | Guiding principles, locked-decisions ledger, open decisions, gates |
+| `artifacts/plan/00-master-plan.md` (+ `sessions/`, `PROGRESS.md`) | **Backend implementation plan** — 12 worktree/PR sessions (everything except frontend), the frozen inter-module contracts, the 12 executable abstraction gates, waves + conflict-free file-ownership. Read before implementing any backend module. Code lives in `backend/`. |
 
 ## Working agreements (for every agent)
 
@@ -99,17 +106,29 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
   hard thinking is done there; your job is to honour it, not re-derive or contradict it.
 - **Provenance is not optional.** Every claim carries source + date; every node/edge carries
   provenance + confidence + freshness. If you can't attach it, stop and flag it.
-- **Config-driven, not hardcoded.** Credibility factors, freshness half-lives, thresholds, observables,
-  ontology types — all configurable (Module 1 is literally "credibility based on user-defined factors").
-  No magic numbers buried in code.
-- **HITL is a service, not per-stage code.** Route ambiguous / high-stakes items through the one
-  adjudication service; overrides must propagate to downstream state.
+- **Config-driven & extensible, not hardcoded.** Credibility factors, freshness half-lives, thresholds,
+  observables, ontology types — all configurable (Module 1 is literally "credibility based on user-defined
+  factors"). No magic numbers buried in code. **Architecture explicitly includes a configuration /
+  framework layer for decision-making and HITL at *any* spine layer that needs it** — the ontology is
+  extensible, and so are the (ACH-style) reasoning frameworks, the credibility rubric, and observables. If
+  something you build could extend to another use case (A/B), build it as an extensible seam rather than
+  hardcoding it to C — **but confirm that extensibility choice with the user first (options template)**;
+  build the seam, not the other use cases' content.
+- **HITL is a service any layer can call, not per-stage code.** Route ambiguous / high-stakes items
+  through the one adjudication service — invocable at any spine layer that needs it; overrides must
+  propagate to downstream state.
 - **Keep the demo deterministic & reproducible.** Freeze scenarios; favour minimal, reproducible choices
   over clever ones. The live query must run the same every time. Generator stays blind to the ontology.
 - **Model exactly what the target queries need, no richer** — the over-engineering trap. Every hour on
   provenance/confidence discipline beats an hour on ontology breadth.
-- **Record decisions.** When you make or change a non-trivial decision, append it to `DECISIONS.md`
-  (and update the relevant design doc's tail). When you *close* an open question, move it there too.
+- **Record & surface decisions.** As you work, **note every decision that leans on a guiding principle**
+  (`DECISIONS.md` §1) — the choice, the principle it invoked, the alternative rejected. **Surface that
+  list at the end of the work**, don't only bury it in a commit: append it to `DECISIONS.md` and flag
+  which design-doc tails should be enriched with it. When you *close* an open question, move it there too.
+- **Borderline-harmful → ask first, with options.** If a decision could be harmful to *any* aspect
+  (correctness, credibility, demo-reliability, scope, timeline, reproducibility, extensibility), do **not**
+  decide it yourself — put it to the user as an **options template** (concrete choices + tradeoffs, e.g.
+  via the question tool), never a bare open question. Reserve unilateral calls for the clearly-safe.
 - **Don't expand scope silently.** B, extra observables, extra learning mechanisms, scale features → the
   roadmap / "four more weeks", not the demo build, unless the user says otherwise.
 - **Deadline awareness.** ~4 days. Build the spine with 2–3 HITL points deep, get one thread running
@@ -119,9 +138,20 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 
 - **Locked:** use case C (HQ-9/P), spine+layer architecture, hosted web app, hybrid data strategy. See
   `DECISIONS.md`.
-- **Stack: NOT decided.** Deferred until the spine scope is finalised (`artifacts/spine/`), so tools
-  follow needs. Store choice (Neo4j / KùzuDB / in-memory NetworkX), agent framework, map/geo stack, and
-  frontend are open — see `DECISIONS.md` → Open decisions. Demo scale (~10–15 docs) makes almost any
-  choice viable; pick for schema-flexibility, easy provenance attachment, and reproducibility, not scale.
-- **Secrets** live in `.env` (LLM API keys, etc.) — never commit them; keep them out of code and logs.
-- Once a stack is chosen, add build/run/test commands to this section.
+- **Stack: DECIDED (2026-07-17)** — full detail in `artifacts/md/07-stack.md`; retrieval/agent design in
+  `artifacts/spine/09-retrieval-and-tools.md`; ledger in `DECISIONS.md` → "Stack & retrieval". One line:
+  **SQLite append-only logs + NetworkX rebuilt view** (KùzuDB-behind-the-view = scale path) · **LLM-only
+  extraction, live at ingest** (seeded baseline for keyless boot; Gemini optional) · **no runtime
+  embeddings** (alias + BM25 + fuzzy) · **bounded ReAct tool-calling agent** (~7 `graph_*` tools, materiality
+  precomputed in `rebuild()`, entailment citation validator; no `temperature` — 400 on Opus 4.8) · FastAPI
+  serving JSON + the built SPA same-origin · React/Vite + Tailwind/shadcn · Cytoscape.js · Leaflet vendored
+  tiles · one multi-stage Docker image · **hosted on one always-on EC2 + Cloudflare Tunnel** · reviewers run
+  it **both** ways (prebuilt GHCR image + `git clone && make run`).
+- **Hot-config rule:** nothing a user does in-app (define an observable, edit credibility weights/thresholds,
+  extend the ontology, ingest a doc) requires an app restart — `rebuild()` is a live in-process op reading a
+  live config store. Ingestion is always available; extraction is the optional (keyed) front-end.
+- **Secrets** live in `.env` (`ANTHROPIC_API_KEY`, optional `GEMINI_API_KEY`) — never commit them; keep them
+  out of code and logs.
+- **Planned CLI (add real build/run/test commands here once built):** `make extract` · `make build`
+  (rebuild the view) · `make ingest DOC=…` · `make ask Q="…"` · `make run` (docker build + serve). Nothing
+  is built yet — this section becomes the command reference at Stage 1.

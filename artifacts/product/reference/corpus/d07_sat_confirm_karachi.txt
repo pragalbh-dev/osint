@@ -1,0 +1,37 @@
+IMAGERY ANALYSIS REPORT
+Commercial Satellite Imagery Assessment
+
+Subject: Suspected Long-Range SAM Deployment Site, Karachi Vicinity
+Imagery Dates: 2022-03-04, 2022-03-11 (comparative pass)
+Sensor: Commercial EO, ~0.5m class, near-nadir, minor haze on 03-04 pass
+Classification (source marking as received): UNCLASSIFIED // FOR OFFICIAL USE ONLY
+
+1. SUMMARY
+
+Analysis of two collects over a previously flagged site along the port access road on Karachi's northern outskirts (referred to locally by nearby residents as the "old grain depot" turnoff) shows continued construction and layout consistent with a long-range surface-to-air missile (SAM) battery position. The site was first noted in open reporting in late 2021 as a possible air defense node associated with Pakistan Air Force force protection of the Karachi port/naval complex. No coordinates are provided in this note per standing practice; the location is referenced descriptively only.
+
+2. SITE DESCRIPTION
+
+The position sits on cleared, graded ground roughly 400-500m (estimate, +/- 50m, obscured by tree line on southern edge) off the main port access road, in an area that historically hosted what locals describe as an agricultural storage compound. Imagery shows:
+
+- A central hardstand with a petal/ring-shaped earthen berm arrangement, six to eight radial revetment lobes visible (count uncertain — two possible additional lobes obscured by shadow on the 03-04 pass), consistent with a SAM fire unit pad layout of the type associated with HQ-9/HQ-9P (export variant, referred to in some regional reporting simply as "FD-2000" in its earlier marketing designation) battalion positions previously observed at other Pakistani sites, including the garrison area analysts have informally dubbed "the old Rawalpindi site."
+
+- Within several of the revetment lobes, elongated rectangular objects approximately 8-10m in length are visible, oriented radially outward from the pad center. Dimensions are approximate given oblique shadow distortion; true length may be closer to 9m per cross-check against a similar signature catalogued at a separate garrison. These are assessed as probable transporter-erector-launcher (TEL) vehicles, though canvas/camouflage netting cannot be ruled out for at least one lobe (object partially obscured, low confidence on that single detection).
+
+- A separate raised earthen pad approximately 60m north of the main ring, with a rectangular object and associated cabling/trench lines, is believed to be the engagement radar position — possibly the HT-233 fire control radar associated with the HQ-9P system, though no distinguishing radar-face detail is resolvable at this resolution/look angle to confirm radar type with confidence.
+
+- Perimeter berm and access track pattern is broadly consistent with previously documented HQ-9/P battalion layouts observed elsewhere in Pakistan, though the site is smaller in overall footprint than the Rawalpindi-area position, suggesting this may be a single battery/company-level deployment rather than a full battalion garrison.
+
+3. COMPARATIVE NOTES
+
+Comparing the 03-04 and 03-11 passes, one additional revetment lobe appears newly graded on the northeastern arc of the ring, along with fresh disturbed soil consistent with recent construction activity. This may indicate the site remains in a build-out phase rather than a finished, fully occupied garrison. Vehicle count at the pad itself varies between the two passes (3 vs. 5 probable TEL/support vehicles), which is not unusual for a site still under construction or subject to routine unit rotation, but could also reflect training/exercise activity reportedly ongoing in the wider Karachi defense sector around this period per regional press.
+
+4. ASSESSMENT
+
+The petal/ring pad configuration together with the radial revetments and probable TEL signatures is judged with moderate-to-high confidence to represent a long-range SAM site, and is assessed as likely associated with the HQ-9/P system given Pakistan's known inventory and prior identification of similar footprints at other locations in-country. The specific unit and full operational status could not be determined from imagery alone. Analysts should treat the battery/company-level assessment as provisional pending a follow-up collect; continued monitoring of this location (informally tracked as "Karachi-East pad" pending formal designation) is recommended, particularly to resolve the ambiguous lobe count and confirm radar type.
+
+5. LIMITATIONS
+
+No SIGINT or ELINT correlation was available for this reporting period. Object counts and dimensions above should be treated as estimates only; ground truth confirmation was not possible. Analyst assesses overall confidence in the SAM-site identification as moderate, with lower confidence on specific variant (HQ-9 vs HQ-9P) and radar subtype.
+
+-- end of report --

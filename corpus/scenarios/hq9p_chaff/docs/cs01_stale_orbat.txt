@@ -1,0 +1,29 @@
+South Asia Defence Monitor — Air Defence Systems Database (cached copy)
+Record ID: SADM-AD-0091 | Retrieved via cache: 04 June 2015 18:22 GMT
+[Note: original page last modified per server header — 11 March 2013 09:47 GMT]
+
+Pakistan — HQ-9/P Long-Range Surface-to-Air Missile
+
+Overview
+
+The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system, itself frequently compared in open literature to the Russian S-300PMU series owing to broad similarities in launcher canister design and engagement envelope. Pakistan's interest in a long-range SAM layer to supplement its ageing Crotale and Spada point-defence batteries has been reported intermittently since the mid-2000s, with the HQ-9/P emerging as the preferred candidate following trials reportedly conducted at an undisclosed range in Baluchistan.
+
+As of this writing, the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector, complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers. Battery composition is estimated at one command-and-control vehicle, six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters, associated HT-233 phased-array engagement radars, and a search/acquisition radar element, broadly mirroring the PLA's own HQ-9 regimental structure.
+
+Force Levels
+
+Open-source estimates of Pakistan's HQ-9/P inventory have varied considerably and should be treated with caution given the near-total absence of official confirmation from either Islamabad or Beijing. A widely-cited figure — drawn from a 2015 order-of-battle assessment compiled by a regional military balance publication — places Pakistani holdings at two operational battalions (approximately eight to twelve TEL launchers per battalion equivalent, figures vary by source) assigned to the PAF's Central Air Command, with a third battalion reportedly in the delivery pipeline. This 2015 figure continues to be reproduced in subsequent trade press and conference briefing slides without apparent revision, and analysts should note that no independent confirmation of unit strength has surfaced since that assessment was first circulated.
+
+The missile itself is reported to have a maximum engagement range on the order of 200 km against aerodynamic targets, with a secondary anti-tactical ballistic missile (ATBM) capability against short-range ballistic missiles claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC), though this ATBM function has not been independently verified in a Pakistani operational context. Missile speed is estimated at Mach 4.2+; the exact terminal-phase seeker configuration (semi-active vs. reportedly upgraded active radar homing on later production lots) remains unconfirmed in unclassified literature.
+
+Acquisition Background
+
+Negotiations for the HQ-9/P are understood to have begun around 2008–2009 in parallel with broader Sino-Pakistani air defence modernisation talks, though a formal contract value has never been published. Pakistani defence officials, speaking on condition of anonymity to a regional defence weekly, characterised the system in 2013 as "already inducted in limited numbers," a characterisation that has not been formally retracted or updated by either government since. As of [publication date not machine-readable in cached header], the system's operational status was described in near-identical language by a separate industry newsletter, suggesting continued reliance on the same underlying 2013 sourcing rather than fresh reporting.
+
+Deployment sites are believed to include positions oriented toward the Arabian Sea approach and, per unconfirmed reporting, a secondary battery near the Punjab border sector, though this latter deployment has not been corroborated by satellite imagery analysis available to this desk.
+
+Comparative Notes
+
+Analysts frequently note that Pakistan's acquisition of the HQ-9/P parallels earlier Chinese SAM transfers to Turkmenistan and, on a smaller scale, discussions (never consummated) with Turkey under the since-cancelled T-LORAMIDS competition. The extent to which Pakistani HQ-9/P batteries are networked with the country's broader integrated air defence…
+
+*[cached fetch truncated — remainder of record unavailable; full text requires subscriber access]*

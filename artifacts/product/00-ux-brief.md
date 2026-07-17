@@ -22,6 +22,14 @@ so your design will get built more or less as drawn. Scope is a focused analyst 
 big-data dashboard: think ~15 entities on screen, not 15,000. Calm, dense, precise — closer to a
 finance terminal or a code editor than a consumer app.
 
+**📁 Context pack:** next to this brief are four short, clean, designer-facing docs —
+**`01-entities-and-relationships.md`** (the nouns on the graph/map), **`02-trust-and-credibility.md`** (the
+trust model, no formulas), **`03-data-contracts.md`** (what info each surface actually has to display), and
+**`04-scenario-entities-and-corpus.md`** (the concrete entities + full document list the demo runs on) —
+plus **`00-START-HERE.md`** (a domain primer + glossary) and the full source corpus in
+`reference/corpus/`. This brief is self-contained, but wherever a section shows a **📎** line, that's a
+pointer to the clean doc with the detail. Start with `00-START-HERE.md` if any term below is unfamiliar.
+
 ---
 
 ## 1. What this is, in one paragraph
@@ -62,6 +70,10 @@ analyst review, accept, reject, or override what the machine did.
 ---
 
 ## 3. The core idea that drives every screen (read this one)
+
+> 📎 **Detail:** `02-trust-and-credibility.md` — the full trust model in plain language: the statuses,
+> freshness, the 3-axis independence rule, integrity/"too-clean", supersede-vs-contradict, and the
+> honest-refusal state. (No formulas.)
 
 **Everything in this product carries a trust status, and that status must be visible everywhere, at a
 glance, without clicking.** This is the whole design challenge in one sentence.
@@ -123,6 +135,9 @@ even slightly similar, the product has failed its one job.
 
 ## 4. The mental model (how the machine thinks — simplified)
 
+> 📎 **Detail:** `02-trust-and-credibility.md` §1 — the two layers (evidence vs knowledge), why the unit
+> is a **claim**, and why a click always reaches the source.
+
 You don't need the engineering, but this model explains *why* the screens are shaped the way they are:
 
 1. **Evidence layer (the receipts).** Every document gets broken into individual **claims** — "Source
@@ -144,6 +159,9 @@ Nothing in this product is allowed to be a naked assertion.
 
 ## 5. The surfaces (screens & panels)
 
+> 📎 The **nouns** on these screens — node types, edge types, map pins, claims — are catalogued in
+> **`01-entities-and-relationships.md`**. Read it before designing the Map and Graph.
+
 Here's the functional inventory. Think of these as the rooms of the app; how they're arranged
 (tabs? split-panes? one workspace with panels?) is **OPEN → overall layout/navigation is yours to
 design.** My instinct is a persistent left rail (subject, alerts, review queue badge) + a main stage
@@ -151,6 +169,9 @@ that switches between Map / Graph / Answer, + a right-hand **provenance drawer**
 any of them. But challenge that.
 
 ### 5.1 The Map — "where is everything?"
+
+> 📎 `01-entities-and-relationships.md` (the `Basing site` pin + attributes like decoy-risk) ·
+> `03-data-contracts.md` §B (what a node/pin carries: status, freshness, confidence).
 A geographic map with **pins for physical locations** (bases, sites). Each pin is **color/shape-coded
 by trust status** (§3). This is the "at a glance, what's solid vs shaky" view.
 - Click a pin → opens the provenance drawer (§5.6) for that location.
@@ -162,6 +183,9 @@ by trust status** (§3). This is the "at a glance, what's solid vs shaky" view.
   the pins pop.
 
 ### 5.2 The Graph explorer — "how does it all connect?"
+
+> 📎 `01-entities-and-relationships.md` (node/edge vocabulary) · `03-data-contracts.md` §B (the fields a
+> node/edge carries).
 A node-link diagram of the supply chain / structure: manufacturer → component → import → unit →
 location, etc. Nodes are entities; edges are relationships. **Both nodes and edges carry trust status**
 and must show it.
@@ -176,6 +200,9 @@ and must show it.
   or as switchable tabs? Linked is more powerful, more work.
 
 ### 5.3 The subject / lens control — "what am I looking at?"
+
+> 📎 `01-entities-and-relationships.md` (intro) — "the subject is a saved lens over one shared graph, not a
+> separate database."
 A control to pick or define the **subject** (the thing under investigation). Switching subjects
 re-focuses the whole workbench (map, graph, answers) on a different anchor. For the demo there's one
 subject, but the control should exist and imply others are possible.
@@ -183,6 +210,9 @@ subject, but the control should exist and imply others are possible.
   is fine; but it's the entry point conceptually.
 
 ### 5.4 The "Ask" view — cited multi-hop answers (arguably the centerpiece)
+
+> 📎 `03-data-contracts.md` §E — the answer's structure: hops, per-hop citations, the observed-vs-inferred
+> tag, and the refusal payload · `02-trust-and-credibility.md` §8 (why/how it refuses).
 The analyst asks a hard question in natural language ("trace this deployed battery back to its
 component supplier and name the weak link"). The system decomposes it, walks the graph, and returns a
 **narrative answer where every single claim has an inline citation** you can click to see the source.
@@ -190,7 +220,8 @@ This view must do three special things:
 
 1. **Cite everything.** Every factual sentence carries a source chip. No citation = we don't say it.
 2. **Separate what we *saw* from what we *reasoned*.** "Observed: the battery is at Site K (satellite
-   image, dated)." vs. "Inferred: therefore the weak link is the radar (only one supplier)." These must
+   image, dated)." vs. "Inferred: the radar is the *candidate* chokepoint — the only supplier visible in
+   open sources, though whether it's truly sole-source is a Known Gap." These must
    be *visually distinct* — the analyst has to know which parts are fact and which are the machine's
    deduction. **OPEN → how to render observed-vs-inferred** (two-column? tags? a left-margin rail?
    different typographic treatment?). Important and unsolved.
@@ -204,6 +235,9 @@ This view must do three special things:
   works.
 
 ### 5.5 The Review Queue — the human-in-the-loop inbox
+
+> 📎 `03-data-contracts.md` §D — the reusable card envelope + the three built-deep payloads (merge,
+> status-override, alert-disposition), their options, and the priority/sort dimensions.
 This is where the system **escalates the hard calls to the analyst.** It's a prioritized list of
 decisions only a human should make. Each item shows the context, the options, and a one-click action;
 acting on it **changes the picture** (map/graph/answers update). The **queue is one surface that hosts
@@ -230,6 +264,10 @@ the top, how urgency/materiality reads). This screen is where "human in the loop
 becomes decorative — it matters a lot.
 
 ### 5.6 The Provenance drawer — "how do you know that?"
+
+> 📎 `03-data-contracts.md` §C (every ingredient of the confidence breakdown) · `02-trust-and-credibility.md`
+> §4 (the independence idea it visualizes) · a real source in `reference/corpus/`
+> (`d11_recycled_image.txt` is exactly the "5 sources, 2 independent looks" case).
 The cross-cutting panel that answers the analyst's constant question. Opens over any view when they
 click a node/edge/pin/citation. Shows, for the selected thing:
 - its current **status + confidence + freshness** (and *why* — the breakdown);
@@ -253,6 +291,9 @@ too-clean warning on one of them" — without a wall of numbers? How deep does o
 too much?
 
 ### 5.7 Alerts / Observables — the monitoring pulse
+
+> 📎 `03-data-contracts.md` §F (the tripwire + fired-alert fields) · `02-trust-and-credibility.md` §9
+> (coverage decay / "degrade visibly, never silently").
 The analyst can define a **tripwire** — a condition that fires an alert when incoming data meets it.
 When it trips, an **alert** appears; the analyst dispositions it (→ review queue). This is the "it's a
 live monitor, not a one-time report" dimension.
@@ -264,6 +305,9 @@ live monitor, not a one-time report" dimension.
   connects to the thing that changed on the map/graph.
 
 ### 5.8 Credibility settings — "whose word counts for how much?"
+
+> 📎 `03-data-contracts.md` §H (the levers a settings screen exposes) · `02-trust-and-credibility.md` §5
+> ("the analyst, not the engineer, owns the trust rules").
 A settings surface where the analyst tunes **how much each type of source is trusted** (the weights
 behind the status computation). This exists because the product's premise is that *the analyst*, not the
 engineer, owns the trust rules. Low-frequency screen; probably a settings panel, not a main stage.
@@ -274,6 +318,10 @@ engineer, owns the trust rules. Low-frequency screen; probably a settings panel,
 ---
 
 ## 6. The status/visual-language spec (hand this to whoever builds the design system)
+
+> 📎 `02-trust-and-credibility.md` §§2–7 (definitions behind status / freshness / source-tier / supersede /
+> Known-Gap) + `01-entities-and-relationships.md` (every node / edge / pin / chip that has to wear this
+> visual language).
 
 Consolidated so it's in one place. Every visual element that represents a fact must express:
 
@@ -304,6 +352,10 @@ system a viewer can learn in ten seconds and a legend can express in one corner.
 
 ## 7. The hero flow (the demo storyboard — make *this* feel great)
 
+> 📎 Each beat's data is in `03-data-contracts.md` (the answer §E, the merge card §D, the relocation alert
+> §F) and `02-trust-and-credibility.md` §7 (the supersede-vs-contradict climax). The recycled-photo beat is
+> real in `reference/corpus/d11_recycled_image.txt`.
+
 On the interview call, one thread is walked end-to-end. This is the sequence the whole UI is optimized
 around; everything else is in service of these ~90 seconds feeling effortless and trustworthy. The
 concrete scenario is already built into the demo data. The beats:
@@ -312,7 +364,8 @@ concrete scenario is already built into the demo data. The beats:
    supplier and name the weak link."*
 2. **Cited answer returns**, with the reasoning path lighting up across the graph. Every claim has a
    clickable source. **Observed** facts (it's at Site K — satellite image) are visually separated from
-   the **inferred** conclusion (the weak link is the radar — because there's only one supplier).
+   the **inferred** conclusion (the radar is the *candidate* chokepoint — the only supplier visible in open
+   sources; whether it's truly sole-source is a Known Gap, not asserted).
 3. **Click to prove it.** Analyst clicks a claim → provenance drawer → the exact source line. "One
    click to truth."
 4. **Show the honest refusal.** Ask about a location where the evidence is a cloud-covered/old

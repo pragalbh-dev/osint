@@ -55,17 +55,22 @@ half-done (`../spine/07-monitoring-retrieval-viz.md`).
 
 ---
 
+## Decisions (locked this session)
+- **Query start node: the Karachi HQ-9/P battery** (Army Air Defence Centre, Karachi; ISPR induction
+  14 Oct 2021) — the clean, well-sourced anchor for the flagship trace. *To be verified against the
+  generated corpus.*
+- **Demo run: several tested queries + bounded live headroom.** One primary scripted+tested worked query,
+  a few more tested queries, plus headroom for a live free-form follow-up. **Discipline:** the graded
+  moments (chokepoint trace, confirmed/probable, insufficient-evidence, M4 override) always run on *tested*
+  queries; the live follow-up is a bonus, never load-bearing. This is safe because **graph traversal is
+  deterministic** — only the LLM's question-decomposition/phrasing varies — so tested queries reproduce and
+  a live one "mostly works."
+- **Sustainment: build BOTH** Interceptor Stockpile & Resupply *and* Tech-Data / Software & Calibration
+  Authority (data for both, per `../md/05-data-scoping-C.md` §5.1) — so both secondary observables are
+  available (follow-on-order resupply signal; OEM firmware/localization dependency).
+
 ## Open questions
-- **Exact battery/site** used as the query's starting node (pick one with a clean imagery frame — Karachi
-  geolocations per `../md/05-data-scoping-C.md` §2.6).
-- **How the run is driven on the call** — scripted worked query vs live free-form Q&A. Leaning: one
-  scripted worked query that always runs, plus headroom for a live follow-up.
-- **Which single sustainment node** to build (shared with `01-materiality-ontology.md`) — Interceptor
-  Stockpile (most observable via follow-on orders) vs Tech-Data Authority (highest-leverage "invisible
-  dependency" story). This decides which secondary observable is live.
-- **Order of the flexes** in the live narrative (leaning: worked query → confirmed/probable → insufficient
-  evidence → M4 override → HITL merge → freshness → the Rawalpindi→Rahwali observable).
-- *(Resolved: the primary observable → locked (Q1) above.)*
+- **Store choice** — deferred by decision (decide later; shared with `../spine/01`).
 
 ## Research directions
 - None new here — this doc consumes the spine + `01-materiality-ontology.md` + the data scoping. Revisit

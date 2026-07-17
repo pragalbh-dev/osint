@@ -5,10 +5,26 @@ decided* (locked-decisions ledger, with pointers to the detailed reasoning), and
 (pulled from every design doc's "Open questions" tail). `CLAUDE.md` is the terse boot context; this is the
 fuller reasoned index behind it.
 
-**How to use it.** Read the principles once — they govern judgement calls. When you *make or change* a
-non-trivial decision, add a row to the ledger and update the source doc's tail. When you *close* an open
-question, move it up into the ledger. Keep entries one-liners with a `→ pointer`; the reasoning lives in
-the design docs, not here. *As of 2026-07-16. Deadline 20 Jul 2026, 12:00.*
+**How to use it.** Read the principles once — they govern judgement calls. Keep ledger entries one-liners
+with a `→ pointer`; the reasoning lives in the design docs, not here. *As of 2026-07-16. Deadline
+20 Jul 2026, 12:00.*
+
+**Decision process — how every decision is made & recorded:**
+- **Note guideline-driven decisions as you go, and surface them at the end of the work** — not only buried
+  in a commit. For each: the choice, the principle (§1) it invoked, the alternative rejected. At end of
+  work, append them to the ledger (§2) and flag which design-doc tails to enrich, so the final design note
+  can absorb them.
+- **Borderline-harmful → ask first, with an options template.** If a decision could harm *any* aspect
+  (correctness, credibility, demo-reliability, scope, timeline, reproducibility, extensibility), don't
+  decide it yourself — put concrete options + tradeoffs to the user, never a bare open question. Unilateral
+  calls are for the clearly-safe only.
+- **Extensible by default; hardcode only with approval.** Architecture includes a configuration / framework
+  layer for decision-making and HITL at *any* spine layer that needs it (the ontology is extensible; so are
+  the reasoning frameworks, the credibility rubric, and observables). Anything that could extend to another
+  use case (A/B) is built as an extensible seam rather than hardcoded to C — but confirm that extensibility
+  choice with the user (options template) rather than assuming the abstraction; build the seam, not the
+  other use cases' content.
+- When you *close* an open question, move it up into the ledger.
 
 ---
 
@@ -38,8 +54,10 @@ These are the durable commitments. Almost every hard choice reduces to one of th
    thresholds, half-lives, observables, ontology extensions live in config / HITL, not buried in code.
 10. **Model exactly what the target queries require, no richer.** The over-engineering trap. Every hour on
     provenance/confidence discipline beats an hour on ontology breadth.
-11. **Reproducible & deterministic for the demo.** Frozen scenarios; the live query runs the same every
-    time; the generator stays blind to the ontology so the pipeline earns its extractions.
+11. **Reproducible where it matters; live where it counts.** The frozen baseline + tested queries run the
+    same every time and the generator stays blind to the ontology (the pipeline earns its extractions); but
+    determinism never cuts capability — the live-ingestion lane is fresh by design (that's what makes it
+    *monitoring*), and a tight extraction prompt is "deterministic enough." (`spine/09`)
 
 ---
 
@@ -77,6 +95,28 @@ These are the durable commitments. Almost every hard choice reduces to one of th
 | **Adaptation = freshness/coverage decay + a learning loop**; degrade visibly, never silently | What makes it *monitoring*; demo one mechanism (**alias table**), roadmap the rest | `spine/06` |
 | **Trace: design the emit-interface now, defer the sink** (Braintrust/LangSmith later for eval-driven regression) | Append-only log + alias table + credibility store is enough to show the loop closing | `spine/06` |
 
+### Spine 2.0 canonical design (2026-07-17 reconciliation)
+| Decision | Why | → |
+|---|---|---|
+| **Canonical scoring form = 08's factor-rubric × noisy-OR corroboration** (rename `s_i`→`claim_credibility`, `C_raw`→`assertion_confidence`; unify cutoffs at **0.50/0.80**; `extraction/model_conf = 1.0` for the demo, seam kept for later per-claim extraction confidence) | Principle 9 (config-driven, analyst-tunable factors — Module 1) + principle 7 (defensible > clever): one transparent rubric beats maintaining two conflicting scoring constructs; **rejects** 04's separate two-axis `w_R × w_C` reliability/plausibility tables — `intrinsic_plausibility` is folded in as one rubric factor instead | `spine/04`, `08` §3.4, `08-spine-2.0-review.md` §A/§C |
+| **INSUFFICIENT-EVIDENCE → Known Gap stays first-class and orthogonal to POSSIBLE** (assessability failure ≠ low magnitude; off the confidence scale entirely, not "confidence≈0") | Principle 4 (never fabricate — insufficient evidence is a feature, the disqualifying line) | **rejects** 08's draft collapsing insufficient into a "possible" confidence band | `spine/04`, `08-spine-2.0-review.md` §C |
+| **Resolution is iterative collective/relational ER (bootstrap → fixpoint); the merge decision is precision-first — recall is recovered at candidate-gen (stage 1) + iteration + HITL, never by loosening the merge threshold** | Principle 2 (depth over coverage) + the false-merge discipline already locked for resolution (FD-2000 ≠ FT-2000 must stay apart) | **rejects** a recall-maximizing merge decision (auto-merging on weak signal to avoid missing pairs) | `spine/03`, `08-spine-2.0-review.md` §B |
+| **Two scores, two objects, never averaged**: `merge_confidence` (identity, lives on the same-as edge) vs `claim_credibility`/`assertion_confidence` (truth, lives on the resolved node/edge) | Principle 6 (confirmed is not probable — structural separation) | **rejects** blending identity-confidence and truth-confidence into one pooled number | `spine/01`, `spine/04`, `08-spine-2.0-review.md` §B/§E |
+| **LLM is proposer, never authority.** No LLM call runs inside `rebuild()`; every LLM output is produced once offline and frozen as a cited, versioned record; deterministic rules dispose. Structural deception detectors (hash/timestamp/aggregator/first-seen) are deterministic, never LLM; the insufficient-evidence statement is a deterministic fill-in-the-blank template; escalation is raise-only (LLM may rank/raise into the HITL band, never remove an item or push a pair past the 0.85 auto-merge line); LLM invocation is gated behind a deterministic pre-filter (high-alias-risk + orphan/thin-block for candidate-gen; near-miss + materiality/novelty for raise-from-reject) | Principle 4 (never fabricate) + principle 11 (reproducible/deterministic for the demo — frozen-replay stands in for "temperature-0," which Opus 4.8 doesn't support) + principle 5 (traceability by construction) | **rejects** letting the LLM finalize confidence or freely re-band status, and **rejects** regenerating prose at presentation time — only frozen, validated prose is ever displayed | `spine/04`, `spine/05`, `08`, `08-spine-2.0-review.md` §D |
+| **`adversary_denial` (and single-pass `decoy_risk`) are GATES** (exclude the claim from grouping / cap status at probable) — **not multipliers** | Principle 6 (confirmed is not probable): a multiplier can still average out to "confirmed"; a gate cannot | **rejects** 08's original design, which bundled `adversary_denial` into the credibility multiplier | `spine/04`, `08-spine-2.0-review.md` §C |
+| **Keep the 3 portability rules as-is; add a "layer contract" corollary** (a use case = read-only graph analytics + a decision rubric + output adapters over the shared graph, adding no storage/ingestion) rather than a new rule | Principle 8 (build once, extend by specification) | **rejects** promoting "encode the problem-statement logic as an algorithm over the graph" to a 4th independent portability rule — it's a consequence of the existing 3 rules, not a new one | `spine/01`, `08-spine-2.0-review.md` §E |
+| **Analyst-initiated integrity flag**: an analyst can flag a source/origin as fake directly (a new caller of the same adjudication service, not system-triggered only); propagates automatically to every co-referring claim sharing that `primary_origin_id` on the next `rebuild()` | Principle 3 (the product is judgement — a human in the loop, not only a system-triggered queue) | **rejects** leaving integrity-flagging system-triggered-only (today's HITL) | `spine/04`, `spine/05`, `08-spine-2.0-review.md` §D |
+| **Extraction = LLM-only, live at ingest (not frozen-only)** — everything via LLM → the one claim schema (no per-source parsers; time-gated demo); Gemini optional 2nd provider. A seeded baseline ships (keyless boot + reproducible graded beats), but **live ingestion is always available** so ingest→rebuild→alert runs for real. **Extract-raw guardrail:** extracts *stated* claims — incl. stated alias/`same-as` (→ `source_asserted` in resolution) — but never resolves/normalizes the *unstated*; replaces the parser-first anti-circularity defense. LLM runs upstream of the append, so the LLM-free-`rebuild()` invariant holds | Principle 10 (no per-source engineering) + principle 3 (live monitoring is a graded axis) + principle 7 (guardrail preserves messiness/anti-circularity) | **rejects** frozen-only extraction (can't demo live ingest→alert) *and* the hybrid deterministic-parsers extraction `07`/`08` originally drafted | `spine/02`, `spine/09`, `md/07-stack.md`, `08` §4, `08-spine-2.0-review.md` §H |
+
+### Stack & retrieval (2026-07-17)
+| Decision | Why | → |
+|---|---|---|
+| **Stack locked** — SQLite logs + **NetworkX** rebuilt view (KùzuDB-behind-the-view = scale path); FastAPI single process serving JSON + SPA same-origin; React/Vite + Tailwind/shadcn; Cytoscape.js + Leaflet vendored tiles; one multi-stage Docker image; **hosted on one always-on EC2 + Cloudflare Tunnel**; reviewers run it **both** ways (prebuilt GHCR image + `git clone && make run`); **`ANTHROPIC_API_KEY`** (+ optional `GEMINI_API_KEY`); Bedrock-via-EC2-instance-role = design-note prod path | Principle 7 (defensible, minimal moving parts) + principle 2 (depth over infra); single in-image artifact → `docker run` == the EC2 box == what reviewers run; the tunnel removes DNS/cert/port setup | **rejects** App Runner (adds ECR/IAM Day-0 setup), managed DB/VPC (unneeded at n≈25), split FE/BE hosting (CORS + 2 artifacts) | `md/07-stack.md` |
+| **Multi-hop = bounded ReAct tool-calling loop over the graph — no framework, no embeddings**; ~7 namespaced `graph_*` tools; **materiality precomputed in `rebuild()` as filterable node attrs** + one parameterized `query_graph`; **entailment-based** citation validator; empty result → `check_sufficiency`, never a guess | Principle 5 (traceability by construction — tools return claim IDs, answer built from cited objects) + principle 4 (first-class refusal) + principle 10 (few capable tools) — research-backed (`md/14`) | **rejects** Microsoft GraphRAG (answer→LLM-summary→source defeats one-click provenance; corpus-theme search, not entity-anchored), vector RAG (single-hop, chunk-level provenance), free-form Text2Cypher (brittle; can't distinguish no-data from insufficient) | `spine/09`, `md/14` |
+| **No embeddings in the runtime** — entity lookup = alias table + BM25 + fuzzy | The reason is **scale + signal, not determinism** (embeddings are deterministic): nothing to fuzzily recall at hundreds of curated nodes, and the discriminating OSINT signal is relational, not semantic (a front company is designed not to look like its parent) | **rejects** a runtime vector store; offline embedding candidate-gen for resolution stays roadmap | `spine/09`, `md/14` |
+| **Hot-config / live-`rebuild()` — nothing a user does in-app requires an app restart.** `rebuild()` is a live in-process op (ms at demo scale) triggered by ingest/decision/config writes; user config (observables, weights, thresholds, ontology types) lives in a live store the UI writes to, not a baked file — so precompute-in-`rebuild()` tracks config changes automatically | Principle 9 (analysts, not engineers, evolve the rules — config-driven) + product UX (restart-to-reconfigure is a bad flow) | **rejects** boot-only rebuild / baked-config-file models that force a restart | `spine/09`, `md/07-stack.md` |
+| **Analyst-defined observables + always-available live ingestion** — an observable is a DSL condition over existing attrs/precomputed metrics, defined live in the UI, armed immediately, fired on the next `rebuild()`; the locked Rawalpindi→Rahwali tripwire is just the seeded example; ingestion (append→rebuild→observable-eval) is always on, extraction is the optional front-end (raw+key → live extract; else pre-extracted claim bundles) | Principle 3 (the product is judgement — analyst configures their own tripwires) + principle 8 (extend by specification); makes the *monitoring/adaptation* graded axis real rather than a scripted reveal | **rejects** a single hardcoded observable + a scripted-reveal demo | `spine/09`, `C/02` |
+
 ### Data
 | Decision | Why | → |
 |---|---|---|
@@ -85,6 +125,11 @@ These are the durable commitments. Almost every hard choice reduces to one of th
 | **Generator kept blind to the ontology**; seed a few **real uncurated docs**; **freeze multiple scenarios**, evaluators pick live | Kills the circularity objection; proves generalisation without live-generation risk | `md/04-claude-chat.md` Q3–Q4, `md/02-gemini-chat.md` Q4 |
 | **Customs file is synthetic-from-real-template** (real BoL rows as template) | Finished SAM systems are genuinely invisible in public customs data for CN/RU/PK — defensible by necessity | `md/05` §0 |
 | **Corpus = text + image + social**, six graded scenarios seeded from real material | Satisfies text+≥1 non-text rule; each scenario seeds a graded moment | `md/05` §5 |
+| **Location precision is per-node-type, set by the touching query/observable — not by node grandeur** (fire-unit → pad/site; manufacturer/design-authority → facility+city+district; port → terminal; HQ → city; unobservable → Known Gap) | Principle 10 (model exactly what the queries need) — materiality applied to geography; the relocating fire-unit is the most precision-hungry node, the "biggest" org (Beijing design authority) needs only district | `md/13`, `C/01` |
+| **Every demonstrated site carries ≥2 surface formats across independent docs** (DD/DMS/MGRS/toponym/renamed-alias/relative/port-alias) so the location-normalizer has real work; **anchor base/port coords real+public, the SAM pad synthetic-from-real & tagged** | Without multi-format refs the normalizer has nothing to resolve and can't be demonstrated; provenance-split keeps us from publishing novel battery fixes | `md/13`, `config/places.yaml`, `hq9p_primary.yaml` (places + expect.location + location_normalization flex) |
+| **Location normalization = deterministic coord-canonicaliser + place-resolution over a seeded gazetteer, reusing the resolution layer's merge machinery; LLM proposes aliases only** — plus the **Karachi-Port ≠ Port-Qasim distinct-from trap** (geographic FT-2000) and a **withheld "Chaklala" alias** the resolver must earn | Principle 8 (build once, extend by spec — place is just another entity type with a geodesic attribute) + principle 4 (LLM proposes, rules dispose) + test-design (traps land in the HITL band; distinct-from is first-class) | `md/13`, `spine/08` §3.9, `config/places.yaml` |
+| **Imagery = a resolution-tiered hybrid: Esri sub-meter (~0.5 m) for the frames that must SHOW a SAM site, Sentinel-2 (10 m) only for the deliberately-low-res cloud/gap beat, fabricated for social/deception.** Sentinel cannot resolve launchers (10 m; a TEL ≈ 1 px) — proven, so it must not carry positive equipment claims | Principle 4 (never fabricate — an image must not claim more than its pixels show; the VLM caption is neutral, so the shape must genuinely be present) + principle 7 (defensible: real morphology, not drawn) | `tools/gather/esri_fetch.py`, `md/12` addendum, `md/10` §6 |
+| **"Confirm" SAM frames = real, unaltered imagery of genuine SAM sites (Xi'an HQ-9, Crimea S-400, Nanjing garrison, Lanzhou empty petal) RELABELED to scenario sites** — `integrity: real`, `provenance: relabeled`, `real_source` in the answer key; image quality matched to the claim (clear→confirmed, ambiguous→probable, empty→gap) | Principle 4 + principle 7 (own the synthetic-scenario limits out loud; auditable relabeling beats a fabricated "confirming" image the system should catch) | `hq9p_primary.yaml` (d07/d17/d18/d17b image blocks), `md/12` |
 
 ### Demo / output
 | Decision | Why | → |
@@ -107,26 +152,39 @@ These are the durable commitments. Almost every hard choice reduces to one of th
 > credibility **factor rubric** (change #1) + **three-axis independence**; **dynamic per-source rating**
 > as next-if-time; the **locked relocation observable**; **Known Gap** nodes + **supersedes/contradicts**;
 > **HITL 8-control-points / 3-wired** phasing; the **enrichment bound (Q5)**. Items below remain open.
+>
+> **Also promoted (2026-07-17, spine 2.0 canonical reconciliation — see "Spine 2.0 canonical design" table
+> above and `08-spine-2.0-review.md` PART 2):** the canonical scoring form (factor-rubric × noisy-OR,
+> `claim_credibility`/`assertion_confidence` vocabulary, unified 0.50/0.80 cutoffs); INSUFFICIENT→Known Gap
+> kept orthogonal to POSSIBLE; resolution as iterative collective ER with precision-first merge; the
+> never-averaged two-scores rule; the LLM proposer-not-authority invariant (frozen-replay determinism,
+> deterministic structural-deception detectors, raise-only escalation, selective invocation gate);
+> `adversary_denial` as a gate, not a multiplier; the layer-contract corollary; the analyst-initiated
+> integrity flag.
 
-### ★ Stack — deferred, gated on finalising spine scope (`artifacts/spine/`)
-Decide tools *after* the spine scope is pinned down, so choices follow needs. Demo scale (~10–15 docs)
-makes almost anything viable — pick for **schema-flexibility, easy provenance attachment, reproducibility**,
-not scale.
-- **Graph store** — property graph (Neo4j / KùzuDB / in-memory NetworkX) vs RDF vs document-store-with-graph-view. `spine/01`
-- **Extraction method** — LLM function-calling to the claim schema vs **hybrid** (parsers for NOTAM/customs/tender + LLM for prose). *Leaning hybrid.* `spine/02`
-- **Agent framework** — plain deterministic tool-calling loop vs a framework. *Favour minimal + reproducible.* `spine/07`
-- **Map / geo stack** — tile source + rendering lib. `spine/07`
-- **Frontend + hosting** — the web-app framework and deploy target (needed now that the deliverable is a hosted app). *new*
+### Stack — DECIDED (2026-07-17) → `md/07-stack.md`, `spine/09`
+Locked: **SQLite append-only logs + NetworkX rebuilt view** (KùzuDB-behind-the-view = scale path) · **LLM-only
+extraction, live at ingest** (seeded baseline for keyless boot) · **no runtime embeddings** (alias + BM25 +
+fuzzy) · Claude API direct (`claude-opus-4-8`) + optional Gemini, Bedrock-via-EC2-instance-role scaffolded ·
+**bounded ReAct tool-calling agent** (~7 tools, `spine/09`; no `temperature` — 400 on Opus 4.8) · FastAPI
+serving JSON + the built SPA same-origin · React/Vite + Tailwind/shadcn · Leaflet vendored tiles ·
+Cytoscape.js · one multi-stage Docker image · **hosted on one always-on EC2 + Cloudflare Tunnel** · reviewers
+run **both** ways (prebuilt GHCR image + `git clone && make run`) · secret via `.env`/compose env var
+(`ANTHROPIC_API_KEY`). Through-line: a single in-image artifact so `docker run` == the EC2 box == what
+reviewers run. Reasoning in the "Stack & retrieval (2026-07-17)" ledger table above.
+- **Still open (taste/time):** frontend component strategy (shadcn default); map fallback depth; a thin
+  CI-to-GHCR job. See `07-stack.md` → Open stack choices.
 
 ### Architecture open items
-- **Where confidence lives** — on knowledge-layer node/edge, recomputed from evidence-layer claims; confirm recompute is cheap/deterministic per update. `spine/01`
+- **Where confidence lives** — on knowledge-layer node/edge, recomputed from evidence-layer claims. *Resolved: recompute is a live in-process `rebuild()`, ms at demo scale, run on any ingest/decision/config write — no restart (`spine/09`).* `spine/01`
 - **Claim immutability vs correction** — retract via an appended retraction event rather than delete? *Leaning append-only.* `spine/01`
 - **Typed-extraction aggressiveness at the edges**; **claim de-duplication** (one claim, multiple spans?). *Leaning one claim, multiple provenance spans.* `spine/02`
 - **Resolution:** blocking / candidate generation (avoid O(n²)); high/low threshold values; **merge representation** (*leaning reversible same-as edge*); transliteration handling (rule vs learned). `spine/03`
-- **Credibility:** exact score-combination form (transparent > sophisticated); per-edge-type **half-life defaults**; confirmed/probable thresholds; a concrete **"independence" rule**. `spine/04`, `C/01`
+- **Credibility:** per-edge-type **half-life defaults** (coarse now, calibrate later). *Score-combination
+  form and confirmed/probable thresholds are now locked — see "Spine 2.0 canonical design" above.* `spine/04`, `C/01`
 - **HITL:** UI surface (*leaning a minimal real review-queue for the ★ points so propagation is visible*); the structured trace-event schema; batching similar items. `spine/05`
 - **Adaptation:** which single learning mechanism to demo (*leaning alias table*); how much of the loop is "online"; trace-sink choice (deferred). `spine/06`
-- **Output:** how "observed vs inferred" is visually separated; whether the call runs a scripted worked query vs live free-form (*leaning one scripted query + headroom for a follow-up*). `spine/07`, `C/02`
+- **Output:** how "observed vs inferred" is visually separated (still open). *Resolved: agent = bounded ReAct tool-calling loop over ~7 tools (`spine/09`); the call runs tested queries + live headroom, and ingestion/observables run live.* `spine/09`, `spine/07`, `C/02`
 
 ### C-specific open items
 - How far the **China-HQ-9 enrichment** goes vs staying a reference (bound it — depth, not scope-creep). `C/00`

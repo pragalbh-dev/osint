@@ -1,0 +1,305 @@
+# ============================================================================
+# SCENARIO SPEC (CHAFF tier) — hq9p_chaff
+# The batch-2 triage-depth layer (09-corpus-sizing §0/§4): echoes, distractors,
+# stale — the substrate the credibility soft-filter, subject-proximity funnel,
+# too-clean/M4 detector, and freshness decay demonstrate AGAINST.
+# Signal does NOT grow here; only chaff does. Combined corpus = primary + chaff.
+#
+# Mechanism-first (NOT a fraction of S): ~2+ per class, extended to a showcase
+# volume. Each chaff unit MUST demonstrate its mechanism (P5) — echoes collapse,
+# distractors sink/fall off-canvas, stale decays — or it proves nothing.
+#
+# LEGIBILITY CAVEAT (09 §5): at this volume the subject-proximity view-time filter
+# becomes a REQUIRED build stage. Distractors here are LOW-PROXIMITY BY DESIGN so
+# they sink via credibility even before that filter exists. Do NOT let any distractor
+# introduce a 2nd supplier path for HT-233 (would flip the marquee chokepoint).
+# ============================================================================
+
+meta:
+  name: hq9p_chaff
+  subject: "Triage chaff around Pakistan HQ-9/P (echoes / distractors / stale / spoof)"
+  tier: chaff
+
+documents:
+  # ---- ECHOES (D2) — extend the M4 burst; collapse into the d11 origin group ----
+  - id: ce01_reshare_c
+    source_class: social
+    mode: chaff
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05-11"
+    asserts: ["third near-identical reshare of the recycled 'Rahwali deployment' image, new handle, same burst window"]
+    corruption: [hype]
+    deception: [echo_burst]
+    registry: {reliability_grade: E, bias_vector: third-party, primary_origin_id: origin_parade_img, coordinated_inauthenticity_flag: true}
+    expect: {note: "collapses into origin_parade_img group; no corroboration boost"}
+    image: {kind: parade, source: fabricated, shared_id: parade_2019, integrity: synthetic}
+  - id: ce02_reshare_d
+    source_class: social
+    mode: chaff
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05-11"
+    asserts: ["fourth near-identical reshare, another handle, minutes later"]
+    corruption: [hype]
+    deception: [echo_burst]
+    registry: {reliability_grade: E, bias_vector: third-party, primary_origin_id: origin_parade_img, coordinated_inauthenticity_flag: true}
+    expect: {note: "collapses into origin group; contributes to too-clean/coordination penalty"}
+    image: {kind: parade, source: fabricated, shared_id: parade_2019, integrity: synthetic}
+  - id: ce03_reshare_e
+    source_class: social
+    mode: chaff
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05-12"
+    asserts: ["fifth reshare a day later, quote-tweet chain referencing the earlier reshares"]
+    corruption: [hype, date_format_flip]
+    deception: [echo_burst]
+    registry: {reliability_grade: E, bias_vector: third-party, primary_origin_id: origin_parade_img, coordinated_inauthenticity_flag: true}
+    expect: {note: "6-post burst total (d11-d13 + ce01-ce03) = ONE look; the visible 'grain in chaff'"}
+    image: {kind: parade, source: fabricated, shared_id: parade_2019, integrity: synthetic}
+
+  # ---- DISTRACTORS (off-subject / low-proximity / resolver decoys) ----
+  - id: cd01_s400_china
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/reference/wikipedia_s400.txt
+    date: "2021-05"
+    intent: "China's S-400 (SA-21 Triumf) deployment near the India border — a DIFFERENT system; the S-400 alias set overlaps nothing in the HQ-9 supply chain and must not link to it"
+    corruption: [alias_substitution, hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "off-subject; S-400 aliases must NOT resolve into HQ-9/P; sinks on subject-proximity"}
+  - id: cd02_india_s400
+    source_class: official
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/official/official_routine_framing.*
+    date: "2021-12"
+    intent: "India's S-400 induction (PIB-style) — other country, other operator; a decoy for the shared S-400 designators"
+    corruption: [hedging]
+    registry: {reliability_grade: B, bias_vector: operator-state}
+    expect: {note: "wrong country/operator; must not attach to the Pakistan HQ-9/P graph"}
+  - id: cd03_pak_hq16
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/trade_media/quwa_hq9p.text.txt
+    date: "2022-03"
+    intent: "Pakistan's LY-80 / HQ-16 MEDIUM-range SAM — SAME country, ADJACENT system: a high-proximity decoy the resolver must keep DISTINCT from HQ-9/P holdings"
+    corruption: [alias_substitution, hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "high subject-proximity but different system -> distinct-from; hardest distractor"}
+  - id: cd04_civ_electronics
+    source_class: customs
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/templates/importyeti_customs_template.*
+    date: "2021-07"
+    intent: "a genuinely CIVILIAN electronics import under HS 8526 (radar/nav apparatus) to an unrelated consumer-electronics consignee — an HS-code COLLISION with the d05 military manifest"
+    corruption: [hs_code_masking, ocr_garble, transliteration_drift]
+    registry: {reliability_grade: C, bias_vector: commercial}
+    expect: {note: "same HS code as d05 but civilian; relevance/relational match must NOT pull it into the supply chain"}
+  - id: cd05_civ_notam
+    source_class: nav_warning
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/nav_warning/notam_faa.*
+    date: "2025-04"
+    intent: "a routine civilian-airport runway-closure NOTAM, unrelated to any SAM activity"
+    corruption: [code_string_noise]
+    registry: {reliability_grade: A, bias_vector: third-party}
+    expect: {note: "high-reliability but zero materiality -> no ontology claim extracted"}
+  - id: cd06_entity_collision_factory
+    source_class: reference
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/reference/rand_rr1414.pdf
+    date: "2019-06"
+    intent: "a routine internal bulletin of an unrelated Chinese research institute doing CIVILIAN telecom / vacuum-electronics R&D, whose name/number happens to resemble a defense-supplier node. Describe ONLY the institute's ordinary civilian activities, personnel moves, and facilities. Do NOT include any 'confused with' / 'distinct from' / 'not to be confused' / disambiguation phrasing, and do NOT mention HQ-9, SAMs, radars, or the missile supply chain — the name/number resemblance is left entirely for the reader to notice"
+    corruption: [transliteration_drift, hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "name-similar but distinct entity -> resolver must NOT merge (distinct-from / keep-separate)"}
+  - id: cd07_unit_collision
+    source_class: reference
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/reference/rusi_bronk_iads.pdf
+    date: "2020-09"
+    intent: "a routine reference blurb about an unrelated ENGINEERING/signals formation (different service, possibly different country) whose numeric designator happens to coincide with the HQ-9/P regiment's number. The document is ENTIRELY about that unrelated unit and its ordinary activities; it NEVER mentions HQ-9, SAMs, Pakistan air defence, or any radar — the collision exists only on the shared number, for the reader to notice, never explained"
+    corruption: [hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "designator-string collision -> resolver must keep separate on identity, not string (answer key; the doc must NOT say so and must NOT be about HQ-9)"}
+  - id: cd08_turkey_sam
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
+    date: "2023-01"
+    intent: "Turkey's SIPER / HISAR indigenous SAM program — off-subject defense procurement noise"
+    corruption: [hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "off-subject; sinks on proximity"}
+  - id: cd09_generic_iads
+    source_class: reference
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/reference/rusi_bronk_iads.pdf
+    date: "2020-01"
+    intent: "a think-tank overview of Chinese IADS in general with NO HQ-9/P-specific claim — tangential, low materiality"
+    corruption: [hedging, truncation]
+    registry: {reliability_grade: B, bias_vector: third-party}
+    expect: {note: "tangential; yields no material claim for the subject"}
+  - id: cd10_rumor_test
+    source_class: social
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-02"
+    intent: "a rumor-tier post about an unrelated ballistic-missile test — pure low-cred noise"
+    corruption: [hype, coordinate_absence, date_format_flip]
+    registry: {reliability_grade: E, bias_vector: third-party}
+    expect: {note: "low-cred + off-subject -> sinks below the confidence floor"}
+  - id: cd11_drone_deal
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/trade_media/quwa_hq9p.text.txt
+    date: "2024-08"
+    intent: "a defense-trade blurb about an unrelated UAV/drone acquisition — noise"
+    corruption: [hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "off-subject trade noise"}
+
+  # ---- STALE (D10) — dated facts printed as current ----
+  - id: cs01_stale_orbat
+    source_class: reference
+    mode: chaff
+    template: corpus/raw/reference/nti_china_missile.pdf
+    date: "2015-06"
+    asserts: ["a 2015 HQ-9 ORBAT figure recirculated as if current"]
+    corruption: [hedging, truncation]
+    deception: [stale_as_current]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "decays -> stale; must not stand as a current holding"}
+  - id: cs02_stale_deployment
+    source_class: trade_media
+    mode: chaff
+    template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
+    date: "2018-04"
+    asserts: ["a 2018 deployment claim resurfacing in 2025 discussion as if new"]
+    corruption: [hedging]
+    deception: [stale_as_current]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "old event, recent recirculation -> stale"}
+  - id: cs03_stale_customs
+    source_class: customs
+    mode: chaff
+    template: corpus/raw/templates/importyeti_customs_template.*
+    date: "2017-03"
+    asserts: ["an old shipment record surfacing in a recent compilation"]
+    corruption: [ocr_garble, hs_code_masking]
+    deception: [stale_as_current]
+    registry: {reliability_grade: C, bias_vector: commercial}
+    expect: {note: "old shipment -> stale; not a current supply signal"}
+
+  # ---- second SUPERSEDE-SPOOF (D8) — against the confirmed Karachi basing ----
+  - id: cx01_spoof_karachi
+    source_class: social
+    mode: chaff
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-06"
+    asserts: ["a fresh-dated SINGLE low-cred post claims the HQ-9/P battery has LEFT Karachi for an unnamed site"]
+    corruption: [coordinate_absence, hype]
+    deception: [supersede_spoof]
+    registry: {reliability_grade: E, bias_vector: adversary, decoy_risk_flag: true}
+    expect: {note: "second D8 instance vs the Karachi confirmed basing; confidence-floor must hold it as candidate-supersede -> HITL"}
+
+  # ---- extra DISTRACTORS (batch-2 depth toward the ~40-50 upper band) ----
+  - id: cd12_turkey_s400
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/reference/wikipedia_s400.txt
+    date: "2019-07"
+    intent: "Turkey's acquisition of the Russian S-400 and the resulting CAATSA/F-35 fallout — a DIFFERENT operator of a DIFFERENT system; another S-400-alias decoy"
+    corruption: [alias_substitution, hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "off-subject; S-400 aliases must not resolve into HQ-9/P"}
+  - id: cd13_saudi_patriot
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
+    date: "2021-09"
+    intent: "Saudi Arabia's Patriot / PAC-3 batteries and Houthi missile intercepts — Western system, different region; pure off-subject air-defence noise"
+    corruption: [hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "off-subject; sinks on proximity"}
+  - id: cd14_china_hq22
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/trade_media/quwa_hq9p.text.txt
+    date: "2022-11"
+    intent: "China's HQ-22 / FK-3 medium-long-range SAM and its Serbia export — an ADJACENT Chinese SAM (same manufacturer family): a proximity decoy the resolver must keep DISTINCT from HQ-9"
+    corruption: [alias_substitution, hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "same-manufacturer adjacent system -> distinct-from HQ-9; do not fold into holdings"}
+  - id: cd15_civ_container
+    source_class: customs
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/templates/importyeti_customs_template.*
+    date: "2022-02"
+    intent: "an ordinary civilian container shipment (textiles / consumer goods) with no dual-use HS code and no defense relevance — pure customs noise"
+    corruption: [ocr_garble, transliteration_drift]
+    registry: {reliability_grade: C, bias_vector: commercial}
+    expect: {note: "no ontology-typed claim; extraction yields nothing for the subject"}
+  - id: cd16_pak_civ_notam
+    source_class: nav_warning
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/nav_warning/navarea_nga.*
+    date: "2025-05"
+    intent: "a routine Pakistani CIVIL-aviation NOTAM/nav-warning (right country) about airspace works unrelated to any SAM activity"
+    corruption: [code_string_noise]
+    registry: {reliability_grade: A, bias_vector: third-party}
+    expect: {note: "right country, zero materiality -> no claim"}
+  - id: cd17_academic_radar
+    source_class: reference
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/reference/rand_rr1414.pdf
+    date: "2018-05"
+    intent: "an academic/technical paper on phased-array radar signal processing THEORY in general, no named system, no HQ-9 — tangential background"
+    corruption: [hedging, truncation]
+    registry: {reliability_grade: B, bias_vector: third-party}
+    expect: {note: "tangential; no material claim for the subject"}
+  - id: cd18_forwarder_collision
+    source_class: customs
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/templates/importyeti_customs_template.*
+    date: "2021-04"
+    intent: "an unrelated import handled by a freight forwarder whose company name closely resembles the shell consignee in the military manifest — a SECOND name-collision the resolver must keep separate; ordinary civilian cargo, no defense content"
+    corruption: [ocr_garble, transliteration_drift, front_company_consignee]
+    registry: {reliability_grade: C, bias_vector: commercial}
+    expect: {note: "name-similar forwarder, civilian cargo -> keep separate; do not attach to the supply chain"}
+  - id: cd19_rumor_missile
+    source_class: social
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-01"
+    intent: "a rumor-tier viral post about an unrelated cruise-missile test by a third country — low-cred noise, no HQ-9"
+    corruption: [hype, coordinate_absence, date_format_flip]
+    registry: {reliability_grade: E, bias_vector: third-party}
+    expect: {note: "low-cred off-subject -> sinks below floor"}
+  - id: cd20_defense_budget
+    source_class: trade_media
+    mode: chaff
+    off_subject: true
+    template: corpus/raw/trade_media/quwa_hq9p.text.txt
+    date: "2024-06"
+    intent: "a Pakistani defence-budget news summary (right country) with topline figures and procurement generalities but NO HQ-9/SAM-specific claim"
+    corruption: [hedging]
+    registry: {reliability_grade: C, bias_vector: operator-state}
+    expect: {note: "right country, no material HQ-9 claim -> tangential"}

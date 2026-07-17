@@ -1,0 +1,87 @@
+# Operator catalogue — corruption (messiness) + deception (misinformation) operators.
+# See artifacts/md/10-data-generation-strategy.md §3 (corruption) and §4 (deception).
+#
+# Each operator carries a `signal`: the instruction injected into the render prompt telling the
+# model to embed the operator's effect IN THE RAW TEXT so the pipeline can EARN detection
+# (principle P2 — never a hidden flag). Deception ops also carry `detector` + `expected` for the
+# answer key / verification, and `bypass: true` for the ones engineered to defeat a naive count.
+
+corruption:
+  alias_substitution:
+    signal: "Use a real designator variant where a real writer naturally would (HQ-9/P vs HQ-9P vs FD-2000; Triumf vs Triumph vs SA-21; Hongqi/红旗). Do not be consistent across the whole doc if a real source wouldn't be."
+  transliteration_drift:
+    signal: "Spell a foreign name/consignee two different ways across the document (transliteration drift), as real customs/academic sources do."
+  hs_code_masking:
+    signal: "Describe dual-use goods by a bland HS code and generic phrase (e.g. '8526 — radar apparatus parts / electronic assembly'), never by military function."
+  front_company_consignee:
+    signal: "List the consignee as a trading house / freight forwarder / shell entity, not the end-user military formation."
+  redaction:
+    signal: "Redact identifiers the way a real tender/contract does: [REDACTED] numbers, 'as per Annexure-B', 'name withheld', pointer chains to annexes not included."
+  ocr_garble:
+    signal: "Introduce authentic OCR/scan noise: broken word-wrap, a mid-word case break, a stray fax/email fragment leaking into a cargo-description field."
+  date_format_flip:
+    signal: "Mix date formats and use relative time where a real source would ('07 Feb 2023' in one place, 'last night' / 'this morning' in another)."
+  coordinate_absence:
+    signal: "Give no coordinates / no pin; refer to place colloquially ('near the port road', 'the old Rawalpindi site')."
+  coordinate_precise:
+    signal: "Give the location as a PRECISE geocoordinate in the notation THIS kind of source naturally uses, and render the exact coordinate supplied in the facts verbatim — do not round it away, do not convert it to a different notation. An IMINT/geolocation report uses an MGRS grid ref or decimal-degrees lat/long; a NOTAM/NAVAREA uses degrees-minutes-seconds; a hobbyist geolocator may paste a raw 'lat, long' pair or a maps URL. Keep the surface notation messy and source-authentic — the pipeline must parse and canonicalise it."
+  toponym_alias:
+    signal: "Refer to the PLACE by the specific name this kind of source would really use, not always the common city name — a historical/renamed base name, the official facility/port name, a district or cantonment name, or a bearing-and-distance from a nearby town ('~12 km NNW of <town>'). Use a real alternate form; do not gloss it as 'also known as'."
+  hedging:
+    signal: "Hedge like a real analyst: 'reportedly', 'believed to be', 'estimated', 'may employ', 'likely' — and leave at least one figure explicitly uncertain."
+  code_string_noise:
+    signal: "Use the raw uppercase machine format verbatim in style (NOTAM Q-line / A) B) C) E); NAVAREA DTG windows like 181400Z TO 181825Z JUL, polygon vertices, CANCEL THIS MSG line)."
+  truncation:
+    signal: "Truncate as a real cached/paywalled fetch would ('… first 200 words only', a cut-off record)."
+  unit_count_absence:
+    signal: "State the capability but withhold the hard count ('battery/TEL count not disclosed') — Pakistan never disclosed HQ-9/P numbers."
+
+deception:
+  recycled_media:
+    signal: "Post that dates an image to the CURRENT event while the scene details match an OLDER event; include a skeptical reply asking if it's actually an old (e.g. 2019 parade) photo. The recycling must be inferable from the text."
+    detector: "M4 first_seen x caption"
+    expected: "artifact-integrity multiplier collapses; cannot lift a node past probable"
+  echo_burst:
+    signal: "Emit several (4-6) near-identical SHORT posts, timestamps within minutes of each other, DIFFERENT handles, each echoing the same origin phrase/image; have some handles reference each other. The duplication and burst timing must be visible from the text alone."
+    detector: "coordinated-inauthenticity + origin-group collapse"
+    expected: "all reshares collapse into ONE origin group (no corroboration boost) + too-clean penalty"
+  aggregator_circular:
+    signal: "Present 'multiple sources' that ALL explicitly cite one upstream — e.g. 'per SIPRI', 'as the SIPRI register shows', 'three trade outlets, all citing the SIPRI figure'. A reader must be able to see they are one origin, not independent."
+    detector: "aggregator-inheritance dedup (origin-independence axis)"
+    expected: "a naive count sees 4 sources -> over-confident; group system collapses to ONE origin group"
+    bypass: true
+  aligned_interest:
+    signal: "Attribute the SAME claim to two sources that are both PARTIES to the transfer — a Pakistani official channel (ISPR-style) AND a Chinese state channel (Global-Times-style) — independent bylines, obviously shared interest."
+    detector: "interest-independence axis (bias_vector)"
+    expected: "naive count sees 2 independent -> confirmed; 3-axis test keeps it PROBABLE until a non-aligned/third-party source appears"
+    bypass: true
+  adversary_denial:
+    signal: "Include, from an interested/adversary channel, an UNVERIFIABLE corroboration or denial: 'a second independent source confirms the battery at X' (that source never shown), OR an official denial of a known dependency."
+    detector: "adversary_denial GATE (discount before grouping)"
+    expected: "neither corroborates nor downgrades — discounted"
+    bypass: true
+  decoy_single_pass:
+    signal: "Report a SINGLE satellite pass / one-time signature match at a site, no repeat, no second collection discipline; note explicitly it is a single pass."
+    detector: "decoy_risk cap"
+    expected: "caps the assertion at PROBABLE until a discipline-independent confirm"
+  front_company:
+    signal: "A customs record: shell/freight-forwarder consignee + bland HS code + an annex/line-item that implies the military radar end-user. LEAVE the civil-vs-military tension UNRESOLVED in the text (do not explain the cover story)."
+    detector: "relational resolution + subject-proximity"
+    expected: "shell is off-subject until resolution links it via relational match, not string"
+  supersede_spoof:
+    signal: "A fresh-dated (2025) SINGLE low-credibility report asserting the unit has LEFT its known confirmed site for a DIFFERENT site — by date alone it would override the confirmed position. Low-credibility source, no corroboration."
+    detector: "NONE without a supersede confidence-floor (this is the bypass)"
+    expected: "WITHOUT floor: wrongly relocates the unit. WITH floor: held as candidate-supersede -> contradiction -> HITL"
+    bypass: true
+  contradiction_same_time:
+    signal: "Two credible-looking sources about the SAME site and the SAME date: one says routine/no-activity, the other says active deployment/movement."
+    detector: "contradiction status"
+    expected: "flagged, routed to HITL — not auto-resolved"
+  stale_as_current:
+    signal: "State a dated fact from years ago inside a recently-dated document as if current; hedge with 'as of' / 'reportedly'. The age gap between report date and event date must be inferable."
+    detector: "freshness decay"
+    expected: "decays past the freshness floor -> confirmed-as-of-DATE -> probable(stale)"
+  withheld_signal:
+    signal: "A NEGATIVE-polarity observation ('imagery of site S on date D shows NO launchers/TELs') OR the conspicuous ABSENCE of the sustainment/spares activity a real induction would produce."
+    detector: "absence-as-evidence / evidence-requirement template"
+    expected: "returns 'insufficient evidence to assess', names missing slots + next coverage due"

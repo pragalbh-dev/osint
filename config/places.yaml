@@ -1,0 +1,100 @@
+# config/places.yaml — SEED place gazetteer (pipeline config, extensible; per CLAUDE.md not hardcoded).
+#
+# This is the pipeline's PRIOR for location normalization (spine/08 §3.9 resolution + md/13):
+#   - coordinate canonicalisation is deterministic (DD/DMS/MGRS/UTM -> WGS84 DD) and needs no gazetteer;
+#   - place RESOLUTION uses this table: toponym/alias match + geodesic proximity -> canonical place node.
+#
+# NOT the answer key. The eval oracle (full truth, incl. withheld aliases + per-doc surface forms) lives
+# in each scenario's answer_key.json (ground_truth.places + expect.location). Two deliberate omissions
+# below give the resolver something to EARN (the adaptation/recall story, spine/08 §3.11):
+#   * pl_nurkhan: the historical "Chaklala" alias is WITHHELD -> resolver must merge a renamed base it
+#     wasn't handed (via ICAO OPRN co-reference + geodesic proximity, or an LLM alias proposal -> HITL).
+#   * pl_rahwali: only the coordinate + primary name are seeded; the "~N km NW of <town>" relative form
+#     must be parsed and matched by proximity, not looked up.
+#
+# provenance: real = public open-source coord (airbase/seaport); synthetic = invented scenario pad
+# (we do not publish real battery fixes); approximate = district-level anchor only.
+# precision_class: pad|site|terminal|district|city  — the coarsest identity the node needs (md/13 §1).
+
+version: 1
+crs: EPSG:4326            # canonical output frame (WGS84 decimal degrees)
+
+places:
+  - place_id: pl_nurkhan
+    canonical_name: "PAF Base Nur Khan, Rawalpindi"
+    kind: airbase
+    precision_class: site
+    canonical_dd: [33.61639, 73.09972]
+    provenance: real
+    icao: OPRN
+    aliases: ["PAF Base Nur Khan", "Nur Khan Airbase", "Benazir Bhutto International", "OPRN"]
+    # WITHHELD from seed (earned merge): "PAF Base Chaklala", "Chaklala", "RAF Chaklala"
+    admin: "Chaklala, Rawalpindi District, Punjab, Pakistan"
+
+  - place_id: pl_rahwali
+    canonical_name: "Rahwali Airfield / Cantonment, Gujranwala"
+    kind: airfield
+    precision_class: site
+    canonical_dd: [32.239, 74.131]
+    provenance: real
+    icao: "OP27(pseudo)"
+    aliases: ["Rahwali", "Rahwali Air Base", "Rahwali Airfield", "Rahwali Cantonment", "Rahwali Cantt"]
+    admin: "Rahwali, Gujranwala District, Punjab, Pakistan"
+
+  - place_id: pl_karachi_ad
+    canonical_name: "Karachi Army Air Defence site (notional, Malir area)"
+    kind: sam_site
+    precision_class: pad
+    canonical_dd: [24.9012, 67.2034]
+    provenance: synthetic
+    aliases: ["Malir AD area"]     # NB: bare "Karachi" is NOT an alias -> it is ambiguous parent-city
+    admin: "Malir area, Karachi, Sindh, Pakistan"
+
+  - place_id: pl_port_qasim
+    canonical_name: "Port Muhammad Bin Qasim"
+    kind: seaport
+    precision_class: terminal
+    canonical_dd: [24.767, 67.333]
+    provenance: real
+    locode: PKBQM
+    aliases: ["Port Qasim", "Port Muhammad Bin Qasim", "Bin Qasim Port", "Bin Qasim", "PQ", "Qasim Port Authority", "QPA"]
+    admin: "Malir District, Karachi Division, Sindh, Pakistan"
+    distinct_from: [pl_karachi_port]
+
+  - place_id: pl_karachi_port
+    canonical_name: "Port of Karachi (Keamari)"
+    kind: seaport
+    precision_class: terminal
+    canonical_dd: [24.835, 66.982]
+    provenance: real
+    locode: PKKHI
+    aliases: ["Karachi Port", "Port of Karachi", "Karachi Port Trust", "KPT", "Keamari", "Kiamari"]
+    admin: "Keamari, Karachi, Sindh, Pakistan"
+    distinct_from: [pl_port_qasim]
+
+  - place_id: pl_casic_2nd
+    canonical_name: "CASIC Second Academy (China Academy of Defence Technology)"
+    kind: facility
+    precision_class: district
+    canonical_dd: [39.860, 116.283]
+    provenance: approximate
+    aliases: ["2nd Academy", "Second Academy", "China Academy of Defense Technology", "China Changfeng Group", "CCFG", "航天科工二院"]
+    admin: "Yongding Road, Haidian District, western Beijing, China"
+
+  - place_id: pl_birm
+    canonical_name: "Beijing Institute of Radio Measurement (CASIC 23rd RI)"
+    kind: facility
+    precision_class: district
+    canonical_dd: [39.860, 116.283]
+    provenance: approximate
+    aliases: ["BIRM", "Beijing Institute of Radio Measurement", "23rd Research Institute", "23rd Institute", "北京无线电测量研究所"]
+    admin: "50 Yongding Road, Haidian District, Beijing, China"
+
+# Proximity thresholds for coordinate->place resolution (analyst-tunable), by precision_class.
+# A parsed coordinate within radius_m of a canonical_dd auto-resolves; 1x-3x -> HITL; beyond -> new place.
+proximity_radius_m:
+  pad: 500
+  site: 1500
+  terminal: 3000
+  district: 5000
+  city: 15000

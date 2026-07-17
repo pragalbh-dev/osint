@@ -1,0 +1,43 @@
+IEEE TRANSACTIONS ON AEROSPACE AND ELECTRONIC SYSTEMS
+Vol. 54, No. 3, May 2018
+
+Adaptive Digital Beamforming for Wideband Phased-Array Radar Under Mainlobe Jamming: A Subspace-Projection Approach
+
+M. R. Alavi, Student Member, IEEE, S. K. Nourbakhsh, Senior Member, IEEE, and D. T. Voss
+
+Department of Electrical and Computer Engineering, Signal and Systems Laboratory
+
+Abstract—Modern active electronically scanned array (AESA) radars increasingly rely on digital beamforming (DBF) at the subarray level to achieve simultaneous multi-function operation, including search, track, and electronic protection. This paper revisits the classical minimum variance distortionless response (MVDR) adaptive weight solution and proposes a modified eigen-subspace projection technique intended to mitigate performance degradation caused by mainlobe interference sources whose angular separation from the desired look direction falls within the array's natural beamwidth. Conventional sidelobe cancellers and Applebaum-loop adaptive nulling architectures are shown, through both simulation and closed-form covariance-matrix analysis, to suffer significant signal cancellation when jammer power exceeds approximately 25-30 dB relative to thermal noise and angular offset is less than 0.5 beamwidths. We derive a generalized sidelobe canceller (GSC) variant incorporating a rank-reduced projection of the sample covariance matrix, and demonstrate improved output signal-to-interference-plus-noise ratio (SINR) of roughly 6-9 dB (exact gain is scenario-dependent and remains under further characterization) across a representative set of array geometries (16x16, 32x32, and a sparse thinned configuration with approximately 60 percent element density). Monte Carlo simulations employing 10,000 independent trials per scenario are used to validate the theoretical covariance-matrix eigenstructure predictions against finite-sample estimation effects, particularly the well-known Reed-Mallett-Brennan sample-support rule of thumb (2N samples for 3 dB average loss). Results are presented for narrowband and wideband (fractional bandwidth up to 15 percent) signal models using tapped-delay-line time-domain beamforming to compensate for beam-squint effects across the array aperture.
+
+I. INTRODUCTION
+
+Phased-array radar systems achieve electronic beam steering through controlled phase (and, in wideband implementations, true time-delay) shifts applied to signals at each radiating element or subarray. The theoretical foundations of adaptive array processing trace to early work by Applebaum [1] and Widrow et al. [2], with subsequent refinement of the sample matrix inversion (SMI) technique by Reed, Mallett, and Brennan [3]. As array apertures have grown and digital receiver/exciter (DREX) modules have proliferated down to the subarray or even element level, the computational burden of adaptive weight calculation has shifted from analog control-loop bandwidth limitations toward covariance-matrix estimation accuracy and processor throughput constraints.
+
+This generic treatment does not address any specific fielded radar system, waveform library, or national program; the analysis herein is intended purely as a contribution to the open adaptive-array signal-processing literature. Reported gains are simulation-derived and are not validated against measured hardware performance, which is estimated to differ due to element-level amplitude/phase errors, mutual coupling, and quantization effects not fully captured in the covariance model used here.
+
+II. SIGNAL MODEL
+
+Consider a planar array of N elements arranged in a rectangular lattice with interelement spacing d, nominally chosen as one-half wavelength at the array's center design frequency to avoid grating lobes across the specified scan volume. The received signal vector at time sample k may be written as
+
+x(k) = a(θ_s)s(k) + Σ_{i=1}^{M} a(θ_i)j_i(k) + n(k)
+
+where a(θ) denotes the array steering vector, s(k) the desired target return, j_i(k) the i-th of M interference sources at angle θ_i, and n(k) additive thermal noise assumed spatially and temporally white with variance σ²_n. The sample covariance matrix estimate is formed as
+
+R̂ = (1/K) Σ_{k=1}^{K} x(k)x^H(k)
+
+and the adaptive weight vector under the MVDR criterion is w = R̂⁻¹a(θ_s) / [a^H(θ_s)R̂⁻¹a(θ_s)], subject to the usual assumption that K ≥ N for R̂ to be invertible with acceptable conditioning; in practice K on the order of 2N to 5N is typically recommended, consistent with [3].
+
+III. MAINLOBE JAMMER SUPPRESSION VIA EIGEN-SUBSPACE PROJECTION
+
+[remainder of full-text access restricted — first 200 words only retrieved from publisher cache, 2018-05 crawl]
+
+...the interference subspace is estimated via eigendecomposition of R̂ and the dominant eigenvectors, whose count is estimated by comparing eigenvalues against a noise-floor threshold (itself dependent on an assumed, possibly imprecise, noise power estimate)...
+
+REFERENCES
+[1] S. P. Applebaum, "Adaptive Arrays," IEEE Trans. Antennas Propag., vol. AP-24, no. 5, pp. 585–598, Sep. 1976.
+[2] B. Widrow et al., "Adaptive Antenna Systems," Proc. IEEE, vol. 55, no. 12, pp. 2143–2159, Dec. 1967.
+[3] I. S. Reed, J. D. Mallett, and L. E. Brennan, "Rapid Convergence Rate in Adaptive Arrays," IEEE Trans. Aerosp. Electron. Syst., vol. AES-10, no. 6, pp. 853–863, Nov. 1974.
+[4] R. Klemm, Principles of Space-Time Adaptive Processing, 3rd ed. London: IET, 2006.
+[5] H. Van Trees, Optimum Array Processing, Part IV of Detection, Estimation, and Modulation Theory. New York: Wiley, 2002.
+
+Manuscript received October 11, 2017; revised February 3, 2018; accepted March 19, 2018. This work was supported in part by an internal university research

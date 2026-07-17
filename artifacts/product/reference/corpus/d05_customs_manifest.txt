@@ -1,0 +1,104 @@
+GOVERNMENT OF PAKISTAN
+CENTRAL BOARD OF REVENUE (FBR) — DIRECTORATE OF CUSTOMS VALUATION
+KARACHI EAST / PORT QASIM COLLECTORATE
+
+GOODS DECLARATION (GD) — IMPORT
+Format WeBOC-GD/2020 (Sec. 79, Customs Act 1969)
+
+GD No.: KAPQ-HC-2020-118834          Date of Filing: 11-NOV-2020
+Type: Home Consumption                Regime: Normal
+Terminal: PICT / Port Qasim
+
+------------------------------------------------------------------------------
+IMPORTER / CONSIGNEE:      TRANS-INDUS TRADING & GEN. SUPPLIES (PVT) LTD
+                            Suite 4-B, Sharae Faisal, Karachi
+                            NTN: 3301145-6   STRN: 03-11-9284-002-77
+                            (c/o freight fwd: Al-Buraq Cargo Services,
+                            same addr. per POA on file)
+
+NOTE ON NAME: shipping line B/L shows consignee as
+"TRANS INDUS TRADING & GENL SUPPLIES PVT.LTD" (no hyphen) — GD narrative
+uses hyphenated form above; discrepancy flagged by data-entry, not
+resolved, filer states "same legal entity, minor typo, ref amendment
+pending."
+
+SHIPPER / EXPORTER:         CHINA XINSHIDAI IMP. & EXP. CORP
+                            (also seen on packing list as "Xin Shi Dai
+                            Import Export Co.", Beijing branch office,
+                            Fengtai Dist.)
+
+COUNTRY OF ORIGIN:          CHINA (PRC)
+COUNTRY OF SHIPMENT:        CHINA (PRC)
+PORT OF LOADING:            TIANJIN XINGANG
+PORT OF DISCHARGE:          PORT QASIM, PAKISTAN
+
+------------------------------------------------------------------------------
+INVOICE NO: XSD/2020/PK/0947          INVOICE DATE: 02-OCT-2020
+CONTRACT/LC REF: TIT-LC-4471/2020 (LC issued MCB Bank Ltd, I.I. Chundrigar
+Br.) — Incoterm: CFR Port Qasim
+
+MODE: Sea, FCL x1 (40' HC)
+CONTAINER NO: TGHU 3350917
+B/L NO: XSDPK20100237
+GROSS WEIGHT: 6,140 KGS       NET WEIGHT: 5,775 KGS
+NO. OF PACKAGES: 14 WOODEN CASES
+
+------------------------------------------------------------------------------
+DECLARATION — ITEM/LINE DETAIL
+
+Item 1 of 3
+HS Code:            8526.91.00
+Description (as declared):
+  "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY, FOR GENERAL
+   INDUSTRIAL RADIO-NAVIGATIONAL USE, ASSTD, NOT FOR MILITARY
+   END-USE (SEE SUPPLIER LETTER ANNEX-C)"
+Qty: 226 PCS      Unit Price: USD 84.60      Total: USD 19,119.60
+Country of Origin: CHINA
+
+Item 2 of 3
+HS Code:             8529.90.90
+Description: "PARTS SUITABLE FOR USE SOLELY OR PRINCIPALLY WITH
+APPARATUS OF HEADING 85.26 — WAVEGUIDE SECTIONS, MOUNTING
+BRACKETS, CABLE HARN-
+ESS SUB-ASSY (BULK)"
+Qty: 340 PCS      Unit Price: USD 22.10      Total: USD 7,514.00
+
+Item 3 of 3
+HS Code: 8543.70.90
+Description: "ELECTRICAL MACHINES AND APPARATUS, HAVING
+INDIVIDUAL FUNCTIONS, NOT SPECIFIED ELSEWHERE — SIGNAL
+PROCESSING UNIT MODULES (CIVIL TELECOM GRADE)"
+Qty: 40 SETS      Unit Price: USD 640.00     Total: USD 25,600.00
+
+DECLARED TOTAL FOB/CFR VALUE: USD 52,233.60
+ASSESSED VALUE (PRAL/Valuation Ruling 1122/2019 applied): USD 58,900.00
+DUTY/TAX CHARGED: Customs Duty 20% + ST 17% + WHT 5.5% — PAID
+
+------------------------------------------------------------------------------
+ANNEX-C (Supplier Technical Note, attached to GD as supporting doc,
+2 pp., poor scan quality — reproduced as received):
+
+"...the enclosed assemblies correspond to sub-components of the
+phased-array illumina-
+tor unit, type ref HT-233 (export config), consistent with
+prior deliveries under Contract Batch 3 to the end-cust omer
+formation at Kirana Hills / Sargodha AD Complex. Please route
+onward per standing instruction — do NOT reference system
+designation on outer case markings, use generic 'radar apparatus
+parts' per prior consignments Ref# LY-2018-0334 and LY-2019-1187..."
+
+>> fax header bleed, top of page 2, partially legible:
+   "...FROM: XINSHIDAI-EXPORT/BEIJING  TO: AL-BURAQ KHI
+   RE: SHPT CONFIRMATION — PLS DISREGARD PRIOR CC TO
+   PAKISTAN AIR FORCE PROCUREMENT WING, RESEND ADDR AS
+   TRANS-INDUS ONLY, THX —END TX—..."
+
+(Annex-C page 2 bottom third illegible/water-damaged; remainder of
+fax number partially visible: +86-10-63xx-xxxx)
+
+------------------------------------------------------------------------------
+FILER REMARKS (Customs Agent):
+Consignment examined 40% per RMS Yellow Channel selectivity.
+Physical exam: cartons contained modular electronic units, PCB
+assemblies, wave-guide flange hardware; no arms/ammo markings
+noted; no import license under Import Policy Order

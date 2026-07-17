@@ -245,6 +245,17 @@ induction.
 Satisfies the assignment's *text + ≥1 of image/video/social* rule with margin, and lets you engineer the
 five graded scenarios into real-sourced material.
 
+> **Exploratory — constant-supplier realism (2026-07-16).** The China→Pakistan finished-system import is a
+> *single constant supplier*, which could look like it flattens the supply-chain / dedup problem. Verdict:
+> it does **not** — it's the *confirmed backbone* by design, and the graded difficulty (alias/variant
+> resolution, deep-tier uncertainty, credibility/freshness/gaps) is orthogonal to it; a lone importer being
+> dependent on one OEM is also the *real* dependency structure, which is exactly what the analysis exposes.
+> **Condition:** to keep the chokepoint analysis non-trivial (not "everything depends on China —
+> obviously"), the corpus MUST **branch below the prime** (≥1 deep-tier sub-supplier) and include **≥1
+> genuine substitutability story** (a component with an alternate source, or the real
+> S-400-under-sanctions re-sourcing analog) so `substitutable-by` has known-sole-source vs known-alternates
+> vs UNKNOWN cases to distinguish. Generator cases in §5.1; ontology in `../C/01-materiality-ontology.md`.
+
 **Modalities**
 - **Text:** SIPRI transfer row; ISPR induction PR; Quwa/Army Recognition/Defense News articles;
   synthetic-from-real customs manifest (ImportYeti/Zauba row as template); synthetic-from-real tender
@@ -264,6 +275,97 @@ five graded scenarios into real-sourced material.
    claims is active.
 6. *Entity-resolution HITL trap* → the **FD-2000 ≠ FT-2000** false-merge, or HQ-9/P↔HQ-9BE↔FD-2000
    ambiguity, surfaced at a confidence threshold for analyst accept/reject.
+
+### 5.1 Supply-chain & entity structure the generator must engineer
+
+Beyond the six credibility scenarios above, the ontology (`../C/01-materiality-ontology.md`) needs these
+**structural** cases seeded so the chokepoint + resolution logic has something to bite on. Most deep
+instances are legitimately *Known-Gap candidates* (OSINT can't see them) — but seed **at least one concrete
+instance of each** so the mechanism demonstrably fires, and make the generator emit each as an explicit,
+**labelled** case so we can report exactly which structural cases the corpus contains.
+
+- **Deep-tier / BOM branch (≥1):** one named sub-component chain below the prime — e.g. HT-233 → T/R module
+  → foundry (via `component-of` / tier-2 `supplies-component`). Seed **one** deep-tier supplier NAMED by a
+  sanctions/export-control listing or tender (→ a *confirmed* deep-tier chokepoint) and leave the rest as
+  candidates (→ collection tasks). This is what stops "everything depends on China" being the only finding.
+- **Substitutability story (≥1):** at least one component with a **known-alternate** source (→ *not* a
+  chokepoint) AND one **known-sole-source** (→ *confirmed* chokepoint), plus the default **UNKNOWN** (→
+  candidate). The real **S-400-under-sanctions re-sourcing** narrative is a ready analog; for HQ-9 a
+  domestic-vs-import sourcing choice works. Also seed one **adversary-denial** case — a planted "a second
+  source exists" claim that must be *discounted*, not treated as a chokepoint downgrade.
+- **Unit aliasing (≥1):** one unit carrying multiple designators (official + **cover-designator/MUCD** +
+  bort/vehicle numbers) so *unit-level* `same-as`/`distinct-from` resolution is exercised — distinct from
+  the system/variant resolution trap in scenario 6.
+- **Readiness proxy vs gap:** for one unit, seed observed readiness *proxies* (ELINT emitter-active /
+  exercise or parade footage) → an ordinal `operational-status`; leave true serviceability/manning
+  unobservable → a **Known Gap**. Demonstrates *possession ≠ combat-ready*.
+- **Alt-part (optional, design-note):** a different component that could do the same job (e.g. an
+  alternative radar/round) as a Component-level substitute.
+
+### 5.2 Data-generation handoff — gaps to close before freezing the corpus (exploratory, 2026-07-16)
+
+> **Why this block exists.** The C problem-scoping docs (`../C/00-overview.md`, `../C/01-materiality-ontology.md`,
+> `../C/02-demo-thread.md`) and this data-scoping doc have **drifted**, because data generation hasn't been
+> properly reworked yet — the docs describe a demo the current corpus can't source. This block is the build
+> backlog for the data-generation agent. It consolidates (i) the **C↔data divergences** and (ii) the
+> **doc↔data-drift** findings from the pre-flight audit (`06-preflight-audit.md` §1 — H-CONSIST-1/2/3,
+> H-DEVIATION-1, M-INCONSIST-1, M-DATA-1, L-CONSIST-1). Owner tags: **[needs Pragalbh]** = a scoping decision
+> to lock *first*; **[agent]** = follows mechanically once the decision above it is locked. **Nothing here is
+> decided** — §1–§5.1 above are unchanged; this is where the next agent picks up.
+
+**5.2.1 — Decisions to lock before extraction freezes** `[needs Pragalbh]`
+
+| # | Divergence | Where it bites | Options / audit-recommended direction |
+|---|---|---|---|
+| D1 | **Marquee observable has zero seed data.** The locked primary observable is the **HQ-9B Rawalpindi→Rahwali (2025)** occupancy state-change with a `supersedes` retirement — but neither site nor the 2025 event appears anywhere in `05` (grep-empty), and the corpus instead ships a weaker "bare status flip" at an orphan `site_second`. Only **Karachi Cantonment** (`05:148`) has real grounding today. | `C/02` flex 6 (LOCKED, Q1); `06` H-CONSIST-2 | **(a)** regenerate the corpus with the full relocation + `supersedes` thread (add `site_rawalpindi`, retarget `site_second`→`site_rahwali`, seed a decoy-capped probable single pass + an independent confirmer, set `observable.primary=basing_relocation`); **(b)** formally de-lock to the Karachi status flip and strip all Rahwali/supersede language. Audit prefers **(a)**. *Timeline-gated.* |
+| D2 | **Flagship merge pair unfixed + un-seeded.** Docs disagree — `C/01` = **HQ-9/P vs HQ-9BE** (`distinct-from`), FD-2000/FT-2000 the "easy secondary"; `08`/`C/02` flex 4 = **FD-2000 ≠ FT-2000** as marquee. Corpus instantiates neither: FT-2000 is in **zero** of 14 docs; **zero** `same-as`/`distinct-from` edges exist. Scenario 6 (`05:276`) still offers both. | `C/01`; `C/02` flex 4; `06` H-CONSIST-3 | Lock ONE flagship (audit: HQ-9/P vs HQ-9BE, seeded by d04), then seed a real `distinct-from` (variant↔variant) + a `same-as`/alias (FD-2000→HQ-9/P) so both merge mechanisms have write-back targets; demote FT-2000 to a design-note example (or add a node + doc if it must appear on screen). |
+| D3 | **Imagery/VLM has no substrate.** Zero raster/video in the corpus; imagery "docs" are prose satellite-product text and the M4 social doc narrates the verdict outright. The design commits to a live VLM extractor + computed image-integrity signals that can't run on text. Governs whether the **Image** modality (`05:263-264`) needs real specimens. | `06` H-DEVIATION-1 | **(a)** lock the honest posture — imagery enters as analyst-report **TEXT**; M4 = coordinated-inauthenticity + first-seen from text+timestamps; VLM/EXIF/reverse-image → roadmap; strip the give-away lines so the signal is *earned* from a near-duplicate/burst cluster; **(b)** gather 3–4 real assets and wire one genuine VLM call. |
+| D4 | **Demo sustainment node undecided, no source either way.** `C/01`/`C/02` leave the demo sustainment node open (Interceptor Stockpile *or* Tech-Data/Software Authority); `05` sources **neither** (grep-empty), so the "follow-on order via `replenishes`" / TDP-authority beat has nothing to seed. PPRA tenders (`05:103-105`) are generic, not interceptor-specific. | `C/01` sustainment nodes; `C/02` open Q | Pick one node, then source (or synthesize-from-template) one concrete instance — a real follow-on interceptor order / spares tender — to seed it. |
+| D5 | **Woody Island may violate C's own enrichment bound.** `05` pushes **CSIS AMTI Woody Island** as *the* China-side imagery enrichment (×4), but `C/00`'s locked out-of-scope list excludes PLA reef/island basing and naval HHQ-9 — Woody Island (Paracels) is arguably exactly that. | `C/00` out-of-scope; `05:65,125-126,171,189-190` | Confirm whether Woody Island imagery is in-bound (capability-family depth) or out (naval/reef site); if out, name a replacement China-side imagery anchor before relying on it. |
+
+**5.2.2 — Mechanical corpus/data fixes** `[agent]` (some gated on 5.2.1)
+
+| # | Fix | Finding |
+|---|---|---|
+| F1 | **Repair the worked-query ground truth.** Rewire `answer_key.json` + generator edges to `C/01`'s grammar so every consecutive pair in `expected_path` is edge-connected (`manufactures` mfr→component, `variant-of` component→variant, `exported-by` import→mfr, keep `imported-by`/`based-at`); add an acceptance check that the path is fully traversable. Two of four hops don't exist today. | `06` H-CONSIST-1 |
+| F2 | **Relabel HT-233 as chokepoint CANDIDATE** (`substitutability:'UNKNOWN'` + attached Known Gap); keep the `supplies-component` edge sourced, but move the sole-source *conclusion* onto a separate candidate overlay. In-degree-1 in a 14-doc hand-built graph is a coverage artifact, and confirming it contradicts `C/01`'s own sole-source honesty rule. Same edit pass as F1. | `06` M-INCONSIST-1 |
+| F3 | **Add missing named designations to the §4 alias tables.** HQ-9 side: **Type 120, Type 305A/B, YLC-2V** (only HT-233/Type 233 present, `05:225`). S-400 side: **55K6E** (command post), **5P85** (TEL) — absent from `05:210-216`. `C/01` requires all as `model_designation` values. | divergence |
+| F4 | **Give CASIC 2nd Academy a real §2 source entry.** It's the named `design-authority-for` anchor but appears only as a bare "CASIC/CPMIEC" label (`05:61`) with no URL/quote (contrast CPMIEC at `05:114`), and no `exported-by`/`design-authority-for` edge wires it into the graph. Source it, then wire the edges (part of F1). | divergence; `06` H-CONSIST-1 |
+| F5 | **Name a real deep-tier sub-supplier + sub-tier parts.** `05:287-291` requires "one deep-tier supplier NAMED by a sanctions/export-control listing or tender" but names none; `C/00` cites **Taian/Wanshan** chassis and **seeker / GaN T/R modules / propellant / ICs / ceramics** as the sub-tier set — none in `05` (grep-empty). Pick a real named instance for the *confirmed* deep-tier chokepoint; leave the rest as candidates. | divergence; `05:287-291` |
+| F6 | **Fix the corruption-operator claim + audit + d05.** Reword `05` §5 / generator header (and `DECISIONS.md`) from "applied programmatically / deterministic" to "named operators, prompt-steered from real specimens and manually audited post-freeze"; hand-audit the 14 frozen docs recording which operators landed per doc; lightly edit d05 to delete the in-line cover-story resolution so the declared-civil-vs-invoice contradiction is surfaced by the pipeline, not pre-resolved. | `06` M-DATA-1 |
+| F7 | **Ground §5.1's other structural cases.** The substitutability story, adversary-denial case, unit-aliasing/MUCD case, and readiness-proxy case (`05:291-301`) are conceptual only — name a concrete instance/document for each, since `C/01`'s demo-scope subset requires one firing instance of each. | divergence |
+| F8 | **Reconcile the HQ-9BE range figure.** `C/01` says ~250–300 km; `05:228` says 260–280 km. Pick one. | divergence |
+
+**5.2.3 — Scenario ↔ flex bookkeeping** (reconcile the counting; do NOT change the body until picked)
+
+- **§5 intro says "five graded scenarios" (`05:245`) but §5 lists six (`05:268-277`)**, and `C/02` counts the Rawalpindi observable as flex #6-of-6 while `DECISIONS.md` counts it separately — so "six" means two different things across docs. Pick one canonical statement (`06` L-CONSIST-1 suggests "8 seeded moments staged as 6 flexes").
+- **Scenario 3 (contradicted pair) is orphaned** — no `C/02` flex cites it (flexes cite Scenarios 1,2,4,5,6). Stage it or drop it.
+- **Flex 5 (freshness/stale) cites no scenario** — earmark a §5 scenario for the "2019/2016 imagery gone stale" beat (only Scenario 5's "gap" framing is near, and flex 2 already claims that).
+
+**5.2.4 — Orphans: `05` content with no C home** (demote to "background / collection-context only" so the generator isn't tempted to seed from them)
+
+- **Comtrade / TradeMap aggregate stats** (`05:58,87-89`) — no C node cites it; component-flow trend background only.
+- **Russia zakupki + Rosoboronexport / Almaz-Antey S-400 procurement** (`05:108-113`) — supports S-400, which is design-note-reference only.
+- **China CCGP / PLA portals** (`05:106-107`) — 05 itself flags these unreachable; `C/00` already predicts tier-2/3 naming stays open.
+- **X / Telegram handle list** (`05:149-152`) — generic; tied to the orphaned Scenario 3.
+- **NOTAM / NAVAREA strings** (`05:154-159`) — no C node consumes "exercise/test tempo" as a typed fact (nearest is `operational-status` readiness proxy, never wired).
+- **§6 collection gotchas** (`05:307-316`) — ingestion-tooling notes; belong to `spine/02`, not C scoping.
+
+> **Also corpus-level (handled at generation, not in this doc):** `06` L-CONSIST-1's cleanup sweep — off-ontology / misspelled type strings (`radar_command_node`, `sustenance_node`, `contract_import`), a stray third temporal field name (`evidence_date`), and a corpus doc missing its `manifest.jsonl` row.
+
+**5.2.5 — Corpus needs from the resolution/assertion design** `[agent]` (per `08-spine-2.0-review.md` Part 2 §F;
+scenario *needs*, not prescribed content — generator stays blind to the ontology, messiness preserved)
+
+- **Orphan/thin-block alias case:** one component reported under a differently-worded name **not** in the
+  seeded §4 alias table, so the LLM candidate-gen recall path (selective, offline proposer — spine/03) has a
+  real orphan to demonstrate recovering.
+- **Deterministically-detectable deception cluster:** near-duplicate text + timestamp ordering (the reshare
+  cluster already at Scenario 4, `05:272-273`) so structural M4 detection fires off hash/timestamp/first-seen
+  signals alone — no LLM, and the doc must not narrate the verdict (ties to D3/F6 above).
+- **Adversary-denial case:** a claim denying a known dependency, or asserting a fake second source, to
+  exercise the discount **gate** (adversary-denial excludes the claim from grouping — it is not a credibility
+  multiplier); already tracked as part of §5.1's substitutability story (`05:294-295`) and F7's open
+  grounding gap — this is the same instance, framed for the gate mechanism rather than duplicated.
 
 ---
 

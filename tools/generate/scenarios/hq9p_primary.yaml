@@ -1,210 +1,493 @@
 # ============================================================================
-# SCENARIO SPEC  —  this is the file you configure.
-# ============================================================================
-# The generator reads this + the gathered real material (corpus/raw/) and emits
-# a FROZEN, messy corpus into corpus/scenarios/hq9p_primary/ that the rest of the
-# system ingests cold. Edit this YAML to retune the demo; copy it to make a new
-# scenario (multi-scenario = multiple specs -> multiple frozen folders).
+# SCENARIO SPEC (SIGNAL tier) — hq9p_primary
+# Realigned 2026-07-17 to the LOCKED observable (HQ-9B Rawalpindi->Rahwali 2025)
+# and the deception structure in artifacts/md/10-data-generation-strategy.md.
+# Fixes audit gaps: H-CONSIST-1 (edge-connected worked-query path),
+# H-CONSIST-2 (relocation seed data), H-CONSIST-3 (flagship distinct-from/same-as),
+# M-INCONSIST-1 (HT-233 = CANDIDATE chokepoint), M-DATA-1 (d05 cover-story not pre-resolved),
+# H-DEVIATION-1 (imagery = analyst-report TEXT), L-CONSIST-1 (clean ontology type strings).
 #
-# Design rules baked in (from artifacts/C + artifacts/spine):
-#   * Generator emits RAW docs only (text/records/captions) — never clean ontology
-#     fields. The pipeline earns extraction. `asserts:` below is GENERATION INTENT,
-#     used to render the doc and to build the answer key; it is NOT written into the
-#     frozen doc.
-#   * Messiness is seeded from REAL specimens (templates in corpus/raw/), applied as
-#     named operators — not "make it messy". Every operator is reportable.
-#   * `ground_truth` is the answer key (eval only), never fed to the pipeline.
+# Fields per doc:
+#   asserts     : generation intent (implied in text, NOT written as fields)
+#   corruption  : messiness operator ids (operators.yaml §corruption) or free text
+#   deception   : deception operator ids (operators.yaml §deception) — earned in text
+#   registry    : GROUND-TRUTH source-registry the pipeline must COMPUTE (answer key only)
+#   expect      : expected pipeline behaviour (verification oracle)
 # ============================================================================
 
 meta:
   name: hq9p_primary
-  subject: "Pakistan HQ-9/P (enriched with China HQ-9)"
-  corpus_size_target: 14
-  # Corpus supports BOTH candidate observables; pick which the demo fires.
+  subject: "Pakistan HQ-9/P (Army, worked query) + HQ-9B (PAF, relocation observable); enriched w/ China HQ-9"
+  tier: signal
   observable:
-    primary: basing_crossing            # a basing node crosses probable -> confirmed
-    also_supported: sustainment_tender  # a 'spares' tender implies induction
-  seed_note: "Keep the generator blind to the ontology. Also leave ≥1 real uncurated doc from corpus/raw in the mix."
+    primary: basing_relocation          # HQ-9B Rawalpindi -> Rahwali (2025) state-change
+    also_supported: sustainment_tender  # spares tender -> probable induction (config-only)
 
 # ---------------------------------------------------------------------------
-# GROUND TRUTH  (answer key — eval only, never ingested)
-# The frozen corpus must let the pipeline reconstruct this, with these statuses.
+# OBSERVABLE (the locked tripwire — verbatim from C/02 + design brief §3)
+# ---------------------------------------------------------------------------
+observable:
+  id: basing_relocation
+  edge: based-at
+  unit: unit_hq9b
+  before: {site: site_rawalpindi, state: occupied, status: confirmed, evidence_date: "2021"}
+  trigger: "new occupancy indicator(s) at Rahwali for the same resolved unit x site instance in 2025"
+  after_probable: {site: site_rahwali, state: occupied, status: probable, cause: "single-pass signature match -> decoy_risk cap"}
+  after_confirmed: {site: site_rahwali, state: occupied, status: confirmed, cause: "2nd discipline-independent + cross-interest signal, clean decoy check"}
+  supersedes: "matched on resolved unit x site instance (NOT designator) -> Rawalpindi based-at degrades to STALE"
+  proves: "perishable-freshness decay + decoy->probable cap + >=2-independent confirmed gate + supersedes-vs-contradicts"
+  seed_docs: [d17_rawalpindi_2021, d18_rahwali_pass1, d19_rahwali_confirm, d20_supersede_spoof]
+
+# ---------------------------------------------------------------------------
+# GROUND TRUTH graph (answer key — eval only, never ingested). Clean type strings.
 # ---------------------------------------------------------------------------
 ground_truth:
   nodes:
-    - {id: mfr_casic,    type: manufacturer,       name: "China Aerospace Science & Industry Corp (CASIC)", export_agent: "CPMIEC"}
-    - {id: comp_ht233,   type: radar_command_node, name: "HT-233 engagement radar", chokepoint: true, why: "sole supplier on the critical path (single-source in-degree)"}
-    - {id: comp_missile, type: component,          name: "HQ-9-family interceptor"}
-    - {id: var_hq9p,     type: variant,            name: "HQ-9/P",  branch: "Pakistan Army"}
-    - {id: var_hq9be,    type: variant,            name: "HQ-9BE",  branch: "Pakistan Air Force"}
-    - {id: import_2021,  type: contract_import,    name: "China→Pakistan HQ-9/P transfer", status: confirmed, evidence_date: "2021"}
-    - {id: unit_paad,    type: unit,               name: "Pakistan Army Air Defence (HQ-9/P)", status: confirmed, evidence_date: "2021-10-14"}
-    - {id: site_karachi, type: basing_site,        name: "Karachi (geolocated)", status: confirmed, confirmed_by: imagery, evidence_date: "2022"}
-    - {id: site_second,  type: basing_site,        name: "second/relocated site", status: probable, note: "single hedged source"}
-    - {id: sustain_spares, type: sustenance_node,  name: "spares/maintenance tender", status: probable, note: "tender implies induction, never confirms"}
+    - {id: mfr_casic,      type: manufacturer, name: "CASIC — HQ-9 design authority = 2nd Academy / China Academy of Defence Technology / China Changfeng Group (CCFG); 2nd Academy on US BIS Entity List (2018)", export_agent: "CPMIEC (export/marketing only, markets as FD-2000 — NOT the manufacturer)", place_ref: pl_casic_2nd}
+    - {id: comp_ht233,     type: component, functional_role: engagement_fire_control, name: "HT-233 engagement radar",
+       chokepoint: candidate, substitutability: UNKNOWN, manufacturer: unknown,
+       why: "authoritative 2025 study (CASI/BluePath) marks HT-233 maker UNKNOWN; single-source in-degree in our data, no evidence of a 2nd qualified line (M-INCONSIST-1)"}
+    - {id: comp_interceptor, type: component, functional_role: interceptor, name: "HQ-9-family interceptor round"}
+    - {id: mfr_23rd_ri,    type: manufacturer, name: "CASIC 23rd Research Institute (Beijing Institute of Radio Measurement) — 2nd Academy in-house radar institute",
+       status: candidate, place_ref: pl_birm, why: "plausible HT-233 maker by institutional logic (builds radars for sibling HQ-series); NOT confirmed for HT-233 (CASI 2025)"}
+    - {id: mfr_4th_academy, type: manufacturer, name: "CASIC 4th Academy / Academy of Rocket Motors Technology (ARMT)",
+       status: candidate, why: "CASIC's house solid-rocket-motor academy; plausible interceptor-motor supplier, not HQ-9-named (US MTCR sanction 2022 is generic)"}
+    - {id: gap_ht233_maker, type: known_gap, name: "HT-233 manufacturer + substitutability", observability_ceiling: probable_max,
+       note: "best open-source study (CASI 2025) states maker Unknown; deeper radar T/R-module / seeker / datalink tiers not open-source-attributable -> collection requirement"}
+    - {id: sustain_techdata, type: sustainment, subtype: techdata_authority, name: "Technical-Data / Software & Calibration Authority",
+       status: probable, why: "the invisible dependency — controls software/calibration (A2 default node)"}
+    - {id: sustain_spares, type: sustainment, subtype: interceptor_stockpile, name: "spares / maintenance tender implication", status: probable}
+    - {id: var_hq9p,       type: variant, export_designator: "HQ-9/P", branch: "Pakistan Army", range_km: 125,
+       aliases: ["HQ-9P", "FD-2000"]}
+    - {id: var_hq9be,      type: variant, export_designator: "HQ-9BE", branch: "Pakistan Air Force", range_km: 260}
+    - {id: alias_ft2000,   type: variant, export_designator: "FT-2000", note: "anti-radiation variant — DISTINCT-FROM HQ-9/P (false-merge trap)"}
+    - {id: import_2021,    type: contract_import_event, name: "China->Pakistan HQ-9/P transfer", status: confirmed, evidence_date: "2021"}
+    - {id: unit_paad,      type: unit, name: "Pakistan Army Air Defence — HQ-9/P regiment", status: confirmed, evidence_date: "2021-10-14"}
+    - {id: unit_hq9b,      type: unit, name: "PAF HQ-9B fire-unit (relocation subject)", status: confirmed, evidence_date: "2021"}
+    - {id: site_karachi,   type: basing_site, name: "Karachi Army Air Defence site (Malir area)", place_ref: pl_karachi_ad, status: confirmed, confirmed_by: imagery, evidence_date: "2022"}
+    - {id: site_rawalpindi, type: basing_site, name: "PAF Base Nur Khan (fmr Chaklala), Rawalpindi", place_ref: pl_nurkhan, status: stale, note: "occupied 2021 (confirmed) -> STALE after 2025 relocation"}
+    - {id: site_rahwali,   type: basing_site, name: "Rahwali airfield/cantonment, Gujranwala", place_ref: pl_rahwali, status: confirmed, note: "2025 relocation destination: probable(single-pass) -> confirmed(2nd signal)"}
+    - {id: gap_launcher_count, type: known_gap, name: "TEL/battery count", observability_ceiling: probable_max, note: "never disclosed by Pakistan"}
   edges:
-    - {rel: manufactures,     from: mfr_casic,    to: var_hq9p,     status: confirmed, freshness: durable}
-    - {rel: supplies-component, from: comp_ht233, to: var_hq9p,     status: confirmed, freshness: durable, chokepoint: true}
-    - {rel: supplies-component, from: comp_missile, to: var_hq9p,   status: confirmed, freshness: durable}
-    - {rel: variant-of,       from: var_hq9p,     to: "HQ-9",       status: confirmed, freshness: durable}
-    - {rel: variant-of,       from: var_hq9be,    to: "HQ-9",       status: confirmed, freshness: durable}
-    - {rel: imported-by,      from: import_2021,  to: unit_paad,    status: confirmed, freshness: durable}
-    - {rel: inducted-into,    from: var_hq9p,     to: unit_paad,    status: confirmed, evidence_date: "2021-10-14"}
-    - {rel: based-at,         from: unit_paad,    to: site_karachi, status: confirmed, confirmed_by: imagery, freshness: perishable}
-    - {rel: based-at,         from: unit_paad,    to: site_second,  status: probable,  freshness: perishable}
-    - {rel: sustained-by,     from: unit_paad,    to: sustain_spares, status: probable, freshness: perishable}
+    # origin / supply chain (durable)
+    - {rel: manufactures,         from: mfr_casic,      to: var_hq9p,       status: confirmed}
+    - {rel: manufactures,         from: mfr_casic,      to: var_hq9be,      status: confirmed}
+    - {rel: manufactures,         from: mfr_casic,      to: comp_ht233,     status: confirmed}
+    - {rel: supplies-component,   from: comp_ht233,     to: var_hq9p,       status: confirmed, chokepoint: candidate}
+    - {rel: supplies-component,   from: comp_interceptor, to: var_hq9p,     status: confirmed}
+    - {rel: candidate-manufactures, from: mfr_23rd_ri,    to: comp_ht233,   status: candidate, note: "inferred institutional logic (CASI 2025); NOT confirmed"}
+    - {rel: candidate-supplies-component, from: mfr_4th_academy, to: comp_interceptor, status: candidate, note: "plausible CASIC SRM house; not HQ-9-named"}
+    - {rel: design-authority-for, from: sustain_techdata, to: var_hq9p,     status: probable, note: "candidate invisible chokepoint"}
+    - {rel: variant-of,           from: var_hq9p,       to: "HQ-9",         status: confirmed}
+    - {rel: variant-of,           from: var_hq9be,      to: "HQ-9",         status: confirmed}
+    # resolution edges (flagship merge — H-CONSIST-3 fix)
+    - {rel: distinct-from,        from: var_hq9p,       to: var_hq9be,      status: confirmed, note: "flagship: ~125km Army vs ~260km PAF"}
+    - {rel: same-as,              from: "FD-2000",      to: var_hq9p,       status: confirmed, note: "export designator = HQ-9/P"}
+    - {rel: distinct-from,        from: alias_ft2000,   to: var_hq9p,       status: confirmed, note: "FT-2000 anti-radiation != HQ-9/P (false-merge trap)"}
+    # ORBAT / import
+    - {rel: imported-via,         from: var_hq9p,       to: import_2021,    status: confirmed}
+    - {rel: exported-by,          from: import_2021,    to: mfr_casic,      status: confirmed}
+    - {rel: imported-by,          from: import_2021,    to: unit_paad,      status: confirmed}
+    - {rel: inducted-into,        from: var_hq9p,       to: unit_paad,      status: confirmed, evidence_date: "2021-10-14"}
+    - {rel: inducted-into,        from: var_hq9be,      to: unit_hq9b,      status: confirmed}
+    # basing (perishable) — worked query anchor + the relocation observable
+    - {rel: based-at,             from: unit_paad,      to: site_karachi,   status: confirmed, confirmed_by: imagery, freshness: perishable}
+    - {rel: based-at,             from: unit_hq9b,      to: site_rawalpindi, status: stale, freshness: perishable, note: "confirmed 2021 -> stale after relocation"}
+    - {rel: based-at,             from: unit_hq9b,      to: site_rahwali,   status: confirmed, freshness: perishable, note: "2025 probable->confirmed"}
+    - {rel: supersedes,           from: site_rahwali,   to: site_rawalpindi, status: confirmed, note: "state-change; needs confidence-floor to resist D8 spoof"}
+    # sustainment
+    - {rel: sustained-by,         from: unit_paad,      to: sustain_spares, status: probable}
+  # ------------------------------------------------------------------------
+  # PLACE GAZETTEER (answer-key oracle for location normalization; see md/13).
+  # canonical_dd = WGS84 decimal degrees; provenance real|synthetic|approximate.
+  # The pipeline must PARSE surface forms (DD/DMS/MGRS/toponym/relative/alias)
+  # from raw text and RESOLVE them to these place_ids — same-as AND distinct-from.
+  # ------------------------------------------------------------------------
+  places:
+    - {place_id: pl_nurkhan, canonical_name: "PAF Base Nur Khan, Rawalpindi", kind: airbase, precision_class: site,
+       canonical_dd: [33.61639, 73.09972], provenance: real, icao: OPRN, locode: null,
+       aliases: ["PAF Base Nur Khan", "Nur Khan Airbase", "PAF Base Chaklala", "Chaklala", "RAF Chaklala", "Chaklala Airport", "Benazir Bhutto International", "OPRN"],
+       admin: "Chaklala, Rawalpindi District, Punjab, Pakistan", relative: "~10 km SE of central Islamabad",
+       used_by: site_rawalpindi,
+       note: "renamed Chaklala->Nur Khan (2012); base coord is PUBLIC/real, the HQ-9B occupancy claim is synthetic scenario"}
+    - {place_id: pl_rahwali, canonical_name: "Rahwali Airfield / Cantonment, Gujranwala", kind: airfield, precision_class: site,
+       canonical_dd: [32.239, 74.131], provenance: real, icao: "OP27(pseudo)", locode: null,
+       aliases: ["Rahwali", "Rahwali Air Base", "Rahwali Airfield", "Rahwali Cantonment", "Rahwali Cantt"],
+       admin: "Rahwali, Gujranwala District, Punjab, Pakistan", relative: "~10 km NW of Gujranwala (GT Road / N-5)",
+       used_by: site_rahwali,
+       note: "airfield vs cantonment adjacent-distinct; OP27 is a DB placeholder, not an official ICAO; base coord public, occupancy claim synthetic"}
+    - {place_id: pl_karachi_ad, canonical_name: "Karachi Army Air Defence site (notional, Malir area)", kind: sam_site, precision_class: pad,
+       canonical_dd: [24.9012, 67.2034], provenance: synthetic, icao: null, locode: null,
+       aliases: ["Karachi", "Malir AD area"],
+       admin: "Malir area, Karachi, Sindh, Pakistan", relative: "NE Karachi",
+       used_by: site_karachi,
+       note: "SYNTHETIC pad position — we do not publish real battery fixes; parent-city 'Karachi' is AMBIGUOUS vs the two seaports below"}
+    - {place_id: pl_port_qasim, canonical_name: "Port Muhammad Bin Qasim", kind: seaport, precision_class: terminal,
+       canonical_dd: [24.767, 67.333], provenance: real, icao: null, locode: PKBQM,
+       aliases: ["Port Qasim", "Port Muhammad Bin Qasim", "Bin Qasim Port", "Bin Qasim", "PQ", "Qasim Port Authority", "QPA"],
+       admin: "Malir District, Karachi Division, Sindh", relative: "~35 km ESE of central Karachi",
+       distinct_from: [pl_karachi_port],
+       note: "port-of-entry for the import (d05); newer deep-water port"}
+    - {place_id: pl_karachi_port, canonical_name: "Port of Karachi (Keamari)", kind: seaport, precision_class: terminal,
+       canonical_dd: [24.835, 66.982], provenance: real, icao: null, locode: PKKHI,
+       aliases: ["Karachi Port", "Port of Karachi", "Karachi Port Trust", "KPT", "Keamari", "Kiamari"],
+       admin: "Keamari, Karachi, Sindh", relative: "~4 km SW of central Karachi",
+       distinct_from: [pl_port_qasim],
+       note: "the DISTINCT-FROM trap (geographic FT-2000): older main port, ~30-35 km from Port Qasim, both loosely called 'Karachi'"}
+    - {place_id: pl_casic_2nd, canonical_name: "CASIC Second Academy (China Academy of Defence Technology)", kind: facility, precision_class: district,
+       canonical_dd: [39.860, 116.283], provenance: approximate, icao: null, locode: null,
+       aliases: ["2nd Academy", "Second Academy", "China Academy of Defense Technology", "China Changfeng Group", "CCFG", "航天科工二院"],
+       admin: "Yongding Road, Haidian District, western Beijing", relative: "~15 km W of central Beijing",
+       used_by: mfr_casic,
+       note: "district-level ONLY (per md/13 precision spec: a design authority needs city+district, not a grid); Haidian/Fengtai attribution ambiguous"}
+    - {place_id: pl_birm, canonical_name: "Beijing Institute of Radio Measurement (CASIC 23rd RI)", kind: facility, precision_class: district,
+       canonical_dd: [39.860, 116.283], provenance: approximate, icao: null, locode: null,
+       aliases: ["BIRM", "Beijing Institute of Radio Measurement", "23rd Research Institute", "23rd Institute", "北京无线电测量研究所"],
+       admin: "50 Yongding Road, Haidian District, Beijing", relative: "co-located district with the 2nd Academy",
+       used_by: mfr_23rd_ri,
+       note: "address well-attested (entity lists), point derived; district-level is the required precision"}
 
 worked_query:
   text: "Trace the HQ-9/P battery at Karachi back to its component supplier and name the chokepoint."
-  expected_path: [site_karachi, unit_paad, import_2021, mfr_casic, comp_ht233]
-  expected_answer: "Chokepoint = HT-233 engagement radar (sole supplier on the critical path)."
-  must: "cite the exact source at every hop; separate observed (basing, imagery) from inferred (chokepoint)."
+  expected_path: [site_karachi, unit_paad, var_hq9p, comp_ht233, mfr_casic]
+  expected_path_edges:            # H-CONSIST-1: every consecutive pair IS edge-connected
+    - {from: site_karachi, rel: based-at,          to: unit_paad}
+    - {from: unit_paad,    rel: inducted-into,     to: var_hq9p}
+    - {from: var_hq9p,     rel: supplies-component, to: comp_ht233}
+    - {from: comp_ht233,   rel: manufactures,      to: mfr_casic}
+  expected_answer: "Chokepoint = HT-233 engagement radar — CANDIDATE. CASIC/2nd Academy is the confirmed program design authority; the specific HT-233 maker is a Known Gap (best open-source candidate = CASIC 23rd Research Institute, inferred/unconfirmed per CASI 2025). Substitutability UNKNOWN → collection requirement, not a confirmed sole-source."
+  must: "cite the exact source at every hop; separate observed (basing/imagery) from inferred (chokepoint candidacy)."
 
 # ---------------------------------------------------------------------------
-# DOCUMENTS  (what gets emitted into the frozen corpus)
-#   template: path under corpus/raw/ whose real FORMAT+messiness to imitate.
-#             If it's still `needs_*` in the manifest, generator falls back to the
-#             catalogued format sample in artifacts/md/05-data-scoping-C.md §2/§6.
-#   asserts:  generation intent (hidden from pipeline) — the claim(s) the raw doc implies.
-#   messy:    named corruption operators, each traceable to a real source of that mess.
+# DOCUMENTS (signal tier)
 # ---------------------------------------------------------------------------
 documents:
+  # ---- corroboration cluster (D3 aggregator, D4 aligned-interest, alias) ----
   - id: d01_sipri_transfer
     source_class: arms_transfer
-    template: corpus/raw/arms_transfer/sipri_transfers.*   # needs_manual_export
+    template: corpus/raw/arms_transfer/sipri_transfers.*
     date: "2021"
-    asserts: ["import_2021 confirmed: China supplied HQ-9/P SAM system to Pakistan"]
-    messy: [hs_code_absent, analyst_coded_row, value_in_comments]
-    flex: [corroborated]
+    asserts: ["import_2021 confirmed: China (CASIC/CPMIEC) supplied HQ-9/P SAM system to Pakistan, delivered/inducted 2021"]
+    corruption: [unit_count_absence, hedging]
+    deception: [aggregator_circular]     # D3: 'three outlets, all citing the SIPRI figure'
+    registry: {reliability_grade: B, bias_vector: third-party, primary_origin_id: SIPRI, aggregator_of: [tradepress_1, tradepress_2]}
+    expect: {contributes_to: import_2021, note: "4 apparent sources collapse to ONE origin group; no over-boost"}
 
   - id: d02_ispr_induction
     source_class: official
-    template: corpus/raw/official/ispr_hq9p_induction.*    # needs_residential_ip
+    template: corpus/raw/official/ispr_hq9p_induction.*
     date: "2021-10-14"
-    asserts: ["var_hq9p inducted-into unit_paad on 2021-10-14; HIMADS; range >100km; CLIAD"]
-    messy: [service_nickname_HIMADS, euphemistic_framing]
-    flex: [corroborated]
+    asserts: ["var_hq9p inducted-into unit_paad 2021-10-14 at Karachi; HIMADS; range >100km; part of CLIAD"]
+    corruption: [alias_substitution, hedging, unit_count_absence]
+    registry: {reliability_grade: B, bias_vector: operator-state, primary_origin_id: ISPR}
+    expect: {contributes_to: [inducted-into, import_2021], note: "official but INTERESTED party (operator-state)",
+             location: {place_id: pl_karachi_ad, surface_form: "Karachi (bare parent city)", formats: [toponym], precision: city,
+                        note: "AMBIGUOUS parent-city form -> resolves to the metro, not to a specific pad/terminal without the coord from d07 (parent-city ambiguity demo)"}}
 
   - id: d03_quwa_analysis
     source_class: trade_media
     template: corpus/raw/trade_media/quwa_hq9p.text.txt
     date: "2021-10"
-    asserts: ["corroborates induction; refers to the system as FD-2000 (export alias)"]
-    messy: [alias_FD2000, hedged_battery_counts]
-    flex: [corroborated, alias_merge_trap]
+    asserts: ["corroborates induction; refers to the system as FD-2000 (export alias = HQ-9/P)"]
+    corruption: [alias_substitution, hedging]
+    registry: {reliability_grade: C, bias_vector: third-party, primary_origin_id: quwa}
+    expect: {resolves: "FD-2000 same-as HQ-9/P (auto-merge)", contributes_to: import_2021}
 
   - id: d04_armyrec_ranges
     source_class: trade_media
     template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
     date: "2021-10"
-    asserts: ["var_hq9p (Army, ~125km) vs var_hq9be (PAF, ~260km) — one import, two branches"]
-    messy: [estimated_ranges, variant_fork]
-    flex: [alias_merge_trap]
+    asserts: ["HQ-9/P (Army ~125km) vs HQ-9BE (PAF ~260km) — one import, two service variants; mentions FT-2000 in passing"]
+    corruption: [alias_substitution, hedging]
+    deception: []
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {resolves: "HQ-9/P distinct-from HQ-9BE (flagship); FT-2000 distinct-from HQ-9/P (do NOT merge — HITL band)"}
 
+  - id: d15_globaltimes_aligned
+    source_class: trade_media
+    template: corpus/raw/reference/wikipedia_s400.txt   # format filler; content is state-media style
+    date: "2021-11"
+    asserts: ["Chinese state media asserts the same HQ-9/P capability/holding as ISPR (d02)"]
+    corruption: [hedging]
+    deception: [aligned_interest]         # D4: ISPR + Chinese state = both parties to the transfer
+    registry: {reliability_grade: C, bias_vector: exporter-state, primary_origin_id: globaltimes}
+    expect: {note: "with d02 forms an ALIGNED-INTEREST pair -> stays PROBABLE, NOT confirmed, until a third-party/non-aligned source"}
+
+  # ---- supply-chain depth (front company D7, deep tier, invisible dependency) ----
   - id: d05_customs_manifest
     source_class: customs
-    template: corpus/raw/templates/importyeti_customs_template.*  # needs_manual
+    template: corpus/raw/templates/importyeti_customs_template.*
     date: "2020-11"
-    asserts: ["comp_ht233 / radar RF parts imported (component tier)"]
-    messy: [hs_code_8526_bland, front_company_consignee, transliteration_variance, missing_values]
-    flex: []          # supply-chain depth (component -> chokepoint hop)
+    asserts: ["a shell consignee imports 'radar apparatus parts' (HS 8526) that imply the HT-233 fire-control radar; the port of discharge is Port Muhammad Bin Qasim (written variously across the manifest lines as 'Bin Qasim' and 'PQ'); civil-vs-military tension UNRESOLVED"]
+    corruption: [hs_code_masking, front_company_consignee, transliteration_drift, ocr_garble, toponym_alias]
+    deception: [front_company]            # D7 — do NOT pre-resolve the cover story (M-DATA-1)
+    registry: {reliability_grade: C, bias_vector: commercial, primary_origin_id: customs_bol}
+    expect: {resolves: "shell -> HT-233 end-user only via RELATIONAL match, not string; contradiction routed to HITL",
+             location: {place_id: pl_port_qasim, surface_form: "Port Muhammad Bin Qasim / Bin Qasim / PQ", formats: [port_alias], precision: terminal, distinct_from: pl_karachi_port,
+                        note: "port-of-entry; must NOT collapse into Port of Karachi (Keamari) — the ~35 km distinct-from trap"}}
 
+  - id: d21_techdata_authority
+    source_class: trade_media
+    template: corpus/raw/reference/rusi_bronk_iads.pdf
+    date: "2022-06"
+    asserts: ["software/calibration for the engagement radar is controlled by a Chinese technical-data authority — an invisible sustainment dependency"]
+    corruption: [hedging]
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {contributes_to: "design-authority-for (probable) — candidate invisible chokepoint"}
+
+  - id: d22_deep_tier_supplier
+    source_class: reference
+    template: corpus/raw/reference/rusi_bronk_iads.pdf
+    date: "2025-03"
+    asserts:
+      - "an authoritative open-source study of China's air-defence radar industrial base states the HT-233 manufacturer is UNKNOWN, and flags the common 'CPMIEC makes it' claim as unverified (CPMIEC is the export agent, not the maker)"
+      - "the plausible-but-unconfirmed candidate maker is CASIC's 23rd Research Institute (Beijing Institute of Radio Measurement / BIRM), the 2nd Academy's in-house radar institute, located on Yongding Road in Haidian District, western Beijing (the same corridor as the Second Academy campus)"
+      - "CASIC 4th Academy (rocket-motor house) is a plausible-not-confirmed interceptor-motor supplier"
+      - "deeper tiers (radar T/R modules / MMICs, seeker, datalink) are not open-source-attributable to HQ-9 — collection gaps"
+    corruption: [toponym_alias, hedging]
+    registry: {reliability_grade: B, bias_vector: third-party, primary_origin_id: casi_2025}
+    expect: {note: "HT-233 maker -> Known Gap (candidate 23rd RI, inferred); CASIC/2nd Academy design-authority confirmed; deeper tiers -> insufficient-evidence, NOT fabricated edges",
+             location: {place_id: pl_birm, surface_form: "BIRM / 23rd RI, Yongding Road, Haidian District, Beijing", formats: [facility, admin], precision: district,
+                        note: "manufacturing/design-authority node needs facility+city+district, NOT a grid (md/13 precision spec); co-located with pl_casic_2nd"}}
+
+  - id: d23_cpmiec_false_attribution
+    source_class: trade_media
+    template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
+    date: "2019-11"
+    asserts: ["a lower-tier trade/blog source asserts 'CPMIEC manufactures the HT-233 radar', conflating the export agent with the manufacturer"]
+    corruption: [alias_substitution, hedging]
+    deception: [aggregator_circular]   # the error propagates across blogs citing each other
+    registry: {reliability_grade: D, bias_vector: commercial, primary_origin_id: blog_cpmiec_mfr}
+    expect: {note: "low-cred conflation; must NOT create a confirmed 'CPMIEC manufactures HT-233' edge (CPMIEC = export-agent-of). Contradicted by the authoritative study d22 -> stays refuted/low-confidence."}
+
+  # ---- induction implication (single source) ----
   - id: d06_spares_tender
     source_class: procurement
     template: corpus/raw/templates/india_mtd_tender_template.pdf
     date: "2023-02"
-    asserts: ["sustain_spares probable: a 'spares' tender IMPLIES an inducted system"]
-    messy: [as_per_annexure_pointer, lot_numbers, redactions, bureaucratic_phrasing]
-    flex: [single_source]     # + drives the sustainment_tender observable
+    asserts: ["a 'spares/sustenance' tender IMPLIES an already-inducted long-range SAM; does not confirm a fresh buy"]
+    corruption: [redaction, alias_substitution, hedging]
+    registry: {reliability_grade: C, bias_vector: operator-state, primary_origin_id: dgdp_tender}
+    expect: {contributes_to: sustained-by, note: "SINGLE source -> stays PROBABLE; tender implies, never confirms"}
 
+  # ---- worked-query basing anchor (Karachi, confirmed) ----
   - id: d07_sat_confirm_karachi
     source_class: imagery
-    template: corpus/raw/imagery/googleearth_karachi_site.*   # needs_manual
+    template: corpus/raw/imagery/googleearth_karachi_site.*
     date: "2022-03"
-    asserts: ["site_karachi based-at CONFIRMED: launchers/petal-pad visible (VLM site-typing)"]
-    messy: [capture_time_ne_event_time, low_res_footprint]
-    flex: []          # this is the item that crosses the basing node probable->confirmed (observable)
+    asserts: ["analyst-report TEXT: a petal/ring SAM pad with TEL revetments consistent with HQ-9/P is identified at a site in the Malir area of Karachi; the analyst pins it to decimal-degree coordinates 24.9012 N, 67.2034 E (multi-pass)"]
+    corruption: [coordinate_precise, hedging]
+    registry: {reliability_grade: B, bias_vector: third-party, decoy_risk_flag: false, note: "multi-pass, confirms basing"}
+    expect: {contributes_to: "based-at unit_paad->site_karachi (confirmed)",
+             location: {place_id: pl_karachi_ad, surface_form: "Malir, Karachi / 24.9012N 67.2034E (DD)", formats: [dd, toponym], precision: pad,
+                        note: "resolves to the SAM site — DISTINCT from pl_port_qasim and pl_karachi_port though all three read as 'Karachi'"}}
+    image: {kind: satellite_overhead, source: real_esri, site: karachi_sam, integrity: real,
+            provenance: relabeled, real_source: "HQ-9 battery nr Xi'an, China (34.62061,108.70656) — Esri World Imagery ~0.5m"}
 
+  # ---- contradiction (same-time) ----
   - id: d08_social_sighting
     source_class: social
-    template: corpus/raw/social/x_osint_sightings.*          # needs_manual
-    date: "2025-05"
-    asserts: ["site_karachi active — convoy/launcher sighting (probable, low-provenance lead)"]
-    messy: [slang, colloquial_placename, relative_time, no_coords, hype]
-    flex: [contradiction]     # contradicts d09 official 'routine'
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05-09"
+    asserts: ["a sighting post claims active HQ-9 convoy/launcher movement near Karachi on 2025-05-09"]
+    corruption: [coordinate_absence, date_format_flip, alias_substitution]
+    deception: [contradiction_same_time]   # D9 (vs d09, SAME date)
+    registry: {reliability_grade: D, bias_vector: third-party}
+    expect: {note: "same site+date as d09 opposite claim -> CONTRADICTED -> HITL, not auto-resolved"}
+    image: {kind: ground_convoy, source: fabricated, integrity: synthetic}
 
   - id: d09_official_routine
     source_class: official
-    template: corpus/raw/official/official_routine_framing.* # real "routine training" euphemism specimen
-    date: "2025-05"
-    asserts: ["official framing: activity is a 'routine exercise' (contradicts d08 sighting)"]
-    messy: [euphemism, omission]
-    flex: [contradiction]
+    template: corpus/raw/official/official_routine_framing.*
+    date: "2025-05-09"
+    asserts: ["official statement frames the 2025-05-09 activity near Karachi as 'routine training', no deployment"]
+    corruption: [hedging]
+    deception: [contradiction_same_time]   # D9
+    registry: {reliability_grade: B, bias_vector: operator-state}
+    expect: {note: "same site+date as d08 -> CONTRADICTED -> HITL"}
 
+  # ---- insufficient-evidence / withheld ----
   - id: d10_sat_cloud_gap
     source_class: imagery
-    template: corpus/raw/imagery/sentinel2_karachi_site.*    # needs_credentials
-    date: "2025-05"
-    asserts: ["95% cloud over site_karachi — cannot confirm launcher count / tail numbers"]
-    messy: [cloud_occlusion, stale_capture]
-    flex: [gap_insufficient_evidence]
+    template: corpus/raw/imagery/sentinel2_karachi_site.*
+    date: "2025-05-10"
+    asserts: ["analyst-report TEXT: ~95% cloud over the site on 2025-05-10 — cannot confirm launcher count"]
+    corruption: [hedging]
+    deception: [stale_as_current]
+    registry: {reliability_grade: B, bias_vector: third-party}
+    expect: {note: "insufficient-evidence to assess launcher count; names missing slot + next coverage due"}
+    image: {kind: satellite_overhead, source: real_sentinel, site: karachi, from: "2025-01-01", to: "2025-07-31", max_cloud: 90, integrity: real}
 
+  - id: d17b_withheld_gap
+    source_class: imagery
+    template: corpus/raw/imagery/sentinel2_karachi_site.*
+    date: "2025-06"
+    asserts: ["analyst-report TEXT: imagery of a suspected forward site on 2025-06 shows NO TELs present (negative observation)"]
+    corruption: [coordinate_absence]
+    deception: [withheld_signal]            # D11 negative-polarity
+    registry: {reliability_grade: B, bias_vector: third-party}
+    expect: {note: "negative-polarity observation -> Known Gap / absence-as-evidence, not silence"}
+    image: {kind: satellite_overhead, source: real_esri, site: forward_empty, integrity: real,
+            provenance: relabeled, real_source: "EMPTY HQ-9 petal nr Lanzhou, China (36.53728,104.14286) — Esri World Imagery ~0.5m; clear revetment ring, NO launchers"}
+
+  # ---- M4 planted cluster (recycled + echo burst) ----
   - id: d11_recycled_image
     source_class: social
-    template: corpus/raw/social/x_osint_sightings.*          # needs_manual
-    date: "2025-05"
-    asserts: ["a 2019 parade photo reposted as a NEW 2025 deployment (real image, false context)"]
-    messy: [miscaptioned_recycled_image, first_seen_2019]
-    flex: [planted_tooclean]
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-05-11"
+    asserts: ["a post presents a 2019 parade photo as a NEW 2025 Rahwali deployment; a reply questions if it's the old photo"]
+    corruption: [alias_substitution, hype]
+    deception: [recycled_media]             # D1
+    registry: {reliability_grade: D, bias_vector: third-party, first_seen: "2019", primary_origin_id: origin_parade_img}
+    expect: {note: "first_seen 2019 + caption mismatch -> integrity multiplier collapses; cannot confirm"}
+    image: {kind: parade, source: fabricated, shared_id: parade_2019, first_seen: "2019", integrity: synthetic}
+
   - id: d12_reshare_a
     source_class: social
     template: corpus/raw/social/x_osint_sightings.*
-    date: "2025-05"
-    asserts: ["near-identical repost of d11 (manufactured independence)"]
-    messy: [near_duplicate, tight_time_window]
-    flex: [planted_tooclean]
+    date: "2025-05-11"
+    asserts: ["near-identical reshare of d11's image/claim, different handle, minutes later"]
+    corruption: [hype]
+    deception: [echo_burst]                 # D2
+    registry: {reliability_grade: E, bias_vector: third-party, primary_origin_id: origin_parade_img, coordinated_inauthenticity_flag: true}
+    expect: {note: "collapses into d11 origin group; adds no corroboration"}
+    image: {kind: parade, source: fabricated, shared_id: parade_2019, integrity: synthetic}
+
   - id: d13_reshare_b
     source_class: social
     template: corpus/raw/social/x_osint_sightings.*
-    date: "2025-05"
-    asserts: ["near-identical repost of d11 (manufactured independence)"]
-    messy: [near_duplicate, tight_time_window]
-    flex: [planted_tooclean]
+    date: "2025-05-11"
+    asserts: ["second near-identical reshare of d11, different handle, same burst window"]
+    corruption: [hype]
+    deception: [echo_burst]                 # D2
+    registry: {reliability_grade: E, bias_vector: third-party, primary_origin_id: origin_parade_img, coordinated_inauthenticity_flag: true}
+    expect: {note: "collapses into d11 origin group; too-clean penalty on the cluster"}
+    image: {kind: parade, source: fabricated, shared_id: parade_2019, integrity: synthetic}
 
+  # ---- freshness / stale ----
   - id: d14_stale_holding
     source_class: reference
     template: corpus/raw/reference/nti_china_missile.pdf
     date: "2016"
-    asserts: ["a China HQ-9 holding sourced only to 2016/2019 imagery, no recent corroboration"]
-    messy: [dated_fact_printed_as_current, no_recent_source]
-    flex: [freshness_stale]
+    asserts: ["a China HQ-9 holding sourced only to 2016 imagery, printed as if current; no recent corroboration"]
+    corruption: [hedging, truncation]
+    deception: [stale_as_current]           # D10
+    registry: {reliability_grade: C, bias_vector: third-party}
+    expect: {note: "decays past freshness floor -> confirmed-as-of-2016 -> probable(stale)"}
+
+  # ---- adversary denial (bypass) ----
+  - id: d16_adversary_denial
+    source_class: official
+    template: corpus/raw/official/official_routine_framing.*
+    date: "2025-05"
+    asserts: ["an interested channel asserts 'a second independent source confirms the HT-233 is fully indigenised' (no such source shown) AND denies the Chinese technical-data dependency"]
+    corruption: [hedging]
+    deception: [adversary_denial]           # D5
+    registry: {reliability_grade: D, bias_vector: adversary, adversary_denial_flag: true}
+    expect: {note: "GATE: discounted before grouping — neither corroborates the indigenisation nor downgrades the techdata dependency"}
+
+  # ---- relocation observable thread (R1-R4) ----
+  - id: d17_rawalpindi_2021
+    source_class: imagery
+    template: corpus/raw/imagery/googleearth_karachi_site.*   # imagery-text format
+    date: "2021"
+    asserts: ["analyst-report TEXT: an HQ-9B fire-unit is assessed occupied in 2021 at PAF Base Nur Khan (the base is the former PAF Base Chaklala, Rawalpindi); the geolocation is given as an MGRS grid, 43S CT 23715 21242; multi-source baseline"]
+    corruption: [coordinate_precise, toponym_alias, hedging]
+    registry: {reliability_grade: B, bias_vector: third-party}
+    expect: {contributes_to: "based-at unit_hq9b->site_rawalpindi (confirmed, aging under garrison half-life)",
+             location: {place_id: pl_nurkhan, surface_form: "PAF Base Nur Khan (fmr Chaklala) / MGRS 43S CT 23715 21242", formats: [mgrs, renamed_alias], precision: site,
+                        note: "Chaklala alias is WITHHELD from the seed gazetteer -> resolver must earn this merge (adaptation)"}}
+    image: {kind: satellite_overhead, source: real_esri, site: rawalpindi_sam, integrity: real,
+            provenance: relabeled, real_source: "PLA air-defence garrison nr Nanjing, China (31.60444,118.99917) — Esri World Imagery ~0.5m"}
+
+  - id: d18_rahwali_pass1
+    source_class: imagery
+    template: corpus/raw/imagery/sentinel2_karachi_site.*
+    date: "2025-03"
+    asserts: ["analyst-report TEXT: a SINGLE 2025 satellite pass shows an HQ-9B site signature at Rahwali airfield near Gujranwala; the pass is geolocated in degrees-minutes-seconds as 32°14′20″N 074°07′52″E; single pass only, no repeat and no second collection discipline"]
+    corruption: [coordinate_precise, hedging]
+    deception: [decoy_single_pass]          # D6
+    registry: {reliability_grade: B, bias_vector: third-party, decoy_risk_flag: true}
+    expect: {note: "single-pass signature -> decoy_risk cap -> PROBABLE occupied@Rahwali",
+             location: {place_id: pl_rahwali, surface_form: "Rahwali airfield / 32°14′20″N 074°07′52″E (DMS)", formats: [dms, toponym], precision: site,
+                        note: "must resolve to the SAME node as d19's toponym+relative form for the 2nd signal to corroborate"}}
+    image: {kind: satellite_overhead, source: real_esri, site: rahwali_sam, integrity: real,
+            provenance: relabeled, real_source: "S-400 site nr Feodosia, Crimea (45.01050,35.39810) — Esri World Imagery ~0.5m; dispersed/ambiguous, fits single-pass decoy-risk"}
+
+  - id: d19_rahwali_confirm
+    source_class: reference
+    template: corpus/raw/reference/rusi_bronk_iads.pdf     # discipline-independent (ELINT/analysis) format
+    date: "2025-04"
+    asserts: ["a discipline-independent, non-aligned signal (a repeat pass or an ELINT emitter-active fix) confirms the HQ-9B presence at the Rahwali Cantonment airfield, described in the report only as roughly 10 km NW of Gujranwala along the GT Road corridor (no grid reference given); clean decoy check"]
+    corruption: [toponym_alias, hedging]
+    registry: {reliability_grade: B, bias_vector: third-party}
+    expect: {note: "2nd independent signal lifts Rahwali to CONFIRMED; supersedes retires Rawalpindi -> STALE",
+             location: {place_id: pl_rahwali, surface_form: "Rahwali Cantonment, ~10 km NW of Gujranwala", formats: [toponym, relative], precision: site,
+                        note: "toponym+relative-bearing form; unifies with d18's DMS to the SAME node -> the corroboration is UNLOCKED by normalization"}}
+
+  - id: d20_supersede_spoof
+    source_class: social
+    template: corpus/raw/social/x_osint_sightings.*
+    date: "2025-06"
+    asserts: ["a fresh-dated (2025-06) SINGLE low-credibility post claims the HQ-9B unit has LEFT Rahwali for a different site"]
+    corruption: [coordinate_absence, hype]
+    deception: [supersede_spoof]            # D8 ⚔⚔ bypass
+    registry: {reliability_grade: E, bias_vector: adversary, decoy_risk_flag: true}
+    expect: {note: "WITHOUT supersede confidence-floor: wrongly relocates the unit. WITH floor: candidate-supersede -> contradiction -> HITL. Demo BOTH runs."}
 
 # ---------------------------------------------------------------------------
-# FLEXES  (the six graded moments + freshness + observable) -> expected behavior
-# The generator ensures each flex has seed material; the eval checks the behavior.
+# FLEXES -> expected behaviour (verification targets)
 # ---------------------------------------------------------------------------
 flexes:
   corroborated:
     docs: [d01_sipri_transfer, d02_ispr_induction, d03_quwa_analysis]
-    expect: "induction promoted to CONFIRMED on ≥2 independent credible sources."
+    expect: "induction -> CONFIRMED, but only once a genuinely cross-interest/third-party source is present; d01's apparent 4 sources collapse to 1 origin group."
+  aligned_interest_bypass:
+    docs: [d02_ispr_induction, d15_globaltimes_aligned]
+    expect: "aligned-interest pair (operator-state + exporter-state) does NOT confirm — stays PROBABLE until non-aligned corroboration (D4 bypass)."
+  aggregator_bypass:
+    docs: [d01_sipri_transfer]
+    expect: "aggregator's cited outlets inherit one origin; naive count over-confident, group system correct (D3 bypass)."
+  adversary_denial_bypass:
+    docs: [d16_adversary_denial]
+    expect: "gated out — neither corroborates the indigenisation claim nor downgrades the techdata dependency (D5 bypass)."
   single_source:
     docs: [d06_spares_tender]
-    expect: "sustain_spares stays PROBABLE (single source; tender implies, never confirms)."
+    expect: "sustain_spares stays PROBABLE (single source)."
   contradiction:
     docs: [d08_social_sighting, d09_official_routine]
-    expect: "edge flagged CONTRADICTED; surfaced, not silently resolved."
+    expect: "same site+date opposing claims -> CONTRADICTED -> HITL (not auto-resolved) (D9)."
   planted_tooclean:
     docs: [d11_recycled_image, d12_reshare_a, d13_reshare_b]
-    expect: "coordinated-inauthenticity + provenance (first-seen 2019) OVERRIDE the corroboration count; not confirmed."
+    expect: "recycled first-seen 2019 + echo burst collapse to one origin group + too-clean penalty -> NOT confirmed (D1+D2)."
   gap_insufficient_evidence:
-    docs: [d10_sat_cloud_gap]
-    expect: "'insufficient evidence to assess' — names what's missing + when next coverage is due."
+    docs: [d10_sat_cloud_gap, d17b_withheld_gap]
+    expect: "'insufficient evidence to assess' with missing slots + next coverage due; negative observation -> Known Gap (D11)."
   alias_merge_trap:
     docs: [d03_quwa_analysis, d04_armyrec_ranges]
-    expect: "FD-2000↔HQ-9 auto-resolves; FD-2000 vs FT-2000 lands in the HITL band (do NOT auto-merge)."
+    expect: "FD-2000 same-as HQ-9/P (auto-merge); HQ-9/P distinct-from HQ-9BE (flagship); FT-2000 distinct-from HQ-9/P -> HITL band, do NOT merge."
   freshness_stale:
     docs: [d14_stale_holding]
-    expect: "shows Confirmed-as-of-2016 -> Probable(stale); never silently 'confirmed' today."
-  observable_basing_crossing:
-    trigger_doc: d07_sat_confirm_karachi
-    expect: "when the imagery arrives, site_karachi crosses PROBABLE->CONFIRMED -> alert -> analyst disposition."
+    expect: "Confirmed-as-of-2016 -> Probable(stale) (D10)."
+  front_company:
+    docs: [d05_customs_manifest]
+    expect: "shell consignee resolves to HT-233 end-user only via relational match; civil-vs-military contradiction surfaced, not pre-resolved (D7)."
+  observable_relocation:
+    docs: [d17_rawalpindi_2021, d18_rahwali_pass1, d19_rahwali_confirm]
+    expect: "Rawalpindi confirmed(2021) -> Rahwali probable(single-pass, decoy cap) -> confirmed(2nd independent) -> supersedes retires Rawalpindi to STALE."
+  supersede_spoof:
+    docs: [d20_supersede_spoof]
+    expect: "D8 ⚔⚔ — without confidence-floor the spoof wrongly relocates; with floor it's held as candidate-supersede -> HITL. The counter-deception headline."
+  location_normalization:
+    docs: [d17_rawalpindi_2021, d18_rahwali_pass1, d19_rahwali_confirm, d07_sat_confirm_karachi, d05_customs_manifest, d02_ispr_induction, d22_deep_tier_supplier]
+    expect: >
+      Parse mixed surface notations (MGRS, DMS, decimal-degrees, port/facility alias, renamed-base alias,
+      relative bearing-and-distance) and resolve to canonical place nodes.
+      SAME-AS (must unify): d18 DMS (32°14′20″N 074°07′52″E) ≡ d19 'Rahwali Cantonment ~10 km NW of
+      Gujranwala' -> pl_rahwali — THIS unification is load-bearing: the 2nd independent signal only
+      corroborates the relocation once both resolve to one site. d17 MGRS + 'Nur Khan (fmr Chaklala)' ->
+      pl_nurkhan (Chaklala alias WITHHELD from seed -> earned merge). d05 'Bin Qasim/PQ' -> pl_port_qasim.
+      DISTINCT-FROM (must NOT merge): pl_port_qasim ≠ pl_karachi_port (~35 km, both 'Karachi'); the Karachi
+      SAM site (pl_karachi_ad) ≠ either port. AMBIGUOUS: bare 'Karachi' (d02) -> metro, not a specific pad.
+      PRECISION: pl_birm/pl_casic_2nd resolve at district level only (design authority needs city+district,
+      not a grid). Coordinate provenance: base/port coords real+public; the Karachi pad is synthetic.

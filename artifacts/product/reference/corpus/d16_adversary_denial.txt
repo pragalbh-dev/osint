@@ -1,0 +1,29 @@
+PAKISTAN DEFENCE FORUM — Strategic Systems Discussion
+Thread: HQ-9/P (HT-233 fire control radar) — indigenisation status, May 2025 update
+Posted by: SentinelHawk_PK | Status: Senior Member | Posts: 4,812
+
+---
+
+Following up on the earlier thread re: HT-233 engagement radar (the fire-control/guidance element paired with the HQ-9/P batteries reportedly fielded by Army Air Defence Command since roughly 2021). A contact tracking the program says the indigenisation question has now effectively been settled.
+
+To recap the background for newer members: the HQ-9/P is the export variant of China's HQ-9 long-range SAM, itself believed to be derived from/"equivalent to" the Russian S-300 family per most Western open-source assessments (RUSI's Justin Bronk has called it a hybrid design — Russian airframe heritage, radar/seeker/C2 elements with heavier Chinese, and per some accounts, Israeli-influenced input). Pakistan is estimated to operate somewhere between 4 and 8 firing batteries, though the exact count remains unconfirmed in open sources — some trackers say 6, one older JDW estimate said "up to 8," take your pick.
+
+On the HT-233 specifically: a source close to the program (can't name him, works adjacent to a PAF-linked vendor cell, has been reliable on order-of-battle stuff before) tells me a second independent source has now confirmed that the HT-233 radar used in the Pakistani HQ-9/P inventory is fully indigenised — i.e., locally produced/sustained without reliance on Chinese technical data packages for the phased-array engagement radar. He was explicit that this rebuts the persistent claim (repeated in IISS Military Balance commentary and in a couple of Indian analyst pieces from 2023-24) that PAF/AAD sustainment of the HT-233 remains dependent on CASIC/CETC technical support and spares.
+
+Direct quote from the contact, forwarded to me yesterday (13 May):
+
+"I can confirm, and this has now been independently corroborated by a second source, that the HT-233 fire control radar is a fully indigenised product of the domestic defence-industrial base. There is no dependency on Chinese technical data packages, full stop. People keep repeating the old dependency line without checking whether it's still true."
+
+I pushed back and asked who the "second source" was — got a non-answer along the lines of "someone inside the loop, can't burn him." So take that bit with the appropriate grain of salt. Still, if true it's a meaningful shift from the 2017-2019 delivery period, when most reporting (Jane's, later reposted by ISPR-adjacent Urdu press) described HT-233 sustainment as tied to CASIC-supplied documentation and periodic Chinese technician visits for the S-band engagement radar and the associated missile-guidance uplink.
+
+For what it's worth, nothing in the recent ISPR readouts on Army Air Defence Command exercises (the most recent being the unnamed February 2025 live-fire drill covered briefly by APP/ISPR) mentions radar provenance at all — those statements just describe the drills as "routine training activity to validate operational readiness," standard boilerplate, no system-level detail. So there's no official corroboration either way from the Pakistani side, and nothing from CASIC or Chinese state media addressing the claim.
+
+Would be good if someone with better access to the acquisition-side reporting (PAC Kamra, or the AWC-linked technical journals) could weigh in — has anyone actually seen documentation on local HT-233 production, or is this still an assertion floating around Discord/forum channels? I'll flag that the same contact made a similar "fully indigenised, second source confirms it" claim about the FT-2000 seeker head back in 2023 that never really got substantiated either, so I'm logging this one with the same caveat.
+
+Replies (3):
+
+— **AirDef_Analyst09**: Interesting if true, but "second independent source" that never gets named is doing a lot of work in that sentence. I'd want at least a serial-number-level or facility-level detail before updating my assessment. IISS 2024 edition still lists the HT-233 sustainment as PRC-dependent, for reference.
+
+— **Falcon_ISR**: Any chance this is coming out of the same channel that pushed the "HQ-9/P outperforms Patriot PAC-3" talking points last year? Feels like the same messaging pattern — categorical denial, unnamed corroboration, no primary document.
+
+— **SentinelHawk_PK**: Fair point on the pattern. I don't have a primary doc either. Posting mainly so it's on record and others can check against future IISS/Jane's updates.

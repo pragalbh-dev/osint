@@ -25,6 +25,11 @@ grades that path, or is an explicit first-class **Known Gap**. Ignorance is neve
 foreign-control + resolver confidence *confirm*. **The flagship deliverable is honestly framed as
 prioritized collection tasking, not a claimed-complete single-point-of-failure map.**
 
+**On "fire-unit" as the anchor:** the deployed **battery/fire-unit is the query *entry point*** (what you
+actually observe in the field), **not** the scope. The trace fans out from it through *every* component it
+fields (radar-by-role, launcher, missile round, command post) to their suppliers and up to origin; the
+graph holds the **whole ORBAT** — all units + all components — not one battery.
+
 Deliberately excluded (scope guard): the operational engagement/cueing layer, IADS C2 / data-link
 topology (kept only as a never-observable Known Gap; `commanded-by` dropped), naval HHQ-9 / other-theatre
 variants, and targeting-grade detail.
@@ -50,7 +55,9 @@ EVIDENCE / CONFIG.
   (string, *promotable* to its own support-vehicle Component when a single-vendor chassis sits on a
   critical path), observable_fingerprint, foreign_control (gated), confidence, provenance, freshness.
   *`functional_role` is the analytic pivot: an engagement radar upgrades a site to a live fire unit and is
-  the SEAD aimpoint / intra-unit chokepoint.*
+  the SEAD aimpoint / intra-unit chokepoint.* A Component may be **composed of sub-components**
+  (`component-of`) so BOM depth (radar → T/R module → GaN die → foundry) is traversable for deep-tier
+  chokepoints; sub-component instances are mostly Known-Gap candidates in OSINT.
 - **Variant** `[durable]` — a model/config carrying its bound interceptor set + radar config. Attrs:
   family (HQ-9 | S-400), base_designator, export_designator (HQ-9/P, HQ-9BE, FD-2000), aliases,
   range_class, associated rounds/radars. *Flagship resolution case: **HQ-9/P (~125 km) vs HQ-9B/HQ-9BE
@@ -68,10 +75,14 @@ EVIDENCE / CONFIG.
 **ORBAT / basing**
 - **Unit / Formation** `[durable]` — ONE **recursive** type by echelon: brigade/regiment → battalion
   (divizion/ying) → **battery/fire-unit** (the atomic node owning equipment + occupying ground). Attrs:
-  echelon, designator, **service_branch** (Pakistan Army vs PAF — disambiguates the two HQ-9 lineages),
+  echelon, **designator (multi-valued: official designation + cover-designator/MUCD + bort/vehicle numbers
+  + analyst-label)**, **service_branch** (Pakistan Army vs PAF — disambiguates the two HQ-9 lineages),
   parent_unit, equipment_fingerprint (counts as ranges; `count_state`: fielded vs nominal vs
   **combat-ready**), home_garrison, confidence, provenance, freshness. *Readiness has a structural home;
-  true serviceability is never-observable → Known Gap, so a fielded count can't stand in for combat-ready.*
+  true serviceability is never-observable → Known Gap, so a fielded count can't stand in for combat-ready.
+  Units are aliased (incl. **adversarial cover designators**) and re-designated / re-subordinated /
+  re-equipped over time — resolved with the same `same-as`/`distinct-from` machinery as systems; temporal
+  changes (relocation, re-subordination, re-equip) via `supersedes`.*
 - **Basing site** `[durable geometry / perishable occupancy]` — a location a unit occupies OR a sustainment
   facility sits at, modeled *separately from the occupant* so it's the shared join node for co-location.
   Attrs: coordinates, site_type (garrison | field/dispersal | training | depot/stockpile),
@@ -114,7 +125,10 @@ EVIDENCE / CONFIG.
   confirmed/probable/insufficient, plus per-assertion evidence templates that GENERATE the
   "what's-missing / next-coverage-due" statement. Full form in `../spine/04-credibility.md`.
 - **Known Gap / Collection Requirement** `[n/a]` — FIRST-CLASS gap object so "what do we NOT know?" reads
-  off nodes, not footnotes. Homes never-observable facts (magazine depth, contract terms, C2 topology,
+  off nodes, not footnotes. **A Known Gap is a *known unknown*:** we know a dependency/entity *exists
+  structurally* (a radar must have T/R modules → a supplier) but not its *identity* — recording that,
+  instead of inventing a fake node or silently ending the chain at the prime, is the point; a naming
+  indicator later *promotes* it to a real node. Homes never-observable facts (magazine depth, contract terms, C2 topology,
   true readiness), architecture-inferred-unnamed entities, and unfilled evidence-template slots. Carries
   `observability_ceiling` (confirmable | probable-max | never-observable) and `next_coverage_due` — this is
   the **collection-tasking output**.
@@ -125,14 +139,18 @@ EVIDENCE / CONFIG.
 [durable] · `supplies-component` (Mfr→Component)[prime durable / tier-2-3 **semi-durable, revalidate on
 sanctions/tender/localization**] · `variant-of` (Component→Variant)[durable] · `exported-by`
 (Contract→Mfr/export-agent)[durable] · `analog-of / derived-from-design` (Variant→Variant)[lineage
-durable; what it *licenses* is capped at **probable** and decays].
+durable; what it *licenses* is capped at **probable** and decays] · `component-of / composed-of`
+(Component→Component)[durable; semi-durable if re-spun — the **BOM/sub-component hierarchy** so deep-tier
+chokepoints traverse radar→module→die; instances mostly Known-Gap candidates].
 
 **ORBAT / basing:** `imported-by` (Contract→Unit)[event durable / holdings ~30mo] · `inducted-into`
 (Variant→Unit)[possession-by-service durable / named-unit assignment perishable ~18mo] · `subordinate-to`
 (Unit→Unit)[durable — sole standing-hierarchy edge; org subordination, **not** cueing architecture] ·
 `based-at` (Unit→Site)[**perishable**: field 30d / garrison ~18mo] · `operates/fields` (Unit→Component)
 [perishable — the equipment_fingerprint; roots the dependency subgraph] · `operational-status/readiness`
-(Unit→engagement radar)[perishable ~3mo — observed readiness proxies].
+(Unit→engagement radar)[perishable ~3mo — **ordinal observed proxies**: observed-active(emitting) >
+exercise-seen > present-only > maintenance-observed > unknown; true graded readiness (P-M-E-S-T / C-1…C-5)
+is never-observable → Known Gap].
 
 **Sustainment:** `located-at` (sustainment node→Site)[makes co-location a shared-node join] ·
 `reloaded-from` (Unit→Stockpile)[perishable] · `stocks-round` (Stockpile→round)[type durable / depth
@@ -142,6 +160,13 @@ perishable] · `replenishes` (Contract→Stockpile/Mfr)[follow-on buy = observab
 (Unit→Training)[durable / force-revalidated] · `software-controlled-by` (Component→Tech-Data Authority)
 [durable / force-revalidated] · `sustained-by` (Unit→sustainment)[coarse rollup only — **not** used for
 chokepoint computation].
+
+**Substitution / redundancy:** `substitutable-by` (three-state: **known-sole-source | known-alternates |
+UNKNOWN**)[semi-durable — revalidate on sanctions/tender/localization] — generalized from Mfr→Mfr to **any
+critical sustainment node → same-type node** (alt-supplier, alt-depot, alt-training, alt-round, alt-site);
+an optional Component→Component form captures an **alt-part** (different component, same function). UNKNOWN
+is the default and is **not** evidence of a SPOF; a known-alternate carrying an `adversary_denial_flag` is
+discounted (a seeded fake second-source can't dissolve a real chokepoint).
 
 **Resolution:** `same-as` (reversible, auditable merge; resolver **recomputes over the union of indicators
 with origin dedup** so a merge can't manufacture corroboration from two echoes; merge-confidence caps the
@@ -170,9 +195,9 @@ when instance identity is uncertain, so "vacant@A" can't erase "occupied@B" for 
 5. **Low buffer / days-of-supply (interceptor path)** — days_of_supply vs consumption + lead-time on the
    authoritative `resupplied-by` edge; confirmed by follow-on-buy via `replenishes`; unobservable depth →
    insufficient-evidence + Known Gap, never a guessed bracket.
-6. **Deep-tier chokepoint below the prime** — traverse tier-2/3 `supplies-component` (seeker, GaN T/R
-   modules, propellant, ICs, beryllium-oxide ceramics, promoted chassis); confirmed only when a
-   sanctions/tender indicator NAMES the supplier; else CANDIDATE.
+6. **Deep-tier chokepoint below the prime** — traverse the **BOM via `component-of`** + tier-2/3
+   `supplies-component` (seeker, GaN T/R modules, propellant, ICs, beryllium-oxide ceramics, promoted
+   chassis); confirmed only when a sanctions/tender indicator NAMES the supplier; else CANDIDATE.
 7. **Confidence ceiling on inferred chokepoints (computed)** — all-inferred-from-architecture → capped at
    probable/candidate; `analog-of`-propagated (S-400→HQ-9) capped at probable.
 8. **Cross-path co-location single point** — a Basing site that is both a unit's `based-at` and the only
@@ -211,10 +236,12 @@ when instance identity is uncertain, so "vacant@A" can't erase "occupied@B" for 
 The full ontology above is the **design-note / interview** artifact — it's what makes C defensible. The
 running demo implements a **coherent subset over the frozen HQ-9/P corpus** (depth over coverage):
 - **Nodes:** Manufacturer, Component (with functional_role), Variant, Contract/Import, Unit (recursive),
-  Basing site, **one** sustainment node (recommend Interceptor Stockpile *or* Tech-Data Authority — the
-  two highest-leverage chokepoints), + the evidence layer (Source, Indicator), Confidence Resolver (config),
+  Basing site, **both** highest-leverage sustainment nodes (Interceptor Stockpile & Resupply + Tech-Data /
+  Software & Calibration Authority), + the evidence layer (Source, Indicator), Confidence Resolver (config),
   Known Gap.
-- **Edges:** the flagship-trace edges + evidence edges + `same-as`/`distinct-from`.
+- **Edges:** the flagship-trace edges + evidence edges + `same-as`/`distinct-from` + **one
+  `substitutable-by`** (the seeded substitutability story) + **one deep-tier `component-of` /
+  `supplies-component` branch** (one named sub-supplier + the rest as candidates).
 - **Chokepoint criteria:** #1, #4, #7, #10 (the three-state sole-source, foreign-control, confidence
   ceiling, and the confirmed-vs-candidate separation) — these carry the story; #2/#8/#9b are design-note.
 - **Confidence:** the resolver form with simplified constants (see `../spine/04-credibility.md`).
@@ -224,8 +251,13 @@ subset; the ontology defends the whole.*
 ## Decisions
 - Materiality is derived **backward from the three target queries + tradecraft** — the defensible answer to
   "why these entities and no more."
-- 14 node types, ~29 edges, 10 chokepoint criteria as above. Node count held; net +6 knowledge-layer edges
-  vs the draft, each required by a query or CONTEXT.
+- 14 node types, ~31 edges, 10 chokepoint criteria as above. Node count held; net +6 knowledge-layer edges
+  vs the original draft, each required by a query or CONTEXT.
+- *Supply-chain-review refinements (additive; mostly design-note, instances land as Known-Gap candidates —
+  not demo-build burden):* added **`component-of`** (BOM depth), listed & **generalized `substitutable-by`**
+  to any critical sustainment node (+ optional Component-level alt-part), made unit **`designator`
+  multi-valued** incl. cover-designator, and made **`operational-status` ordinal**. The corpus seeds ≥1
+  concrete instance of each so the mechanism fires (data cases in `../md/05-data-scoping-C.md` §5.1).
 - Chokepoint = **structural nomination + evidence confirmation**, output as **prioritized collection
   tasking** (confirmed chokepoints + candidate gaps), never a claimed-complete SPOF map.
 - Freshness is **symmetric**: people/knowledge sustainment edges are durable-by-default but
@@ -234,14 +266,12 @@ subset; the ontology defends the whole.*
   `../spine/04-credibility.md` (Q2–Q4).
 
 ## Open questions
-- **Deep-tier hunting depth** (lock Q5 residual, *needs your call*): how aggressively to hunt/name tier-2/3
-  China-side suppliers — effort vs collection-tasking value. The one real depth-vs-effort knob inside the
-  reachability bound.
-- **Which single sustainment node** to build for the demo (Interceptor Stockpile vs Tech-Data Authority vs
-  Maintenance/Depot) — leaning Interceptor Stockpile (most observable via follow-on orders) or Tech-Data
-  Authority (highest-leverage, cleanest "invisible dependency" story). Decide in `02-demo-thread.md`.
 - **Store choice** to represent recursive units + reversible merges + evidence layer (shared with
-  `../spine/01-graph-and-ontology.md`).
+  `../spine/01-graph-and-ontology.md`) — *deferred by decision; decide later.*
+- *(Resolved this session: **sustainment node → build BOTH** Interceptor Stockpile & Tech-Data Authority;
+  **deep-tier hunting depth → a data question**, bounded by the generator cases in
+  `../md/05-data-scoping-C.md` §5.1 — seed ≥1 sanctions/tender-named sub-supplier (confirmed) + the rest as
+  candidates.)*
 
 ## Research directions / provenance
 - ★ Materiality research **done** (this doc). Residual: a focused pass on *known HQ-9/P deep-tier
