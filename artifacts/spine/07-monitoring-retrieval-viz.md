@@ -11,15 +11,22 @@ credibility/graph core, but each is a brief requirement.
 ### Observables / tripwires (the monitoring requirement)
 An **observable** is an analyst-defined condition that fires an alert when met (e.g. a logistics surge, a
 comms blackout, a sustained fuel build-up; for C, a *new induction signal* or a *new basing appearing*).
-- Analyst-defined (a HITL control point, `05-hitl-and-triage.md`).
+- Analyst-defined (a HITL control point, `05-hitl-and-triage.md`) **as a live DSL condition over existing
+  node/edge attributes + precomputed metrics — defined in-app, armed immediately, no app restart**
+  (`09-retrieval-and-tools.md`). Reviewers set their own; the locked C tripwire is just the seeded example.
+- Evaluated by a **post-`rebuild()` observable evaluator**: every `make ingest` / UI ingest → `rebuild()` →
+  armed observables re-checked → crossings fire. Live ingestion is always available (extraction is the
+  optional front-end).
 - Firing produces an alert that goes to **disposition** (real / noise / needs-more), which feeds tripwire
   tuning (`06-adaptation.md`).
 - The brief asks for **at least one** working observable to demonstrate the real-time-monitoring idea —
   scope to one good one, wired end-to-end and traceable, not a suite.
 
 ### Multi-hop cited QnA (the agent)
-- **Decompose** a non-trivial question into sub-questions, **traverse 2–3 hops** of the graph, return an
-  answer that **cites the exact source behind every claim**.
+**Detailed design — tool surface, bounded loop, citation validator, query taxonomy, hot-config — in
+`09-retrieval-and-tools.md` (research basis: `../md/14-multihop-retrieval-research.md`).** In brief:
+- **Decompose** a non-trivial question into sub-questions, **traverse 2–3 hops** of the graph via a bounded
+  ReAct tool-calling loop, return an answer that **cites the exact source behind every claim**.
 - **Separate observed activity from inferred intent** — state what is seen vs what is reasoned.
 - **Insufficient-evidence fires on a planted gap** — the agent must say what's missing and when coverage
   is due rather than guess (uses the evidence-requirement templates, `04-credibility.md`).
@@ -37,15 +44,16 @@ comms blackout, a sustained fuel build-up; for C, a *new induction signal* or a 
 ---
 
 ## Open questions
-- **Which observable for C** — leaning "a new/relocated basing node crossing into 'confirmed', or a
-  sustainment-tender signal implying induction." Decide in `../C/02-demo-thread.md`.
-- **Agent framework** — plain tool-calling loop vs a framework; keep it deterministic enough to run the
-  same every demo. TBD; favour minimal + reproducible.
-- **Map stack** — tile source + geo rendering lib. Deferred (demo-feasibility choice, not a graded one).
-- **"Observed vs inferred" rendering** — how the answer visually separates the two. TBD.
+- *(Resolved: **which observable** → LOCKED as the HQ-9B Rawalpindi→Rahwali occupancy state-change
+  (`../C/02-demo-thread.md` Q1) — but now just the seeded example; observables are user-definable live,
+  `09-retrieval-and-tools.md`.)*
+- *(Resolved: **agent framework** → a plain **bounded ReAct tool-calling loop**, no framework;
+  `09-retrieval-and-tools.md`.)*
+- *(Resolved: **map stack** → Leaflet with vendored tiles; `../md/07-stack.md`.)*
+- **"Observed vs inferred" rendering** — how the answer visually separates the two. TBD (a UX call).
 
 ## Research directions
-- Cited/grounded graph-RAG patterns that keep per-hop provenance intact (so every claim in the answer
-  traces to a source line).
+- *(Done: cited/grounded graph-RAG patterns that keep per-hop provenance intact — see
+  `09-retrieval-and-tools.md` + `../md/14-multihop-retrieval-research.md`.)*
 - Confidence-coded geospatial conventions used in real intel products (symbology for
   confirmed/probable/suspected) — for a credible visualisation.

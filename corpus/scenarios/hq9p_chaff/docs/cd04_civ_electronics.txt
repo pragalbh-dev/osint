@@ -1,0 +1,88 @@
+BILL OF LADING PARTICULARS
+B/L NO: KKLUE7719402                              PAGE 1 OF 1
+
+SHIPPER:
+SHENZHEN GOLDVISION ELECTRONICS CO LTD
+RM 803 BAOAN BLDG, FUYONG ST
+SHENZHEN, GUANGDONG, CHINA
+
+CONSIGNEE:
+STARLINK HOME APPLIANCES (PVT) LTD
+PLOT 45-C, SITE AREA
+KARACHI-75700 PAKISTAN
+TEL: 021-32
+ATTN: MR. FAROOQ AH---MED/ M. FAROOQ AHMAD
+
+NOTIFY PARTY: SAME AS CONSIGNEE
+              C/O UNIVERSAL CLEARING & FORWARDING AGENCY
+              WEST WHARF ROAD, KARACHI
+
+PORT OF LOADING:    YANTIAN, CHINA - 57035
+PORT OF DISCHARGE:  PORT QASIM, PAKISTAN
+FINAL DESTINATION:  KARACHI (BONDED WHSE)
+
+VESSEL:      KOTA LAGU              VOYAGE: 0134E
+CARRIER:     KMTC (KOREA MARINE TRANSPORT CO)
+CONTAINER:   KKTU2210987, 20FT GP, 1x1
+SEAL NO:     KK884521
+
+GOODS DESCRIPTION (AS DECLARED):
+8526 -- RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY
+SATELLITE FINDER MODULE W/ LNB TUNER PCB
+FOR DTH DISH ANTENNA RECEIVER SETS
+MODEL: SF-2200HD / SF2200-HD REV.B
+CIVIL USE - HOME ENTERTAINMENT RECEPTION EQPT
+>>> fwd: re: inv#4471 pls advise ETD before CNY hol---
+    iday closure thx rgds Jenny <<<
+PARTS FOR ASSEMBLY LOCAL: PCB BOARD, TUNER HEAD,
+LNB BRACKET, PLASTIC HOUSING (KD FORM), POWER
+ADAPTOR 12V, USER MANU-
+AL (ENGLISH/URDU)
+
+NOT FOR RE-EXPORT -- END USE: RESIDENTIAL SATELLITE
+TV RECEPTION (DTH), NON-COMMERCIAL GRADE
+
+HS CODE (TARIFF):     8526.91.00
+NO. OF PACKAGES:      140 CTN
+GROSS WEIGHT:         1,860 KGS
+NET WEIGHT:           1,640 KGS
+MEASUREMENT:          9.4 CBM
+FREIGHT:              PREPAID
+DECLARED VALUE (FOB): USD 18,340.00
+
+MARKS & NOS:
+STARLINK HOME APPLIANCE
+KARACHI / MADE IN CHINA
+CTN NO. 1-140
+
+SB NO: KHI-EXP-2021-0088341        DATE: 09-07-2021
+DATE OF SHIPMENT: 04 JUL 2021
+DATE OF ARRIVAL (EST): 22 JUL 2021
+
+REMARKS:
+Shipment covers routine consumer DTH satellite-finder
+sub-assemblies for local retail assembly line, per
+import license IL/2021/KHI/6642 dtd 11-05-2021.
+Consignee is engaged in domestic consumer electronics
+distribution (TVs, DTH set-top boxes, home audio) -
+no association w/ any govt or defence procurement
+entity. HS 8526 classification per PCT 2021-22 covers
+radar, radio navigational aid and radio remote control
+apparatus generally; sub-heading 8526.91 (radio
+navigational aid apparatus, nfd) applied by clearing
+agent per prior precedent ruling ref PCT-WCO-8526-14,
+though goods are strictly DTH reception hardware, not
+navigation/radar equipment. Broker note: recurring
+classification query raised w/ Customs Valuation &
+Classification Dept re: correct sub-head (8528 vs 8526)
+for satellite-finder assemblies - pending clarification,
+filed under 8526 as per prior consignments (ref BL
+KKLUE7602211 dtd Mar-2021, same consignee, same
+description).
+
+---
+CLEARING AGENT:  UNIVERSAL C&F AGENCY, KARACHI
+LICENSE NO:      CHA-0091-KHI
+SIGNATURE:       [illegible]                 STAMP: [illegible]
+
+--- END OF DOCUMENT ---

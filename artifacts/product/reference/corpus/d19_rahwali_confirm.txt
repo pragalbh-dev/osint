@@ -1,0 +1,34 @@
+IISS Military Balance+ / Weekly Update — Air Defence Order of Battle Watch
+South Asia Desk — Issue No. 17-2025
+Distribution: Subscriber institutions (open-source collation; not for further redistribution)
+
+Pakistan Air Force Ground-Based Air Defence — Rahwali Battery, Continued Monitoring
+
+Summary
+
+This update revisits the suspected HQ-9BE (export variant of the PLA's HQ-9B) deployment in the vicinity of Rahwali Cantonment, Punjab, first flagged in our Issue 41-2024 note following commercial imagery showing engagement-radar-type emplacements and a cluster of erector-launcher vehicles inconsistent with the legacy Anza/LY-80 order of battle at that garrison. Analysts had previously assessed the site with only medium confidence owing to reliance on a single imagery pass. Subsequent collection, summarized below, raises confidence to high.
+
+Site background
+
+Rahwali Cantonment (32.19°N, 74.20°E approx., adjacent to Gujranwala) has hosted PAF and Pakistan Army air defence elements since at least the early 2000s. Open-source tracking of the HQ-9/P (the designation more commonly used in Pakistani procurement-adjacent reporting, believed to correspond closely to the PLA's HQ-9B configuration, though the degree of sub-variant commonality remains debated among collectors) has placed a battery-sized element at this location since approximately 2021-2022, with a second, less-confirmed site reportedly near Karachi's coastal approaches.
+
+Collection update, March–April 2025
+
+A commercial electro-optical pass on or about 14 March 2025 imaged what is assessed as an HT-233-type engagement radar (or a derivative thereof; NATO/Western literature sometimes conflates this with the phased-array set associated with the S-300PMU analog lineage) in its normal operating orientation at the previously identified pad. Notably, this is a repeat observation — the same radar footprint and approximate vehicle count (estimated 4-6 TEL, though cloud shadow obscured at least one possible additional launcher) was recorded in an earlier pass in October 2024, meaning the deployment has now been confirmed on two independent imagery dates roughly five months apart, reducing the likelihood that analysts were looking at a transient exercise deployment or a decoy array left in place for deception purposes.
+
+Separately, and independent of the imagery collection, a signals-intelligence-adjacent open source (a hobbyist SIGINT/ELINT monitoring forum whose operators claim reception in the relevant L/S-band segments from a receive site in northern India) reported on 22 March 2025 an emitter consistent with HT-233 engagement-radar parameters, active for a duration "of several minutes," with a bearing that intersects the Rahwali coordinates within the stated error ellipse of the reporting station. The forum post itself should be treated cautiously — provenance of the receiving equipment cannot be verified, and the operator is anonymous — but the emitter characteristics (PRF and estimated scan behavior) are reportedly consistent with prior characterizations of the HT-233 by regional SIGINT services, and critically, an active radar emission cannot be faked by a ground decoy array, which by definition does not radiate. Taken together with the imagery repeat-pass, this represents two discipline-independent indicators (imagery and a plausible RF emission) that do not share a common failure mode, which analysts assess meaningfully increases confidence that the Rahwali position is a live, occupied HQ-9B/P fire unit rather than a decoy or spoofed hardstand.
+
+Assessment
+
+- Confidence: High (upgraded from Medium, Issue 41-2024) that Rahwali hosts an active HQ-9BE/HQ-9P battery, not a mock-up or training aid.
+- The estimated missile count per TEL (4 canisters, per most open literature on the export HQ-9 launcher) remains unconfirmed at this specific site; imagery resolution has not permitted a canister-level count as of this writing.
+- Maximum engagement range for the export HQ-9BE is widely cited as ~200-260 km, though PAF's own published statements are vaguer, and some Chinese-language marketing material suggests figures at the upper end may apply only to a specific extended-range interceptor variant not confirmed as fielded by Pakistan.
+- The possibility of a second, partially-built site near Karachi remains assessed as low-to-medium confidence and is not corroborated by the current reporting period's collection.
+
+Caveats
+
+As with all crowd-derived ELINT reporting, the March 22 forum post could reflect misidentification of a co-located or nearby emitter (e.g., a fire-control radar from a different SAM type, or civil ATC/surveillance radar in the wider Gujranwala corridor); we have not been able to independently verify the receiving station's calibration. Imagery timestamps are EXIF/metadata-derived from the vendor and have not been cross-checked against an independent satellite pass. Readers should treat the "high confidence" label as a collation-desk judgment, not a certified intelligence assessment.
+
+Next scheduled review: Issue 21-2025, or earlier if new imagery tasking clears.
+
+— South Asia Desk, Air Defence OOB Watch. Queries to the editorial distribution list.

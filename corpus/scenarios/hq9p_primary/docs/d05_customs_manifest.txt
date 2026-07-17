@@ -1,59 +1,92 @@
-BOL Number:        HLCUKR2039817
-Consignee:         Al-Barakat Trading & General Services (Pvt) Ltd
-Notify Party:      Bureau of Supplies, National Logistics Cell -- c/o same address
-Shipper:           China Xinshidai Shipbuilding & Electromech Import/Export Corp
-Shipper Country:   China
+GOVERNMENT OF PAKISTAN
+PAKISTAN CUSTOMS - PAKISTAN REVENUE AUTOMATION LIMITED (PRAL)
+WeBOC SYSTEM - IMPORT GOODS DECLARATION (GD) EXTRACT
+FORM: CUSDEC-1 (Sea Cargo) -- Consolidated Manifest Line Report
 
-Product Description (as shown, cleaned form):
-  "ELECTRICAL APPARATUS FOR LINE TELEPHONY LINE TELEGRAPHY PARTS THEREOF -- RADIO
-   TRANSCEIVER MODULE ASSY / RF SUB-UNIT SPARE COMPONENTS -- MODEL: HT-233 (QTY VARIES
-   PER CTN) -- FOR INDUSTRIAL COMMUNICATION USE -- SAID TO CONTAIN: CIRCUIT BOARD, WAVEGUIDE
-   FLANGE, T/R MODULE, MISC HARDWARE -- N.O.S."
+Report Type:     Manifest / GD Cross-Reference (Bulk Extract)
+Terminal:        Karachi International Container Terminal / QICT PQ
+Period Covered:  01-NOV-2020 to 30-NOV-2020
+Generated:       25-NOV-2020 14:07 (PKT) -- Batch Ref: WB/KHI/2020-11/0447
 
-HS Code:           8526.91
-Weight:            gross wt not stated / net 4,120 kg (per packing list attach.)
-Quantity:          38 CTN (Cartons), 6 PLT (Pallets)
-Port of Loading:   XINGANG (TIANJIN) - CN 35141
-Port of Unlading:  Karachi (KICT Terminal) - PK 45500
-Arrival Date:      11/xx/2020 (day illeg. on manifest scan)
-Departure Date:    not explicitly stated on rendered view
-Carrier:           Hyundai Merchant Marine / partner vessel-share arrangement
-Vessel Name:       HYUNDAI FORTUNE (also seen as "HYUNDAI FORTUNA" in agent's covering letter)
-Vessel IMO:        9187339
-Container:         HLXU7742210, 40ft HC (1 of 2 — second container CMAU4498821 not on this row)
-Voyage:            0EW4N
+-----------------------------------------------------------------------------
+GD No: KPQA-HC-2020-118834          Filing Date: 04-11-2020
+Port of Discharge: PORT MUHAMMAD BIN QASIM (PQ)
+Terminal Handler: Pakistan International Bulk Terminal
+Vessel: MV YM INCEPTION  Voy: 0091E   Line: Yang Ming (SCAC YMLU)
+B/L No: YMLUW189234567
 
-=== B. RAW EMBEDDED PAYLOAD FIELDS (verbatim, broker worksheet) ===
+Consignee:       ORIENT ELECTRO TRADING (PVT) LTD
+                 Suite 4-C, Sharae Faisal Commercial Complex,
+                 Karachi -- NTN 3298761-4
+Shipper:         SINO-GALAXY IMP/EXP CO. LTD
+                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)
+Shipper Ctry:    CHINA (Origin: Tianjin Xingang)
+Notify Party:    same as consignee
 
-field: consignee_name       val: "AL BARAKAT TRADG & GEN SERV(PVT)LTD"
-field: consignee_addr       val: "OFFICE # 4, 2ND FLR, HASSAN ARCADE, SHAHRAH-E-FAISAL, KHI"
-field: consignee_altname    val: "AL-BARKAT TRADING CO" (per B/L rider, spelling variance)
-field: ntfy_party           val: "NLC BOS -- FOR ONWARD DELIVERY, ATTN: STORES OFFICER (AIR DEFENCE WING)"
-field: shipper_name         val: "CHINA XINSHIDAI SHIPBUILDING & ELECTROMECH I/E CORP"
-field: shipper_altname      val: "CN XIN SHI DAI S/B ELECTROMECH IMP EXP CO" (chb translit)
-field: shipper_addr         val: "RM 1108, XINSHIDAI BLDG, HEPING RD, TIANJIN, PRC"
-field: hs_declared          val: "8526.91.00 - RADAR APPARATUS AND PARTS THEREOF, N.E.S."
-field: hs_alt_seen          val: "8526.91" / "8526" (broker split usage across cartons — not consistent)
-field: item_desc_raw        val: "RF MODULE H/T-233 X LOT, ANTENNA FEED PARTS, WAVEGUIDE SECTION,
-                                   TR MODULE PCB ASSY, SPARE - FOR RADAR SYS (SEE INV #)"
-field: end_use_stmt         val: "CIVIL TELECOM MAINTENANCE" [as declared by shipper -- unverifiable
-                                   against invoice line items, which ref. "HT-233 fire control radar,
-                                   sub-assembly"]
-field: invoice_no           val: XSD-2020-4471
-field: invoice_qty_line3    val: "H/T233 RF FRONT-END UNIT ... 6 SETS"
-field: invoice_qty_line7    val: "WAVEGUIDE FLANGE ASSY (SPARE) ... 24 PCS"
-field: invoice_qty_line9    val: "MISC HARDWARE KIT ... N/A QTY" [blank on scanned copy]
-field: value_decl           val: USD 118,[illeg — figure cut off in scan]
-field: currency              val: USD
-field: net_weight_kg        val: 4120
-field: gross_weight_kg      val: n/a
-field: packing_list_ref     val: PL-4471-A (attached, partial only — pgs 2,3 missing)
-field: broker_name          val: "M/S TRUSTLINE CLEARING AGENCY, KHI"
-field: broker_ref           val: TCA/2020/1187
-field: hs_code_prior_row    val: 8526.10 [struck through, corrected by hand to 8526.91]
-field: remarks              val: "CONSIGNEE ADDR PER LC DIFFERS FROM CNIC-REG ADDR ON FILE — REFER
-                                   IMPORT LICENSE NO. ***/2020 (NUMBER NOT LEGIBLE ON COPY HELD)"
-field: end_consignee_flag   val: null
-field: gsp_cert             val: not provided
-field: prior_shpmt_xref     val: "SEE ALSO HLCUKR2019402 (SAME CONSIGNEE, JUL2020, HT-233 LOT
-                                   CONT'D)"
+HS Code:         8526.91.00
+Description (as filed): "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE,
+                 FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT"
+Pkgs:            14 WOODEN CRATES, gross wt 9,870 kg
+Container:       TCNU7712204 / TCNU7712341 (2 x 40ft HC)
+Declared Value:  USD 612,400 (CIF PQ)
+Freight Fwdr:    AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi
+
+-----------------------------------------------------------------------------
+GD No: KPQA-HC-2020-118835          Filing Date: 04-11-2020
+Port of Discharge: BIN QASIM
+Vessel: MV YM INCEPTION  Voy: 0091E
+B/L No: YMLUW189234568
+
+Consignee:       ORIENT ELECTRO TRADING (PVT) LTD
+Shipper:         SINO GALAXY IMP. & EXP. CO.
+Shipper Ctry:    CHINA
+
+HS Code:         8526.92.00
+Description (as filed): "ELECTRONIC ASSEMBLY, ANTENNA FEED SUB-UNIT, TEST
+                 EQPT ACCESSORY, PARTS OF SURVEILLANCE INSTRUMENT N.E.S."
+Pkgs:            6 CRATES, gross wt 4,120 kg
+Container:       TCNU7712204 (shared, see line 118834)
+Declared Value:  USD 188,900
+
+Annex A / Line-Item Detail (attached to GD 118835, page 2 of 2 -- scan quality poor):
+  Item 1  -- WAVEGUIDE ASSY, X-BAND, QTY 4
+  Item 2  -- SERVO DRIVE UNIT, AZ/EL, QTY 2 .......... ref dwg HT233-
+             -- FrOm: zhang.wei@sinogalaxy-export.cn
+             Subject: RE: shipping docs pkg 2 attached pls confirm
+             consignee addr for CD papers, urgent -- thx
+  Item 3  -- IFF TRANSPONDER INTERFACE MODULE, QTY 1
+  Item 4  -- CALIBRATION FIXTURE, RADAR TEST BENCH, QTY 1
+
+End-user certificate on file: NOT ATTACHED TO GD (ref. letter DGDP/IMP/2020/2246
+cited in broker cover note, copy not scanned)
+Delivery instructions (broker note, handwritten annotation on file copy):
+  "consignee to arrange onward clearance -- final destination Air Defence
+  Depot, ~12 km NNW of Kala Chitta / Attock Cantt area, coordinate with
+  local agent before release"
+
+-----------------------------------------------------------------------------
+GD No: KPQA-HC-2020-119011          Filing Date: 09-11-2020
+Port of Discharge: Port Qasim
+Vessel: MV COSCO SHIPPING ARIES  Voy: 118W  Line: COSCO
+B/L No: COSU6178820410
+
+Consignee:       ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC
+                 TRADING CO -- name change ref SECP CUIN 0087762, 2019)
+Shipper:         SINO-GALAXY IMPEX CO, LTD
+Shipper Ctry:    China
+
+HS Code:         8526.91.00
+Description (as filed): "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY,
+                 REPLACEMENT SPARES FOR CIVIL AIR NAVIGATION AID SYSTEM"
+Pkgs:            9 CRATES, gross wt 6,005 kg
+Container:       CSNU4402217
+Declared Value:  USD 244,150
+
+Remarks (WeBOC system-generated, exam order):
+  EXAM TYPE: GREEN CHANNEL -- NO PHYSICAL EXAMINATION
+  Risk flag auto-cleared by AEO status of freight forwarder (AL-NOOR CARGO
+  SERVICES -- AEO Cert No. PK-AEO-0231)
+
+-----------------------------------------------------------------------------
+CROSS-REFERENCE NOTE (internal PRAL data-matching, non-adjudicative):
+Consignee ORIENT ELECTRO TRADING (PVT) LTD / ORI

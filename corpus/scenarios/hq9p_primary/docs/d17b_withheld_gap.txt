@@ -1,0 +1,43 @@
+IMAGERY ANALYSIS SUMMARY — COMMERCIAL SATELLITE DERIVED
+Ref: OSINT-VIS-0625-114
+Distribution: Open / Unclassified — Suitable for Public Release
+
+Subject: Air Defense Infrastructure, Southern Approaches — Site Activity Check
+
+1. Purpose
+
+This report provides a visual update on a suspected forward SAM deployment area previously flagged in open-source discussion threads as associated with the HQ-9P long-range air defense system fielded by Pakistan. The site in question — referred to in prior open reporting simply as "the old Rawalpindi-area site" near the port road turnoff, not the garrison itself — was tasked for revisit collection this cycle following unconfirmed claims circulating on regional defense forums of a battery relocation.
+
+2. Collection Details
+
+Imagery date: 2025-06-11 (single pass, ~1030 local)
+Platform: commercial EO, sub-meter resolution, pansharpened
+Cloud cover: ~15%, partial obscuration along the northern tree line
+Prior baseline reference: chip from 2024-11 pass (same vendor, cataloged separately)
+
+3. Observations
+
+The area consistent with the suspected forward site shows the previously noted perimeter berm and access road configuration largely unchanged from the 2024-11 baseline. Vegetation growth along the eastern edge has advanced somewhat and now partially shadows two of the hardstand pads noted in earlier passes.
+
+No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass. The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image. No canvas-covered or tarped objects of TEL-consistent dimensions were identified on either the northern or southern pad clusters. Shadow analysis at the given sun angle does not suggest concealed elongated objects under the tree canopy fringe, though the analyst notes partial obscuration limits confidence along roughly 20% of the perimeter.
+
+No unusual vehicle staging, generator trailers, or the tented storage typically associated with missile canister or spares handling was noted anywhere within the fenced compound this pass, consistent with the site's general appearance over the past several collection cycles.
+
+Compound-level activity is otherwise sparse: two light vehicles parked near what is assessed as an administration or guard structure, and what appears to be routine grounds maintenance debris near the western fence line, unchanged in character from prior imagery.
+
+4. Comparative Note
+
+A separate item circulating on a Telegram-linked OSINT aggregator (post dated 11 June, timestamped 0640Z — i.e., roughly four hours before the collection above) asserted that "fresh HQ-9/P TEL deployment confirmed near port road site, imagery pending," citing an unnamed "regional source." No imagery accompanied that post at time of writing, and the claim predates the pass documented in Section 2 by several hours. The present collection does not corroborate the assertion; whether the two references concern the same site footprint could not be independently established from the forum post's description alone, as it gives no coordinates and describes the location only as "near the port road, same as always."
+
+5. Assessment
+
+Current imagery is assessed as a negative TEL presence observation for the pass window noted. This does not preclude the possibility of dispersal, maintenance rotation to an unobserved facility, or a collection-timing gap relative to the forum claim referenced in Section 4. Given the partial cloud obscuration and single-pass nature of this collection, a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding, ideally cross-referenced against a second vendor's catalog for the same window.
+
+6. Caveats
+
+- Single EO pass; no SAR cross-check performed this cycle.
+- Analyst confidence: moderate on hardstand/laydown areas, low along obscured tree-line segment.
+- Site identity as "the forward HQ-9/P site" rests on prior open-source association rather than confirmed order-of-battle documentation; no unit markings or signage visible in any pass to date.
+- Baseline imagery (2024-11) sourced from separate collection contract; direct pixel-level comparison not performed, visual assessment only.
+
+— end of item —

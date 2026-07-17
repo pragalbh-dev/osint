@@ -1,0 +1,92 @@
+Royal United Services Institute
+for Defence and Security Studies
+
+Occasional Paper
+
+The Evolution of China's Integrated Air Defence Architecture
+A Systems-Level Overview
+
+RUSI Occasional Paper, January 2020
+
+Royal United Services Institute
+for Defence and Security Studies
+
+189 years of independent thinking on defence and security
+The Royal United Services Institute (RUSI) is the world's oldest and the UK's leading defence and security
+think tank. Its mission is to inform, influence and enhance public debate on a safer and more stable world.
+RUSI is a research-led institute, producing independent, practical and innovative analysis to address today's
+complex challenges.
+
+The views expressed in this publication are those of the author, and do not reflect the views of RUSI or any
+other institution.
+Published in 2020 by the Royal United Services Institute for Defence and Security Studies.
+This work is licensed under a Creative Commons Attribution – Non-Commercial – No-Derivatives 4.0
+International Licence.
+RUSI Occasional Paper, January 2020. ISSN 2397-0286 (Online); ISSN 2397-0278 (Print).
+
+Executive Summary
+
+China's integrated air defence system (IADS) has undergone a sustained modernisation drive over the past
+fifteen years, transitioning from a largely Soviet-derived, geographically fragmented network into what is
+believed to be one of the more densely layered and networked air defence architectures in the world. This
+paper provides a systems-level overview of that architecture: its command-and-control (C2) philosophy, radar
+coverage, and the general disposition of strategic and tactical surface-to-air missile (SAM) belts protecting
+China's coastal industrial base, key political centres, and contested maritime approaches in the South and
+East China Seas.
+
+The analysis draws on open-source order-of-battle estimates, satellite imagery vendor releases, and prior
+academic literature on the PLA Air Force (PLAAF) and PLA Ground Force air defence brigades. Precise
+unit-level deployment figures remain contested in the open literature; several of the estimates below should
+be treated as indicative rather than authoritative, and are flagged accordingly.
+
+1. Command and Control Philosophy
+
+Unlike the more centralised Soviet-legacy model still visible in parts of the Russian VKS, China's IADS has
+reportedly moved toward a more distributed, networked C2 structure since the mid-2000s, integrating early
+warning radar picket lines, airborne early warning and control (AEW&C) assets such as the KJ-2000 and
+KJ-500, and a mix of strategic and point-defence SAM systems under regional Theater Command air defence
+control centres. Analysts differ on the degree of automation involved in track correlation and engagement
+authority; some open-source assessments describe a system with substantial machine-assisted fusion, while
+others caution that reported integration levels may be overstated in PLA media messaging.
+
+2. Radar and Sensor Layers
+
+China is estimated to operate several hundred early warning and fire-control radars of varying generations,
+ranging from legacy Soviet-derived P-18/P-19 derivatives still in reserve service to indigenous over-the-horizon
+(OTH) backscatter arrays believed to extend detection ranges well beyond 3,000 km against large aerial
+targets under favourable conditions. The exact number of OTH facilities currently operational is not
+precisely known in open sources — estimates range from two to four major sites, with a further site
+reportedly under construction as of late 2019.
+
+3. Strategic SAM Belts
+
+Strategic-range SAM coverage is concentrated around Beijing, the East China Sea approaches, and increasingly
+around military installations in the South China Sea, including reported deployments to features in the
+Spratly and Paracel island groups. The PLA's strategic SAM inventory includes a mix of Russian-supplied
+S-300PMU/PMU1/PMU2 systems acquired from the late 1990s onward, and progressively larger numbers of
+indigenously produced long-range SAM systems developed by China's domestic defence industry, which
+Western analysts generally assess to offer broadly comparable — though not necessarily identical —
+performance envelopes to their Russian antecedents. This paper does not attempt to adjudicate between
+competing claims on the precise seeker technology, guidance modes, or export variants associated with any
+single system type; readers seeking system-specific technical assessments are directed to specialist literature
+on individual platforms.
+
+4. Medium- and Short-Range Layers
+
+Beneath the strategic tier, PLA Ground Force air defence brigades and PLAAF SAM divisions field a substantial
+and growing inventory of medium-range systems (broadly in the 40–150 km engagement bracket) together
+with short-range point-defence systems intended to protect airfields, naval bases, and command nodes from
+saturation and stand-off strike. Force totals at this tier are difficult to verify independently; a commonly
+cited but unverified figure suggests in excess of thirty medium-range SAM battalions currently fielded,
+though this number may understate battalions held in reserve or under conversion.
+
+5. Export Dimension
+
+A parallel dimension of China's air defence modernisation has been the export of selected SAM technologies
+to partner states, principally through state-owned defence conglomerates. Analysts note that export variants
+typically differ from domestic PLA fielding in seeker technology, datalink standards, and integration software,
+complicating direct threat comparisons based solely on nominal range or altitude figures published in
+open marketing material. A comprehensive country-by-country accounting of these transfers falls outside
+the scope of this paper and is addressed in forthcoming RUSI
+
+[cached record truncated — remainder unavailable in stored snapshot]

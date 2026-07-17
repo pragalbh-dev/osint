@@ -1,47 +1,47 @@
-COLLECTION: COMMERCIAL EO SATELLITE — ARCHIVE TASKING
-PRODUCT ID: SIH-2022-0071-K
-SENSOR: SI-VHR-1 (optical, pan-sharpened)
-NOMINAL GSD: 0.50m (pan), 2.0m (MS) — resampled product 0.5m
+GEOSPATIAL INTELLIGENCE SUMMARY REPORT
+UNCLASSIFIED // FOR OFFICIAL USE ONLY // OSINT
+Serial: GIS-2022-0311-KHI
+Imagery Analyst Working Notes — Distribution: Open Source Working Group
 
-ACQ DATE/TIME (UTC): 2022-03-14 / 06:41:22Z
-IMAGE PROCESSING DATE: 2022-03-19
-SCENE ID: SIH20220314T064122_K_R1C2
-CLOUD COVER: 8%
-SUN ELEV: 41.2 deg / AZ 132.6 deg
-OFF-NADIR: 27.4 deg (left-looking)
+SUBJECT: Probable Long-Range SAM Emplacement, Malir District, Karachi, Sindh Province, Pakistan
 
-AOI: KARACHI METRO / COASTAL BELT, SINDH PROVINCE, PAKISTAN
-AOI CENTER (approx, WGS84): 24.89N, 66.98E
-FRAME SIZE: 4.1km x 3.6km
+DATE OF REPORT: 2022-03-14
+PERIOD OF IMAGERY COVERAGE: 2021-11-02 through 2022-03-09 (multi-pass, 4 collects)
 
----
+1. SUMMARY
 
-ANNOTATION LAYER (analyst overlay, generated 2022-03-21, v1)
+Analysis of commercially available satellite imagery over the Malir area on the northeastern periphery of Karachi has identified a fortified air defense site exhibiting a petal/ring-pattern surface-to-air missile pad consistent with known HQ-9/P (export variant of the CASIC HQ-9, NATO CH-SA-9) transporter-erector-launcher (TEL) deployment schemes. The site is assessed with MODERATE-HIGH confidence to be an active or newly constructed long-range SAM battery position. Coordinate pin, derived from multi-pass geolocation and cross-referenced against basemap control points, is:
 
-Chip 1 of 3 — full frame context, downsampled preview (res degraded ~2.0m for release copy; native 0.5m held in archive)
+24.9012 N, 67.2034 E
 
-Chip 2 of 3 — subframe A, center 24.887N 66.976E
-- Cleared hardstand, hexagonal/petal-shaped revetment layout consistent w/ SAM battery dispersal pattern. 6x radial spurs off central hub, spur length approx 18-22m each, compatible with TEL parking bays.
-- 4x elongated rectangular objects on northern spurs, dims approx 8.5m x 3.2m — signature consistent w/ large tracked/wheeled TEL-class vehicle, erector arm not resolved at this res (imagery below native, some smear from off-nadir look angle + light haze).
-- 1x object, central pad, boxy, ~5m x 5m, possible engagement radar or fire-control shelter (NOT resolved to type — antenna face orientation unclear).
-- Access road tracks visible connecting pad to perimeter berm; berm shadow consistent w/ earthen revetment approx 2.5m height (shadow-length estimate, sun elev 41 deg).
-- Note: object counts should be treated as approximate — 2 candidate TEL contacts partially occluded by netting/shadow overlap on eastern spur, could be 1 or 2 vehicles.
+(decimal degrees, WGS-84; analyst-plotted centroid of central hardstand)
 
-Chip 3 of 3 — subframe B, center 24.892N 66.981E
-- Secondary revetment cluster, smaller radius, possible support/reload area or unrelated construction laydown — low confidence, ambiguous at this resolution.
-- Vehicle-sized shadows along access track, count indeterminate.
+2. IMAGERY DISCUSSION
 
----
+Pass 1 (2021-11-02, ~0.5m resolution, off-nadir ~12°): initial tip from a change-detection tile flagged new earthworks in an agricultural/scrubland belt east of the Malir Cantonment road network. A roughly circular graded pad, approximate diameter 90-110m, is visible with six radial spurs terminating in what are believed to be TEL revetments — earthen berms 2-3m in estimated height, open-topped, oriented outward from a central hub. This "petal" or "flower" layout is a signature associated with HQ-9/P and analogous S-300/400-family battery construction, intended to provide blast separation between launcher vehicles and a central engagement/guidance radar position.
 
-SITE TYPING (VLM auto-classifier, run 2022-03-21, model rev 4.2):
-- classifier output: "SAM_BATTERY_SITE — HIGH" (petal/hub revetment geometry, radial TEL bays, central engagement-radar pad) — matches training signature for long-range SAM garrison, style consistent w/ S-300/HQ-9 family dispersal doctrine (petal-pad).
-- confidence flag: MEDIUM-HIGH (geometry strong match; vehicle-type confirmation LOW due to sub-optimal GSD for this range — recommend re-task at nadir, <20cm GSD if tasking window permits)
-- prior imagery on file for this pad: 2021-11-02 (partial cloud, pad visible but bare/no deployed hardware); 2022-01-09 (hardstand construction complete, no TELs present)
-- change detection vs 2022-01-09 baseline: POSITIVE — new returns on northern and eastern spurs not present in Jan baseline.
+Pass 2 (2021-12-19): revetment construction appears more complete; a raised circular foundation at pad center, approx. 15-20m diameter, is consistent with an emplaced engagement radar (possibly HT-233 or derivative, NATO association tentative). No radar array itself is resolvable at this resolution/sun angle — presence inferred from foundation geometry alone.
 
----
+Pass 3 (2022-01-27): shadow analysis suggests object(s) present in at least two of the six revetments, elongated, approx. 9-11m in length — dimensions broadly compatible with an HQ-9/P TEL (reported ~8m missile canister length, chassis variable), though a shorter-range system or unrelated support vehicle cannot be excluded at this resolution. Object count is uncertain; possible additional occupied revetment obscured by cloud shadow along the northern arc.
 
-ANALYST REMARKS (freeform, unreviewed):
-possible HQ-9P bty consistent with reported PAF/Army AD deployment near Karachi approaches — cf open-source reporting on Pak acquisition of HQ-9P (export variant, CH-SA-9 reporting name) for coastal/point air defense of Karachi harbor + associated infra. caveat — imagery acquired 14 Mar but tasking request was for 09 Mar window, satellite revisit slipped due to competing collection priority, so treat "current as of" date as capture date not request date. also note downlinked product came through at lower res than contracted (partial sensor binning applied upstream, vendor says correction pass pending) — pad/hub geometry still diagnostic for site-type call even at degraded res, but individual TEL hull ID not achievable this pass. recommend follow-up VHR tasking + SIGINT cross-check (engagement radar emissions) before upgrading confidence past MEDIUM-HIGH.
+Pass 4 (2022-03-09): pad and revetment layout unchanged from Pass 3. Perimeter berm and what is assessed as a secondary access road (unpaved, ~6m width) connecting to the main Malir-Gadap corridor are now clearly resolved. No additional radar or support infrastructure (fire control van, generator trailers) positively identified, though several small rectangular objects near the pad's southern edge may represent support shelters or unrelated agricultural structures.
 
-END PRODUCT SIH-2022-0071-K
+3. ASSESSMENT
+
+The petal/ring pad geometry, revetment count, and TEL-consistent object dimensions are judged sufficient to assess this site as a likely HQ-9/P battery position, reportedly part of Pakistan Army Air Defence Command's continuing long-range SAM buildout. Confidence in system-type identification (HQ-9/P specifically, vs. a legacy or alternate long-range SAM) is MODERATE; no hull markings, canister markings, or radar signatures were collectable from available commercial imagery. The site's proximity to Karachi's urban/port periphery is consistent with previously reported point-defense deployments oriented toward coastal and airspace approaches, though the analyst notes this specific location has not, to this analyst's knowledge, previously appeared in open literature.
+
+Estimated operational status: possibly not yet fully operational as of the March pass — absence of a resolvable radar array is the principal open question. Object count within revetments (2 confirmed, up to 4 possible) should be treated as provisional pending a higher-resolution or more favorable sun-angle collect.
+
+4. COORDINATES / GEOREFERENCE
+
+Centroid (pad hub): 24.9012 N, 67.2034 E
+Grid/area reference: Malir District, Karachi Division, Sindh, Pakistan
+Basemap control: OSM/commercial tile cross-check, RMSE not independently computed by this analyst
+
+5. COLLECTION GAPS
+
+- No SAR pass available to confirm object presence under cloud cover (Pass 3 northern arc).
+- No imagery collect between 2022-01-27 and 2022-03-09 (41-day gap) — construction/emplacement activity in interval unknown.
+- Radar emitter identification would require ELINT/SIGINT cross-cue not available to this analyst.
+
+END OF REPORT

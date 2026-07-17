@@ -34,7 +34,13 @@ Build 2–3 deeply for the demo; the rest are the *same service* with different 
 5. **Observable definition** — analyst defines tripwire conditions.
 6. **Alert disposition** ★ — fired tripwire: real / noise / needs-more; feeds tuning.
 7. **Assessment review** — final cited assessment accepted/annotated before it becomes "intelligence."
-8. **Integrity flags** — M4 signal fired: decide whether to discount.
+8. **Integrity flags** — M4 signal fired: decide whether to discount. Two callers of the same adjudication
+   service: **system-triggered** (a structural deception detector fires) and **analyst-initiated** (an
+   analyst spots a fake post on their own and flags it — today's HITL is system-triggered only, so this is
+   a new entry point, not a new mechanism). Either caller enqueues the same item shape; the writeback is
+   identical. Because dedup groups claims by `primary_origin_id`, flagging a source/origin as fake
+   propagates automatically to every co-referring claim on that origin the next `rebuild()` — no per-claim
+   fan-out logic needed.
 
 ★ = the three recommended for deep demo build (merge, override, alert disposition).
 
@@ -44,6 +50,17 @@ Triage is a configurable routing function deciding escalate-vs-auto-proceed. Inp
 without loss of intelligence*: tune the **precision** of what auto-proceeds; hold the **recall of
 escalation near 1.0** (when in doubt, escalate rather than drop). "Grain in the chaff" at the workflow
 level: protect the scarce analyst while never silently discarding a possible signal.
+
+**LLM is raise-only inside triage — it ranks, it never removes.** The escalate-vs-auto boundary is a
+deterministic gate (confidence band + materiality + novelty); recall≈1.0 lives *there*, not in the LLM. On
+top of that gate, a **config-versioned NL triage rubric** is what the LLM *applies* to items already raised
+into the review queue, to **rank** them (which of the escalated items an analyst should look at first) —
+it may never pull an item back out of review, and it may never move the escalate-vs-auto boundary itself.
+Ranking runs once, offline, against the frozen rubric version and is **replayed**, not recomputed live, so
+the queue order is reproducible run to run. Caveat for the demo: under finite analyst capacity, ranking can
+still effectively bury a low-ranked-but-real item if the queue is long — so the ★ marquee control points are
+**deterministically pinned** to the top of the review queue regardless of LLM rank, rather than trusting
+rank alone to surface them.
 
 ---
 

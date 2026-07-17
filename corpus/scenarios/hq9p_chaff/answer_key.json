@@ -1,0 +1,612 @@
+{
+  "ground_truth": {},
+  "worked_query": {},
+  "observable": {},
+  "flexes": {},
+  "documents": [
+    {
+      "id": "ce01_reshare_c",
+      "source_class": "social",
+      "date": "2025-05-11",
+      "mode": "chaff",
+      "asserts": [
+        "third near-identical reshare of the recycled 'Rahwali deployment' image, new handle, same burst window"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hype"
+      ],
+      "deception": [
+        "echo_burst"
+      ],
+      "registry": {
+        "reliability_grade": "E",
+        "bias_vector": "third-party",
+        "primary_origin_id": "origin_parade_img",
+        "coordinated_inauthenticity_flag": true
+      },
+      "expect": {
+        "note": "collapses into origin_parade_img group; no corroboration boost"
+      },
+      "image": {
+        "image_file": "ce01_reshare_c.png",
+        "kind": "parade",
+        "source": "fabricated",
+        "integrity": "synthetic",
+        "shared_id": "parade_2019",
+        "first_seen": null,
+        "sha256_16": "d51931db96679da6",
+        "realism": 1.0,
+        "model": "cached-shared [shared]",
+        "caption": "This ground-level, medium-resolution image depicts a military parade proceeding along a paved urban roadway bordered by streetlights, bleachers, and numerous hoisted flags, including several horizontal tricolor designs. The primary subject is a convoy of at least three multi-axle, camouflage-painted heavy transporter vehicles, each equipped with a rear-mounted cluster of four large cylindrical canisters. A dense crowd of civilian spectators is visible in the immediate foreground and midground grandstands, many utilizing mobile devices to capture the event, while a few individuals in military dress uniforms march on foot alongside the heavy vehicles."
+      }
+    },
+    {
+      "id": "ce02_reshare_d",
+      "source_class": "social",
+      "date": "2025-05-11",
+      "mode": "chaff",
+      "asserts": [
+        "fourth near-identical reshare, another handle, minutes later"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hype"
+      ],
+      "deception": [
+        "echo_burst"
+      ],
+      "registry": {
+        "reliability_grade": "E",
+        "bias_vector": "third-party",
+        "primary_origin_id": "origin_parade_img",
+        "coordinated_inauthenticity_flag": true
+      },
+      "expect": {
+        "note": "collapses into origin group; contributes to too-clean/coordination penalty"
+      },
+      "image": {
+        "image_file": "ce02_reshare_d.png",
+        "kind": "parade",
+        "source": "fabricated",
+        "integrity": "synthetic",
+        "shared_id": "parade_2019",
+        "first_seen": null,
+        "sha256_16": "d51931db96679da6",
+        "realism": 1.0,
+        "model": "cached-shared [shared]",
+        "caption": "This ground-level, medium-resolution image depicts a military parade proceeding along a paved urban roadway bordered by streetlights, bleachers, and numerous hoisted flags, including several horizontal tricolor designs. The primary subject is a convoy of at least three multi-axle, camouflage-painted heavy transporter vehicles, each equipped with a rear-mounted cluster of four large cylindrical canisters. A dense crowd of civilian spectators is visible in the immediate foreground and midground grandstands, many utilizing mobile devices to capture the event, while a few individuals in military dress uniforms march on foot alongside the heavy vehicles."
+      }
+    },
+    {
+      "id": "ce03_reshare_e",
+      "source_class": "social",
+      "date": "2025-05-12",
+      "mode": "chaff",
+      "asserts": [
+        "fifth reshare a day later, quote-tweet chain referencing the earlier reshares"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hype",
+        "date_format_flip"
+      ],
+      "deception": [
+        "echo_burst"
+      ],
+      "registry": {
+        "reliability_grade": "E",
+        "bias_vector": "third-party",
+        "primary_origin_id": "origin_parade_img",
+        "coordinated_inauthenticity_flag": true
+      },
+      "expect": {
+        "note": "6-post burst total (d11-d13 + ce01-ce03) = ONE look; the visible 'grain in chaff'"
+      },
+      "image": {
+        "image_file": "ce03_reshare_e.png",
+        "kind": "parade",
+        "source": "fabricated",
+        "integrity": "synthetic",
+        "shared_id": "parade_2019",
+        "first_seen": null,
+        "sha256_16": "d51931db96679da6",
+        "realism": 1.0,
+        "model": "cached-shared [shared]",
+        "caption": "This ground-level, medium-resolution image depicts a military parade proceeding along a paved urban roadway bordered by streetlights, bleachers, and numerous hoisted flags, including several horizontal tricolor designs. The primary subject is a convoy of at least three multi-axle, camouflage-painted heavy transporter vehicles, each equipped with a rear-mounted cluster of four large cylindrical canisters. A dense crowd of civilian spectators is visible in the immediate foreground and midground grandstands, many utilizing mobile devices to capture the event, while a few individuals in military dress uniforms march on foot alongside the heavy vehicles."
+      }
+    },
+    {
+      "id": "cd01_s400_china",
+      "source_class": "trade_media",
+      "date": "2021-05",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "alias_substitution",
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "off-subject; S-400 aliases must NOT resolve into HQ-9/P; sinks on subject-proximity"
+      }
+    },
+    {
+      "id": "cd02_india_s400",
+      "source_class": "official",
+      "date": "2021-12",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "B",
+        "bias_vector": "operator-state"
+      },
+      "expect": {
+        "note": "wrong country/operator; must not attach to the Pakistan HQ-9/P graph"
+      }
+    },
+    {
+      "id": "cd03_pak_hq16",
+      "source_class": "trade_media",
+      "date": "2022-03",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "alias_substitution",
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "high subject-proximity but different system -> distinct-from; hardest distractor"
+      }
+    },
+    {
+      "id": "cd04_civ_electronics",
+      "source_class": "customs",
+      "date": "2021-07",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hs_code_masking",
+        "ocr_garble",
+        "transliteration_drift"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "commercial"
+      },
+      "expect": {
+        "note": "same HS code as d05 but civilian; relevance/relational match must NOT pull it into the supply chain"
+      }
+    },
+    {
+      "id": "cd05_civ_notam",
+      "source_class": "nav_warning",
+      "date": "2025-04",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "code_string_noise"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "A",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "high-reliability but zero materiality -> no ontology claim extracted"
+      }
+    },
+    {
+      "id": "cd06_entity_collision_factory",
+      "source_class": "reference",
+      "date": "2019-06",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "transliteration_drift",
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "name-similar but distinct entity -> resolver must NOT merge (distinct-from / keep-separate)"
+      }
+    },
+    {
+      "id": "cd07_unit_collision",
+      "source_class": "reference",
+      "date": "2020-09",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "designator-string collision -> resolver must keep separate on identity, not string (answer key; the doc must NOT say so and must NOT be about HQ-9)"
+      }
+    },
+    {
+      "id": "cd08_turkey_sam",
+      "source_class": "trade_media",
+      "date": "2023-01",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "off-subject; sinks on proximity"
+      }
+    },
+    {
+      "id": "cd09_generic_iads",
+      "source_class": "reference",
+      "date": "2020-01",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging",
+        "truncation"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "B",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "tangential; yields no material claim for the subject"
+      }
+    },
+    {
+      "id": "cd10_rumor_test",
+      "source_class": "social",
+      "date": "2025-02",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hype",
+        "coordinate_absence",
+        "date_format_flip"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "E",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "low-cred + off-subject -> sinks below the confidence floor"
+      }
+    },
+    {
+      "id": "cd11_drone_deal",
+      "source_class": "trade_media",
+      "date": "2024-08",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "off-subject trade noise"
+      }
+    },
+    {
+      "id": "cs01_stale_orbat",
+      "source_class": "reference",
+      "date": "2015-06",
+      "mode": "chaff",
+      "asserts": [
+        "a 2015 HQ-9 ORBAT figure recirculated as if current"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hedging",
+        "truncation"
+      ],
+      "deception": [
+        "stale_as_current"
+      ],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "decays -> stale; must not stand as a current holding"
+      }
+    },
+    {
+      "id": "cs02_stale_deployment",
+      "source_class": "trade_media",
+      "date": "2018-04",
+      "mode": "chaff",
+      "asserts": [
+        "a 2018 deployment claim resurfacing in 2025 discussion as if new"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [
+        "stale_as_current"
+      ],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "old event, recent recirculation -> stale"
+      }
+    },
+    {
+      "id": "cs03_stale_customs",
+      "source_class": "customs",
+      "date": "2017-03",
+      "mode": "chaff",
+      "asserts": [
+        "an old shipment record surfacing in a recent compilation"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "ocr_garble",
+        "hs_code_masking"
+      ],
+      "deception": [
+        "stale_as_current"
+      ],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "commercial"
+      },
+      "expect": {
+        "note": "old shipment -> stale; not a current supply signal"
+      }
+    },
+    {
+      "id": "cx01_spoof_karachi",
+      "source_class": "social",
+      "date": "2025-06",
+      "mode": "chaff",
+      "asserts": [
+        "a fresh-dated SINGLE low-cred post claims the HQ-9/P battery has LEFT Karachi for an unnamed site"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "coordinate_absence",
+        "hype"
+      ],
+      "deception": [
+        "supersede_spoof"
+      ],
+      "registry": {
+        "reliability_grade": "E",
+        "bias_vector": "adversary",
+        "decoy_risk_flag": true
+      },
+      "expect": {
+        "note": "second D8 instance vs the Karachi confirmed basing; confidence-floor must hold it as candidate-supersede -> HITL"
+      }
+    },
+    {
+      "id": "cd12_turkey_s400",
+      "source_class": "trade_media",
+      "date": "2019-07",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "alias_substitution",
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "off-subject; S-400 aliases must not resolve into HQ-9/P"
+      }
+    },
+    {
+      "id": "cd13_saudi_patriot",
+      "source_class": "trade_media",
+      "date": "2021-09",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "off-subject; sinks on proximity"
+      }
+    },
+    {
+      "id": "cd14_china_hq22",
+      "source_class": "trade_media",
+      "date": "2022-11",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "alias_substitution",
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "same-manufacturer adjacent system -> distinct-from HQ-9; do not fold into holdings"
+      }
+    },
+    {
+      "id": "cd15_civ_container",
+      "source_class": "customs",
+      "date": "2022-02",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "ocr_garble",
+        "transliteration_drift"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "commercial"
+      },
+      "expect": {
+        "note": "no ontology-typed claim; extraction yields nothing for the subject"
+      }
+    },
+    {
+      "id": "cd16_pak_civ_notam",
+      "source_class": "nav_warning",
+      "date": "2025-05",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "code_string_noise"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "A",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "right country, zero materiality -> no claim"
+      }
+    },
+    {
+      "id": "cd17_academic_radar",
+      "source_class": "reference",
+      "date": "2018-05",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging",
+        "truncation"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "B",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "tangential; no material claim for the subject"
+      }
+    },
+    {
+      "id": "cd18_forwarder_collision",
+      "source_class": "customs",
+      "date": "2021-04",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "ocr_garble",
+        "transliteration_drift",
+        "front_company_consignee"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "commercial"
+      },
+      "expect": {
+        "note": "name-similar forwarder, civilian cargo -> keep separate; do not attach to the supply chain"
+      }
+    },
+    {
+      "id": "cd19_rumor_missile",
+      "source_class": "social",
+      "date": "2025-01",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hype",
+        "coordinate_absence",
+        "date_format_flip"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "E",
+        "bias_vector": "third-party"
+      },
+      "expect": {
+        "note": "low-cred off-subject -> sinks below floor"
+      }
+    },
+    {
+      "id": "cd20_defense_budget",
+      "source_class": "trade_media",
+      "date": "2024-06",
+      "mode": "chaff",
+      "asserts": [],
+      "off_subject": true,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "C",
+        "bias_vector": "operator-state"
+      },
+      "expect": {
+        "note": "right country, no material HQ-9 claim -> tangential"
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+IMAGERY ANALYSIS REPORT
+COMMERCIAL SATELLITE IMAGERY ASSESSMENT
+
+CLASSIFICATION: UNCLASSIFIED // FOR TEST/TRAINING USE ONLY
+
+SUBJECT: Continued SAM deployment activity, Rawalpindi vicinity, Punjab, Pakistan
+
+REPORT DATE: 14 November 2021
+IMAGERY DATES REFERENCED: 03 Aug 2021, 22 Sep 2021, 29 Oct 2021 (three-pass comparison)
+IMAGING PLATFORMS: commercial EO (sub-meter), supplemented by open-source ground photography circulated online in Sept 2021
+
+---
+
+1. SUMMARY
+
+Multi-pass commercial satellite coverage of the long-established air defense compound on the northern edge of Rawalpindi cantonment — referred to locally by residents and in prior reporting simply as "the old Rawalpindi site," off the secondary road paralleling the rail line, not the main GT Road frontage — continues to show a configuration consistent with a long-range SAM fire unit. Analysts assess with moderate-to-high confidence that this represents an HQ-9B (export/PLA designation variance noted; some open-source Pakistani commentary uses "FD-2000" nomenclature, believed obsolete for this battery) fire unit, occupied since at least mid-2021 and still present as of the most recent pass.
+
+2. OBSERVATIONS
+
+Pass 1 (03 Aug 2021): Six TEL-type erector-launcher vehicles arranged in a loose fan pattern approximately 150-250m from a raised earthen berm enclosure, consistent with prior HQ-9-family deployments imaged elsewhere in-country. A large phased-array engagement radar, tentatively identified as an HT-233-type set (or derivative), sits atop what appears to be a prepared hardstand near the compound's northeast corner. Shadow analysis suggests radar mast/tower height in the 3-5m range — figure uncertain due to oblique sun angle at time of collection.
+
+Pass 2 (22 Sep 2021): Vehicle count essentially unchanged (5-6 TELs visible; one possibly obscured by a support vehicle or tarp). A support/command vehicle cluster is visible roughly 80m south of the radar position. Analysts note this spacing is broadly consistent with published HQ-9B fire-unit doctrine, though exact battery organization (search radar vs. engagement radar separation) cannot be confirmed from this single angle.
+
+Open-source ground imagery purportedly taken near the same period (circulated on a Pakistani defense enthusiast forum, geolocation unconfirmed but plausible given visible terrain features matching the compound's perimeter wall) shows a canister-type missile round consistent with HQ-9/HQ-9B airframe proportions on a transporter, reportedly photographed "near the port road" checkpoint outside the cantonment — likely a resupply or rotation event rather than a new deployment.
+
+Pass 3 (29 Oct 2021): Continuity confirmed. Same general TEL disposition, radar hardstand still occupied. Minor changes in vehicle parking suggest routine crew rotation or maintenance activity rather than relocation. No indication of displacement to an alternate site.
+
+3. ASSESSMENT
+
+Taken together, the imagery and the corroborating open-source ground photography support a judgment that an HQ-9B fire unit has been occupying the Rawalpindi garrison-area site continuously (or near-continuously) through at least Q3-Q4 2021. This is consistent with unconfirmed 2020 reporting (not independently verified by this analyst) that the Pakistan Army Air Defence Command had begun rotating HQ-9/P batteries through legacy sites previously associated with older-generation SAM systems in the same cantonment. The system likely provides area air defense coverage over the greater Rawalpindi-Islamabad corridor, though the precise operational tasking (point defense of GHQ-adjacent facilities vs. broader area coverage) cannot be determined from imagery alone.
+
+Confidence in system type (HQ-9B variant) is assessed as MODERATE — radar and TEL signatures are consistent with open-source reference imagery of HQ-9/P exports, but resolution is insufficient to distinguish HQ-9B from earlier HQ-9/HQ-9A configurations with certainty. Confidence in continued occupation of the site through the reporting period is assessed as HIGH.
+
+4. CAVEATS
+
+- No precise coordinates included in this product per standing collection guidance; site referenced by local/colloquial description only.
+- TEL count (5 vs. 6) could not be reconciled across all three passes; estimate should be treated as approximate.
+- Ground-photo provenance is single-source and unconfirmed; forum posting metadata suggests capture in the Sept 2021 window but this is not independently verified.
+- Radar mast height estimate carries significant shadow-geometry error margin.
+
+END OF REPORT

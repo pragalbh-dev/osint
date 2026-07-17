@@ -1,0 +1,36 @@
+IMAGERY ANALYSIS REPORT
+UNCLASSIFIED // FOR OFFICIAL USE ONLY // OPEN SOURCE
+
+SUBJECT: Continued SAM deployment activity, PAF Base Nur Khan, Rawalpindi District, Punjab, Pakistan
+REPORT NO: IA-2021-0947
+DATE OF REPORT: 14 OCT 2021
+IMAGERY DATES: 03 AUG 2021, 22 SEP 2021, 09 OCT 2021 (multi-pass, commercial EO)
+ANALYST HANDLING: OSINT / imagery correlation cell
+
+1. SUMMARY
+
+Commercial satellite imagery collected across three passes in Aug-Oct 2021 continues to show a fire unit consistent with the CASIC HQ-9B (export/derivative of the HQ-9, CH-SA-9 per NATO reporting) long-range SAM system occupying a prepared revetment complex at the installation historically known as PAF Base Chaklala, now designated PAF Base Nur Khan, on the eastern margin of Rawalpindi Cantonment, Punjab. The position is assessed as an active or near-active fire-unit site based on recurring TEL layout, apparent engagement-radar emplacement, and support-vehicle presence consistent across all three collects.
+
+2. LOCATION
+
+Grid: 43S CT 23715 21242 (MGRS, WGS84)
+Approx. bearing/distance: ~1.5 km NE of the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District.
+Alternate facility reference: PAF Base Chaklala (legacy nomenclature still used in some ATC/aviation publications and in older order-of-battle literature).
+
+3. OBSERVATIONS
+
+- 03 AUG pass: revetted position shows six elongated TEL-type objects arranged in a semi-radial pattern around a central hardstand, consistent in dimension with HQ-9/HQ-9B canisterized launchers (estimated 8-9m length per object, resolution-limited). A separate hardstand ~180m to the NNW holds a single larger radar-type object, tentatively consistent with the engagement radar associated with the HQ-9B fire unit (possibly HT-233 or a derivative; positive type ID not achievable at this resolution).
+- 22 SEP pass: launcher count at the same position appears reduced to four visible objects; assessed as maintenance rotation or partial redeployment rather than site abandonment, given continued presence of support infrastructure (generator trailers, two soft-skin utility vehicles, what is believed to be a command/comms shelter).
+- 09 OCT pass: launcher count returns to six; radar hardstand object present and apparently repositioned approximately 15m from its 03 AUG location — may indicate a mobile/relocatable emplacement practice rather than a fixed hardstand, though shadow analysis is inconclusive at this look angle.
+
+4. ASSESSMENT
+
+The fire unit is assessed with moderate-to-high confidence as an HQ-9B battery element occupied through the reporting period at the former Chaklala airfield site, now PAF Base Nur Khan. This assessment is consistent with prior-year reporting (2019-2020 commercial imagery reviewed by open-source collectors) placing a long-range SAM presence at or near this same grid, and is further supported by unverified regional aviation-enthusiast forum posts (2020-2021) describing convoy movements of large canisterized missile transporters on the Rawalpindi Ring Road in proximity to the base perimeter, though these secondary reports could not be independently corroborated against imagery timestamps.
+
+Number of fire units co-located at Nur Khan remains uncertain; only one revetment cluster has been positively resolved in the current pass set, though the base's perimeter extent (~6.4 km circumference, per open perimeter trace) leaves open the possibility of additional dispersed elements not captured within the current image footprints. Battalion or brigade-level C2 integration with wider Punjab-based air defense architecture is inferred but not confirmed from imagery alone.
+
+5. CAVEATS
+
+Object counts and dimensional estimates are resolution-limited (best available GSD ~0.5m for the commercial product reviewed). Radar type identification is tentative. The 22 SEP apparent reduction in launcher count has not been resolved against any known maintenance or training-cycle schedule for PAF air defense units. Grid reference above corresponds to the approximate center of the primary revetment cluster identified across all three passes and should be treated as accurate to within the stated commercial product's nominal geolocation accuracy (~5-10m CE90, per vendor specification).
+
+END OF REPORT

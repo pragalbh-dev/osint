@@ -1,0 +1,20 @@
+Defense-Trade Intelligence Weekly
+Volume 14, Issue 33 — August 2024
+
+UNMANNED SYSTEMS BRIEF
+
+Jordanian Air Force Advances Talks on Turkish-Origin Loitering Munition/ISR Drone Package
+
+Amman-based defense procurement sources indicate the Royal Jordanian Air Force (RJAF) is in advanced negotiations with a Turkish manufacturer for an estimated 12–18 unit acquisition of a medium-altitude long-endurance (MALE) UAV platform, believed to be a variant derived from the Bayraktar TB2/Akıncı family, though the exact configuration remains unconfirmed as of this writing. The deal, reportedly valued between $180–260 million depending on payload and sensor packages selected, would mark Jordan's third major UAV procurement since 2021 and reflects a broader regional trend of Gulf and Levantine air forces diversifying away from exclusively US-sourced unmanned platforms.
+
+Industry sources speaking on condition of anonymity suggest the package may include electro-optical/infrared (EO/IR) turrets, synthetic aperture radar (SAR) modules, and an undisclosed number of precision-guided munitions compatible with the airframe's four to six hardpoints. Integration timelines are said to span 18–24 months from contract signature, with initial deliveries possibly beginning in late 2025 or early 2026 — a schedule several analysts characterize as optimistic given the manufacturer's existing order backlog from Gulf and North African customers.
+
+The prospective sale has not been officially confirmed by either Jordanian or Turkish defense ministries. A spokesperson for Jordan's Ministry of Defense declined to comment when reached, stating only that "all procurement discussions remain confidential until contractual finalization." A Turkish industry representative, speaking at a regional trade exhibition earlier this month, characterized ongoing discussions with "several Middle Eastern partners" as "productive" without naming Jordan specifically.
+
+Analysts tracking the transaction note that Jordan's existing UAV inventory — which includes a mix of Chinese CH-4B systems acquired in the mid-2010s and smaller Israeli-origin tactical drones — has faced reported sustainment and spare-parts challenges in recent years, a factor believed to be driving interest in a Turkish alternative with potentially more favorable maintenance and technology-transfer terms. Whether the current negotiation encompasses co-production or local assembly components, as has been the case in several other Turkish UAV export deals, could not be independently verified.
+
+Separately, trade publication sources report that discussions between the same Turkish manufacturer and an unnamed North African state remain ongoing, though no timeline for conclusion has been indicated. Neither deal is expected to affect near-term production allocations for existing NATO customers, according to a company statement issued in July.
+
+This publication will continue to monitor developments and update readers as further details, including confirmed unit counts and delivery schedules, become available.
+
+— Staff Report, Defense-Trade Intelligence Weekly

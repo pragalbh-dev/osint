@@ -1,0 +1,22 @@
+Turkish Defence Industry Newsletter
+Ankara — January 2023 Edition
+
+SIPER Long-Range Air Defence System: Serial Production Timeline Slips Amid Continued Testing Phase, Sources Say
+
+Turkey's indigenous long-range air and missile defence system, SIPER (Siper Havadan Gelen Tehditlere Karşı Bölge Savunma Sistemi), remains on track for what officials describe as a "phased operational rollout," though industry sources close to the program suggest the originally touted 2023 fielding target may slip into early 2024, at least for the full-configuration variant.
+
+Developed jointly by defence contractors Aselsan, Roketsan, and the state research body TÜBİTAK SAGE, under the coordination of the Presidency of Defence Industries (SSB), SIPER is intended to close the gap in Turkey's layered air defence architecture between the medium-range HISAR-A/O family and any future very-long-range acquisition. Ankara has repeatedly framed the program as a strategic hedge following the fallout from Turkey's 2019 purchase of the Russian S-400 Triumf system, which precipitated its removal from the F-35 partner program.
+
+Test firings reportedly conducted at the Sinop missile test range through late 2022 are said to have validated intercept performance against medium-altitude aerial targets at ranges "in excess of 100 km," according to statements attributed to SSB President İsmail Demir in December remarks to Turkish press. Independent verification of these figures has not been possible, and some regional trade observers regard the quoted range and intercept-altitude figures as likely to reflect best-case test conditions rather than fielded performance. One industry newsletter put the effective engagement envelope at "an estimated 100-150 km," a figure that has not been confirmed by SSB or by Roketsan directly.
+
+The SIPER project sits alongside continued production of the HISAR family of medium- and short-range systems. HISAR-A (short range, ~15 km) and HISAR-O (medium range, believed to be in the 25-40 km bracket depending on missile variant) have both entered limited operational service with the Turkish Air Force, primarily for point defence of airbases and critical infrastructure. A further variant, HISAR-O+, said to feature an improved seeker and extended envelope, was reportedly undergoing qualification trials as of late 2022, though a firm in-service date has not been publicly disclosed.
+
+Ankara has consistently linked SIPER and HISAR development to its broader ambition of reducing reliance on imported air defence architecture — a policy line reinforced after difficulties in securing Patriot batteries from the United States in the mid-2010s, and again after the S-400 controversy soured relations with NATO allies over interoperability concerns. Turkish officials have periodically floated the idea of an export configuration for HISAR-O, though no confirmed foreign customer has been named as of this writing.
+
+Separately, Aselsan announced at a December supplier conference in Ankara that production capacity at its Akyurt facility would be expanded in 2023 to support "simultaneous SIPER and HISAR manufacturing lines," without specifying unit numbers or delivery schedules. A company spokesperson declined to comment on whether the expansion was tied to a specific Turkish Armed Forces procurement order or was intended primarily to build export inventory.
+
+Analysts tracking the program caution that, as with many indigenous SAM efforts undertaken on accelerated political timelines, publicly stated performance figures should be treated as provisional pending independent operational testing. The Turkish Ministry of National Defence has not released a detailed SIPER acquisition roadmap, and the total planned battery count for initial operational capability remains unclear — estimates circulating among regional defence commentators range from four to eight fire units, though none of these figures carry official confirmation.
+
+No further test dates have been publicly scheduled at time of writing.
+
+— Compiled from open-source Turkish defence trade reporting and SSB public statements, January 2023.

@@ -1,0 +1,44 @@
+UNCLASSIFIED // FOR OFFICIAL USE ONLY // OSINT-DERIVED
+
+IMAGERY ANALYSIS SUMMARY
+Ref: IA-2025-0317-PK-AD
+Subject: Possible HQ-9B (export) SAM site signature, Rahwali airfield vicinity, Punjab, Pakistan
+Imagery basis: single commercial EO pass, 2025 (date/time group withheld per source handling)
+
+1. SUMMARY
+
+A single commercial electro-optical satellite pass tasked over Rahwali airfield (Gujranwala Cantonment area), Punjab, Pakistan, shows an array consistent with a Pakistan Army Air Defence Command long-range SAM deployment. Configuration is assessed as likely HQ-9B (export designator; PLA domestic HQ-9/HQ-9A lineage, CASIC), based on radar/launcher spacing and revetment layout compared against reference signatures. Assessment is SINGLE-SOURCE, SINGLE-PASS — no repeat collection or corroborating discipline (SIGINT/COMINT, additional EO/SAR tasking) has been obtained as of this writing.
+
+2. LOCATION
+
+Center of signature: 32°14′20″N 074°07′52″E (WGS-84, derived from image metadata + manual pixel measurement against basemap; estimated CE90 ~15-20m, not independently surveyed).
+
+Site sits on the northern perimeter apron/dispersal area associated with Rahwali airfield, approx. 3.8 km NNE of Gujranwala city center by rough measurement. No prior open-source reporting located that specifically identifies this dispersal pad as a SAM deployment area; PAF/Army Air Defence order-of-battle references for Rahwali are limited in open literature and largely inferential.
+
+3. OBSERVED SIGNATURE
+
+- One (1) probable engagement/fire-control radar pallet, dimensions and mount geometry roughly consistent with HT-233 (or derivative) associated with HQ-9 series; resolution insufficient for confident discrimination against alternative PLA/Pakistani radar fits.
+- Four (4) object clusters at spacing loosely consistent with published HQ-9 TEL (transporter-erector-launcher) turning radii and canister counts; individual canister count per TEL not resolvable at this pass's ground sample distance — estimated 4 canisters/TEL based on analogy to prior HQ-9B deployments elsewhere, not directly counted.
+- Support vehicles / possible command post shelter, unconfirmed function.
+- No berm/revetment maturity assessment possible from single pass — vegetation/shadow state suggests position may be recently occupied, though this is a soft inference from one image and could reflect routine exercise deployment rather than a fixed emplacement.
+
+4. ANALYST COMMENTS
+
+This is treated internally as a candidate signature only. Confidence in system-type ID is MODERATE at best given the single-pass, single-discipline nature of the collection; confidence in "operational SAM site" vs. "transient exercise/training deployment" is LOW-MODERATE. The absence of a second pass means dwell time, radar emission state, and persistence of the array cannot be established — the imagery could represent a drill, a relocation in progress, or a static garrison position photographed mid-exercise.
+
+Cross-reference: open-source order-of-battle compilations (e.g., Wikipedia "HQ-9" article, rev. 2025; various defense-enthusiast SAM-site trackers) list Pakistan as an HQ-9/P operator with unconfirmed battery locations; none of the consulted compilations specifically cite Rahwali prior to this pass. Analyst is unaware of any prior imagery tasking of this specific coordinate for SAM-related purposes.
+
+Coordinate re-stated for record: 32°14′20″N 074°07′52″E.
+
+5. COLLECTION GAPS
+
+- No SAR pass obtained to confirm metallic/structural signature independent of EO.
+- No repeat EO pass scheduled at time of writing; tasking request submitted 2025-03, status pending.
+- No RF/SIGINT correlation attempted.
+- Site not cross-checked against any historical imagery archive prior to the reporting pass (baseline "before" imagery not yet pulled for change-detection).
+
+6. DISTRIBUTION
+
+OSINT working group / imagery cell internal circulation only. Not for onward release pending analyst follow-up tasking.
+
+END OF SUMMARY
