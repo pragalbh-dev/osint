@@ -1,0 +1,8 @@
+# Backend build + runtime artifacts — never committed.
+*.egg-info/
+.data/            # runtime SQLite copy (settings.data_dir)
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/

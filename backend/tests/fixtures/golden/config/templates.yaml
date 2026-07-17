@@ -1,0 +1,17 @@
+# Evidence-requirement templates per assertion type (§3.7). The refusal statement is a fill-in-the-
+# blank template, never regenerated prose (§3.11). SCORE evaluates these; ASK renders the refusal.
+templates:
+  - assertion_type: based-at
+    require:
+      any_of:
+        - imagery_confirmation: {within_days: 365}
+        - independent_text_groups: {min: 2, within_days: 365}
+    on_fail: insufficient_evidence
+    refusal_template: "Cannot confirm basing of {subject}: missing {missing_slots}. Next coverage due {next_coverage_due}."
+  - assertion_type: supplies-component
+    require:
+      any_of:
+        - named_in_sanction_or_tender: {}
+        - independent_origin_groups: {min: 2}
+    on_fail: insufficient_evidence
+    refusal_template: "Supplier of {subject} is a Known Gap: {missing_slots}."

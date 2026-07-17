@@ -1,0 +1,13 @@
+# Ontology types — schema designed, instances discovered. A minimal synthetic subset for the fixture;
+# the real 14-node / ~31-edge C ontology is DATA-C's (C/01).
+node_types:
+  - {name: unit, freshness_class: durable}
+  - {name: component, freshness_class: durable}
+  - {name: manufacturer, freshness_class: durable}
+  - {name: basing_site, freshness_class: perishable-occupancy}
+edge_types:
+  - {name: fields, freshness_class: perishable}
+  - {name: supplies-component, freshness_class: semi-durable}
+  - {name: based-at, freshness_class: perishable}
+event_types:
+  - {name: TransferEvent, freshness_class: durable}

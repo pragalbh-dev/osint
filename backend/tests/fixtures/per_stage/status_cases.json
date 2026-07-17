@@ -1,0 +1,82 @@
+{
+  "_doc": "Confirmed-gate cases for gate G7. Each `element` is an EdgeView-shaped dict; the gate's checker must return `valid_confirmed == expected`. SCORE later ALSO runs G7 against real rebuild output; it may extend these cases but must never weaken the checker.",
+  "cases": [
+    {
+      "name": "valid_confirmed",
+      "expected_valid_confirmed": true,
+      "element": {
+        "id": "e:ok", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1", "b1"], "status": "confirmed",
+        "confidence": {"assertion_confidence": 0.84,
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1"]}, {"group_id": "g2", "claim_ids": ["b1"]}]},
+        "sufficiency": {"satisfied": true}
+      }
+    },
+    {
+      "name": "single_independent_group",
+      "expected_valid_confirmed": false,
+      "element": {
+        "id": "e:one", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1", "a2"], "status": "confirmed",
+        "confidence": {"assertion_confidence": 0.84,
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1", "a2"]}]},
+        "sufficiency": {"satisfied": true}
+      }
+    },
+    {
+      "name": "below_threshold",
+      "expected_valid_confirmed": false,
+      "element": {
+        "id": "e:low", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1", "b1"], "status": "confirmed",
+        "confidence": {"assertion_confidence": 0.60,
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1"]}, {"group_id": "g2", "claim_ids": ["b1"]}]},
+        "sufficiency": {"satisfied": true}
+      }
+    },
+    {
+      "name": "sufficiency_unsatisfied",
+      "expected_valid_confirmed": false,
+      "element": {
+        "id": "e:suff", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1", "b1"], "status": "confirmed",
+        "confidence": {"assertion_confidence": 0.84,
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1"]}, {"group_id": "g2", "claim_ids": ["b1"]}]},
+        "sufficiency": {"satisfied": false, "missing_slots": ["imagery_confirmation"]}
+      }
+    },
+    {
+      "name": "unresolved_contradiction",
+      "expected_valid_confirmed": false,
+      "element": {
+        "id": "e:contra", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1", "b1"], "status": "confirmed", "attrs": {"contradiction": true},
+        "confidence": {"assertion_confidence": 0.84,
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1"]}, {"group_id": "g2", "claim_ids": ["b1"]}]},
+        "sufficiency": {"satisfied": true}
+      }
+    },
+    {
+      "name": "integrity_gate_fired",
+      "expected_valid_confirmed": false,
+      "element": {
+        "id": "e:dirty", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1", "b1"], "status": "confirmed",
+        "confidence": {"assertion_confidence": 0.84, "integrity_flags": ["adversary-denial"],
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1"]}, {"group_id": "g2", "claim_ids": ["b1"]}]},
+        "sufficiency": {"satisfied": true}
+      }
+    },
+    {
+      "name": "probable_is_unconstrained",
+      "expected_valid_confirmed": true,
+      "element": {
+        "id": "e:prob", "type": "based-at", "source": "u", "target": "s",
+        "claim_ids": ["a1"], "status": "probable",
+        "confidence": {"assertion_confidence": 0.60,
+          "independence_groups": [{"group_id": "g1", "claim_ids": ["a1"]}]},
+        "sufficiency": {"satisfied": true}
+      }
+    }
+  ]
+}
