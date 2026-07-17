@@ -1,0 +1,16 @@
+{
+  "_doc": "RESOLVE seed: input claims → expected partition. F0's identity stub produces the `expected_identity` partition (no merges). RESOLVE replaces `expected_identity` with `expected_merged` (the FD-2000 ≠ FT-2000 trap lands in the HITL band) and gates on that; the input shape is frozen here.",
+  "input_claims": [
+    {"claim_id": "r1", "source_id": "s", "doc_ref": {"file": "f"}, "kind": "observation",
+     "asserts": "entity", "payload": {"form": "entity", "entity_type": "variant", "name": "FD-2000"},
+     "resolved_ref": {"entity_id": "var_fd2000"}},
+    {"claim_id": "r2", "source_id": "s", "doc_ref": {"file": "f"}, "kind": "observation",
+     "asserts": "entity", "payload": {"form": "entity", "entity_type": "variant", "name": "FT-2000"},
+     "resolved_ref": {"entity_id": "var_ft2000"}}
+  ],
+  "expected_identity": {
+    "resolved_ref": {"r1": {"entity_id": "var_fd2000"}, "r2": {"entity_id": "var_ft2000"}},
+    "same_as": [],
+    "distinct_from": []
+  }
+}

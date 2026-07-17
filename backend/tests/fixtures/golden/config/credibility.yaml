@@ -1,0 +1,24 @@
+# Synthetic credibility rubric for the golden fixture. All numeric knobs live HERE, never in code
+# (gate G6). The real values are DATA-C's / analyst-tuned; these are illustrative defaults.
+factor_weights:
+  authority: 0.35
+  process: 0.25
+  directness: 0.25
+  track_record: 0.15
+source_class_factors:
+  curated-register: {authority: 0.9, process: 0.9, directness: 0.4, track_record: 0.5}
+  satellite: {authority: 0.9, process: 0.9, directness: 0.9, track_record: 0.5}
+  customs-tender: {authority: 0.6, process: 0.6, directness: 0.6, track_record: 0.5}
+  social: {authority: 0.3, process: 0.2, directness: 0.6, track_record: 0.5}
+integrity_penalties:
+  recycled: 0.5
+  too_clean: 0.8
+  coordinated_inauthenticity: 0.4
+thresholds:
+  confirmed: 0.80
+  probable: 0.50
+half_lives_days:
+  based-at: 365
+  fields: 540
+  supplies-component: 1825
+  operational-status: 90
