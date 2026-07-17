@@ -1,0 +1,42 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  background: radial-gradient(1200px 600px at 50% -10%, #12202e, #0a0e13 60%);
+  color: #d6e4f5;
+}
+
+.wrap { text-align: center; padding: 2rem; max-width: 640px; }
+
+.badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  color: #7fd1b9;
+  border: 1px solid #23414a;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  margin-bottom: 1.4rem;
+}
+
+h1 { font-size: 2.4rem; margin: 0 0 0.4rem; letter-spacing: -0.02em; color: #eaf2fb; }
+.sub { color: #8fa6bd; margin: 0 0 1.4rem; }
+.tag { color: #b9c9db; font-size: 0.9rem; margin: 0 0 1.6rem; }
+
+.health {
+  font-size: 0.95rem;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #22303d;
+  background: #0e151d;
+  color: #9fb3c7;
+}
+.health.ok  { border-color: #1f5c46; color: #7fe3bf; background: #0c1a15; }
+.health.err { border-color: #6b2330; color: #ff9aa6; background: #1a0f12; }
+
+footer { margin-top: 1.8rem; font-size: 0.74rem; color: #5b7286; letter-spacing: 0.04em; }

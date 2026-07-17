@@ -1,0 +1,40 @@
+# Chanakya OSINT — walking-skeleton compose (Session X0).
+#
+#   Local (build + serve):   docker compose up --build app
+#   Pull the GHCR image:     docker compose pull app && docker compose up -d app
+#   EC2 (app + tunnel):      docker compose --profile tunnel up -d
+#
+# SHIP extends this to the production service set. X0 proves the shape.
+
+services:
+  app:
+    build:
+      context: ./app_skeleton      # X0 is self-contained; SHIP repoints to "."
+      dockerfile: ../Dockerfile
+    image: ghcr.io/pragalbh-dev/osint:skeleton
+    restart: unless-stopped
+    env_file:
+      - .env                       # ANTHROPIC_API_KEY (+ optional GEMINI_API_KEY) — injected, never baked
+    ports:
+      # Host-side debug port only — the tunnel reaches app:8000 over the compose
+      # network, so no host port is strictly required. Set APP_PORT in .env when
+      # co-locating on a box where 8000 is already taken. Localhost-only: no public inbound.
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # Cloudflare Tunnel: dials OUT to Cloudflare and serves the app at a real https
+  # URL with managed TLS — no domain, no DNS, no open inbound security-group ports.
+  # Runs on EC2; gated behind the "tunnel" profile so local `up` skips it.
+  # Set TUNNEL_TOKEN in .env (Cloudflare Zero Trust dashboard). See deploy/README.md.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:-}
+    depends_on:
+      - app
+    profiles: ["tunnel"]
