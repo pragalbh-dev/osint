@@ -1,0 +1,14 @@
+# A subject IS a query-time lens (gate G10): anchors + hop bound + materiality filter. Re-pointing is
+# a config edit, never code. Used by the golden lens test.
+subjects:
+  - subject_id: lens-acme
+    anchors: [unit_acme]
+    max_hops: 2
+    materiality_filter: {}          # no filter at F0 (materiality attrs are SCORE's); hop-scope only
+    target_queries:
+      - "trace the fielded unit to its component supplier"
+  - subject_id: lens-acme-1hop
+    anchors: [unit_acme]
+    max_hops: 1
+    materiality_filter: {}
+    target_queries: []

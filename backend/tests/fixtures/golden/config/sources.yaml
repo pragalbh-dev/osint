@@ -1,0 +1,24 @@
+# Minimal synthetic source registry for the golden fixture (decoupled from the C corpus).
+# The real config/sources.yaml is DATA-C's; this only feeds F0's fixtures + the config-store tests.
+sources:
+  - source_id: src-register
+    source_type: curated-register
+    reliability_grade: B
+    bias_vector: third-party
+    cadence: irregular
+  - source_id: src-imagery
+    source_type: satellite
+    reliability_grade: B
+    bias_vector: commercial
+    cadence: "~5d revisit"
+  - source_id: src-customs
+    source_type: customs-tender
+    reliability_grade: C
+    bias_vector: commercial
+    primary_origin_id: src-customs
+    cadence: quarterly
+  - source_id: src-social
+    source_type: social
+    reliability_grade: E
+    bias_vector: third-party
+    cadence: continuous

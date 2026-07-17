@@ -1,0 +1,119 @@
+[
+  {
+    "claim_id": "d01-e1",
+    "source_id": "src-register",
+    "doc_ref": {"file": "d01_register.txt", "row": 1},
+    "kind": "observation",
+    "asserts": "entity",
+    "payload": {"form": "entity", "entity_type": "unit", "name": "Acme Air-Defence Battalion",
+                "attrs": {"echelon": "battalion"}},
+    "report_time": {"kind": "exact", "iso_date": "2021-03-01", "raw": "1 Mar 2021"},
+    "resolved_ref": {"entity_id": "unit_acme"}
+  },
+  {
+    "claim_id": "d01-e2",
+    "source_id": "src-register",
+    "doc_ref": {"file": "d01_register.txt", "row": 2},
+    "kind": "observation",
+    "asserts": "entity",
+    "payload": {"form": "entity", "entity_type": "component", "name": "Gizmo engagement radar",
+                "attrs": {"functional_role": "engagement_fire_control"}},
+    "resolved_ref": {"entity_id": "comp_gizmo"}
+  },
+  {
+    "claim_id": "d01-e3",
+    "source_id": "src-register",
+    "doc_ref": {"file": "d01_register.txt", "row": 3},
+    "kind": "observation",
+    "asserts": "entity",
+    "payload": {"form": "entity", "entity_type": "manufacturer", "name": "Foundry Corp",
+                "attrs": {"tier": "prime"}},
+    "resolved_ref": {"entity_id": "mfr_foundry"}
+  },
+  {
+    "claim_id": "d01-e4",
+    "source_id": "src-register",
+    "doc_ref": {"file": "d01_register.txt", "row": 4},
+    "kind": "observation",
+    "asserts": "entity",
+    "payload": {"form": "entity", "entity_type": "basing_site", "name": "North Cantonment"},
+    "resolved_ref": {"entity_id": "site_north"}
+  },
+  {
+    "claim_id": "d01-e5",
+    "source_id": "src-imagery",
+    "doc_ref": {"file": "d19_pass.txt", "region": "central-pad"},
+    "kind": "observation",
+    "asserts": "entity",
+    "payload": {"form": "entity", "entity_type": "basing_site", "name": "South Airfield"},
+    "resolved_ref": {"entity_id": "site_south"}
+  },
+  {
+    "claim_id": "d02-l1",
+    "source_id": "src-register",
+    "doc_ref": {"file": "d01_register.txt", "row": 5},
+    "kind": "observation",
+    "asserts": "relationship",
+    "payload": {"form": "triple", "subject": "unit_acme", "predicate": "fields", "object": "comp_gizmo"},
+    "event_time": {"kind": "exact", "iso_date": "2021-03-01"}
+  },
+  {
+    "claim_id": "d03-row7",
+    "source_id": "src-customs",
+    "doc_ref": {"file": "d03_manifest.csv", "row": 7},
+    "kind": "observation",
+    "asserts": "relationship",
+    "payload": {"form": "triple", "subject": "mfr_foundry", "predicate": "supplies-component", "object": "comp_gizmo"},
+    "event_time": {"kind": "label", "granularity": "year", "year": 2021, "raw": "2021"}
+  },
+  {
+    "claim_id": "d17-l1",
+    "source_id": "src-imagery",
+    "doc_ref": {"file": "d17_pass2021.txt", "region": "pad-ring"},
+    "kind": "observation",
+    "asserts": "relationship",
+    "payload": {"form": "triple", "subject": "unit_acme", "predicate": "based-at", "object": "site_north"},
+    "event_time": {"kind": "exact", "iso_date": "2021-06-01", "raw": "Jun 2021"},
+    "resolved_ref": {"entity_id": "unit_acme", "edge_instance": "based-at:unit_acme"}
+  },
+  {
+    "claim_id": "d19-l1",
+    "source_id": "src-imagery",
+    "doc_ref": {"file": "d19_pass2025.txt", "region": "pad-ring"},
+    "kind": "observation",
+    "asserts": "relationship",
+    "payload": {"form": "triple", "subject": "unit_acme", "predicate": "based-at", "object": "site_south"},
+    "event_time": {"kind": "exact", "iso_date": "2025-05-01", "raw": "May 2025"},
+    "resolved_ref": {"entity_id": "unit_acme", "edge_instance": "based-at:unit_acme"}
+  },
+  {
+    "claim_id": "d04-ev1",
+    "source_id": "src-register",
+    "doc_ref": {"file": "d04_transfer.txt", "span": [0, 80]},
+    "kind": "observation",
+    "asserts": "event",
+    "payload": {"form": "event", "event_type": "TransferEvent",
+                "participants": ["mfr_foundry", "unit_acme"],
+                "time_interval": {"kind": "exact", "iso_date": "2020-06-01"}},
+    "event_time": {"kind": "exact", "iso_date": "2020-06-01"},
+    "resolved_ref": {"entity_id": "ev_transfer_2020"}
+  },
+  {
+    "claim_id": "d05-bogus",
+    "source_id": "src-social",
+    "doc_ref": {"file": "d05_post.txt", "span": [10, 60]},
+    "kind": "observation",
+    "asserts": "relationship",
+    "payload": {"form": "triple", "subject": "unit_acme", "predicate": "fields", "object": "comp_phantom"},
+    "event_time": {"kind": "exact", "iso_date": "2024-01-01"}
+  },
+  {
+    "claim_id": "d05-retract",
+    "source_id": "src-social",
+    "doc_ref": {"file": "d05_post.txt", "span": [10, 60]},
+    "kind": "retraction",
+    "asserts": "relationship",
+    "payload": {"form": "triple", "subject": "unit_acme", "predicate": "fields", "object": "comp_phantom"},
+    "targets": "d05-bogus"
+  }
+]

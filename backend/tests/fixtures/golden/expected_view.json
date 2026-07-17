@@ -1,0 +1,513 @@
+{
+  "alerts": [],
+  "edges": [
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d03-row7"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d03-row7"
+            ],
+            "group_id": "grp:d03-row7",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "edge_instance": "edge:mfr_foundry:supplies-component:comp_gizmo",
+      "freshness": null,
+      "id": "e:mfr_foundry:supplies-component:comp_gizmo",
+      "merge_confidence": null,
+      "opposing_claims": [],
+      "source": "mfr_foundry",
+      "status": "probable",
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "superseded_by": null,
+      "supersedes": null,
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d03-row7"
+          ],
+          "group_id": "grp:d03-row7",
+          "weight": 1.0
+        }
+      ],
+      "target": "comp_gizmo",
+      "type": "supplies-component"
+    },
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d17-l1"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d17-l1"
+            ],
+            "group_id": "grp:d17-l1",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "edge_instance": "based-at:unit_acme",
+      "freshness": null,
+      "id": "e:unit_acme:based-at:site_north",
+      "merge_confidence": null,
+      "opposing_claims": [],
+      "source": "unit_acme",
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "superseded_by": "e:unit_acme:based-at:site_south",
+      "supersedes": null,
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d17-l1"
+          ],
+          "group_id": "grp:d17-l1",
+          "weight": 1.0
+        }
+      ],
+      "target": "site_north",
+      "type": "based-at"
+    },
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d19-l1"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d19-l1"
+            ],
+            "group_id": "grp:d19-l1",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "edge_instance": "based-at:unit_acme",
+      "freshness": null,
+      "id": "e:unit_acme:based-at:site_south",
+      "merge_confidence": null,
+      "opposing_claims": [],
+      "source": "unit_acme",
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "superseded_by": null,
+      "supersedes": "e:unit_acme:based-at:site_north",
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d19-l1"
+          ],
+          "group_id": "grp:d19-l1",
+          "weight": 1.0
+        }
+      ],
+      "target": "site_south",
+      "type": "based-at"
+    },
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d02-l1"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d02-l1"
+            ],
+            "group_id": "grp:d02-l1",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "edge_instance": "edge:unit_acme:fields:comp_gizmo",
+      "freshness": null,
+      "id": "e:unit_acme:fields:comp_gizmo",
+      "merge_confidence": null,
+      "opposing_claims": [],
+      "source": "unit_acme",
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "superseded_by": null,
+      "supersedes": null,
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d02-l1"
+          ],
+          "group_id": "grp:d02-l1",
+          "weight": 1.0
+        }
+      ],
+      "target": "comp_gizmo",
+      "type": "fields"
+    }
+  ],
+  "events": [
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d04-ev1"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d04-ev1"
+            ],
+            "group_id": "grp:d04-ev1",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "event_type": "TransferEvent",
+      "freshness": null,
+      "id": "ev_transfer_2020",
+      "location": null,
+      "opposing_claims": [],
+      "participants": [
+        "mfr_foundry",
+        "unit_acme"
+      ],
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d04-ev1"
+          ],
+          "group_id": "grp:d04-ev1",
+          "weight": 1.0
+        }
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2020-06-01",
+        "kind": "exact",
+        "raw": ""
+      }
+    }
+  ],
+  "known_gaps": [],
+  "meta": {
+    "config_version": 1,
+    "edge_count": 4,
+    "event_count": 1,
+    "known_gap_count": 0,
+    "node_count": 5
+  },
+  "nodes": [
+    {
+      "attrs": {
+        "functional_role": "engagement_fire_control"
+      },
+      "claim_ids": [
+        "d01-e2"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d01-e2"
+            ],
+            "group_id": "grp:d01-e2",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "freshness": null,
+      "id": "comp_gizmo",
+      "location": null,
+      "materiality": null,
+      "name": "Gizmo engagement radar",
+      "opposing_claims": [],
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d01-e2"
+          ],
+          "group_id": "grp:d01-e2",
+          "weight": 1.0
+        }
+      ],
+      "type": "component"
+    },
+    {
+      "attrs": {
+        "tier": "prime"
+      },
+      "claim_ids": [
+        "d01-e3"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d01-e3"
+            ],
+            "group_id": "grp:d01-e3",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "freshness": null,
+      "id": "mfr_foundry",
+      "location": null,
+      "materiality": null,
+      "name": "Foundry Corp",
+      "opposing_claims": [],
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d01-e3"
+          ],
+          "group_id": "grp:d01-e3",
+          "weight": 1.0
+        }
+      ],
+      "type": "manufacturer"
+    },
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d01-e4"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d01-e4"
+            ],
+            "group_id": "grp:d01-e4",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "freshness": null,
+      "id": "site_north",
+      "location": null,
+      "materiality": null,
+      "name": "North Cantonment",
+      "opposing_claims": [],
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d01-e4"
+          ],
+          "group_id": "grp:d01-e4",
+          "weight": 1.0
+        }
+      ],
+      "type": "basing_site"
+    },
+    {
+      "attrs": {},
+      "claim_ids": [
+        "d01-e5"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d01-e5"
+            ],
+            "group_id": "grp:d01-e5",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "freshness": null,
+      "id": "site_south",
+      "location": null,
+      "materiality": null,
+      "name": "South Airfield",
+      "opposing_claims": [],
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d01-e5"
+          ],
+          "group_id": "grp:d01-e5",
+          "weight": 1.0
+        }
+      ],
+      "type": "basing_site"
+    },
+    {
+      "attrs": {
+        "echelon": "battalion"
+      },
+      "claim_ids": [
+        "d01-e1"
+      ],
+      "confidence": {
+        "assertion_confidence": null,
+        "freshness_factor": null,
+        "independence_groups": [
+          {
+            "axis_key": {},
+            "claim_ids": [
+              "d01-e1"
+            ],
+            "group_id": "grp:d01-e1",
+            "weight": 1.0
+          }
+        ],
+        "integrity_flags": [],
+        "per_claim_credibility": {}
+      },
+      "freshness": null,
+      "id": "unit_acme",
+      "location": null,
+      "materiality": null,
+      "name": "Acme Air-Defence Battalion",
+      "opposing_claims": [],
+      "status": null,
+      "sufficiency": {
+        "ceiling": null,
+        "missing_slots": [],
+        "next_coverage_due": null,
+        "satisfied": true,
+        "template_id": null
+      },
+      "supporting_claims": [
+        {
+          "axis_key": {},
+          "claim_ids": [
+            "d01-e1"
+          ],
+          "group_id": "grp:d01-e1",
+          "weight": 1.0
+        }
+      ],
+      "type": "unit"
+    }
+  ]
+}

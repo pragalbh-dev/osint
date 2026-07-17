@@ -1,0 +1,18 @@
+{
+  "_doc": "Planted-gap case for gate G8. An assertion whose evidence template is unmet must yield a first-class Known Gap (off the confidence scale) with missing_slots + next_coverage_due + observability_ceiling, and its refusal prose must be a rendered TEMPLATE (deterministic), never regenerated. SCORE produces this from real sufficiency evaluation; F0 seeds the shape + the templated-prose check.",
+  "known_gap": {
+    "id": "gap:e:supplier",
+    "related_ref": "e:mfr_unknown:supplies-component:comp_seeker",
+    "what_missing": "named sole-source supplier",
+    "observability_ceiling": "probable-max",
+    "next_coverage_due": "2026-10-01",
+    "missing_slots": ["named_in_sanction_or_tender", "independent_origin_groups"]
+  },
+  "refusal_template": "Supplier of {subject} is a Known Gap: {missing_slots}. Next coverage due {next_coverage_due}.",
+  "refusal_slots": {
+    "subject": "comp_seeker",
+    "missing_slots": "named_in_sanction_or_tender, independent_origin_groups",
+    "next_coverage_due": "2026-10-01"
+  },
+  "expected_refusal": "Supplier of comp_seeker is a Known Gap: named_in_sanction_or_tender, independent_origin_groups. Next coverage due 2026-10-01."
+}
