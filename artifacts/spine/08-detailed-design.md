@@ -405,7 +405,7 @@ which is exactly the point to make on the call.
 | 2 | **Merge adjudication** ★ | sub-threshold `same-as`/`distinct-from`: accept / reject / split | **BUILD NOW** — C's marquee (FD-2000 ≠ FT-2000) |
 | 3 | Ontology extension | extraction proposes a new type/edge: add / map-to-existing / discard | later (roadmap) |
 | 4 | **Confirmed↔probable override** ★ | promote / demote / reject an assertion; propagates on rebuild | **BUILD NOW** |
-| 5 | Observable definition | analyst declares a tripwire condition | later (config-authored for the demo, not a UI) |
+| 5 | Observable definition | analyst declares a tripwire condition | **in-app define → arm-on-save → fire-on-next-rebuild** (spine/09 supersedes the earlier "config-authored, not a UI" note); config-authored is the seeded/keyless path |
 | 6 | **Alert disposition** ★ | fired tripwire: real / noise / needs-more → feeds tuning | **BUILD NOW** |
 | 7 | Assessment review | final cited assessment accepted / annotated before it's "intelligence" | later |
 | 8 | Integrity-flag disposition | M4 signal fired: discount / dismiss | later (auto-applied in the demo; surfaced in the drawer) |

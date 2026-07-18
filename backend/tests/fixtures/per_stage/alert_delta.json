@@ -1,22 +1,31 @@
 {
-  "_doc": "MONITOR seed: two views (before/after a relocation) → the expected Alert. F0's observe stub fires nothing; MONITOR implements the DSL evaluator and gates on `expected_alert`. The before→after shape (occupied@A → occupied@B) is frozen here.",
+  "_doc": "MONITOR seed: two views (before/after a relocation) → the expected Alert. F0's observe stub fires nothing; MONITOR implements the DSL evaluator and gates on `expected_alert`. The before→after shape (occupied@A → occupied@B) is frozen here. The watched unit is `unit_acme` so the seeded `obs-relocation` observable (subject `lens-acme`, anchor `unit_acme`) actually scopes to it (F0-amendment: aligned from the stray `unit_x`).",
   "before": {
-    "edges": [{"id": "e:unit_x:based-at:site_a", "type": "based-at", "source": "unit_x", "target": "site_a",
-               "edge_instance": "based-at:unit_x", "claim_ids": ["c-2021"]}]
+    "nodes": [
+      {"id": "unit_acme", "type": "unit", "name": "ACME SAM regiment", "claim_ids": ["c-2021"]},
+      {"id": "site_acme_a", "type": "basing_site", "name": "Site A", "claim_ids": ["c-2021"]}
+    ],
+    "edges": [{"id": "e:unit_acme:based-at:site_acme_a", "type": "based-at", "source": "unit_acme", "target": "site_acme_a",
+               "edge_instance": "based-at:unit_acme", "claim_ids": ["c-2021"]}]
   },
   "after": {
+    "nodes": [
+      {"id": "unit_acme", "type": "unit", "name": "ACME SAM regiment", "claim_ids": ["c-2021"]},
+      {"id": "site_acme_a", "type": "basing_site", "name": "Site A", "claim_ids": ["c-2021"]},
+      {"id": "site_acme_b", "type": "basing_site", "name": "Site B", "claim_ids": ["c-2025"]}
+    ],
     "edges": [
-      {"id": "e:unit_x:based-at:site_a", "type": "based-at", "source": "unit_x", "target": "site_a",
-       "edge_instance": "based-at:unit_x", "claim_ids": ["c-2021"], "superseded_by": "e:unit_x:based-at:site_b"},
-      {"id": "e:unit_x:based-at:site_b", "type": "based-at", "source": "unit_x", "target": "site_b",
-       "edge_instance": "based-at:unit_x", "claim_ids": ["c-2025"], "supersedes": "e:unit_x:based-at:site_a"}
+      {"id": "e:unit_acme:based-at:site_acme_a", "type": "based-at", "source": "unit_acme", "target": "site_acme_a",
+       "edge_instance": "based-at:unit_acme", "claim_ids": ["c-2021"], "superseded_by": "e:unit_acme:based-at:site_acme_b"},
+      {"id": "e:unit_acme:based-at:site_acme_b", "type": "based-at", "source": "unit_acme", "target": "site_acme_b",
+       "edge_instance": "based-at:unit_acme", "claim_ids": ["c-2025"], "supersedes": "e:unit_acme:based-at:site_acme_a"}
     ]
   },
   "expected_alert": {
     "observable_id": "obs-relocation",
-    "subject": "unit_x",
-    "before": {"based-at": "site_a"},
-    "after": {"based-at": "site_b"},
+    "subject": "unit_acme",
+    "before": {"based-at": "site_acme_a"},
+    "after": {"based-at": "site_acme_b"},
     "severity": "notify"
   }
 }

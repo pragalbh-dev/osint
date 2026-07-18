@@ -113,7 +113,11 @@ class ObservableDef(ConfigModel):
     """A declarative tripwire (§3.8) — a condition over existing attrs/precomputed metrics, no new code."""
 
     observable_id: str
-    subject: str | None = None
+    subject: str | None = None  # a lens id: broad graph-hop scope (anchors + anchors_within_hops)
+    watch_instances: list[str] = []  # explicit resolved entity ids to watch; scope = lens ∪ this set.
+    # Filled by explicit multi-select (UI sends resolved ids) or an upstream text→observable proposer
+    # (ASK) that resolves named mentions to ids. Match is always on the RESOLVED instance, never a
+    # designator string (§3.8). Empty + a subject = lens-only scope; empty + no subject = unscoped.
     trigger: dict[str, Any] = {}  # {"on":…, "edge_type":…, "match_on":[…], "anchors_within_hops":…}
     severity: str = "notify"
     disposition: list[str] = Field(default_factory=lambda: ["real", "noise", "needs-more"])
