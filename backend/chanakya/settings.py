@@ -24,7 +24,7 @@ def repo_root() -> Path:
 
 
 def config_dir() -> Path:
-    """Directory holding the seven pipeline YAML files (DATA-C content)."""
+    """Directory holding the eight pipeline YAML files (DATA-C content)."""
     return repo_root() / "config"
 
 

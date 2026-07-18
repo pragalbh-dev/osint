@@ -59,6 +59,21 @@ corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2
   Lands in the **ASK** PR (`feat/ask`); `chanakya/agent/` is ASK-owned, so the edit is in-path — logged
   here per Rule 3 because the *signature* is a contract API reads. *(ASK, 2026-07-18.)*
 
+**Places + merge-edge amendments (branch `f0/places-and-merge-edges`; dependents rebase onto `main`):**
+- **`places` is the 8th loaded config section (`PlacesConfig`)** — master §4.1/§4.4. `config/places.yaml`
+  is now served by the live config store (hot-config, `set_section("places", …)`) and consumed by RESOLVE;
+  it was previously standalone/unloaded. `ConfigBundle` gains a `.places` field (additive). *(PR
+  `f0/places-and-merge-edges`; RESOLVE flagged the gap.)*
+- **`Partition` gains `candidates` (HITL-band pairs) + `merge_breakdown` (per-pair score breakdown)**; a
+  `pair_key(a, b)` helper indexes `merge_confidence`/`merge_breakdown` — `schemas/stage_io.py`. Additive;
+  the F0 stub still returns them empty → golden view byte-identical (G2). *(PR `f0/places-and-merge-edges`.)*
+- **`rebuild()` renders the resolver's decisions as edges** — candidate `same-as` (HITL band) +
+  `distinct-from` (both already G4-exempt + ontology-declared), carrying `merge_confidence` + breakdown;
+  accepted merges stamp `resolved_from` provenance on the canonical node. Emitted *after* the status
+  machine → never scored (G5). master §4.3. **Rebase note:** sessions reading the view (SCORE, MONITOR,
+  ASK, API) + in-flight branches rebase onto `main` after this merges — purely additive (new edge types
+  + a node attr), no field removed. *(PR `f0/places-and-merge-edges`.)*
+
 ## Known build-time reconciliations (F0 / build must resolve — not blockers)
 - **F0 location descriptor** must carry `geocode_candidates` + `proposed_alias` so INGEST can freeze
   Nominatim/LLM place proposals onto the ClaimRecord upstream of the append (INGEST flag #1). If F0's schema

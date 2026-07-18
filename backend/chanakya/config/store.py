@@ -30,7 +30,7 @@ class ConfigStore:
 
     @classmethod
     def seed_from(cls, config_dir: Path | str) -> ConfigStore:
-        """Seed a store from the seven ``config/*.yaml`` files. Missing files → section defaults.
+        """Seed a store from the eight ``config/*.yaml`` files. Missing files → section defaults.
 
         Tolerant by design: F0 ships no config *content* (that's DATA-C), so booting against an empty
         or partial ``config/`` must still yield a valid, usable bundle.

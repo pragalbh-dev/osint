@@ -6,16 +6,17 @@ inside this function. Given the same logs + config, the emitted view is byte-ide
 
 Stage call-order is fixed (master §4.3):
 ``resolve → score_claims → (group by independence) → assign_status → check → precompute``.
-Around those five stages, F0 owns three *real* pieces: retraction handling, supersede/contradict
-(``supersede.py``), and HITL decision-effect application (gate G12). All numeric scoring lives in the
-stages (which read config), never here.
+Around those five stages, F0 owns four *real* pieces: retraction handling, supersede/contradict
+(``supersede.py``), rendering the resolver's decisions as edges (candidate ``same-as`` + ``distinct-from``,
+G4-exempt / never scored), and HITL decision-effect application (gate G12). All numeric scoring lives
+in the stages (which read config), never here.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import cast
+from typing import Any, cast
 
 from chanakya.credibility import assign_status, group_by_independence, score_claims
 from chanakya.materiality import precompute
@@ -34,6 +35,7 @@ from chanakya.schemas import (
     KnownGap,
     NodeView,
     Partition,
+    pair_key,
 )
 from chanakya.sufficiency import check
 
@@ -69,6 +71,68 @@ def _apply_partition(claims: list[ClaimRecord], partition: Partition) -> list[Cl
     for c in claims:
         rr = partition.resolved_ref.get(c.claim_id, c.resolved_ref)
         out.append(c.model_copy(update={"resolved_ref": rr}) if rr is not c.resolved_ref else c)
+    return out
+
+
+# ── resolution-decision rendering (real F0: merges + traps made inspectable) ───────────────────
+
+def _merge_provenance(nodes: dict[str, NodeView], partition: Partition) -> None:
+    """Stamp accepted-merge provenance on the surviving (canonical) node — the auto-merge audit trail.
+
+    An accepted merge is *effected* by a shared ``resolved_ref`` (both members already collapsed to
+    one node); this records the *why* (which ref, at what confidence, with the score breakdown) on
+    that node so the merge stays one-click inspectable. ``merge_confidence`` is identity, never truth
+    (gate G5). Iterated in sorted order for byte-determinism (gate G2).
+    """
+    for member, canonical in sorted(partition.same_as):
+        node = nodes.get(canonical)
+        if node is None:
+            continue
+        key = pair_key(member, canonical)
+        entry: dict[str, Any] = {"merged_ref": member}
+        conf = partition.merge_confidence.get(key)
+        if conf is not None:
+            entry["merge_confidence"] = conf
+        breakdown = partition.merge_breakdown.get(key)
+        if breakdown:
+            entry["breakdown"] = breakdown
+        node.attrs.setdefault("resolved_from", []).append(entry)
+
+
+def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView]:
+    """Render the resolver's *undecided* + *veto* decisions: candidate ``same-as`` + ``distinct-from`` edges.
+
+    These cite a merge decision, not a claim, so they are G4-exempt and are **never scored** (added
+    after the status machine; they carry ``merge_confidence`` — identity — never
+    ``assertion_confidence``, gate G5). Auto-merges do *not* appear here (they collapse to one node —
+    see :func:`_merge_provenance`); only pairs an analyst still has to adjudicate, and explicit
+    do-not-merge traps, surface as edges. An edge is emitted only when *both* endpoints exist as nodes.
+    """
+    out: list[EdgeView] = []
+    for a, b in sorted(partition.candidates):
+        if a in node_ids and b in node_ids:
+            key = pair_key(a, b)
+            out.append(
+                EdgeView(
+                    id=f"same-as:{key}",
+                    type="same-as",
+                    source=a,
+                    target=b,
+                    merge_confidence=partition.merge_confidence.get(key),
+                    attrs={"merge_band": "candidate", "breakdown": partition.merge_breakdown.get(key, {})},
+                )
+            )
+    for a, b in sorted(partition.distinct_from):
+        if a in node_ids and b in node_ids:
+            out.append(
+                EdgeView(
+                    id=f"distinct-from:{pair_key(a, b)}",
+                    type="distinct-from",
+                    source=a,
+                    target=b,
+                    attrs={"reason": "explicit do-not-merge (hard veto)"},
+                )
+            )
     return out
 
 
@@ -176,6 +240,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 2. assemble nodes/edges/events (+ supersede/contradict — real F0)
     nodes, edges, events = _assemble(resolved)
+    _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
 
@@ -252,6 +317,10 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 8. HITL decision effects last (an override wins over the machine — gate G12)
     view = apply_decision_effects(view, decisions)
+
+    # 8b. render the resolver's decisions as edges — candidate same-as (HITL band) + distinct-from
+    #     traps. Added AFTER scoring so they're never assigned a truth status (G5); G4-exempt.
+    view.edges.extend(_resolution_edges({n.id for n in view.nodes}, partition))
 
     # 9. deterministic ordering + diagnostic meta (no clock, no RNG — G2)
     view = sorted_view(view)

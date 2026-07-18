@@ -15,17 +15,33 @@ from .claim import ResolvedRef
 from .view import Freshness, IndependenceGroup, Status, SufficiencyEval
 
 
+def pair_key(a: str, b: str) -> str:
+    """Order-independent key for a merge pair → indexes ``merge_confidence`` / ``merge_breakdown``.
+
+    Sorted so ``(a, b)`` and ``(b, a)`` collide and the key is deterministic (gate G2).
+    """
+    return "|".join(sorted((a, b)))
+
+
 class Partition(Record):
     """RESOLVE's output: which claim resolves to which entity/edge instance + the merge decisions.
 
-    ``merge_confidence`` (identity) is a **separate object** from any truth confidence — it rides the
-    same-as edge and is never fed into ``assertion_confidence`` (gate G5).
+    Three tiers of decision: ``same_as`` (ACCEPTED merges — effected by a shared ``resolved_ref`` so
+    the members collapse to one node; provenance stamped on that node), ``candidates`` (HITL-band
+    pairs kept separate → rendered as candidate ``same-as`` edges for an analyst to adjudicate), and
+    ``distinct_from`` (explicit do-not-merge — a hard veto applied before banding).
+
+    ``merge_confidence``/``merge_breakdown`` (identity) are a **separate object** from any truth
+    confidence — they ride the same-as edge and are never fed into ``assertion_confidence`` (gate G5).
+    Index both by :func:`pair_key`.
     """
 
-    resolved_ref: dict[str, ResolvedRef] = {}  # claim_id → resolved_ref
-    same_as: list[tuple[str, str]] = []  # accepted merges: (entity_id, entity_id)
-    distinct_from: list[tuple[str, str]] = []  # explicit do-not-merge (FD-2000 ≠ FT-2000)
-    merge_confidence: dict[str, float] = {}  # "<a>|<b>" same-as edge key → identity confidence
+    resolved_ref: dict[str, ResolvedRef] = {}  # claim_id → resolved_ref (shared entity_id ⇒ collapse to one node)
+    same_as: list[tuple[str, str]] = []  # accepted merges (member, canonical) — collapse via resolved_ref
+    candidates: list[tuple[str, str]] = []  # HITL-band pairs kept separate → candidate same-as edges + review queue
+    distinct_from: list[tuple[str, str]] = []  # explicit do-not-merge (FD-2000 ≠ FT-2000) — hard veto before banding
+    merge_confidence: dict[str, float] = {}  # pair_key(a, b) → identity confidence (same_as + candidates)
+    merge_breakdown: dict[str, dict[str, float]] = {}  # pair_key(a, b) → {attribute, relational, temporal_consistency, source_asserted, total}
 
 
 class AssertionInput(Record):
