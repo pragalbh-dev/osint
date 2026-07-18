@@ -1,88 +1,71 @@
-BILL OF LADING PARTICULARS
-B/L NO: KKLUE7719402                              PAGE 1 OF 1
+BILL OF LADING - CARGO MANIFEST DETAIL
+CBP Automated Manifest System / Sea Container Record
 
-SHIPPER:
-SHENZHEN GOLDVISION ELECTRONICS CO LTD
-RM 803 BAOAN BLDG, FUYONG ST
-SHENZHEN, GUANGDONG, CHINA
+B/L Number:         COSU6183774410
+Carrier SCAC:       COSU
+Vessel:             COSCO SHIPPING AQUARIUS
+Voyage:             029E
+IMO:                9784427
+Port of Loading:    KAOHSIUNG - TW KHH
+Port of Discharge:  Karachi, PK - PKKHI
+Est. Arrival:       19-JUL-2021
+Manifest Filed:     07/11/2021
 
-CONSIGNEE:
-STARLINK HOME APPLIANCES (PVT) LTD
-PLOT 45-C, SITE AREA
-KARACHI-75700 PAKISTAN
-TEL: 021-32
-ATTN: MR. FAROOQ AH---MED/ M. FAROOQ AHMAD
+Shipper:            Chuang-Yi Electronics Co Ltd
+                     No. 118 Sec 2 Min Sheng Rd
+                     Hsinchu Industrial Park, Taiwan R.O.C.
 
-NOTIFY PARTY: SAME AS CONSIGNEE
-              C/O UNIVERSAL CLEARING & FORWARDING AGENCY
-              WEST WHARF ROAD, KARACHI
+Consignee:          Al-Barkat Home Appliances & Electronics (Pvt) Ltd
+                     Shop 44-46 Rainbow Centre
+Notify Party:       Al Barkaat Trading Co., Saddar Rd, Karachi
+                     tel 021-32-  --fax line garbled--
+                     >>> RE: YOUR FAX 07/09 PLS CONFIRM L/C AMEND B4 SHPMT <<<
+                     ATT: MR. S. QURESHI - URGENT
 
-PORT OF LOADING:    YANTIAN, CHINA - 57035
-PORT OF DISCHARGE:  PORT QASIM, PAKISTAN
-FINAL DESTINATION:  KARACHI (BONDED WHSE)
+Cargo Description (as declared):
+  "8526 -- RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY, PARTS OF
+   NAVIGATIONAL AID EQUIPMENT (SATELLITE RECEIVER MODULES, TUNER
+   BOARDS, LNB ASSY) FOR HOME  th
+   EATRE & DIRECT-TO-HOME  DISH  RECEIVER  UNITS, CKD/SKD FORM,
+   NOT FOR RE-EXPORT, 340 CARTONS"
 
-VESSEL:      KOTA LAGU              VOYAGE: 0134E
-CARRIER:     KMTC (KOREA MARINE TRANSPORT CO)
-CONTAINER:   KKTU2210987, 20FT GP, 1x1
-SEAL NO:     KK884521
+Declared HS Code:    8526.91.00
+Broker Query Flag:   HELD -- CLASSIFICATION QUERY RAISED, SEE FIELD 40C
+Field 40C Remark:    Consignee tariff filing lists 8526.91 (radar/nav apparatus, NESOI);
+                     Karachi Customs House pre-clearance scan cross-matched description
+                     against open manifest ref D05-2021-KHI (bulk consignment, same
+                     vessel string, HS 8528 declared, different shipper of record --
+                     Poly Technologies/CATIC forwarding agent). Duplicate description
+                     string "electronic assembly / navigational aid" flagged by ASYCUDA
+                     keyword filter for manual review. Importer invoice attached shows
+                     item nos. matching Sat-Fi tuner cat. STV-220R and STV-221R,
+                     unit price USD 14.10/pc, total inv value USD 47,940.00.
 
-GOODS DESCRIPTION (AS DECLARED):
-8526 -- RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY
-SATELLITE FINDER MODULE W/ LNB TUNER PCB
-FOR DTH DISH ANTENNA RECEIVER SETS
-MODEL: SF-2200HD / SF2200-HD REV.B
-CIVIL USE - HOME ENTERTAINMENT RECEPTION EQPT
->>> fwd: re: inv#4471 pls advise ETD before CNY hol---
-    iday closure thx rgds Jenny <<<
-PARTS FOR ASSEMBLY LOCAL: PCB BOARD, TUNER HEAD,
-LNB BRACKET, PLASTIC HOUSING (KD FORM), POWER
-ADAPTOR 12V, USER MANU-
-AL (ENGLISH/URDU)
+Weight:              6,210 kg (gross)
+Quantity:            340 CTN
+Container No:        COSU8827761 / 40HC (1x40)
+Seal No:             CS7741102
 
-NOT FOR RE-EXPORT -- END USE: RESIDENTIAL SATELLITE
-TV RECEPTION (DTH), NON-COMMERCIAL GRADE
+Marks & Numbers:     ALBRKT/KHI/0721
+                     C/NO 1-340
+                     MADE IN TAIWAN
 
-HS CODE (TARIFF):     8526.91.00
-NO. OF PACKAGES:      140 CTN
-GROSS WEIGHT:         1,860 KGS
-NET WEIGHT:           1,640 KGS
-MEASUREMENT:          9.4 CBM
-FREIGHT:              PREPAID
-DECLARED VALUE (FOB): USD 18,340.00
+Freight Terms:       PREPAID
+Payment Instrument:  L/C No. 0089-21-004417, Habib Bank Ltd Karachi Br,
+                     amend pending per notify party fax above
 
-MARKS & NOS:
-STARLINK HOME APPLIANCE
-KARACHI / MADE IN CHINA
-CTN NO. 1-140
+Remarks (customs clerk, handwritten transcription):
+  "check against 8528 mft ref D05 -- same wk arrival -- fwd to
+  classification desk -- consignee not same party as D05 filing --
+  Al Barkat / Al-Barkaat spelling per invoice vs B/L differs, confirm
+  co. registration no. before release"
 
-SB NO: KHI-EXP-2021-0088341        DATE: 09-07-2021
-DATE OF SHIPMENT: 04 JUL 2021
-DATE OF ARRIVAL (EST): 22 JUL 2021
+Prior Line Entries (same importer, last 90 days):
+  20/04/2021  COSU6151902200  8528.72  LED TV PANELS 55IN CKD          412 CTN
+  02/06/2021  COSU6169884471  8518.30  AUDIO SPEAKER DRIVER UNITS       88 CTN
 
-REMARKS:
-Shipment covers routine consumer DTH satellite-finder
-sub-assemblies for local retail assembly line, per
-import license IL/2021/KHI/6642 dtd 11-05-2021.
-Consignee is engaged in domestic consumer electronics
-distribution (TVs, DTH set-top boxes, home audio) -
-no association w/ any govt or defence procurement
-entity. HS 8526 classification per PCT 2021-22 covers
-radar, radio navigational aid and radio remote control
-apparatus generally; sub-heading 8526.91 (radio
-navigational aid apparatus, nfd) applied by clearing
-agent per prior precedent ruling ref PCT-WCO-8526-14,
-though goods are strictly DTH reception hardware, not
-navigation/radar equipment. Broker note: recurring
-classification query raised w/ Customs Valuation &
-Classification Dept re: correct sub-head (8528 vs 8526)
-for satellite-finder assemblies - pending clarification,
-filed under 8526 as per prior consignments (ref BL
-KKLUE7602211 dtd Mar-2021, same consignee, same
-description).
+Status:              HOLD - PENDING TARIFF DESK RULING
+Assessed Duty (provisional): PKR 1,847,220 @ 8526 rate schedule
+Alt. Assessment (if 8528 applies): PKR 2,214,660
 
----
-CLEARING AGENT:  UNIVERSAL C&F AGENCY, KARACHI
-LICENSE NO:      CHA-0091-KHI
-SIGNATURE:       [illegible]                 STAMP: [illegible]
-
---- END OF DOCUMENT ---
+--- END MANIFEST RECORD ---
