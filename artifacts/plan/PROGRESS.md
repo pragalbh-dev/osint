@@ -36,6 +36,10 @@ _Post-F0 changes to a frozen contract go here. Each entry: what changed, which c
 - **F0 location descriptor** must carry `geocode_candidates` + `proposed_alias` so INGEST can freeze
   Nominatim/LLM place proposals onto the ClaimRecord upstream of the append (INGEST flag #1). If F0's schema
   omits these, it is a one-line F0-amendment.
+- **`ClaimRecord.extraction` field naming** — rename the ambiguous `version` → **`model`** (the extraction
+  model id) so the frozen contract matches INGEST's `extraction.model`; final shape `{method: llm|vlm, model,
+  model_conf}`. One-line F0-amendment, docs-only (backend greenfield). *(DECIDED 2026-07-18; see `md/15` §4 +
+  DECISIONS §3; raised as its own F0-amendment PR.)*
 - **Hero-trace edge names** (`ASK`/`EVAL`) — `…imported-by → exported-by → supplies-component` must be
   reconciled against DATA-C's `ontology.yaml` + `answer_key.json`, which are authoritative for exact edge
   names (`C/02` notes the anchor is "to be verified against the generated corpus"). Resolve at DATA-C author
