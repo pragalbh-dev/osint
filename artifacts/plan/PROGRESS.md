@@ -15,7 +15,7 @@
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
-| ASK | Bounded ReAct agent + citation validator | 1 | in-progress | — | F0 | — |
+| ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | not-started | — | F0 | — |
 | INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | not-started | — | F0 (+DATA-C soft) | — |
 | API | FastAPI layer | 2 | not-started | — | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
@@ -160,7 +160,7 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   as the seeded before→after fire fixture. G1 (no network/LLM in `observe/`) + G6 (no scoring literals)
   re-verified green.
 
-### ASK (in-progress, feat/ask):
+### ASK (in-review, feat/ask — PR #14):
 - **Shipped:** the cited multi-hop QnA agent as a callable `ask(question, view, config, llm=None, claims=None)
   -> AskAnswer` in `chanakya/agent/` — the 7 deterministic `graph_*` tools (`context.py`+`tools.py`), their
   `strict` JSON schemas with when-NOT-to-use + `input_examples` (`tool_specs.py`), the provider-agnostic LLM
