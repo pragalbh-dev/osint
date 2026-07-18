@@ -11,7 +11,7 @@
 |----|---------|------|--------|----|--------------------|---------------|
 | F0 | Foundation + store + rebuild skeleton + fixtures + gates + CI | 0 | not-started | — | — | — |
 | X0 | Walking-skeleton deploy (EC2 + tunnel + GHCR) | 0 | merged | [#5](https://github.com/pragalbh-dev/osint/pull/5) | — | 0c364be |
-| DATA-C | Corpus freeze + C config YAML | 0 | not-started | — | F0 (soft) | — |
+| DATA-C | Corpus freeze + C config YAML | 0 | in-review | [#8](https://github.com/pragalbh-dev/osint/pull/8) | F0 (soft) | — |
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
 | MONITOR | Observable DSL engine | 1 | not-started | — | F0 | — |
@@ -45,6 +45,13 @@ _Post-F0 changes to a frozen contract go here. Each entry: what changed, which c
   reconciled against DATA-C's `ontology.yaml` + `answer_key.json`, which are authoritative for exact edge
   names (`C/02` notes the anchor is "to be verified against the generated corpus"). Resolve at DATA-C author
   time; ASK/EVAL bind to whatever the answer_key uses.
+  **RESOLVED (DATA-C 2026-07-18):** hero path (traversed battery→origin) is
+  `site_karachi ←based-at– unit_paad ←inducted-into– var_hq9p ←equips– comp_ht233 ←manufactures– mfr_casic`
+  (canonical edge directions stored origin-ward; traverse bidirectionally). **`equips`** (Component→Variant)
+  replaces the overloaded `supplies-component`, now **reserved Manufacturer→Component**. **No `candidate-*`
+  edge types** — candidate-ness is a computed edge status (`possible`). Sustainment **split** into
+  `techdata_authority` + `interceptor_stockpile`. Dropped `variant-of` (family = Variant attr) + `imported-via`.
+  ASK/EVAL bind to these names.
 - **`make extract`** is SHIP's Makefile target; INGEST ships only the CLI entrypoint it invokes (INGEST flag #2).
 
 ## Handoff notes
@@ -73,3 +80,30 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   `frontend/`; swap `requirements.txt`→`backend/pyproject.toml`; own `:latest`; rollback drill; token-tunnel
   on the dedicated box for a persistent URL.
 - **Gate fixtures:** none (X0 adds no `chanakya/` code; G1–G12 N/A).
+
+### DATA-C (in-review, feat/data-c):
+- **Shipped:** the **7 `config/*.yaml`** (ontology/sources/credibility/resolution/templates/subjects/
+  observables) — validate + hot-round-trip through F0's config store; generator keyed on `ANTHROPIC_API_KEY`
+  only (**G11 green**); **corpus/oracle/text fixes applied + verified** against `answer_key.json`; **F5
+  confirmed deep-tier** added under an evidence gate (new doc `d24`); two `tmp/conv/` handoff docs
+  (observations + flex-protection changelog).
+- **Decisions (principle → choice → alt rejected):**
+  - *Answer_key is authoritative + build-it-well* → renamed the overloaded hero edge to **`equips`** (vs
+    keeping `supplies-component` overloaded across two node-type pairs); split **sustainment** into two node
+    types (vs one merged type that can't carry two freshness classes).
+  - *Bi-level, status-is-computed* → **no `candidate-*` edge types**; candidate-ness = edge status `possible`
+    (vs baking candidacy into the edge type).
+  - *Config-driven, no magic numbers (G6)* → all weights/thresholds/half-lives in `credibility.yaml`;
+    integrity tables flattened, gates as an extra `gates:` field (vs hardcoding in SCORE).
+  - *Non-negotiable — no fabricated certainty* → F5 confirmed deep-tier only via a source that **directly
+    names supplier+component+relationship** (Taian/Wanshan TEL chassis, `d24`), not a bare sanctions listing;
+    HT-233 chokepoint kept `candidate`/`UNKNOWN`; 23rd RI/4th Academy kept `possible`.
+  - *`source_type` == credibility class* → `sources.yaml source_type` vocabulary matches
+    `credibility.source_class_factors` keys (direct R lookup, no mapping layer).
+- **Deviations from plan:** none affecting shared contracts (PROGRESS.md in-PR is the standard under the
+  updated Rule 4). Full per-fixture **provenance-sidecar system** + the **ingest oracle-boundary guardrail**
+  deferred (generator / INGEST scope, documented in the changelog).
+- **Follow-ups:** EVAL must confirm the pipeline reaches the oracle's F5-confirmed + equips/split names at
+  runtime; **H-200→HT-233 orphan alias** stays OUT of the resolver seed (earn/verify — adaptation demo);
+  F7 structural cases (substitutable-by 3-state, MUCD, operational-status) represented-not-instantiated (roadmap).
+- **Gate fixtures:** none added (config/corpus session; backend gates untouched, G11 re-verified green).

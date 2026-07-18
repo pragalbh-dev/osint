@@ -101,7 +101,7 @@ def main():
 
     if not cap:
         # Claude vision fallback
-        akey = key_from(["ANTHROPIC_API_KEY", "CLAUDE_API_KEY"])
+        akey = key_from(["ANTHROPIC_API_KEY"])  # CLAUDE_API_KEY dropped (stack locked on ANTHROPIC_API_KEY)
         if akey:
             try:
                 import anthropic

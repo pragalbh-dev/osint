@@ -1,0 +1,92 @@
+# config/resolution.yaml — relational entity-resolution knobs (spine/08 §3.9; md/05 §4; md/13).
+# Validates against F0 ResolutionConfig {merge_weights, bands, blocking_keys, alias_table, transliteration}
+# (+ extra knobs, extra="allow"). RESOLVE consumes this; the seeded alias table grows from HITL merges.
+
+merge_weights:            # merge_score = Σ w·signal (spine/08 §3.9)
+  attribute: 0.30
+  relational: 0.40
+  temporal_consistency: 0.15
+  source_asserted: 0.15
+
+bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge) -> HITL; < hitl_low -> keep separate
+  auto_merge: 0.85
+  hitl_low: 0.55
+
+blocking_keys:            # candidate generation scope (demo scale: all-pairs-within-block is fine)
+  - type
+  - country_or_domain_namespace
+  - name_token
+
+alias_table:              # canonical -> [known aliases]. SEEDED (auto-merge-eligible). Grows from HITL.
+  # --- HQ-9 family (the subject) ---
+  "HQ-9/P":
+    - "HQ-9P"
+    - "FD-2000"           # export designator = HQ-9/P (auto-merge; the seeded merge card)
+    - "HIMADS"            # Pakistani service nickname
+  "HQ-9":
+    - "Hongqi-9"
+    - "红旗-9"
+    - "紅旗-9"
+  "HHQ-9":
+    - "海红旗-9"
+  # --- Manufacturers / design authorities ---
+  "CASIC Second Academy":
+    - "2nd Academy"
+    - "Second Academy"
+    - "China Academy of Defense Technology"
+    - "China Changfeng Group"
+    - "CCFG"
+    - "航天科工二院"
+  "Beijing Institute of Radio Measurement":
+    - "BIRM"
+    - "23rd Research Institute"
+    - "23rd Institute"
+    - "北京无线电测量研究所"
+  # --- S-400 (design-note reference subject; kept minimal — the transliteration marquee) ---
+  "S-400 Triumf":
+    - "Triumph"
+    - "С-400 Триумф"
+    - "SA-21 Growler"
+  # NOTE (place aliases): config/places.yaml is the authoritative gazetteer for place resolution
+  # (md/13 §2). Do NOT duplicate place aliases here.
+  # WITHHELD (earned-merge traps — must NOT be seeded here or in places.yaml):
+  #   - "Chaklala" / "PAF Base Chaklala" / "RAF Chaklala"  -> pl_nurkhan (earn via ICAO OPRN + proximity, md/13 §6)
+  #   - "H-200" -> "HT-233"  -> ORPHAN alias to VERIFY (a candidate, not an assumption); the LLM candidate-gen
+  #     recall demo (spine/08 §3.11). Left OUT of the seed on purpose; data agent verifies the mapping first.
+
+transliteration:          # script -> latin (rule-based normalizer seed; spine/08 §3.9, md/13 §2)
+  "Триумф": "Triumf"
+  "红旗-9": "Hongqi-9"
+  "紅旗-9": "Hongqi-9"
+  "海红旗-9": "HHQ-9"
+  "防盾-2000": "FD-2000"
+  "航天科工二院": "CASIC Second Academy"
+  "北京无线电测量研究所": "Beijing Institute of Radio Measurement"
+
+# ── extra knobs (extra="allow") ─────────────────────────────────────────────────────────────────
+high_alias_risk_types:    # blocks of these types get the LLM candidate-gen recall pass (spine/08 §3.11)
+  - variant
+  - component
+  - unit
+  - manufacturer
+
+orphan_block_threshold_k: 2      # fire LLM candidate-gen only when deterministic_candidate_count < k (authored default)
+llm_candidate_gen:
+  max_calls_per_rebuild: 20      # authored budget cap (spine/08 §3.11 "cap by config budget; log skips")
+  batch_per_orphan: true
+  log_skips: true
+
+place_proximity_radius_m:        # from config/places.yaml (md/13) — same-place merge radius by precision class
+  pad: 500
+  site: 1500
+  terminal: 3000
+  district: 5000
+  city: 15000
+place_proximity_hitl_multiplier: 3   # 1x-3x radius -> HITL; beyond -> new place (places.yaml)
+
+# Non-place keep-separate traps (the geographic Karachi-Port vs Port-Qasim pair lives in places.yaml's
+# own distinct_from field — intentionally NOT duplicated here).
+distinct_from:
+  "HQ-9/P":
+    - "FT-2000"            # anti-radiation variant — false-merge trap (HITL band)
+    - "HQ-9BE"             # flagship distinct-from: ~125 km Army vs ~260 km PAF

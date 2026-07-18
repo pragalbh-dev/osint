@@ -144,6 +144,9 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
   ration *capability* as if one dev were typing it all. And remember this is an **assignment: push as far
   toward a real, production-grade system as the time allows** — the brief itself calls for that, not a toy
   demo.
+- **Data issues → `tmp/conv/`, don't self-fix.** When any agent hits a corpus / `answer_key.json` / data-model
+  issue it shouldn't fix itself, write an observation MD to `tmp/conv/` for the **data agent** to resolve —
+  don't edit the frozen corpus or answer_key unilaterally.
 
 ## Status & stack
 

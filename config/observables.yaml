@@ -1,0 +1,44 @@
+# config/observables.yaml — declarative tripwires (spine/08 §3.8; spine/09). An observable is a condition
+# over existing node/edge attrs + precomputed metrics — no new code. Validates against F0
+# ObservablesConfig{observables: list[ObservableDef{observable_id, subject?, trigger, severity, disposition}]}.
+# Lifecycle: define -> arm (evaluate on save) -> fire on next rebuild() -> disposition feeds tuning.
+observables:
+  # SEEDED PRIMARY — the flagship relocation tripwire (Rawalpindi 2021 -> Rahwali 2025).
+  - observable_id: obs-basing-relocation
+    subject: lens-hq9p-pk
+    trigger:
+      "on": occupancy_state_change
+      edge_type: based-at
+      match_on: [resolved_unit, site_instance]   # resolved identity, NOT designator strings (spine/08 §3.8)
+      anchors_within_hops: 2
+      unit: unit_hq9b                             # scoping instance (answer_key.json)
+      from_site: site_rawalpindi
+      to_site: site_rahwali
+      window: "2025"
+    severity: notify
+    disposition: [real, noise, needs-more]
+
+  # CONFIG-ONLY SECONDARIES — armed but NOT wired into the narrative (proves observables are declarative,
+  # not hardcoded). No UI/demo-script hooks.
+  - observable_id: obs-followon-interceptor-order
+    subject: lens-hq9p-pk
+    trigger:
+      "on": new_edge
+      edge_type: replenishes
+      from_type: contract_import_event
+      to_type: interceptor_stockpile
+      match_on: [resolved_contract, resolved_stockpile]
+      event_subtype: follow-on-order
+    severity: notify
+    disposition: [real, noise, needs-more]
+
+  - observable_id: obs-spares-tender-probable-induction
+    subject: lens-hq9p-pk
+    trigger:
+      "on": new_claim
+      source_class: customs-tender
+      implies_edge: sustained-by
+      target_status_ceiling: probable    # criterion-7 ceiling — a tender can never auto-confirm
+      match_on: [resolved_unit]
+    severity: notify
+    disposition: [real, noise, needs-more]

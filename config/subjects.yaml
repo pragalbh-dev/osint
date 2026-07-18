@@ -1,0 +1,36 @@
+# config/subjects.yaml — subject lenses (master §1 invariant #6; gate G10). A subject is a QUERY-TIME
+# lens (anchors + hop/materiality scoping + target queries), never its own database. Validates against
+# F0 SubjectsConfig{subjects: list[SubjectLens{subject_id, anchors[], max_hops, materiality_filter,
+# target_queries[]}]}. Re-pointing to a new subject is a config edit, not core code.
+subjects:
+  - subject_id: lens-hq9p-pk
+    anchors:
+      - unit_paad        # Pakistan Army Air Defence — HQ-9/P regiment (well-sourced flagship entry point)
+      - site_karachi     # Karachi Army Air Defence site (Malir) — imagery-confirmed
+    max_hops: 3          # unit_paad -> var_hq9p -> comp_ht233 -> mfr_casic = 3 edges (full chokepoint chain)
+    materiality_filter:
+      # keep the assessed view to the C/01 demo-scope node set; drop chaff / off-subject claims so
+      # distractors don't leak into the lens (hq9p_chaff scenario: mode=chaff / off_subject=true).
+      node_types_allow:
+        - manufacturer
+        - component
+        - variant
+        - contract_import_event
+        - unit
+        - basing_site
+        - interceptor_stockpile
+        - techdata_authority
+        - known_gap
+        - source
+        - indicator
+      exclude_off_subject: true
+      materiality_attrs:          # precomputed in rebuild() (spine/09) — what query_graph filters on
+        - chokepoint_status
+        - chokepoint_count
+        - substitutability_state
+        - status
+      never_drop_indeterminate: true   # query_graph must return an "indeterminate" partition, never drop UNKNOWN
+    target_queries:               # verbatim from C/00-overview.md
+      - "trace this deployed HQ-9/P battery back to its component supplier and name the chokepoint"
+      - "is this holding confirmed or probable, and on what evidence?"
+      - "what do we NOT know here?"
