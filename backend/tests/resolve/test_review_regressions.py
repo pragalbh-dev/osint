@@ -135,3 +135,27 @@ def test_place_bridge_cannot_transitively_fuse_vetoed_pair() -> None:
     ]
     part = resolve(claims, cfg)
     assert not ({"site_a", "site_b"} <= _cluster_of(part, "site_a"))  # veto holds through the place bridge
+
+
+# ── (high) gazetteer distinct_from is a HARD veto on entity-merge, not just an emitted edge ─────
+
+def test_gazetteer_distinct_vetoes_entity_merge_even_with_shared_neighbourhood() -> None:
+    qasim = PlaceEntry(place_id="pl_qasim", canonical_name="Port Qasim", kind="seaport",
+                       precision_class="terminal", canonical_dd=(24.767, 67.333), aliases=["Port Qasim"],
+                       distinct_from=["pl_keamari"])
+    keamari = PlaceEntry(place_id="pl_keamari", canonical_name="Karachi Port", kind="seaport",
+                         precision_class="terminal", canonical_dd=(24.835, 66.982), aliases=["Karachi Port"],
+                         distinct_from=["pl_qasim"])
+    cfg = mk_config(places=[qasim, keamari], proximity_radius_m=RADII, place_proximity_hitl_multiplier=3.0)
+    # Two ports that SHARE a shipping neighbourhood (both receive the same contract) — a naive relational
+    # merge would fuse them; the gazetteer distinct_from must veto it.
+    claims = [
+        entity("site_qasim", "basing_site", "Port Qasim", coordinates=[24.767, 67.333]),
+        entity("site_keamari", "basing_site", "Karachi Port", coordinates=[24.835, 66.982]),
+        entity("ctr_1", "contract_import_event", "HQ-9 import 2021"),
+        triple("ctr_1", "imported-via", "site_qasim"),
+        triple("ctr_1", "imported-via", "site_keamari"),
+    ]
+    part = resolve(claims, cfg)
+    assert not ({"site_qasim", "site_keamari"} <= _cluster_of(part, "site_qasim"))
+    assert frozenset({"site_qasim", "site_keamari"}) in {frozenset(p) for p in part.distinct_from}

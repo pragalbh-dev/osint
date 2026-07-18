@@ -110,34 +110,57 @@ def _location_of(ent: Entity) -> tuple[str, Coords | None] | None:
     return (str(icao) if (icao and not coords) else toponym), coords
 
 
-def augment(
-    result: ResolveResult, graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[frozenset[str]]
-) -> None:
-    """Resolve **place-type** entities to gazetteer nodes; emit same_as / distinct_from / candidates.
-
-    Location resolution is about PLACE identity: two place-type mentions of one gazetteer node are the
-    same place; place-type entities on gazetteer ``distinct_from`` nodes are kept apart. It never fuses
-    a non-place entity (a unit is *located at* a base, it is not the base), never fuses two distinct
-    co-located assets, and **honours the entity-level veto + learned ``barred``** (co-location ≠ identity;
-    a confident wrong merge corrupts the ORBAT — spine/03). Raw pairs only; ``finalise`` builds the flat
-    canonical map. No-op when the gazetteer is empty (F0's golden config) → golden unchanged (gate G2).
-    """
-    if not cfg.places.places or not cfg.scorable:
-        return
-
+def _place_of(graph: EntityGraph, cfg: ResolveConfig) -> dict[str, PlaceMatch]:
+    """Resolve every place-type entity that carries a location to a gazetteer node (place_id + band)."""
     place_types = cfg.place_entity_types
-    place_of: dict[str, PlaceMatch] = {}
+    out: dict[str, PlaceMatch] = {}
     for eid, ent in sorted(graph.entities.items()):
         if ent.etype not in place_types:
-            continue  # only entities whose identity IS a place participate in place merges/traps
+            continue  # only entities whose identity IS a place participate in place resolution
         loc = _location_of(ent)
         if loc is None:
             continue
         match = resolve_place(loc[0], loc[1], cfg)
         if match.place_id is not None:
-            place_of[eid] = match
+            out[eid] = match
+    return out
 
+
+def place_distinct_pairs(graph: EntityGraph, cfg: ResolveConfig) -> set[frozenset[str]]:
+    """Entity pairs whose gazetteer places are mutually ``distinct_from`` → a **hard veto**.
+
+    Computed BEFORE ``resolve_entities`` so the Karachi-Port ≠ Port-Qasim trap vetoes an *entity*-level
+    merge too (two ports that share a shipping neighbourhood must still never fuse), not merely surface
+    as an edge afterwards. Folded into the veto set, so it also blocks transitive fusion in ``finalise``.
+    """
+    if not cfg.places.places or not cfg.scorable:
+        return set()
     distinct_places = _distinct_place_pairs(cfg)
+    place_of = _place_of(graph, cfg)
+    out: set[frozenset[str]] = set()
+    for a, b in unordered_pairs(sorted(place_of)):
+        if frozenset((place_of[a].place_id, place_of[b].place_id)) in distinct_places:
+            out.add(frozenset((a, b)))
+    return out
+
+
+def augment(
+    result: ResolveResult, graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[frozenset[str]]
+) -> None:
+    """Fuse **place-type** mentions of one gazetteer node; emit same_as / candidates (not distinct).
+
+    Location resolution is about PLACE identity: two place-type mentions of one gazetteer node are the
+    same place. It never fuses a non-place entity (a unit is *located at* a base, it is not the base),
+    never fuses two distinct co-located assets (different types), and **honours the veto + learned
+    ``barred``** (co-location ≠ identity — a confident wrong merge corrupts the ORBAT, spine/03). The
+    gazetteer ``distinct_from`` trap is enforced upstream as a hard veto (:func:`place_distinct_pairs`),
+    so it is not re-emitted here. Raw pairs only; ``finalise`` builds the flat canonical map. No-op when
+    the gazetteer is empty (F0's golden config) → golden unchanged (gate G2).
+    """
+    if not cfg.places.places or not cfg.scorable:
+        return
+
+    place_of = _place_of(graph, cfg)
     trans = cfg.transliteration
 
     def barred(a: str, b: str) -> bool:
@@ -148,9 +171,6 @@ def augment(
     for a, b in unordered_pairs(sorted(place_of)):
         ma, mb = place_of[a], place_of[b]
         key = pair_key(a, b)
-        if frozenset((ma.place_id, mb.place_id)) in distinct_places:
-            result.distinct_from.append((a, b))  # the trap: Karachi-Port ≠ Port-Qasim
-            continue
         if ma.place_id != mb.place_id or graph.entities[a].etype != graph.entities[b].etype or barred(a, b):
             continue  # different places / different types / vetoed apart → not a place merge
         if ma.band == "auto" and mb.band == "auto":

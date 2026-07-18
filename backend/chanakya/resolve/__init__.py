@@ -43,7 +43,9 @@ def resolve(
     # Effective alias table = seeded config ∪ replayed merge_adjudication(accept)s (spine/03/06).
     alias_idx = aliases.build(cfg.alias_table, cfg.transliteration, decisions)
 
-    veto = _veto_pairs(graph, cfg, alias_idx)
+    # veto = configured distinct-from (by name) ∪ gazetteer-distinct place pairs (Karachi-Port ≠ Port-Qasim,
+    # computed up front so it hard-vetoes an entity-level merge too, not just surfaces as an edge).
+    veto = _veto_pairs(graph, cfg, alias_idx) | places.place_distinct_pairs(graph, cfg)
     llm = _llm_pairs(graph, cfg, alias_idx, decisions)
 
     result = resolve_entities(graph, cfg, alias_idx, veto, llm)
