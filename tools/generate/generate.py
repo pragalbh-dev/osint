@@ -212,6 +212,13 @@ def build_prompt(doc: dict, template_text: str | None, aliases: str) -> str:
             "deception standing for the pipeline to catch:\n"
             + "\n".join("- " + _op_signal("deception", d) for d in deception) + "\n\n")
 
+    avoid = doc.get("avoid")
+    if avoid:
+        parts.append(
+            "ABSOLUTELY DO NOT include any of the following — doing so would leak the answer or resolve the "
+            "trap the pipeline is supposed to catch on its own, which invalidates the test document:\n"
+            f"{avoid}\n\n")
+
     parts.append(
         "Below is a real specimen to imitate for FORMAT, tone, and noise (copy its shape, NOT its entities). "
         "The specimen may carry a collector's provenance header / source-URLs / [flags] / 'Notes:' — that "

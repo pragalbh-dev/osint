@@ -49,11 +49,12 @@ documents:
     mode: chaff
     template: corpus/raw/social/x_osint_sightings.*
     date: "2025-05-12"
-    asserts: ["fifth reshare a day later, quote-tweet chain referencing the earlier reshares"]
+    asserts: ["fifth reshare of the same recycled image a day later, a new handle in the quote-tweet chain, with a DIVERGENT caption from the earlier posts (same image, different claimed location/status)"]
     corruption: [hype, date_format_flip]
     deception: [echo_burst]
+    avoid: "Any reply or post that EXPOSES the recycling/coordination — no 'same frame reused across accounts', 'same wording within minutes', 'same pic being recycled', 'appears to be the same single frame', 'treat with caution'. The coordinated burst must stand RAW for the system to catch it. A vague non-conclusive 'source?' reply is fine; naming the reuse/echo mechanism is not."
     registry: {reliability_grade: E, bias_vector: third-party, primary_origin_id: origin_parade_img, coordinated_inauthenticity_flag: true}
-    expect: {note: "6-post burst total (d11-d13 + ce01-ce03) = ONE look; the visible 'grain in chaff'"}
+    expect: {note: "6-post burst total (d11-d13 + ce01-ce03) = ONE look; captions DIVERGE over the same image; the system must detect the reuse itself"}
     image: {kind: parade, source: fabricated, shared_id: parade_2019, integrity: synthetic}
 
   # ---- DISTRACTORS (off-subject / low-proximity / resolver decoys) ----
@@ -64,6 +65,7 @@ documents:
     template: corpus/raw/reference/wikipedia_s400.txt
     date: "2021-05"
     intent: "China's S-400 (SA-21 Triumf) deployment near the India border — a DIFFERENT system; the S-400 alias set overlaps nothing in the HQ-9 supply chain and must not link to it"
+    avoid: "Any mention of HQ-9 at all, and any 'not to be confused with' / 'distinct from' / 'shares no common supply chain / seeker / launcher' disambiguation vs HQ-9. Write purely about the S-400; the reader notices the S-400≠HQ-9 distinction unaided."
     corruption: [alias_substitution, hedging]
     registry: {reliability_grade: C, bias_vector: third-party}
     expect: {note: "off-subject; S-400 aliases must NOT resolve into HQ-9/P; sinks on subject-proximity"}
@@ -83,7 +85,8 @@ documents:
     off_subject: true
     template: corpus/raw/trade_media/quwa_hq9p.text.txt
     date: "2022-03"
-    intent: "Pakistan's LY-80 / HQ-16 MEDIUM-range SAM — SAME country, ADJACENT system: a high-proximity decoy the resolver must keep DISTINCT from HQ-9/P holdings"
+    intent: "The document is ENTIRELY about Pakistan's LY-80 / HQ-16 MEDIUM-range SAM in service — its induction, batteries, and role. HQ-9/P may appear ONLY as a single bare passing mention of 'the longer-range tier' (one clause at most), NEVER with any operator / holding / fleet / battery-count / 'top tier provided by' claim about HQ-9/P."
+    avoid: "Any self-debunk or disambiguation — 'not to be confused with', 'not interchangeable', 'analysts caution against conflating LY-80 with HQ-9/P', 'distinct in order-of-battle'. Also any SUBSTANTIVE HQ-9/P claim (operator, holdings, tier role, battery count) — keep HQ-9/P to at most one bare passing clause. The LY-80≠HQ-9/P distinction is left entirely for the reader."
     corruption: [alias_substitution, hedging]
     registry: {reliability_grade: C, bias_vector: third-party}
     expect: {note: "high subject-proximity but different system -> distinct-from; hardest distractor"}
@@ -93,7 +96,8 @@ documents:
     off_subject: true
     template: corpus/raw/templates/importyeti_customs_template.*
     date: "2021-07"
-    intent: "a genuinely CIVILIAN electronics import under HS 8526 (radar/nav apparatus) to an unrelated consumer-electronics consignee — an HS-code COLLISION with the d05 military manifest"
+    intent: "a genuinely CIVILIAN electronics import under HS 8526 (radar/nav apparatus) to an unrelated consumer-electronics consignee — an HS-code COLLISION with the d05 military manifest. Keep the 8528-vs-8526 HS-classification dispute (that IS the collision); leave civil-vs-military UNRESOLVED for the reader."
+    avoid: "Any broker/analyst note that pre-resolves the civil-vs-military question — e.g. 'no association with any government or defence procurement entity', 'strictly consumer goods, not radar equipment'. The consignee being civilian must be inferable from the cargo/parties alone, never stated as a disclaimer."
     corruption: [hs_code_masking, ocr_garble, transliteration_drift]
     registry: {reliability_grade: C, bias_vector: commercial}
     expect: {note: "same HS code as d05 but civilian; relevance/relational match must NOT pull it into the supply chain"}
@@ -183,12 +187,13 @@ documents:
     source_class: trade_media
     mode: chaff
     template: corpus/raw/trade_media/army_recognition_hq9p.text.txt
-    date: "2018-04"
-    asserts: ["a 2018 deployment claim resurfacing in 2025 discussion as if new"]
+    date: "2025-05"
+    asserts: ["a fresh 2025-dated article presents a 2018 HQ-9 deployment as if it were current/breaking news; the original 2018 dates are visible in the body but never flagged as old"]
     corruption: [hedging]
     deception: [stale_as_current]
+    avoid: "Any note that the reporting is old, 'recycled', 'resurfacing', 'goes back a while', or 'treated like breaking news'. The whole point is that it MASQUERADES as current — present it as fresh; let the embedded 2018 dates be the only clue to its true age."
     registry: {reliability_grade: C, bias_vector: third-party}
-    expect: {note: "old event, recent recirculation -> stale"}
+    expect: {note: "report_time 2025 but event_time 2018 (embedded) -> decays on age to probable(stale); NOT self-flagged as old"}
   - id: cs03_stale_customs
     source_class: customs
     mode: chaff
