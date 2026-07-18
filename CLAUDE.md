@@ -82,6 +82,8 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 | `artifacts/md/14-multihop-retrieval-research.md` | **Retrieval research reference** — cited (2025–26) landscape for multi-hop KGQA + tool-calling best practices (agentic traversal vs GraphRAG/vector/Text2Cypher; embeddings; determinism); source-quality flagged |
 | `artifacts/md/13-location-normalization.md` | **Location precision spec + normalization system** — per-node-type precision (fire-unit→pad … design-authority→district), the ≥2-format corpus seeding, coord-canonicaliser + place-resolution design, the place gazetteer + distinct-from traps |
 | `config/places.yaml` | **Seed place gazetteer** (extensible config) — canonical place nodes + aliases + WGS84 coords (real/synthetic/approximate) + precision class; one alias withheld for the earned-merge demo |
+| `artifacts/md/17-corpus-catalogue.md` | **Corpus catalogue** — per-doc walkthrough of all 51 docs (24 signal + 27 chaff): doc type, KG source/grade/bias, info, real-vs-planted (+ how), pipeline/demo value; the graph it builds; coverage of the 6 graded scenarios; honest gap list |
+| `artifacts/md/16-design-note-disclosures.md` | **Design-note disclosures** — running list of honest tradeoffs/limitations to state out loud in the 2–3p design note (synthetic-data limits, relabeled imagery, candidate-chokepoint, calibration, scope); the design-note agent folds these in |
 | `artifacts/md/questions.md` | Open-question scratchpad |
 | `artifacts/spine/00-overview.md` | Spine map + the four load-bearing ideas + gates + build order |
 | `artifacts/spine/01-graph-and-ontology.md` | One graph, bi-level model, designed-schema/discovered-instances, subjects-as-lenses |
