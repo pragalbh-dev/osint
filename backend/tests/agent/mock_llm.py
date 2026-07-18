@@ -21,6 +21,18 @@ def final(text: str = "done") -> LLMResponse:
     return LLMResponse(text=text, stop_reason="end_turn")
 
 
+def draft_turn(
+    mentions: list[str], trigger_on: str, edge_type: str | None = None, severity: str = "notify"
+) -> LLMResponse:
+    """A scripted `draft_observable` tool call for the text→observable proposer."""
+    payload: dict[str, Any] = {"mentions": mentions, "trigger_on": trigger_on, "severity": severity}
+    if edge_type:
+        payload["edge_type"] = edge_type
+    return LLMResponse(
+        tool_calls=[ToolCall(id="draft", name="draft_observable", input=payload)], stop_reason="tool_use"
+    )
+
+
 def planner(*responses: LLMResponse) -> ScriptedClient:
     """A ScriptedClient replaying the given turns in order (the recorded/mocked planner)."""
     return ScriptedClient(list(responses))

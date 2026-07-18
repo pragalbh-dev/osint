@@ -166,8 +166,10 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   `strict` JSON schemas with when-NOT-to-use + `input_examples` (`tool_specs.py`), the provider-agnostic LLM
   seam (`client.py`: `LLMClient` protocol · `AnthropicClient` · `ScriptedClient` for offline/recorded),
   the bounded ReAct loop + deterministic fixed hero path (`loop.py`), deterministic answer assembly across
-  query shapes (`assemble.py`), the entailment citation validator (`validate.py`), and the `ask()` entrypoint.
-  **56 agent tests + 1 opt-in `@live`; full suite 119 pass/1 skip; ruff + mypy + all §5 gates green.**
+  query shapes (`assemble.py`), the entailment citation validator (`validate.py`), the `ask()` entrypoint,
+  and `propose.py` (free text → `ObservableDef` draft — the MONITOR-handoff scope, below).
+  **62 agent tests + 2 opt-in `@live`; full suite 165 pass/2 skip (post-rebase on MONITOR #11); ruff + mypy
+  + all §5 gates green.**
 - **Acceptance met:** hero query traces `based-at → inducted-into → equips → manufactures` citing a real
   claim at each hop; **HT-233 renders CANDIDATE (`substitutability_state=UNKNOWN` → `indeterminate`), never a
   confirmed sole-source**; planted-gap → reasoned insufficiency (`missing_slots` + `next_coverage_due` +
@@ -181,6 +183,15 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   attrs served every shape by *composition* — **no surface extension (new operator/attr/tool) was required**.
   *(Added ops `!=`, `>`, `>=`, `in` beyond the spine/09 core `<,≤,=,exists,not_exists` — additive breadth,
   agent-local, no shared-contract change.)*
+- **Observable proposer (MONITOR handoff, folded in):** `propose_observable_from_text(text, view, config,
+  llm=None) -> ObservableProposal` (`agent/propose.py`) — free text → an `ObservableDef` **draft**. The LLM
+  proposes the trigger intent + named mentions (a `draft_observable` structured tool call); `find_entity`
+  resolves each mention → `watch_instances` (resolved node ids, **never designator strings**); an
+  unresolvable mention is surfaced with its "did you mean" — **never silently wrong-bound**; MONITOR's
+  `explain()` is attached for the confirm screen. **Never arms** (`needs_confirmation=True`): the analyst
+  confirms, then MONITOR's `arm()`/`evaluate()` take over. Consumes F0-amend #9 (`ObservableDef.watch_instances`)
+  + `chanakya.observe.{explain,arm}`; integration-tested against `observe.arm()` (a real cross-session check).
+  Closes the ASK follow-up MONITOR handed over (DECISIONS §6 MONITOR).
 - **Decisions (principle → choice → alt rejected):**
   - *Testability + keyless boot (invariant #2, §6)* → **F0-amendment**: `ask()` gains optional `llm` + `claims`
     (both additive; API caller unaffected) — see Contract amendments above. Rejected: internal-only client

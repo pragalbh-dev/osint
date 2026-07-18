@@ -351,3 +351,10 @@ section of the design note, not the build.
   `substitutability_state = UNKNOWN` into an `indeterminate` set, never counted as "no substitute" (HT-233
   stays CANDIDATE). Closes the spine/09 open question along its stated leaning. Rejected: collapsing
   candidate/UNKNOWN into a confirmed negative (prints ignorance as a finding).
+- **`propose_observable_from_text` is a draft-only proposer (MONITOR handoff, folded into this PR).**
+  Principle 3 (human-in-loop) + invariant #2 (LLM proposes upstream, never disposes): free text → an
+  `ObservableDef` draft the analyst confirms before MONITOR arms it. Named mentions resolve via ASK's
+  `find_entity` (matched on the resolved instance, never a designator string); an unresolvable mention is
+  surfaced with its "did you mean" and left out of `watch_instances`. Reuses MONITOR's pre-wired
+  `watch_instances` (F0-amend #9) + `explain()`. Rejected: auto-arming a tripwire from text (removes the
+  human gate) / silently binding a near-match (a wrong-entity tripwire is worse than an unresolved one).

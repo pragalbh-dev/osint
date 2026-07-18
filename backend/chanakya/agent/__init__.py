@@ -32,13 +32,14 @@ from .assemble import assemble_answer
 from .client import ScriptedClient, build_default_client
 from .context import ToolContext, normalize
 from .loop import run_fixed_hero_path, run_react_loop
+from .propose import ObservableProposal, propose_observable_from_text
 from .validate import validate_answer
 
 if TYPE_CHECKING:
     from chanakya.agent.client import LLMClient
     from chanakya.schemas import ClaimRecord
 
-__all__ = ["ask", "ToolContext"]
+__all__ = ["ask", "ToolContext", "propose_observable_from_text", "ObservableProposal"]
 
 # Keyword signature of the flagship trace — routes it to the deterministic fixed hero path (primary +
 # reproducible), independent of whether a key is present. Kept narrow so only the flagship query triggers.
