@@ -1,0 +1,81 @@
+# config/ontology.yaml — HQ-9/P (Use Case C) demo-scope ontology.
+# Schema-designed, instances-discovered (DECISIONS). Validates against F0 OntologyConfig
+# {node_types, edge_types, event_types}: list[TypeDef{name, freshness_class?, attrs[]}] (extra="allow").
+#
+# Ratified data-agent decisions applied (tmp/conv/DATA-C-corpus-and-oracle-observations.md):
+#   - supplies-component reserved for Manufacturer->Component; the Component->Variant hero edge is `equips`.
+#   - sustainment SPLIT into interceptor_stockpile (perishable) + techdata_authority (durable/force-reval).
+#   - NO candidate-* edge types: candidate-ness is a computed edge STATUS (possible), never an edge type.
+#   - variant-of DROPPED (family carried as a Variant attr); no dangling family node.
+#   - imported-via DROPPED (Contract carries variant_delivered + linked_unit attrs; hero trace doesn't need it).
+#   - functional_role values are identifiers; Variant.branch -> operator_branch.
+# freshness_class buckets (spine/04): durable | perishable | semi-durable | force-revalidated | n/a.
+# credibility.yaml half_lives_days is keyed by the precise edge NAME (these categories are documentation).
+
+node_types:
+  - name: manufacturer
+    freshness_class: durable
+    attrs: [role, tier, foreign_control, named_examples, production_rate, export_agent, place_ref]
+  - name: component
+    freshness_class: durable
+    # functional_role identifiers: acquisition | battle_management | engagement_fire_control | interceptor
+    attrs: [component_class, functional_role, model_designation, radar_band, host_chassis, observable_fingerprint, foreign_control]
+  - name: variant
+    freshness_class: durable
+    # family retained as an attr (e.g. "HQ-9"); operator_branch replaces the old `branch`.
+    attrs: [family, base_designator, export_designator, aliases, range_class, range_km, operator_branch, associated_rounds, associated_radars]
+  - name: contract_import_event
+    freshness_class: durable
+    attrs: [event_subtype, quantity, count_state, variant_delivered, linked_unit, evidence_date]
+  - name: unit
+    freshness_class: durable
+    attrs: [echelon, designator, service_branch, parent_unit, equipment_fingerprint, count_state, home_garrison]
+  - name: basing_site
+    freshness_class: durable       # the site is durable; occupancy perishability lives on the based-at edge
+    attrs: [coordinates, site_type, site_signature_geometry, occupancy_state, occupancy_observed_date, decoy_risk_flag]
+  - name: interceptor_stockpile    # SPLIT from sustainment — perishable (depth/consumption move fast)
+    freshness_class: perishable
+    attrs: [stocked_round, magazine_depth, consumption_rate, days_of_supply, resupply_lead_time, production_sole_source_flag, foreign_control]
+  - name: techdata_authority       # SPLIT from sustainment — durable / force-revalidated
+    freshness_class: force-revalidated
+    attrs: [holds, foreign_control]  # holds ∈ TDP | firmware | crypto-keys | calibration-ref
+  - name: source
+    freshness_class: n/a
+    attrs: [source_type, primary_origin_id, aggregator_of, bias_vector, coordinated_inauthenticity_flag, adversary_denial_flag, reliability_grade, citation_url]
+  - name: indicator
+    freshness_class: n/a
+    attrs: [indicator_class, lifecycle_stage, observation_date, valid_time, resolved_entity_ref, edge_instance_ref, artifact_integrity, first_seen, caption_vs_image_consistency, evidentiary_strength]
+  - name: known_gap
+    freshness_class: n/a
+    # observability_ceiling ∈ confirmable | probable-max | never-observable  (HYPHENATED per frozen view.py)
+    attrs: [observability_ceiling, next_coverage_due, related_ref, missing_slots]
+
+edge_types:
+  # flagship trace
+  - {name: based-at, freshness_class: perishable}          # Unit->Site (field 30d / garrison 18mo, see credibility)
+  - {name: inducted-into, freshness_class: semi-durable}   # Variant->Unit
+  - {name: imported-by, freshness_class: durable}          # Contract->Unit
+  - {name: exported-by, freshness_class: durable}          # Contract->Manufacturer/export-agent
+  - {name: equips, freshness_class: durable}               # Component->Variant (the renamed hero edge)
+  - {name: supplies-component, freshness_class: durable}   # Manufacturer->Component (reserved; tier-2/3 sub-case decays)
+  - {name: manufactures, freshness_class: durable}         # Manufacturer->{Component, Variant}
+  - {name: design-authority-for, freshness_class: durable} # techdata_authority->Variant
+  - {name: component-of, freshness_class: durable}         # deep-tier BOM branch (Component->Component)
+  - {name: sustained-by, freshness_class: n/a}             # Unit->{interceptor_stockpile, techdata_authority} — rollup only
+  - {name: replenishes, freshness_class: perishable}       # Contract->interceptor_stockpile (follow-on resupply; observable)
+  # resolution
+  - {name: same-as, freshness_class: n/a}
+  - {name: distinct-from, freshness_class: n/a}
+  - {name: substitutable-by, freshness_class: semi-durable}  # three-state on the edge; only UNKNOWN seeded (roadmap)
+  # evidence
+  - {name: evidenced-by, freshness_class: n/a}
+  - {name: corroborates, freshness_class: n/a}
+  - {name: contradicts, freshness_class: n/a}
+  - {name: supersedes, freshness_class: n/a}
+  - {name: derived-from, freshness_class: n/a}
+
+event_types:
+  - {name: TransferEvent, freshness_class: durable}
+  - {name: InductionEvent, freshness_class: durable}
+  - {name: SightingEvent, freshness_class: durable}
+  - {name: ExerciseEvent, freshness_class: durable}

@@ -28,7 +28,7 @@
         "id": "mfr_23rd_ri",
         "type": "manufacturer",
         "name": "CASIC 23rd Research Institute (Beijing Institute of Radio Measurement) — 2nd Academy in-house radar institute",
-        "status": "candidate",
+        "status": "possible",
         "place_ref": "pl_birm",
         "why": "plausible HT-233 maker by institutional logic (builds radars for sibling HQ-series); NOT confirmed for HT-233 (CASI 2025)"
       },
@@ -36,28 +36,41 @@
         "id": "mfr_4th_academy",
         "type": "manufacturer",
         "name": "CASIC 4th Academy / Academy of Rocket Motors Technology (ARMT)",
-        "status": "candidate",
+        "status": "possible",
         "why": "CASIC's house solid-rocket-motor academy; plausible interceptor-motor supplier, not HQ-9-named (US MTCR sanction 2022 is generic)"
+      },
+      {
+        "id": "mfr_taian",
+        "type": "manufacturer",
+        "name": "Taian / Wanshan special-vehicle works (WS-series 8x8 heavy TEL chassis)",
+        "status": "confirmed",
+        "tier": "deep-tier",
+        "why": "the HQ-9/P TEL rides a Taian/Wanshan WS-series 8x8 special chassis — the well-attested, multiply-corroborated deep-tier link (contrast: HT-233 radar maker stays UNKNOWN); confirmed via d24 which directly names supplier+component+relationship (evidence gate satisfied — not a bare sanctions listing)"
+      },
+      {
+        "id": "comp_tel_chassis",
+        "type": "component",
+        "component_class": "TEL 8x8 special-vehicle chassis",
+        "name": "HQ-9/P TEL transporter-erector-launcher chassis (WS-series)",
+        "why": "a CONFIRMABLE deep-tier component (mobility platform), unlike the never-attributable radar T/R-module tier"
       },
       {
         "id": "gap_ht233_maker",
         "type": "known_gap",
         "name": "HT-233 manufacturer + substitutability",
-        "observability_ceiling": "probable_max",
+        "observability_ceiling": "probable-max",
         "note": "best open-source study (CASI 2025) states maker Unknown; deeper radar T/R-module / seeker / datalink tiers not open-source-attributable -> collection requirement"
       },
       {
         "id": "sustain_techdata",
-        "type": "sustainment",
-        "subtype": "techdata_authority",
+        "type": "techdata_authority",
         "name": "Technical-Data / Software & Calibration Authority",
         "status": "probable",
         "why": "the invisible dependency — controls software/calibration (A2 default node)"
       },
       {
         "id": "sustain_spares",
-        "type": "sustainment",
-        "subtype": "interceptor_stockpile",
+        "type": "interceptor_stockpile",
         "name": "spares / maintenance tender implication",
         "status": "probable"
       },
@@ -65,7 +78,8 @@
         "id": "var_hq9p",
         "type": "variant",
         "export_designator": "HQ-9/P",
-        "branch": "Pakistan Army",
+        "family": "HQ-9",
+        "operator_branch": "Pakistan Army",
         "range_km": 125,
         "aliases": [
           "HQ-9P",
@@ -76,7 +90,8 @@
         "id": "var_hq9be",
         "type": "variant",
         "export_designator": "HQ-9BE",
-        "branch": "Pakistan Air Force",
+        "family": "HQ-9",
+        "operator_branch": "Pakistan Air Force",
         "range_km": 260
       },
       {
@@ -89,6 +104,8 @@
         "id": "import_2021",
         "type": "contract_import_event",
         "name": "China->Pakistan HQ-9/P transfer",
+        "variant_delivered": "HQ-9/P",
+        "linked_unit": "unit_paad",
         "status": "confirmed",
         "evidence_date": "2021"
       },
@@ -135,7 +152,7 @@
         "id": "gap_launcher_count",
         "type": "known_gap",
         "name": "TEL/battery count",
-        "observability_ceiling": "probable_max",
+        "observability_ceiling": "probable-max",
         "note": "never disclosed by Pakistan"
       }
     ],
@@ -159,31 +176,45 @@
         "status": "confirmed"
       },
       {
-        "rel": "supplies-component",
+        "rel": "equips",
         "from": "comp_ht233",
         "to": "var_hq9p",
         "status": "confirmed",
         "chokepoint": "candidate"
       },
       {
-        "rel": "supplies-component",
+        "rel": "equips",
         "from": "comp_interceptor",
         "to": "var_hq9p",
         "status": "confirmed"
       },
       {
-        "rel": "candidate-manufactures",
+        "rel": "manufactures",
         "from": "mfr_23rd_ri",
         "to": "comp_ht233",
-        "status": "candidate",
-        "note": "inferred institutional logic (CASI 2025); NOT confirmed"
+        "status": "possible",
+        "note": "inferred institutional logic (CASI 2025); NOT confirmed — candidate-ness carried as edge status=possible, not an edge type"
       },
       {
-        "rel": "candidate-supplies-component",
+        "rel": "supplies-component",
         "from": "mfr_4th_academy",
         "to": "comp_interceptor",
-        "status": "candidate",
-        "note": "plausible CASIC SRM house; not HQ-9-named"
+        "status": "possible",
+        "note": "plausible CASIC SRM house; not HQ-9-named — candidate-ness carried as edge status=possible, not an edge type"
+      },
+      {
+        "rel": "supplies-component",
+        "from": "mfr_taian",
+        "to": "comp_tel_chassis",
+        "status": "confirmed",
+        "note": "F5 confirmed deep-tier: Taian/Wanshan supplies the HQ-9/P TEL 8x8 chassis; hard direct source d24 names supplier+component+relationship -> clears the confirmed gate"
+      },
+      {
+        "rel": "equips",
+        "from": "comp_tel_chassis",
+        "to": "var_hq9p",
+        "status": "confirmed",
+        "note": "the TEL chassis is an integral part of the HQ-9/P fire unit"
       },
       {
         "rel": "design-authority-for",
@@ -191,18 +222,6 @@
         "to": "var_hq9p",
         "status": "probable",
         "note": "candidate invisible chokepoint"
-      },
-      {
-        "rel": "variant-of",
-        "from": "var_hq9p",
-        "to": "HQ-9",
-        "status": "confirmed"
-      },
-      {
-        "rel": "variant-of",
-        "from": "var_hq9be",
-        "to": "HQ-9",
-        "status": "confirmed"
       },
       {
         "rel": "distinct-from",
@@ -224,12 +243,6 @@
         "to": "var_hq9p",
         "status": "confirmed",
         "note": "FT-2000 anti-radiation != HQ-9/P (false-merge trap)"
-      },
-      {
-        "rel": "imported-via",
-        "from": "var_hq9p",
-        "to": "import_2021",
-        "status": "confirmed"
       },
       {
         "rel": "exported-by",
@@ -484,26 +497,27 @@
     ],
     "expected_path_edges": [
       {
-        "from": "site_karachi",
-        "rel": "based-at",
-        "to": "unit_paad"
-      },
-      {
         "from": "unit_paad",
-        "rel": "inducted-into",
-        "to": "var_hq9p"
+        "rel": "based-at",
+        "to": "site_karachi"
       },
       {
         "from": "var_hq9p",
-        "rel": "supplies-component",
-        "to": "comp_ht233"
+        "rel": "inducted-into",
+        "to": "unit_paad"
       },
       {
         "from": "comp_ht233",
+        "rel": "equips",
+        "to": "var_hq9p"
+      },
+      {
+        "from": "mfr_casic",
         "rel": "manufactures",
-        "to": "mfr_casic"
+        "to": "comp_ht233"
       }
     ],
+    "expected_path_edges_note": "edges are the CANONICAL stored direction (== ground_truth.edges); expected_path lists node traversal order (observed battery -> origin), i.e. the reverse walk. The agent traverses edges bidirectionally by node id.",
     "expected_answer": "Chokepoint = HT-233 engagement radar — CANDIDATE. CASIC/2nd Academy is the confirmed program design authority; the specific HT-233 maker is a Known Gap (best open-source candidate = CASIC 23rd Research Institute, inferred/unconfirmed per CASI 2025). Substitutability UNKNOWN → collection requirement, not a confirmed sole-source.",
     "must": "cite the exact source at every hop; separate observed (basing/imagery) from inferred (chokepoint candidacy)."
   },
@@ -613,6 +627,12 @@
         "d05_customs_manifest"
       ],
       "expect": "shell consignee resolves to HT-233 end-user only via relational match; civil-vs-military contradiction surfaced, not pre-resolved (D7)."
+    },
+    "deep_tier_confirmed": {
+      "docs": [
+        "d24_tel_chassis_attribution"
+      ],
+      "expect": "F5 contrast: ONE deep-tier supplier is CONFIRMED (Taian/Wanshan -> HQ-9/P TEL 8x8 chassis — a source directly names supplier+component+relationship, multiply attested) while the HT-233 radar maker stays a Known Gap and 23rd RI / 4th Academy stay POSSIBLE. Confirms only on a direct supply link; a sanctions/entity-listing alone is NOT sufficient."
     },
     "observable_relocation": {
       "docs": [
@@ -872,6 +892,28 @@
           "precision": "district",
           "note": "manufacturing/design-authority node needs facility+city+district, NOT a grid (md/13 precision spec); co-located with pl_casic_2nd"
         }
+      }
+    },
+    {
+      "id": "d24_tel_chassis_attribution",
+      "source_class": "reference",
+      "date": "2024-09",
+      "mode": "signal",
+      "asserts": [
+        "an authoritative open-source industrial-base reference, drawing on vehicle-registry and procurement records, directly identifies the HQ-9 / HQ-9/P transporter-erector-launcher as riding a Taian (Wanshan) WS-series 8x8 heavy special-vehicle chassis — a supply relationship named across multiple independent open analyses, in explicit contrast to the HT-233 engagement radar whose manufacturer remains unattributable"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "B",
+        "bias_vector": "third-party",
+        "primary_origin_id": "csis_missilethreat"
+      },
+      "expect": {
+        "note": "F5 CONFIRMED deep-tier: mfr_taian supplies-component comp_tel_chassis (CONFIRMED) + comp_tel_chassis equips var_hq9p. Source DIRECTLY names supplier+component+relationship and is multiply corroborated (distinct origin from d22's casi_2025) -> clears the confirmed gate. Keeps 23rd RI/4th Academy POSSIBLE and HT-233 maker a Known Gap — the confirmable-vs-unconfirmable deep-tier contrast."
       }
     },
     {
@@ -1242,7 +1284,7 @@
     },
     {
       "id": "d16_adversary_denial",
-      "source_class": "official",
+      "source_class": "social",
       "date": "2025-05",
       "mode": "signal",
       "asserts": [

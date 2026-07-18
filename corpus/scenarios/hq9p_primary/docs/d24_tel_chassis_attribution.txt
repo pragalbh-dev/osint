@@ -1,0 +1,32 @@
+CSIS Missile Threat — Industrial Base Note
+"Who builds the HQ-9? Mapping the attributable and the unattributable tiers"
+Reference brief, September 2024
+
+Summary. Efforts to map the HQ-9 / HQ-9BE supply chain from open sources run into a sharp, uneven wall:
+some tiers are firmly attributable from public records, while others are effectively opaque. This note
+draws that line explicitly, because conflating the two is the most common error in secondary reporting on
+Chinese long-range SAM production.
+
+Mobility platform (attributable). The single most consistently attributable deep-tier element of the HQ-9
+family is its transporter-erector-launcher (TEL) platform. Across successive editions of the system —
+including the HQ-9, HQ-9A and the HQ-9B/HQ-9BE export configurations — the TEL rides a heavy 8x8 special
+wheeled chassis produced by the Taian (Wanshan) special-vehicle works of the WS-series lineage (variously
+rendered TAS5380 / WS2400-series in trade and vehicle-registry literature). The attribution rests on more
+than a single claim: the WS-series chassis appears under the HQ-9 TEL in multiple independent open analyses,
+in Chinese heavy-vehicle industry catalogues, and in export-brochure imagery, and the chassis family is
+itself a well-documented product line supplied across several Chinese missile programs. For the HQ-9/P and
+HQ-9BE fielded by Pakistan, there is no open indication of a substitute chassis; the launcher platform is
+therefore a confirmed Taian/Wanshan supply relationship — a genuine deep-tier node that IS attributable.
+
+Fire-control radar (NOT attributable). By explicit contrast, the manufacturer of the HT-233 engagement
+radar that the system depends on cannot be established from open sources. Institutional logic points to a
+CASIC in-house radar house (the 23rd Research Institute / Beijing Institute of Radio Measurement is the most
+frequently suggested candidate), but no public record — export annex, end-user certificate summary, or
+Chinese-language industry yearbook — names the HT-233 maker, and the common "CPMIEC makes it" claim confuses
+the export-marketing agent for the manufacturer. Deeper still, the radar's transmit/receive modules and
+MMICs, the seeker, and the datalink are not open-source-attributable to the HQ-9 at all.
+
+The distinction matters for collection. A supply-chain map that marks the TEL-chassis tier "confirmed" and
+the radar tier "unknown/collection gap" is doing its job; one that fills the radar tier with the chassis
+tier's confidence, or that downgrades the chassis tier to match the radar's opacity, is not. The former is
+a supported attribution; the latter is a hypothesis wearing a fact's clothing.

@@ -1,0 +1,74 @@
+# config/credibility.yaml — Confidence Resolver config (spine/04; spine/08 §3.4-§3.6).
+# Validates against F0 CredibilityConfig {factor_weights, source_class_factors, integrity_penalties,
+# thresholds, half_lives_days} (+ extra `gates`, allowed by extra="allow"). Every numeric knob lives
+# here, never in code (gate G6). R(source) is the rubric's OUTPUT (factor_weights x source_class_factors),
+# never a hand-typed per-class constant — the R values in comments are sanity-check outputs, not inputs.
+# source_class_factors keys == sources.yaml `source_type` values (SCORE does a direct lookup, no mapping).
+
+factor_weights:
+  authority: 0.35
+  process: 0.30
+  directness: 0.10
+  track_record: 0.10          # held at neutral prior (0.5) for the demo — dynamic per-source rating is a roadmap seam
+  intrinsic_plausibility: 0.15 # held at ceiling (1.0) for the demo — only a per-claim LLM DOWNWARD override lowers it
+
+source_class_factors:
+  curated-register:      {authority: 0.95, process: 0.95, directness: 0.30, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.85 (SIPRI)
+  satellite:             {authority: 0.90, process: 0.85, directness: 0.90, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.86
+  official:              {authority: 0.90, process: 0.50, directness: 0.90, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.75 (ISPR)
+  think-tank:            {authority: 0.60, process: 0.85, directness: 0.25, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.69 (CSIS/RAND/IISS)
+  trade-media:           {authority: 0.50, process: 0.75, directness: 0.35, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.64 (Quwa/Jane's)
+  customs-tender:        {authority: 0.55, process: 0.55, directness: 0.55, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.61
+  exporter-state-media:  {authority: 0.60, process: 0.80, directness: 0.50, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.70 (Global Times; authored, not doc-anchored)
+  named-social:          {authority: 0.15, process: 0.10, directness: 0.70, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.35
+  anon-social:           {authority: 0.05, process: 0.05, directness: 0.20, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.25
+
+integrity_penalties:
+  # Flattened "<table>.<flag>" keys (4 M4 tables -> one flat dict[str,float], the frozen field's type).
+  # SCORE lookup: integrity_penalties.get(f"{table}.{flag}", 1.0) per table, then multiply the four
+  # results. Missing key -> 1.0 (no penalty) so an absent signal never silently zeroes credibility.
+  artifact_integrity.unaltered: 1.0
+  artifact_integrity.unverifiable: 0.85
+  artifact_integrity.edited: 0.30
+  artifact_integrity.synthetic: 0.10
+  first_seen.original: 1.0
+  first_seen.recycled: 0.30
+  caption.consistent: 1.0
+  caption.uncheckable: 0.9
+  caption.mismatched: 0.30
+  coordinated_inauthenticity.independent: 1.0
+  coordinated_inauthenticity.suspected: 0.5
+  coordinated_inauthenticity.too_clean: 0.4
+
+# GATES, not multipliers (spine/04; DECISIONS). Extra field. SCORE reads gate_flags
+# (schemas/stage_io.py AssertionInput.gate_flags: "adversary-denial","decoy-risk") against this map.
+gates:
+  adversary_denial:
+    flag: adversary-denial
+    exclude_from_grouping: true    # never enters an independence group -> never corroborates
+    cap_at_probable: true          # caps the affected assertion at PROBABLE even if math clears 0.80
+  decoy_risk:
+    flag: decoy-risk
+    exclude_from_grouping: false    # single-pass imagery still counts as a look — only the STATUS is capped
+    cap_at_probable: true          # single-pass basing can never reach CONFIRMED
+
+thresholds:
+  confirmed: 0.80
+  probable: 0.50
+  # "possible" has no separate cutoff: assessable AND assertion_confidence < 0.50.
+
+half_lives_days:
+  # Convention: 1 month = 30d, 1 year = 365d. A type/sub-key with NO entry is DURABLE (freshness=1.0,
+  # no decay). Sub-variants: "<edge_type>.<variant>" (SCORE tries the specific key, then the bare edge,
+  # then no-decay). Keyed to the edges present in ontology.yaml.
+  based-at.field: 30
+  based-at.garrison: 540
+  inducted-into.named-unit: 540          # possession-by-service is durable (omitted)
+  imported-by.holdings: 900              # the transfer event itself is durable (omitted)
+  supplies-component.tier-2-3: 540       # deep-tier supplier; revalidate on sanctions/tender/localization
+  # supplies-component (prime), manufactures, equips, exported-by, design-authority-for, component-of -> DURABLE (omitted)
+  replenishes.event: 3650                # a follow-on order having happened is durable-ish
+  replenishes.implication: 900           # "still resupplying?" decays faster
+  substitutable-by: 540                  # 18mo (authored default; no doc number)
+  # sustained-by -> OMITTED (coarse rollup, not independently scored)
+  # same-as, distinct-from, evidenced-by, corroborates, contradicts, supersedes, derived-from -> OMITTED (structural)

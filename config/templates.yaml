@@ -1,0 +1,57 @@
+# config/templates.yaml — evidence-requirement templates per assertion type (spine/04; spine/08 §3.7).
+# Validates against F0 TemplatesConfig{templates: list[EvidenceTemplate{assertion_type, require, on_fail,
+# refusal_template?}]} (+ extra observability_ceiling on never-observable rows, extra="allow").
+# require-DSL: any_of / all_of (each entry {slot: {constraints}}) | never_observable: true (sentinel).
+# on_fail stays "insufficient_evidence" (typed). The Known-Gap payload (missing_slots, next_coverage_due)
+# is computed by check() at eval time from these templates + the source registry's `cadence` — never
+# authored here. refusal_template is a deterministic fill-in-the-blank string, never regenerated prose.
+templates:
+  - assertion_type: based-at
+    require:
+      any_of:
+        - imagery_confirmation: {within_days: 365}
+        - independent_text_groups: {min: 2, within_days: 365}
+    on_fail: insufficient_evidence
+    refusal_template: "Cannot confirm basing of {subject}: missing {missing_slots}. Next coverage due {next_coverage_due}."
+
+  - assertion_type: inducted-into
+    require:
+      all_of:
+        - official_announcement: {}
+        - independent_origin_groups: {min: 1, cross_interest: true, within_days: 1825}
+    on_fail: insufficient_evidence
+    refusal_template: "Cannot confirm {subject}'s induction: missing {missing_slots}. Next coverage due {next_coverage_due}."
+
+  - assertion_type: supplies-component      # the sustainment-dependency / deep-tier supplier assertion (chokepoint criterion #1)
+    require:
+      any_of:
+        - named_in_sanction_or_tender: {}
+        - independent_origin_groups: {min: 2}
+    on_fail: insufficient_evidence
+    refusal_template: "Supplier of {subject} is a Known Gap: {missing_slots}."
+
+  # never-observable classes — check() short-circuits to unsatisfied; observability_ceiling pinned so the
+  # refusal is never mistaken for a closable coverage gap; next_coverage_due stays null (nothing to schedule).
+  - assertion_type: interceptor-depth       # magazine / round depth (chokepoint criterion #5)
+    require: {never_observable: true}
+    on_fail: insufficient_evidence
+    observability_ceiling: never-observable
+    refusal_template: "{subject}'s interceptor/magazine depth cannot be assessed from open sources (ceiling: never-observable) — no future collection closes this gap; a structural limit, not a coverage lapse."
+
+  - assertion_type: contract-terms
+    require: {never_observable: true}
+    on_fail: insufficient_evidence
+    observability_ceiling: never-observable
+    refusal_template: "Contract terms for {subject} cannot be assessed from open sources (ceiling: never-observable) — official statements confirm induction dates but never commercial/contract internals."
+
+  - assertion_type: c2-topology
+    require: {never_observable: true}
+    on_fail: insufficient_evidence
+    observability_ceiling: never-observable
+    refusal_template: "{subject}'s C2/cueing topology cannot be assessed from open sources (ceiling: never-observable) — a structural limit, not a coverage lapse."
+
+  - assertion_type: true-readiness          # graded readiness rating; only the ordinal proxy is observable
+    require: {never_observable: true}
+    on_fail: insufficient_evidence
+    observability_ceiling: never-observable
+    refusal_template: "{subject}'s true graded readiness cannot be assessed from open sources (ceiling: never-observable); only the ordinal proxy is assessable — see operational-status."
