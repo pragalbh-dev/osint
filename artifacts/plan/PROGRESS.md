@@ -15,7 +15,7 @@
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
-| ASK | Bounded ReAct agent + citation validator | 1 | not-started | — | F0 | — |
+| ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | not-started | — | F0 | — |
 | INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | not-started | — | F0 (+DATA-C soft) | — |
 | API | FastAPI layer | 2 | not-started | — | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
@@ -42,6 +42,22 @@ corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2
 - Reworded **gate G1** to guard the *rebuild call-path* behaviorally (rebuild runs with the LLM patched to
   raise), not to ban `anthropic` from a stage package — so RESOLVE/INGEST may house an offline proposer/
   extractor in-package. Master §1 invariant #2 + §5 G1. *(RESOLVE/INGEST flagged the tension.)*
+
+**Post-F0 amendments (folded into the owning session's PR; dependents rebase):**
+- **`ask()` gains two optional query-time inputs** — frozen entrypoint is now
+  `ask(question, view, config, llm=None, claims=None) -> AskAnswer` (was `ask(question, view, config)`).
+  Master §4.5. *Both additive & optional* — the existing/planned caller `ask(question, view, config)`
+  (**API** session) is unaffected, so no rebase is required.
+  - `llm` — the query-time `chanakya.agent.client.LLMClient` seam (mock/recorded in tests, settings-built
+    at runtime, keyless → recorded-trace replay). *(user-approved the amendment route over injecting the
+    client internally.)*
+  - `claims` — a `claim_id → ClaimRecord` lookup. `rebuild()` emits a view that references claims by ID
+    only; the record bodies (`kind`, `doc_ref`, source, dates) stay in the evidence log, but `get_evidence`
+    (source/date/span) and observed-vs-inferred (from `kind`) need them. **API** passes
+    `{c.claim_id: c for c in store.replay()}`. *(ASK call — necessary, additive, API-compatible; the
+    view alone cannot cite a source/date/span or tag observed-vs-inferred.)*
+  Lands in the **ASK** PR (`feat/ask`); `chanakya/agent/` is ASK-owned, so the edit is in-path — logged
+  here per Rule 3 because the *signature* is a contract API reads. *(ASK, 2026-07-18.)*
 
 ## Known build-time reconciliations (F0 / build must resolve — not blockers)
 - **F0 location descriptor** must carry `geocode_candidates` + `proposed_alias` so INGEST can freeze
@@ -143,3 +159,60 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
 - **Gate fixtures:** none added; extended none. Consumes F0's `per_stage/alert_delta.json` (aligned in #9)
   as the seeded before→after fire fixture. G1 (no network/LLM in `observe/`) + G6 (no scoring literals)
   re-verified green.
+
+### ASK (in-review, feat/ask — PR #14):
+- **Shipped:** the cited multi-hop QnA agent as a callable `ask(question, view, config, llm=None, claims=None)
+  -> AskAnswer` in `chanakya/agent/` — the 7 deterministic `graph_*` tools (`context.py`+`tools.py`), their
+  `strict` JSON schemas with when-NOT-to-use + `input_examples` (`tool_specs.py`), the provider-agnostic LLM
+  seam (`client.py`: `LLMClient` protocol · `AnthropicClient` · `ScriptedClient` for offline/recorded),
+  the bounded ReAct loop + deterministic fixed hero path (`loop.py`), deterministic answer assembly across
+  query shapes (`assemble.py`), the entailment citation validator (`validate.py`), the `ask()` entrypoint,
+  and `propose.py` (free text → `ObservableDef` draft — the MONITOR-handoff scope, below).
+  **62 agent tests + 2 opt-in `@live`; full suite 165 pass/2 skip (post-rebase on MONITOR #11); ruff + mypy
+  + all §5 gates green.**
+- **Acceptance met:** hero query traces `based-at → inducted-into → equips → manufactures` citing a real
+  claim at each hop; **HT-233 renders CANDIDATE (`substitutability_state=UNKNOWN` → `indeterminate`), never a
+  confirmed sole-source**; planted-gap → reasoned insufficiency (`missing_slots` + `next_coverage_due` +
+  Known Gap); validator rejects uncited / non-supporting / count-mismatch / not-entailed (mocked judge);
+  `find_entity('HQ9P')` fires the "did you mean 'HQ-9/P'?" error; determinism verified (identical `model_dump`).
+- **Wide query battery + coverage verdict:** all 10 spine/09 taxonomy shapes exercised (point · 1-hop ·
+  multi-hop · filtered · aggregate · status/corroboration · gap · temporal · reverse · ranking) + 2
+  adversarial (misspelling → refusal, no wrong bind; "confirmed sole-source?" → INDETERMINATE, absence ≠
+  negative). **Every case is answered-with-citations or refused — never fabricated** (`tests/agent/test_battery.py`).
+  **Coverage verdict:** the frozen 5-operator + `aggregate` `query_graph` surface over raw + materiality
+  attrs served every shape by *composition* — **no surface extension (new operator/attr/tool) was required**.
+  *(Added ops `!=`, `>`, `>=`, `in` beyond the spine/09 core `<,≤,=,exists,not_exists` — additive breadth,
+  agent-local, no shared-contract change.)*
+- **Observable proposer (MONITOR handoff, folded in):** `propose_observable_from_text(text, view, config,
+  llm=None) -> ObservableProposal` (`agent/propose.py`) — free text → an `ObservableDef` **draft**. The LLM
+  proposes the trigger intent + named mentions (a `draft_observable` structured tool call); `find_entity`
+  resolves each mention → `watch_instances` (resolved node ids, **never designator strings**); an
+  unresolvable mention is surfaced with its "did you mean" — **never silently wrong-bound**; MONITOR's
+  `explain()` is attached for the confirm screen. **Never arms** (`needs_confirmation=True`): the analyst
+  confirms, then MONITOR's `arm()`/`evaluate()` take over. Consumes F0-amend #9 (`ObservableDef.watch_instances`)
+  + `chanakya.observe.{explain,arm}`; integration-tested against `observe.arm()` (a real cross-session check).
+  Closes the ASK follow-up MONITOR handed over (DECISIONS §6 MONITOR).
+- **Decisions (principle → choice → alt rejected):**
+  - *Testability + keyless boot (invariant #2, §6)* → **F0-amendment**: `ask()` gains optional `llm` + `claims`
+    (both additive; API caller unaffected) — see Contract amendments above. Rejected: internal-only client
+    construction (un-injectable) / stuffing claims into `view.meta` (bloats `/view`).
+  - *Answer_key authoritative (design-authority order)* → hero chain bound to `based-at/inducted-into/equips/
+    manufactures`; ASK.md's `imported-by/exported-by/supplies-component` treated as stale.
+  - *Non-negotiable — absence ≠ evidence of absence* → chokepoint-honesty fork closed along spine/09's leaning:
+    `query_graph` reports matches + a separate `indeterminate` partition; UNKNOWN never counted as a negative.
+  - *LLM plans, tools compute (spine/09)* → the answer text is assembled **deterministically from tool
+    results** (citations a by-product), not from model prose; the entailment judge validates each assembled
+    sentence. Rejected: trusting the LLM's free-form final answer.
+  - *Deterministic + offline-testable (§6)* → entailment judge runs only for a live client; ScriptedClient
+    (offline/recorded) paths use the deterministic validation part; autouse fixture strips keys for non-`@live`.
+- **Deviations from plan:** none affecting shared contracts beyond the logged F0-amendment. `ask()` also
+  serves point/1-hop/filter/status/reverse/ranking shapes (assemble builds cited answers from
+  `query_graph`/`neighbors`/`get_node`/`get_evidence`, not only `find_paths`) — a capability add, not a
+  contract change.
+- **Follow-ups:** real-corpus loop-parameter calibration (hop cap / top-k / where LLM-pruning earns its cost)
+  is a build-time tune once DATA-C/INGEST land (out of scope here, per ASK.md); the committed **recorded
+  hero-trace** (a `ScriptedClient` transcript for keyless replay of the *free-loop* hero, distinct from the
+  no-LLM fixed path) is best frozen against the real seeded view at Wave-2 (API/EVAL); API session calls
+  `ask(...)` and passes `claims = {c.claim_id: c for c in store.replay()}`.
+- **Gate fixtures:** none added/weakened (ASK owns `chanakya/agent/**` + `tests/agent/**`; G1 still green —
+  runtime LLM is import-lazy and outside the rebuild call-path).

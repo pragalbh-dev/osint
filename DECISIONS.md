@@ -325,3 +325,36 @@ section of the design note, not the build.
   (LLM proposes upstream; the analyst confirms before arming). MONITOR pre-wired the target: the
   `watch_instances` field + `explain()` for the confirm screen. Logged as an ASK scope note in
   `PROGRESS.md`.
+
+### ASK — Bounded ReAct agent + citation validator (choice · principle invoked · alternative rejected)
+- **`ask()` gains two optional query-time inputs (F0-amendment):**
+  `ask(question, view, config, llm=None, claims=None)`. Principle: *LLM is a proposer downstream of
+  `rebuild()`; testability + keyless boot* (invariant #2, master §6); *unit = the sourced claim, one-click
+  to source* (principle 5). Both are additive/optional so the API caller `ask(question, view, config)` is
+  unaffected.
+  - `llm` reaches the agent through a provider-agnostic `agent.client.LLMClient` seam so offline tests
+    inject a mock/recorded client and keyless boot replays the recorded hero-trace. Rejected: keeping the
+    3-arg signature and constructing the client internally from env (harder to inject; hides the
+    dependency). *User chose the amendment route.*
+  - `claims` (a `claim_id → ClaimRecord` lookup) because `rebuild()`'s view references claims by ID only —
+    the bodies (`kind`, `doc_ref`, source, dates) live in the evidence log, and `get_evidence` +
+    observed-vs-inferred need them. Rejected: stuffing claim bodies into `view.meta` (bloats the `/view`
+    payload; `meta` is diagnostic-only) or reconstructing them from the view (impossible — `kind`/span/date
+    aren't there).
+- **Bind the hero trace to the DATA-C `answer_key.json` edge names, not `sessions/ASK.md`'s prose.**
+  Principle: *the answer_key/`ontology.yaml` is authoritative (design-authority order, master preamble).*
+  Chain = `site_karachi ←based-at– unit_paad ←inducted-into– var_hq9p ←equips– comp_ht233 ←manufactures–
+  mfr_casic` (5 nodes/4 edges; stored origin-ward, traversed bidirectionally). Rejected: ASK.md's stale
+  `imported-by → exported-by → supplies-component` (would diverge from the corpus and break EVAL).
+- **Chokepoint honesty fork → return both, never collapse.** Principle: *the non-negotiable — absence of
+  evidence ≠ evidence of absence.* `query_graph` reports confirmed-and-candidate separately and partitions
+  `substitutability_state = UNKNOWN` into an `indeterminate` set, never counted as "no substitute" (HT-233
+  stays CANDIDATE). Closes the spine/09 open question along its stated leaning. Rejected: collapsing
+  candidate/UNKNOWN into a confirmed negative (prints ignorance as a finding).
+- **`propose_observable_from_text` is a draft-only proposer (MONITOR handoff, folded into this PR).**
+  Principle 3 (human-in-loop) + invariant #2 (LLM proposes upstream, never disposes): free text → an
+  `ObservableDef` draft the analyst confirms before MONITOR arms it. Named mentions resolve via ASK's
+  `find_entity` (matched on the resolved instance, never a designator string); an unresolvable mention is
+  surfaced with its "did you mean" and left out of `watch_instances`. Reuses MONITOR's pre-wired
+  `watch_instances` (F0-amend #9) + `explain()`. Rejected: auto-arming a tripwire from text (removes the
+  human gate) / silently binding a near-match (a wrong-entity tripwire is worse than an unresolved one).
