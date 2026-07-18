@@ -84,7 +84,7 @@
       "date": "2025-05-12",
       "mode": "chaff",
       "asserts": [
-        "fifth reshare a day later, quote-tweet chain referencing the earlier reshares"
+        "fifth reshare of the same recycled image a day later, a new handle in the quote-tweet chain, with a DIVERGENT caption from the earlier posts (same image, different claimed location/status)"
       ],
       "off_subject": false,
       "corruption": [
@@ -101,7 +101,7 @@
         "coordinated_inauthenticity_flag": true
       },
       "expect": {
-        "note": "6-post burst total (d11-d13 + ce01-ce03) = ONE look; the visible 'grain in chaff'"
+        "note": "6-post burst total (d11-d13 + ce01-ce03) = ONE look; captions DIVERGE over the same image; the system must detect the reuse itself"
       },
       "image": {
         "image_file": "ce03_reshare_e.png",
@@ -360,10 +360,10 @@
     {
       "id": "cs02_stale_deployment",
       "source_class": "trade_media",
-      "date": "2018-04",
+      "date": "2025-05",
       "mode": "chaff",
       "asserts": [
-        "a 2018 deployment claim resurfacing in 2025 discussion as if new"
+        "a fresh 2025-dated article presents a 2018 HQ-9 deployment as if it were current/breaking news; the original 2018 dates are visible in the body but never flagged as old"
       ],
       "off_subject": false,
       "corruption": [
@@ -377,7 +377,7 @@
         "bias_vector": "third-party"
       },
       "expect": {
-        "note": "old event, recent recirculation -> stale"
+        "note": "report_time 2025 but event_time 2018 (embedded) -> decays on age to probable(stale); NOT self-flagged as old"
       }
     },
     {
