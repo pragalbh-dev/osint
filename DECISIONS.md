@@ -238,6 +238,39 @@ section of the design note, not the build.
 
 ## 6. Build decisions (appended per session; §8 of the master plan)
 
+### F0-amendment — places + merge-edge rendering (RESOLVE-raised, 2026-07-18)
+- **`config/places.yaml` promoted to the 8th loaded config section (`PlacesConfig`).** Principle 9
+  (config-driven extensibility) + the hot-config rule: the gazetteer is genuinely analyst-tunable config,
+  so it is served by the live store (hot-editable, no restart, single source of truth) rather than
+  read from a second file path inside RESOLVE. Rejected: RESOLVE loads `places.yaml` itself (a second
+  config path; gazetteer not hot-editable). → `schemas/config_models.py`, `config/store.py`. *(User
+  approved the config-store route after the gazetteer's open-world-overlay purpose was explained.)*
+- **Merges + traps are first-class in the view: `rebuild()` emits candidate `same-as` + `distinct-from`
+  edges (with `merge_confidence` + score breakdown) and stamps `resolved_from` provenance on
+  auto-merged nodes; `Partition` gains `candidates` + `merge_breakdown`.** Principle 5 (traceability) +
+  6 (confirmed ≠ probable): the marquee "grain in the chaff, human in the loop" reasoning has to be
+  *visible* — the analyst adjudicates a rendered candidate, and the "why" is one click away. Edges are
+  emitted after the status machine so they are never scored (G5) and are G4-exempt (they cite a merge
+  decision, not a claim). Rejected: keep merge decisions inside the Partition only, unrendered (marquee
+  invisible in the graph). → `schemas/stage_io.py`, `view/pipeline.py`. *(User approved the "small F0
+  touch-up".)*
+- **`resolve()` receives the decision log; `_assemble()` reconnects merged entities' edges.** Principle 5
+  (traceability) + the design's own words (spine/03:37 — resolution is a pure function of *evidence log,
+  **decision log**, config*): the offline LLM proposer's `merge_proposal` records + the analyst's
+  `merge_adjudication(accept)`s (alias learning) both live in the decision log, so `resolve()`'s signature
+  gains `decisions` (default None; only `rebuild()` calls it → no sibling breaks; still LLM-free on the
+  rebuild path, G1). And because edges attach to nodes by the *raw* triple subject/object string
+  (`supersede.py`), a merge is made to actually reconnect edges via `Partition.entity_canonical`, applied
+  in `_assemble()`. Both additive + empty-safe (golden byte-identical, G2). Rejected: apply learned merges
+  only as post-resolve HITL effects (can't unlock the relational fixpoint, and can't collapse nodes cleanly);
+  leave edges dangling on merge (corrupts the graph). → `schemas/stage_io.py`, `view/pipeline.py`,
+  `resolve/__init__.py`.
+- **FT-2000 is scored into the HITL band, not seeded as a hard `distinct-from`.** Principle 3 (product is
+  judgement) + 4-adjacent: the look-alike must demonstrate the scoring judgement + human adjudication, not
+  be pre-vetoed. Config fix routed to DATA-C (`tmp/conv/RESOLVE-config-and-oracle-observations.md`);
+  RESOLVE emits it as a mid-band candidate. Rejected: keep the seeded veto (short-circuits the demo).
+  *(User decision, this session.)*
+
 ### F0 — Foundation (choice · principle invoked · alternative rejected)
 - **Records `extra="forbid"`, config surfaces `extra="allow"`.** Principle 5 (traceability) + 9
   (config-driven): a drifted record fails loudly; DATA-C may add config knobs without an F0-amendment.

@@ -1,4 +1,4 @@
-"""The seven config surfaces + the ``ConfigBundle`` (master §4.4).
+"""The eight config surfaces + the ``ConfigBundle`` (master §4.4).
 
 F0 freezes the *shapes* and the **load-bearing typed fields** (weights, thresholds, half-lives) so
 code can read them typed and gate G6 can assert "no magic numbers in code — all read from config".
@@ -14,6 +14,7 @@ from pydantic import Field
 
 from .base import ConfigModel
 from .claim import SourceRegistryEntry
+from .values import PrecisionClass
 
 # ── ontology.yaml ──────────────────────────────────────────────────────────────────────────────
 
@@ -63,11 +64,52 @@ class CredibilityConfig(ConfigModel):
 class ResolutionConfig(ConfigModel):
     """Merge scoring + bands + blocking + seeded alias table + transliteration (§3.9)."""
 
-    merge_weights: dict[str, float] = {}  # {"attribute":0.30,"relational":0.40,"temporal":0.15,"source_asserted":0.15}
+    merge_weights: dict[str, float] = {}  # {"attribute":0.30,"relational":0.40,"temporal_consistency":0.15,"source_asserted":0.15}
     bands: dict[str, float] = {}  # {"auto_merge":0.85, "hitl_low":0.55}
     blocking_keys: list[str] = []
     alias_table: dict[str, list[str]] = {}  # canonical → aliases (seeded; grows from HITL merges)
     transliteration: dict[str, str] = {}
+
+
+# ── places.yaml (the place gazetteer — 8th surface; RESOLVE consumes at rebuild) ─────────────────
+
+class PlaceEntry(ConfigModel):
+    """One canonical place node in the gazetteer (``config/places.yaml``; md/13).
+
+    A curated *prior* for place resolution, **not a closed world**: at rebuild a frozen coord beyond
+    the precision-class radius mints a *new* place node (open-world). Carries the exact WGS84 coord +
+    the aliases/hard-IDs (ICAO/LOCODE) that customs & aviation sources actually use + the do-not-merge
+    traps (Karachi-Port ≠ Port-Qasim). Coord canonicalisation/geocoding is INGEST's (frozen onto the
+    claim); this is the identity target RESOLVE matches those frozen coords + toponyms against.
+    """
+
+    place_id: str
+    canonical_name: str
+    kind: str | None = None  # airbase | seaport | sam_site | facility | airfield …
+    precision_class: PrecisionClass | None = None  # coarsest identity the node needs (md/13 §1)
+    canonical_dd: tuple[float, float] | None = None  # (lat, lon) WGS84
+    aliases: list[str] = []
+    icao: str | None = None  # unique hard-ID (airbase)
+    locode: str | None = None  # unique hard-ID (seaport, e.g. PKBQM)
+    admin: str | None = None
+    provenance: str | None = None  # real | synthetic | approximate
+    distinct_from: list[str] = []  # explicit do-not-merge place_ids (hard veto, before banding)
+
+
+class PlacesConfig(ConfigModel):
+    """The seed place gazetteer + per-precision-class proximity radii (md/13; hot-config extensible).
+
+    Loaded from ``config/places.yaml`` through the live store like every other surface, so an analyst
+    can add a place or fix a coord with no restart. RESOLVE reuses the ``merge_score``/bands machinery
+    over these entries (toponym/alias match + geodesic proximity by ``precision_class``).
+    """
+
+    crs: str = "EPSG:4326"  # canonical output frame (WGS84 decimal degrees)
+    places: list[PlaceEntry] = []
+    proximity_radius_m: dict[str, float] = {}  # precision_class → auto-resolve radius (1x–3x → HITL; beyond → new place)
+
+    def as_map(self) -> dict[str, PlaceEntry]:
+        return {p.place_id: p for p in self.places}
 
 
 # ── templates.yaml ─────────────────────────────────────────────────────────────────────────────
@@ -130,7 +172,7 @@ class ObservablesConfig(ConfigModel):
 # ── the bundle ─────────────────────────────────────────────────────────────────────────────────
 
 class ConfigBundle(ConfigModel):
-    """All seven surfaces + a monotonic ``version`` the config store bumps on every hot write."""
+    """All eight surfaces + a monotonic ``version`` the config store bumps on every hot write."""
 
     version: int = 0
     ontology: OntologyConfig = OntologyConfig()
@@ -140,9 +182,10 @@ class ConfigBundle(ConfigModel):
     templates: TemplatesConfig = TemplatesConfig()
     subjects: SubjectsConfig = SubjectsConfig()
     observables: ObservablesConfig = ObservablesConfig()
+    places: PlacesConfig = PlacesConfig()
 
 
-# The seven surface filenames, in the fixed load order (config store reads these from config/).
+# The eight surface filenames, in the fixed load order (config store reads these from config/).
 CONFIG_SECTIONS: dict[str, type[ConfigModel]] = {
     "ontology": OntologyConfig,
     "sources": SourcesConfig,
@@ -151,4 +194,5 @@ CONFIG_SECTIONS: dict[str, type[ConfigModel]] = {
     "templates": TemplatesConfig,
     "subjects": SubjectsConfig,
     "observables": ObservablesConfig,
+    "places": PlacesConfig,
 }

@@ -6,16 +6,17 @@ inside this function. Given the same logs + config, the emitted view is byte-ide
 
 Stage call-order is fixed (master §4.3):
 ``resolve → score_claims → (group by independence) → assign_status → check → precompute``.
-Around those five stages, F0 owns three *real* pieces: retraction handling, supersede/contradict
-(``supersede.py``), and HITL decision-effect application (gate G12). All numeric scoring lives in the
-stages (which read config), never here.
+Around those five stages, F0 owns four *real* pieces: retraction handling, supersede/contradict
+(``supersede.py``), rendering the resolver's decisions as edges (candidate ``same-as`` + ``distinct-from``,
+G4-exempt / never scored), and HITL decision-effect application (gate G12). All numeric scoring lives
+in the stages (which read config), never here.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Iterable
-from typing import cast
+from typing import Any, cast
 
 from chanakya.credibility import assign_status, group_by_independence, score_claims
 from chanakya.materiality import precompute
@@ -34,6 +35,7 @@ from chanakya.schemas import (
     KnownGap,
     NodeView,
     Partition,
+    pair_key,
 )
 from chanakya.sufficiency import check
 
@@ -72,19 +74,90 @@ def _apply_partition(claims: list[ClaimRecord], partition: Partition) -> list[Cl
     return out
 
 
+# ── resolution-decision rendering (real F0: merges + traps made inspectable) ───────────────────
+
+def _merge_provenance(nodes: dict[str, NodeView], partition: Partition) -> None:
+    """Stamp accepted-merge provenance on the surviving (canonical) node — the auto-merge audit trail.
+
+    An accepted merge is *effected* by a shared ``resolved_ref`` (both members already collapsed to
+    one node); this records the *why* (which ref, at what confidence, with the score breakdown) on
+    that node so the merge stays one-click inspectable. ``merge_confidence`` is identity, never truth
+    (gate G5). Iterated in sorted order for byte-determinism (gate G2).
+    """
+    for member, canonical in sorted(partition.same_as):
+        node = nodes.get(canonical)
+        if node is None:
+            continue
+        key = pair_key(member, canonical)
+        entry: dict[str, Any] = {"merged_ref": member}
+        conf = partition.merge_confidence.get(key)
+        if conf is not None:
+            entry["merge_confidence"] = conf
+        breakdown = partition.merge_breakdown.get(key)
+        if breakdown:
+            entry["breakdown"] = breakdown
+        node.attrs.setdefault("resolved_from", []).append(entry)
+
+
+def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView]:
+    """Render the resolver's *undecided* + *veto* decisions: candidate ``same-as`` + ``distinct-from`` edges.
+
+    These cite a merge decision, not a claim, so they are G4-exempt and are **never scored** (added
+    after the status machine; they carry ``merge_confidence`` — identity — never
+    ``assertion_confidence``, gate G5). Auto-merges do *not* appear here (they collapse to one node —
+    see :func:`_merge_provenance`); only pairs an analyst still has to adjudicate, and explicit
+    do-not-merge traps, surface as edges. An edge is emitted only when *both* endpoints exist as nodes.
+    """
+    out: list[EdgeView] = []
+    for a, b in sorted(partition.candidates):
+        if a in node_ids and b in node_ids:
+            key = pair_key(a, b)
+            out.append(
+                EdgeView(
+                    id=f"same-as:{key}",
+                    type="same-as",
+                    source=a,
+                    target=b,
+                    merge_confidence=partition.merge_confidence.get(key),
+                    attrs={"merge_band": "candidate", "breakdown": partition.merge_breakdown.get(key, {})},
+                )
+            )
+    for a, b in sorted(partition.distinct_from):
+        if a in node_ids and b in node_ids:
+            out.append(
+                EdgeView(
+                    id=f"distinct-from:{pair_key(a, b)}",
+                    type="distinct-from",
+                    source=a,
+                    target=b,
+                    attrs={"reason": "explicit do-not-merge (hard veto)"},
+                )
+            )
+    return out
+
+
 # ── graph assembly (+ supersede/contradict) ──────────────────────────────────────────────────
 
-def _assemble(resolved: list[ClaimRecord]) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
+def _assemble(
+    resolved: list[ClaimRecord], entity_canonical: dict[str, str] | None = None
+) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
     edge_groups: dict[str, list[ClaimRecord]] = defaultdict(list)
+    # A merge reconnects edges: a triple's raw subject/object (supersede.py reads these directly) is
+    # remapped to the merged entity's canonical id. Empty map ⇒ identity ⇒ view unchanged (gate G2).
+    canon = entity_canonical or {}
+
+    def to_canonical(ref: str) -> str:
+        return canon.get(ref, ref)
 
     for c in resolved:
         rr = c.resolved_ref
         payload = c.payload
         # Narrow on the payload type (isinstance) — the validator guarantees it matches `asserts`.
         if isinstance(payload, EntityDescriptor):
-            nid = rr.entity_id if rr and rr.entity_id else f"ent:{payload.entity_type}:{payload.name}"
+            raw = rr.entity_id if rr and rr.entity_id else f"ent:{payload.entity_type}:{payload.name}"
+            nid = to_canonical(raw)
             node = nodes.get(nid)
             if node is None:
                 node = NodeView(id=nid, type=payload.entity_type, name=payload.name)
@@ -101,15 +174,18 @@ def _assemble(resolved: list[ClaimRecord]) -> tuple[dict[str, NodeView], list[Ed
                     event_type=payload.event_type,
                     time_interval=payload.time_interval,
                     location=payload.location,
-                    participants=list(payload.participants),
+                    participants=[to_canonical(p) for p in payload.participants],
                     attrs=dict(payload.attrs),
                     claim_ids=[c.claim_id],
                 )
             )
         else:  # Triple (relationship)
-            ei = rr.edge_instance if rr and rr.edge_instance else (
-                f"edge:{payload.subject}:{payload.predicate}:{payload.object}"
-            )
+            # Remap endpoints through the merge map so build_instance_edges (which reads the raw
+            # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
+            subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
+            if (subj, obj) != (payload.subject, payload.object):
+                c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
+            ei = rr.edge_instance if rr and rr.edge_instance else f"edge:{subj}:{payload.predicate}:{obj}"
             edge_groups[ei].append(c)
 
     edges: list[EdgeView] = []
@@ -170,12 +246,16 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     decisions: list[DecisionRecord] = _replay(decision, DecisionRecord)
     active = apply_retractions(claims)
 
-    # 1. resolution
-    partition = resolve(active, config, prev_view)
+    # 1. resolution — resolve() is a pure function of (claims, config, prev_view, decision log): the
+    #    decision log carries the offline LLM proposer's frozen merge_proposal records + the analyst's
+    #    replayed merge_adjudication(accept)s that grow the alias table (spine/03; still no live LLM — G1).
+    partition = resolve(active, config, prev_view, decisions)
     resolved = _apply_partition(active, partition)
 
-    # 2. assemble nodes/edges/events (+ supersede/contradict — real F0)
-    nodes, edges, events = _assemble(resolved)
+    # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
+    #    merged-away entity's edges to its canonical node (no-op when nothing merged).
+    nodes, edges, events = _assemble(resolved, partition.entity_canonical)
+    _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
 
@@ -252,6 +332,10 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 8. HITL decision effects last (an override wins over the machine — gate G12)
     view = apply_decision_effects(view, decisions)
+
+    # 8b. render the resolver's decisions as edges — candidate same-as (HITL band) + distinct-from
+    #     traps. Added AFTER scoring so they're never assigned a truth status (G5); G4-exempt.
+    view.edges.extend(_resolution_edges({n.id for n in view.nodes}, partition))
 
     # 9. deterministic ordering + diagnostic meta (no clock, no RNG — G2)
     view = sorted_view(view)

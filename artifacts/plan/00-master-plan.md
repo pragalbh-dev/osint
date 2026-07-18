@@ -225,7 +225,7 @@ backend/                            # ALL Python backend code, tests, deps live 
   eval/                   EVAL
 frontend/                           # OUT OF SCOPE (SPA) — API serves its build via StaticFiles; SHIP's Docker Node stage builds it
 config/*.yaml             DATA-C    # ontology, sources, credibility, resolution, templates, subjects, observables
-config/places.yaml        (exists)  # DATA-C may extend
+config/places.yaml        DATA-C    # 8th loaded config section (PlacesConfig); gazetteer, served by the live store
 corpus/scenarios/*/docs/  DATA-C    # frozen docs + manifests + answer_key
 corpus/scenarios/*/claims/ INGEST   # pre-extracted claim bundles (keyless ingest)
 tools/                    DATA-C    # existing generator/gather (stays ontology-blind, G11)
@@ -357,14 +357,17 @@ call-order is fixed: `resolve → score_claims → (group by independence) → a
 
 ### 4.4 Config surface + live config store
 
-Seven files, seeded from YAML into a **live, writable config store** the API mutates (hot-config):
+Eight files, seeded from YAML into a **live, writable config store** the API mutates (hot-config):
 `ontology.yaml` (node/edge/event types) · `sources.yaml` (registry: class, reliability_grade, cadence,
 bias_vector, aggregator_of/primary_origin_id) · `credibility.yaml` (R-factor rubric + weights, integrity
 penalties, thresholds 0.50/0.80, half-lives) · `resolution.yaml` (merge_score weights 0.30/0.40/0.15/0.15,
 bands 0.85/0.55, blocking keys, seeded alias table, transliteration rules) · `templates.yaml`
 (evidence-requirement templates per assertion type) · `subjects.yaml` (lenses: anchors, hop/materiality
-rules, target queries) · `observables.yaml` (declarative tripwires incl. seeded relocation). **All numeric
-knobs live here, never in code (gate G6).**
+rules, target queries) · `observables.yaml` (declarative tripwires incl. seeded relocation) ·
+`places.yaml` (the place gazetteer: canonical place nodes, WGS84 coords, aliases, ICAO/LOCODE hard-IDs,
+precision classes, proximity radii, distinct-from traps — `PlacesConfig`, added by the RESOLVE-raised
+F0-amendment so RESOLVE reads the gazetteer through the live store). **All numeric knobs live here, never
+in code (gate G6).**
 
 ### 4.5 Agent tool surface (`chanakya/agent/`) — `spine/09`
 
