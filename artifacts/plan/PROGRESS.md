@@ -242,3 +242,47 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   `ask(...)` and passes `claims = {c.claim_id: c for c in store.replay()}`.
 - **Gate fixtures:** none added/weakened (ASK owns `chanakya/agent/**` + `tests/agent/**`; G1 still green —
   runtime LLM is import-lazy and outside the rebuild call-path).
+
+### RESOLVE (in-review, feat/resolve — stacked on f0/places-and-merge-edges):
+- **Shipped:** the real `resolve()` stage body (`chanakya/resolve/**`) — iterative relational collective ER:
+  candidate-gen (blocking `type+namespace+name_token` + hard-ID + **relational-neighbour** blocking + alias)
+  → **bootstrap** (shared unique-ID / alias-equiv / exact-name+namespace) → **relational fixpoint**
+  (0.40 shared-neighbourhood term, iterate to no-new-auto-merge, monotone⇒terminates) → **location
+  resolution** over the gazetteer (toponym/hard-ID/geodesic-proximity by precision class). Emits the
+  Partition (`same_as`/`candidates`/`distinct_from`/`merge_confidence`+breakdown/`entity_canonical`).
+  Modules: `rconfig` (literal-free config, G6), `normalize` (transliteration + Jaro-Winkler), `aliases`
+  (derived table = seed ∪ replayed `merge_adjudication(accept)`), `entities`, `scoring`
+  (attribute/relational/temporal/source_asserted + **relocation exclusion**), `cluster` (2-phase ER,
+  **veto-guarded union**, flat `finalise`), `places`, `propose` (offline **raise-only** LLM proposer).
+- **Acceptance criteria:** all green — FD-2000↔HQ-9/P auto-merge; FT-2000 mid-HITL-band; HQ-9/P⊥HQ-9BE
+  distinct (incl. **transitively** through a bridge); fixpoint terminates; raise-only can't cross 0.85;
+  alias grows from the log; Karachi-Port≠Port-Qasim (hard veto even with shared neighbourhood);
+  Chaklala→pl_nurkhan earned (ICAO/proximity); Rahwali DMS≡relative. 102 tests, ruff+mypy, G1/G2/G5/G6/G10.
+- **Decisions (principle → choice → alt rejected):**
+  - *Precision-first + false-merge discipline* → **cluster-level cannot-link** (a union that would put a
+    vetoed pair in one cluster is refused) instead of only a direct-pair veto check (which a bridge node
+    bypassed); gazetteer `distinct_from` is a **hard veto computed before entity resolution**, not just an
+    emitted edge (so two co-located/co-shipping ports still never fuse).
+  - *Design fidelity (spine/03:37)* → `resolve()` consumes the **decision log** (F0-amendment) for the
+    offline proposer's frozen `merge_proposal`s + replayed accepts; LLM is **raise-only, hard-clamped
+    below auto-merge** structurally (band() can only reach HITL via the LLM, never auto).
+  - *Reversible, non-destructive merges* → merges are an **overlay** (`same_as` + flat `entity_canonical`),
+    never a rewrite of a claim's own `resolved_ref`; a no-merge run is byte-identical to F0's stub (G2).
+  - *Relocation ≠ identity* → two entities that are co-endpoints of one supersede `edge_instance` are
+    excluded from the relational term + score temporal-consistency 0 (a unit's two bases don't make the
+    bases the same place) — reuses F0's supersede instance identity.
+- **Deviations / F0-amendments consumed:** built on `f0/places-and-merge-edges` (PR #10) — `PlacesConfig`,
+  `Partition.{candidates,merge_breakdown,entity_canonical}`, `resolve(..., decisions)`, `_assemble`
+  endpoint-reconnect + resolution-edge rendering. **Rebase/retarget to `main` once #10 merges.**
+- **Follow-ups:**
+  - **DATA-C** (`tmp/conv/RESOLVE-config-and-oracle-observations.md`): remove FT-2000 from the
+    `distinct_from` seed + confirm the corpus instantiates it; the 3 place/oracle drifts; author
+    `attribute_rules` + `hard_id_fields` + `place_entity_types` config; dedup the proximity radii.
+  - **INGEST contract:** state/occupancy-predicate claims (`based-at`, …) must carry a **slot-based
+    `edge_instance`** (`"<predicate>:<subject>"`, object-free — as F0's golden fixture does) so RESOLVE
+    detects relocations (co-targets of one instance) and SCORE's supersede fires. Single-target
+    relationship claims may leave it unset (RESOLVE synthesises identity).
+  - Place-based entity merge activates when INGEST freezes coords onto place-type entity attrs; the core
+    `resolve_place()` matching is fully unit-tested against the gazetteer now.
+- **Gate fixtures:** none weakened; added `tests/resolve/**` (incl. `test_review_regressions.py` locking
+  7 defects an adversarial review pass caught). G1/G2/G5/G6/G10 re-verified green.
