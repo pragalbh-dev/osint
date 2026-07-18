@@ -14,6 +14,16 @@ design doc wins — and fix this plan.** Design authority order: `DECISIONS.md` 
 → `spine/09` (retrieval/agent/hot-config) → `spine/04` (credibility) → `C/01` (C ontology) → `md/07-stack`
 (stack/deploy) → `product/03` (data contracts).
 
+**These contracts are a coordination floor, not a capability ceiling.** They exist so parallel agents don't
+collide and so provenance/traceability stay honest — **not** to ration ambition or freeze later stages.
+Later-stage internals are deliberately *under*-specified here: a session that sees a better approach — a new
+dependency, richer / more production-grade machinery, a sharper contract — should **propose and coordinate
+it**, not clip its own solution to fit a first draft. Add the library, build the capability *well*; just keep
+the build deployable, keep the §5 gates green, and — only for a change to a *shared* contract a sibling reads
+— coordinate it (§2 Rule 3) so no one is broken. Writing code is **not** the scarce resource here (many
+agents run in parallel); design judgement, correctness, and QA are — so spend the latitude on making the
+system genuinely good, not on staying minimal. This is an assignment to push toward a *real* system.
+
 **The non-negotiable, carried into every session.** Where evidence is absent/ambiguous/contradictory the
 system returns an explicit **"insufficient evidence to assess"** — naming what is missing and when next
 coverage is due — as a first-class `Known Gap`, never a fabricated assessment. This is disqualifying if
@@ -102,10 +112,12 @@ image on **GHCR** · reviewers run it **both** ways (`docker run ghcr…` and `g
 The whole point of F0 is to make Wave-1 sessions **provably conflict-free** so they can be built in parallel
 worktrees and merged in any order.
 
-**Rule 1 — F0 freezes all shared surface.** F0 is merged to `main` *before any other code session starts*.
-It creates and owns, permanently:
-- `pyproject.toml` with **every runtime + dev dependency declared up front** (the stack is locked, so this is
-  knowable now — see §4.1). Wave-1 sessions never edit it.
+**Rule 1 — F0 freezes the shared *surface* (shapes + interfaces), so siblings compose without collision.**
+F0 is merged to `main` *before any other code session starts*. It creates and owns, permanently:
+- `pyproject.toml` with the **locked baseline dependency set** declared up front (§4.1) — a working floor,
+  **not a ceiling**. A session that needs another library **adds it** (append to the deps list; prefer the
+  stdlib or an existing dep first; flag it in the PR so the image/deploy stay in sync). `pyproject.toml` is
+  the one deliberately-shared file where additive edits are welcome — an appended dep line merges trivially.
 - `chanakya/schemas/**` (all record + config + view + API models), `chanakya/config/**` (loader + live
   config store), `chanakya/store/**` (SQLite logs), `chanakya/view/**` (`rebuild()` orchestration + stage
   interfaces + **stub implementations** + lens scoping + JSON export).
@@ -117,12 +129,17 @@ It creates and owns, permanently:
 
 **Rule 2 — disjoint ownership.** Every post-F0 session owns a set of paths that no other session touches
 (§4.1 file-ownership map). Because ownership is disjoint, a rebase onto updated `main` is always clean and
-merge order is irrelevant.
+merge order is irrelevant. (The one deliberate exception is `pyproject.toml`, for *additive* dependency lines
+— Rule 1; additive list edits merge trivially, and a rare conflict there is seconds to resolve.)
 
-**Rule 3 — contract changes are amendments, not silent edits.** If a session finds it must change a frozen
-contract (a schema field, a stage signature), it does **not** edit F0's files in its own PR. It stops, files
-a small **F0-amendment PR** (which you review), that lands, and then dependents rebase. This is rare and
-keeps the guarantee intact. Log every amendment in `PROGRESS.md` and `DECISIONS.md`.
+**Rule 3 — coordinate changes to a *shared* contract; don't silently fork it.** The frozen surface exists
+only because siblings *depend* on it, so if a session needs to change a shared contract another session reads
+(a schema field, a stage signature, the config surface, an API shape), it doesn't just edit it inside its own
+PR and diverge — it opens a small **contract-amendment PR** first (you review; usually a quick yes), that
+lands, then dependents pick it up on rebase. This is lightweight coordination to keep the compose-guarantee
+intact — **not** a discouragement: propose the better contract. It **does not** apply to adding a dependency,
+to a session's own *internal* design, or to richer machinery inside its owned paths — those are the session's
+call, no amendment needed. Log a shared-contract amendment in `PROGRESS.md` and `DECISIONS.md`.
 
 **Rule 4 — `PROGRESS.md` stays out of PRs.** You (the merge authority) update it at merge time. This removes
 the only remaining shared-file write, so *no PR ever edits a file another PR edits*.
@@ -165,18 +182,22 @@ API/EVAL/SHIP integrate merged Wave-1 code. Develop against fixtures; integrate 
 
 ## 4. Frozen contracts (the shared reference)
 
-> These are frozen by **F0**. Subplans implement against them and cite section numbers; they do not
-> re-derive schemas. Numeric constants (weights, thresholds, half-lives) are **config defaults, not code
-> constants** — authored in `config/*.yaml` by DATA-C, validated against these schemas.
+> These are frozen by **F0** as a **coordination floor** — the shapes siblings agree on so they compose
+> without collision. Subplans implement against them and cite section numbers rather than re-deriving
+> schemas; if one genuinely needs to evolve, that's a small contract-amendment (§2 Rule 3), not a fork — the
+> contract is meant to *improve*, not to handcuff. Numeric constants (weights, thresholds, half-lives) are
+> **config defaults, not code constants** — authored in `config/*.yaml` by DATA-C, validated against these
+> schemas.
 
 ### 4.1 Package layout & file-ownership map
 
 ```
 # ── repo root ──
 backend/                            # ALL Python backend code, tests, deps live here (the separate backend dir)
-  pyproject.toml          F0        # all deps: pydantic, networkx, anthropic, google-genai(opt), fastapi,
+  pyproject.toml          F0*       # baseline deps: pydantic, networkx, anthropic, google-genai(opt), fastapi,
                                     #   uvicorn, pyyaml, python-dateutil, rapidfuzz, rank-bm25, geopy,
-                                    #   pytest, pytest-cov, ruff, mypy, httpx (test), respx (test)
+                                    #   pytest, pytest-cov, ruff, mypy, httpx (test), respx (test).
+                                    #   *Shared file: any session may APPEND deps it needs (additive; §2 R1).
   chanakya/
     schemas/              F0        # §4.2 records + value objects (Date/Location/Quantity) + config/view/API models
     config/               F0        # loader + live config store (read/write, seed-from-yaml)
@@ -460,8 +481,11 @@ never weakens a gate.
 - **Health/readiness:** `/health` returns 200 only after `rebuild()`; `restart: unless-stopped`; rollback =
   pin the previous GHCR tag. Map tiles vendored; no external network on a graded beat; recorded hero-trace
   fallback for the Ask beat.
-- Every session must leave the build **deployable** — its module imports cleanly, tests pass, and it never
-  introduces a runtime dependency outside the locked stack (a new dep = an F0-amendment PR).
+- Every session must leave the build **deployable** — its module imports cleanly, tests pass, and any
+  dependency it adds installs cleanly in the image and doesn't break keyless boot or the vendored/offline
+  demo path. **Adding a dependency is fine** — append it to `pyproject.toml` (prefer the locked stack or an
+  existing dep first), and flag it in the PR so the image + deploy stay in sync. The "locked stack" names the
+  *load-bearing* choices (store, view engine, agent shape, hosting); it is **not** a ban on helper libraries.
 
 ---
 
