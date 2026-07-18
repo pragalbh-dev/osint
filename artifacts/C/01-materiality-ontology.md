@@ -118,7 +118,8 @@ EVIDENCE / CONFIG.
   compute on. Attrs: indicator_class, lifecycle_stage, observation_date, **valid_time** (real-world time
   the obs is about — powers supersedes vs contradicts), **resolved_entity_ref + edge_instance_ref** (match
   supersedes/contradicts on resolved identity + edge instance, never a designator string),
-  artifact_integrity, first_seen (reverse-image — catches recycled photo), caption_vs_image_consistency,
+  artifact_integrity, first_seen (local PDQ hash-index — catches recycled photo; reverse-image = roadmap
+  enrichment), caption_vs_image_consistency,
   evidentiary_strength (COMPUTED), freshness_class.
 - **Confidence Resolver & Evidence-Requirement Template** `[n/a]` CONFIG (versioned; a function assertions
   *reference*, not an OB entity) — the transparent scoring function + thresholds that COMPUTE
