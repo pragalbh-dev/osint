@@ -138,7 +138,7 @@ event_time:    2021-10-14                  # a.k.a. C/01's `valid_time` — when
 report_time:   2021-10-14                  # when the source published
 ingest_time:   2026-07-17
 resolved_ref:  {entity_id, edge_instance}  # what this resolves to — supersede/contradict match on THIS, never a string
-extraction:    {method: llm|vlm, version, model_conf}   # demo: model_conf held at 1.0; parser path = roadmap
+extraction:    {method: llm|vlm, model, model_conf}     # model = extraction model id; demo: model_conf held at 1.0; parser path = roadmap
 premises:      [claim_ids]                 # inference only
 targets:       claim_id                    # retraction only
 ```
