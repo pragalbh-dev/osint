@@ -12,7 +12,7 @@
 | F0 | Foundation + store + rebuild skeleton + fixtures + gates + CI | 0 | merged | [#1](https://github.com/pragalbh-dev/osint/pull/1) | — | 7a9e87b |
 | X0 | Walking-skeleton deploy (EC2 + tunnel + GHCR) | 0 | merged | [#5](https://github.com/pragalbh-dev/osint/pull/5) | — | 0c364be |
 | DATA-C | Corpus freeze + C config YAML | 0 | merged | [#8](https://github.com/pragalbh-dev/osint/pull/8) | F0 (soft) | 407f1c2 |
-| RESOLVE | Iterative relational entity resolution | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
+| RESOLVE | Iterative relational entity resolution | 1 | in-review | [#16](https://github.com/pragalbh-dev/osint/pull/16) | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
