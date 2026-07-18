@@ -109,4 +109,4 @@ config content (F0 / DATA-C). No LLM logic of the API's own (delegated to ASK/IN
 merged) → onboard (`CLAUDE.md` → `PROGRESS.md` → this file → the §4.8/§4.3/§4.5/§4.6/§4.7 contracts +
 `product/03`) → implement e2e inside owned paths only → PR `[API]` (template in master §8; check G1–G12 +
 `ruff`/`mypy`/`pytest`) → **you review & merge** (sole merge authority; the agent does not self-merge) →
-update `PROGRESS.md` → `git worktree remove ../wt-API` and delete the branch.
+`git worktree remove ../wt-API` and delete the branch.

@@ -135,6 +135,5 @@ on the *real* corpus (a build-time tune once DATA-C/INGEST land — not blocking
 
 ## Worktree lifecycle
 `git worktree add ../wt-ASK -b feat/ask` → implement e2e inside owned paths → keep `ruff`/`mypy`/`pytest` +
-all §5 gates green locally → PR `[ASK]` → **you review & merge** → append handoff notes → you update
-`PROGRESS.md` → `git worktree remove ../wt-ASK`. Starts only after F0 is on `main`; runs concurrently with
+all §5 gates green locally → PR `[ASK]` → **you review & merge** → append handoff notes → `git worktree remove ../wt-ASK`. Starts only after F0 is on `main`; runs concurrently with
 any other Wave-1 session (disjoint ownership → clean rebase, any merge order).

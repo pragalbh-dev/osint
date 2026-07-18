@@ -141,12 +141,17 @@ intact — **not** a discouragement: propose the better contract. It **does not*
 to a session's own *internal* design, or to richer machinery inside its owned paths — those are the session's
 call, no amendment needed. Log a shared-contract amendment in `PROGRESS.md` and `DECISIONS.md`.
 
-**Rule 4 — `PROGRESS.md` stays out of PRs.** You (the merge authority) update it at merge time. This removes
-the only remaining shared-file write, so *no PR ever edits a file another PR edits*.
+**Rule 4 — `PROGRESS.md` is session-maintained, reviewed in the PR.** The session updates its **own** board
+row + appends its **own** handoff note **inside its PR** — you review it with the rest of the diff; you are
+not the scribe. A session only ever touches *its own* row and *its own* append, so the writes don't overlap
+across siblings, and the rare adjacent-line collision resolves in seconds on rebase. *(Changed 2026-07-18:
+the old "user updates it at merge, never in a PR" rule made you hand-maintain a board the agent already fills
+— which just left it stale.)*
 
-**Result.** You can open as many or as few worktrees as you want, in any order after F0, and no PR will
-conflict. CI reruns the full suite on every push, so a clean rebase that would break a sibling is caught
-automatically before you merge.
+**Result.** You can open as many or as few worktrees as you want, in any order after F0, and no PR conflicts
+on **code**. The only shared file a PR now writes is `PROGRESS.md`, and each session touches only its own row
++ handoff-note append (non-overlapping). CI reruns the full suite on every push, so a clean rebase that would
+break a sibling is caught automatically before you merge.
 
 ---
 
@@ -228,7 +233,7 @@ Dockerfile, compose       X0(skeleton) → SHIP(production)   # Node builds fron
 Makefile                  F0(skeleton) → SHIP(real targets)
 deploy/                   X0
 .github/workflows/        F0
-artifacts/plan/PROGRESS.md  (you, at merge)   # never in a PR
+artifacts/plan/PROGRESS.md  session (in its PR)  # own row + handoff note; you review, then merge
 ```
 
 **Rooting convention.** The Python package lives at **`backend/`**; `config/`, `corpus/`, `tools/`, and the
@@ -493,6 +498,12 @@ never weakens a gate.
 
 Each session is one agent, one worktree, one PR, one merge, then teardown.
 
+**The primary `osint/` checkout is read-only — never work in it.** The repo-root working copy (`…/osint`) is
+the canonical mirror of `origin/main`: agents only **read** it or `git fetch` / `git pull origin main` **into**
+it — never edit, commit, or branch there. **All** work happens in a per-session worktree (`../wt-<ID>`,
+step 1). This keeps the primary checkout always clean and current with the master remote, so every new
+worktree branches off a fresh `origin/main` and the only writable trees are per-session worktrees.
+
 1. **Branch + worktree** off latest `main` (F0 already merged):
    `git worktree add ../wt-<ID> -b feat/<id>` (e.g. `feat/score-confidence-resolver`).
 2. **Onboard** (see §9): read `CLAUDE.md` → `PROGRESS.md` → `sessions/<ID>.md` → the design docs it names →
@@ -503,8 +514,8 @@ Each session is one agent, one worktree, one PR, one merge, then teardown.
 5. **Stay until merged.** Rebase onto `main` whenever a sibling merges (always a clean rebase given disjoint
    ownership); address review. **You (the user) are the sole merge authority** — the agent does not
    self-merge.
-6. **After merge:** append the session's outcomes to its handoff note; you update `PROGRESS.md`; the agent
-   runs `git worktree remove ../wt-<ID>` and deletes the branch.
+6. **In the PR:** update your `PROGRESS.md` row (status + PR#) and append your handoff note — reviewed with
+   the diff. **After merge:** the agent runs `git worktree remove ../wt-<ID>` and deletes the branch.
 
 **Branch naming:** `feat/<id>` lowercase (`feat/f0-foundation`, `feat/resolve`, `feat/score`, `feat/ask`, …).
 **PR title:** `[<ID>] <one-line>`. **PR body template:**
@@ -516,7 +527,7 @@ Design docs honoured: <list>
 ### Acceptance (from sessions/<ID>.md)
 - [ ] <criterion 1> …
 ### Gates
-- [ ] G1–G12 green   - [ ] ruff/mypy/pytest green   - [ ] no frozen-file edits (or: F0-amendment #NN)
+- [ ] G1–G12 green   - [ ] ruff/mypy/pytest green   - [ ] no frozen-file edits (or: F0-amendment #NN)   - [ ] `PROGRESS.md` row + handoff note updated
 ### Decisions taken (principle → choice → alternative rejected)   # → also appended to DECISIONS.md
 ### Handoff notes / follow-ups
 ```
@@ -525,8 +536,8 @@ Design docs honoured: <list>
 
 ## 9. Handoff & progress mechanism
 
-**`PROGRESS.md`** (repo-root, *not* in any PR — you maintain it at merge time) is the live board any agent
-reads to know where things stand. One row per session + a handoff-notes log:
+**`PROGRESS.md`** (repo-root, **maintained by each session inside its PR — you review it there, then merge**)
+is the live board any agent reads to know where things stand. One row per session + a handoff-notes log:
 
 ```
 | ID | Status | PR | Owns | Depends | Merged commit | Handoff note ↓ |

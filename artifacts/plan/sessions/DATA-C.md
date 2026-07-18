@@ -190,5 +190,5 @@ missing).
 `git worktree add ../wt-data-c -b feat/data-c` (off latest `main`) → freeze corpus + reconcile generator +
 author the six YAML inside owned paths only → validate the YAML against F0's schemas once F0 is merged →
 PR `[DATA-C]` per the master §8 template (list decisions taken + the corpus-verification result) → you
-review & merge → you update `PROGRESS.md` → `git worktree remove ../wt-data-c` and delete the branch.
+review & merge → `git worktree remove ../wt-data-c` and delete the branch.
 Develops in parallel with F0; the config-store validation step lands after F0 merges.

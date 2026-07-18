@@ -1,15 +1,16 @@
 # PROGRESS — Chanakya OSINT backend build
 
 **The live board.** Any agent reads this (after `CLAUDE.md`) to know where things stand before starting.
-**Maintained by the user at merge time — never edited inside a PR** (so it can't conflict). See
-`00-master-plan.md` §2, §9. Status ∈ `not-started · in-progress · in-review · merged · blocked`.
+**Each session maintains its own row + handoff note inside its PR; you review it with the diff, then merge**
+(master §2 Rule 4, §9). A session touches only *its own* row/append, so PRs don't collide. Status ∈
+`not-started · in-progress · in-review · merged · blocked`.
 
 ## Board
 
 | ID | Session | Wave | Status | PR | Depends (merged) | Merged commit |
 |----|---------|------|--------|----|--------------------|---------------|
 | F0 | Foundation + store + rebuild skeleton + fixtures + gates + CI | 0 | not-started | — | — | — |
-| X0 | Walking-skeleton deploy (EC2 + tunnel + GHCR) | 0 | not-started | — | — | — |
+| X0 | Walking-skeleton deploy (EC2 + tunnel + GHCR) | 0 | merged | [#5](https://github.com/pragalbh-dev/osint/pull/5) | — | 0c364be |
 | DATA-C | Corpus freeze + C config YAML | 0 | not-started | — | F0 (soft) | — |
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
@@ -47,7 +48,28 @@ _Post-F0 changes to a frozen contract go here. Each entry: what changed, which c
 - **`make extract`** is SHIP's Makefile target; INGEST ships only the CLI entrypoint it invokes (INGEST flag #2).
 
 ## Handoff notes
-_Appended at merge. Each entry: what shipped · decisions (principle→choice→alternative) · deviations from
-plan · follow-ups · any gate fixtures added/extended._
+_Appended by each session in its PR (stamped with the merge commit at merge). Each entry: what shipped ·
+decisions (principle→choice→alternative) · deviations from plan · follow-ups · any gate fixtures added/extended._
 
 ### F0 (merged <commit>):
+
+### X0 (merged 0c364be — PR #5): Walking-skeleton deploy
+- **Shipped:** self-contained `app_skeleton/` (FastAPI `/health` + minimal Vite placeholder SPA); multi-stage
+  `Dockerfile` (`node:20-alpine` builds SPA → `python:3.12-slim` serves it + API); `docker-compose.yml`
+  (`restart: unless-stopped`, `127.0.0.1` bind + `APP_PORT` override, `ANTHROPIC_API_KEY` via `env_file`,
+  profile-gated `cloudflared`); `deploy/` (README runbook, `bootstrap-ec2.sh`, `verify.sh`, `prove-live.sh`).
+  Public GHCR image `ghcr.io/pragalbh-dev/osint:skeleton` (digest `59cb67c748dd…`).
+- **Proven live:** image → GHCR → Docker on EC2 (the moltbot box; Docker installed fresh, moltbot is native so
+  untouched) → Cloudflare Tunnel; `/health`=200 and `/` serves the SPA locally, from an anonymous GHCR pull,
+  and over a public https tunnel URL. Secret injected via `env_file`, empty in the raw image.
+- **Decisions:** build context = `app_skeleton/` (strict ownership; SHIP repoints to repo root) · vanilla-JS
+  Vite skeleton (leanest real Node build) · ephemeral `trycloudflare` for the proof + token-tunnel for the
+  persistent URL · `APP_PORT` for co-location · `env_file` secret injection (never baked).
+- **Deviations:** none (no F0-amendment). Rebased clean onto `main@9f18c07`; deploy merged as #5 (`0c364be`).
+  A plan change rode along (Rule 4 flip — sessions maintain `PROGRESS.md` in-PR; primary checkout read-only);
+  a merge race meant it landed via a small follow-up PR rather than #5 itself. This row/note is the first
+  written under the new rule.
+- **Follow-ups (SHIP):** repoint Docker context to repo root; bake `config/`+corpus+seed-SQLite+`backend/`/
+  `frontend/`; swap `requirements.txt`→`backend/pyproject.toml`; own `:latest`; rollback drill; token-tunnel
+  on the dedicated box for a persistent URL.
+- **Gate fixtures:** none (X0 adds no `chanakya/` code; G1–G12 N/A).
