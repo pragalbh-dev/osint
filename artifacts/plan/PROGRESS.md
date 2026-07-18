@@ -58,15 +58,25 @@ corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2
     view alone cannot cite a source/date/span or tag observed-vs-inferred.)*
   Lands in the **ASK** PR (`feat/ask`); `chanakya/agent/` is ASK-owned, so the edit is in-path — logged
   here per Rule 3 because the *signature* is a contract API reads. *(ASK, 2026-07-18.)*
+- **`DocRef.line` + `ClaimRecord.attributes`** (`f0/ingest-schema-slots`, INGEST prep — PR #15) — a nullable
+  `line:int` (1-indexed txt line locator, alongside the exact char `span`) on `DocRef`, and a nullable typed
+  `attributes:dict` bag on `ClaimRecord` (tier-3 of INGEST's 3-tier attribute promotion: source-native
+  context with no ontology home — HS-code/container#/BoL#). Master §4.2. Additive only → Wave-1 siblings pick
+  up two new nullable fields on rebase; no code change required. F0 suite (63 tests) green.
 
 ## Known build-time reconciliations (F0 / build must resolve — not blockers)
 - **F0 location descriptor** must carry `geocode_candidates` + `proposed_alias` so INGEST can freeze
-  Nominatim/LLM place proposals onto the ClaimRecord upstream of the append (INGEST flag #1). If F0's schema
-  omits these, it is a one-line F0-amendment.
+  Nominatim/LLM place proposals onto the ClaimRecord upstream of the append (INGEST flag #1).
+  **RESOLVED (already in F0):** `Location` on `main` already carries `geocode_candidates`, `proposed_alias`,
+  `wgs84_lat/lon`, `precision_class`, `resolved_place_ref` — no amendment needed; INGEST fills the existing slots.
 - **`ClaimRecord.extraction` field naming** — rename the ambiguous `version` → **`model`** (the extraction
   model id) so the frozen contract matches INGEST's `extraction.model`; final shape `{method: llm|vlm, model,
   model_conf}`. One-line F0-amendment, docs-only (backend greenfield). *(DECIDED 2026-07-18; see `md/15` §4 +
   DECISIONS §3; raised as its own F0-amendment PR.)*
+  **DEFERRED (INGEST 2026-07-18):** the rename did NOT land on `main` (field is still `version`); renaming
+  mid-Wave-1 churns `claim.py` + every consumer for zero demo benefit, so INGEST emits `{method, version,
+  model_conf}` (model-id string in `version`) and `version`→`model` becomes a **post-INGEST** cleanup PR — not
+  this amendment.
 - **Hero-trace edge names** (`ASK`/`EVAL`) — `…imported-by → exported-by → supplies-component` must be
   reconciled against DATA-C's `ontology.yaml` + `answer_key.json`, which are authoritative for exact edge
   names (`C/02` notes the anchor is "to be verified against the generated corpus"). Resolve at DATA-C author

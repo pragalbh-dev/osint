@@ -41,6 +41,7 @@ class DocRef(Record):
 
     file: str
     span: tuple[int, int] | None = None  # [start, end] char offsets in a text doc
+    line: int | None = None  # 1-indexed line in a text doc — human-readable txt locator (span stays the exact range)
     row: int | None = None  # a table/CSV row (customs manifest)
     page: int | None = None  # a PDF page
     bbox: tuple[float, float, float, float] | None = None  # [x0, y0, x1, y1] on a page/image
@@ -125,6 +126,10 @@ class ClaimRecord(Record):
     extraction: Extraction = Extraction()
     premises: list[str] = []  # claim_ids — inference only
     targets: str | None = None  # claim_id — retraction only
+    # Tier-3 of INGEST's 3-tier attribute promotion: source-native context with no ontology home
+    # (HS-code, container#, BoL#). Nullable + typed-loose — traceable & queryable, never traversed;
+    # promotable to a node/edge or a knowledge-layer attr later. Not resolved, not scored.
+    attributes: dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def _check_shape(self) -> ClaimRecord:

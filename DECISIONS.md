@@ -358,3 +358,27 @@ section of the design note, not the build.
   surfaced with its "did you mean" and left out of `watch_instances`. Reuses MONITOR's pre-wired
   `watch_instances` (F0-amend #9) + `explain()`. Rejected: auto-arming a tripwire from text (removes the
   human gate) / silently binding a near-match (a wrong-entity tripwire is worse than an unresolved one).
+### INGEST — F0-amendment (schema slots) + onboarding decisions (choice · principle · alternative rejected)
+- **Additive nullable schema slots via a small F0-amendment (not folded into the INGEST PR).** Master Rule 3:
+  a shared-contract change lands as its own early PR so siblings rebase. Added `DocRef.line` (human-readable
+  txt locator; char `span` stays the exact range) + `ClaimRecord.attributes` (tier-3 source-native bag).
+  Additive/nullable → no sibling code change. Rejected: overloading per-payload `attrs` for tier-3 (no home on
+  a bare relationship Triple); deriving line at display time only (user asked it be stored). → `schemas/claim.py`.
+- **Defer `extraction.version`→`model` rename.** Coordination-floor stability > cosmetic naming: the rename
+  touches `claim.py` + 4 live sibling worktrees for no demo benefit; INGEST stores the model-id in the existing
+  `version` field and defers the rename to a post-INGEST PR. Rejected: renaming mid-Wave-1.
+- **INGEST owns the bearing+distance geo-offset (the Rahwali beat).** Principle 4/11 + G1: the locked
+  relocation observable only fires if d18(DMS)≡d19("~12 km NNW of Gujranwala") unify; INGEST deterministically
+  applies the bearing+distance → Rahwali-level WGS84 at extraction (pure geo-math, no network), keeping the
+  Gujranwala anchor as a `geocode_candidate`; place-merge stays RESOLVE's. Rejected: freezing only the anchor
+  centroid + widening RESOLVE's radius (fragile vs the distinct-from traps; silent demo failure).
+- **Extraction dispatch = native record format, not credibility `source_type`.** Principle 8 + G9: `source_type`
+  (credibility class) is coarser than the doc's native shape (`official`=PR|NOTAM, `customs-tender`=BoL|tender);
+  6 format-keyed all-optional schemas + a deterministic text sniffer split the ambiguous families. Format is a
+  source axis (G9-safe, not use-case-typed). Rejected: one schema per `source_type` (wrong-schema routing for
+  NOTAM/tender docs).
+- **Concurrency: parallel extraction, serial deterministic id-assignment, single-writer append+rebuild.**
+  User ask + G2: fan out I/O-bound extraction across+within docs under a bounded semaphore, then assign
+  `claim_id`s in a serial pass (stable sort by doc then span offset) so frozen bundles stay byte-stable;
+  `append` + `rebuild()` serialized. Rejected: assigning ids during the parallel fan-out (nondeterministic
+  order → breaks G2 byte-stability).
