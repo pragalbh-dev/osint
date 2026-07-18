@@ -18,6 +18,7 @@ from chanakya.schemas import (
     NodeView,
     Partition,
     ResolvedRef,
+    Triple,
     pair_key,
 )
 from chanakya.view import pipeline
@@ -75,6 +76,60 @@ def _entity_claim(cid: str, name: str) -> ClaimRecord:
     )
 
 
+def test_merge_reconnects_edges_to_canonical_node() -> None:
+    # An entity (var_fd2000) merges into var_hq9p; a triple about the merged-away entity must
+    # reconnect to the canonical node, not dangle as an "unknown" node.
+    entity = ClaimRecord(
+        claim_id="d1-e1", source_id="s", doc_ref=DocRef(file="f", span=(0, 1)),
+        kind="observation", asserts="entity",
+        payload=EntityDescriptor(entity_type="variant", name="FD-2000"),
+        resolved_ref=ResolvedRef(entity_id="var_hq9p"),  # RESOLVE rewrote it to canonical
+    )
+    edge = ClaimRecord(
+        claim_id="d2-l1", source_id="s", doc_ref=DocRef(file="f", span=(0, 1)),
+        kind="observation", asserts="relationship",
+        payload=Triple(subject="var_fd2000", predicate="marketed-as", object="var_export"),
+    )
+    part = Partition(
+        resolved_ref={"d1-e1": ResolvedRef(entity_id="var_hq9p")},
+        same_as=[("var_fd2000", "var_hq9p")],
+        entity_canonical={"var_fd2000": "var_hq9p"},
+    )
+    nodes, edges, _ = pipeline._assemble([entity, edge], part.entity_canonical)
+    e = next(e for e in edges if e.type == "marketed-as")
+    assert e.source == "var_hq9p"  # reconnected, not the merged-away "var_fd2000"
+    assert "var_fd2000" not in {n.id for n in nodes.values()}
+
+
+def test_assemble_identity_when_no_merges() -> None:
+    # Empty merge map ⇒ endpoints untouched (the golden-path guarantee behind G2).
+    edge = ClaimRecord(
+        claim_id="d2-l1", source_id="s", doc_ref=DocRef(file="f", span=(0, 1)),
+        kind="observation", asserts="relationship",
+        payload=Triple(subject="a", predicate="rel", object="b"),
+    )
+    _, edges, _ = pipeline._assemble([edge], {})
+    assert edges[0].source == "a" and edges[0].target == "b"
+
+
+def test_resolve_receives_decisions(monkeypatch: pytest.MonkeyPatch) -> None:
+    seen: dict[str, object] = {}
+
+    def spy_resolve(claims, config, prev_view=None, decisions=None):  # type: ignore[no-untyped-def]
+        seen["decisions"] = decisions
+        return Partition()
+
+    monkeypatch.setattr(pipeline, "resolve", spy_resolve)
+    decision = {
+        "event_id": "ev1", "ts": "2026-01-01", "actor": "analyst", "stage": "resolution",
+        "type": "merge_adjudication", "subject_ref": "m1", "decision": {"accept": True},
+    }
+    from chanakya.schemas import DecisionRecord
+
+    rebuild([], [DecisionRecord.model_validate(decision)], ConfigBundle())
+    assert isinstance(seen["decisions"], list) and len(seen["decisions"]) == 1  # type: ignore[arg-type]
+
+
 def test_rebuild_wires_in_candidate_edge(monkeypatch: pytest.MonkeyPatch) -> None:
     c1 = _entity_claim("d1-l1", "HQ-9P")
     c2 = _entity_claim("d1-l2", "FT-2000")
@@ -82,7 +137,10 @@ def test_rebuild_wires_in_candidate_edge(monkeypatch: pytest.MonkeyPatch) -> Non
     ck = pair_key(id1, id2)
 
     def fake_resolve(
-        claims: list[ClaimRecord], config: ConfigBundle, prev_view: GraphView | None = None
+        claims: list[ClaimRecord],
+        config: ConfigBundle,
+        prev_view: GraphView | None = None,
+        decisions: object = None,
     ) -> Partition:
         return Partition(
             resolved_ref={"d1-l1": ResolvedRef(entity_id=id1), "d1-l2": ResolvedRef(entity_id=id2)},

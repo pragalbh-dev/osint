@@ -64,9 +64,20 @@ corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2
   is now served by the live config store (hot-config, `set_section("places", …)`) and consumed by RESOLVE;
   it was previously standalone/unloaded. `ConfigBundle` gains a `.places` field (additive). *(PR
   `f0/places-and-merge-edges`; RESOLVE flagged the gap.)*
-- **`Partition` gains `candidates` (HITL-band pairs) + `merge_breakdown` (per-pair score breakdown)**; a
-  `pair_key(a, b)` helper indexes `merge_confidence`/`merge_breakdown` — `schemas/stage_io.py`. Additive;
-  the F0 stub still returns them empty → golden view byte-identical (G2). *(PR `f0/places-and-merge-edges`.)*
+- **`Partition` gains `candidates` (HITL-band pairs) + `merge_breakdown` (per-pair score breakdown) +
+  `entity_canonical` (raw entity ref → canonical id)**; a `pair_key(a, b)` helper indexes
+  `merge_confidence`/`merge_breakdown` — `schemas/stage_io.py`. Additive; the F0 stub still returns them
+  empty → golden view byte-identical (G2). *(PR `f0/places-and-merge-edges`.)*
+- **`resolve()` signature gains `decisions` (the replayed decision log)** —
+  `resolve(claims, config, prev_view=None, decisions=None)`. It is RESOLVE's channel for the offline LLM
+  proposer's frozen `merge_proposal` records + analyst `merge_adjudication(accept)`s that grow the alias
+  table (spine/03:37 — resolution is a pure function of *evidence log, decision log, config*). Only
+  `rebuild()` calls `resolve()`, so no sibling breaks; still LLM-free on the rebuild path (G1). *(PR
+  `f0/places-and-merge-edges`.)*
+- **`_assemble()` reconnects a merged entity's edges to its canonical node** via
+  `Partition.entity_canonical` — edges attach by the *raw* triple subject/object (supersede.py), so a
+  merge would otherwise dangle them. Empty map ⇒ identity ⇒ golden unchanged (G2). *(PR
+  `f0/places-and-merge-edges`.)*
 - **`rebuild()` renders the resolver's decisions as edges** — candidate `same-as` (HITL band) +
   `distinct-from` (both already G4-exempt + ontology-declared), carrying `merge_confidence` + breakdown;
   accepted merges stamp `resolved_from` provenance on the canonical node. Emitted *after* the status

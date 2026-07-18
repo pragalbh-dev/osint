@@ -5,12 +5,22 @@ claim if the extractor set one, else synthesised deterministically), with **no**
 ``rebuild()`` run end-to-end today; RESOLVE replaces the body with candidate-gen + ``merge_score`` +
 bands + bootstrap→fixpoint (master §4.3, spine/03).
 
-Frozen signature: ``resolve(claims, config, prev_view) -> Partition``.
+Frozen signature: ``resolve(claims, config, prev_view=None, decisions=None) -> Partition``. ``decisions``
+is the replayed decision log — RESOLVE's channel for the offline LLM proposer's frozen ``merge_proposal``
+records + the analyst ``merge_adjudication(accept)``s that grow the alias table (spine/03). It stays a
+pure function (no live LLM/network/clock/RNG — gate G1); the decision log is just more frozen input.
 """
 
 from __future__ import annotations
 
-from chanakya.schemas import ClaimRecord, ConfigBundle, GraphView, Partition, ResolvedRef
+from chanakya.schemas import (
+    ClaimRecord,
+    ConfigBundle,
+    DecisionRecord,
+    GraphView,
+    Partition,
+    ResolvedRef,
+)
 
 
 def _identity_ref(claim: ClaimRecord) -> ResolvedRef:
@@ -31,6 +41,7 @@ def resolve(
     claims: list[ClaimRecord],
     config: ConfigBundle,
     prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
 ) -> Partition:
     """STUB (identity): resolve each claim to itself; assert no merges. RESOLVE fills the real body."""
     resolved_ref = {c.claim_id: _identity_ref(c) for c in claims}

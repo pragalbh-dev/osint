@@ -254,6 +254,17 @@ section of the design note, not the build.
   decision, not a claim). Rejected: keep merge decisions inside the Partition only, unrendered (marquee
   invisible in the graph). → `schemas/stage_io.py`, `view/pipeline.py`. *(User approved the "small F0
   touch-up".)*
+- **`resolve()` receives the decision log; `_assemble()` reconnects merged entities' edges.** Principle 5
+  (traceability) + the design's own words (spine/03:37 — resolution is a pure function of *evidence log,
+  **decision log**, config*): the offline LLM proposer's `merge_proposal` records + the analyst's
+  `merge_adjudication(accept)`s (alias learning) both live in the decision log, so `resolve()`'s signature
+  gains `decisions` (default None; only `rebuild()` calls it → no sibling breaks; still LLM-free on the
+  rebuild path, G1). And because edges attach to nodes by the *raw* triple subject/object string
+  (`supersede.py`), a merge is made to actually reconnect edges via `Partition.entity_canonical`, applied
+  in `_assemble()`. Both additive + empty-safe (golden byte-identical, G2). Rejected: apply learned merges
+  only as post-resolve HITL effects (can't unlock the relational fixpoint, and can't collapse nodes cleanly);
+  leave edges dangling on merge (corrupts the graph). → `schemas/stage_io.py`, `view/pipeline.py`,
+  `resolve/__init__.py`.
 - **FT-2000 is scored into the HITL band, not seeded as a hard `distinct-from`.** Principle 3 (product is
   judgement) + 4-adjacent: the look-alike must demonstrate the scoring judgement + human adjudication, not
   be pre-vetoed. Config fix routed to DATA-C (`tmp/conv/RESOLVE-config-and-oracle-observations.md`);

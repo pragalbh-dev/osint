@@ -42,6 +42,10 @@ class Partition(Record):
     distinct_from: list[tuple[str, str]] = []  # explicit do-not-merge (FD-2000 ≠ FT-2000) — hard veto before banding
     merge_confidence: dict[str, float] = {}  # pair_key(a, b) → identity confidence (same_as + candidates)
     merge_breakdown: dict[str, dict[str, float]] = {}  # pair_key(a, b) → {attribute, relational, temporal_consistency, source_asserted, total}
+    # Edges attach to nodes by the RAW triple subject/object string (supersede.py), not by resolved_ref —
+    # so a merged-away entity's edges would dangle. This maps every merged raw entity ref → its canonical
+    # id; rebuild()/_assemble applies it to triple endpoints so a merge reconnects edges. Empty ⇒ no-op.
+    entity_canonical: dict[str, str] = {}  # raw entity ref → canonical entity id (merged refs only)
 
 
 class AssertionInput(Record):

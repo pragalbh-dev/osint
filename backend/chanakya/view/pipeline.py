@@ -138,17 +138,26 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
 
 # ── graph assembly (+ supersede/contradict) ──────────────────────────────────────────────────
 
-def _assemble(resolved: list[ClaimRecord]) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
+def _assemble(
+    resolved: list[ClaimRecord], entity_canonical: dict[str, str] | None = None
+) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
     edge_groups: dict[str, list[ClaimRecord]] = defaultdict(list)
+    # A merge reconnects edges: a triple's raw subject/object (supersede.py reads these directly) is
+    # remapped to the merged entity's canonical id. Empty map ⇒ identity ⇒ view unchanged (gate G2).
+    canon = entity_canonical or {}
+
+    def to_canonical(ref: str) -> str:
+        return canon.get(ref, ref)
 
     for c in resolved:
         rr = c.resolved_ref
         payload = c.payload
         # Narrow on the payload type (isinstance) — the validator guarantees it matches `asserts`.
         if isinstance(payload, EntityDescriptor):
-            nid = rr.entity_id if rr and rr.entity_id else f"ent:{payload.entity_type}:{payload.name}"
+            raw = rr.entity_id if rr and rr.entity_id else f"ent:{payload.entity_type}:{payload.name}"
+            nid = to_canonical(raw)
             node = nodes.get(nid)
             if node is None:
                 node = NodeView(id=nid, type=payload.entity_type, name=payload.name)
@@ -165,15 +174,18 @@ def _assemble(resolved: list[ClaimRecord]) -> tuple[dict[str, NodeView], list[Ed
                     event_type=payload.event_type,
                     time_interval=payload.time_interval,
                     location=payload.location,
-                    participants=list(payload.participants),
+                    participants=[to_canonical(p) for p in payload.participants],
                     attrs=dict(payload.attrs),
                     claim_ids=[c.claim_id],
                 )
             )
         else:  # Triple (relationship)
-            ei = rr.edge_instance if rr and rr.edge_instance else (
-                f"edge:{payload.subject}:{payload.predicate}:{payload.object}"
-            )
+            # Remap endpoints through the merge map so build_instance_edges (which reads the raw
+            # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
+            subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
+            if (subj, obj) != (payload.subject, payload.object):
+                c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
+            ei = rr.edge_instance if rr and rr.edge_instance else f"edge:{subj}:{payload.predicate}:{obj}"
             edge_groups[ei].append(c)
 
     edges: list[EdgeView] = []
@@ -234,12 +246,15 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     decisions: list[DecisionRecord] = _replay(decision, DecisionRecord)
     active = apply_retractions(claims)
 
-    # 1. resolution
-    partition = resolve(active, config, prev_view)
+    # 1. resolution — resolve() is a pure function of (claims, config, prev_view, decision log): the
+    #    decision log carries the offline LLM proposer's frozen merge_proposal records + the analyst's
+    #    replayed merge_adjudication(accept)s that grow the alias table (spine/03; still no live LLM — G1).
+    partition = resolve(active, config, prev_view, decisions)
     resolved = _apply_partition(active, partition)
 
-    # 2. assemble nodes/edges/events (+ supersede/contradict — real F0)
-    nodes, edges, events = _assemble(resolved)
+    # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
+    #    merged-away entity's edges to its canonical node (no-op when nothing merged).
+    nodes, edges, events = _assemble(resolved, partition.entity_canonical)
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
