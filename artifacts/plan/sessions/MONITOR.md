@@ -100,6 +100,6 @@ exist as a view field (that is a redeploy, not an observable — `spine/09` hone
 
 ## Worktree lifecycle
 `git worktree add ../wt-MONITOR -b feat/monitor` → implement inside owned paths only → PR `[MONITOR]` →
-**you review & merge** → you update `PROGRESS.md` → `git worktree remove ../wt-MONITOR`. Rebase onto `main`
+**you review & merge** → `git worktree remove ../wt-MONITOR`. Rebase onto `main`
 whenever a sibling merges (always clean given disjoint ownership); does not block and is not blocked by any
 other Wave-1 session.

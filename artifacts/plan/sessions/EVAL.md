@@ -125,6 +125,5 @@ read-only, never edits or regenerates it); the per-unit G1–G12 gate suite (F0 
 them end-to-end, it does not re-author them); the API app body (API).
 
 ## Worktree lifecycle
-`git worktree add ../wt-EVAL -b feat/eval` → implement → PR `[EVAL]` → **you review & merge** → you update
-`PROGRESS.md` → `git worktree remove ../wt-EVAL`. Runs in Wave 2 alongside API; both integrate merged Wave-1
+`git worktree add ../wt-EVAL -b feat/eval` → implement → PR `[EVAL]` → **you review & merge** → `git worktree remove ../wt-EVAL`. Runs in Wave 2 alongside API; both integrate merged Wave-1
 code. Rebase onto `main` whenever a sibling merges (clean given disjoint ownership).
