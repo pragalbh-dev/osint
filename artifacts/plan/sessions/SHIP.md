@@ -63,8 +63,9 @@ standards) + §4.8 (API/`/health`). Skim only; SHIP honours these, it does not r
 Master **§7** (deployment-readiness standards) in full, serving the **§4.8** API surface (esp. `/health`
 gated on `rebuild()` + the `StaticFiles` SPA seam). SHIP freezes **no** code contract; it takes ownership of
 the `Dockerfile`/`compose`/`deploy/` X0 stubbed and the `Makefile` targets F0 stubbed (a sequential handoff,
-not a parallel-conflict — those Wave-0 sessions are long merged). No F0-frozen surface is edited (a new
-runtime dep would be an F0-amendment PR, master §2 Rule 3).
+not a parallel-conflict — those Wave-0 sessions are long merged). No F0-frozen *contract* is edited; a
+dependency any session added is welcome (additive, master §2 Rule 1) — SHIP just makes sure it installs
+cleanly in the image and doesn't break keyless boot / the offline demo path (§7).
 
 ## Acceptance criteria
 - [ ] The **production image builds** (both stages) and bakes the built SPA + seeded SQLite baseline +
