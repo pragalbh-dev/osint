@@ -105,7 +105,7 @@ def alias_ground_truth() -> str:
 
 
 # ----------------------------------------------------------------------------- model
-API_KEY_NAMES = ("ANTHROPIC_API_KEY", "CLAUDE_API_KEY")
+API_KEY_NAMES = ("ANTHROPIC_API_KEY",)  # stack locked on ANTHROPIC_API_KEY (master §1); CLAUDE_API_KEY dropped
 
 
 def _api_key() -> str | None:

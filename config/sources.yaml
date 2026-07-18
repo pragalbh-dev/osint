@@ -1,0 +1,68 @@
+# config/sources.yaml — the source registry (spine/04 §3.5; master §4.2). Validates against F0
+# SourcesConfig{sources: list[SourceRegistryEntry]}. This is source-INTRINSIC signal only (class,
+# reliability, independence, cadence, bias) — NEVER a graded verdict (those live in answer_key.json,
+# which the pipeline never reads).
+#
+# `source_type` uses the SAME vocabulary as credibility.yaml `source_class_factors` keys, so SCORE
+# computes R via a direct source_class_factors[source_type] lookup (no mapping layer).
+# `cadence` drives sufficiency's next_coverage_due: "Nd" = periodic revisit; "event-driven" / "continuous"
+# / "irregular" / "per-tender" have no fixed clock. Encoded traps (as DATA, not verdicts): SIPRI aggregator
+# collapse (d01), ISPR+Global Times aligned-interest (d02/d15 share operator/exporter-state sides),
+# adversary-denial gate (d16). NOTE: `decoy-risk` is a CLAIM-level gate (single-pass imagery), carried on
+# the assertion's gate_flags — not a source field — so it is absent here by design (e.g. d18, d20, cx01).
+sources:
+  # ── hq9p_primary (24) ──────────────────────────────────────────────────────────────────────────
+  - {source_id: d01_sipri_transfer, source_type: curated-register, reliability_grade: B, primary_origin_id: sipri, aggregator_of: [tradepress_1, tradepress_2], bias_vector: third-party, cadence: "365d", citation_url: "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt"}
+  - {source_id: d02_ispr_induction, source_type: official, reliability_grade: B, bias_vector: operator-state, cadence: "event-driven", citation_url: "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt"}
+  - {source_id: d03_quwa_analysis, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt"}
+  - {source_id: d04_armyrec_ranges, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt"}
+  - {source_id: d05_customs_manifest, source_type: customs-tender, reliability_grade: C, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt"}
+  - {source_id: d06_spares_tender, source_type: customs-tender, reliability_grade: C, bias_vector: operator-state, cadence: "per-tender", citation_url: "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt"}
+  - {source_id: d07_sat_confirm_karachi, source_type: satellite, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt"}
+  - {source_id: d08_social_sighting, source_type: named-social, reliability_grade: D, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt"}
+  - {source_id: d09_official_routine, source_type: official, reliability_grade: B, bias_vector: operator-state, cadence: "event-driven", citation_url: "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt"}
+  - {source_id: d10_sat_cloud_gap, source_type: satellite, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt"}
+  - {source_id: d11_recycled_image, source_type: named-social, reliability_grade: D, primary_origin_id: origin_parade_img, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt"}
+  - {source_id: d12_reshare_a, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt"}
+  - {source_id: d13_reshare_b, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt"}
+  - {source_id: d14_stale_holding, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt"}
+  - {source_id: d15_globaltimes_aligned, source_type: exporter-state-media, reliability_grade: C, bias_vector: exporter-state, cadence: "30d", citation_url: "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt"}
+  - {source_id: d16_adversary_denial, source_type: anon-social, reliability_grade: D, bias_vector: adversary, adversary_denial_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt"}
+  - {source_id: d17_rawalpindi_2021, source_type: satellite, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt"}
+  - {source_id: d17b_withheld_gap, source_type: satellite, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt"}
+  - {source_id: d18_rahwali_pass1, source_type: satellite, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt"}
+  - {source_id: d19_rahwali_confirm, source_type: think-tank, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt"}
+  - {source_id: d20_supersede_spoof, source_type: named-social, reliability_grade: E, bias_vector: adversary, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt"}
+  - {source_id: d21_techdata_authority, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt"}
+  - {source_id: d22_deep_tier_supplier, source_type: think-tank, reliability_grade: B, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt"}
+  - {source_id: d23_cpmiec_false_attribution, source_type: trade-media, reliability_grade: D, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt"}
+  - {source_id: d24_tel_chassis_attribution, source_type: think-tank, reliability_grade: B, primary_origin_id: csis_missilethreat, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt"}
+
+  # ── hq9p_chaff (27) ────────────────────────────────────────────────────────────────────────────
+  - {source_id: ce01_reshare_c, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/ce01_reshare_c.txt"}
+  - {source_id: ce02_reshare_d, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/ce02_reshare_d.txt"}
+  - {source_id: ce03_reshare_e, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/ce03_reshare_e.txt"}
+  - {source_id: cd01_s400_china, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd01_s400_china.txt"}
+  - {source_id: cd02_india_s400, source_type: official, reliability_grade: B, bias_vector: operator-state, cadence: "event-driven", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd02_india_s400.txt"}
+  - {source_id: cd03_pak_hq16, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd03_pak_hq16.txt"}
+  - {source_id: cd04_civ_electronics, source_type: customs-tender, reliability_grade: C, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd04_civ_electronics.txt"}
+  - {source_id: cd05_civ_notam, source_type: official, reliability_grade: A, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd05_civ_notam.txt"}
+  - {source_id: cd06_entity_collision_factory, source_type: think-tank, reliability_grade: C, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd06_entity_collision_factory.txt"}
+  - {source_id: cd07_unit_collision, source_type: think-tank, reliability_grade: C, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd07_unit_collision.txt"}
+  - {source_id: cd08_turkey_sam, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd08_turkey_sam.txt"}
+  - {source_id: cd09_generic_iads, source_type: think-tank, reliability_grade: B, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd09_generic_iads.txt"}
+  - {source_id: cd10_rumor_test, source_type: anon-social, reliability_grade: E, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd10_rumor_test.txt"}
+  - {source_id: cd11_drone_deal, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd11_drone_deal.txt"}
+  - {source_id: cs01_stale_orbat, source_type: think-tank, reliability_grade: C, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt"}
+  - {source_id: cs02_stale_deployment, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cs02_stale_deployment.txt"}
+  - {source_id: cs03_stale_customs, source_type: customs-tender, reliability_grade: C, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cs03_stale_customs.txt"}
+  - {source_id: cx01_spoof_karachi, source_type: named-social, reliability_grade: E, bias_vector: adversary, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cx01_spoof_karachi.txt"}
+  - {source_id: cd12_turkey_s400, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd12_turkey_s400.txt"}
+  - {source_id: cd13_saudi_patriot, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd13_saudi_patriot.txt"}
+  - {source_id: cd14_china_hq22, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd14_china_hq22.txt"}
+  - {source_id: cd15_civ_container, source_type: customs-tender, reliability_grade: C, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd15_civ_container.txt"}
+  - {source_id: cd16_pak_civ_notam, source_type: official, reliability_grade: A, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd16_pak_civ_notam.txt"}
+  - {source_id: cd17_academic_radar, source_type: think-tank, reliability_grade: B, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd17_academic_radar.txt"}
+  - {source_id: cd18_forwarder_collision, source_type: customs-tender, reliability_grade: C, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd18_forwarder_collision.txt"}
+  - {source_id: cd19_rumor_missile, source_type: anon-social, reliability_grade: E, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd19_rumor_missile.txt"}
+  - {source_id: cd20_defense_budget, source_type: trade-media, reliability_grade: C, bias_vector: operator-state, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd20_defense_budget.txt"}
