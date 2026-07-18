@@ -289,4 +289,4 @@ INGEST computes only the *local* hash + freezes it, `md/15` §1) · **learned co
 
 ## Worktree lifecycle
 `git worktree add ../wt-INGEST -b feat/ingest` → implement inside owned paths only → PR `[INGEST]` → you
-review & merge → you update `PROGRESS.md` → `git worktree remove ../wt-INGEST`.
+review & merge → `git worktree remove ../wt-INGEST`.

@@ -132,5 +132,5 @@ seed, merge weights, and any `places.yaml` extensions are DATA-C's (RESOLVE cons
 
 ## Worktree lifecycle
 `git worktree add ../wt-RESOLVE -b feat/resolve` → implement e2e inside owned paths → PR `[RESOLVE]` → **you
-review & merge** → you update `PROGRESS.md` → `git worktree remove ../wt-RESOLVE`. Starts only after F0 is on
+review & merge** → `git worktree remove ../wt-RESOLVE`. Starts only after F0 is on
 `main`; conflict-free with sibling Wave-1 sessions (disjoint ownership → clean rebase, any merge order).

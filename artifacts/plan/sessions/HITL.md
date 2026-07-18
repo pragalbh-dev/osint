@@ -126,5 +126,5 @@ credibility-config or authoring observables (read-only / config-authored for the
 
 ## Worktree lifecycle
 `git worktree add ../wt-HITL -b feat/hitl` → implement inside owned paths only → PR `[HITL]` → **you review &
-merge** → you update `PROGRESS.md` → `git worktree remove ../wt-HITL`. Rebase onto `main` on any sibling
+merge** → `git worktree remove ../wt-HITL`. Rebase onto `main` on any sibling
 merge (always clean given disjoint ownership); the agent never self-merges.
