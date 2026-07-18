@@ -109,22 +109,28 @@ the *same* unified confidence:
 1. **Content veracity** — is the claim true? → corroboration + credibility.
 2. **Artifact integrity** — is this image/video authentic and unmanipulated?
 3. **Contextual provenance** — is a *real* artifact correctly attributed to the claimed time/place/event?
-   (The recycled-2019-photo-with-new-caption case — corroboration can't catch it; first-seen/reverse-image
-   can.)
+   (The recycled-2019-photo-with-new-caption case — corroboration can't catch it; the local first-seen
+   hash-index can — reverse-image search is a roadmap enrichment.)
 
 **Cheap, defensible signals** (each applies a *credibility penalty*, not a binary fake/real verdict):
 - **VLM caption-vs-image consistency** — caption says "launcher at Base X," VLM sees a civilian truck or
   95% cloud → flag.
 - **Cross-source physical consistency** — satellite reports total cloud cover, but a "clear daylight photo"
   of the same base the same day exists → suspicious.
-- **Provenance / recency** — first-seen date / reverse-image catches the recycled photo.
+- **Provenance / recency** — the **local first-seen hash-index** catches the recycled photo (reverse-image
+  search = roadmap enrichment, `md/15` §1).
 - **Coordinated inauthenticity** — N near-identical posts in a tight window → manufactured consensus,
   discount (this is the "too-clean"/independence signal; a network signal, not a content one).
 
-**Detector discipline (per §D):** the structural signals — perceptual/image hash, coordinated
-timestamps, aggregator/`primary_origin_id`, first-seen/reverse-image — are **deterministic detectors,
-never LLM-proposed**, and fail *closed* (a group counts as independent only when metadata affirmatively
-establishes it). Only the soft **"too-clean" narrative** may be LLM-proposed, and only **downward**.
+**Detector discipline (per §D):** the structural signals — **two image hashes** (`sha256` exact-byte for
+same-origin grouping + a **PDQ** perceptual near-dup hash for recycled/reshare detection — they do opposite
+jobs, `md/15` §1), coordinated timestamps, aggregator/`primary_origin_id`, and the **local first-seen
+hash-index** — are **deterministic detectors, never LLM-proposed**, and fail *closed* (a group counts as
+independent only when metadata affirmatively establishes it). Hashes + EXIF are **computed by code and frozen
+at ingest**; `first_seen` is then determined in `rebuild()` over the frozen hashes. **Reverse-image search
+(TinEye) is a roadmap enrichment**, not this detector — if wired it runs at ingest as a frozen upstream
+*proposer*, never inside `rebuild()`. Only the soft **"too-clean" narrative** may be LLM-proposed, and only
+**downward**.
 
 ### Image trust is source-tiered (satellite vs social)
 - **Commercial satellite imagery — high-provenance confirmation.** Known provider/timestamp/geo. Job:

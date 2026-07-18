@@ -442,8 +442,10 @@ fallback, not the only path.
   trap pair across 0.85. The candidate proposer traverses only the evidence-layer claim graph + the
   previous frozen view (not the in-progress rebuild) and **emits no relational score** (relational is the
   fixpoint's job, §3.9).
-- **Structural deception is deterministic.** Image/perceptual hash, coordinated timestamps,
-  aggregator / `primary_origin_id`, `first_seen` are **deterministic detectors, never LLM-proposed** (§3.5).
+- **Structural deception is deterministic.** The **two image hashes** (`sha256` exact + **PDQ** perceptual
+  near-dup, both computed by code and frozen at ingest — `md/15` §1), coordinated timestamps,
+  aggregator / `primary_origin_id`, and the **local first-seen hash-index** are **deterministic detectors,
+  never LLM-proposed** (§3.5); reverse-image search is a roadmap upstream proposer, never in `rebuild()`.
   The LLM keeps only the soft "too-clean" narrative, **downward-only**. **Fail-closed**: a group counts as
   independent only when metadata affirmatively establishes it — absence of an LLM flag ≠ clean.
 - **Insufficient / missing-evidence statements are deterministic templates.** The refusal statement is a

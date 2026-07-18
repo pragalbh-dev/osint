@@ -39,7 +39,7 @@ to the analyst, don't guess**.
   S-400 as a design-note reference. Scope + rationale: `artifacts/C/00-overview.md`. **B (intent /
   I&W)** is a reasoning layer we *describe* plugging in, and *build only if time allows* — never at C's
   expense.
-- **Architecture: one shared spine + a thin pluggable use-case layer.** ~70% of the graded value is the
+- **Architecture: one shared spine + a pluggable use-case layer.** ~70% of the graded value is the
   spine (built once); ~30% is C's layer. The pipeline contract:
   `data-gen → ingest → structure (w/ HITL) → source credibility → alert/observable → cited multi-hop QnA`,
   over a `designed ontology + queryable graph + cross-source entity resolution`.
@@ -117,10 +117,14 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 - **HITL is a service any layer can call, not per-stage code.** Route ambiguous / high-stakes items
   through the one adjudication service — invocable at any spine layer that needs it; overrides must
   propagate to downstream state.
-- **Keep the demo deterministic & reproducible.** Freeze scenarios; favour minimal, reproducible choices
-  over clever ones. The live query must run the same every time. Generator stays blind to the ontology.
-- **Model exactly what the target queries need, no richer** — the over-engineering trap. Every hour on
-  provenance/confidence discipline beats an hour on ontology breadth.
+- **Keep the demo deterministic & reproducible.** Freeze scenarios; the live query must run the same every
+  time; the generator stays blind to the ontology. When a choice trades reproducibility against a richer or
+  cleverer approach, **ask the user** — don't silently default to the minimal option.
+- **Model the ontology to what the target queries need — don't invent entity/edge types with no query
+  behind them.** But build what you *do* model *fully*: depth on provenance, credibility, HITL, and the
+  retrieval agent is the point, not a cost. Richer *machinery* (more robust, more auditable, more
+  production-grade) is good; richer *taxonomy-for-its-own-sake* is the trap. When in doubt, build the
+  capability well rather than clipping it.
 - **Record & surface decisions.** As you work, **note every decision that leans on a guiding principle**
   (`DECISIONS.md` §1) — the choice, the principle it invoked, the alternative rejected. **Surface that
   list at the end of the work**, don't only bury it in a commit: append it to `DECISIONS.md` and flag
@@ -129,10 +133,17 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
   (correctness, credibility, demo-reliability, scope, timeline, reproducibility, extensibility), do **not**
   decide it yourself — put it to the user as an **options template** (concrete choices + tradeoffs, e.g.
   via the question tool), never a bare open question. Reserve unilateral calls for the clearly-safe.
-- **Don't expand scope silently.** B, extra observables, extra learning mechanisms, scale features → the
-  roadmap / "four more weeks", not the demo build, unless the user says otherwise.
+- **Don't expand scope silently — but don't silently clip it either.** When the build needs more than the
+  current scope (B, extra observables, extra learning mechanisms, scale features), don't just defer it to
+  the roadmap and don't just build it — **surface it and get the user's permission** (options template)
+  before expanding. Expansion is the user's call, not a silent yes or a silent no.
 - **Deadline awareness.** ~4 days. Build the spine with 2–3 HITL points deep, get one thread running
-  end-to-end, then add depth. Depth in batches; a working thin thread beats a broken rich one.
+  end-to-end, then add depth. Depth in batches; a working thin thread beats a broken rich one. **But note
+  the bottleneck:** we run **multiple coding agents in parallel, so writing code is *not* the scarce
+  resource** — brainstorming, design judgement, and QA are. Spend the scarce thinking time there; don't
+  ration *capability* as if one dev were typing it all. And remember this is an **assignment: push as far
+  toward a real, production-grade system as the time allows** — the brief itself calls for that, not a toy
+  demo.
 
 ## Status & stack
 
