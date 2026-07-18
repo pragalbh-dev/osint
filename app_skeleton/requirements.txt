@@ -1,0 +1,5 @@
+# X0 walking-skeleton deps — SELF-CONTAINED, deliberately minimal.
+# NOT F0's pyproject.toml: X0 must build with zero dependency on the backend.
+# SHIP reconciles this into the production image (which uses backend/pyproject.toml).
+fastapi==0.115.6
+uvicorn[standard]==0.34.0

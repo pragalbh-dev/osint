@@ -1,0 +1,9 @@
+# Build context = ./app_skeleton (see Dockerfile). Keep it tiny + reproducible:
+# the Node stage installs from the lockfile, so never ship local artifacts.
+web/node_modules
+web/dist
+**/__pycache__
+*.pyc
+*.pyo
+.env
+.env.*
