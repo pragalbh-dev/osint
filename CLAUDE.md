@@ -149,6 +149,8 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 - **Data issues → `tmp/conv/`, don't self-fix.** When any agent hits a corpus / `answer_key.json` / data-model
   issue it shouldn't fix itself, write an observation MD to `tmp/conv/` for the **data agent** to resolve —
   don't edit the frozen corpus or answer_key unilaterally.
+- **Commits: no AI co-author.** Do **not** add a `Co-Authored-By: Claude …` trailer (or any AI/assistant
+  co-author / "Generated with" line) to commit messages or PR bodies. Author commits as the human committer only.
 
 ## Status & stack
 
