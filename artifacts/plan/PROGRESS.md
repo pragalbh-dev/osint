@@ -9,9 +9,9 @@
 
 | ID | Session | Wave | Status | PR | Depends (merged) | Merged commit |
 |----|---------|------|--------|----|--------------------|---------------|
-| F0 | Foundation + store + rebuild skeleton + fixtures + gates + CI | 0 | not-started | — | — | — |
+| F0 | Foundation + store + rebuild skeleton + fixtures + gates + CI | 0 | merged | [#1](https://github.com/pragalbh-dev/osint/pull/1) | — | 7a9e87b |
 | X0 | Walking-skeleton deploy (EC2 + tunnel + GHCR) | 0 | merged | [#5](https://github.com/pragalbh-dev/osint/pull/5) | — | 0c364be |
-| DATA-C | Corpus freeze + C config YAML | 0 | in-review | [#8](https://github.com/pragalbh-dev/osint/pull/8) | F0 (soft) | — |
+| DATA-C | Corpus freeze + C config YAML | 0 | merged | [#8](https://github.com/pragalbh-dev/osint/pull/8) | F0 (soft) | 407f1c2 |
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
 | MONITOR | Observable DSL engine | 1 | not-started | — | F0 | — |
@@ -24,6 +24,16 @@
 
 ## Contract amendments (F0-amendment PRs)
 _Post-F0 changes to a frozen contract go here. Each entry: what changed, which contract §, which sessions must rebase._
+
+**MONITOR observable-scope amendment (2026-07-18, branch `f0/observable-watch-instances`):** added an
+optional typed field **`watch_instances: list[str] = []`** to `ObservableDef` (master §4.4/§4.6) so an
+analyst can watch an **explicit set of resolved entities** (multi-select or a text→observable proposer),
+scope = lens ∪ watch_instances. Additive/optional → siblings need no change; **MONITOR/API/frontend**
+consume it. Also aligned the golden `alert_delta.json` per-stage fixture from the stray `unit_x` →
+`unit_acme` so the seeded `obs-relocation` (subject `lens-acme`, anchor `unit_acme`) actually scopes to
+the watched unit; and reconciled the stale `spine/08` §3.10 control-point-5 note ("config-authored, not a
+UI") to defer to the `spine/09` in-app define → arm-on-save → fire-on-next-rebuild model. **Board fix:**
+corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2`).
 
 **Plan-authoring refinements (folded in before F0 is built — no rebase needed):**
 - Added **`config/resolution.yaml`** as the 7th config file (merge weights/bands/blocking keys/alias-seed/
