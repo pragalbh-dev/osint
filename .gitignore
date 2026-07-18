@@ -30,3 +30,4 @@ CLAUDE.md
 tracker/todo
 
 .env
+*.pem
