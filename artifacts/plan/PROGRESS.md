@@ -14,7 +14,7 @@
 | DATA-C | Corpus freeze + C config YAML | 0 | merged | [#8](https://github.com/pragalbh-dev/osint/pull/8) | F0 (soft) | 407f1c2 |
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
-| MONITOR | Observable DSL engine | 1 | not-started | — | F0 | — |
+| MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
 | ASK | Bounded ReAct agent + citation validator | 1 | not-started | — | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | not-started | — | F0 | — |
 | INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | not-started | — | F0 (+DATA-C soft) | — |
@@ -117,3 +117,29 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   runtime; **H-200→HT-233 orphan alias** stays OUT of the resolver seed (earn/verify — adaptation demo);
   F7 structural cases (substitutable-by 3-state, MUCD, operational-status) represented-not-instantiated (roadmap).
 - **Gate fixtures:** none added (config/corpus session; backend gates untouched, G11 re-verified green).
+
+### MONITOR (in-review, feat/monitor — PR #11):
+- **Shipped:** `chanakya/observe/**` — the declarative observable evaluator over `rebuild()` view deltas.
+  `evaluate(prev_view, view, config) -> [Alert]` (frozen sig) + `arm()` (arm-on-save read-only pass +
+  back-scan) + `explain()` (how an observable compiles — for the config UI / ASK proposer) +
+  `read_dispositions()` (reads `alert_disposition` back into per-observable tuning stats). One generic DSL
+  (eq/ne/lt/le/gt/ge/exists/not_exists + crossing as a delta mode) with named-`on` sugar → crossing /
+  exists / match / **arm-only**, **no per-observable branch**. 40 module tests; full backend suite green
+  (103); gates G1–G12 green; ruff + mypy clean.
+- **Decisions (principle → choice → alt rejected):** see DECISIONS.md §6 → "MONITOR". Headlines: explicit
+  `watch_instances` ∪ lens scope (F0-amend #9); `new_claim` = arm-only (honest boundary — claims aren't in
+  the view); match on resolved `edge_instance`/`id` not designators; `fired_ts` left for the API
+  (deterministic evaluate); lenient scope fallback (recall bias); disposition = MONITOR consumes / HITL
+  writes / config vocabulary / nothing auto-retunes; **location seam built (geofence + "near-a-place"
+  scope) but NOT demo-wired** (locked "build seam, roadmap the demo" call, 2026-07-18).
+- **Deviations from plan:** none affecting shared contracts. One F0-amendment (#9, merged first): added
+  optional `ObservableDef.watch_instances`, aligned the `alert_delta.json` fixture (`unit_x`→`unit_acme`),
+  reconciled a stale `spine/08` §3.10 line, corrected the stale board rows (F0/DATA-C → merged).
+- **Follow-ups (ASK):** ASK owns **`propose_observable_from_text()`** — free text → an `ObservableDef`
+  draft, reusing `find_entity` to resolve named mentions to resolved ids (LLM proposes upstream; analyst
+  confirms before arming). MONITOR pre-wired the target (`watch_instances` + `explain()`); this is an ASK
+  scope addition, not built here. **(EVAL/roadmap):** wire the location geofence as a roadmap flex; the
+  seam + `within_area` primitive are shipped and tested but no geofence observable is in the demo config.
+- **Gate fixtures:** none added; extended none. Consumes F0's `per_stage/alert_delta.json` (aligned in #9)
+  as the seeded before→after fire fixture. G1 (no network/LLM in `observe/`) + G6 (no scoring literals)
+  re-verified green.

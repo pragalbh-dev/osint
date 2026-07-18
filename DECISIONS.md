@@ -272,3 +272,56 @@ section of the design note, not the build.
   `make test/lint` are real; note `Location` carries `geocode_candidates`+`proposed_alias` (closes the
   PROGRESS "F0 location descriptor" reconciliation); note `rebuild()` module is `view/pipeline.py`.
 - `sessions/F0.md` — reconcile scope #1 (test/lint real) + #10 (PROGRESS not in the PR).
+
+### MONITOR — Observable DSL engine (choice · principle invoked · alternative rejected)
+- **Explicit `watch_instances` union'd with the lens (F0-amendment #9).** Principle 3 (the analyst
+  configures their own tripwires) + 8 (extend by spec): an observable's scope = a lens (graph-hop
+  neighbourhood) **∪** an explicit set of resolved entity ids, so "watch exactly these units" and "watch
+  this area of the graph" are one model. Rejected: overloading `subject` to `str|list` (a frozen-field
+  type change) / burying the list in the `trigger` dict (undiscoverable for the API/SPA). → `schemas`
+  (amend), `observe/observable.py`.
+- **One generic DSL (equality/threshold/exists) + crossing as a delta *mode*; `trigger.on` compiles to
+  crossing/exists/match/arm-only with NO per-observable branch (G6).** Principle 9 (analysts evolve the
+  rules via config, not code) + 8. Operator tokens match `query_graph`'s so the DSL and retrieval speak
+  one vocabulary. Rejected: three hardcoded trigger handlers (not declarative — a new tripwire would need
+  code). → `observe/dsl.py`, `observe/observable.py`.
+- **`new_claim` (source-class) compiles to *arm-only*.** Principle 4 (never fabricate) + spine/09 honest
+  boundary: a claim-level trigger lives in the evidence log, not the rebuilt view, so it parses + arms but
+  cannot fire off a *view* delta — and `explain()` says exactly why. Rejected: faking a fire from data the
+  view doesn't carry. → `observe/observable.py`.
+- **Match on the resolved `edge_instance`/`id`, never a designator string; supersede-aware active-edge
+  selection.** Principle 6 + the supersedes-vs-contradicts rule: a spelling/transliteration variant that
+  resolves to the same instance trips the same wire; a different instance does not. Rejected: matching on
+  names (would break or duplicate the wire). → `observe/evaluator.py`.
+- **`evaluate()` leaves `fired_ts=None` (the API stamps it on persist); no clock/RNG/network/LLM in
+  `observe/`.** G1/G2 spirit — a wall-clock in the evaluator would make it non-deterministic and
+  un-fixture-able. Rejected: stamping the time inside `evaluate`. → `observe/evaluator.py`.
+- **Lenient scope fallback: a named lens whose anchors are absent in the current view → unscoped, not
+  disarmed.** Recall-bias (hold recall of escalation ≈ 1.0): never silently drop a tripwire because its
+  subject isn't present yet. Rejected: dropping candidates when the lens can't resolve. →
+  `observe/observable.py::resolve_scope`.
+- **Disposition: MONITOR *consumes* (reads `alert_disposition` back into per-observable tuning stats),
+  HITL *owns* the card + writeback; the verdict vocabulary comes from each observable's config;
+  `needs-more` is flagged awaiting-coverage; nothing auto-retunes.** Principle 3 (human-in-loop) + the
+  non-negotiable (insufficiency is first-class). Rejected: MONITOR mutating config/graph from dispositions
+  (a machine silently retuning its own tripwires). → `observe/disposition.py`.
+- **Location axis built as a *seam*, not demo-wired (locked 2026-07-18).** Principle 8 (extensible seam,
+  user-approved) + the "build seam, roadmap the demo" call: geofence entry/exit (`within_area`, offline
+  `geopy` great-circle math) and a "near a place" location-scope filter are pure config edits, proven by
+  tests, but the shipped `config/observables.yaml` wires none — the demo stays led by the instance-scoped
+  Rawalpindi→Rahwali relocation. Rejected: wiring a geofence into the demo (competes with the locked beat)
+  / not building the axis (clips a capability the data already supports). → `observe/dsl.py`,
+  `observe/evaluator.py`.
+
+**Design-doc tails to enrich (MONITOR):**
+- `spine/07` / `spine/08` §3.8 — record the DSL operator set (eq/threshold/exists + crossing mode), the
+  `new_claim` arm-only honest boundary, the `watch_instances` explicit-scope, and the geofence/location
+  seam (roadmap).
+- `C/02` — note the geofence tripwire is a roadmap flex, not demo-wired.
+
+**Follow-up handed to another session:**
+- **ASK owns `propose_observable_from_text()`** — free text ("watch HQ-9B and the 8th SAM regiment for
+  relocations") → an `ObservableDef` draft, reusing ASK's `find_entity` to resolve named mentions to ids
+  (LLM proposes upstream; the analyst confirms before arming). MONITOR pre-wired the target: the
+  `watch_instances` field + `explain()` for the confirm screen. Logged as an ASK scope note in
+  `PROGRESS.md`.
