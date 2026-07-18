@@ -271,6 +271,26 @@ section of the design note, not the build.
   RESOLVE emits it as a mid-band candidate. Rejected: keep the seeded veto (short-circuits the demo).
   *(User decision, this session.)*
 
+### RESOLVE — iterative relational entity resolution (2026-07-18)
+- **Precision-first / false-merge discipline is structural.** distinct-from is a hard veto enforced at the
+  **cluster level** (a union that would co-cluster a vetoed pair is refused — a direct-pair-only check let a
+  bridge node fuse HQ-9/P↔HQ-9BE transitively); gazetteer `distinct_from` (Karachi-Port ≠ Port-Qasim) is a
+  **veto computed before entity resolution**, so co-located/co-shipping ports never fuse. Rejected:
+  per-pair-only veto (bypassable). → `cluster.py`, `places.py`.
+- **LLM is proposer, never authority; raise-only is structural.** `band()` reaches *auto* only via the
+  deterministic terms; an LLM `merge_proposal` (consumed from the decision log) can only lift a pair to the
+  *HITL* band — a maximal LLM signal on a trap can't cross 0.85. Rejected: LLM feeding the numeric score.
+  → `cluster.py`, `propose.py`.
+- **Merges are a reversible overlay, never destructive collapse.** `same_as` + a flat `entity_canonical`
+  collapse nodes at assembly; a claim's own `resolved_ref` is untouched, so a no-merge run is byte-identical
+  to F0's stub (G2) and a split is just another decision-log entry. → `__init__.py`, `cluster.finalise`.
+- **Relocation ≠ identity.** Two entities that are co-endpoints of one supersede `edge_instance` are
+  excluded from the relational term and score temporal-consistency 0 (reusing F0's supersede identity — a
+  unit's two bases don't fuse the bases). → `scoring.py`.
+- **Adversarial self-review before PR (principle 7, defensible-not-clever).** Two review workflows
+  (find → adversarially-verify) caught 12 + 1 confirmed defects the unit tests missed; each is fixed and
+  locked by a regression (`tests/resolve/test_review_regressions.py`). Rejected: ship on green units alone.
+
 ### F0 — Foundation (choice · principle invoked · alternative rejected)
 - **Records `extra="forbid"`, config surfaces `extra="allow"`.** Principle 5 (traceability) + 9
   (config-driven): a drifted record fails loudly; DATA-C may add config knobs without an F0-amendment.
