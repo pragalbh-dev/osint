@@ -115,6 +115,26 @@ stub F0 exports there); sufficiency in `chanakya/sufficiency/`; materiality in `
    — it renders as *candidate* + a `Known Gap`, and is **never printed as sole-source** (absence of evidence
    ≠ evidence of absence, the disqualifying line).
 
+## HITL pickups (from session HITL — PR #12; wire + verify here)
+HITL only *appends* decisions; the **recompute is yours**. Two beats were deliberately deferred to SCORE so
+they land where they can actually be exercised (rationale in `DECISIONS.md` §6 "HITL"):
+
+1. **Reject-claim → machine recompute.** HITL's status-override `reject` currently writes
+   `effects.set_status→probable` (a *forced* demote, applied post-machine by F0 — indistinguishable from
+   `demote` today). The richer beat is a `reject` that **excludes the supporting claim** so *your* status
+   machine re-derives confirmed→probable from fewer independent groups. That needs a small **F0-amendment**
+   (drop a decision-named claim upstream of scoring, like a retraction — HITL emits the effect, F0 applies
+   it); once wired, SCORE needs no special handling, but **add a fixture asserting the confirmed→probable
+   transition** when removing one look drops the group count below the confirmed gate (feeds spine-gate #4 /
+   flex #4 at EVAL).
+2. **Analyst integrity flag → per-claim + origin-wide penalty.** HITL appends `type: integrity_flag` with
+   `effects.add_integrity_flag{element_id, flag}` (element-level, applied *today* by F0) **and**
+   `effects.flag_origin{primary_origin_id, co_referring_claims}`. `score_claims` must also read the
+   **decision-log** integrity flags (not only `sources.yaml coordinated_inauthenticity_flag`) and apply the
+   penalty to **every claim sharing that `primary_origin_id` — including claims ingested *after* the flag**
+   (the monitoring/adaptation beat). Verify the false-confidence collapse: flagged echoes → one penalised
+   group → the resting assertion drops.
+
 ## Contracts implemented
 Master **§4.2** (ClaimRecord, SourceRegistryEntry, DerivedAssertionState, KnownGap), **§4.3** (the four stage
 signatures + fixed call-order — implemented *exactly*, not re-derived), **§4.4** (all knobs read from the

@@ -87,6 +87,16 @@ Known-Gap-off-scale) so status assertions match the machine, not prose.
 8. **Report** (`eval/`) — a short markdown/JSON report: pass/fail per spine-gate criterion, per demo flex, and
    a node/edge **status-diff table** (expected vs computed). This is a demo deliverable — legible on the call.
 
+**HITL deferrals to re-verify end-to-end (from HITL PR #12; see `DECISIONS.md` §6 "HITL" + `sessions/SCORE.md`
+"HITL pickups").** Two HITL beats are scoped down at the HITL layer (nothing to recompute against until SCORE)
+and must be re-proven here on the merged pipeline: (a) **reject-claim → machine recompute** — an analyst
+`reject` that excludes a supporting claim makes the status machine drop the node **confirmed→probable** and
+changes the worked-query answer (strengthens spine-gate #4 / flex #4 beyond the forced-`set_status` path); and
+(b) **integrity flag → origin-wide collapse** — flagging a source by `primary_origin_id` taints **every**
+co-referring claim of that origin *and* claims ingested after the flag, collapsing false confidence. If either
+is still forced/element-level at integration time, assert the *effect shape* HITL emits and record the gap in
+the report — never fake the recompute to make the flex look green.
+
 ## Contracts consumed (EVAL freezes nothing)
 Master §4.2/§4.3 (record + stage signatures) and §4.8 + `product/03` A–H (view-JSON / provenance / ask /
 observable / Known-Gap shapes) — EVAL asserts against these, it does not define them. It re-exercises the §5
