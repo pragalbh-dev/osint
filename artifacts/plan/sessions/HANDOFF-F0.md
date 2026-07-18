@@ -60,8 +60,9 @@ See DECISIONS.md. Highlights: renamed the rebuild *module* to `view/pipeline.py`
 ## Deviations / reconciliations vs `sessions/F0.md`
 - **`make test`/`lint` are real, not `echo TODO`** — acceptance requires `make test` green; only the app
   targets (extract/build/ingest/ask/run) are stubbed. (Master §7 wins over F0.md scope #1's literal list.)
-- **`PROGRESS.md` not edited in this PR** — master §2 Rule 4 (never in a PR; user maintains at merge)
-  overrides F0.md scope #10's "seed"; the board already exists. Paste the F0 handoff row at merge.
+- **`PROGRESS.md` seeded but no F0 handoff row added in-PR** — F0 ran under the pre-2026-07-18 Rule 4 (board
+  maintained outside PRs); the row is still to be filled. (Rule 4 has since flipped: sessions now maintain
+  their own row + handoff note in-PR — master §2 Rule 4, §9.)
 - **F0 own-module tests live in `tests/{view,store,config,schemas}`** — master §4.1 ("`tests/<module>/`
   owned by that module's session"; F0 owns those four modules). F0.md's owned-path list named only
   `tests/{fixtures,gates}`; these dirs are conflict-free (no other session touches them).

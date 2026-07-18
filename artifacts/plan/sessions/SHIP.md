@@ -90,6 +90,5 @@ The **acceptance assertions** (EVAL owns the spine-gate + demo-flex harness). Th
 Authoring config *content* (DATA-C) or seed bundles (INGEST).
 
 ## Worktree lifecycle
-`git worktree add ../wt-SHIP -b feat/ship` → implement → PR `[SHIP]` → **you review & merge** → you update
-`PROGRESS.md` → `git worktree remove ../wt-SHIP`. Starts only after `API` is on `main` (with `X0`, `DATA-C`,
+`git worktree add ../wt-SHIP -b feat/ship` → implement → PR `[SHIP]` → **you review & merge** → `git worktree remove ../wt-SHIP`. Starts only after `API` is on `main` (with `X0`, `DATA-C`,
 `INGEST` merged); rebase onto `main` on every sibling merge (clean given disjoint ownership).

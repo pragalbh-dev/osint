@@ -163,6 +163,6 @@ store). SCORE never edits a frozen/shared file (master Rule 3).
 
 ## Worktree lifecycle
 `git worktree add ../wt-SCORE -b feat/score` → implement e2e inside owned paths → PR `[SCORE]` (template in
-master §8) → **you review & merge** → append outcomes to the handoff note → you update `PROGRESS.md` →
+master §8) → **you review & merge** → append outcomes to the handoff note →
 `git worktree remove ../wt-SCORE` and delete the branch. Rebase onto `main` on each sibling merge (always
 clean given disjoint ownership). Does not block any other Wave-1 session.

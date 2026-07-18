@@ -1,6 +1,6 @@
 # Handoff — Session <ID> <title>
 
-**Fill this in as you go; paste the final into the PR body and (on merge) into `PROGRESS.md` §Handoff notes.**
+**Fill this in as you go; paste the final into the PR body and into `PROGRESS.md` §Handoff notes (in your PR).**
 This is what the next agent reads to trust and build on your work.
 
 ## Status at handoff
