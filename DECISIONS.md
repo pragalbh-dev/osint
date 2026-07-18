@@ -415,3 +415,47 @@ section of the design note, not the build.
   `claim_id`s in a serial pass (stable sort by doc then span offset) so frozen bundles stay byte-stable;
   `append` + `rebuild()` serialized. Rejected: assigning ids during the parallel fan-out (nondeterministic
   order → breaks G2 byte-stability).
+
+### HITL — Adjudication service + writeback + cards (choice · principle invoked · alternative rejected)
+- **`reject` = forced demote (`set_status→probable`) for now; no F0-amendment.** *(User decision
+  2026-07-18.)* Principle: demo-reliability + don't unilaterally change a shared contract siblings read.
+  Rejected: a `reject-claim` effect that excludes a claim upstream of scoring so the status machine
+  recomputes confirmed→probable — that needs rebuild to drop a decision-named claim before the stages (an
+  F0-amendment). **Deferred:** the machine-recompute variant, re-verified end-to-end at EVAL / a later pass.
+  → `controlpoints.build_status_override_item`.
+- **HITL never mutates the view — writeback only *appends* a `DecisionRecord`; the next `rebuild()` applies
+  `effects`.** Principle 5 + gate G12 (propagation is structural, not a fan-out). Rejected: per-stage code
+  that edits graph state on disposition. → `writeback.py`.
+- **Deterministic disposing path (G1/G2): no LLM/network/clock/RNG; `event_id` derived from
+  `(item, chosen option)`, `ts` supplied by the caller.** Principle 4/11. Rejected: `datetime.now()`/`uuid`
+  inside writeback (would break byte-identical replay). The triage-rank rubric LLM is **offline** and enters
+  only as a pre-baked, replayed `frozen_rank` (data) — never a live call. → `writeback.py`, `triage.py`.
+- **Recall-biased triage: auto-proceed requires *positive* safety on confidence AND materiality AND
+  novelty; any unknown (`None`) escalates.** Principle: hold recall of escalation ≈ 1.0 — never silently
+  drop. Rejected: a precision-first gate that lets unknowns auto-proceed. → `triage.should_escalate`.
+- **★ pinning + LLM-raise-only are enforced *structurally* in `order_queue`:** pinned items lead (fixed
+  priority, ignoring the rank), unranked items are retained (never dropped), unknown ids are ignored (never
+  injected). Principle: finite analyst attention + LLM proposes, never authorities. Rejected: trusting the
+  LLM rank to order the whole queue (could bury/remove a real item or move the escalate boundary). →
+  `triage.order_queue`.
+- **`TriageConfig` is HITL-owned + overridable, not a new shared config section.** Principle 9
+  (config-driven) + keep the F0-amendment surface minimal. Rejected: adding a `triage`/`hitl` section to the
+  shared config store (an F0 config-schema amendment for a module-local knob). *(hitl/ is outside gate G6.)*
+- **Per-option `effects` preview on the item; writeback records the chosen option's effect verbatim.**
+  Principle 5 — what the analyst was shown is exactly what is logged. Rejected: re-deriving effects at
+  writeback (silent divergence from the preview). → `queue.build_item`, `writeback.build_record`.
+- **Integrity flag stays within F0's effect vocabulary (single-element `add_integrity_flag`) and also
+  carries a `flag_origin` intent (`primary_origin_id` + co-referring set).** Consistency with the `reject`
+  call (no F0-amendment) + honest scoping: co-referring claims sharing one origin support the *same* resolved
+  element, so flagging it propagates on rebuild today. Rejected: origin-keyed fan-out inside `rebuild()`
+  (F0-amendment). **Deferred / flagged:** SCORE does the fuller per-claim penalty incl. *future* claims of a
+  flagged origin — until then, a flag doesn't auto-taint claims that arrive *after* it (a monitoring-grade
+  gap). → `controlpoints.build_integrity_flag_item`.
+
+**Design-doc tails to enrich (flagged per the working agreement):**
+- `sessions/HITL.md` acceptance #1 — note `reject` is forced-demote for now; machine-recompute via
+  claim-exclusion is deferred (would be an F0-amendment) and re-verified at EVAL.
+- `spine/05` / `spine/08` §3.11 — note the analyst integrity-flag propagates at the *element* level via
+  F0's `add_integrity_flag` for the demo; full per-claim + future-claim origin fan-out is SCORE's.
+- **Flag to EVAL:** re-verify (a) status recompute (reject→confirmed→probable via the machine) and
+  (b) integrity origin fan-out end-to-end once SCORE lands.

@@ -1,28 +1,45 @@
-"""HITL stage — the one cross-cutting adjudication service (owned by session HITL).
+"""HITL — the one cross-cutting adjudication service (session HITL; master §4.7; spine/05, §08 §3.10).
 
-One service, one signature, callable from any spine layer: ``enqueue(item, context, options,
-writeback) → decision → mutate view + emit trace`` (spine/05, spine/08 §3.10). Writeback appends a
-decision-log entry; the next ``rebuild()`` applies its ``effects`` (propagation is structural — gate
-G12). All 8 control points exist in the service; HITL wires 3 deep (merge / status-override /
-alert-disposition).
+One service, one signature, callable from any spine layer or the analyst:
+``enqueue(item, context, options, writeback) → decision``. Triage decides escalate-vs-auto
+(deterministic, recall-biased); a disposition is written back as an **appended**
+:class:`~chanakya.schemas.DecisionRecord`, and the next ``rebuild()`` applies its ``effects`` —
+so "the human is in control" is *structural*, not a special code path (gate G12). All 8 control
+points live in this one service (:mod:`controlpoints`); 3 are wired deep (merge / status-override /
+alert-disposition), plus the analyst-initiated integrity flag.
 
-F0 ships a stub raising ``NotImplementedError`` — the service is HITL's to build; F0 only freezes the
-review-queue/decision shapes (``schemas.api_models``) and the decision-log record it writes back.
+**No LLM, no network, no clock, no RNG on the disposing path** (gate G1) — this package imports none
+of ``anthropic``/``httpx``/``requests``; the triage-rank rubric LLM is offline and enters only as a
+pre-baked, replayed ``frozen_rank`` (data, never a live call).
 """
 
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any
+from .controlpoints import (
+    CONTROL_POINTS,
+    CONTROL_POINTS_BY_KEY,
+    ControlPoint,
+    build_alert_disposition_item,
+    build_integrity_flag_item,
+    build_merge_item,
+    build_status_override_item,
+)
+from .queue import ReviewQueue, build_item
+from .service import dispose, enqueue
+from .triage import STAR_TYPES, TriageConfig, order_queue, should_escalate
+from .writeback import bind_writeback, build_record
 
-from chanakya.schemas import HitlDecision, ReviewContext, ReviewQueueItem
-
-
-def enqueue(
-    item: ReviewQueueItem,
-    context: ReviewContext,
-    options: list[str],
-    writeback: Callable[[HitlDecision], Any],
-) -> HitlDecision | None:
-    """STUB: the adjudication service. HITL implements enqueue → decide → writeback → propagate."""
-    raise NotImplementedError("HITL session implements the adjudication service")
+__all__ = [
+    # the service
+    "enqueue", "dispose",
+    # queue + envelope
+    "ReviewQueue", "build_item",
+    # triage
+    "TriageConfig", "should_escalate", "order_queue", "STAR_TYPES",
+    # writeback
+    "bind_writeback", "build_record",
+    # control points
+    "CONTROL_POINTS", "CONTROL_POINTS_BY_KEY", "ControlPoint",
+    "build_merge_item", "build_status_override_item", "build_alert_disposition_item",
+    "build_integrity_flag_item",
+]
