@@ -16,7 +16,7 @@
 | SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
-| HITL | Adjudication service + writeback + 3 cards | 1 | not-started | — | F0 | — |
+| HITL | Adjudication service + writeback + 3 cards | 1 | in-review | [#12](https://github.com/pragalbh-dev/osint/pull/12) | F0 | — |
 | INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | not-started | — | F0 (+DATA-C soft) | — |
 | API | FastAPI layer | 2 | not-started | — | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
@@ -252,3 +252,39 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   `ask(...)` and passes `claims = {c.claim_id: c for c in store.replay()}`.
 - **Gate fixtures:** none added/weakened (ASK owns `chanakya/agent/**` + `tests/agent/**`; G1 still green —
   runtime LLM is import-lazy and outside the rebuild call-path).
+
+### HITL (in-review, feat/hitl):
+- **Shipped:** the one cross-cutting adjudication service under `backend/chanakya/hitl/` —
+  `service.py` (`enqueue` triage-gate + `dispose` analyst path) · `triage.py` (recall-biased
+  escalate-vs-auto gate + `order_queue` with ★-pinning and raise-only frozen LLM rank) · `queue.py`
+  (envelope builder over F0's `ReviewQueueItem` + transient `ReviewQueue`) · `writeback.py`
+  (disposition → appended `DecisionRecord`, deterministic `event_id`, append-only) · `controlpoints.py`
+  (all **8** control points catalogued in one service; 3 ★ wired deep — merge/status-override/alert —
+  + the built analyst-initiated integrity flag; the other 4 named config/roadmap). 32 tests in
+  `tests/hitl/**`; **full suite green (post-rebase on ASK #14 / MONITOR #11), ruff + mypy clean.**
+- **Decisions (principle → choice → alt rejected):** see `DECISIONS.md` §6 "HITL". Headlines:
+  - *Demo-reliability / don't fork a shared contract* → **`reject` = forced demote (`set_status→probable`),
+    no F0-amendment** *(user 2026-07-18)*; the claim-exclusion machine-recompute is deferred to EVAL.
+  - *Structural propagation (G12)* → **writeback only appends; `rebuild()` applies `effects`** (no per-stage
+    fan-out).
+  - *G1/G2* → **disposing path has no LLM/network/clock/RNG**; `event_id` derived from (item, option), `ts`
+    supplied; the triage-rank LLM is offline/frozen/replayed (data, never a live call). `chanakya/hitl`
+    imports no `anthropic`/`httpx`/`requests` (asserted in-test).
+  - *Recall ≈ 1.0* → **auto-proceed only on positive safety on all of confidence/materiality/novelty**;
+    any unknown escalates. ★ pinning + no-drop/no-inject enforced structurally in `order_queue`.
+  - *Config-driven, minimal amendment surface* → **`TriageConfig` is HITL-owned + overridable**, not a new
+    shared config section.
+- **Deviations from plan:** (1) `reject` scoped to forced-demote (above) — session acceptance #1's
+  machine-recompute deferred. (2) Integrity flag propagates at the **element** level via F0's existing
+  `add_integrity_flag` (co-referring claims share one element) + carries a `flag_origin` intent; true
+  per-claim + *future-claim* origin fan-out is SCORE's (a monitoring-grade gap, flagged for EVAL). **No
+  F0-amendment; no shared-contract change; no frozen-file edits.**
+- **Follow-ups (EVAL):** re-verify end-to-end once SCORE lands — (a) reject→confirmed→probable via the real
+  status machine, (b) integrity origin fan-out across claims/future claims. Effect shapes HITL emits for
+  siblings: `grow_alias`/`record_distinct`/`split_merge` (RESOLVE) · `set_status` (SCORE) ·
+  `tune_tripwire` (MONITOR) · `add_integrity_flag`+`flag_origin` (SCORE).
+- **Gate fixtures:** extended G12 coverage lives in `tests/hitl/test_acceptance.py` (F0's
+  `tests/gates/test_g12_*` untouched and green); no gate weakened.
+- **Board note:** F0/DATA-C rows read stale at branch time (F0 `not-started`, DATA-C `in-review`) though
+  both were merged (PR #1/#8); left others' rows untouched per Rule 4 — the amendment PR #9 has since
+  corrected them, picked up on rebase.
