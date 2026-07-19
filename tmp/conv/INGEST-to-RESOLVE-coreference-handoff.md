@@ -1,106 +1,93 @@
-# INGEST → RESOLVE — in-document coreference: what INGEST now emits, and what RESOLVE must do
+# In-document coreference — INGEST pass 2 + the RESOLVE honor policy (BOTH HALVES DONE)
 
-**Status:** INGEST half **DONE** on `feat/ingest-coref` (worktree `wt-INGEST-coref`, branched off
-`origin/main` @ ea392c6). RESOLVE half **NOT STARTED** — that is this handoff.
-**Source design:** `tmp/conv/INGEST-RESOLVE-in-document-coreference-clustering-PROPOSAL.md` (Option B,
-derived overlay). **Decisions:** `DECISIONS.md` → "INGEST — in-document coreference clustering".
+**Status:** **COMPLETE** on `feat/ingest-coref` (worktree `wt-INGEST-coref`, rebased onto `origin/main`
+after Phase 3 / PR #35 + #36). Design: `INGEST-RESOLVE-in-document-coreference-clustering-PROPOSAL.md`
+(Option B, derived overlay). Decisions: `DECISIONS.md` → the two "in-document coreference" blocks.
+
+> **This file previously specified the RESOLVE half and was written against pre-Phase-3 code. Two of its
+> assumptions were wrong by the time Phase 3 landed** (see §5). It is now a record of what was built, not a
+> spec. Consistent with the Phase-4 audit's finding that handoffs go stale as specs — verify against code.
 
 ---
 
-## 1. Why you are getting this (the measurement)
+## 1. What Phase 3 changed, and what that did to the case for this
 
-On the rebuilt view, **86 of 258 nodes (33%) are `unknown`-type nodes** — dangling relation endpoints that
-never got an entity claim. They include:
+Phase 3 (`24124b1`) largely closed the gap this feature was built for, **deterministically**:
 
-```
-CPMIEC                                         BIRM
-China Precision Machinery Import-Export Corp.  Beijing Institute of Radio Measurement
-China National Precision Machinery Import & Export Corporation
-CASIC                                          CASIC's 23rd Research Institute
-China Aerospace Science and Industry Corp.     23rd Research Institute
-FD-2000                                        FD-2000 long-range surface-to-air missile system
-```
+| | RCA baseline | Phase 2 | **Phase 3** |
+|---|---|---|---|
+| nodes | 294 | 258 | **162** |
+| `unknown` (dangling endpoints) | 109 | 86 | **3** |
+| merges | 5 | 5 | **53** |
 
-These are one entity each, fragmented across surface forms, and RESOLVE cannot fix it from strings alone —
-the licensing evidence ("… Corporation (CPMIEC)") lives in the document and is gone by the time RESOLVE
-runs. INGEST now captures it. **Nothing consumes it yet.**
+Its "endpoint-as-mention" fix plus a **containment/acronym bootstrap** now resolve `CPMIEC`, `BIRM` /
+`Beijing Institute of Radio Measurement`, and `CASIC` / `China Aerospace Science and Industry Corporation`
+with no model call. **Those were the motivating examples in this document's first version — they are no
+longer the case for coreference.** A deterministic rule beats an LLM pass whenever it can reach the answer.
 
-## 2. What INGEST emits
+**What remains, honestly.** Of the 9 pairs still in the adjudication queue, ~4 are genuine equivalences a
+document quote could settle (`HQ-9P fire control radar ↔ Type 305B`, `WS-series 8x8 chassis ↔ TEL
+platform`, `CPMIEC ↔ China National Precision Machinery Import & Export Corp`, `HQ-16 ↔ LY-80`) and 5 are
+traps that must stay apart (three distinct customs contract numbers; `Turkmenistan ↔ Uzbekistan`). The
+first two of those four are **descriptive ↔ designator** pairs sharing no token — the slice no string
+method can ever reach. So the value is now: **reach the non-lexical cases, and attach a verbatim licence
+to what an analyst would otherwise adjudicate unaided** — not "find merges nothing else can".
 
-One relationship claim per non-anchor cluster member, on a **dedicated predicate**:
+## 2. The policy as built
 
-| Field | Value |
+`EXPLICIT_EQUIVALENCE` (the document *states* it — apposition, acronym expansion, "also known as") may
+**bootstrap** (auto-merge). `NAME_VARIANT` and `UNAMBIGUOUS_ANAPHOR` are the extractor *interpreting*, so
+they stay **raise-only** and reach the analyst queue carrying their quote.
+
+This deliberately crosses Phase-3's D-2.5 raise-only rule for one narrow, opted-in category, on the
+grounds that a coreference claim is not an ordinary identity assertion: it is a reading of one document's
+own discourse, and it must quote the licensing span. Everything else about D-2.5 is untouched.
+
+**Authoritative is never unconditional.** In `resolve._coref_pairs`:
+- a stated/configured `distinct-from` **drops** the pair outright — a do-not-merge outranks any reading;
+- a **type**, **namespace**, or **hard-attribute** contradiction (`scoring.has_hard_conflict`) **demotes**
+  the pair to the analyst queue rather than deleting it — the evidence still reaches a human;
+- an absent attribute is *not* a contradiction (absence ≠ disagreement).
+
+## 3. Where it lives
+
+| Concern | Location |
 |---|---|
-| `payload.predicate` | **`coref-same-as`** (new; `config/ontology.yaml`, symmetric, NOT `extractor`) |
-| `payload.subject` / `.object` | the two verbatim surface forms |
-| `attributes._coref_cluster` | document-local cluster id (`c1`, `c2` …) — groups a >2-member cluster |
-| `attributes._coref_evidence` | `EXPLICIT_EQUIVALENCE` \| `NAME_VARIANT` \| `UNAMBIGUOUS_ANAPHOR` |
-| `attributes.source_quote` | the **verbatim licensing span**, checked to occur in the document |
-| `attributes._subject_mention` / `._object_mention` | the entity-claim id that named each endpoint (when declared) |
-| `doc_ref` | the licensing span itself (G4: one click to the text that licenses the merge) |
-| `kind` | `inference` (+`premises` = member mentions) when a member is a declared entity; else `observation` |
+| Emission (pass 2) | `ingest/coref.py`, invoked from `extract_document` (so the live lane **and** the keyless bundle seed inherit it) |
+| Predicate | `coref-same-as` — `config/ontology.yaml`, symmetric, **not** `extractor` |
+| Claim payload | evidence category + verbatim quote + cluster id in the tier-3 bag; `doc_ref` cites the licensing span |
+| Edge plumbing | `resolve/entities.py` — `Edge.attributes` carries the claim's tier-3 bag |
+| Split & gates | `resolve.__init__._coref_pairs` → `(authoritative, raise_only)` |
+| Bootstrap | `resolve/cluster.py::resolve_entities(..., authoritative)` |
+| View | consumed, **not drawn** (`view/pipeline._assemble`), same as `same-as` |
+| Config | `resolution.yaml → coref_authoritative_evidence` (RESOLVE) · `credibility.yaml → coreference` (INGEST, **still commented out**) |
 
-Ordinary relationship claims **also** now carry `_subject_mention` / `_object_mention`. These are
-**positional** (they describe `Triple.subject`/`.object`) — `edge_direction.swap_mention_refs` keeps them in
-sync under reorientation, and `dedup.remap_claim_refs` rewrites them wherever ids are reassigned.
+## 4. To actually turn it on
 
-## 3. THE critical constraint — do not "score" this
+1. RESOLVE knob is **already set** to `[EXPLICIT_EQUIVALENCE]` and is inert today — with the producer
+   dormant there are no coreference claims to honour.
+2. Uncomment `coreference:` in `config/credibility.yaml`. This costs a **second extraction call per
+   document** and **re-records every frozen bundle**.
+3. **Coordinate that re-record with EVAL** rather than doing it twice, and re-measure the queue before/after.
 
-`coref-same-as` is deliberately **absent** from `resolve.scoring._IDENTITY_PREDICATES`
-(`{same-as, same_as, aka, also-known-as, marketed-as, is}`), which feed the `source_asserted` **weighted
-term** of `merge_score`.
+## 5. Corrections to this document's earlier version (kept deliberately)
 
-**Do not simply add `coref-same-as` to that set.** That is the failure mode the proposal explicitly
-rejected: it would turn a decision made *with* the document's discourse context into a partial score that
-attribute-dissimilarity can outvote — re-deriving, with less information, what the extractor already
-decided with more. The whole point of the separate lane is that the honor policy is a **different
-mechanism**, not a heavier weight.
-
-There is a regression test pinning this: `tests/ingest/test_coref.py::
-test_coref_lane_is_inert_to_the_resolvers_merge_scoring`.
-
-## 4. What RESOLVE should do — "authoritative-unless-contradicted"
-
-Proposed shape (proposal §4), to be confirmed when you build it:
-
-1. **Treat an in-document cluster as a merge directive that shortcuts the attribute scorer**, not as a
-   scoring input. Mechanically this most resembles the existing **bootstrap** pass (high-precision, no
-   relational term) or `AliasIndex` equivalence — not `merge_score`.
-2. **`EXPLICIT_EQUIVALENCE` / `NAME_VARIANT`** → co-locate the members onto one node **unless a hard
-   attribute contradiction** exists among them (conflicting `origin_country`, `designator`, coordinates) —
-   in which case route to HITL rather than merge.
-3. **`UNAMBIGUOUS_ANAPHOR`** → open question: auto-apply, or route to HITL by default? Measure the
-   false-merge rate on the 6 frozen scenarios and decide from data. The emission side can already be
-   restricted to the two safe categories via `credibility.yaml → coreference.categories`.
-4. **The existing `distinct_from` veto must still outrank a cluster.** INGEST already refuses to cluster a
-   pair the document itself distinguished, but the configured/learned veto is a second, independent rail —
-   keep it above this.
-5. **Store the cluster id, evidence category and licensing quote on the derived node** so HITL can inspect
-   and **split** (apply the cluster to a subset). Split is native here — you are choosing a partition, never
-   un-welding — which is what keeps RESOLVE's merge-monotonicity from becoming a trap.
-6. **Relations follow their mention.** Under a split, each relation is already anchored by
-   `_subject_mention`/`_object_mention` to the mention that named it, so it follows its sub-node with zero
-   re-inference. Prefer the mention ref over the surface string once you honour clusters.
-
-## 5. How to turn it on
-
-Dormant by default. Uncomment the `coreference:` block in `config/credibility.yaml`. **Enable it together
-with the honor policy, not before** — it costs a second extraction call per document and re-records every
-frozen bundle, and until RESOLVE honours it the clusters are inert (that is by design, so this branch could
-land safely ahead of you).
-
-Note for EVAL/DATA: enabling **will** require re-recording the frozen bundles, and will add `coref-same-as`
-edges to the view. Coordinate that with the Phase-3 re-record rather than doing it twice.
+- It said "do not add `coref-same-as` to `_IDENTITY_PREDICATES`". That constant was **renamed** to public
+  `IDENTITY_PREDICATES` and its meaning changed: identity claims are now *consumed as merge signals and
+  suppressed from the view*, not scored as graph edges. The advice's intent survived (coreference gets its
+  own channel, not a heavier weight on an existing one); its literal wording did not.
+- It cited 86 dangling `unknown` nodes as the motivating evidence. That is now **3**.
 
 ## 6. Limitation to carry forward
 
-A "mention" is keyed by **surface form within one document** (pass 1 already collapses same-name mentions
-per document). So one document using one string for two genuinely different entities ("3rd Battalion" twice)
-is not separable. This is an **under-reach, never an over-merge** — those two occurrences were already a
-single claim before this pass existed.
+A mention is keyed by **surface form within one document** (pass 1 already collapses same-name mentions per
+document), so one document using a single label for two genuinely different entities is not separable. An
+**under-reach, never an over-merge**.
 
-## 7. Tests to read first
+## 7. Tests
 
-`backend/tests/ingest/test_coref.py` (28 tests) — dormancy, the lane separation, every over-merge rail
-(unquotable span, unknown evidence kind, cross-type, stated distinction, lone member, invented id,
-overlapping clusters), ontology typing of undeclared endpoints, and the mention-ref remap/swap contracts.
+`backend/tests/ingest/test_coref.py` (28) — emission, dormancy, and every over-merge rail.
+`backend/tests/resolve/test_coref_honor.py` (11) — opt-in, category split, veto, contradiction demotion,
+cross-type refusal, and consumed-not-drawn. Note the fixture lesson: entities must use production ids
+(`ent:<type>:<name>`) or endpoints resolve to freshly minted attribute-less twins and every
+attribute-reading rail silently passes.

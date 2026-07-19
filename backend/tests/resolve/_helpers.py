@@ -48,8 +48,10 @@ def mk_config(
     containment_min_short_tokens: int | None = None,
     acronym_min_len: int | None = None,
     source_grades: dict[str, str] | None = None,
+    coref_authoritative_evidence: list[str] | None = None,
 ) -> ConfigBundle:
     resolution = ResolutionConfig(
+        coref_authoritative_evidence=coref_authoritative_evidence or [],
         merge_weights=dict(WEIGHTS),
         bands=dict(BANDS),
         blocking_keys=blocking_keys or ["type", "country_or_domain_namespace", "name_token"],
@@ -107,6 +109,31 @@ def entity(eid: str, etype: str, name: str, **attrs: Any) -> ClaimRecord:
         asserts="entity",
         payload=EntityDescriptor(entity_type=etype, name=name, attrs=attrs),
         resolved_ref=ResolvedRef(entity_id=eid),
+    )
+
+
+def coref(
+    subject: str,
+    obj: str,
+    *,
+    evidence: str = "EXPLICIT_EQUIVALENCE",
+    quote: str = "Full Name (SHORT)",
+    source: str = "src-t",
+    cluster: str = "c1",
+) -> ClaimRecord:
+    """An in-document coreference claim as INGEST's extraction pass 2 emits it (``ingest/coref.py``).
+
+    Written on its own predicate, carrying the categorical evidence kind and the verbatim licensing span
+    in the tier-3 bag — that bag is what ``resolve._coref_pairs`` reads to decide bootstrap vs raise-only.
+    """
+    return ClaimRecord(
+        claim_id=_cid("cr"),
+        source_id=source,
+        doc_ref=DocRef(file="d.txt", span=(0, 1)),
+        kind="observation",
+        asserts="relationship",
+        payload=Triple(subject=subject, predicate="coref-same-as", object=obj),
+        attributes={"_coref_cluster": cluster, "_coref_evidence": evidence, "source_quote": quote},
     )
 
 

@@ -864,3 +864,52 @@ is an under-reach, never an over-merge.
 **Design-doc tails to enrich:** `spine/02` — extraction is now **two passes** (fill, then in-document
 coreference), and the claim carries mention-keyed endpoint provenance. `spine/03` — RESOLVE gains a
 prospective authoritative in-document signal that shortcuts the attribute scorer (pending the honor policy).
+
+---
+
+## RESOLVE — honouring in-document coreference, pass 2 of 2 (2026-07-19, `feat/ingest-coref`)
+
+Completes the coreference feature by reconciling it with the **post-Phase-3** resolver (PR #35). Handoff +
+the full before/after numbers: `tmp/conv/INGEST-to-RESOLVE-coreference-handoff.md`.
+
+**Reassessment first — the case for this feature shrank, and that is recorded rather than glossed.** Phase 3
+took `unknown` nodes 86 → **3** and merges 5 → **53**, resolving `CPMIEC`, `BIRM`/`Beijing Institute of Radio
+Measurement` and `CASIC` deterministically via endpoint-as-mention + a containment/acronym bootstrap. Those
+were the motivating examples in the INGEST-half decision block above; **a deterministic rule beats an LLM
+pass wherever it reaches the answer**, so the honest residual is narrower: of the 9 remaining queue pairs,
+~4 are genuine equivalences a quote could settle (two of them *descriptive ↔ designator* pairs sharing no
+token — the slice no string method can reach) and 5 are traps that must stay apart.
+
+- **`EXPLICIT_EQUIVALENCE` may bootstrap; `NAME_VARIANT` / `UNAMBIGUOUS_ANAPHOR` stay raise-only.** *User
+  decision (options template).* This knowingly crosses Phase-3's **D-2.5** raise-only rule for one narrow
+  category, justified because a coreference claim is *not* an ordinary identity assertion: it is a reading
+  of one document's own discourse that must **quote the licensing span**. What the document *states* can
+  merge; what the extractor *interprets* goes to a human. *Rejected:* full authoritative (reverses D-2.5
+  outright and puts anaphora — the riskiest category — into automatic merging); pure raise-only (safe, but
+  silently clips the proposal's thesis).
+- **Opt-in via `resolution.yaml → coref_authoritative_evidence`, empty by default.** *Principle:* config-
+  driven, and shipping a producer must never change anyone's topology by itself. "How much authority does
+  the extractor's in-document reading carry" is an operator decision, not a code literal.
+- **Authoritative ≠ unconditional.** A stated/configured `distinct-from` **drops** the pair; a type,
+  namespace, or hard-attribute contradiction **demotes** it to the analyst queue rather than deleting it —
+  the evidence still reaches a human. `scoring.has_hard_conflict` deliberately reuses the scorer's own
+  `attribute_rules`, so "what counts as a contradiction" has one definition. Absence ≠ disagreement.
+- **It joins the bootstrap, not the fixpoint.** *Principle:* put like with like — the bootstrap is where
+  direct, high-precision identity statements already live (shared hard-ID, alias equivalence, exact name,
+  containment/acronym), and it runs the same veto checks. The fixpoint's `auto` band still structurally
+  excludes the source-asserted term, so D-2.5's enforcement is untouched for every other signal.
+- **Coreference is consumed, not drawn** (`view/pipeline._assemble`), exactly as `same-as` now is: identity
+  is answered by merging or by a candidate edge, never by a third parallel edge.
+- **`Edge` carries the claim's tier-3 bag** so a triple can say something about *how it was derived*
+  without RESOLVE importing INGEST (which would drag the LLM client into `rebuild()`'s import graph).
+
+**Verified end-to-end:** with both halves enabled, a document stating "… Corporation (CPMIEC)" merges *"the
+export agency"* into it — two mentions sharing **zero** tokens, unreachable by containment, acronym or
+alias — with the coref edge consumed and merge provenance on the node. 658 pass, ruff + mypy clean.
+
+**Still OFF by default.** The RESOLVE knob is set but inert; enabling the INGEST producer costs a second
+extraction call per document and re-records every frozen bundle — **coordinate with EVAL's re-record**.
+
+**Design-doc tails to enrich:** `spine/03` — RESOLVE now has three identity channels (deterministic
+bootstrap, raise-only proposals, and opted-in authoritative in-document coreference), and the bootstrap is
+the documented home for direct identity statements.

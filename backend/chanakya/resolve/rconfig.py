@@ -110,6 +110,21 @@ class ResolveConfig:
         v = self._extra("identity_raise_min_weight", None)
         return float(v) if v is not None else 0.0
 
+    @property
+    def coref_authoritative_evidence(self) -> set[str]:
+        """Which in-document coreference evidence categories may **bootstrap** (auto-merge).
+
+        Empty by default — so every coreference cluster is merely raise-only until an operator opts a
+        category in, and shipping the producer alone cannot change anyone's node topology. Naming the
+        categories in config rather than in code keeps "how much authority does the extractor's
+        in-document reading carry" an operator decision: run with ``[EXPLICIT_EQUIVALENCE]`` to auto-merge
+        only what a document *states* verbatim, or leave it empty to send everything to the analyst queue.
+
+        A category listed here still clears every other rail — the ``distinct-from`` veto, type and
+        namespace agreement, and the hard-attribute-contradiction check (``scoring.has_hard_conflict``).
+        """
+        return {str(c) for c in self._extra("coref_authoritative_evidence", [])}
+
     # ── open-world name triggers (P3.3: containment / acronym expansion) ──────────────────────
     @property
     def containment_min_descriptor_len(self) -> int | None:

@@ -218,13 +218,21 @@ def resolve_entities(
     alias_idx: AliasIndex,
     veto: set[Pair],
     raise_only: set[Pair],
+    authoritative: set[Pair] | None = None,
 ) -> ResolveResult:
     """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
 
     ``raise_only`` is the union of the *proposal* channels — the frozen offline LLM ``merge_proposal``
     records and the source-asserted ``same-as`` pairs from the claim stream (D-2.5). Both may lift a pair
     into the HITL band and neither may ever reach auto-merge.
+
+    ``authoritative`` is the one channel that may **bootstrap**: in-document coreference whose evidence
+    category the operator opted in, already veto-, type-, namespace- and contradiction-gated by
+    ``resolve._coref_pairs`` (empty by default). It joins the bootstrap rather than the fixpoint because
+    it is the same *kind* of evidence the other bootstrap triggers are — a direct, high-precision
+    statement of identity — and it is still subject to the veto checks every bootstrap merge runs.
     """
+    authoritative = authoritative or set()
     res = ResolveResult()
     if not cfg.scorable:
         return res  # no bands configured ⇒ inert (identity partition) — no code literal needed
@@ -233,7 +241,10 @@ def resolve_entities(
     uf = _UnionFind(eids)
     trans = cfg.transliteration
     toks = _token_index(graph, cfg)
-    pairs = sorted(tuple(sorted(p)) for p in _candidate_pairs(graph, cfg, alias_idx, raise_only, toks))
+    pairs = sorted(
+        tuple(sorted(p))
+        for p in _candidate_pairs(graph, cfg, alias_idx, raise_only | authoritative, toks)
+    )
 
     def vetoed(a: str, b: str) -> bool:
         return frozenset((a, b)) in veto or alias_idx.barred(
@@ -268,6 +279,9 @@ def resolve_entities(
             or alias_idx.equivalent(na, nb)
             or (bool(na) and na == nb and same_ns)
             or _name_containment(ea, eb, cfg, toks)
+            # The document itself stated this equivalence in a quotable span, and the pair cleared the
+            # veto/type/namespace/contradiction gates upstream — evidence no string comparison can reach.
+            or frozenset((a, b)) in authoritative
         ):
             bd = merge_score(ea, eb, graph, uf.find, cfg, alias_idx)
             merge(a, b, 1.0, bd)  # unambiguous evidence → identity confidence 1.0

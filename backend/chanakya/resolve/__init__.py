@@ -38,7 +38,13 @@ from .normalize import normalize
 from .places import location_attr
 from .propose import propose_candidates
 from .rconfig import ResolveConfig
-from .scoring import DISTINCT_PREDICATES, IDENTITY_PREDICATES
+from .scoring import (
+    COREF_EVIDENCE_ATTR,
+    COREF_PREDICATE,
+    DISTINCT_PREDICATES,
+    IDENTITY_PREDICATES,
+    has_hard_conflict,
+)
 
 __all__ = [
     "resolve",
@@ -46,6 +52,7 @@ __all__ = [
     "location_attr",
     "IDENTITY_PREDICATES",
     "DISTINCT_PREDICATES",
+    "COREF_PREDICATE",
 ]
 
 
@@ -91,11 +98,19 @@ def resolve(
     # do-not-merge about a mention that only *became* an entity in the line above. Idempotent (a set union).
     veto |= _claim_distinct_pairs(graph, cfg, alias_idx)
 
-    # The two raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
+    # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
-    raise_only = _llm_pairs(graph, cfg, alias_idx, decisions) | _identity_pairs(graph, cfg, alias_idx, veto)
+    # In-document coreference is the one signal that may also *bootstrap* — and only for the evidence
+    # categories an operator opted in, uncontradicted (see :func:`_coref_pairs`); everything it cannot
+    # justify falls back into the same raise-only queue.
+    coref_authoritative, coref_raise = _coref_pairs(graph, cfg, alias_idx, veto)
+    raise_only = (
+        _llm_pairs(graph, cfg, alias_idx, decisions)
+        | _identity_pairs(graph, cfg, alias_idx, veto)
+        | coref_raise
+    )
 
-    result = resolve_entities(graph, cfg, alias_idx, veto, raise_only)
+    result = resolve_entities(graph, cfg, alias_idx, veto, raise_only, coref_authoritative)
     result.candidates.extend(ambiguous)  # an endpoint with >1 irreconcilable match is adjudicated, never guessed
     places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
@@ -337,6 +352,56 @@ def _best_identity_weight(graph: EntityGraph, cfg: ResolveConfig, a: str, b: str
         if e.predicate in IDENTITY_PREDICATES and {e.subject, e.object} == {a, b}
     ]
     return max(weights) if weights else 0.0
+
+
+# ── in-document coreference: authoritative-unless-contradicted (INGEST pass 2) ─────────────────
+
+def _coref_pairs(
+    graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[Pair]
+) -> tuple[set[Pair], set[Pair]]:
+    """Split ``coref-same-as`` claims into ``(authoritative, raise_only)`` entity-id pairs.
+
+    A coreference claim carries something no other identity signal does: the extractor read **this one
+    document's discourse** and reported which mentions it treats as one entity, with a verbatim span that
+    licenses the grouping. Re-deriving that from surface strings is exactly the information loss the
+    design forbids — so a category the operator has opted into
+    (:attr:`ResolveConfig.coref_authoritative_evidence`, empty by default) *bootstraps* rather than
+    merely raising, and every other category joins the ordinary raise-only queue.
+
+    "Authoritative" is never "unconditional". A pair is demoted to raise-only — an analyst decision, with
+    the licensing quote attached — whenever the two ends disagree in a way the document's local reading
+    cannot settle: a different entity **type**, an incompatible **namespace** (a China/Pakistan split), or
+    a stated **hard-attribute contradiction** (:func:`scoring.has_hard_conflict`). A vetoed pair is
+    dropped outright, exactly like a source-asserted ``same-as``: a stated do-not-merge outranks any
+    reading of the prose. Demotion, not silent deletion, is the point — the evidence still reaches a human.
+    """
+    authoritative: set[Pair] = set()
+    raise_only: set[Pair] = set()
+    allowed = cfg.coref_authoritative_evidence
+
+    for e in graph.edges:
+        if e.predicate != COREF_PREDICATE:
+            continue
+        evidence = str((e.attributes or {}).get(COREF_EVIDENCE_ATTR) or "")
+        left = _matching_eids(e.subject, graph, cfg, alias_idx)
+        right = _matching_eids(e.object, graph, cfg, alias_idx)
+        for a, b in product(left, right):
+            if a == b or a not in graph.entities or b not in graph.entities:
+                continue
+            pair = frozenset((a, b))
+            if pair in veto:
+                continue  # a stated do-not-merge outranks the extractor's reading of the prose
+            ea, eb = graph.entities[a], graph.entities[b]
+            contradicted = (
+                ea.etype != eb.etype
+                or not namespace_compatible(ea, eb)
+                or has_hard_conflict(ea, eb, cfg)
+            )
+            if evidence in allowed and not contradicted:
+                authoritative.add(pair)
+            else:
+                raise_only.add(pair)
+    return authoritative, raise_only
 
 
 def _llm_pairs(
