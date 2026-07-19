@@ -7,11 +7,15 @@
         "d03-row7"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.585,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "commercial",
+              "origin": "src-customs"
+            },
             "claim_ids": [
               "d03-row7"
             ],
@@ -20,27 +24,38 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d03-row7": 0.585
+        }
       },
       "edge_instance": "edge:mfr_foundry:supplies-component:comp_gizmo",
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": 1825.0,
+        "last_support_time": "2021-12-31"
+      },
       "id": "e:mfr_foundry:supplies-component:comp_gizmo",
       "merge_confidence": null,
       "opposing_claims": [],
       "source": "mfr_foundry",
-      "status": "probable",
+      "status": "possible",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
         "next_coverage_due": null,
         "satisfied": true,
-        "template_id": null
+        "template_id": "supplies-component"
       },
       "superseded_by": null,
       "supersedes": null,
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "commercial",
+            "origin": "src-customs"
+          },
           "claim_ids": [
             "d03-row7"
           ],
@@ -57,11 +72,15 @@
         "d17-l1"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.84,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "IMINT",
+              "interest": "commercial",
+              "origin": "src-imagery"
+            },
             "claim_ids": [
               "d17-l1"
             ],
@@ -70,27 +89,38 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d17-l1": 0.84
+        }
       },
       "edge_instance": "based-at:unit_acme",
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": 365.0,
+        "last_support_time": "2021-06-01"
+      },
       "id": "e:unit_acme:based-at:site_north",
       "merge_confidence": null,
       "opposing_claims": [],
       "source": "unit_acme",
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
         "next_coverage_due": null,
         "satisfied": true,
-        "template_id": null
+        "template_id": "based-at"
       },
       "superseded_by": "e:unit_acme:based-at:site_south",
       "supersedes": null,
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "IMINT",
+            "interest": "commercial",
+            "origin": "src-imagery"
+          },
           "claim_ids": [
             "d17-l1"
           ],
@@ -107,11 +137,15 @@
         "d19-l1"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.84,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "IMINT",
+              "interest": "commercial",
+              "origin": "src-imagery"
+            },
             "claim_ids": [
               "d19-l1"
             ],
@@ -120,27 +154,38 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d19-l1": 0.84
+        }
       },
       "edge_instance": "based-at:unit_acme",
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": 365.0,
+        "last_support_time": "2025-05-01"
+      },
       "id": "e:unit_acme:based-at:site_south",
       "merge_confidence": null,
       "opposing_claims": [],
       "source": "unit_acme",
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
         "next_coverage_due": null,
         "satisfied": true,
-        "template_id": null
+        "template_id": "based-at"
       },
       "superseded_by": null,
       "supersedes": "e:unit_acme:based-at:site_north",
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "IMINT",
+            "interest": "commercial",
+            "origin": "src-imagery"
+          },
           "claim_ids": [
             "d19-l1"
           ],
@@ -157,11 +202,15 @@
         "d02-l1"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.715,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "third-party",
+              "origin": "src-register"
+            },
             "claim_ids": [
               "d02-l1"
             ],
@@ -170,15 +219,22 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d02-l1": 0.715
+        }
       },
       "edge_instance": "edge:unit_acme:fields:comp_gizmo",
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": 540.0,
+        "last_support_time": "2021-03-01"
+      },
       "id": "e:unit_acme:fields:comp_gizmo",
       "merge_confidence": null,
       "opposing_claims": [],
       "source": "unit_acme",
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -190,7 +246,11 @@
       "supersedes": null,
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "third-party",
+            "origin": "src-register"
+          },
           "claim_ids": [
             "d02-l1"
           ],
@@ -209,11 +269,15 @@
         "d04-ev1"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.715,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "third-party",
+              "origin": "src-register"
+            },
             "claim_ids": [
               "d04-ev1"
             ],
@@ -222,10 +286,17 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d04-ev1": 0.715
+        }
       },
       "event_type": "TransferEvent",
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": null,
+        "last_support_time": null
+      },
       "id": "ev_transfer_2020",
       "location": null,
       "opposing_claims": [],
@@ -233,7 +304,7 @@
         "mfr_foundry",
         "unit_acme"
       ],
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -243,7 +314,11 @@
       },
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "third-party",
+            "origin": "src-register"
+          },
           "claim_ids": [
             "d04-ev1"
           ],
@@ -259,12 +334,24 @@
       }
     }
   ],
-  "known_gaps": [],
+  "known_gaps": [
+    {
+      "id": "gap:chokepoint:comp_gizmo",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "comp_gizmo",
+      "what_missing": "confirmed sole-source supplier / substitutability for Gizmo engagement radar"
+    }
+  ],
   "meta": {
     "config_version": 1,
     "edge_count": 4,
     "event_count": 1,
-    "known_gap_count": 0,
+    "known_gap_count": 1,
     "node_count": 5
   },
   "nodes": [
@@ -276,11 +363,15 @@
         "d01-e2"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.715,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "third-party",
+              "origin": "src-register"
+            },
             "claim_ids": [
               "d01-e2"
             ],
@@ -289,15 +380,30 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d01-e2": 0.715
+        }
       },
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": null,
+        "last_support_time": null
+      },
       "id": "comp_gizmo",
       "location": null,
-      "materiality": null,
+      "materiality": {
+        "chokepoint_count": 0,
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d03-row7",
+          "e:mfr_foundry:supplies-component:comp_gizmo"
+        ],
+        "substitutability_state": "UNKNOWN"
+      },
       "name": "Gizmo engagement radar",
       "opposing_claims": [],
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -307,7 +413,11 @@
       },
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "third-party",
+            "origin": "src-register"
+          },
           "claim_ids": [
             "d01-e2"
           ],
@@ -325,11 +435,15 @@
         "d01-e3"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.715,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "third-party",
+              "origin": "src-register"
+            },
             "claim_ids": [
               "d01-e3"
             ],
@@ -338,15 +452,27 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d01-e3": 0.715
+        }
       },
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": null,
+        "last_support_time": null
+      },
       "id": "mfr_foundry",
       "location": null,
-      "materiality": null,
+      "materiality": {
+        "chokepoint_count": 0,
+        "chokepoint_status": "none",
+        "contributing_refs": [],
+        "substitutability_state": "UNKNOWN"
+      },
       "name": "Foundry Corp",
       "opposing_claims": [],
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -356,7 +482,11 @@
       },
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "third-party",
+            "origin": "src-register"
+          },
           "claim_ids": [
             "d01-e3"
           ],
@@ -372,11 +502,15 @@
         "d01-e4"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.715,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "third-party",
+              "origin": "src-register"
+            },
             "claim_ids": [
               "d01-e4"
             ],
@@ -385,15 +519,27 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d01-e4": 0.715
+        }
       },
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": null,
+        "last_support_time": null
+      },
       "id": "site_north",
       "location": null,
-      "materiality": null,
+      "materiality": {
+        "chokepoint_count": 0,
+        "chokepoint_status": "none",
+        "contributing_refs": [],
+        "substitutability_state": "UNKNOWN"
+      },
       "name": "North Cantonment",
       "opposing_claims": [],
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -403,7 +549,11 @@
       },
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "third-party",
+            "origin": "src-register"
+          },
           "claim_ids": [
             "d01-e4"
           ],
@@ -419,11 +569,15 @@
         "d01-e5"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.84,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "IMINT",
+              "interest": "commercial",
+              "origin": "src-imagery"
+            },
             "claim_ids": [
               "d01-e5"
             ],
@@ -432,15 +586,27 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d01-e5": 0.84
+        }
       },
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": null,
+        "last_support_time": null
+      },
       "id": "site_south",
       "location": null,
-      "materiality": null,
+      "materiality": {
+        "chokepoint_count": 0,
+        "chokepoint_status": "none",
+        "contributing_refs": [],
+        "substitutability_state": "UNKNOWN"
+      },
       "name": "South Airfield",
       "opposing_claims": [],
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -450,7 +616,11 @@
       },
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "IMINT",
+            "interest": "commercial",
+            "origin": "src-imagery"
+          },
           "claim_ids": [
             "d01-e5"
           ],
@@ -468,11 +638,15 @@
         "d01-e1"
       ],
       "confidence": {
-        "assertion_confidence": null,
-        "freshness_factor": null,
+        "assertion_confidence": 0.715,
+        "freshness_factor": 1.0,
         "independence_groups": [
           {
-            "axis_key": {},
+            "axis_key": {
+              "discipline": "textual",
+              "interest": "third-party",
+              "origin": "src-register"
+            },
             "claim_ids": [
               "d01-e1"
             ],
@@ -481,15 +655,27 @@
           }
         ],
         "integrity_flags": [],
-        "per_claim_credibility": {}
+        "per_claim_credibility": {
+          "d01-e1": 0.715
+        }
       },
-      "freshness": null,
+      "freshness": {
+        "decay_factor": 1.0,
+        "half_life": null,
+        "half_life_days": null,
+        "last_support_time": null
+      },
       "id": "unit_acme",
       "location": null,
-      "materiality": null,
+      "materiality": {
+        "chokepoint_count": 0,
+        "chokepoint_status": "none",
+        "contributing_refs": [],
+        "substitutability_state": "UNKNOWN"
+      },
       "name": "Acme Air-Defence Battalion",
       "opposing_claims": [],
-      "status": null,
+      "status": "probable",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -499,7 +685,11 @@
       },
       "supporting_claims": [
         {
-          "axis_key": {},
+          "axis_key": {
+            "discipline": "textual",
+            "interest": "third-party",
+            "origin": "src-register"
+          },
           "claim_ids": [
             "d01-e1"
           ],

@@ -26,12 +26,14 @@ def test_resolve_stub_is_identity_matching_fixture() -> None:
     assert part.same_as == [] and part.distinct_from == []
 
 
-def test_credibility_stubs_shapes() -> None:
+def test_credibility_shapes() -> None:
+    # SCORE stages are live now (not stubs): no claims → no credibilities; claim ids with no bodies
+    # can't be grouped (fail-closed); an empty assertion pools to 0.0 → possible (never fabricated).
     assert score_claims([], {}, CFG) == {}
-    groups = group_by_independence(["a", "b"], {}, {}, CFG)
-    assert [g.claim_ids for g in groups] == [["a"], ["b"]]  # identity: one look per claim
+    assert group_by_independence(["a", "b"], {}, {}, CFG) == []  # unknown claims → no groups
     assessments = assign_status([AssertionInput(element_id="e1", element_kind="edge")], CFG)
-    assert assessments["e1"].status is None and assessments["e1"].assertion_confidence is None
+    assert assessments["e1"].assertion_confidence == 0.0
+    assert assessments["e1"].status == "possible"
 
 
 def test_sufficiency_and_materiality_and_observe_stubs() -> None:

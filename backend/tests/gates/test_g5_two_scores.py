@@ -31,11 +31,14 @@ def test_merge_confidence_does_not_feed_assertion_confidence() -> None:
 
 def test_status_only_from_machine_or_override() -> None:
     cfg = loaders.golden_config_store().snapshot()
-    # With NO decisions, the stub status machine assigns nothing → every status is None.
+    # The status machine assigns every element's status (never hand-written in assembly/supersede).
     plain = rebuild(loaders.golden_evidence_log(), [], cfg)
-    assert all(el.status is None for el in [*plain.nodes, *plain.edges, *plain.events])
+    assert all(e.status is not None for e in plain.edges)  # machine-assigned, not None
+    base = {e.id: e.status for e in plain.edges}
 
-    # With the golden decision log (a status_override), EXACTLY the overridden edge changes.
+    # The golden decision log (a status_override) changes EXACTLY the overridden edge vs the machine baseline.
     overridden = rebuild(loaders.golden_evidence_log(), loaders.golden_decision_log(), cfg)
-    changed = {el.id: el.status for el in overridden.edges if el.status is not None}
-    assert changed == {"e:mfr_foundry:supplies-component:comp_gizmo": "probable"}
+    over = {e.id: e.status for e in overridden.edges}
+    diff = {eid for eid in base if base[eid] != over[eid]}
+    assert diff == {"e:mfr_foundry:supplies-component:comp_gizmo"}
+    assert over["e:mfr_foundry:supplies-component:comp_gizmo"] == "possible"  # analyst downgrade wins

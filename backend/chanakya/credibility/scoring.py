@@ -22,9 +22,19 @@ lives here** (gate G6): every weight, penalty, threshold, half-life, and the dec
 from __future__ import annotations
 
 from chanakya.ingest.hashing import pdq_hamming
-from chanakya.schemas import ClaimRecord, ConfigBundle, DecisionRecord, SourceRegistryEntry
+from chanakya.schemas import (
+    ClaimRecord,
+    ConfigBundle,
+    DecisionRecord,
+    Freshness,
+    SourceRegistryEntry,
+)
 from chanakya.schemas.values import canonical_iso_bounds
 from chanakya.timeref import effective_as_of
+
+# Freshness gate-flag vocabulary (must match status.py) — strings, not scoring numbers (G6).
+_AGING = "aging"  # ≥1 supporting look older than 1 half-life → blocks confirmed
+_STALE = "stale"  # the freshest supporting look older than 1 half-life → demote confirmed→stale
 
 # Integrity table names + flag vocabulary (must match config.credibility.integrity_penalties keys,
 # "<table>.<flag>"). Strings, not scoring numbers — the *values* live in config (gate G6).
@@ -140,35 +150,91 @@ def _days_between(start_iso: str, end_iso: str) -> float:
     return float((date.fromisoformat(end_iso) - date.fromisoformat(start_iso)).days)
 
 
+def _half_life_days(claim: ClaimRecord, config: ConfigBundle) -> float | None:
+    """This claim's half-life (variant-qualified → bare edge → durable/None)."""
+    half_lives = config.credibility.half_lives_days
+    key = _edge_key(claim)
+    if key is None:
+        return None
+    variant = _attrs(claim).get(_ATTR_FRESH_VARIANT)
+    if variant is not None:
+        specific = half_lives.get(f"{key}.{variant}")
+        if specific is not None:
+            return specific
+    return half_lives.get(key)
+
+
+def _event_iso(claim: ClaimRecord) -> tuple[str | None, bool]:
+    """The claim's freshness anchor ISO: event_time, else report_time (flagged fell_back)."""
+    _, event_hi = canonical_iso_bounds(claim.event_time)
+    if event_hi is not None:
+        return event_hi, False
+    _, report_hi = canonical_iso_bounds(claim.report_time)
+    return report_hi, report_hi is not None
+
+
 def freshness(claim: ClaimRecord, as_of: str | None, config: ConfigBundle) -> tuple[float, bool]:
     """``base^(−age/half_life)`` on event_time (fallback report_time, flagged). Returns (factor, fell_back).
 
     Durable edge types (no half-life configured) skip decay → ``1.0``. A future-dated claim
     (event after as_of) clamps to fresh (``1.0``) — nothing is fresher than the evaluation date.
     """
-    half_lives = config.credibility.half_lives_days
-    key = _edge_key(claim)
-    variant = _attrs(claim).get(_ATTR_FRESH_VARIANT)
-    half_life = None
-    if key is not None:
-        if variant is not None:
-            half_life = half_lives.get(f"{key}.{variant}")
-        if half_life is None:
-            half_life = half_lives.get(key)
+    half_life = _half_life_days(claim, config)
     base = getattr(config.credibility, "decay_base", None)
     if half_life is None or base is None or as_of is None:
         return 1.0, False  # durable / unconfigured / no reference → no decay
-    fell_back = False
-    _, event_hi = canonical_iso_bounds(claim.event_time)
-    if event_hi is None:
-        _, event_hi = canonical_iso_bounds(claim.report_time)
-        fell_back = True
+    event_hi, fell_back = _event_iso(claim)
     if event_hi is None:
         return 1.0, False
     age = _days_between(event_hi, as_of)
     if age <= 0.0:
         return 1.0, fell_back  # future-relative / same-day → fresh, never > 1.0
     return base ** (-(age / half_life)), fell_back
+
+
+def assertion_freshness(
+    claim_ids: list[str],
+    claims_by_id: dict[str, ClaimRecord],
+    as_of: str | None,
+    config: ConfigBundle,
+) -> tuple[Freshness, list[str]]:
+    """Summarise an assertion's freshness (freshest look) + the freshness gate flags for the machine.
+
+    ``aging`` if *any* supporting look has aged past one half-life (blocks confirmed — "every look
+    fresh"); ``stale`` if the *freshest* look has aged past one half-life (demote confirmed→stale).
+    Durable looks never age. Pure/clock-free (G1).
+    """
+    base = getattr(config.credibility, "decay_base", None)
+    freshest_iso: str | None = None
+    freshest_decay = 1.0
+    freshest_hl: float | None = None
+    any_aged = False
+    freshest_aged = False
+    for cid in claim_ids:
+        claim = claims_by_id.get(cid)
+        if claim is None:
+            continue
+        half_life = _half_life_days(claim, config)
+        if half_life is None or base is None or as_of is None:
+            continue  # durable / no reference → always fresh; contributes no aging
+        event_hi, _ = _event_iso(claim)
+        if event_hi is None:
+            continue
+        age = _days_between(event_hi, as_of)
+        decay = 1.0 if age <= 0.0 else base ** (-(age / half_life))
+        aged = age > half_life
+        any_aged = any_aged or aged
+        if freshest_iso is None or event_hi > freshest_iso:
+            freshest_iso, freshest_decay, freshest_hl, freshest_aged = event_hi, decay, half_life, aged
+    flags: list[str] = []
+    if any_aged:
+        flags.append(_AGING)
+    if freshest_aged:
+        flags.append(_STALE)
+    summary = Freshness(
+        last_support_time=freshest_iso, half_life_days=freshest_hl, decay_factor=freshest_decay
+    )
+    return summary, flags
 
 
 # ── first_seen precomputation (image-fingerprint dedup across the claim set) ────────────────────

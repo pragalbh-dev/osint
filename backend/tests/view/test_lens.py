@@ -25,10 +25,13 @@ def test_edges_survive_only_when_both_endpoints_do() -> None:
 
 def test_materiality_filter_keeps_unknown_but_drops_low() -> None:
     view = loaders.golden_view()
-    # Tag one node as low-materiality; anchors are always kept, unknown attrs pass.
+    # The SCORE materiality stage now sets attrs on every node; set up the two cases explicitly:
+    # site_north = explicitly low (count 0 → dropped); site_south = unknown (no count → kept).
     for n in view.nodes:
         if n.id == "site_north":
             n.materiality = MaterialityAttrs(chokepoint_count=0)
+        elif n.id == "site_south":
+            n.materiality = MaterialityAttrs(chokepoint_count=None)
     lens = SubjectLens(subject_id="s", anchors=["unit_acme"], max_hops=2,
                        materiality_filter={"min_chokepoint_count": 1})
     ids = {n.id for n in apply_lens(view, lens).nodes}

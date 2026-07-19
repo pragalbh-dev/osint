@@ -28,8 +28,10 @@ def test_retraction_removes_phantom_node_and_edge() -> None:
 
 def test_meta_is_deterministic_and_clockless() -> None:
     view = loaders.golden_view()
+    # known_gap_count == 1: with the SCORE stages live, materiality flags comp_gizmo a *candidate*
+    # chokepoint (sole-source in-degree, substitutability UNKNOWN) → a first-class Known Gap.
     assert view.meta == {
-        "config_version": 1, "node_count": 5, "edge_count": 4, "event_count": 1, "known_gap_count": 0,
+        "config_version": 1, "node_count": 5, "edge_count": 4, "event_count": 1, "known_gap_count": 1,
     }
 
 

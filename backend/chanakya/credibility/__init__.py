@@ -1,68 +1,23 @@
 """CREDIBILITY stage — the Confidence Resolver + independence grouping + status machine (owned by SCORE).
 
-F0 ships **trivial stubs** (no scoring): ``score_claims`` returns no credibilities, grouping is the
-identity (one look per claim — never *over*-claiming corroboration), and ``assign_status`` assigns no
-status. This keeps ``rebuild()`` running while SCORE fills the real bodies (per-claim
-reliability×integrity×freshness, noisy-OR over independence groups, the 3-gate status machine —
-spine/04, master §4.3).
+Three pure, config-driven stages of ``rebuild()`` (master §4.3), split across submodules and re-exported
+here so the pipeline's frozen ``from chanakya.credibility import …`` keeps working:
 
-**No magic numbers here (gate G6):** the real SCORE bodies read weights/thresholds/half-lives from
-``config.credibility``. These stubs contain no scoring literals.
+* ``scoring.score_claims`` — per-claim ``R(source) × Π(integrity) × freshness`` (spine/04 §C).
+* ``independence.group_by_independence`` — three-axis (origin/discipline/interest) clustering (§3.5).
+* ``status.assign_status`` — noisy-OR pooling + the confirmed/probable/possible/insufficient/
+  contradicted/stale gate machine (§3.4).
 
-Frozen signatures:
-    score_claims(resolved_claims, sources, config, decisions=None) -> {claim_id: claim_credibility}
-    group_by_independence(claim_ids, claims, sources, config) -> [IndependenceGroup]
-    assign_status(assertions, config) -> {element_id: AssertionAssessment}
+**No scoring literal lives in this package (gate G6):** every weight, penalty, threshold, half-life,
+decay base, and look-count comes from ``config.credibility`` through F0's live store. **No LLM / network /
+clock / RNG (gate G1):** freshness reads the clock-free ``as_of`` (``chanakya.timeref``); the soft
+"too-clean" narrative is produced upstream at ingest, not here.
 """
 
 from __future__ import annotations
 
-from chanakya.schemas import (
-    AssertionAssessment,
-    AssertionInput,
-    ClaimRecord,
-    ConfigBundle,
-    DecisionRecord,
-    IndependenceGroup,
-    SourceRegistryEntry,
-)
+from .independence import group_by_independence
+from .scoring import assertion_freshness, score_claims
+from .status import assign_status
 
-
-def score_claims(
-    resolved_claims: list[ClaimRecord],
-    sources: dict[str, SourceRegistryEntry],
-    config: ConfigBundle,
-    decisions: list[DecisionRecord] | None = None,
-) -> dict[str, float]:
-    """STUB: compute no per-claim credibilities yet. SCORE fills reliability×integrity×freshness.
-
-    ``decisions`` (the replayed decision log, optional) is SCORE's channel for analyst integrity flags:
-    an ``flag_origin`` effect must penalise **every** claim sharing that ``primary_origin_id`` — including
-    claims ingested *after* the flag (the monitoring beat) — not just the flagged element. Additive &
-    optional, so the existing ``rebuild()`` / API caller is unaffected (master §2 Rule 3).
-    """
-    return {}
-
-
-def group_by_independence(
-    claim_ids: list[str],
-    claims: dict[str, ClaimRecord],
-    sources: dict[str, SourceRegistryEntry],
-    config: ConfigBundle,
-) -> list[IndependenceGroup]:
-    """STUB (identity): one group per claim — no collapsing, so no false corroboration is asserted.
-
-    SCORE replaces this with 3-axis (origin/discipline/interest) clustering (§3.5).
-    """
-    return [
-        IndependenceGroup(group_id=f"grp:{cid}", claim_ids=[cid])
-        for cid in claim_ids
-    ]
-
-
-def assign_status(
-    assertions: list[AssertionInput],
-    config: ConfigBundle,
-) -> dict[str, AssertionAssessment]:
-    """STUB: assign no status / no confidence. SCORE fills the 3-gate machine (spine/04 §3.4)."""
-    return {a.element_id: AssertionAssessment(element_id=a.element_id) for a in assertions}
+__all__ = ["assertion_freshness", "assign_status", "group_by_independence", "score_claims"]
