@@ -114,6 +114,11 @@ corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2
   edge types** — candidate-ness is a computed edge status (`possible`). Sustainment **split** into
   `techdata_authority` + `interceptor_stockpile`. Dropped `variant-of` (family = Variant attr) + `imported-via`.
   ASK/EVAL bind to these names.
+- **Eval-match bridge (EVAL RCA, 2026-07-19):** the golden `answer_key`'s hand-assigned ids and RESOLVE's
+  minted ids are two different namespaces, so the acceptance harness matches view→oracle by name+type
+  overlap, not id-exact, until the entity canonical-id registry (DECISIONS §6 "EVAL" D-B) is consumed
+  end-to-end and the answer_key is reconciled onto it (separate follow-up) — then eval switches to
+  id-exact and the bridge retires. See DECISIONS.md §6 "EVAL" D-C; `tmp/conv/eval-rca/00-RCA-index.md`.
 - **`make extract`** is SHIP's Makefile target; INGEST ships only the CLI entrypoint it invokes (INGEST flag #2).
 
 ## Handoff notes

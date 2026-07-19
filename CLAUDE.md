@@ -153,6 +153,12 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 - **Data issues → `tmp/conv/`, don't self-fix.** When any agent hits a corpus / `answer_key.json` / data-model
   issue it shouldn't fix itself, write an observation MD to `tmp/conv/` for the **data agent** to resolve —
   don't edit the frozen corpus or answer_key unilaterally.
+- **Keep the orchestrator's context lean — delegate.** Push heavy reading, searching, and multi-file
+  investigation into **subagents** and read back only their *conclusions*, not the raw files — this is how the
+  driving agent stays fast and focused, not merely how work parallelises. **Size each subagent to the smallest
+  model that suffices** for its task (a doc-read, a lookup, or a mechanical rendering rarely needs the biggest
+  model); reserve the large models — and your own scarce context — for the judgement that genuinely demands
+  them. Effective delegation to right-sized models is a context-management tool, not just a speed one.
 - **Talk to the user (the orchestrator) in plain, intuitive language — never dump code/schema at them.** The
   user directs the work and reasons about it conceptually; they are *not* reading the source. In any message
   to the user, explain the *why*, the tradeoff, and the *so-what* using concepts and analogies — not verbatim

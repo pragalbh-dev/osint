@@ -1,0 +1,728 @@
+[
+  {
+    "asserts": "event",
+    "attributes": {
+      "bl_no": "YMLUW189234567",
+      "containers": [
+        "TCNU7712204",
+        "TCNU7712341"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-118834",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": 12,
+      "span": [
+        531,
+        1532
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-04-11",
+      "kind": "exact",
+      "raw": "04-11-2020"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "declared_value": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 612400.0
+        },
+        "description": "\"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE,\n                 FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT\""
+      },
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "PORT MUHAMMAD BIN QASIM (PQ)",
+        "raw": "PORT MUHAMMAD BIN QASIM (PQ)",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "ORIENT ELECTRO TRADING (PVT) LTD",
+        "SINO-GALAXY IMP/EXP CO. LTD"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2020-04-11",
+        "kind": "exact",
+        "raw": "04-11-2020"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "YMLUW189234568",
+      "containers": [
+        "TCNU7712204"
+      ],
+      "gd_no": "KPQA-HC-2020-118835",
+      "hs_code": "8526.92.00"
+    },
+    "claim_id": "d05-customs-manifest-row18",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 18,
+        "page": null,
+        "region": null,
+        "row": 18,
+        "span": [
+          784,
+          833
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 18,
+        "page": null,
+        "region": null,
+        "row": 18,
+        "span": [
+          784,
+          937
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "role": "consignee"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "ORIENT ELECTRO TRADING (PVT) LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "YMLUW189234567",
+      "containers": [
+        "TCNU7712204",
+        "TCNU7712341"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-118834",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": 21,
+      "span": [
+        938,
+        1105
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "CHINA",
+        "role": "shipper"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "SINO-GALAXY IMP/EXP CO. LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row21-2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 21,
+        "page": null,
+        "region": null,
+        "row": 21,
+        "span": [
+          938,
+          1105
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 21,
+        "page": null,
+        "region": null,
+        "row": 21,
+        "span": [
+          955,
+          1056
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SINO-GALAXY IMPEX CO, LTD",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "SINO-GALAXY IMP/EXP CO. LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "bl_no": "YMLUW189234568",
+      "containers": [
+        "TCNU7712204"
+      ],
+      "gd_no": "KPQA-HC-2020-118835",
+      "hs_code": "8526.92.00"
+    },
+    "claim_id": "d05-customs-manifest-row35",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 35,
+      "page": null,
+      "region": null,
+      "row": 35,
+      "span": [
+        1612,
+        3050
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-04-11",
+      "kind": "exact",
+      "raw": "04-11-2020"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "declared_value": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 188900.0
+        },
+        "description": "\"ELECTRONIC ASSEMBLY, ANTENNA FEED SUB-UNIT, TEST\n                 EQPT ACCESSORY, PARTS OF SURVEILLANCE INSTRUMENT N.E.S.\""
+      },
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "Port Muhammad Bin Qasim",
+            "lat": 24.767,
+            "lon": 67.333,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "BIN QASIM",
+        "raw": "BIN QASIM",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 24.767,
+        "wgs84_lon": 67.333
+      },
+      "participants": [
+        "ORIENT ELECTRO TRADING (PVT) LTD",
+        "SINO GALAXY IMP. & EXP. CO."
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2020-04-11",
+        "kind": "exact",
+        "raw": "04-11-2020"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "YMLUW189234568",
+      "containers": [
+        "TCNU7712204"
+      ],
+      "gd_no": "KPQA-HC-2020-118835",
+      "hs_code": "8526.92.00"
+    },
+    "claim_id": "d05-customs-manifest-row41",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 41,
+      "page": null,
+      "region": null,
+      "row": 41,
+      "span": [
+        1811,
+        1878
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "CHINA",
+        "role": "shipper"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "SINO GALAXY IMP. & EXP. CO."
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row63",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 63,
+      "page": null,
+      "region": null,
+      "row": 63,
+      "span": [
+        2919,
+        3003
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Kala Chitta / Attock Cantt area",
+          "raw": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+          "resolved_place_ref": null,
+          "surface_format": "relative",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "stated_destination"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "bl_no": "COSU6178820410",
+      "containers": [
+        "CSNU4402217"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-119011",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row68",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 68,
+      "page": null,
+      "region": null,
+      "row": 68,
+      "span": [
+        3130,
+        4004
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-09-11",
+      "kind": "exact",
+      "raw": "09-11-2020"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "declared_value": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 244150.0
+        },
+        "description": "\"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY,\n                 REPLACEMENT SPARES FOR CIVIL AIR NAVIGATION AID SYSTEM\""
+      },
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "Port Muhammad Bin Qasim",
+            "lat": 24.767,
+            "lon": 67.333,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Port Qasim",
+        "raw": "Port Qasim",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 24.767,
+        "wgs84_lon": 67.333
+      },
+      "participants": [
+        "ORIENT ELECTRO TRADING PVT LTD",
+        "SINO-GALAXY IMPEX CO, LTD"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2020-09-11",
+        "kind": "exact",
+        "raw": "09-11-2020"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "COSU6178820410",
+      "containers": [
+        "CSNU4402217"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-119011",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row73",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 73,
+      "page": null,
+      "region": null,
+      "row": 73,
+      "span": [
+        3300,
+        3447
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "role": "consignee"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "ORIENT ELECTRO TRADING PVT LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row73-2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 73,
+        "page": null,
+        "region": null,
+        "row": 73,
+        "span": [
+          3300,
+          3447
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 73,
+        "page": null,
+        "region": null,
+        "row": 73,
+        "span": [
+          3317,
+          3447
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ORIENT ELECTRONIC TRADING CO",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "ORIENT ELECTRO TRADING PVT LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "COSU6178820410",
+      "containers": [
+        "CSNU4402217"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-119011",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row75",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 75,
+      "page": null,
+      "region": null,
+      "row": 75,
+      "span": [
+        3448,
+        3513
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "shipper"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "SINO-GALAXY IMPEX CO, LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  }
+]

@@ -720,3 +720,36 @@ _(2026-07-19, `feat/api`. The thin HTTP layer — master §4.8. Full detail: PRO
   `IngestRequest.source_type` (the keyed lane needs the source credibility class). Both additive/optional;
   logged in PROGRESS + `tmp/conv/API-to-FRONTEND-contract-log.md` (user-approved "best decision + inform
   the frontend via the contract log", 2026-07-19).
+### EVAL — RCA fix-plan ratifications (choice · principle invoked · alternative rejected, 2026-07-19)
+- **D-A — Edge-vocabulary collision fix (Phase 1/2).** Keep the ratified edge-type names; add declared
+  domain/range (from-type→to-type, plus a symmetric flag for same-as/distinct-from/substitutable-by) to
+  every edge in `config/ontology.yaml`; constrain the extractor to emit only predefined edges via a
+  Pydantic enum on the extraction output schema; and add a deterministic write-time re-laning validator
+  that maps each fact onto the correct edge by its **endpoint types** (Variant→Unit ⇒ inducted-into,
+  Mfr→Component ⇒ supplies-component, Component→Variant ⇒ equips), rejecting/flagging any fact whose
+  endpoints match no edge instead of minting an ad-hoc predicate. *Principle 9 (config-driven &
+  extensible, not hardcoded) + principle 10 (model to what the queries need).* **Rejects** renaming the
+  edges to match natural English — the directional ambiguity is inherent to the words (renaming doesn't
+  fix it without domain/range), and it would force re-syncing `answer_key.json` + `C/01` + the design note
+  days before the demo for cosmetic gain. Owners: DATA-C + ARCH (vocab + domain/range, Phase 1); INGEST
+  (enum + write-time re-lane, Phase 2). → `tmp/conv/eval-rca/00-RCA-index.md` Phase 1/2.
+- **D-B — Entity canonical-id registry (Phase 1, consumed Phase 3).** Introduce an entity registry
+  mirroring `config/places.yaml` — `{canonical_id (== the oracle id), type, canonical_name, aliases[]}` —
+  as the standardization/traceability id space. The extractor does not resolve names to canonical ids; it
+  emits surface form + type only. RESOLVE owns surface→canonical mapping via alias-equivalence (seeded ∪
+  learned) + fuzzy name + attribute/relational scoring; the alias table is a growing prior — auto-merges
+  and HITL-accepts replay from the decision log into the effective alias set. Open-world: an unknown
+  entity still mints a node. *Principle 9 (config-driven/extensible) + the HITL learning loop.* **Rejects**
+  surface-form-only ids (status quo) — the cause of the id-namespace split. Owners: DATA-C (registry
+  content, Phase 1); RESOLVE (consume into canonical node ids + band recalibration + containment/head-token
+  bootstrap, Phase 3). → `tmp/conv/eval-rca/00-RCA-index.md` Phase 1/3.
+- **D-C — Eval matching contract + id-unification target.** The eval harness matches view→oracle by
+  name+type overlap, not id-exact — a deliberate, temporary bridge, because the golden `answer_key`'s
+  hand-assigned ids and the ids RESOLVE currently mints are two different namespaces (Master A,
+  `eval-rca`). Target state: one unified id namespace, where the registry's canonical ids (D-B) are used by
+  resolve-minted nodes, subject-lens anchors, and observables **and** — via a separate answer_key
+  reconciliation task — the golden output too, at which point eval can match by id and the bridge retires.
+  *Principle: make the system work now + traceability.* **Rejects** forcing id-exact matching today
+  (pushes brittle id-election guarantees into Phase 3 prematurely). Owners: EVAL (bridge); DATA-C/EVAL
+  (answer_key reconciliation — a separate follow-up task, not Phase 1). →
+  `tmp/conv/eval-rca/00-RCA-index.md`.
