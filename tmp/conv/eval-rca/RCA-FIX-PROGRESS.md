@@ -13,26 +13,23 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
     entity canonical-id registry, 14 entities / ~76 aliases, distinct-from traps, earned-merges withheld,
     foreign_control seeds removed (D-B, D-B.1, D-C.1).
   - Tests: `backend/tests/test_ontology.py`, `backend/tests/config/test_entities_config.py` (green).
-- **Phase 2 — extraction (INGEST): 🟨 CODE COMPLETE — only the keyed re-record remains.**
-  Commits **80a8702** (core rework) + **02ad5aa** (ING-8 image co-load: 9 primary sources; ING-7 real
-  per-doc `report_date`: 24 stamped, honesty-verified against the docs, 29 left null — no fabrication).
-  Full backend suite 571✓/6-skip. **Remaining Phase-2 gate:** the keyed re-record of `claims/*.json`
-  (needs API keys; regenerates the frozen bundles so all Phase-2 extraction changes land together). Below
-  is the pre-re-record state.
-  Branch `fix/phase2-ingest-extraction` (off `fix/phase1-…`), commit **80a8702**. Delivered (decisions
-  D-2.1…D-2.8): enum narrowed to `EdgeLaneIndex.extractor_edges()`; write-time re-lane + endpoint-type
-  recovery + `edge_direction` partial-typing fallback; provenance rule (`_as_stated_predicate` + quote +
-  reason); denials/gap-sentences no longer emit edges/nodes; customs `contract_import_event` +
-  `exported-by`/`imported-by` role-edges + `trading_org` type; tender `interceptor_stockpile`/
-  `techdata_authority` nodes. Validated by unit tests (transforms are pure): ingest+ontology 247✓/4-skip,
-  full backend 568✓/6-skip. **Remaining Phase-2 items (pending):** ING-8 satellite-image co-load
-  (`seed.py` + a `sources.yaml` image pointer — DATA-C) · ING-7 real per-doc `report_time`/event dates
-  (DATA-C) · then **one keyed re-record** of `claims/*.json` to reflect all Phase-2 extraction changes.
-  Deferred by design: identity render/consume → P3; `based-at`/`sustained-by` → derived (P3/P4). See
-  `PHASE2-INGEST-RESULT.md` + `RCA-FIX-DECISIONS.md` §Phase-2.
-- **Phase 3 — resolution (RESOLVE): PENDING.** `handoff-resolve.md` (RES-1 endpoint-linking master fix;
-  RES-2 band recalibration + containment bootstrap; consume the registry) ·
-  `PHASE3-RESOLVE-alias-candidates-and-ambiguities.md`.
+- **Phase 2 — extraction (INGEST): ✅ DONE + re-record verified.**
+  Branch `fix/phase2-ingest-extraction`. Commits: **80a8702** (core rework — enum + write-time re-lane +
+  provenance rule + denials-drop + gap slot-keying + customs/tender structural transforms + `trading_org`)
+  · **02ad5aa** (ING-8 image co-load, 9 sources; ING-7 real per-doc dates, 24 stamped / honesty-verified)
+  · **e597891** (chaff image pointers) · keyed re-record of all 26 `hq9p_primary` bundles (pymupdf PDF
+  path, D-2.9). **Verified delta** (`PHASE2-VERIFY-DELTA-AND-HANDOFF.md`): ad-hoc edge predicates
+  **~22→0**; `exported-by` 0→5, `supplies-component` 0→1, `imported-by` 2→7, `contract_import_event` 1→4,
+  `trading_org` 0→4; VLM claims 0→9 bundles; `known_gap` sentence-nodes 14→6; view 294n/101e→258n/100e.
+  **Unchanged by design → downstream:** fragmentation (P3 RES-1), lens `0/0` (P4 ARCH AR-2), hero crash
+  (P4 ASK AS-1), `as_of=2021` rewind empty (P4 MONITOR MON-2 valid-time) — see the handoff. Decisions
+  D-2.1…D-2.9; full backend suite 571✓/6-skip.
+- **Phase 3 — resolution (RESOLVE): PLANNED (ready to build).** `phase3-resolve-PLAN.md` — the build plan
+  (refines `handoff-resolve.md`; folds in the 2026-07-19 design review + Phase-2 D-2.5: endpoint-as-mention
+  at the graph layer, register consumed as candidates, re-derive-not-persist ids, no gazetteer auto-mint,
+  identity read source-weighted from the claim stream / same-as raise-only + not-drawn, band re-tune to an
+  invariant). Supporting: `handoff-resolve.md` (evidence/probes) ·
+  `PHASE3-RESOLVE-alias-candidates-and-ambiguities.md` (candidates + ambiguities to adjudicate).
 - **Phase 4 — derived + surfaces: PENDING.** `handoff-score.md` · `handoff-arch.md` (lens anchors via
   registry; materiality-filter schema) · `handoff-monitor.md` · `handoff-ask.md` (crash-guard + honest refusal).
 - **Cross-cutting (DATA + EVAL): analysis DONE, answer_key edits PENDING.**
@@ -51,8 +48,10 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
 ## Handoff index
 | Doc | Owner | Phase | Status |
 |---|---|---|---|
-| `handoff-resolve.md` | RESOLVE | 3 | pending |
-| `handoff-ingest.md` | INGEST | 2 | 🟨 core done (80a8702); ING-7/ING-8 + re-record pending |
+| `phase3-resolve-PLAN.md` | RESOLVE | 3 | 📋 **build plan ready** (refines handoff-resolve; folds in D-2.5) |
+| `handoff-resolve.md` | RESOLVE | 3 | superseded-by-plan (evidence/probes still valid) |
+| `handoff-ingest.md` | INGEST | 2 | ✅ DONE (80a8702 + 02ad5aa + e597891 + re-record) |
+| `PHASE2-VERIFY-DELTA-AND-HANDOFF.md` | INGEST→P3/P4 | 2 | ✅ delta verified; downstream inheritance + repro gotcha |
 | `handoff-data-c.md` | DATA-C | 1/2 | Phase-1 parts DONE |
 | `handoff-score.md` | SCORE | 4 | pending |
 | `handoff-arch.md` | ARCH | 1/4 | contract DONE; lens code pending |

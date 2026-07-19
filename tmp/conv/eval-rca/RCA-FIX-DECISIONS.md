@@ -123,3 +123,10 @@ produced the audit + handoff, did **not** touch `answer_key.json`.
 - **Known minor limitation:** a *rejected* relation's tier-3 note lives in `ClaimRecord.attributes`, which
   `dedup` excludes from its signature, so through the full lane the note can be absorbed into a restatement.
   Primary guarantees (no ad-hoc edge, no `unknown` node) hold; rejected relations are rare. Logged, not fixed.
+- **D-2.9 — Keyed re-record takes the pymupdf PDF path (withhold `AZURE_*`).** The re-record crashes on the
+  one corpus PDF (d25) when Azure OCR creds are in-env but `azure-ai-documentintelligence` is not installed
+  (the loader selects the Azure path → `ModuleNotFoundError`). d25 is **born-digital**, so withholding
+  `AZURE_*` takes the keyless pymupdf text path (pages still render for the VLM lane). Re-record with only
+  `GEMINI_API_KEY`/`ANTHROPIC_API_KEY` exported. *Keyless≡live reproducibility; no optional-dep coupling on
+  the extract path.* *Rejected:* installing the Azure extra just to read a born-digital PDF. See
+  `PHASE2-VERIFY-DELTA-AND-HANDOFF.md`.
