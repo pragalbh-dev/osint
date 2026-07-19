@@ -544,3 +544,39 @@ section of the design note, not the build.
   F0's `add_integrity_flag` for the demo; full per-claim + future-claim origin fan-out is SCORE's.
 - **Flag to EVAL:** re-verify (a) status recompute (reject→confirmed→probable via the machine) and
   (b) integrity origin fan-out end-to-end once SCORE lands.
+
+### SCORE — Confidence Resolver + Sufficiency/Known-Gap + materiality (choice · principle · alternative rejected)
+- **Freshness reference "now" = an explicit `as_of` config input, resolved clock-free** (pinned ISO date /
+  API-stamped `now` at the request edge / else the newest available claim date). *Principle 11
+  (reproducible/deterministic) + principle 5 (auditable replay)* — a wall clock inside `rebuild()` would
+  break G1/G2 and make a past assessment unreplayable. **Rejects** reading `date.today()` in the reduction.
+  A **past `as_of` also rewinds the graph** (hides claims not yet available then — an honest point-in-time
+  "what did we know when"). *User-approved 2026-07-19.*
+- **`adversary_denial` = gate; `decoy_risk` = single-pass-conditional gate — neither is a multiplier.**
+  Adversary-denial: excluded from grouping AND caps at probable, always. Decoy: caps a *single-pass* look at
+  probable, but a **second independent, clean look resolves it** → confirmable. *Principle 6 (confirmed is not
+  probable)* + it reconciles spine/04's "single-pass basing cannot confirm" with the INGEST attribution-
+  inference net-effect **and** keeps gate G7 satisfiable (a `decoy-risk` flag never rides a confirmed element).
+  **Rejects** an unconditional decoy cap (would forbid the hero IMINT+text confirmation).
+- **Inference claims share their premises' independence group** (derivation ≠ corroboration). *Principle 4
+  (never fabricate corroboration)* — "I see a cylinder" + "that cylinder is an HQ-9" is one look, not two.
+- **Pipeline reorder `check → assign_status`** so the status machine reads sufficiency, enforces it in the
+  confirmed gate, and owns the `insufficient` label (assessability ⊥ magnitude). *Principle 4 (the
+  non-negotiable is structural)* — **rejects** the post-machine reconciliation that could leave a
+  confirmed-but-insufficient element (a G7 hole). `AssertionInput.sufficiency` is F0's frozen channel for it.
+- **UNKNOWN substitutability renders as *candidate* + a first-class Known Gap, never a confirmed sole-source**;
+  a `known-alternate` carrying `adversary_denial` is discounted (can't dissolve a real chokepoint); an
+  all-inferred nomination is capped at candidate (#7). *Principle 4 (absence of evidence ≠ evidence of
+  absence — the disqualifying line)* — **rejects** printing ignorance as a dependency.
+- **All resolver knobs live in config, never code (G6):** `decay_base`, `min_independent_groups`,
+  `same_class_weight`, `pdq_recycled_hamming`, `aligned_bias_vectors`, `disciplines`, `gated_attrs` added to
+  `credibility.yaml`. *Principle 9 (analyst-tunable, config-driven)* — **rejects** hardcoded thresholds.
+
+**Contract amendments:** F0-amend **#18** (`f0/score-amendments`) — `CredibilityConfig.as_of`, `chanakya/timeref.py`,
+`score_claims(…, decisions=None)`, rebuild rewind-filter + `apply_claim_exclusions` + `deception_gate_flags`
+(all additive/optional, golden byte-identical). The `check→assign_status` reorder rides in the SCORE PR (#20)
+as a view-internal reconciliation. Both logged in PROGRESS.md → "Contract amendments (SCORE)".
+
+**Open questions closed (moved from §3):** freshness-reference "now" mechanism (→ config `as_of`); the
+chokepoint honesty fork stays at query-time (ASK) while precompute keeps the confirmed/candidate partition +
+three-state `substitutability_state` faithful (never a single collapsed count).
