@@ -913,3 +913,29 @@ extraction call per document and re-records every frozen bundle — **coordinate
 **Design-doc tails to enrich:** `spine/03` — RESOLVE now has three identity channels (deterministic
 bootstrap, raise-only proposals, and opted-in authoritative in-document coreference), and the bootstrap is
 the documented home for direct identity statements.
+
+### Amendment (same branch, pre-merge): shipped fully gated, and a demo collision found
+
+- **`coref_authoritative_evidence` ships EMPTY, not `[EXPLICIT_EQUIVALENCE]`.** The policy decision above
+  stands and is fully built + tested; what changed is the shipped *default*. Two reasons:
+  1. **Independent switches.** The producer is dormant; a pre-set honor policy would mean enabling the
+     producer silently switches auto-merging on in the same motion — a loaded gun, not two gates.
+  2. **A concrete collision, found by going looking for one.** `d10_sat_cloud_gap` states *"HT-233 (H-200)
+     engagement radar array"* — a textbook `Full Name (SHORT)` apposition, exactly what
+     `EXPLICIT_EQUIVALENCE` is built to catch. But that orphan alias is a **deliberate demo beat an analyst
+     is meant to earn** (`cluster._descriptor_extension` says so in as many words). Auto-merging it would
+     have silently deleted the beat. *Not measured* — the producer is dormant, so this is an exact pattern
+     match, not an observation; that is precisely why it must be measured before opting in.
+
+  Raise-only turns out to be the *better* demo behaviour anyway: the pair reaches the analyst queue **with
+  its licensing quote**, so the human still earns the merge but is handed the exact sentence that justifies
+  it — triage plus citation, which is what the brief grades, rather than an automatic merge.
+
+- **Order of operations when enabling** (all three, together, with EVAL): enable the producer → re-record
+  bundles → measure the false-merge rate on the 6 frozen scenarios (HT-233/H-200 explicitly) → only then
+  consider opting a category into `coref_authoritative_evidence`.
+
+**Design-note disclosure worth carrying:** the strongest honest framing of this feature post-Phase-3 is not
+"it finds merges" — Phase 3's deterministic rules absorbed most of that — but "it reaches the *non-lexical*
+pairs nothing else can, and it hands the analyst a citation for the rest." A deterministic rule beats an
+LLM pass wherever it reaches the answer; the LLM's value is the slice where no string comparison exists.

@@ -62,13 +62,29 @@ own discourse, and it must quote the licensing span. Everything else about D-2.5
 | View | consumed, **not drawn** (`view/pipeline._assemble`), same as `same-as` |
 | Config | `resolution.yaml → coref_authoritative_evidence` (RESOLVE) · `credibility.yaml → coreference` (INGEST, **still commented out**) |
 
-## 4. To actually turn it on
+## 4. To actually turn it on — BOTH GATES ARE SHUT
 
-1. RESOLVE knob is **already set** to `[EXPLICIT_EQUIVALENCE]` and is inert today — with the producer
-   dormant there are no coreference claims to honour.
-2. Uncomment `coreference:` in `config/credibility.yaml`. This costs a **second extraction call per
-   document** and **re-records every frozen bundle**.
-3. **Coordinate that re-record with EVAL** rather than doing it twice, and re-measure the queue before/after.
+The feature ships **fully off**: the producer is commented out *and*
+`resolution.yaml → coref_authoritative_evidence` is **empty** (every cluster raise-only = Phase-3 D-2.5
+behaviour). Two independent switches on purpose — a pre-set honor policy would mean enabling the producer
+silently switched auto-merging on in the same motion.
+
+**Do this in order, with EVAL:**
+
+1. Uncomment `coreference:` in `config/credibility.yaml`. Costs a **second extraction call per document**
+   and **re-records every frozen bundle** — coordinate with EVAL's re-record rather than doing it twice.
+2. **Measure the false-merge rate on the 6 frozen scenarios**, and the before/after adjudication-queue size.
+3. Only then consider `coref_authoritative_evidence: [EXPLICIT_EQUIVALENCE]`.
+
+### ⚠ Known collision to check at step 2
+
+`d10_sat_cloud_gap` states *"HT-233 (H-200) engagement radar array"* — a textbook `Full Name (SHORT)`
+apposition, exactly what `EXPLICIT_EQUIVALENCE` catches. But that orphan alias is a **deliberate demo beat
+an analyst is meant to earn** (`cluster._descriptor_extension` says so). Auto-merging it would silently
+delete the beat. **Not measured** — the producer is dormant, so this is a pattern match, not an observation.
+
+Raise-only is arguably the better demo behaviour regardless: the pair reaches the queue **with its
+licensing quote**, so the human still earns the merge but is handed the exact sentence justifying it.
 
 ## 5. Corrections to this document's earlier version (kept deliberately)
 
