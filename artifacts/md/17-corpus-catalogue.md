@@ -1,7 +1,7 @@
 # 17 — Corpus catalogue (what every generated doc is, and why)
 
-Full per-document walkthrough of the frozen corpus: **51 docs** = **24 signal** (`hq9p_primary`) +
-**27 chaff** (`hq9p_chaff`), **12 images**. Generated from real templates, entities varied synthetically
+Full per-document walkthrough of the frozen corpus: **52 docs** = **25 signal** (`hq9p_primary`) +
+**27 chaff** (`hq9p_chaff`), **12 images + 1 embedded schematic figure** (d25). Generated from real templates, entities varied synthetically
 (generator blind to the ontology). This is the map from raw doc → what the pipeline must do with it.
 
 ## How to read the two "source" columns
@@ -40,6 +40,7 @@ Every doc is *synthetic-from-real-template*. The distinction that matters is wha
 | d21 | techdata_authority | trade_media | (C / third-party) | Software/calibration for the engagement radar controlled by a Chinese technical-data authority | **TRUE-SIGNAL** (single) | The **invisible dependency** chokepoint (`design-authority-for`, probable) |
 | d22 | deep_tier_supplier | reference | casi_2025 (B / third-party) | HT-233 maker **UNKNOWN**; CPMIEC = export agent NOT maker; candidate = **23rd RI/BIRM** (Yongding Rd, Haidian, Beijing); deeper tiers = gaps | **TRUE-SIGNAL** (authoritative) | The honest deep-tier → **Known Gap**; district-level location; **contradicts d23** |
 | d23 | cpmiec_false_attribution | trade_media | blog_cpmiec_mfr (D / commercial) | "CPMIEC manufactures the HT-233" (conflates export agent with maker) | **MISINFO** — `aggregator_circular` (false attribution) | Low-cred conflation must NOT create a confirmed edge; refuted by d22; export-agent ≠ maker |
+| d25 | hq9_site_fingerprint | **curated-register** + **PDF/FIG** | osint_sam_recognition_ref (B / third-party) | Canonical HQ-9/HQ-9B **battery site signature** (leg c): ~90–110 m petal pad, **~6 radial TEL revetments** around a central **HT-233 hardstand**, ~8–9 m canister TELs on 8×8 WS-series chassis; single-pass = *consistent-with*, not a positive ID | **TRUE-SIGNAL** (reference literature) | **The attribution fingerprint** the subject-blind imagery read (d18) matches against → cited variant-ID inference; deterministic labelled schematic (Figure 1), **not** a relabeled overhead → no recycled-image collision |
 | d06 | spares_tender | procurement | dgdp_tender (C / operator-state) | A spares/sustenance tender *implies* an already-inducted SAM | **TRUE-SIGNAL** (single, inference) | **Single source → stays PROBABLE**; tender implies, never confirms; an *inference* claim |
 | d07 | sat_confirm_karachi | imagery + **IMG** | (B / third-party, decoy=false) | Petal/ring SAM pad + TEL revetments at Malir, Karachi; DD `24.9012N 67.2034E`; multi-pass | **TRUE-SIGNAL** | **Worked-query anchor**; imagery confirm of basing; the **hero frame** (real Esri, Xi'an relabeled); DD location |
 | d08 | social_sighting | social + **IMG** | (D / third-party) | Post claims active HQ-9 convoy movement near Karachi 2025-05-09 | **DECEPTION** — `contradiction_same_time` (D9) vs d09 | Same site+date opposite claim → **CONTRADICTED → HITL**; fabricated convoy image |

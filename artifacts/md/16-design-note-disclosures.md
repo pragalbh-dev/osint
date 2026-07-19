@@ -30,6 +30,14 @@ deliberate, defensible choices, not apologies.
   a site. Resolution honesty is a feature: an image never claims more than its pixels show.
 - **Fabricated images are JPEG-encoded with a `.png` name** (the image model returns JPEG). Valid, browser-
   renders; a cosmetic wrinkle only.
+- **The attribution *fingerprint* (d25) is a deterministically-drawn schematic, not a real overhead frame.**
+  The reference the imagery inference matches against is a labelled top-view *recognition schematic* (reportlab,
+  no RNG/network — reproducible), the genuine genre of SAM-site recognition literature (cf. ausairpower /
+  ResearchGate battery-layout figures). Chosen over a real Esri petal deliberately: reusing a real HQ-9 frame
+  (Xi'an/Lanzhou) would collide with d07/d17b under the recycled-image (PDQ) detector and falsely fire the M4
+  recycled-image trap reserved for the parade chain; an ambiguous fresh frame wouldn't show the geometry
+  cleanly. The schematic is honest reference literature *about* HQ-9 (subject-blindness applies only to the
+  target-imagery leg, never to reference literature) and encodes the real published geometry.
 
 ## Analytic honesty
 

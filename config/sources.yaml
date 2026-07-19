@@ -37,6 +37,10 @@ sources:
   - {source_id: d22_deep_tier_supplier, source_type: think-tank, reliability_grade: B, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt"}
   - {source_id: d23_cpmiec_false_attribution, source_type: trade-media, reliability_grade: D, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt"}
   - {source_id: d24_tel_chassis_attribution, source_type: think-tank, reliability_grade: B, primary_origin_id: csis_missilethreat, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt"}
+  # d25: leg (c) of the attribution triangle — the canonical HQ-9 site-signature FINGERPRINT the imagery
+  # inference matches against. source_type curated-register: the ONE string in BOTH the credibility rubric
+  # (R≈0.85) AND the proposer's reference_source_classes default — see tmp/conv DATA→INGEST note.
+  - {source_id: d25_hq9_site_fingerprint, source_type: curated-register, reliability_grade: B, primary_origin_id: osint_sam_recognition_ref, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf"}
 
   # ── hq9p_chaff (27) ────────────────────────────────────────────────────────────────────────────
   - {source_id: ce01_reshare_c, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/ce01_reshare_c.txt"}

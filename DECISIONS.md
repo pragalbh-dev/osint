@@ -631,3 +631,41 @@ three-state `substitutability_state` faithful (never a single collapsed count).
   enrichment over the frozen view (not only per-frame at ingest); note the trigger + convergence.
 - **Working agreement added to `CLAUDE.md`:** talk to the user (orchestrator) in plain/intuitive language —
   no verbatim code/schema in chat; depth stays in files, design docs, and handoff notes.
+
+### DATA — Attribution fingerprint doc (d25) + claim-level oracle (choice · principle · alternative rejected)
+- **The attribution reference (leg c) is a real figure/doc the VLM reads into a prose `signature_geometry`
+  string — the two sides need only be "similar enough for a human to compare", not one schema.** *Principle 9
+  (config-/LLM-driven, not rigid) + principle 7 (defensible > clever)* — an LLM judges the image's shape
+  tokens against the reference prose, so a string carries it; a "cover these features" **prompt** (not a
+  rigid structured schema) supplies the what-to-include and generalises across technical docs. **Rejects**
+  forcing the reference into the image's structured shape schema (over-engineered; a rigid token match would
+  over/under-fire on the deliberately-ambiguous decoy frame). *User-approved 2026-07-19.*
+- **d25's figure is a deterministic labelled recognition schematic, NOT a real Esri overhead.** *Principle 11
+  (reproducible) + don't manufacture a false trap* — reusing the real HQ-9 petals (Xi'an→d07, Lanzhou→d17b)
+  collides under the PDQ recycled-image detector and falsely fires the M4 recycled trap reserved for the
+  parade chain; an arbitrary fresh HQ-9 coordinate is landscaped/ambiguous. A schematic is the authentic
+  recognition-literature genre and encodes the real published geometry. **Rejects** a relabeled real frame
+  for the reference. Disclosed in `md/16`.
+- **`source_type: curated-register` (not `reference`).** *Principle 4 (fail-closed — never fabricate
+  credibility) + config-consistency* — `reference` is absent from `source_class_factors`, so SCORE scores it
+  **R=0 (fails closed)** and the inference can't clear probable; `curated-register` is in **both** the rubric
+  (R≈0.85) and the proposer's `reference_source_classes` (which INGEST/#21 set to `[curated-register,
+  think-tank, trade-media]`). **Rejects** `reference` (unscored); curated-register is the cleanest register
+  semantics and fail-safe (d25 would also qualify as think-tank, but that class scores lower and is broader).
+  *SCORE + user-confirmed 2026-07-19.*
+- **No corpus re-orientation of `based-at`; the proposer hops unit→variant, so unit-subject C works and D
+  lands on the existing unit-at-Rahwali edge.** *Principle 7 (don't re-model what the code already handles) +
+  preserves the unit×site-keyed supersede/anti-spoof lesson* — the INGEST→DATA doc's "C must be
+  variant-subject" overstated the requirement (`_variant_via_hop` recovers the variant; identity rides as
+  `attributed_variant`). **Rejects** a parallel variant-subject `based-at` edge or a new news doc; **d19
+  stays the independent look**.
+- **Claim-level oracle added for inference D** (`answer_key → attribution_inference`): premises [A,B], both
+  doc_refs, decoy attrs, resolved triple, group-{A,D}/independent-d19→confirmed. *Principle 5 (traceability) +
+  principle 4 (the braked single pixel-read is the point)* — the first claim-level gold in an otherwise
+  doc-level oracle, for the INGEST determinism test.
+
+**Handoff:** `tmp/conv/DATA-to-INGEST-fingerprint-doc-DELIVERED.md` — the one BLOCKING code-side wiring
+(extraction attaches `signature_geometry` to a *floating* `basing_site`; it must land on a variant-adjacent
+node — recommended `observable_fingerprint` on `comp_tel_chassis` via `equips`), the reading-prompt checklist,
+the figure/multimodal path, and the proposer config knobs to verify. **FYI drift:** d22/d24 `source_type:
+think-tank` vs `source_class: "reference"` label mismatch (cosmetic, unrelated to firing).
