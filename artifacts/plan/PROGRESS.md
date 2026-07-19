@@ -17,7 +17,7 @@
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | in-review | [#12](https://github.com/pragalbh-dev/osint/pull/12) | F0 | — |
-| INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | in-review | feat/ingest | F0 (+DATA-C soft) | — |
+| INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | in-review | [#17](https://github.com/pragalbh-dev/osint/pull/17) | F0 (+DATA-C soft) | — |
 | API | FastAPI layer | 2 | not-started | — | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
 | SHIP | Production packaging & deploy | 2 | not-started | — | API (+X0, DATA-C, INGEST) | — |
@@ -288,7 +288,7 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
 - **Board note:** F0/DATA-C rows read stale at branch time (F0 `not-started`, DATA-C `in-review`) though
   both were merged (PR #1/#8); left others' rows untouched per Rule 4 — the amendment PR #9 has since
   corrected them, picked up on rebase.
-### INGEST (in-review, feat/ingest): Source-typed extraction + live lane + keyless bundles
+### INGEST (in-review, feat/ingest — PR #17): Source-typed extraction + live lane + keyless bundles
 - **Shipped:** the full `chanakya/ingest/**` (12 modules, ~4.3k LOC, 172 tests; whole suite 337 pass, all
   gates G1–G12 green, ruff+mypy clean): source-typed **loaders** (`text, regions[]` + exact char-span+line /
   page+bbox provenance; Azure DocIntel OCR seam + born-digital poppler fallback); a **2-method extraction
