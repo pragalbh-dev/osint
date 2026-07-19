@@ -25,14 +25,16 @@ dependencies = [
     "pillow>=10",
     "numpy>=1.26,<3",
     "pdqhash>=0.2",
+    # INGEST coordinate-grid parsing (Location adapter): the corpus *states* MGRS (d17 "43S CT…" → Nur
+    # Khan) + UTM, so these are demo-exercised, not truly optional — core so CI installs + tests them.
+    # Small + pure-Python; the adapter still degrades gracefully to a raw Location if ever omitted.
+    "mgrs>=1.5",
+    "utm>=0.7",
 ]
 
 [project.optional-dependencies]
 # Optional 2nd extraction provider (INGEST). Keyless boot never needs it (master §7).
 gemini = ["google-genai>=0.3"]
-# Optional coordinate-grid parsing for the Location adapter (INGEST). Degrades gracefully if absent
-# (an unresolved coord Location keeps its raw form for RESOLVE) — DD/DMS/url/name paths need neither.
-geo = ["mgrs>=1.5", "utm>=0.7"]
 # Optional rich-PDF OCR provider (INGEST, Azure Document Intelligence). Born-digital PDFs use poppler
 # and need none of this; the transform is SDK-free (fixture-tested). Keyless boot never needs it.
 ocr = ["azure-ai-documentintelligence>=1.0,<2"]
