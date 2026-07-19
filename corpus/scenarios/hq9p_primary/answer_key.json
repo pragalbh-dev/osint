@@ -553,6 +553,35 @@
       "d20_supersede_spoof"
     ]
   },
+  "attribution_inference": {
+    "_comment": "Ask-3 claim-level oracle for the imagery attribution inference D (proposer: ingest/attribute.py). Doc-level oracle is otherwise the norm; this is the one claim-level gold, for the INGEST determinism test.",
+    "id_pattern": "d18_rahwali_pass1-<region>-<variant>-attr",
+    "kind": "inference",
+    "asserts": "relationship",
+    "premises": [
+      "A = d18_rahwali_pass1 subject-blind VLM shape observation (the .png image.caption region ONLY, never the analyst text)",
+      "B = d25_hq9_site_fingerprint reference site_signature_geometry (canonical HQ-9 petal / Figure 1)"
+    ],
+    "doc_refs": [
+      "d18_rahwali_pass1.png (image region)",
+      "d25_hq9_site_fingerprint.pdf (Figure 1 + signature text span)"
+    ],
+    "triple": {
+      "copies": "the textual claim C's (subject,predicate,object) VERBATIM -> D and C co-locate on ONE EdgeView (the 'second look' mechanic)",
+      "resolved": "<unit_hq9b, based-at, site_rahwali> (UNIT-subject: C is the existing based-at edge; the proposer hops unit->variant via inducted-into to recover HQ-9 identity, which rides as attributes.attributed_variant, NOT as the triple subject). D lands on the SAME edge the relocation beat uses.",
+      "orientation_note": "The INGEST->DATA doc said C must be variant-subject; the proposer code (_variant_presence + _variant_via_hop) does NOT require that -- unit-subject C works. No parallel variant-subject edge is needed."
+    },
+    "attributes": {
+      "decoy_risk": true,
+      "decoy_risk_flag": true,
+      "single_pass": true,
+      "fingerprint_match": "SOFT -- d18's frame is the deliberately-ambiguous relabeled S-400/Crimea petal; 'consistent-but-single-pass', the crisp d25 reference keeps the verdict honest",
+      "attributed_variant": "var_hq9be",
+      "reference_source_id": "d25_hq9_site_fingerprint"
+    },
+    "expect": "raise-only: D is APPENDED subject-blind, cited to BOTH d18 image + d25 reference (gate G4). SCORE groups {A, D} as ONE look (D derived from A via premises) and the decoy_risk_flag caps the edge at PROBABLE while D is the only non-textual look. The INDEPENDENT look (d19 repeat-EO + ELINT, distinct origin) is what clears the decoy cap -> CONFIRMED. D ALONE never confirms. Matches test_g7_confirmed_gate invariant.",
+    "proves": "subject-blind IMINT->variant attribution via a CITED reference fingerprint; single pixel-read braked at probable; grouped with its own premise so it cannot corroborate itself."
+  },
   "flexes": {
     "corroborated": {
       "docs": [
@@ -914,6 +943,38 @@
       },
       "expect": {
         "note": "F5 CONFIRMED deep-tier: mfr_taian supplies-component comp_tel_chassis (CONFIRMED) + comp_tel_chassis equips var_hq9p. Source DIRECTLY names supplier+component+relationship and is multiply corroborated (distinct origin from d22's casi_2025) -> clears the confirmed gate. Keeps 23rd RI/4th Academy POSSIBLE and HT-233 maker a Known Gap — the confirmable-vs-unconfirmable deep-tier contrast."
+      }
+    },
+    {
+      "id": "d25_hq9_site_fingerprint",
+      "source_class": "curated-register",
+      "date": "2024",
+      "mode": "signal",
+      "asserts": [
+        "an open-source site-recognition reference describes the CANONICAL overhead battery signature of the HQ-9 / HQ-9B (CASIC; HQ-9/P, HQ-9BE): a ~90-110 m circular 'petal' pad enclosed by a perimeter access road, ~6 TEL revetments in a radial fan around a central engagement-radar (HT-233) hardstand, canisterized TEL objects ~8-9 m long on a Taian/Wanshan 8x8 WS-series chassis; it explicitly frames a single-pass geometry match as CONSISTENT-WITH, not a positive ID (decoy-imitable) -- the crisp reference the imagery inference is judged against"
+      ],
+      "off_subject": false,
+      "corruption": [
+        "hedging"
+      ],
+      "deception": [],
+      "registry": {
+        "reliability_grade": "B",
+        "bias_vector": "third-party",
+        "primary_origin_id": "osint_sam_recognition_ref"
+      },
+      "figure": {
+        "kind": "schematic_plan",
+        "provenance": "authored-schematic",
+        "file": "d25_hq9_site_fingerprint.pdf (Figure 1)",
+        "note": "deterministic labelled top-view plan (reportlab; no RNG/network) of the canonical petal battery. NOT a satellite frame -> no relabel, no recycled-image (PDQ) collision with the real d07/d17b petals. Multimodal doc-extractor reads text+figure into signature_geometry; reference literature ABOUT HQ-9 so it MAY name the system (subject-blindness is the target-imagery leg only)."
+      },
+      "expect": {
+        "note": "Leg (c) of the attribution triangle: the reference FINGERPRINT (B) the subject-blind imagery inference D matches against. To FIRE, the extracted site-geometry claim must be REACHABLE from var_hq9p/var_hq9be by the proposer's _fingerprint (variant + one hop). WIRING (INGEST): extraction today captures signature_geometry only on a SiteMention->basing_site (floating, unreachable) -- attach it to a variant-adjacent node instead. RECOMMENDED: observable_fingerprint on comp_tel_chassis (equips var_hq9p, 1 hop) and/or comp_ht233; alt: site_signature_geometry carried on the variant node. See tmp/conv DATA->INGEST note.",
+        "fingerprint_for": ["var_hq9p", "var_hq9be"],
+        "signature_geometry": "petal/ring ~90-110 m pad; ~6 radial TEL revetments around a central HT-233 hardstand; perimeter access road; ~8-9 m canisterized TELs on an 8x8 WS-series (Taian/Wanshan) chassis",
+        "attaches_via": "observable_fingerprint (comp_tel_chassis / comp_ht233, via equips) | site_signature_geometry (variant-carried)",
+        "source_class_lock": "curated-register -- in credibility source_class_factors (R~0.85) AND proposer reference_source_classes; 'reference' would score R=0 (fails closed)"
       }
     },
     {
