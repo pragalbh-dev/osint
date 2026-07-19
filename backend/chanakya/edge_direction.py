@@ -122,6 +122,26 @@ def _orientation_score(subject_type: str | None, object_type: str | None, rule: 
     return score
 
 
+def reversed_for_types(
+    predicate: str, subject_type: str | None, object_type: str | None,
+    rules: dict[str, DirectionRule],
+) -> bool:
+    """Should a triple be swapped, given only its predicate + endpoint types (no ``Triple`` in hand)?
+
+    The **partial-typing companion** to :func:`canonicalize_claim` for INGEST's write-time re-lane: when
+    only one endpoint could be typed, :meth:`EdgeLaneIndex.relane` cannot *name* the edge, but the edge's
+    declared direction can still say whether the fact was written **backwards**. Returns ``False`` (leave
+    as written) for an unknown / symmetric / same-type predicate, or whenever the known types give no
+    positive evidence for a swap — mirroring :func:`_is_reversed`, on which the same scoring rule is used.
+    """
+    rule = rules.get(predicate)
+    if rule is None or (rule.from_type is not None and rule.from_type == rule.to_type):
+        return False
+    return _orientation_score(object_type, subject_type, rule) > _orientation_score(
+        subject_type, object_type, rule
+    )
+
+
 def _is_reversed(triple: Triple, rule: DirectionRule, type_of: TypeOf) -> bool:
     """Is ``triple`` **cleanly reversed** — swapping its endpoints strictly improves the type fit?
 
@@ -176,5 +196,6 @@ __all__ = [
     "canonicalize_claim",
     "canonicalize_claims",
     "direction_map",
+    "reversed_for_types",
     "type_index",
 ]

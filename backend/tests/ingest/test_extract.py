@@ -173,8 +173,10 @@ def test_customs_row_yields_many_typed_claims_and_three_tiers(config: ConfigBund
     claims = extract_document(loaded, source_id="d05", source_type="customs-tender",
                               config=config, client=_client(_customs_row_filled()))
 
-    # tier-1: consignee & shipper get their own org nodes; the shipment gets its own event.
-    orgs = [e for e in _entities(claims) if e.entity_type == "manufacturer"]
+    # tier-1: consignee & shipper get their own org nodes — typed `trading_org`, NOT `manufacturer`
+    # (ING-3: `manufacturer` is reserved for real OEMs). The shipment gets its own event.
+    assert not [e for e in _entities(claims) if e.entity_type == "manufacturer"]
+    orgs = [e for e in _entities(claims) if e.entity_type == "trading_org"]
     roles = {e.attrs.get("role") for e in orgs}
     assert {"consignee", "shipper"} <= roles
     events = [e for e in _events(claims) if e.event_type == "TransferEvent"]
@@ -191,6 +193,18 @@ def test_customs_row_yields_many_typed_claims_and_three_tiers(config: ConfigBund
     assert bag.get("hs_code") == "8526.91.00"
     assert "TCNU7712204" in bag.get("containers", [])
     assert bag.get("bl_no") == "YMLUW189234567"
+
+    # ING-2: the row also mints a contract_import_event NODE with its roles projected onto edges.
+    imports = [e for e in _entities(claims) if e.entity_type == "contract_import_event"]
+    assert len(imports) == 1
+    import_key = imports[0].name
+    exported = [t for t in _rels(claims) if t.predicate == "exported-by"]
+    imported = [t for t in _rels(claims) if t.predicate == "imported-by"]
+    assert exported and exported[0].subject == import_key and "SINO-GALAXY" in exported[0].object
+    assert imported and imported[0].subject == import_key and "ORIENT ELECTRO" in imported[0].object
+    # the edge endpoints are the trading_org nodes (real endpoints — no invented end-user link).
+    trading_names = {e.name for e in orgs}
+    assert exported[0].object in trading_names and imported[0].object in trading_names
 
     # every claim keeps a resolvable, row-citing doc_ref.
     assert _all_refs_resolvable(claims)
@@ -252,9 +266,9 @@ def test_tender_aliases_and_distinctions(config: ConfigBundle) -> None:
     assert not any(t.predicate == "same-as" and "S-400" in t.object for t in rels)
 
 
-# ── social: a "nothing to report" negation → a negative-polarity observation ──────────────────────
+# ── social: a "nothing to report" negation mints NO edge (RCA ING-1), the sighting still stands ───────
 
-def test_social_negation_is_negative_polarity(config: ConfigBundle) -> None:
+def test_social_negation_mints_no_edge(config: ConfigBundle) -> None:
     loaded = _load("d08_social_sighting.txt")
     filled = {"posts": [{
         "handle": "@Reh_Baloch",
@@ -268,9 +282,11 @@ def test_social_negation_is_negative_polarity(config: ConfigBundle) -> None:
     }]}
     claims = extract_document(loaded, source_id="d08", source_type="named-social",
                               config=config, client=_client(filled))
-    negatives = [c for c in claims if c.polarity == "negative"]
-    assert negatives and negatives[0].asserts == "relationship"
-    # the handle is registered as a social source; the sighting is a positive event.
+    # the negation is NOT emitted as a knowledge edge, and no junk endpoint node is minted from it.
+    assert not _rels(claims), "a negation must not become a subject->object edge"
+    assert not any(c.polarity == "negative" for c in claims)
+    assert not any("vehicle movement" in (e.name or "") for e in _entities(claims))
+    # the handle is still registered as a social source; the positive sighting still stands.
     assert any(e.entity_type == "source" for e in _entities(claims))
     assert any(ev.event_type == "SightingEvent" for ev in _events(claims))
 
