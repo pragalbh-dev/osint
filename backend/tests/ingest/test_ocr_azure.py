@@ -19,7 +19,18 @@ from chanakya.ingest.ocr_azure import (
     transform_layout,
 )
 
-_AZURE_INSTALLED = importlib.util.find_spec("azure.ai.documentintelligence") is not None
+
+def _azure_installed() -> bool:
+    # find_spec on a dotted name imports the parent packages, so it *raises* ModuleNotFoundError (not
+    # returns None) when the top-level `azure` namespace is entirely absent — e.g. a clean CI without the
+    # optional [ocr] extra. Guard it so collection never crashes; the SDK-free transform tests always run.
+    try:
+        return importlib.util.find_spec("azure.ai.documentintelligence") is not None
+    except ModuleNotFoundError:
+        return False
+
+
+_AZURE_INSTALLED = _azure_installed()
 
 
 # A small hand-authored ``prebuilt-layout`` response (camelCase, the REST/``as_dict()`` wire form):
