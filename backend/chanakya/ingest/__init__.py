@@ -1,34 +1,60 @@
-"""INGEST stage — source-typed LLM extraction → ClaimRecord + live-ingest lane (owned by INGEST).
+"""INGEST — source-typed extraction → ClaimRecord + the live-ingest lane + keyless seed bundles.
 
-**Source-typed, never use-case-typed (gate G9):** this package must not import subject/ontology-instance
-content and must not branch on a subject — a customs doc ingests identically regardless of consumer.
-F0 keeps the module import-clean (schemas only) so G9 passes now and stays meaningful.
+The one package that turns a raw document (prose / structured record / imagery) into **sourced,
+provenance-bearing, deduplicated claims** and appends them to the evidence log — faithfully, never
+resolving or scoring (that is RESOLVE/SCORE downstream). Public surface (submodules carry the detail):
 
-F0 ships stubs: extraction (the LLM part) raises ``NotImplementedError`` until INGEST builds it; the
-keyless bundle-append lane is a thin helper INGEST owns too. INGEST also houses the Date/Location/
-Quantity normalization *adapters* (master §4.1/§4.2) — run at extraction, pre-append, never as pydantic
-validators.
+* :func:`~chanakya.ingest.lane.ingest_document` — the always-available live lane: raw doc → concurrent
+  extraction → serial dedup+id → single-writer append → (injected) rebuild → observe. The one call the
+  ``/ingest`` API wraps.
+* :func:`~chanakya.ingest.extract.extract_document` — the source-typed extraction entrypoint (a loaded
+  doc → claims), off the rebuild path; :data:`~chanakya.ingest.extract.SCHEMAS` + ``format_sniffer``.
+* :func:`~chanakya.ingest.imagery.read_image_document` — the subject-blind VLM imagery lane (two-hash +
+  signature→variant corroboration).
+* :func:`ingest_bundle` — parse a pre-extracted claim bundle (``list[dict]`` → claims): the keyless
+  append body of ``POST /ingest``. The frozen bundles are the output of live extraction over the same
+  docs, so appending them yields the *identical* claims a live extract would (keyless ≡ live).
+* :func:`~chanakya.ingest.seed.seed_store_from_bundles` / ``extract_corpus`` — the frozen-seed baseline +
+  the ``python -m chanakya.ingest`` CLI (``make extract``).
+* :func:`~chanakya.ingest.loaders.load_document` / :func:`~chanakya.ingest.client.build_extraction_client`.
 
-Frozen signatures: ``extract_claims(raw_text, source_id, config) -> [ClaimRecord]`` (LLM, offline of
-rebuild) · ``ingest_bundle(bundle) -> [ClaimRecord]`` (keyless, parse pre-extracted records).
+**Gate G9:** nothing here imports a subject/ontology-instance or a downstream pipeline stage (the
+``view`` reducer, ``resolve``, the scoring stages, or ``observe``). The lane triggers ``rebuild`` /
+``observe`` via **injected** callables the API supplies — never an import — so ingest stays decoupled
+and source-typed.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-from chanakya.schemas import ClaimRecord, ConfigBundle
-
-
-def extract_claims(raw_text: str, source_id: str, config: ConfigBundle) -> list[ClaimRecord]:
-    """STUB: live LLM extraction. INGEST implements it (runs upstream of the append — G1 unaffected)."""
-    raise NotImplementedError("INGEST session implements source-typed LLM extraction")
+from chanakya.ingest.client import ExtractionClient, build_extraction_client
+from chanakya.ingest.extract import SCHEMAS, extract_document, format_sniffer
+from chanakya.ingest.imagery import LiteratureRef, read_image_document
+from chanakya.ingest.lane import DocInput, extract_many, ingest_document
+from chanakya.ingest.loaders import LoadedDoc, Region, load_document
+from chanakya.ingest.seed import extract_corpus, seed_store_from_bundles
+from chanakya.schemas import ClaimRecord
 
 
 def ingest_bundle(bundle: list[dict[str, Any]]) -> list[ClaimRecord]:
-    """Parse a pre-extracted claim bundle (the keyless lane). Pure — no network, no LLM.
+    """Parse a pre-extracted claim bundle (a list of ``ClaimRecord`` dicts) → claims. Pure, keyless.
 
-    F0 provides this minimal, safe helper so the keyless ingest path is testable now; INGEST extends it
-    (dedup, provenance stamping). Kept deliberately trivial and ontology-blind.
+    The append body of ``POST /ingest``'s keyless path (``IngestRequest.bundle``) — the in-memory twin of
+    :func:`chanakya.ingest.seed.ingest_bundle`, which reads the same JSON from a file. No LLM, no network:
+    a frozen bundle is the output of live extraction over the same doc, so appending it is byte-for-byte
+    the keyless equal of the live lane.
     """
     return [ClaimRecord.model_validate(row) for row in bundle]
+
+
+__all__ = [
+    # the live lane
+    "ingest_document", "extract_many", "DocInput",
+    # extraction
+    "extract_document", "format_sniffer", "SCHEMAS", "read_image_document", "LiteratureRef",
+    # keyless bundles + seed baseline
+    "ingest_bundle", "seed_store_from_bundles", "extract_corpus",
+    # building blocks
+    "load_document", "LoadedDoc", "Region", "build_extraction_client", "ExtractionClient",
+]
