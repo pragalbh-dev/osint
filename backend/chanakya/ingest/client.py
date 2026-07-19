@@ -153,10 +153,20 @@ class GeminiExtractionClient:
     """
 
     def __init__(self, api_key: str | None = None, *, model_id: str = DEFAULT_GEMINI_MODEL) -> None:
-        from google import genai
-
-        self._client: Any = genai.Client(api_key=api_key) if api_key else genai.Client()
+        # SDK import + client construction are deferred to first use, so *constructing* this client (and
+        # thus `build_extraction_client`) never requires the optional `google-genai` dep — only an actual
+        # `extract()`/`read_image()` call does. Keeps the keyless/CI path (no `[gemini]` extra) import-clean;
+        # a missing SDK surfaces a clear ImportError at call time, not at build.
+        self._api_key = api_key
+        self._client: Any = None
         self.model_id = model_id
+
+    def _sdk_client(self) -> Any:
+        if self._client is None:
+            from google import genai
+
+            self._client = genai.Client(api_key=self._api_key) if self._api_key else genai.Client()
+        return self._client
 
     def _call(
         self, *, tool_name: str, input_schema: dict[str, Any], system: str, contents: Any
@@ -174,7 +184,7 @@ class GeminiExtractionClient:
                 )
             ),
         )
-        response = self._client.models.generate_content(
+        response = self._sdk_client().models.generate_content(
             model=self.model_id, contents=contents, config=config
         )
         for candidate in response.candidates or []:
