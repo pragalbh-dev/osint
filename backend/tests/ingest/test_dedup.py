@@ -195,3 +195,37 @@ def test_assign_does_not_mutate_inputs() -> None:
     claim = _triple_claim(span=(0, 10), line=1, claim_id="tmp")
     assign_claim_ids([claim], doc_id="d01")
     assert claim.claim_id == "tmp"  # a fresh copy is stamped; the input keeps its placeholder
+
+
+# ── cross-claim references follow the reassignment (the imagery-corroboration linkage) ─────────────
+
+def test_inference_premises_follow_reassigned_ids() -> None:
+    # An inference whose premises name the observation's PROVISIONAL id must follow the id reassignment
+    # (the md/15 signature→variant corroboration: premises=[observation_id, literature_id]).
+    obs = _triple_claim(subj="site", pred="observed-signature", obj="ring",
+                        span=(0, 10), line=1, claim_id="obs-tmp")
+    inf = _triple_claim(subj="site", pred="based-at", obj="hq-9", span=(20, 30), line=2,
+                        kind="inference", premises=["obs-tmp", "lit-external"], claim_id="inf-tmp")
+
+    out = assign_claim_ids([obs, inf], doc_id="d07")
+    by_pred = {c.payload.predicate: c for c in out}  # type: ignore[attr-defined]
+    obs_id = by_pred["observed-signature"].claim_id
+
+    assert "obs-tmp" not in by_pred["based-at"].premises  # the stale provisional id is gone
+    assert obs_id in by_pred["based-at"].premises  # remapped onto the observation's canonical id
+    assert "lit-external" in by_pred["based-at"].premises  # an unknown premise id is left untouched
+
+
+def test_retraction_target_follows_reassigned_id() -> None:
+    orig = _triple_claim(pred="based-at", span=(0, 10), line=1, claim_id="orig-tmp")
+    retraction = ClaimRecord(
+        claim_id="ret-tmp", source_id="src-a",
+        doc_ref=DocRef(file="d01.txt", span=(20, 30), line=2),
+        kind="retraction", asserts="relationship",
+        payload=Triple(subject="hq-9", predicate="based-at", object="site-7"),
+        targets="orig-tmp",
+    )
+    out = assign_claim_ids([orig, retraction], doc_id="d01")
+    orig_new = next(c.claim_id for c in out if c.kind == "observation")
+    ret = next(c for c in out if c.kind == "retraction")
+    assert ret.targets == orig_new  # not the stale "orig-tmp"

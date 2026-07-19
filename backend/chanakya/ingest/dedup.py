@@ -198,14 +198,32 @@ def assign_claim_ids(claims: list[ClaimRecord], *, doc_id: str) -> list[ClaimRec
     disambiguates collisions via ``make_claim_id(..., index=)`` (``d02-l3`` then ``d02-l3-2``). Because
     the order and the counts are derived from content, the same claim set mints byte-identical IDs on
     every run (gates G9/G10). Inputs are not mutated; the returned list is in the deterministic order.
+
+    **Cross-claim references follow the reassignment.** An ``inference`` claim's ``premises`` and a
+    ``retraction``'s ``targets`` name *other claims by id*; those provisional ids change here, so this
+    pass remaps them onto the reassigned ids (an old→new map built while stamping). Without this, the
+    imagery signature→variant inference (premises = [observation_id, literature_id]) — and any future
+    inference/retraction — would dangle after id assignment. This is why the fix lives here, not in a
+    single caller: every path that assigns ids (the live lane *and* the frozen-bundle seed) inherits it.
     """
     ordered = sorted(claims, key=lambda c: (_earliest_docref_key(c), _claim_signature(c)))
     seen: dict[str, int] = {}
-    out: list[ClaimRecord] = []
+    remap: dict[str, str] = {}
+    staged: list[tuple[ClaimRecord, str]] = []
     for claim in ordered:
         locator = _locator_for_claim(claim)
         seen[locator] = seen.get(locator, 0) + 1
         occurrence = seen[locator]
-        claim_id = make_claim_id(doc_id, locator, index=None if occurrence == 1 else occurrence)
-        out.append(claim.model_copy(update={"claim_id": claim_id}))
+        new_id = make_claim_id(doc_id, locator, index=None if occurrence == 1 else occurrence)
+        remap[claim.claim_id] = new_id
+        staged.append((claim, new_id))
+
+    out: list[ClaimRecord] = []
+    for claim, new_id in staged:
+        update: dict[str, Any] = {"claim_id": new_id}
+        if claim.premises:
+            update["premises"] = [remap.get(p, p) for p in claim.premises]
+        if claim.targets is not None and claim.targets in remap:
+            update["targets"] = remap[claim.targets]
+        out.append(claim.model_copy(update=update))
     return out
