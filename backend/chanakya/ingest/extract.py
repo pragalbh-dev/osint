@@ -45,13 +45,15 @@ ones once within-doc restatements are folded.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Literal, get_args
+from typing import Any, Literal
 
 from pydantic import BaseModel
 
+from chanakya import edge_direction
 from chanakya.ingest import adapters
 from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.loaders import LoadedDoc
+from chanakya.ontology import EdgeLaneIndex
 from chanakya.schemas import ConfigBundle, make_claim_id
 from chanakya.schemas.claim import (
     ClaimPayload,
@@ -73,18 +75,17 @@ from chanakya.schemas.values import DateValue, Location, Quantity
 # off-ontology type is flagged in tier-3 ``attributes`` — extensibility without silent loss.
 
 NodeTypeName = Literal[
-    "manufacturer", "component", "variant", "contract_import_event", "unit", "basing_site",
-    "interceptor_stockpile", "techdata_authority", "source", "indicator", "known_gap",
-]
-EdgeTypeName = Literal[
-    "based-at", "inducted-into", "imported-by", "exported-by", "equips", "supplies-component",
-    "manufactures", "design-authority-for", "component-of", "sustained-by", "replenishes",
-    "same-as", "distinct-from", "substitutable-by", "evidenced-by", "corroborates",
-    "contradicts", "supersedes", "derived-from",
+    "manufacturer", "trading_org", "component", "variant", "contract_import_event", "unit",
+    "basing_site", "interceptor_stockpile", "techdata_authority", "source", "indicator", "known_gap",
 ]
 EventTypeName = Literal["TransferEvent", "InductionEvent", "SightingEvent", "ExerciseEvent"]
 
-_EDGE_TYPE_SET: frozenset[str] = frozenset(get_args(EdgeTypeName))
+# The relationship-predicate enum handed to the model is NOT a hardcoded literal — it is driven at
+# schema-build time from :meth:`EdgeLaneIndex.extractor_edges` (the ~10 relationship edges) by
+# :func:`_constrain_relation_enum`, so the model can only assert real relationship edges. Identity /
+# evidence / derived edges (``same-as``, ``distinct-from``, ``corroborates`` …) are deliberately absent
+# from that enum — identity still flows through its OWN dedicated fields (``aka`` / ``designators`` /
+# ``aliases`` / ``distinctions``), never the ``relations`` slot (D-A, DECISIONS §6 "EVAL").
 
 # event_kind (a source-neutral verb the schema offers the model) → the ontology event TYPE.
 _EVENT_KIND_TO_TYPE: dict[str, EventTypeName] = {
@@ -187,9 +188,14 @@ class EventMention(BaseModel):
 
 
 class RelationMention(BaseModel):
-    """A relationship the source *explicitly states*, keyed by a generic edge TYPE (never inferred)."""
+    """A relationship the source *explicitly states*, keyed by a generic edge TYPE (never inferred).
 
-    relation: EdgeTypeName | None = None
+    ``relation`` is typed ``str`` here; the *allowed values* are narrowed to the extractor-edge enum in
+    the tool schema at build time (:func:`_constrain_relation_enum`). The model's verb is only a hint —
+    the transform re-lanes the fact onto the edge its endpoint types imply (:meth:`_Emitter.relation`).
+    """
+
+    relation: str | None = None
     subject: str | None = None
     object: str | None = None
     source_quote: str | None = None
@@ -274,6 +280,25 @@ class CustomsGdBol(BaseModel):
     rows: list[GdRow] = []
 
 
+class StockpileMention(BaseModel):
+    """A stated interceptor / spares stockpile posture — the perishable sustainment node (depth, resupply)."""
+
+    name: str | None = None
+    stocked_round: str | None = None
+    magazine_depth: str | None = None
+    resupply_lead_time: str | None = None
+    source_quote: str | None = None
+
+
+class TechDataMention(BaseModel):
+    """A stated technical-data / design-authority holding — the durable sustainment node (TDP, calibration)."""
+
+    name: str | None = None
+    holds: str | None = None  # TDP | firmware | crypto-keys | calibration-ref (as the source states it)
+    foreign_control: str | None = None
+    source_quote: str | None = None
+
+
 class TenderProcurement(BaseModel):
     """A procurement tender skeleton — numbered clauses + [REDACTED] (customs-tender family)."""
 
@@ -284,6 +309,11 @@ class TenderProcurement(BaseModel):
     line_items: list[ComponentMention] = []
     contract_value: str | None = None
     issue_date: str | None = None
+    # A sustainment tender states a spares/stockpile posture and/or a technical-data authority — each a
+    # first-class sustainment NODE (interceptor_stockpile / techdata_authority). The rolled-up
+    # `sustained-by` edge is SCORE's derived synthesis, NOT emitted here (Phase-4 boundary).
+    stockpile: StockpileMention | None = None
+    techdata_authority: TechDataMention | None = None
     aliases: list[AliasMention] = []
     distinctions: list[AliasMention] = []  # explicit "no interoperability" / "not related" → distinct-from
     relations: list[RelationMention] = []
@@ -612,9 +642,14 @@ class _Emitter:
     node_types: frozenset[str]
     edge_types: frozenset[str]
     event_types: frozenset[str]
+    lane: EdgeLaneIndex           # the domain/range re-lane + extraction enum (D-A)
+    dir_rules: dict[str, edge_direction.DirectionRule]  # partial-typing orientation fallback
     geocoder: adapters.Geocoder | None = None
     _n: int = 0
     claims: list[ClaimRecord] = field(default_factory=list)
+    # name -> entity_type of every entity emitted *for this document*, so a relation's endpoints can be
+    # typed from the entities the same document mentioned (write-time endpoint-type recovery).
+    _entity_types: dict[str, str] = field(default_factory=dict)
 
     def location(self, raw: str | None, *, surface_format: str | None = None) -> Location | None:
         """Normalize a stated location, injecting the doc's geocoder — the one location call-site.
@@ -649,6 +684,7 @@ class _Emitter:
 
     def entity(self, entity_type: str, name: str, ref: DocRef, *, attrs: dict[str, Any] | None = None,
                event_time: DateValue | None = None, attributes: dict[str, Any] | None = None) -> None:
+        self._entity_types.setdefault(name, entity_type)  # first writer wins → deterministic recovery
         attributes = self._offontology(self.node_types, entity_type, attributes)
         self._emit(
             EntityDescriptor(entity_type=entity_type, name=name, attrs=_prune(attrs or {})),
@@ -676,11 +712,98 @@ class _Emitter:
                object_value: Quantity | Location | DateValue | None = None,
                polarity: str = "positive", event_time: DateValue | None = None,
                attributes: dict[str, Any] | None = None) -> None:
+        """Emit a relationship claim **verbatim** — the raw path (identity edges + already-canonical edges).
+
+        Never re-lanes: identity claims (``same-as`` / ``distinct-from`` from stated aliases/designators)
+        and deterministic structural role-edges keep the exact predicate they were given. LLM-asserted
+        relationships go through :meth:`relation`, which re-lanes onto the endpoint-implied edge first.
+        """
         attributes = self._offontology(self.edge_types, predicate, attributes)
         self._emit(
             Triple(subject=subject, predicate=predicate, object=obj, object_value=object_value),
             "relationship", ref, polarity=polarity, event_time=event_time, attributes=attributes,
         )
+
+    def relation(self, subject: str, predicate: str, obj: str, ref: DocRef, *,
+                 subj_type: str | None = None, obj_type: str | None = None,
+                 object_value: Quantity | Location | DateValue | None = None,
+                 event_time: DateValue | None = None, source_quote: str | None = None,
+                 attributes: dict[str, Any] | None = None) -> None:
+        """Emit an **LLM-asserted** relationship, re-laned onto the edge its endpoint types imply (D-A).
+
+        Endpoint types are taken from ``subj_type``/``obj_type`` when the caller knows them (the
+        structural transforms), else recovered from the entities this document emitted (``_entity_types``).
+        Then, by how much can be typed:
+
+        * **both typed** → :meth:`EdgeLaneIndex.relane` names the edge (and orientation). ``rejected``
+          (endpoints fit no edge) records the fact as a tier-3 note on the subject node — never a
+          first-class edge, never an invented predicate.
+        * **one typed** → :func:`edge_direction.reversed_for_types` fixes orientation only; the as-stated
+          predicate (already a valid extractor edge post enum-narrowing) is kept.
+        * **neither typed** → keep the as-stated predicate, flagged tier-3 (provenance never dropped).
+
+        THE PROVENANCE RULE: whenever the label or orientation is changed, the emitted claim carries the
+        as-stated predicate, the verbatim ``source_quote`` and the re-lane reason — normalising the *label*
+        so two sources of one fact corroborate on one edge, never overwriting what the source said.
+        """
+        st = subj_type or self._entity_types.get(subject)
+        ot = obj_type or self._entity_types.get(obj)
+
+        if st is not None and ot is not None:
+            result = self.lane.relane(predicate, st, ot)
+            if not result.ok:  # endpoints fit no edge — record, don't invent a predicate
+                self._record_rejected(subject, st, predicate, obj, ref, result.reason, source_quote)
+                return
+            subj_out, obj_out = (obj, subject) if result.reversed else (subject, obj)
+            attrs = attributes
+            if result.action == "relaned":  # label and/or orientation changed → preserve provenance
+                attrs = self._relane_provenance(attributes, predicate, result.reason, source_quote)
+            self.triple(subj_out, result.edge or predicate, obj_out, ref, object_value=object_value,
+                        event_time=event_time, attributes=attrs)
+            return
+
+        if st is not None or ot is not None:  # partial typing → orientation only, predicate kept as stated
+            if edge_direction.reversed_for_types(predicate, st, ot, self.dir_rules):
+                reason = f"{predicate!r} reoriented ({st or '?'}->{ot or '?'})"
+                attrs = self._relane_provenance(attributes, predicate, reason, source_quote)
+                self.triple(obj, predicate, subject, ref, object_value=object_value,
+                            event_time=event_time, attributes=attrs)
+            else:
+                self.triple(subject, predicate, obj, ref, object_value=object_value,
+                            event_time=event_time, attributes=attributes)
+            return
+
+        # Neither endpoint typable: keep the as-stated predicate, flag tier-3 (never drop the provenance).
+        flagged = dict(attributes or {})
+        flagged["_endpoint_typing"] = "unresolved"
+        if source_quote:
+            flagged.setdefault("source_quote", source_quote)
+        self.triple(subject, predicate, obj, ref, object_value=object_value,
+                    event_time=event_time, attributes=flagged)
+
+    @staticmethod
+    def _relane_provenance(attributes: dict[str, Any] | None, as_stated: str, reason: str,
+                           source_quote: str | None) -> dict[str, Any]:
+        """The provenance trio a re-laned claim must carry (as-stated predicate + verbatim quote + why)."""
+        attrs = dict(attributes or {})
+        attrs["_as_stated_predicate"] = as_stated
+        attrs["_relane_reason"] = reason
+        if source_quote:
+            attrs.setdefault("source_quote", source_quote)
+        return attrs
+
+    def _record_rejected(self, subject: str, subj_type: str, predicate: str, obj: str, ref: DocRef,
+                         reason: str, source_quote: str | None) -> None:
+        """A relation whose endpoints fit no edge: keep the fact as a tier-3 note on the subject node.
+
+        No first-class edge (would be an ad-hoc predicate + could mint an ``unknown`` endpoint node) and
+        no invented predicate — the fact stays traceable/queryable in the evidence log but is never
+        traversed. Mirrors the ``_offontology`` flag: a tier-3 attribute, not a graph edge.
+        """
+        rejected: dict[str, Any] = {"predicate": predicate, "object": obj, "reason": reason}
+        if source_quote:
+            rejected["source_quote"] = source_quote
+        self.entity(subj_type, subject, ref, attributes={"_rejected_relation": rejected})
 
     @staticmethod
     def _offontology(vocab: frozenset[str], type_name: str,
@@ -708,7 +831,9 @@ def _emitter(source_id: str, loaded: LoadedDoc, config: ConfigBundle, model_id: 
     nodes, edges, events = _vocab(config)
     return _Emitter(source_id=source_id, loaded=loaded, model_id=model_id,
                     report_time=report_time, ingest_time=ingest_time,
-                    node_types=nodes, edge_types=edges, event_types=events, geocoder=geocoder)
+                    node_types=nodes, edge_types=edges, event_types=events,
+                    lane=EdgeLaneIndex(config.ontology), dir_rules=edge_direction.direction_map(config),
+                    geocoder=geocoder)
 
 
 def _money_quantity(raw: str | None) -> Quantity | None:
@@ -803,17 +928,17 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
     for m in _items(filled, "relations"):
         rel, subj, obj = _str(m, "relation"), _str(m, "subject"), _str(m, "object")
         if rel and subj and obj:
-            ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=subj)
-            em.triple(subj, rel, obj, ref)
+            quote = _str(m, "source_quote")
+            ref = _resolve_doc_ref(loaded, quote, fallback=subj)
+            em.relation(subj, rel, obj, ref, source_quote=quote)
 
     _emit_aliases(em, _items(filled, "aliases"), "same-as")
     _emit_aliases(em, _items(filled, "distinctions"), "distinct-from")
 
-    for m in _items(filled, "denials"):
-        subj, pred, obj = _str(m, "subject"), _str(m, "predicate"), _str(m, "object")
-        if subj and pred and obj:
-            ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=subj)
-            em.triple(subj, pred, obj, ref, polarity="negative")
+    # Denials / negations are NOT emitted as edges: a negation is not a subject→object knowledge edge,
+    # and its free-text endpoints would mint junk `unknown` nodes (RCA ING-1). Nothing downstream reads
+    # denials today; with the pipeline drawing every triple, retaining them would still pollute the
+    # graph — so the denial lane is dropped here (zero denial-derived edges / `unknown` nodes).
 
     return em.claims
 
@@ -880,11 +1005,13 @@ def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: 
                              config: ConfigBundle, report_time: DateValue | None,
                              ingest_time: DateValue | None, model_id: str,
                              geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
-    """One customs row → MANY typed claims: consignee & shipper orgs (tier-1), a TransferEvent carrying
-    port (Location) + filing date (Date) + declared value (Quantity), with HS-code/container#/B-L# in
-    the tier-3 ``attributes`` bag. A stated alias/'formerly'/spelling-variant → a ``same-as`` claim; a
-    stated onward destination is kept as its OWN ``basing_site`` — the consignee is NEVER linked to it
-    (the unstated shell→depot resolution is RESOLVE's)."""
+    """One customs row → MANY typed claims: consignee & shipper as ``trading_org`` nodes (tier-1;
+    ``manufacturer`` is reserved for real OEMs — ING-3), a ``contract_import_event`` NODE with the row's
+    own roles projected into ``exported-by``→shipper / ``imported-by``→consignee edges (ING-2), a
+    TransferEvent carrying port (Location) + filing date (Date) + declared value (Quantity), with
+    HS-code/container#/B-L# in the tier-3 ``attributes`` bag. A stated alias/'formerly'/spelling-variant →
+    a ``same-as`` claim; a stated onward destination is kept as its OWN ``basing_site`` — the consignee is
+    NEVER linked to it (the unstated shell→depot / import→end-user resolution is RESOLVE's)."""
     em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
     for row in _items(filled, "rows"):
         row_ref = _resolve_doc_ref(loaded, _str(row, "source_quote"), cite_row=True)
@@ -895,15 +1022,17 @@ def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: 
         })
 
         participants: list[str] = []
+        roles: dict[str, str] = {}
         for slot, role in (("consignee", "consignee"), ("shipper", "shipper")):
             org = _obj(row, slot)
             oname = _str(org, "name") if org else None
             if org and oname:
                 oref = _resolve_doc_ref(loaded, _str(org, "source_quote"), fallback=oname, cite_row=True)
-                em.entity("manufacturer", oname, oref,
+                em.entity("trading_org", oname, oref,
                           attrs={"role": role, "origin_country": _str(org, "origin_country")},
                           attributes=dict(tier3))
                 participants.append(oname)
+                roles[role] = oname
                 aka = _str(org, "aka")
                 if aka:
                     em.triple(oname, "same-as", aka, oref)
@@ -921,6 +1050,21 @@ def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: 
                          "declared_value": _dump(value), "description": _str(row, "description"),
                          "count_state": _str(row, "count_state"),
                      }, attributes=dict(tier3))
+
+        # The row IS an import event → a first-class node, with its own structural roles projected onto
+        # edges (a deterministic projection of present fields, never inference). Keyed by GD/BoL number.
+        # These role-edges are emitted verbatim (not re-laned): the row's role IS the edge, and the
+        # generic ``trading_org`` endpoint is intentional (linking the shell to the end-user is RESOLVE's).
+        import_key = _str(row, "gd_no") or _str(row, "bl_no")
+        if import_key and roles:
+            em.entity("contract_import_event", import_key, row_ref,
+                      event_time=when, attrs={"event_subtype": "customs-import",
+                                              "declared_value": _dump(value)},
+                      attributes=dict(tier3))
+            if "shipper" in roles:
+                em.triple(import_key, "exported-by", roles["shipper"], row_ref)
+            if "consignee" in roles:
+                em.triple(import_key, "imported-by", roles["consignee"], row_ref)
 
         # A STATED onward destination → its own place (never a resolved consignee→depot edge).
         dest = _str(row, "destination_ref")
@@ -988,11 +1132,34 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
                 "functional_role": _str(m, "functional_role"), "quantity": _dump(qty),
             })
 
+    # A sustainment tender implies sustainment NODES — the perishable spares/stockpile posture and/or the
+    # durable technical-data authority. Nodes only: the `sustained-by` rollup is SCORE's derived synthesis
+    # (Phase-4 boundary), so no `sustained-by`/`design-authority-for` edge is minted here.
+    stock = _obj(filled, "stockpile")
+    if stock:
+        sname = _str(stock, "name") or "sustainment spares/stockpile"
+        if _str(stock, "name") or _str(stock, "stocked_round") or _str(stock, "magazine_depth"):
+            sref = _resolve_doc_ref(loaded, _str(stock, "source_quote"), fallback=sname)
+            em.entity("interceptor_stockpile", sname, sref, attrs={
+                "stocked_round": _str(stock, "stocked_round"),
+                "magazine_depth": _str(stock, "magazine_depth"),
+                "resupply_lead_time": _str(stock, "resupply_lead_time"),
+            })
+
+    td = _obj(filled, "techdata_authority")
+    if td and (_str(td, "name") or _str(td, "holds")):
+        tname = _str(td, "name") or "technical-data / calibration authority"
+        tref = _resolve_doc_ref(loaded, _str(td, "source_quote"), fallback=tname)
+        em.entity("techdata_authority", tname, tref, attrs={
+            "holds": _str(td, "holds"), "foreign_control": _str(td, "foreign_control"),
+        })
+
     for m in _items(filled, "relations"):
         rel, subj, obj = _str(m, "relation"), _str(m, "subject"), _str(m, "object")
         if rel and subj and obj:
-            ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=subj)
-            em.triple(subj, rel, obj, ref)
+            quote = _str(m, "source_quote")
+            ref = _resolve_doc_ref(loaded, quote, fallback=subj)
+            em.relation(subj, rel, obj, ref, source_quote=quote)
 
     _emit_aliases(em, _items(filled, "aliases"), "same-as")
     _emit_aliases(em, _items(filled, "distinctions"), "distinct-from")
@@ -1028,11 +1195,9 @@ def transform_social_post(filled: dict[str, Any], *, source_id: str, loaded: Loa
                      attrs={"activity": _str(s, "activity")},
                      attributes=_prune({"status_url": status_url}))
 
-        for n in _items(post, "negations"):
-            subj, pred, obj = _str(n, "subject"), _str(n, "predicate"), _str(n, "object")
-            if subj and pred and obj:
-                nref = _resolve_doc_ref(loaded, _str(n, "source_quote"), fallback=subj)
-                em.triple(subj, pred, obj, nref, polarity="negative", event_time=posted)
+        # A 'nothing to report' negation is NOT emitted as an edge — see the prose transform's denial
+        # note (RCA ING-1): free-text negation endpoints would mint junk `unknown` nodes, and no consumer
+        # reads denials. Zero negation-derived edges / `unknown` nodes.
     return em.claims
 
 
@@ -1042,8 +1207,10 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
                              geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """GEOINT analyst prose → a ``basing_site`` (with WGS84 coords), a SightingEvent per dated pass
     (object count as a Quantity range, count_state=fielded), the assessed system ``variant`` carrying
-    the analyst's own confidence wording, radar/components, and a ``known_gap`` per stated collection
-    gap (seeding the insufficient-evidence machinery). Coords come from the text (authoritative)."""
+    the analyst's own confidence wording, and radar/components. Collection gaps are a sufficiency signal,
+    NOT order-of-battle entities: SCORE's sufficiency engine emits the correctly-shaped ``gap:*`` items —
+    so a ``known_gap`` node is minted **only** when a normalized ``missing_slot`` is stated, keyed by that
+    slot (never the verbose sentence, which never merges — RCA ING-4). Coords come from the text."""
     em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
 
     site = _obj(filled, "site")
@@ -1085,15 +1252,17 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
                                                      "functional_role": _str(m, "functional_role")})
 
     for m in _items(filled, "collection_gaps"):
-        desc = _str(m, "description")
-        if desc:
-            ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=desc)
-            due = adapters.normalize_date(_str(m, "next_coverage_due"), report_time=report_time)
-            em.entity("known_gap", desc, ref, attrs={
-                "missing_slots": _strlist(m, "missing_slot") or ([_str(m, "missing_slot")]
-                                                                  if _str(m, "missing_slot") else []),
-                "next_coverage_due": _dump(due),
-            })
+        # Key by the normalized missing_slot ONLY — never the raw sentence. No slot ⇒ no node (the gap is
+        # still a sufficiency signal SCORE handles via its own gap:* items; INGEST mints no OB entity).
+        slots = _strlist(m, "missing_slot")
+        if not slots:
+            continue
+        slot_key = slots[0]
+        ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=slot_key)
+        due = adapters.normalize_date(_str(m, "next_coverage_due"), report_time=report_time)
+        em.entity("known_gap", slot_key, ref, attrs={
+            "missing_slots": slots, "next_coverage_due": _dump(due),
+        })
     return em.claims
 
 
@@ -1236,6 +1405,26 @@ def _extract_filled(loaded: LoadedDoc, *, tool_name: str, input_schema: dict[str
 # The public entry point.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
+def _constrain_relation_enum(schema: dict[str, Any], allowed: list[str]) -> dict[str, Any]:
+    """Narrow the ``relations``-field predicate enum in the tool schema to the extractor edges (D-A).
+
+    The model may assert ONLY the ~10 relationship edges (``EdgeLaneIndex.extractor_edges()``) — never an
+    identity/evidence/derived edge (``same-as``, ``corroborates`` …) through the ``relations`` slot.
+    Driven from the *live* ontology at build time, not a hardcoded literal; identity still flows through
+    its own dedicated fields (``aka`` / ``designators`` / ``aliases`` / ``distinctions``). A no-op when the
+    ``RelationMention`` def or its ``relation`` property is absent (a schema without stated relations).
+    """
+    rel_def = schema.get("$defs", {}).get("RelationMention")
+    if isinstance(rel_def, dict) and isinstance(rel_def.get("properties"), dict):
+        props = rel_def["properties"]
+        if "relation" in props and allowed:
+            props["relation"] = {
+                "anyOf": [{"enum": list(allowed), "type": "string"}, {"type": "null"}],
+                "default": None, "title": "Relation",
+            }
+    return schema
+
+
 def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
                      config: ConfigBundle, client: ExtractionClient,
                      report_time: DateValue | None = None, ingest_time: DateValue | None = None,
@@ -1255,7 +1444,9 @@ def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
     """
     fmt: Format = format_hint if format_hint in SCHEMAS else format_sniffer(loaded.text, source_type)  # type: ignore[assignment]
     schema_model = SCHEMAS[fmt]
-    input_schema = schema_model.model_json_schema()
+    input_schema = _constrain_relation_enum(
+        schema_model.model_json_schema(), EdgeLaneIndex(config.ontology).extractor_edges()
+    )
     filled = _extract_filled(
         loaded, tool_name=_TOOL_NAMES[fmt], input_schema=input_schema,
         system=_SYSTEM_PROMPTS[fmt], client=client, config=config,

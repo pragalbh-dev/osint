@@ -15,7 +15,7 @@
       "row": null,
       "span": [
         0,
-        130
+        22
       ]
     },
     "event_time": {
@@ -46,7 +46,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -54,18 +59,18 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d06-spares-tender-l2",
+    "claim_id": "d06-spares-tender-l1-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
       "frame": null,
-      "line": 2,
+      "line": 1,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        23,
-        82
+        0,
+        130
       ]
     },
     "event_time": null,
@@ -83,7 +88,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "echelon": "Air Headquarters",
+        "echelon": "AIR HEADQUARTERS PROCUREMENT DIRECTORATE",
         "service_branch": "Pakistan Air Force"
       },
       "entity_type": "unit",
@@ -92,66 +97,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d06_spares_tender",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d06-spares-tender-l15",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
-        "frame": null,
-        "line": 15,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          487,
-          707
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
-        "frame": null,
-        "line": 15,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          601,
-          707
-        ]
-      }
-    ],
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
+    "report_time": {
       "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
+      "iso_date": "2023-02-06",
       "kind": "exact",
-      "raw": "frozen-seed-baseline"
+      "raw": "2023-02-06"
     },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "the System",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "Long Range Surface-to-Air Missile (LR-SAM) system"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -159,7 +110,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d06-spares-tender-l15-2",
+    "claim_id": "d06-spares-tender-l15",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
@@ -169,8 +120,8 @@
       "region": null,
       "row": null,
       "span": [
-        587,
-        707
+        616,
+        665
       ]
     },
     "event_time": null,
@@ -189,6 +140,7 @@
     "payload": {
       "attrs": {
         "designators": [
+          "LR-SAM",
           "HQ-9/P",
           "HQ-9P",
           "FD-2000"
@@ -201,7 +153,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -209,7 +166,7 @@
   {
     "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d06-spares-tender-l15-3",
+    "claim_id": "d06-spares-tender-l15-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
@@ -219,8 +176,8 @@
       "region": null,
       "row": null,
       "span": [
-        587,
-        707
+        616,
+        665
       ]
     },
     "event_time": null,
@@ -245,7 +202,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -253,7 +215,7 @@
   {
     "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d06-spares-tender-l15-4",
+    "claim_id": "d06-spares-tender-l15-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
@@ -263,8 +225,8 @@
       "region": null,
       "row": null,
       "span": [
-        587,
-        707
+        616,
+        665
       ]
     },
     "event_time": null,
@@ -289,7 +251,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -297,7 +264,7 @@
   {
     "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d06-spares-tender-l15-5",
+    "claim_id": "d06-spares-tender-l15-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
@@ -307,8 +274,8 @@
       "region": null,
       "row": null,
       "span": [
-        587,
-        707
+        616,
+        665
       ]
     },
     "event_time": null,
@@ -333,7 +300,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -341,7 +313,7 @@
   {
     "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d06-spares-tender-l15-6",
+    "claim_id": "d06-spares-tender-l15-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
@@ -351,8 +323,8 @@
       "region": null,
       "row": null,
       "span": [
-        587,
-        776
+        616,
+        665
       ]
     },
     "event_time": null,
@@ -370,14 +342,169 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "designated Air Defence squadrons",
+      "object": "LR-SAM",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Long Range Surface-to-Air Missile (LR-SAM) system"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
+    "resolved_ref": null,
+    "source_id": "d06_spares_tender",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d06-spares-tender-l15-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        695,
+        705
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-300P/PMU-series",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "the System"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
+    "resolved_ref": null,
+    "source_id": "d06_spares_tender",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d06-spares-tender-l15-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        695,
+        705
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-400/Triumf",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "the System"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
+    "resolved_ref": null,
+    "source_id": "d06_spares_tender",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "source_quote": "presently held on the inventory of designated Air Defence squadrons"
+    },
+    "claim_id": "d06-spares-tender-l15-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        708,
+        775
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Air Defence squadrons",
       "object_value": null,
       "predicate": "equips",
       "subject": "the System"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -395,7 +522,7 @@
       "region": null,
       "row": null,
       "span": [
-        1634,
+        1638,
         1777
       ]
     },
@@ -414,15 +541,20 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "role": "original equipment manufacturer"
+        "role": "OEM"
       },
       "entity_type": "manufacturer",
       "form": "entity",
-      "name": "subsidiary of a major Chinese state aerospace conglomerate"
+      "name": "original equipment manufacturer"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -440,140 +572,8 @@
       "region": null,
       "row": null,
       "span": [
-        1940,
-        2054
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Hongqi-9 family",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "the System"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d06_spares_tender",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d06-spares-tender-l23-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1940,
-        2158
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "FD-2000",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "Hongqi-9 family"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d06_spares_tender",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d06-spares-tender-l23-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1940,
-        2158
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9/P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "Hongqi-9 family"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d06_spares_tender",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d06-spares-tender-l23-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1940,
-        2158
+        2056,
+        2113
       ]
     },
     "event_time": null,
@@ -594,11 +594,65 @@
       "object": "HQ-9P",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "Hongqi-9 family"
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
+    "resolved_ref": null,
+    "source_id": "d06_spares_tender",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d06-spares-tender-l23-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2056,
+        2157
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -644,7 +698,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -682,7 +741,15 @@
     "payload": {
       "attrs": {
         "component_class": "spares",
-        "functional_role": "Ground support vehicle spares for erector-launcher chassis"
+        "functional_role": "Ground support vehicle spares for erector-launcher chassis",
+        "quantity": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 4.0
+        }
       },
       "entity_type": "component",
       "form": "entity",
@@ -690,7 +757,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -709,7 +781,7 @@
       "row": null,
       "span": [
         2614,
-        2763
+        2687
       ]
     },
     "event_time": null,
@@ -727,10 +799,10 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "Battery/charging modules",
+        "component_class": "modules",
         "functional_role": "Battery/charging modules for engagement radar cabin",
         "quantity": {
-          "approx": false,
+          "approx": true,
           "count_state": null,
           "max": 60.0,
           "min": 40.0,
@@ -744,7 +816,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -781,7 +858,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "Waveguide assemblies and RF connectors",
+        "component_class": "assemblies",
         "functional_role": "Waveguide assemblies and RF connectors, various"
       },
       "entity_type": "component",
@@ -790,7 +867,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -827,16 +909,21 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "Calibration/test jigs",
+        "component_class": "jigs",
         "functional_role": "Calibration/test jigs for missile round check-out prior to captive-carry/loading drills"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "Calibration/test jigs for missile round check-out prior to captive-carry/loading drills"
+      "name": "Calibration/test jigs for missile round check-out"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -882,7 +969,64 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
+    "resolved_ref": null,
+    "source_id": "d06_spares_tender",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "source_quote": "certain sub-systems associated with the System's fire-control/engagement radar (believed by open-source observers to be a derivative of the Type 305B / H-200 family"
+    },
+    "claim_id": "d06-spares-tender-l46",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d06_spares_tender.txt",
+      "frame": null,
+      "line": 46,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3996,
+        4160
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "the System",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "Type 305B / H-200 family"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -900,8 +1044,8 @@
       "region": null,
       "row": null,
       "span": [
-        4703,
-        5109
+        4786,
+        4861
       ]
     },
     "event_time": null,
@@ -919,14 +1063,19 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "S-300P/PMU-series",
+      "object": "SA-20",
       "object_value": null,
-      "predicate": "distinct-from",
-      "subject": "this system"
+      "predicate": "same-as",
+      "subject": "S-300P/PMU-series"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null
@@ -944,8 +1093,8 @@
       "region": null,
       "row": null,
       "span": [
-        4703,
-        5109
+        4882,
+        4945
       ]
     },
     "event_time": null,
@@ -963,14 +1112,19 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "S-400/Triumf",
+      "object": "Triumph",
       "object_value": null,
-      "predicate": "distinct-from",
-      "subject": "this system"
+      "predicate": "same-as",
+      "subject": "S-400/Triumf"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2023-02-06",
+      "kind": "exact",
+      "raw": "2023-02-06"
+    },
     "resolved_ref": null,
     "source_id": "d06_spares_tender",
     "targets": null

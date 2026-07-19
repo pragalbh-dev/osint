@@ -1,10 +1,55 @@
 [
   {
     "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d16-adversary-denial-l3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
+      "frame": null,
+      "line": 3,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        149,
+        164
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "SentinelHawk_PK"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d16_adversary_denial",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
     "attributes": {
       "posted_at": "May 2025"
     },
-    "claim_id": "d16-adversary-denial-l3",
+    "claim_id": "d16-adversary-denial-l3-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
@@ -98,7 +143,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "fielded"
+        "activity": "reportedly fielded"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -129,228 +174,6 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d16-adversary-denial-l9",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        910,
-        985
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 5,
-      "quarter": null,
-      "raw": "May 2025",
-      "year": 2025
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "operate"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "پاکستان",
-            "lat": 30.3308401,
-            "lon": 71.247499,
-            "source": "nominatim"
-          }
-        ],
-        "precision_class": null,
-        "proposed_alias": "Pakistan",
-        "raw": "Pakistan",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": 30.3308401,
-        "wgs84_lon": 71.247499
-      },
-      "participants": [
-        "firing batteries"
-      ],
-      "time_interval": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "month",
-        "half": null,
-        "kind": "label",
-        "month": 5,
-        "quarter": null,
-        "raw": "May 2025",
-        "year": 2025
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d16_adversary_denial",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d16-adversary-denial-l11",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1355,
-        1410
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 5,
-      "quarter": null,
-      "raw": "May 2025",
-      "year": 2025
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "used"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Pakistani HQ-9/P inventory",
-        "raw": "Pakistani HQ-9/P inventory",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "HT-233 radar"
-      ],
-      "time_interval": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "month",
-        "half": null,
-        "kind": "label",
-        "month": 5,
-        "quarter": null,
-        "raw": "May 2025",
-        "year": 2025
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d16_adversary_denial",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "dependency on"
-    },
-    "claim_id": "d16-adversary-denial-l15",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
-      "frame": null,
-      "line": 15,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2075,
-        2144
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 5,
-      "quarter": null,
-      "raw": "May 2025",
-      "year": 2025
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Chinese technical data packages",
-      "object_value": null,
-      "predicate": "dependency on",
-      "subject": "HT-233 fire control radar"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d16_adversary_denial",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "mentions"
-    },
     "claim_id": "d16-adversary-denial-l19",
     "doc_ref": {
       "bbox": null,
@@ -361,8 +184,8 @@
       "region": null,
       "row": null,
       "span": [
-        2775,
-        2975
+        2814,
+        2913
       ]
     },
     "event_time": {
@@ -371,9 +194,9 @@
       "granularity": "month",
       "half": null,
       "kind": "label",
-      "month": 5,
+      "month": 2,
       "quarter": null,
-      "raw": "May 2025",
+      "raw": "February 2025",
       "year": 2025
     },
     "extraction": {
@@ -389,69 +212,28 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "radar provenance",
-      "object_value": null,
-      "predicate": "mentions",
-      "subject": "recent ISPR readouts on Army Air Defence Command exercises"
+      "attrs": {
+        "activity": "live-fire drill"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "Army Air Defence Command"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 2,
+        "quarter": null,
+        "raw": "February 2025",
+        "year": 2025
+      }
     },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d16_adversary_denial",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "addressing"
-    },
-    "claim_id": "d16-adversary-denial-l19-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
-      "frame": null,
-      "line": 19,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3209,
-        3271
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 5,
-      "quarter": null,
-      "raw": "May 2025",
-      "year": 2025
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "the claim",
-      "object_value": null,
-      "predicate": "addressing",
-      "subject": "CASIC or Chinese state media"
-    },
-    "polarity": "negative",
+    "polarity": "positive",
     "premises": [],
     "report_time": null,
     "resolved_ref": null,
@@ -471,8 +253,8 @@
       "region": null,
       "row": null,
       "span": [
-        3828,
-        4125
+        3808,
+        3824
       ]
     },
     "event_time": null,
@@ -516,8 +298,8 @@
       "region": null,
       "row": null,
       "span": [
-        4145,
-        4375
+        4131,
+        4141
       ]
     },
     "event_time": null,
@@ -540,51 +322,6 @@
       "entity_type": "source",
       "form": "entity",
       "name": "Falcon_ISR"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d16_adversary_denial",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d16-adversary-denial-l29",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
-      "frame": null,
-      "line": 29,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        4400,
-        4551
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "source_type": "social"
-      },
-      "entity_type": "source",
-      "form": "entity",
-      "name": "SentinelHawk_PK"
     },
     "polarity": "positive",
     "premises": [],

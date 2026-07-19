@@ -5,18 +5,18 @@
       "posted_at": "2025-05-11 (~14:22 PKT)",
       "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
     },
-    "claim_id": "d13-reshare-b-l1",
+    "claim_id": "d13-reshare-b-l5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 1,
+      "line": 5,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        0,
-        349
+        127,
+        294
       ]
     },
     "event_time": {
@@ -59,7 +59,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -69,7 +74,7 @@
     "attributes": {
       "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
     },
-    "claim_id": "d13-reshare-b-l5",
+    "claim_id": "d13-reshare-b-l5-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -153,109 +158,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
-    },
-    "claim_id": "d13-reshare-b-l5-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 5,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        204,
-        222
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
+    "report_time": {
       "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
+      "iso_date": "2025-05-11",
       "kind": "exact",
-      "raw": "frozen-seed-baseline"
+      "raw": "2025-05-11"
     },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "allegedly hit"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "Lahore University of Management Sciences, Sector V & U Outer Road Phase 2, شہری لاہور, Rehman Villas, Chung Khurad, تحصیل لاہور کنٹونمنٹ, ضلع لاہور, لاہور ڈویژن, پنجاب, 54792, پاکستان",
-            "lat": 31.470326,
-            "lon": 74.4097439,
-            "source": "nominatim"
-          }
-        ],
-        "precision_class": null,
-        "proposed_alias": "Lahore sector",
-        "raw": "Lahore sector",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": 31.470326,
-        "wgs84_lon": 74.4097439
-      },
-      "participants": [
-        "HIMADS (HQ-9P) battery"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": null,
-        "kind": "period",
-        "period_type": "range",
-        "start": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2025",
-          "year": 2025
-        }
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -275,8 +183,8 @@
       "region": null,
       "row": null,
       "span": [
-        204,
-        242
+        181,
+        243
       ]
     },
     "event_time": {
@@ -311,27 +219,19 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "allegedly hit"
+        "activity": "site allegedly hit"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "EDGE MANPOWER SERVICES LEADING RECRUITMENT AGENCY IN PAKISTAN, Office No 324 , Block H-2 Near Shimla Bakers , Johar Town, Minjah-ul-Hussain Road, شہری لاہور, سن فلاور ہاؤسنگ سوسائٹی, جوہر ٹاؤن, لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54000, پاکستان",
-            "lat": 31.4707072,
-            "lon": 74.2657649,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "near Lahore",
-        "raw": "near Lahore",
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.4707072,
-        "wgs84_lon": 74.2657649
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HQ-9/P HIMADS battery"
@@ -357,7 +257,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -368,18 +273,18 @@
       "posted_at": "2025-05-11 (~14:24 PKT)",
       "status_url": "https://x.com/Sherdil_Watch/status/1921490511028912128"
     },
-    "claim_id": "d13-reshare-b-l8",
+    "claim_id": "d13-reshare-b-l12",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 8,
+      "line": 12,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        351,
-        679
+        478,
+        624
       ]
     },
     "event_time": {
@@ -422,7 +327,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -432,7 +342,7 @@
     "attributes": {
       "status_url": "https://x.com/Sherdil_Watch/status/1921490511028912128"
     },
-    "claim_id": "d13-reshare-b-l12",
+    "claim_id": "d13-reshare-b-l12-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -478,31 +388,22 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly struck overnight"
+        "activity": "reportedly struck overnight by IAF jet"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "EDGE MANPOWER SERVICES LEADING RECRUITMENT AGENCY IN PAKISTAN, Office No 324 , Block H-2 Near Shimla Bakers , Johar Town, Minjah-ul-Hussain Road, شہری لاہور, سن فلاور ہاؤسنگ سوسائٹی, جوہر ٹاؤن, لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54000, پاکستان",
-            "lat": 31.4707072,
-            "lon": 74.2657649,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "near Lahore",
         "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.4707072,
-        "wgs84_lon": 74.2657649
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
-        "HQ-9/P HIMADS site",
-        "IAF jet"
+        "HQ-9/P HIMADS site"
       ],
       "time_interval": {
         "approximate": false,
@@ -525,7 +426,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -536,18 +442,18 @@
       "posted_at": "2025-05-11 (~14:26 PKT)",
       "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
     },
-    "claim_id": "d13-reshare-b-l15",
+    "claim_id": "d13-reshare-b-l19",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 15,
+      "line": 19,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        681,
-        1030
+        812,
+        924
       ]
     },
     "event_time": {
@@ -590,7 +496,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -600,7 +511,7 @@
     "attributes": {
       "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
     },
-    "claim_id": "d13-reshare-b-l19",
+    "claim_id": "d13-reshare-b-l19-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -646,30 +557,21 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "engaged"
+        "activity": "engaged HIMADS (HQ-9P) battery"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "Lahore University of Management Sciences, Sector V & U Outer Road Phase 2, شہری لاہور, Rehman Villas, Chung Khurad, تحصیل لاہور کنٹونمنٹ, ضلع لاہور, لاہور ڈویژن, پنجاب, 54792, پاکستان",
-            "lat": 31.470326,
-            "lon": 74.4097439,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore sector",
         "raw": "Lahore sector",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.470326,
-        "wgs84_lon": 74.4097439
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
-        "HIMADS (HQ-9P) battery",
         "IAF jet"
       ],
       "time_interval": {
@@ -693,7 +595,111 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d13_reshare_b",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
+    },
+    "claim_id": "d13-reshare-b-l19-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        858,
+        924
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "site allegedly hit"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Lahore sector",
+        "raw": "Lahore sector",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HIMADS (HQ-9P) battery"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -704,18 +710,18 @@
       "posted_at": "2025-05-11 (~14:29 PKT)",
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l22",
+    "claim_id": "d13-reshare-b-l26",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 22,
+      "line": 26,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1032,
-        1322
+        1175,
+        1282
       ]
     },
     "event_time": {
@@ -758,7 +764,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -768,7 +779,7 @@
     "attributes": {
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l26",
+    "claim_id": "d13-reshare-b-l26-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -819,22 +830,14 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
-            "lat": 31.5656822,
-            "lon": 74.3141829,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.5656822,
-        "wgs84_lon": 74.3141829
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "Lahore HQ-9/P site"
@@ -860,7 +863,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -870,7 +878,7 @@
     "attributes": {
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l26-2",
+    "claim_id": "d13-reshare-b-l26-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -916,13 +924,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "allegedly engaged"
+        "activity": "allegedly engaged battery"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "battery",
         "jet"
       ],
       "time_interval": {
@@ -946,7 +953,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -957,18 +969,18 @@
       "posted_at": "2025-05-11 (~14:31 PKT)",
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l28",
+    "claim_id": "d13-reshare-b-l32",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 28,
+      "line": 32,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1324,
-        1601
+        1455,
+        1558
       ]
     },
     "event_time": {
@@ -1011,7 +1023,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1021,7 +1038,7 @@
     "attributes": {
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l32",
+    "claim_id": "d13-reshare-b-l32-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1072,22 +1089,14 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "EDGE MANPOWER SERVICES LEADING RECRUITMENT AGENCY IN PAKISTAN, Office No 324 , Block H-2 Near Shimla Bakers , Johar Town, Minjah-ul-Hussain Road, شہری لاہور, سن فلاور ہاؤسنگ سوسائٹی, جوہر ٹاؤن, لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54000, پاکستان",
-            "lat": 31.4707072,
-            "lon": 74.2657649,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "near Lahore",
         "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.4707072,
-        "wgs84_lon": 74.2657649
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HIMADS/HQ9P battery"
@@ -1113,7 +1122,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1123,7 +1137,7 @@
     "attributes": {
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l32-2",
+    "claim_id": "d13-reshare-b-l32-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1198,7 +1212,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1207,70 +1226,6 @@
     "asserts": "entity",
     "attributes": {
       "posted_at": "2025-05-11 (~14:33 PKT)",
-      "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
-    },
-    "claim_id": "d13-reshare-b-l34",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 34,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1603,
-        1933
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "source_type": "social"
-      },
-      "entity_type": "source",
-      "form": "entity",
-      "name": "@DefenceUpdatesPK"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
       "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
     },
     "claim_id": "d13-reshare-b-l38",
@@ -1319,31 +1274,91 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly engaged/hit"
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@DefenceUpdatesPK"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d13_reshare_b",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
+    },
+    "claim_id": "d13-reshare-b-l38-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
+      "frame": null,
+      "line": 38,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1752,
+        1816
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "reportedly engaged/hit overnight by IAF jet"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
-            "lat": 31.5656822,
-            "lon": 74.3141829,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.5656822,
-        "wgs84_lon": 74.3141829
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
-        "Lahore HQ-9/P HIMADS",
-        "IAF jet"
+        "Lahore HQ-9/P HIMADS"
       ],
       "time_interval": {
         "approximate": false,
@@ -1366,7 +1381,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1377,18 +1397,18 @@
       "posted_at": "2025-05-08 (~05:15 IST)",
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l42",
+    "claim_id": "d13-reshare-b-l46",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 42,
+      "line": 46,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1940,
-        2263
+        2075,
+        2262
       ]
     },
     "event_time": {
@@ -1431,7 +1451,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1441,7 +1466,7 @@
     "attributes": {
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46",
+    "claim_id": "d13-reshare-b-l46-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1452,7 +1477,7 @@
       "row": null,
       "span": [
         2097,
-        2180
+        2198
       ]
     },
     "event_time": {
@@ -1487,30 +1512,22 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "shooting down"
+        "activity": "shooting down Pak drone & missile attacks on military targets"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "Indian Institute of Science, CV Raman Road, Malleswaram, Malleshwaram, Bengaluru West City Corporation, Bengaluru, Bangalore North, Bengaluru Urban, Karnataka, 560012, India",
-            "lat": 13.0222347,
-            "lon": 77.5671832,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "North & West India",
         "raw": "North & West India",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 13.0222347,
-        "wgs84_lon": 77.5671832
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
-        "Pak drone & missile attacks"
+        "Pak drone & missile"
       ],
       "time_interval": {
         "approximate": false,
@@ -1533,7 +1550,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1543,7 +1565,7 @@
     "attributes": {
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46-2",
+    "claim_id": "d13-reshare-b-l46-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1553,7 +1575,7 @@
       "region": null,
       "row": null,
       "span": [
-        2209,
+        2200,
         2261
       ]
     },
@@ -1589,7 +1611,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "drone strikes"
+        "activity": "drone strikes on Pak's air defence"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -1604,7 +1626,6 @@
         "wgs84_lon": null
       },
       "participants": [
-        "Pak's air defence",
         "drone"
       ],
       "time_interval": {
@@ -1628,7 +1649,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1636,21 +1662,20 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "2025-05-08 (~05:20 IST, exact timestamp via search only) [PARAPHRASED]",
-      "status_url": "not recoverable — X blocks unauthenticated access to this status"
+      "posted_at": "2025-05-08 (~05:20 IST, exact timestamp via search only)"
     },
-    "claim_id": "d13-reshare-b-l48",
+    "claim_id": "d13-reshare-b-l52",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 48,
+      "line": 52,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2265,
-        2631
+        2474,
+        2569
       ]
     },
     "event_time": {
@@ -1693,17 +1718,20 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
   },
   {
     "asserts": "event",
-    "attributes": {
-      "status_url": "not recoverable — X blocks unauthenticated access to this status"
-    },
-    "claim_id": "d13-reshare-b-l52",
+    "attributes": null,
+    "claim_id": "d13-reshare-b-l52-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1754,22 +1782,14 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "EDGE MANPOWER SERVICES LEADING RECRUITMENT AGENCY IN PAKISTAN, Office No 324 , Block H-2 Near Shimla Bakers , Johar Town, Minjah-ul-Hussain Road, شہری لاہور, سن فلاور ہاؤسنگ سوسائٹی, جوہر ٹاؤن, لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54000, پاکستان",
-            "lat": 31.4707072,
-            "lon": 74.2657649,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "near Lahore",
         "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.4707072,
-        "wgs84_lon": 74.2657649
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "Pakistani air defence radar/SAM assets"
@@ -1795,7 +1815,87 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d13_reshare_b",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
+    },
+    "claim_id": "d13-reshare-b-l58",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
+      "frame": null,
+      "line": 58,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2764,
+        2826
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "yesterday"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "footage from yesterday resurfacing again today"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ9 site"
+      ],
+      "time_interval": {
+        "boundary_source": "relative",
+        "iso_date": "2025-05-10",
+        "kind": "exact",
+        "raw": "yesterday"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1806,18 +1906,18 @@
       "posted_at": "2025-05-11 (~19:40 IST)",
       "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
     },
-    "claim_id": "d13-reshare-b-l54",
+    "claim_id": "d13-reshare-b-l58-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 54,
+      "line": 58,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2633,
-        2951
+        2764,
+        2908
       ]
     },
     "event_time": {
@@ -1860,109 +1960,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
-    },
-    "claim_id": "d13-reshare-b-l58",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 58,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2764,
-        2863
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
+    "report_time": {
       "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
+      "iso_date": "2025-05-11",
       "kind": "exact",
-      "raw": "frozen-seed-baseline"
+      "raw": "2025-05-11"
     },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "strike"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
-            "lat": 31.5656822,
-            "lon": 74.3141829,
-            "source": "nominatim"
-          }
-        ],
-        "precision_class": null,
-        "proposed_alias": "Lahore",
-        "raw": "Lahore",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": 31.5656822,
-        "wgs84_lon": 74.3141829
-      },
-      "participants": [
-        "Lahore HQ9 site"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": null,
-        "kind": "period",
-        "period_type": "range",
-        "start": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2025",
-          "year": 2025
-        }
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -1973,18 +1976,18 @@
       "posted_at": "2025-05-11 (~19:52 IST)",
       "status_url": "https://x.com/OSINT_Desi/status/1921570091234567890"
     },
-    "claim_id": "d13-reshare-b-l60",
+    "claim_id": "d13-reshare-b-l64",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 60,
+      "line": 64,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2953,
-        3246
+        3075,
+        3207
       ]
     },
     "event_time": {
@@ -2027,7 +2030,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null
@@ -2037,7 +2045,7 @@
     "attributes": {
       "status_url": "https://x.com/OSINT_Desi/status/1921570091234567890"
     },
-    "claim_id": "d13-reshare-b-l64",
+    "claim_id": "d13-reshare-b-l64-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -2048,7 +2056,7 @@
       "row": null,
       "span": [
         3075,
-        3112
+        3207
       ]
     },
     "event_time": {
@@ -2082,26 +2090,20 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "activity": "video again captioned as \"breaking\""
+      },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
-            "lat": 31.5656822,
-            "lon": 74.3141829,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.5656822,
-        "wgs84_lon": 74.3141829
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HIMADS"
@@ -2127,7 +2129,104 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d13_reshare_b",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "caption_text": "Ground-level photograph of a public military parade featuring large wheeled transport vehicles carrying large cylindrical canisters.",
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
+        "pdq_quality": 100,
+        "phash": "d5da98c72b1166c9",
+        "sha256": "d51931db96679da6fbb25b17b3aa54593b6efd450fe20040b754ed1244959696"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d13-reshare-b-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "caption_vs_image_consistency": "consistent",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": 4.0,
+          "min": 3.0,
+          "unit": "large wheeled military transport vehicles with cylindrical canisters",
+          "value": null
+        },
+        "description": "A ground-level perspective of a public military parade on a multi-lane paved city street. Multiple large, dark-green wheeled vehicles (multi-axle) are driving in a column, each carrying a cluster of four large cylindrical canisters on its bed. Spectators are crowded along the side of the road in the foreground, many holding up mobile phones and small national and regional flags. Uniformed personnel are marching on foot alongside the vehicles. Numerous flags and lampposts line the route in the background under an overcast sky.",
+        "frame_kind": "ground-level",
+        "gsd_note": "N/A (ground-level photograph)",
+        "observed_features": [
+          {
+            "arrangement": "aligned in a column on the street",
+            "feature": "multi-axle military vehicles",
+            "note": "large dark-green wheeled transport vehicles",
+            "shape": "oblong/rectangular chassis with multiple large tires"
+          },
+          {
+            "arrangement": "grouped in clusters of four per vehicle",
+            "feature": "cylindrical canisters",
+            "note": "mounted on the rear bed of the transport vehicles",
+            "shape": "cylindrical"
+          },
+          {
+            "arrangement": "lining the sides of the street",
+            "feature": "spectators",
+            "note": "crowd holding up mobile phones and flags",
+            "shape": "irregular cluster"
+          }
+        ],
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient",
+        "site_signature_geometry": "A ground-level perspective of a public military parade on a multi-lane paved city street. Multiple large, dark-green wheeled vehicles (multi-axle) are driving in a column, each carrying a cluster of four large cylindrical canisters on its bed. Spectators are crowded along the side of the road in the foreground, many holding up mobile phones and small national and regional flags. Uniformed personnel are marching on foot alongside the vehicles. Numerous flags and lampposts line the route in the background under an overcast sky.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d13_reshare_b"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
     "resolved_ref": null,
     "source_id": "d13_reshare_b",
     "targets": null

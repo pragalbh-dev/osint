@@ -1,67 +1,5 @@
 [
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d09-official-routine-l6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt",
-      "frame": null,
-      "line": 6,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        64,
-        329
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "coordinates": {
-          "geocode_candidates": [
-            {
-              "confidence": null,
-              "label": "Sindh, India",
-              "lat": 25.6371738,
-              "lon": 78.1138551,
-              "source": "nominatim"
-            }
-          ],
-          "precision_class": null,
-          "proposed_alias": "Sindh",
-          "raw": "Sindh",
-          "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": 25.6371738,
-          "wgs84_lon": 78.1138551
-        }
-      },
-      "entity_type": "basing_site",
-      "form": "entity",
-      "name": "Karachi"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d09_official_routine",
-    "targets": null
-  },
-  {
     "asserts": "event",
     "attributes": null,
     "claim_id": "d09-official-routine-l8",
@@ -123,7 +61,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d09_official_routine",
     "targets": null
@@ -142,7 +85,7 @@
       "row": null,
       "span": [
         125,
-        158
+        187
       ]
     },
     "event_time": null,
@@ -159,62 +102,19 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "service_branch": "Pakistan Army"
-      },
+      "attrs": {},
       "entity_type": "unit",
       "form": "entity",
       "name": "Pakistan Army Air Defence Command"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d09_official_routine",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "large-scale mobilisation or activation"
-    },
-    "claim_id": "d09-official-routine-l12",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        615,
-        805
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
+    "report_time": {
       "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
+      "iso_date": "2025-05-09",
       "kind": "exact",
-      "raw": "frozen-seed-baseline"
+      "raw": "2025-05-09"
     },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Karachi area",
-      "object_value": null,
-      "predicate": "large-scale mobilisation or activation",
-      "subject": "air defence systems"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d09_official_routine",
     "targets": null

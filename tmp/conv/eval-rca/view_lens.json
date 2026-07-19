@@ -5,11 +5,11 @@
   "known_gaps": [],
   "meta": {
     "config_version": 1,
-    "edge_count": 101,
+    "edge_count": 100,
     "event_count": 79,
-    "known_gap_count": 14,
-    "node_count": 294,
-    "scoped_from_nodes": 294,
+    "known_gap_count": 37,
+    "node_count": 258,
+    "scoped_from_nodes": 258,
     "subject": "lens-hq9p-pk"
   },
   "nodes": []

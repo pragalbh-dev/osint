@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 from chanakya import settings
 from chanakya.ingest import adapters, dedup, extract, imagery, loaders
@@ -110,36 +110,89 @@ def _under_scenario(citation_url: str, scenario: str) -> bool:
     return scenario in Path(citation_url).parts
 
 
+def _report_time_for(entry: SourceRegistryEntry) -> DateValue | None:
+    """The source's ``report_time`` built from its registry ``report_date`` (ING-7) — or ``None``.
+
+    ``report_date`` is only ever a verbatim day-level date the document itself states (see the field's
+    docstring); when unset, this returns ``None`` rather than fabricating one — the same "we looked but
+    cannot say" discipline the imagery lane applies to counts. ``boundary_source="explicit"`` because a
+    stamped ``report_date`` is, by construction, read directly off the document, never guessed.
+    """
+    if not entry.report_date:
+        return None
+    return ExactDate(iso_date=entry.report_date, raw=entry.report_date, boundary_source="explicit")
+
+
+def _merge_chunks(chunks: list[list[ClaimRecord]]) -> list[ClaimRecord]:
+    """Namespace + flatten several extraction calls' claims before dedup/id-assignment.
+
+    Provisional claim ids are unique only *within* one extraction call (``extract_document`` / one
+    ``read_image_document`` read); a source whose text lane runs alongside one or more co-loaded images
+    makes several such calls, each minting its own provisional ids that can collide once concatenated.
+    Mirrors the identical namespacing the live lane applies in ``lane._extract_doc_claims`` (chunk-prefix
+    each call's ids, then remap that call's own inference ``premises`` / retraction ``targets`` in
+    lockstep) — the seed path must reshape multi-call output exactly like the live path does, or the two
+    would diverge on a source with co-loaded imagery (breaking KEYLESS ≡ LIVE).
+    """
+    claims: list[ClaimRecord] = []
+    for k, chunk in enumerate(chunks):
+        remap = {c.claim_id: f"chunk{k}-{c.claim_id}" for c in chunk}
+        for c in chunk:
+            update: dict[str, Any] = {"claim_id": remap[c.claim_id]}
+            if c.premises:
+                update["premises"] = [remap.get(p, p) for p in c.premises]
+            if c.targets is not None and c.targets in remap:
+                update["targets"] = remap[c.targets]
+            claims.append(c.model_copy(update=update))
+    return claims
+
+
 def _extract_source(
     entry: SourceRegistryEntry, *, client: ExtractionClient, config: ConfigBundle,
     ingest_time: DateValue, geocoder: adapters.Geocoder | None = None,
 ) -> list[ClaimRecord]:
     """Run the full live pipeline over one registered source → its final, id-assigned claims.
 
-    Dispatches on the citation's file shape only (gate G9): a ``.png`` runs the subject-blind VLM lane
-    (:func:`~chanakya.ingest.imagery.read_image_document`, no ``literature_ref`` — the seed asserts only
-    what a single frame states), everything else the text lane (``load_document`` → ``extract_document``).
-    ``geocoder`` (the gazetteer coord-cache → Nominatim chain, or ``None`` = offline) is threaded to the
-    text lane so anchor coordinates are frozen onto the bundle. The two shared closing passes — within-doc
-    dedup then deterministic id-assignment — are exactly what the live lane runs, so the frozen output
-    equals the live output (KEYLESS ≡ LIVE).
+    Dispatches on the citation's file shape only (gate G9): a ``.png`` citation runs the subject-blind
+    VLM lane (:func:`~chanakya.ingest.imagery.read_image_document`, no ``literature_ref`` — the seed
+    asserts only what a single frame states); everything else runs the text lane (``load_document`` →
+    ``extract_document``). A source also carrying ``images`` (ING-8: a GEOINT ``.txt`` write-up beside
+    its satellite/social ``.png``) co-loads each of those frames through the *same* VLM lane, run
+    alongside the text lane — mirroring how the live (keyed) lane feeds co-located frames via
+    ``DocInput.images`` (:mod:`chanakya.ingest.lane`) — so the frozen bundle carries both the prose
+    extraction *and* the subject-blind imagery observation a live keyed extract would produce, never one
+    at the expense of the other. ``report_time`` is built from the registry's ``report_date`` (ING-7) and
+    threaded to every call this source makes. ``geocoder`` (the gazetteer coord-cache → Nominatim chain,
+    or ``None`` = offline) is threaded to the text lane so anchor coordinates are frozen onto the bundle.
+    The closing passes — chunk-namespacing, within-doc dedup, then deterministic id-assignment — are
+    exactly what the live lane runs, so the frozen output equals the live output (KEYLESS ≡ LIVE).
     """
     citation_url = entry.citation_url or ""
     src_path = _resolve_source_path(citation_url)
     ext = Path(citation_url).suffix.lower()
+    report_time = _report_time_for(entry)
 
+    chunks: list[list[ClaimRecord]] = []
     if ext in _IMAGE_EXTS:
-        claims = imagery.read_image_document(
+        chunks.append(imagery.read_image_document(
             src_path.read_bytes(), file=citation_url, source_id=entry.source_id,
-            config=config, client=client, ingest_time=ingest_time,
-        )
+            config=config, client=client, report_time=report_time, ingest_time=ingest_time,
+        ))
     else:
         loaded = loaders.load_document(src_path.read_bytes(), file=citation_url)
-        claims = extract.extract_document(
+        chunks.append(extract.extract_document(
             loaded, source_id=entry.source_id, source_type=entry.source_type,
-            config=config, client=client, ingest_time=ingest_time, geocoder=geocoder,
-        )
+            config=config, client=client, report_time=report_time, ingest_time=ingest_time,
+            geocoder=geocoder,
+        ))
+        for image_url in entry.images:
+            image_path = _resolve_source_path(image_url)
+            chunks.append(imagery.read_image_document(
+                image_path.read_bytes(), file=image_url, source_id=entry.source_id,
+                config=config, client=client, report_time=report_time, ingest_time=ingest_time,
+            ))
 
+    claims = _merge_chunks(chunks)
     claims = dedup.dedup_within_doc(claims)
     return dedup.assign_claim_ids(claims, doc_id=entry.source_id)
 

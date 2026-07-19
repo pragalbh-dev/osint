@@ -30,20 +30,27 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "source_type": "official-PR"
+      },
       "entity_type": "source",
       "form": "entity",
       "name": "Inter-Services Public Relations (ISPR)"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d02_ispr_induction",
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "event",
     "attributes": null,
     "claim_id": "d02-ispr-induction-l11",
     "doc_ref": {
@@ -55,69 +62,7 @@
       "region": null,
       "row": null,
       "span": [
-        265,
-        297
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "coordinates": {
-          "geocode_candidates": [
-            {
-              "confidence": null,
-              "label": "کراچی ڈویژن, سندھ, پاکستان",
-              "lat": 24.8546842,
-              "lon": 67.0207055,
-              "source": "nominatim"
-            }
-          ],
-          "precision_class": null,
-          "proposed_alias": "Karachi",
-          "raw": "Karachi",
-          "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": 24.8546842,
-          "wgs84_lon": 67.0207055
-        }
-      },
-      "entity_type": "basing_site",
-      "form": "entity",
-      "name": "Army Air Defence Centre"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d02_ispr_induction",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d02-ispr-induction-l11-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        305,
+        188,
         458
       ]
     },
@@ -167,7 +112,71 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        253,
+        297
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Karachi",
+          "raw": "Karachi",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        }
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Army Air Defence Centre"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d02_ispr_induction",
     "targets": null
@@ -176,6 +185,108 @@
     "asserts": "relationship",
     "attributes": null,
     "claim_id": "d02-ispr-induction-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        253,
+        412
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Army Air Defence Centre, Karachi",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "High to Medium Air Defence System (HIMADS)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_relane_reason": "'equips' reoriented (variant->?)",
+      "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit."
+    },
+    "claim_id": "d02-ispr-induction-l11-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
@@ -204,14 +315,19 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "Pakistan Army Air Defence (PAAD) unit",
+      "object": "HQ-9/P",
       "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "HQ-9/P"
+      "predicate": "equips",
+      "subject": "Pakistan Army Air Defence (PAAD) unit"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d02_ispr_induction",
     "targets": null
@@ -219,7 +335,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d02-ispr-induction-l11-4",
+    "claim_id": "d02-ispr-induction-l11-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
@@ -252,11 +368,16 @@
       },
       "entity_type": "unit",
       "form": "entity",
-      "name": "Pakistan Army Air Defence (PAAD)"
+      "name": "Pakistan Army Air Defence"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d02_ispr_induction",
     "targets": null
@@ -293,7 +414,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "family": "Chinese Hongqi-9 (HQ-9P/FD-2000 family)",
+        "family": "Hongqi-9",
         "range_km": {
           "approx": false,
           "count_state": null,
@@ -309,7 +430,61 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        837,
+        876
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d02_ispr_induction",
     "targets": null

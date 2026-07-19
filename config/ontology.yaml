@@ -27,6 +27,9 @@ node_types:
   - name: manufacturer
     freshness_class: durable
     attrs: [role, tier, foreign_control, named_examples, production_rate, export_agent, place_ref]
+  - name: trading_org           # ING-3: generic trading / intermediary / freight org (a customs consignee /
+    freshness_class: durable    # shipper / export-agent shell) — NOT an OEM. `manufacturer` is reserved for real makers.
+    attrs: [role, origin_country, foreign_control, place_ref]
   - name: component
     freshness_class: durable
     # functional_role identifiers: acquisition | battle_management | engagement_fire_control | interceptor
