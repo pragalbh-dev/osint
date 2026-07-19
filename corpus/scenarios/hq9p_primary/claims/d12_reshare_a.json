@@ -36,27 +36,19 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "HIT??"
+        "activity": "HIT"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "SITE, اسٹریٹ 5, شہری لاہور, Qadri Colony, Charr, تحصیل لاہور کنٹونمنٹ, ضلع لاہور, لاہور ڈویژن, پنجاب, 54791, پاکستان",
-            "lat": 31.4861707,
-            "lon": 74.3691691,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "LAHORE SITE",
         "raw": "LAHORE SITE",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.4861707,
-        "wgs84_lon": 74.3691691
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HQ9/P"
@@ -70,7 +62,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -122,7 +119,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -181,7 +183,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -190,19 +197,34 @@
     "asserts": "event",
     "attributes": null,
     "claim_id": "d12-reshare-a-l2-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 2,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        178,
-        204
-      ]
-    },
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+        "frame": null,
+        "line": 2,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          178,
+          204
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+        "frame": null,
+        "line": 12,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          695,
+          723
+        ]
+      }
+    ],
     "event_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -240,7 +262,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -292,7 +319,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -344,66 +376,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d12-reshare-a-l12",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        695,
-        723
-      ]
-    },
-    "event_time": {
+    "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
       "kind": "exact",
-      "raw": "May 8, 2025"
+      "raw": "2025-05-08"
     },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "neutralized!!"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HIMADS battery"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-05-08",
-        "kind": "exact",
-        "raw": "May 8, 2025"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -455,7 +433,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -497,27 +480,19 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "hit??"
+        "activity": "hit"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "SITE, اسٹریٹ 5, شہری لاہور, Qadri Colony, Charr, تحصیل لاہور کنٹونمنٹ, ضلع لاہور, لاہور ڈویژن, پنجاب, 54791, پاکستان",
-            "lat": 31.4861707,
-            "lon": 74.3691691,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore site",
         "raw": "Lahore site",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.4861707,
-        "wgs84_lon": 74.3691691
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HQ-9/P"
@@ -531,7 +506,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -583,7 +563,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -625,7 +610,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "down!!"
+        "activity": "down"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -642,7 +627,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -694,7 +684,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -741,22 +736,14 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
-            "lat": 31.5656822,
-            "lon": 74.3141829,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.5656822,
-        "wgs84_lon": 74.3141829
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HQ9/P",
@@ -771,7 +758,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -823,7 +815,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -875,58 +872,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "turned into"
-    },
-    "claim_id": "d12-reshare-a-l37-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 37,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2000,
-        2067
-      ]
-    },
-    "event_time": {
+    "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
       "kind": "exact",
-      "raw": "May 8, 2025"
+      "raw": "2025-05-08"
     },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "a fertilizer plant fire",
-      "object_value": null,
-      "predicate": "turned into",
-      "subject": "Sargodha strike"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -978,7 +929,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -1019,26 +975,20 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "activity": "footage"
+      },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
-            "lat": 31.5656822,
-            "lon": 74.3141829,
-            "source": "nominatim"
-          }
-        ],
+        "geocode_candidates": [],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": 31.5656822,
-        "wgs84_lon": 74.3141829
+        "wgs84_lat": null,
+        "wgs84_lon": null
       },
       "participants": [
         "HQ-9/P"
@@ -1052,58 +1002,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "has not acknowledged"
-    },
-    "claim_id": "d12-reshare-a-l45",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 45,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2492,
-        2558
-      ]
-    },
-    "event_time": {
+    "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
       "kind": "exact",
-      "raw": "May 8, 2025"
+      "raw": "2025-05-08"
     },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "any HQ-9/P site loss near Lahore",
-      "object_value": null,
-      "predicate": "has not acknowledged",
-      "subject": "Pakistan MoD"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null
@@ -1113,7 +1017,7 @@
     "attributes": {
       "posted_at": "May 8, 2025"
     },
-    "claim_id": "d12-reshare-a-l45-2",
+    "claim_id": "d12-reshare-a-l45",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
@@ -1155,7 +1059,103 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "caption_text": "Ground-level view of military vehicles with cylindrical canisters participating in a parade with onlookers.",
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
+        "pdq_quality": 100,
+        "phash": "d5da98c72b1166c9",
+        "sha256": "d51931db96679da6fbb25b17b3aa54593b6efd450fe20040b754ed1244959696"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d12-reshare-a-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "caption_vs_image_consistency": "Consistent",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": 4.0,
+          "min": 3.0,
+          "unit": "heavy multi-axle vehicles carrying cylindrical canisters",
+          "value": null
+        },
+        "description": "A ground-level photograph depicting a public parade. Multiple large, green, multi-axle heavy transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on its rear bed (arranged in a 2x2 bundle). The vehicles are driving in a column along a wide, paved city street. The street is lined with crowds of spectators on both sides, many of whom are holding up mobile phones to photograph the scene or waving small flags. In the background, there are streetlights, multi-story buildings, and numerous flags mounted on poles. Soldiers in uniform are also visible marching near the vehicles.",
+        "frame_kind": "ground-level photograph",
+        "geometry_tokens": [
+          "road",
+          "vehicles",
+          "crowd"
+        ],
+        "gsd_note": "Not applicable (ground-level photograph)",
+        "observed_features": [
+          {
+            "arrangement": "column",
+            "feature": "heavy wheeled vehicles",
+            "note": "Multi-axle large transport vehicles with green camouflage livery",
+            "shape": "rectangular cab and chassis"
+          },
+          {
+            "arrangement": "2x2 cluster on vehicle beds",
+            "feature": "cylindrical canisters",
+            "note": "Large dark green tubes carried on the rear of each vehicle",
+            "shape": "cylindrical"
+          }
+        ],
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient",
+        "site_signature_geometry": "A ground-level photograph depicting a public parade. Multiple large, green, multi-axle heavy transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on its rear bed (arranged in a 2x2 bundle). The vehicles are driving in a column along a wide, paved city street. The street is lined with crowds of spectators on both sides, many of whom are holding up mobile phones to photograph the scene or waving small flags. In the background, there are streetlights, multi-story buildings, and numerous flags mounted on poles. Soldiers in uniform are also visible marching near the vehicles.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d12_reshare_a"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
     "resolved_ref": null,
     "source_id": "d12_reshare_a",
     "targets": null

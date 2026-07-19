@@ -1,6 +1,6 @@
 [
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": {
       "bl_no": "YMLUW189234567",
       "containers": [
@@ -12,6 +12,78 @@
       "hs_code": "8526.91.00"
     },
     "claim_id": "d05-customs-manifest-row12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": 12,
+      "span": [
+        531,
+        1532
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-04-11",
+      "kind": "exact",
+      "raw": "04-11-2020"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "declared_value": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 612400.0
+        },
+        "event_subtype": "customs-import"
+      },
+      "entity_type": "contract_import_event",
+      "form": "entity",
+      "name": "KPQA-HC-2020-118834"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "bl_no": "YMLUW189234567",
+      "containers": [
+        "TCNU7712204",
+        "TCNU7712341"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-118834",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row12-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
@@ -80,7 +152,110 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row12-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": 12,
+      "span": [
+        531,
+        1532
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ORIENT ELECTRO TRADING (PVT) LTD",
+      "object_value": null,
+      "predicate": "imported-by",
+      "subject": "KPQA-HC-2020-118834"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row12-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": 12,
+      "span": [
+        531,
+        1532
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SINO-GALAXY IMP/EXP CO. LTD",
+      "object_value": null,
+      "predicate": "exported-by",
+      "subject": "KPQA-HC-2020-118834"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -141,13 +316,82 @@
       "attrs": {
         "role": "consignee"
       },
-      "entity_type": "manufacturer",
+      "entity_type": "trading_org",
       "form": "entity",
       "name": "ORIENT ELECTRO TRADING (PVT) LTD"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row21",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 21,
+        "page": null,
+        "region": null,
+        "row": 21,
+        "span": [
+          938,
+          1056
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "frame": null,
+        "line": 21,
+        "page": null,
+        "region": null,
+        "row": 21,
+        "span": [
+          938,
+          1105
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SINO-GALAXY IMPEX CO, LTD",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "SINO-GALAXY IMP/EXP CO. LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -164,7 +408,7 @@
       "gd_no": "KPQA-HC-2020-118834",
       "hs_code": "8526.91.00"
     },
-    "claim_id": "d05-customs-manifest-row21",
+    "claim_id": "d05-customs-manifest-row21-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
@@ -196,50 +440,52 @@
         "origin_country": "CHINA",
         "role": "shipper"
       },
-      "entity_type": "manufacturer",
+      "entity_type": "trading_org",
       "form": "entity",
       "name": "SINO-GALAXY IMP/EXP CO. LTD"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d05-customs-manifest-row21-2",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
-        "frame": null,
-        "line": 21,
-        "page": null,
-        "region": null,
-        "row": 21,
-        "span": [
-          938,
-          1105
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
-        "frame": null,
-        "line": 21,
-        "page": null,
-        "region": null,
-        "row": 21,
-        "span": [
-          955,
-          1056
-        ]
-      }
-    ],
-    "event_time": null,
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "YMLUW189234568",
+      "containers": [
+        "TCNU7712204"
+      ],
+      "gd_no": "KPQA-HC-2020-118835",
+      "hs_code": "8526.92.00"
+    },
+    "claim_id": "d05-customs-manifest-row35",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 35,
+      "page": null,
+      "region": null,
+      "row": 35,
+      "span": [
+        1612,
+        3050
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-04-11",
+      "kind": "exact",
+      "raw": "04-11-2020"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -253,15 +499,29 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "SINO-GALAXY IMPEX CO, LTD",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "SINO-GALAXY IMP/EXP CO. LTD"
+      "attrs": {
+        "declared_value": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 188900.0
+        },
+        "event_subtype": "customs-import"
+      },
+      "entity_type": "contract_import_event",
+      "form": "entity",
+      "name": "KPQA-HC-2020-118835"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -276,7 +536,7 @@
       "gd_no": "KPQA-HC-2020-118835",
       "hs_code": "8526.92.00"
     },
-    "claim_id": "d05-customs-manifest-row35",
+    "claim_id": "d05-customs-manifest-row35-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
@@ -353,7 +613,110 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row35-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 35,
+      "page": null,
+      "region": null,
+      "row": 35,
+      "span": [
+        1612,
+        3050
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ORIENT ELECTRO TRADING (PVT) LTD",
+      "object_value": null,
+      "predicate": "imported-by",
+      "subject": "KPQA-HC-2020-118835"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row35-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 35,
+      "page": null,
+      "region": null,
+      "row": 35,
+      "span": [
+        1612,
+        3050
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SINO GALAXY IMP. & EXP. CO.",
+      "object_value": null,
+      "predicate": "exported-by",
+      "subject": "KPQA-HC-2020-118835"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -400,13 +763,18 @@
         "origin_country": "CHINA",
         "role": "shipper"
       },
-      "entity_type": "manufacturer",
+      "entity_type": "trading_org",
       "form": "entity",
       "name": "SINO GALAXY IMP. & EXP. CO."
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -424,8 +792,8 @@
       "region": null,
       "row": 63,
       "span": [
-        2919,
-        3003
+        2877,
+        3050
       ]
     },
     "event_time": null,
@@ -461,7 +829,83 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "bl_no": "COSU6178820410",
+      "containers": [
+        "CSNU4402217"
+      ],
+      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "gd_no": "KPQA-HC-2020-119011",
+      "hs_code": "8526.91.00"
+    },
+    "claim_id": "d05-customs-manifest-row68",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 68,
+      "page": null,
+      "region": null,
+      "row": 68,
+      "span": [
+        3130,
+        4004
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-09-11",
+      "kind": "exact",
+      "raw": "09-11-2020"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "declared_value": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 244150.0
+        },
+        "event_subtype": "customs-import"
+      },
+      "entity_type": "contract_import_event",
+      "form": "entity",
+      "name": "KPQA-HC-2020-119011"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -477,7 +921,7 @@
       "gd_no": "KPQA-HC-2020-119011",
       "hs_code": "8526.91.00"
     },
-    "claim_id": "d05-customs-manifest-row68",
+    "claim_id": "d05-customs-manifest-row68-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
@@ -554,7 +998,110 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row68-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 68,
+      "page": null,
+      "region": null,
+      "row": 68,
+      "span": [
+        3130,
+        4004
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ORIENT ELECTRO TRADING PVT LTD",
+      "object_value": null,
+      "predicate": "imported-by",
+      "subject": "KPQA-HC-2020-119011"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d05-customs-manifest-row68-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 68,
+      "page": null,
+      "region": null,
+      "row": 68,
+      "span": [
+        3130,
+        4004
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SINO-GALAXY IMPEX CO, LTD",
+      "object_value": null,
+      "predicate": "exported-by",
+      "subject": "KPQA-HC-2020-119011"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -601,13 +1148,18 @@
       "attrs": {
         "role": "consignee"
       },
-      "entity_type": "manufacturer",
+      "entity_type": "trading_org",
       "form": "entity",
       "name": "ORIENT ELECTRO TRADING PVT LTD"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -616,34 +1168,19 @@
     "asserts": "relationship",
     "attributes": null,
     "claim_id": "d05-customs-manifest-row73-2",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
-        "frame": null,
-        "line": 73,
-        "page": null,
-        "region": null,
-        "row": 73,
-        "span": [
-          3300,
-          3447
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
-        "frame": null,
-        "line": 73,
-        "page": null,
-        "region": null,
-        "row": 73,
-        "span": [
-          3317,
-          3447
-        ]
-      }
-    ],
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 73,
+      "page": null,
+      "region": null,
+      "row": 73,
+      "span": [
+        3300,
+        3447
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -666,7 +1203,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null
@@ -714,13 +1256,18 @@
         "origin_country": "China",
         "role": "shipper"
       },
-      "entity_type": "manufacturer",
+      "entity_type": "trading_org",
       "form": "entity",
       "name": "SINO-GALAXY IMPEX CO, LTD"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
     "resolved_ref": null,
     "source_id": "d05_customs_manifest",
     "targets": null

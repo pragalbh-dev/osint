@@ -41,9 +41,8 @@
           "wgs84_lat": null,
           "wgs84_lon": null
         },
-        "occupancy_state": "active or near-active fire-unit site",
-        "site_signature_geometry": "revetment complex",
-        "site_type": "airfield site"
+        "occupancy_state": "active or near-active",
+        "site_type": "prepared revetment complex"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -51,7 +50,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -69,8 +73,8 @@
       "region": null,
       "row": null,
       "span": [
-        501,
-        594
+        507,
+        512
       ]
     },
     "event_time": null,
@@ -97,7 +101,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -147,14 +156,14 @@
           "unit": null,
           "value": 6.0
         },
-        "dimensions": "estimated 8-9m length per object",
-        "object_type": "elongated TEL-type objects"
+        "dimensions": "estimated 8-9m length per object, resolution-limited",
+        "object_type": "TEL-type objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "elongated TEL-type objects"
+        "TEL-type objects"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -165,7 +174,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -202,7 +216,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "launcher",
+        "component_class": "TEL-type objects",
         "functional_role": "launcher"
       },
       "entity_type": "component",
@@ -211,7 +225,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -230,7 +249,7 @@
       "row": null,
       "span": [
         1621,
-        1871
+        1784
       ]
     },
     "event_time": {
@@ -270,7 +289,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -288,8 +312,8 @@
       "region": null,
       "row": null,
       "span": [
-        1700,
-        1817
+        1667,
+        1870
       ]
     },
     "event_time": null,
@@ -307,16 +331,21 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "engagement radar",
-        "functional_role": "engagement radar associated with the HQ-9B fire unit"
+        "component_class": "radar-type object",
+        "functional_role": "engagement radar"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "HT-233"
+      "name": "engagement radar (possibly HT-233 or a derivative)"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -335,7 +364,7 @@
       "row": null,
       "span": [
         1874,
-        1962
+        1963
       ]
     },
     "event_time": {
@@ -366,13 +395,13 @@
           "unit": null,
           "value": 4.0
         },
-        "object_type": "visible objects (launchers)"
+        "object_type": "launcher/visible objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "visible objects (launchers)"
+        "launcher/visible objects"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -383,7 +412,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -419,14 +453,21 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "component_class": "trailers"
+      },
       "entity_type": "component",
       "form": "entity",
       "name": "generator trailers"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -462,14 +503,21 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "component_class": "utility vehicles"
+      },
       "entity_type": "component",
       "form": "entity",
       "name": "soft-skin utility vehicles"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -487,7 +535,7 @@
       "region": null,
       "row": null,
       "span": [
-        2155,
+        2180,
         2201
       ]
     },
@@ -505,14 +553,21 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "component_class": "shelter"
+      },
       "entity_type": "component",
       "form": "entity",
       "name": "command/comms shelter"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
@@ -531,7 +586,7 @@
       "row": null,
       "span": [
         2206,
-        2248
+        2249
       ]
     },
     "event_time": {
@@ -562,13 +617,13 @@
           "unit": null,
           "value": 6.0
         },
-        "object_type": "launcher count"
+        "object_type": "launcher/visible objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "launcher count"
+        "launcher/visible objects"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -579,29 +634,39 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "event",
     "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l30",
+    "claim_id": "d17-rawalpindi-2021-l24-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
       "frame": null,
-      "line": 30,
+      "line": 24,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        3362,
-        3550
+        2250,
+        2351
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-09",
+      "kind": "exact",
+      "raw": "09 OCT 2021"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -615,14 +680,134 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "known_gap",
-      "form": "entity",
-      "name": "additional dispersed elements not captured within the current image footprints"
+      "attrs": {
+        "object_type": "radar hardstand object"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "radar hardstand object"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-10-09",
+        "kind": "exact",
+        "raw": "09 OCT 2021"
+      }
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "caption_text": "Aerial view of a facility featuring a central circular loop road with internal structures, surrounded by forested terrain and support buildings.",
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "3a6942328ce713e2677b5343e859fbc9a009a68395a7ac25d1dd8ad340137f7e",
+        "pdq_quality": 100,
+        "phash": "bf3fe464545272c0",
+        "sha256": "15c3435b9d431426fa4bf63f5367dc06e6bf9dceb8d4522b86bfe3040f938392"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d17-rawalpindi-2021-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "caption_vs_image_consistency": "Consistent",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": 10.0,
+          "min": 5.0,
+          "unit": "rectangular structures/pads inside the central circular loop road",
+          "value": null
+        },
+        "description": "The image shows a facility nested in a densely forested, hilly area. At the center is a distinctive circular loop road enclosing several light-colored rectangular structures or pads. North and east of this loop are additional support buildings, cleared areas, and terraced plots. In the lower-left corner, there is a larger built-up area containing clusters of rectangular buildings and agricultural fields. A major divided highway is visible in the upper-left corner, and several small lakes or ponds are scattered around the perimeter.",
+        "frame_kind": "satellite",
+        "geometry_tokens": [
+          "circular",
+          "loop",
+          "rectangular",
+          "linear"
+        ],
+        "gsd_note": "Resolution is sufficient to distinguish roads, building footprints, and layout features clearly.",
+        "observed_features": [
+          {
+            "arrangement": "loop",
+            "feature": "circular road layout",
+            "note": "A central loop road enclosing multiple structures",
+            "shape": "circular"
+          },
+          {
+            "arrangement": "clustered",
+            "feature": "rectangular structures",
+            "note": "Small light-colored structures or pads located inside the central loop road",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "linear and clustered",
+            "feature": "support buildings",
+            "note": "Barracks-style and utility buildings located to the north, east, and southwest of the central loop",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "scattered",
+            "feature": "water bodies",
+            "note": "Small ponds or lakes on the edges of the forested hill",
+            "shape": "irregular"
+          }
+        ],
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient",
+        "site_signature_geometry": "The image shows a facility nested in a densely forested, hilly area. At the center is a distinctive circular loop road enclosing several light-colored rectangular structures or pads. North and east of this loop are additional support buildings, cleared areas, and terraced plots. In the lower-left corner, there is a larger built-up area containing clusters of rectangular buildings and agricultural fields. A major divided highway is visible in the upper-left corner, and several small lakes or ponds are scattered around the perimeter.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d17_rawalpindi_2021"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
     "resolved_ref": null,
     "source_id": "d17_rawalpindi_2021",
     "targets": null

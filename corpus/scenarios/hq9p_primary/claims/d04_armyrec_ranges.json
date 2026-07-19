@@ -31,6 +31,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designators": [
+          "HQ-9/P",
+          "HQ-9P",
+          "FD-2000"
+        ],
+        "family": "HQ-9 family",
         "range_km": {
           "approx": false,
           "count_state": null,
@@ -52,9 +58,171 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "relationship",
     "attributes": null,
     "claim_id": "d04-armyrec-ranges-l1-2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 1,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          52,
+          58
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 7,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          652,
+          724
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l1-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        52,
+        58
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l1-4",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 1,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          52,
+          58
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 7,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          592,
+          646
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l1-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -83,6 +251,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "family": "HQ-9 family",
         "range_km": {
           "approx": false,
           "count_state": null,
@@ -117,7 +286,7 @@
       "row": null,
       "span": [
         140,
-        319
+        267
       ]
     },
     "event_time": null,
@@ -164,8 +333,8 @@
       "region": null,
       "row": null,
       "span": [
-        219,
-        267
+        387,
+        405
       ]
     },
     "event_time": null,
@@ -182,12 +351,10 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "family": "HQ-9"
-      },
-      "entity_type": "variant",
+      "attrs": {},
+      "entity_type": "unit",
       "form": "entity",
-      "name": "HQ-9 family"
+      "name": "Pakistan Air Force"
     },
     "polarity": "positive",
     "premises": [],
@@ -200,34 +367,19 @@
     "asserts": "relationship",
     "attributes": null,
     "claim_id": "d04-armyrec-ranges-l5-3",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-        "frame": null,
-        "line": 5,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          387,
-          411
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-        "frame": null,
-        "line": 9,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          1223,
-          1292
-        ]
-      }
-    ],
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        387,
+        411
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -269,52 +421,7 @@
       "row": null,
       "span": [
         494,
-        569
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "role": "operator"
-      },
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "Pakistan Army"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        494,
-        569
+        533
       ]
     },
     "event_time": null,
@@ -347,8 +454,12 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-3",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P"
+    },
+    "claim_id": "d04-armyrec-ranges-l7-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -377,53 +488,9 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HQ-9/P",
+      "object": "Air Defence Command",
       "object_value": null,
-      "predicate": "equips",
-      "subject": "Air Defence Command"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        570,
-        646
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9P",
-      "object_value": null,
-      "predicate": "same-as",
+      "predicate": "inducted-into",
       "subject": "HQ-9/P"
     },
     "polarity": "positive",
@@ -435,226 +502,12 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        581,
-        724
-      ]
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE"
     },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "FD-2000",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        600,
-        646
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-7",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        652,
-        705
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "FD-2000"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-8",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        903,
-        937
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "S-300PMU导"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
     "claim_id": "d04-armyrec-ranges-l9",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1223,
-        1292
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "role": "operator"
-      },
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "Pakistan Air Force"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l9-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -683,54 +536,10 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HQ-9BE",
+      "object": "Pakistan Air Force",
       "object_value": null,
-      "predicate": "equips",
-      "subject": "Pakistan Air Force"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l9-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1836,
-        1930
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9BE",
-      "object_value": null,
-      "predicate": "manufactures",
-      "subject": "China Aerospace Science and Industry Corporation"
+      "predicate": "inducted-into",
+      "subject": "HQ-9BE"
     },
     "polarity": "positive",
     "premises": [],
@@ -742,7 +551,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l9-4",
+    "claim_id": "d04-armyrec-ranges-l9-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -788,35 +597,20 @@
   {
     "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l9-5",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-        "frame": null,
-        "line": 9,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          1856,
-          1930
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-        "frame": null,
-        "line": 9,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          1874,
-          1930
-        ]
-      }
-    ],
+    "claim_id": "d04-armyrec-ranges-l9-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1856,
+        1930
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -845,20 +639,20 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l13",
+    "claim_id": "d04-armyrec-ranges-l9-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
       "frame": null,
-      "line": 13,
+      "line": 9,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2617,
-        2676
+        1924,
+        1929
       ]
     },
     "event_time": null,
@@ -875,7 +669,57 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2665,
+        2706
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "FT-2000",
+          "FT-2000A"
+        ],
+        "family": "HQ-9 family"
+      },
       "entity_type": "variant",
       "form": "entity",
       "name": "FT-2000"
@@ -900,7 +744,51 @@
       "region": null,
       "row": null,
       "span": [
-        2669,
+        2665,
+        2706
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FT-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "FT-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l13-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2665,
         2706
       ]
     },
@@ -932,97 +820,12 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l13-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 13,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2678,
-        2705
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "FT-2000A"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
     "asserts": "relationship",
     "attributes": {
-      "_offontology_type": "has acquired"
+      "_as_stated_predicate": "equips",
+      "_relane_reason": "'equips' reoriented (variant->?)",
+      "source_quote": "India's S-400 Triumf"
     },
-    "claim_id": "d04-armyrec-ranges-l13-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 13,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2829,
-        2898
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "FT-2000",
-      "object_value": null,
-      "predicate": "has acquired",
-      "subject": "Pakistan"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
     "claim_id": "d04-armyrec-ranges-l15",
     "doc_ref": {
       "bbox": null,
@@ -1051,10 +854,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "S-400 Triumf"
+      "form": "triple",
+      "object": "S-400 Triumf",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "India"
     },
     "polarity": "positive",
     "premises": [],
@@ -1067,63 +871,34 @@
     "asserts": "relationship",
     "attributes": null,
     "claim_id": "d04-armyrec-ranges-l15-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 15,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3501,
-        3513
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "SA-21",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "S-400 Triumf"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l15-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 15,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3501,
-        3571
-      ]
-    },
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3493,
+          3571
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3493,
+          3612
+        ]
+      }
+    ],
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -1154,6 +929,55 @@
   {
     "asserts": "entity",
     "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3493,
+        3612
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "S-400 Triumf",
+          "Triumph",
+          "SA-21"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
     "claim_id": "d04-armyrec-ranges-l15-4",
     "doc_ref": {
       "bbox": null,
@@ -1164,8 +988,8 @@
       "region": null,
       "row": null,
       "span": [
-        3515,
-        3571
+        3493,
+        3612
       ]
     },
     "event_time": null,
@@ -1182,10 +1006,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "Triumph"
+      "form": "triple",
+      "object": "S-400 Triumf",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-400 Triumf"
     },
     "polarity": "positive",
     "premises": [],
@@ -1195,22 +1020,37 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "relationship",
     "attributes": null,
     "claim_id": "d04-armyrec-ranges-l15-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 15,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3577,
-        3611
-      ]
-    },
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3493,
+          3612
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3577,
+          3611
+        ]
+      }
+    ],
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -1225,10 +1065,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "SA-21"
+      "form": "triple",
+      "object": "SA-21",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-400 Triumf"
     },
     "polarity": "positive",
     "premises": [],

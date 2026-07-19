@@ -42,7 +42,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -63,66 +68,6 @@
       "row": null,
       "span": [
         231,
-        328
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "moving toward the old coastal battery turnoff"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "near the port road, Karachi side",
-        "raw": "near the port road, Karachi side",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "3-4 heavy trailers with escort, canvas covered"
-      ],
-      "time_interval": null
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d08_social_sighting",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/Reh_Baloch/status/1920783341122009871"
-    },
-    "claim_id": "d08-social-sighting-l5-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
-      "frame": null,
-      "line": 5,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        395,
         503
       ]
     },
@@ -163,7 +108,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -216,109 +166,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d08_social_sighting",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "no"
-    },
-    "claim_id": "d08-social-sighting-l13",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
-      "frame": null,
-      "line": 13,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        857,
-        1003
-      ]
-    },
-    "event_time": {
+    "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
       "kind": "exact",
       "raw": "2025-05-09"
     },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "vehicle movement",
-      "object_value": null,
-      "predicate": "no",
-      "subject": "usual site near the port road (same location flagged 07 Feb 2023 as a probable Hongqi/HQ-9P deployment position)"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d08_social_sighting",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_offontology_type": "no"
-    },
-    "claim_id": "d08-social-sighting-l13-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
-      "frame": null,
-      "line": 13,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1005,
-        1056
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-09",
-      "kind": "exact",
-      "raw": "2025-05-09"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "personnel activity beyond routine guard rotation",
-      "object_value": null,
-      "predicate": "no",
-      "subject": "usual site near the port road (same location flagged 07 Feb 2023 as a probable Hongqi/HQ-9P deployment position)"
-    },
-    "polarity": "negative",
-    "premises": [],
-    "report_time": null,
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -366,7 +219,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -387,7 +245,7 @@
       "row": null,
       "span": [
         1349,
-        1481
+        1453
       ]
     },
     "event_time": null,
@@ -405,7 +263,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "moving through Karachi outskirts, believed relocating from a known garrison area"
+        "activity": "moving through Karachi outskirts, believed relocating"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -426,7 +284,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -478,7 +341,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -496,8 +364,8 @@
       "region": null,
       "row": null,
       "span": [
-        1960,
-        2060
+        1959,
+        2023
       ]
     },
     "event_time": {
@@ -546,7 +414,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -571,7 +444,12 @@
         2805
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "9th May"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -594,7 +472,12 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null
@@ -618,7 +501,12 @@
         2481
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "today"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -640,8 +528,8 @@
       "location": {
         "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "near Karsaz-Korangi belt / port road area",
-        "raw": "near Karsaz-Korangi belt / port road area",
+        "proposed_alias": "Karsaz-Korangi belt / port road area",
+        "raw": "Karsaz-Korangi belt / port road area",
         "resolved_place_ref": null,
         "surface_format": "toponym",
         "wgs84_lat": null,
@@ -650,11 +538,116 @@
       "participants": [
         "HQ9/HQ-9P"
       ],
-      "time_interval": null
+      "time_interval": {
+        "boundary_source": "relative",
+        "iso_date": "2025-05-09",
+        "kind": "exact",
+        "raw": "today"
+      }
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
+    "resolved_ref": null,
+    "source_id": "d08_social_sighting",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "fa62a45005fd178a3a36f82065b101a3db48bf5cf4fcc4a38b476cdcb6b3f212",
+        "pdq_quality": 100,
+        "phash": "9a24669df1629d9c",
+        "sha256": "6c0f1284a9ca2efcc10b6b2195574bd4d39c9c7f749f10fc718cd6372df1d75d"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d08-social-sighting-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": 8.0,
+          "min": 4.0,
+          "unit": "wheeled armored vehicles",
+          "value": null
+        },
+        "description": "A ground-level perspective photograph taken at night on a wet city street, showing a convoy of wheeled armored vehicles. In the foreground, a large multi-wheeled armored vehicle with headlights on is driving on the asphalt. Behind it, a line of several more armored vehicles with headlights illuminated extends into the background. On the right side, onlookers standing on the sidewalk are holding up smartphones to film or photograph the passing convoy. The street surface is wet and reflective. Overhead streetlights and trolleybus or tram wires are visible. A timestamp reading 'OCT 26, 23:47' is located in the bottom right corner.",
+        "frame_kind": "ground-level perspective photograph",
+        "observed_features": [
+          {
+            "arrangement": "column",
+            "feature": "wheeled armored vehicles",
+            "note": "Driving in a line on the street with headlights on",
+            "shape": "boxy, multi-wheeled"
+          },
+          {
+            "arrangement": "linear",
+            "feature": "roadway",
+            "note": "Wet, reflective asphalt street with painted lane markings",
+            "shape": "linear"
+          },
+          {
+            "arrangement": "linear",
+            "feature": "sidewalk",
+            "note": "Paved sidewalk with onlookers filming the vehicles",
+            "shape": "linear"
+          },
+          {
+            "arrangement": "overhead",
+            "feature": "streetlights and utility wires",
+            "note": "Suspended wires and elevated glowing lamps casting warm light",
+            "shape": "linear and point sources"
+          }
+        ],
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient",
+        "site_signature_geometry": "A ground-level perspective photograph taken at night on a wet city street, showing a convoy of wheeled armored vehicles. In the foreground, a large multi-wheeled armored vehicle with headlights on is driving on the asphalt. Behind it, a line of several more armored vehicles with headlights illuminated extends into the background. On the right side, onlookers standing on the sidewalk are holding up smartphones to film or photograph the passing convoy. The street surface is wet and reflective. Overhead streetlights and trolleybus or tram wires are visible. A timestamp reading 'OCT 26, 23:47' is located in the bottom right corner.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d08_social_sighting"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "resolved_ref": null,
     "source_id": "d08_social_sighting",
     "targets": null

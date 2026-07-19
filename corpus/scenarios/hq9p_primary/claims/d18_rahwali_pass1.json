@@ -13,7 +13,7 @@
       "row": null,
       "span": [
         123,
-        137
+        128
       ]
     },
     "event_time": null,
@@ -31,81 +31,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "confidence_language": "MODERATE at best",
-        "family": "HQ-9/HQ-9A lineage"
+        "confidence_language": "MODERATE",
+        "family": "HQ-9/HQ-9A"
       },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9B (export)"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d18_rahwali_pass1",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l5-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
-      "frame": null,
-      "line": 5,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        123,
-        156
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "year",
-      "half": null,
-      "kind": "label",
-      "month": null,
-      "quarter": null,
-      "raw": "2025",
-      "year": 2025
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "object_type": "HQ-9B (export) SAM site signature"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9B (export) SAM site signature"
-      ],
-      "time_interval": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
+      "name": "HQ-9B"
     },
     "polarity": "positive",
     "premises": [],
@@ -117,7 +48,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l5-3",
+    "claim_id": "d18-rahwali-pass1-l5-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
@@ -164,8 +95,9 @@
           "wgs84_lat": 32.23888888888889,
           "wgs84_lon": 74.13111111111111
         },
-        "occupancy_state": "recently occupied, though this is a soft inference from one image and could reflect routine exercise deployment rather than a fixed emplacement",
-        "site_type": "northern perimeter apron/dispersal area associated with Rahwali airfield"
+        "occupancy_state": "recently occupied",
+        "site_signature_geometry": "radar/launcher spacing and revetment layout",
+        "site_type": "SAM deployment area"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -192,7 +124,7 @@
       "row": null,
       "span": [
         1505,
-        1764
+        1664
       ]
     },
     "event_time": null,
@@ -211,11 +143,89 @@
     "payload": {
       "attrs": {
         "component_class": "radar",
-        "functional_role": "engagement/fire-control"
+        "functional_role": "engagement/fire-control radar pallet"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "engagement/fire-control radar pallet"
+      "name": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d18_rahwali_pass1",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d18-rahwali-pass1-l20-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+      "frame": null,
+      "line": 20,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1505,
+        1664
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2025",
+      "year": 2025
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 1.0
+        },
+        "dimensions": "roughly consistent with HT-233 (or derivative) associated with HQ-9 series",
+        "object_type": "engagement/fire-control radar pallet"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "engagement/fire-control radar pallet"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
     },
     "polarity": "positive",
     "premises": [],
@@ -238,7 +248,7 @@
       "row": null,
       "span": [
         1767,
-        2103
+        1910
       ]
     },
     "event_time": null,
@@ -261,7 +271,7 @@
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "TEL (transporter-erector-launcher)"
+      "name": "HQ-9 TEL"
     },
     "polarity": "positive",
     "premises": [],
@@ -271,23 +281,33 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "event",
     "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l22",
+    "claim_id": "d18-rahwali-pass1-l21-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
       "frame": null,
-      "line": 22,
+      "line": 21,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2106,
-        2177
+        1767,
+        1910
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2025",
+      "year": 2025
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -302,54 +322,34 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "functional_role": "Support vehicles / possible command post shelter"
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 4.0
+        },
+        "dimensions": "spacing loosely consistent with published HQ-9 TEL (transporter-erector-launcher) turning radii and canister counts",
+        "object_type": "object clusters"
       },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "Support vehicles / possible command post shelter"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d18_rahwali_pass1",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l35",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
-      "frame": null,
-      "line": 35,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3462,
-        3542
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "known_gap",
-      "form": "entity",
-      "name": "No SAR pass obtained to confirm metallic/structural signature independent of EO."
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "object clusters"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
     },
     "polarity": "positive",
     "premises": [],
@@ -389,10 +389,14 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "missing_slots": [
+          "repeat EO pass"
+        ]
+      },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "No repeat EO pass scheduled at time of writing; tasking request submitted 2025-03, status pending."
+      "name": "repeat EO pass"
     },
     "polarity": "positive",
     "premises": [],
@@ -403,24 +407,31 @@
   },
   {
     "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l37",
+    "attributes": {
+      "caption_text": "Overhead view of a cleared compound with parked equipment rows in a hilly, wooded terrain.",
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "80589d92106c266325ba9bad3376c608fce4f84dbe32ecf2d34d61b865b3c78b",
+        "pdq_quality": 100,
+        "phash": "aa68e48e9927a6d9",
+        "sha256": "06e40dc09b2cd1ee5096bf714f381d9524802ef4bae2d48250ad8403099ecb9c"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d18-rahwali-pass1-full",
     "doc_ref": {
       "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.png",
       "frame": null,
-      "line": 37,
+      "line": null,
       "page": null,
-      "region": null,
+      "region": "full",
       "row": null,
-      "span": [
-        3646,
-        3681
-      ]
+      "span": null
     },
     "event_time": null,
     "extraction": {
-      "method": "llm",
+      "method": "vlm",
       "model_conf": 1.0,
       "version": "gemini-flash-latest"
     },
@@ -432,53 +443,67 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "known_gap",
+      "attrs": {
+        "caption_vs_image_consistency": "Consistent",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": "vehicles and equipment elements",
+          "value": null
+        },
+        "description": "The overhead image shows a facility situated within a rugged, hilly, and partially forested landscape. At the center of the frame is a cleared, loop-shaped compound containing multiple graded dirt pads. On the southeastern pad, a linear row of approximately 9 to 11 rectangular vehicles or trailers is parked side-by-side. On the northwestern pad, a smaller linear row of approximately 5 to 7 vehicles is visible. Additional equipment, vehicles, and small support structures are clustered near the center of this loop. To the west and southwest, several larger rectangular support buildings are distributed along a dirt road network. On the eastern side of the image, a large rectangular double-bermed or double-fenced enclosure is situated on the slope of a hill. Numerous dirt tracks and trails traverse the surrounding hilly terrain.",
+        "frame_kind": "optical_overhead",
+        "geometry_tokens": [
+          "loop_road",
+          "graded_pad",
+          "linear_arrangement",
+          "berm",
+          "building",
+          "dirt_road",
+          "enclosure"
+        ],
+        "observed_features": [
+          {
+            "arrangement": "linear",
+            "feature": "parked vehicles",
+            "note": "A row of vehicles/trailers parked side-by-side on a southeastern graded pad.",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "linear",
+            "feature": "parked vehicles",
+            "note": "A smaller row of vehicles/trailers parked side-by-side on a northwestern graded pad.",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "loop",
+            "feature": "graded pads",
+            "note": "A central loop-shaped cleared area containing graded earth pads for vehicle parking.",
+            "shape": "oval"
+          },
+          {
+            "arrangement": "scattered",
+            "feature": "support buildings",
+            "note": "Rectangular buildings situated to the west and southwest of the main loop.",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "isolated",
+            "feature": "enclosure",
+            "note": "A double-bermed or double-fenced rectangular area on the eastern slope.",
+            "shape": "rectangular"
+          }
+        ],
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient",
+        "site_signature_geometry": "The overhead image shows a facility situated within a rugged, hilly, and partially forested landscape. At the center of the frame is a cleared, loop-shaped compound containing multiple graded dirt pads. On the southeastern pad, a linear row of approximately 9 to 11 rectangular vehicles or trailers is parked side-by-side. On the northwestern pad, a smaller linear row of approximately 5 to 7 vehicles is visible. Additional equipment, vehicles, and small support structures are clustered near the center of this loop. To the west and southwest, several larger rectangular support buildings are distributed along a dirt road network. On the eastern side of the image, a large rectangular double-bermed or double-fenced enclosure is situated on the slope of a hill. Numerous dirt tracks and trails traverse the surrounding hilly terrain.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
       "form": "entity",
-      "name": "No RF/SIGINT correlation attempted."
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d18_rahwali_pass1",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l38",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
-      "frame": null,
-      "line": 38,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3684,
-        3838
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "known_gap",
-      "form": "entity",
-      "name": "Site not cross-checked against any historical imagery archive prior to the reporting pass (baseline \"before\" imagery not yet pulled for change-detection)."
+      "name": "imagery-site:d18_rahwali_pass1"
     },
     "polarity": "positive",
     "premises": [],
