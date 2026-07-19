@@ -30,6 +30,11 @@ dependencies = [
     # Small + pure-Python; the adapter still degrades gracefully to a raw Location if ever omitted.
     "mgrs>=1.5",
     "utm>=0.7",
+    # INGEST PDF handling: pymupdf extracts the text layer AND renders every page to an image for the
+    # one multimodal extract call (Azure OCR is the optional keyed upgrade for scanned/table-rich PDFs).
+    # NB licence: pymupdf is AGPL-3.0 — fine for this hosted take-home (not distributed as a product);
+    # flagged in the design note. Permissive alt = pdfminer.six + pypdf, at the cost of one-lib rendering.
+    "pymupdf>=1.24",
 ]
 
 [project.optional-dependencies]

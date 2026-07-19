@@ -334,3 +334,38 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
   entity name's first occurrence (minor mis-cite).
 - **Gate fixtures:** none added/weakened; INGEST owns `chanakya/ingest/**` + `tests/ingest/**`. G9's meaning
   is preserved (the lane's DI keeps it green rather than weakening the gate).
+
+### INGEST follow-up (feat/ingest-pdf-geo, stacked on #17): PDF-multimodal + geocoding wiring
+- **Shipped** (from the deferred handoff `tmp/conv/INGEST-handoff-pdf-geocoding-keyless.md`; whole suite
+  **403 pass** / 6 skip, all gates green, ruff+mypy clean; +24 tests):
+  - **PDF path rebuilt to one non-brittle read** — no born-digital detection: `AZURE_*` present → Azure OCR
+    (paged text+tables+figures, now **char-spanned** so page/bbox provenance survives — G4); else pymupdf
+    text layer (poppler fallback). **Every page is always rendered to an image** (pymupdf), and text + page
+    images feed **one multimodal `extract` call** (prose+tables+figures read together). Oversized docs are
+    **page-window chunked** (guard `PDF_CHUNK_MAX_PAGES=8`/`_CHARS=60_000`) with filled dicts merged before
+    one transform pass → one dedup batch (G2). `LoadedDoc.page_images` (`PageImage`) added.
+  - **Client seam** `extract(*, …, images=[])` across the protocol + Gemini/Anthropic/scripted (additive,
+    back-compatible — images passed only when present; `read_image` stays for the standalone-imagery lane).
+  - **Two-stage geocoder** — `GazetteerGeocoder` (offline EXACT-match coord-cache over `config/places.yaml`:
+    canonical_name/alias/icao/locode → `canonical_dd`, `source="gazetteer"`) → `ChainedGeocoder([gaz,
+    Nominatim])`, threaded through `extract_document` → `em.location()` (all 7 site call-sites). Recorder
+    defaults offline; the CLI (`make extract`) builds the live chain (`--offline` = gazetteer-only).
+    `resolved_place_ref` stays `None` (identity is RESOLVE's). Local `gazetteer_key` normaliser is a
+    **byte-identical, test-pinned copy** of RESOLVE's `normalize()` (RESOLVE unmerged → can't import; dedupe
+    when it lands).
+- **Validated LIVE** (real creds/network, controlled to ~1 page each): real **Azure OCR** through the loader
+  (env-name wiring `AZURE_ENDPOINT`/`AZURE_API_KEY`, regions+bbox, `find→page` provenance resolves); real
+  **Gemini multimodal** (`gemini-flash-latest`) reading a rendered figure page → claims that include a
+  component read off the **drawn figure**, all page-provenanced; and real **Nominatim** — the chained
+  gazetteer→Nominatim routing (seeded "PAF Base Nur Khan"→gazetteer offline; unseeded "Sialkot"→Nominatim,
+  `source` tagged correctly) plus the **Rahwali relative-offset beat** ("~12 km NNW of Gujranwala" → geocode
+  anchor + great-circle offset → ~2 km from the real Rahwali coord, well within RESOLVE's proximity radius;
+  `resolved_place_ref` stays `None`).
+- **Decisions:** see DECISIONS §6 INGEST "PDF-multimodal + geocoding follow-up" (8 build decisions incl. the
+  local-normaliser rationale, the md/13 coordinate-cache refinement, the `gemini-flash-latest` fix).
+- **Deps:** `pymupdf>=1.24` added to core (AGPL-3.0 — flagged for the design note `md/16`).
+- **Design-doc tails to enrich:** `md/13` Stage-A/B split (add the INGEST coordinate-cache), `md/15` §4 (PDF
+  path is now multimodal, not text-only), `md/16` (AGPL disclosure).
+- **Follow-ups still open:** (1) re-record the frozen bundles with a keyed `make extract` now that the geocoder
+  freezes anchor coords; (2) dedupe `gazetteer_key` ↔ RESOLVE `normalize` into one shared module once RESOLVE
+  merges; (3) the chunk thresholds could graduate to a config section.

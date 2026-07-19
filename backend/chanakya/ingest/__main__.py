@@ -19,7 +19,7 @@ import sys
 
 from chanakya import settings
 from chanakya.config.store import ConfigStore
-from chanakya.ingest import seed
+from chanakya.ingest import adapters, seed
 from chanakya.ingest.client import build_extraction_client
 from chanakya.schemas import ConfigBundle
 from chanakya.store.log import EvidenceLog
@@ -39,8 +39,13 @@ def _cmd_extract(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 2
+    config = _load_config()
+    # The keyed recorder geocodes live: gazetteer coord-cache (offline, byte-stable for the anchors) →
+    # Nominatim (open world). ``--offline`` restricts to the gazetteer for a fully-deterministic re-record.
+    geocoder = adapters.build_geocoder(config, online=not args.offline)
     written = seed.extract_corpus(
-        args.scenario, client=client, config=_load_config(), ingest_time=seed.FROZEN_INGEST_TIME
+        args.scenario, client=client, config=config, ingest_time=seed.FROZEN_INGEST_TIME,
+        geocoder=geocoder,
     )
     for path in written:
         print(f"wrote {path}")
@@ -69,6 +74,8 @@ def main(argv: list[str] | None = None) -> int:
 
     p_extract = sub.add_parser("extract", help="re-record frozen claim bundles for a scenario (keyed)")
     p_extract.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
+    p_extract.add_argument("--offline", action="store_true",
+                           help="geocode from the gazetteer only (no Nominatim) — deterministic re-record")
     p_extract.set_defaults(func=_cmd_extract)
 
     p_seed = sub.add_parser("seed", help="load a scenario's frozen bundles into a store (keyless)")

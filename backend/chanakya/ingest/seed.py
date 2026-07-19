@@ -37,7 +37,7 @@ from pathlib import Path
 from typing import Protocol
 
 from chanakya import settings
-from chanakya.ingest import dedup, extract, imagery, loaders
+from chanakya.ingest import adapters, dedup, extract, imagery, loaders
 from chanakya.ingest.client import ExtractionClient
 from chanakya.schemas import ClaimRecord, ConfigBundle, SourceRegistryEntry
 from chanakya.schemas.values import DateValue, ExactDate
@@ -112,15 +112,17 @@ def _under_scenario(citation_url: str, scenario: str) -> bool:
 
 def _extract_source(
     entry: SourceRegistryEntry, *, client: ExtractionClient, config: ConfigBundle,
-    ingest_time: DateValue,
+    ingest_time: DateValue, geocoder: adapters.Geocoder | None = None,
 ) -> list[ClaimRecord]:
     """Run the full live pipeline over one registered source → its final, id-assigned claims.
 
     Dispatches on the citation's file shape only (gate G9): a ``.png`` runs the subject-blind VLM lane
     (:func:`~chanakya.ingest.imagery.read_image_document`, no ``literature_ref`` — the seed asserts only
     what a single frame states), everything else the text lane (``load_document`` → ``extract_document``).
-    The two shared closing passes — within-doc dedup then deterministic id-assignment — are exactly what
-    the live lane runs, so the frozen output equals the live output (KEYLESS ≡ LIVE).
+    ``geocoder`` (the gazetteer coord-cache → Nominatim chain, or ``None`` = offline) is threaded to the
+    text lane so anchor coordinates are frozen onto the bundle. The two shared closing passes — within-doc
+    dedup then deterministic id-assignment — are exactly what the live lane runs, so the frozen output
+    equals the live output (KEYLESS ≡ LIVE).
     """
     citation_url = entry.citation_url or ""
     src_path = _resolve_source_path(citation_url)
@@ -135,7 +137,7 @@ def _extract_source(
         loaded = loaders.load_document(src_path.read_bytes(), file=citation_url)
         claims = extract.extract_document(
             loaded, source_id=entry.source_id, source_type=entry.source_type,
-            config=config, client=client, ingest_time=ingest_time,
+            config=config, client=client, ingest_time=ingest_time, geocoder=geocoder,
         )
 
     claims = dedup.dedup_within_doc(claims)
@@ -157,6 +159,7 @@ def _write_bundle(path: Path, claims: list[ClaimRecord]) -> None:
 def extract_corpus(
     scenario: str, *, client: ExtractionClient, config: ConfigBundle,
     ingest_time: DateValue | None = None, out_dir: str | Path | None = None,
+    geocoder: adapters.Geocoder | None = None,
 ) -> list[Path]:
     """Record the frozen bundles for one scenario — the keyed path that produces the keyless baseline.
 
@@ -164,10 +167,12 @@ def extract_corpus(
     the live extraction pipeline (:func:`_extract_source`) over the cited document and write its claims
     to ``<out_dir>/<source_id>.json``. ``ingest_time`` defaults to the pinned :data:`FROZEN_INGEST_TIME`
     and ``out_dir`` to ``corpus/scenarios/<scenario>/claims`` — so a bare ``extract_corpus("hq9p_primary",
-    …)`` re-freezes the checked-in baseline in place. Returns the written bundle paths (source order).
+    …)`` re-freezes the checked-in baseline in place. ``geocoder`` defaults to ``None`` (offline — no
+    network at record time, fully deterministic); the CLI passes a live gazetteer→Nominatim chain so a
+    keyed ``make extract`` freezes anchor coordinates. Returns the written bundle paths (source order).
 
-    Deterministic given the client's output: with a :class:`ScriptedExtractionClient` (or a re-recorded
-    live client), two runs write byte-identical files. Runs entirely upstream of ``store.append`` (G1).
+    Deterministic given the client's output **and** an offline (or gazetteer-only) geocoder: two runs
+    write byte-identical files. Runs entirely upstream of ``store.append`` (G1).
     """
     ingest_time = ingest_time or FROZEN_INGEST_TIME
     target = (
@@ -181,7 +186,8 @@ def extract_corpus(
     for entry in config.sources.sources:
         if not entry.citation_url or not _under_scenario(entry.citation_url, scenario):
             continue
-        claims = _extract_source(entry, client=client, config=config, ingest_time=ingest_time)
+        claims = _extract_source(entry, client=client, config=config, ingest_time=ingest_time,
+                                 geocoder=geocoder)
         out_path = target / f"{entry.source_id}.json"
         _write_bundle(out_path, claims)
         written.append(out_path)

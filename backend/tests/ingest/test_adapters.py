@@ -335,3 +335,121 @@ def test_quantity_without_number_returns_none() -> None:
     assert normalize_quantity("several launchers") is None
     assert normalize_quantity("") is None
     assert normalize_quantity(None) is None
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+# The two-stage geocoder — gazetteer coordinate-cache (offline, exact-match) → Nominatim open world.
+# INGEST freezes COORDINATES; identity (resolved_place_ref) stays RESOLVE's. See the RESOLVE note
+# (tmp/conv/INGEST-locations-gazetteer-vs-nominatim.md) + md/13.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+from chanakya import settings  # noqa: E402
+from chanakya.config.store import ConfigStore  # noqa: E402
+from chanakya.ingest.adapters import (  # noqa: E402
+    ChainedGeocoder,
+    GazetteerGeocoder,
+    build_geocoder,
+    gazetteer_key,
+)
+from chanakya.schemas.config_models import PlaceEntry  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def real_config() -> object:
+    """The live config bundle (real ``config/places.yaml`` gazetteer + transliteration rules)."""
+    return ConfigStore.seed_from(settings.config_dir()).snapshot()
+
+
+# ── gazetteer_key: the exact normaliser, pinned byte-identical to RESOLVE's normalize() ───────────
+
+def test_gazetteer_key_matches_resolve_normalize_spec() -> None:
+    # These outputs are RESOLVE's chanakya.resolve.normalize.normalize() spec (transliterate → casefold
+    # → collapse non-alnum runs → strip). Pinned so an INGEST/RESOLVE key drift is caught (RESOLVE note).
+    assert gazetteer_key("PAF Base Nur Khan") == "paf base nur khan"
+    assert gazetteer_key("  Port   Qasim  ") == "port qasim"
+    assert gazetteer_key("OPRN") == "oprn"
+    assert gazetteer_key("Bin Qasim Port!!") == "bin qasim port"
+    assert gazetteer_key("") == ""
+    # transliteration rule applied longest-first, then punctuation collapsed.
+    assert gazetteer_key("红旗-9", {"红旗": "Hongqi"}) == "hongqi 9"
+
+
+# ── GazetteerGeocoder: EXACT match only, over the real seed ───────────────────────────────────────
+
+def test_gazetteer_exact_match_seeded_name_returns_canonical_dd(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    hit = gaz.geocode("PAF Base Nur Khan")
+    assert hit is not None
+    assert hit.latitude == pytest.approx(33.61639) and hit.longitude == pytest.approx(73.09972)
+    assert hit.source == "gazetteer"
+
+
+def test_gazetteer_matches_hard_ids_icao_and_locode(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    assert gaz.geocode("OPRN").latitude == pytest.approx(33.61639)  # Nur Khan ICAO
+    assert gaz.geocode("PKBQM").latitude == pytest.approx(24.767)   # Port Qasim LOCODE
+
+
+def test_gazetteer_normalises_before_matching(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    # casefold + punctuation collapse: a noisy surface form still exact-matches a seeded alias.
+    assert gaz.geocode("  port   qasim ") is not None
+    assert gaz.geocode("PAF BASE NUR KHAN") is not None
+
+
+def test_gazetteer_withheld_alias_chaklala_does_not_match(real_config: object) -> None:
+    # "Chaklala" is deliberately absent from the seed (the earned-merge demo) — must NOT hit here.
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    assert gaz.geocode("Chaklala") is None
+    assert gaz.geocode("PAF Base Chaklala") is None
+
+
+def test_gazetteer_unseeded_name_returns_none(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    assert gaz.geocode("Some Unknown Place") is None
+
+
+def test_gazetteer_skips_places_without_coords() -> None:
+    places = [PlaceEntry(place_id="p1", canonical_name="No Coord Place", aliases=["NCP"])]
+    gaz = GazetteerGeocoder(places, {})
+    assert gaz.geocode("No Coord Place") is None
+
+
+# ── ChainedGeocoder: gazetteer first, Nominatim fallback ──────────────────────────────────────────
+
+def test_chained_geocoder_prefers_gazetteer_then_falls_back(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    fake_nominatim = _FakeGeocoder({"Gujranwala": (32.157, 74.19, "Gujranwala, Punjab, PK")})
+    chain = ChainedGeocoder([gaz, fake_nominatim])
+
+    seeded = chain.geocode("PAF Base Nur Khan")  # gazetteer wins
+    assert seeded.source == "gazetteer" and seeded.latitude == pytest.approx(33.61639)
+
+    open_world = chain.geocode("Gujranwala")  # not seeded → Nominatim fallback
+    assert open_world is not None and open_world.latitude == pytest.approx(32.157)
+    assert getattr(open_world, "source", "nominatim") == "nominatim"  # fake has no source attr
+
+    assert chain.geocode("Nowhere At All") is None
+
+
+def test_chained_geocoder_filters_none_geocoders(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    chain = ChainedGeocoder([None, gaz, None])
+    assert chain.geocode("OPRN") is not None
+
+
+# ── build_geocoder + normalize_location integration ───────────────────────────────────────────────
+
+def test_build_geocoder_offline_is_gazetteer_only(real_config: object) -> None:
+    geocoder = build_geocoder(real_config, online=False)
+    assert geocoder.geocode("PAF Base Nur Khan") is not None  # seeded, offline
+    assert geocoder.geocode("Gujranwala") is None             # open world needs Nominatim (offline → miss)
+
+
+def test_normalize_location_via_gazetteer_freezes_coord_and_source(real_config: object) -> None:
+    gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
+    loc = normalize_location("PAF Base Nur Khan", geocoder=gaz)
+    assert isinstance(loc, Location)
+    assert loc.wgs84_lat == pytest.approx(33.61639) and loc.wgs84_lon == pytest.approx(73.09972)
+    assert loc.geocode_candidates[0].source == "gazetteer"
+    assert loc.resolved_place_ref is None  # identity stays RESOLVE's, at rebuild

@@ -612,8 +612,19 @@ class _Emitter:
     node_types: frozenset[str]
     edge_types: frozenset[str]
     event_types: frozenset[str]
+    geocoder: adapters.Geocoder | None = None
     _n: int = 0
     claims: list[ClaimRecord] = field(default_factory=list)
+
+    def location(self, raw: str | None, *, surface_format: str | None = None) -> Location | None:
+        """Normalize a stated location, injecting the doc's geocoder — the one location call-site.
+
+        Centralises every transform's ``normalize_location`` through the emitter so the injected
+        geocoder (gazetteer coord-cache → Nominatim, or ``None`` = offline) reaches all of them
+        uniformly. Coordinate freezing only; ``resolved_place_ref`` stays ``None`` (RESOLVE's, at
+        rebuild). Runs upstream of the append (gate G1).
+        """
+        return adapters.normalize_location(raw, surface_format=surface_format, geocoder=self.geocoder)
 
     def _emit(self, payload: ClaimPayload, asserts: str, ref: DocRef, *,
               kind: str = "observation", polarity: str = "positive",
@@ -692,11 +703,12 @@ def _vocab(config: ConfigBundle) -> tuple[frozenset[str], frozenset[str], frozen
 
 
 def _emitter(source_id: str, loaded: LoadedDoc, config: ConfigBundle, model_id: str,
-             report_time: DateValue | None, ingest_time: DateValue | None) -> _Emitter:
+             report_time: DateValue | None, ingest_time: DateValue | None,
+             geocoder: adapters.Geocoder | None = None) -> _Emitter:
     nodes, edges, events = _vocab(config)
     return _Emitter(source_id=source_id, loaded=loaded, model_id=model_id,
                     report_time=report_time, ingest_time=ingest_time,
-                    node_types=nodes, edge_types=edges, event_types=events)
+                    node_types=nodes, edge_types=edges, event_types=events, geocoder=geocoder)
 
 
 def _money_quantity(raw: str | None) -> Quantity | None:
@@ -722,10 +734,11 @@ def _emit_aliases(em: _Emitter, mentions: list[dict[str, Any]], predicate: str, 
 
 def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: LoadedDoc,
                           config: ConfigBundle, report_time: DateValue | None,
-                          ingest_time: DateValue | None, model_id: str) -> list[ClaimRecord]:
+                          ingest_time: DateValue | None, model_id: str,
+                          geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """Analytic/official prose → source / org / unit / variant / component / site entities + events +
     stated relations + alias/distinct/denial claims. Emits only what the model filled (all-optional)."""
-    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time)
+    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
 
     for m in _items(filled, "sources"):
         name = _str(m, "name")
@@ -777,7 +790,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
         name = _str(m, "name")
         if name:
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
-            loc = adapters.normalize_location(_str(m, "location_text"))
+            loc = em.location(_str(m, "location_text"))
             em.entity("basing_site", name, ref, attrs={
                 "site_type": _str(m, "site_type"),
                 "site_signature_geometry": _str(m, "signature_geometry"),
@@ -825,7 +838,7 @@ def _emit_event(em: _Emitter, m: dict[str, Any]) -> None:
         event_type = "SightingEvent"
     ref = _resolve_doc_ref(em.loaded, _str(m, "source_quote"), fallback=participants[0])
     when = adapters.normalize_date(_str(m, "date_text"), report_time=em.report_time)
-    where = adapters.normalize_location(_str(m, "location_text"))
+    where = em.location(_str(m, "location_text"))
     qty = adapters.normalize_quantity(_str(m, "quantity_text"), count_state=_str(m, "count_state"))
     em.event(event_type, ref, participants=participants, time_interval=when, location=where,
              attrs={"quantity": _dump(qty), "count_state": _str(m, "count_state")})
@@ -833,11 +846,12 @@ def _emit_event(em: _Emitter, m: dict[str, Any]) -> None:
 
 def transform_notam_navwarning(filled: dict[str, Any], *, source_id: str, loaded: LoadedDoc,
                                config: ConfigBundle, report_time: DateValue | None,
-                               ingest_time: DateValue | None, model_id: str) -> list[ClaimRecord]:
+                               ingest_time: DateValue | None, model_id: str,
+                               geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """NOTAM / NAVAREA → a dated activity-in-place claim per notice. Military activity (event_kind) →
     a SightingEvent/ExerciseEvent; otherwise an ``indicator`` observation (a civil notice still yields
     a citable located fact — never a fabricated military read)."""
-    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time)
+    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
     for m in _items(filled, "notices"):
         activity = _str(m, "activity")
         notice_id = _str(m, "notice_id")
@@ -845,7 +859,7 @@ def transform_notam_navwarning(filled: dict[str, Any], *, source_id: str, loaded
         if not name:
             continue
         ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=notice_id or activity)
-        where = adapters.normalize_location(_str(m, "location_ref"))
+        where = em.location(_str(m, "location_ref"))
         when = adapters.normalize_date(_str(m, "time_window"), report_time=report_time)
         tier3 = {"notice_id": notice_id, "location_ref": _str(m, "location_ref")}
         kind = _str(m, "event_kind")
@@ -864,13 +878,14 @@ def transform_notam_navwarning(filled: dict[str, Any], *, source_id: str, loaded
 
 def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: LoadedDoc,
                              config: ConfigBundle, report_time: DateValue | None,
-                             ingest_time: DateValue | None, model_id: str) -> list[ClaimRecord]:
+                             ingest_time: DateValue | None, model_id: str,
+                             geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """One customs row → MANY typed claims: consignee & shipper orgs (tier-1), a TransferEvent carrying
     port (Location) + filing date (Date) + declared value (Quantity), with HS-code/container#/B-L# in
     the tier-3 ``attributes`` bag. A stated alias/'formerly'/spelling-variant → a ``same-as`` claim; a
     stated onward destination is kept as its OWN ``basing_site`` — the consignee is NEVER linked to it
     (the unstated shell→depot resolution is RESOLVE's)."""
-    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time)
+    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
     for row in _items(filled, "rows"):
         row_ref = _resolve_doc_ref(loaded, _str(row, "source_quote"), cite_row=True)
         tier3 = _prune({
@@ -897,7 +912,7 @@ def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: 
 
         # The shipment itself → a TransferEvent (port=location, filing date=date, value=quantity).
         port = _str(row, "port_of_discharge") or _str(row, "terminal")
-        where = adapters.normalize_location(port)
+        where = em.location(port)
         when = adapters.normalize_date(_str(row, "filing_date"), report_time=report_time)
         value = _money_quantity(_str(row, "declared_value"))
         if participants or where or when or value:
@@ -911,7 +926,7 @@ def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: 
         dest = _str(row, "destination_ref")
         if dest:
             dref = _resolve_doc_ref(loaded, _str(row, "destination_quote"), fallback=dest, cite_row=True)
-            dloc = adapters.normalize_location(dest)
+            dloc = em.location(dest)
             em.entity("basing_site", dest, dref,
                       attrs={"site_type": "stated_destination", "coordinates": _dump(dloc)})
     return em.claims
@@ -919,11 +934,12 @@ def transform_customs_gd_bol(filled: dict[str, Any], *, source_id: str, loaded: 
 
 def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, loaded: LoadedDoc,
                                  config: ConfigBundle, report_time: DateValue | None,
-                                 ingest_time: DateValue | None, model_id: str) -> list[ClaimRecord]:
+                                 ingest_time: DateValue | None, model_id: str,
+                                 geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """A procurement tender → a contract_import_event node + the procuring unit, the referenced system
     (with every stated alias → same-as), the OEM, component line items (quantities as tier-2), and any
     explicit distinct-from ('no interoperability'). Aliases stay stated; nothing unstated is resolved."""
-    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time)
+    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
     root_ref = _resolve_doc_ref(loaded, _str(filled, "source_quote"))
 
     tender_id = _str(filled, "tender_id")
@@ -985,11 +1001,12 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
 
 def transform_social_post(filled: dict[str, Any], *, source_id: str, loaded: LoadedDoc,
                           config: ConfigBundle, report_time: DateValue | None,
-                          ingest_time: DateValue | None, model_id: str) -> list[ClaimRecord]:
+                          ingest_time: DateValue | None, model_id: str,
+                          geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """Social posts → a ``source`` node per handle (status URL in tier-3), a SightingEvent per claimed
     sighting, and a negative-polarity observation for a 'nothing to report' negation. The post's stated
     uncertainty is preserved as text — INGEST extracts the claim, SCORE weighs it."""
-    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time)
+    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
     for post in _items(filled, "posts"):
         handle = _str(post, "handle")
         posted = adapters.normalize_date(_str(post, "posted_at"), report_time=report_time)
@@ -1005,7 +1022,7 @@ def transform_social_post(filled: dict[str, Any], *, source_id: str, loaded: Loa
                 continue
             sref = _resolve_doc_ref(loaded, _str(s, "source_quote"), fallback=participants[0])
             when = adapters.normalize_date(_str(s, "time_text"), report_time=report_time) or posted
-            where = adapters.normalize_location(_str(s, "location_text"))
+            where = em.location(_str(s, "location_text"))
             em.event("SightingEvent", sref, participants=participants, time_interval=when,
                      location=where, event_time=when,
                      attrs={"activity": _str(s, "activity")},
@@ -1021,18 +1038,19 @@ def transform_social_post(filled: dict[str, Any], *, source_id: str, loaded: Loa
 
 def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: LoadedDoc,
                              config: ConfigBundle, report_time: DateValue | None,
-                             ingest_time: DateValue | None, model_id: str) -> list[ClaimRecord]:
+                             ingest_time: DateValue | None, model_id: str,
+                             geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """GEOINT analyst prose → a ``basing_site`` (with WGS84 coords), a SightingEvent per dated pass
     (object count as a Quantity range, count_state=fielded), the assessed system ``variant`` carrying
     the analyst's own confidence wording, radar/components, and a ``known_gap`` per stated collection
     gap (seeding the insufficient-evidence machinery). Coords come from the text (authoritative)."""
-    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time)
+    em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
 
     site = _obj(filled, "site")
     site_name = _str(site, "name") if site else None
     if site and site_name:
         sref = _resolve_doc_ref(loaded, _str(site, "source_quote"), fallback=site_name)
-        loc = adapters.normalize_location(_str(site, "location_text"))
+        loc = em.location(_str(site, "location_text"))
         em.entity("basing_site", site_name, sref, attrs={
             "site_type": _str(site, "site_type"),
             "site_signature_geometry": _str(site, "signature_geometry"),
@@ -1092,30 +1110,155 @@ TRANSFORMS: dict[str, _Transform] = {
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
+# The multimodal extract call — text + rendered page images, windowed by page only when oversized.
+#
+# A PDF now yields the whole document's text (OCR / pymupdf) **and** every page rendered to an image
+# (loaders.PageImage). ``extract_document`` feeds both to ONE forced-tool call so the model reads prose,
+# tables and figures together. A very large document is windowed by page (a size *guard*, not the
+# default): each window is one forced-tool call, and the filled dicts are merged BEFORE the single
+# transform pass — so a multi-page PDF is still one doc, deduped in one batch with one deterministic
+# id-assignment (gate G2). Thresholds are INGEST tunables (module constants, the `MAX_TOKENS` precedent;
+# G6 scans only the scoring packages, never `ingest/`).
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+#: Max pages fed to a single multimodal call before the doc is windowed by page.
+PDF_CHUNK_MAX_PAGES = 8
+#: Max characters of doc text fed to a single call before windowing (a coarse token-budget proxy).
+PDF_CHUNK_MAX_CHARS = 60_000
+
+
+def _page_char_ranges(loaded: LoadedDoc) -> dict[int, tuple[int, int]]:
+    """``page → (min_start, max_end)`` char span, from the regions that carry both a page and a span."""
+    ranges: dict[int, tuple[int, int]] = {}
+    for r in loaded.regions:
+        if r.page is None or r.span is None:
+            continue
+        s, e = r.span
+        lo, hi = ranges.get(r.page, (s, e))
+        ranges[r.page] = (min(lo, s), max(hi, e))
+    return ranges
+
+
+def _page_windows(pages: list[int], page_ranges: dict[int, tuple[int, int]], *,
+                  max_pages: int, max_chars: int) -> list[list[int]]:
+    """Greedily pack contiguous pages into windows bounded by ``max_pages`` and ``max_chars``.
+
+    At least one page per window (a lone page that alone exceeds ``max_chars`` still forms its own
+    window, never dropped). Deterministic given the sorted ``pages`` — the window order is the page order.
+    """
+    windows: list[list[int]] = []
+    current: list[int] = []
+    current_chars = 0
+    for page in pages:
+        lo, hi = page_ranges.get(page, (0, 0))
+        page_chars = hi - lo
+        if current and (len(current) >= max_pages or current_chars + page_chars > max_chars):
+            windows.append(current)
+            current, current_chars = [], 0
+        current.append(page)
+        current_chars += page_chars
+    if current:
+        windows.append(current)
+    return windows
+
+
+def _window_text(loaded: LoadedDoc, win_pages: list[int],
+                 page_ranges: dict[int, tuple[int, int]]) -> str:
+    """The contiguous text substring covering ``win_pages`` (empty when the window is image-only).
+
+    A substring of ``loaded.text`` — so a ``source_quote`` the model returns from the window is still
+    found by ``loaded.text.find`` over the *full* doc in the transform (provenance stays exact, G4)."""
+    spans = [page_ranges[p] for p in win_pages if p in page_ranges]
+    if not spans:
+        return ""
+    return loaded.text[min(s for s, _ in spans):max(e for _, e in spans)]
+
+
+def _merge_filled(parts: list[dict[str, Any]]) -> dict[str, Any]:
+    """Merge per-window filled dicts into one (list fields concatenated; scalars/objects first-non-empty).
+
+    The all-optional schemas are list-heavy (``sources``/``rows``/``notices``/``observations``…); a
+    windowed extraction fills each window's slice, and this stitches them back into the single dict the
+    transform expects — as if one call had read the whole document."""
+    if len(parts) == 1:
+        return parts[0]
+    out: dict[str, Any] = {}
+    for part in parts:
+        for key, value in part.items():
+            if isinstance(value, list):
+                bucket = out.setdefault(key, [])
+                if isinstance(bucket, list):
+                    bucket.extend(value)
+            elif out.get(key) in (None, "", {}, []):
+                out[key] = value
+    return out
+
+
+def _extract_filled(loaded: LoadedDoc, *, tool_name: str, input_schema: dict[str, Any],
+                    system: str, client: ExtractionClient, config: ConfigBundle) -> Any:
+    """Force the extraction tool over the doc text + rendered page images — one call, or page-windowed.
+
+    A single forced-tool call carries ``loaded.text`` plus every ``PageImage`` (the common case — the
+    call count is unchanged, so scripted/offline tests replay exactly one response). Only a document that
+    exceeds :data:`PDF_CHUNK_MAX_PAGES` / :data:`PDF_CHUNK_MAX_CHARS` **and** has page structure is
+    windowed by page; each window is its own forced-tool call and the filled dicts are merged before the
+    single transform pass. Returns the (merged) filled dict, or the raw client result when not chunking.
+    """
+    def _call(text: str, images: list[tuple[bytes, str]]) -> Any:
+        # Pass ``images`` only when there are any, so a pure-text source calls ``extract`` with exactly
+        # the old signature (a text-only client double needs no change; only image calls use the kwarg).
+        if images:
+            return client.extract(tool_name=tool_name, input_schema=input_schema, system=system,
+                                  text=text, images=images)
+        return client.extract(tool_name=tool_name, input_schema=input_schema, system=system, text=text)
+
+    page_images = loaded.page_images
+    all_images = [(pi.data, pi.media_type) for pi in page_images]
+    page_ranges = _page_char_ranges(loaded)
+    pages = sorted(set(page_ranges) | {pi.page for pi in page_images})
+    oversized = len(pages) > PDF_CHUNK_MAX_PAGES or len(loaded.text) > PDF_CHUNK_MAX_CHARS
+
+    if not (pages and oversized):
+        return _call(loaded.text, all_images)
+
+    parts: list[dict[str, Any]] = []
+    for win_pages in _page_windows(pages, page_ranges, max_pages=PDF_CHUNK_MAX_PAGES,
+                                   max_chars=PDF_CHUNK_MAX_CHARS):
+        win_set = set(win_pages)
+        win_images = [(pi.data, pi.media_type) for pi in page_images if pi.page in win_set]
+        filled = _call(_window_text(loaded, win_pages, page_ranges), win_images)
+        if isinstance(filled, dict):
+            parts.append(filled)
+    return _merge_filled(parts) if parts else {}
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
 # The public entry point.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
 def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
                      config: ConfigBundle, client: ExtractionClient,
                      report_time: DateValue | None = None, ingest_time: DateValue | None = None,
-                     format_hint: str | None = None) -> list[ClaimRecord]:
+                     format_hint: str | None = None,
+                     geocoder: adapters.Geocoder | None = None) -> list[ClaimRecord]:
     """Extract a loaded document into provenance-bearing claims — dispatch → forced tool → transform.
 
     Deterministic given the client's output: :func:`format_sniffer` picks the format (or ``format_hint``
     overrides), the format's all-optional pydantic schema becomes the forced tool's JSON schema, the
-    client fills it, and the per-format transform maps fields → typed claims with exact ``doc_ref``\\ s
-    and adapter-normalized dates/locations/quantities. Runs entirely upstream of ``store.append`` (gate
-    G1); the returned claims carry *provisional* ids (``dedup.assign_claim_ids`` reassigns the canonical
-    ones). An empty doc, or a client that fills nothing, yields **zero** claims (anti-fabrication).
+    client fills it (over the doc text **and** any rendered page images — one multimodal call, windowed
+    by page only when the doc exceeds the size guard), and the per-format transform maps fields → typed
+    claims with exact ``doc_ref``\\ s and adapter-normalized dates/locations/quantities. ``geocoder``
+    (gazetteer coord-cache → Nominatim, or ``None`` = offline) is threaded to every location call-site.
+    Runs entirely upstream of ``store.append`` (gate G1); the returned claims carry *provisional* ids
+    (``dedup.assign_claim_ids`` reassigns the canonical ones). An empty doc, or a client that fills
+    nothing, yields **zero** claims (anti-fabrication).
     """
     fmt: Format = format_hint if format_hint in SCHEMAS else format_sniffer(loaded.text, source_type)  # type: ignore[assignment]
     schema_model = SCHEMAS[fmt]
     input_schema = schema_model.model_json_schema()
-    filled = client.extract(
-        tool_name=_TOOL_NAMES[fmt],
-        input_schema=input_schema,
-        system=_SYSTEM_PROMPTS[fmt],
-        text=loaded.text,
+    filled = _extract_filled(
+        loaded, tool_name=_TOOL_NAMES[fmt], input_schema=input_schema,
+        system=_SYSTEM_PROMPTS[fmt], client=client, config=config,
     )
     if not isinstance(filled, dict):
         return []
@@ -1123,5 +1266,6 @@ def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
     claims: list[ClaimRecord] = transform(
         filled, source_id=source_id, loaded=loaded, config=config,
         report_time=report_time, ingest_time=ingest_time, model_id=client.model_id,
+        geocoder=geocoder,
     )
     return claims

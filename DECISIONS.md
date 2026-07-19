@@ -441,6 +441,66 @@ section of the design note, not the build.
   provisional ids so multiple co-located images can't collide + cross-wire. Rejected: a lane-only remap
   (leaves the seed path broken).
 
+**PDF-multimodal + geocoding follow-up (feat/ingest-pdf-geo, 2026-07-19; handoff `tmp/conv/INGEST-handoff-pdf-geocoding-keyless.md`):**
+- **PDF path = one non-brittle read: OCR-when-keyed / pymupdf text, and ALWAYS render every page to an
+  image for ONE multimodal extract call. No born-digital detection.** Principle: capability over premature
+  optimization; depth on the reading path. The old text-density heuristic (born-digital vs scanned) is
+  dropped — an `AZURE_*` provider present → Azure OCR (paged text+tables+figures); else pymupdf's text
+  layer (poppler fallback). Either way pymupdf rasterises every page, and text + page images feed one
+  forced-tool call so the model reads prose, tables and figures together. Rejected: the brittle
+  "no-page-returned-text → OCR" branch and a separate per-figure VLM call. `md/15` §4, `spine/02`,
+  `plan/sessions/INGEST.md` item 1.
+- **Subject-blindness stays scoped to STANDALONE adversarial imagery; the PDF page-read is subject-aware
+  multimodal.** Principle 4/11 + G9: the sycophantic-modality-gap risk (~17% counterfactual) is a
+  *pixel-only* failure mode, so satellite/social `.png` keep the subject-blind `imagery.py` lane
+  (`read_image`); a PDF page-read is text-anchored (the surrounding prose is legitimate context) so it
+  rides the new `extract(images=…)`. Routing is by file-shape (loader dispatch), which for this corpus
+  equals the source-type split. Rejected: forcing subject-blindness onto document figures (needless
+  capability loss) or feeding subjects to standalone imagery (the documented failure). `md/15` §2/§4.
+- **OCR regions get char-spans assigned at assembly (G4 fix).** Azure returns paged regions with
+  `page`/`bbox` but no char `span`; the loader now stamps a span as it concatenates, so
+  `loaded.text.find(source_quote)` → `locate` → the region's page/bbox. Without it an OCR'd doc silently
+  lost per-page provenance. Validated live (real Azure OCR → `find→page` resolves). Principle 5 + G4.
+- **Page-window chunking is a size GUARD (`PDF_CHUNK_MAX_PAGES=8`/`_CHARS=60_000`), not the default; filled
+  dicts merge BEFORE one transform pass.** Principle: a multi-page PDF is ONE doc → one dedup batch → one
+  deterministic id-assignment (G2). Only an oversized, page-structured doc is windowed; each window's text
+  is a contiguous substring so `find` provenance still resolves. Thresholds are module constants (the
+  `MAX_TOKENS` precedent; G6 scans only the scoring packages, never `ingest/`) — a full INGEST config
+  section was disproportionate for two tunables and would touch F0-owned schema. Rejected: per-window
+  transform passes (would split one doc's dedup batch, breaking G2). Candidate to graduate to config later.
+- **Gazetteer-first coordinate cache at INGEST, then Nominatim (`ChainedGeocoder`); refines the md/13
+  baseline that put ALL gazetteer use in RESOLVE.** Per the two 2026-07-19 coordination notes (the handoff
+  + RESOLVE's `INGEST-locations-gazetteer-vs-nominatim.md`): INGEST uses `config/places.yaml` as a strict
+  offline **coordinate cache** (EXACT normalised match on `canonical_name`/`alias`/`icao`/`locode` →
+  freeze `canonical_dd`, `source="gazetteer"`), Nominatim for the open world. Additive + strictly *better*
+  for determinism (anchor coords byte-stable offline); `resolved_place_ref` still left `None` (identity
+  stays RESOLVE's). Reads only the coordinate fields, never `proximity_radius_m`/`distinct_from`. The
+  withheld "Chaklala" alias is absent from the seed → never hits → RESOLVE earns it. Principle: config-
+  driven + reproducibility. Rejected: Nominatim-only at INGEST (loses offline byte-stability for anchors).
+  `md/13`, RESOLVE note. → enrich `md/13`'s "Stage A/B split" tail with the coordinate-cache refinement.
+- **The gazetteer key normaliser is a LOCAL byte-identical copy of RESOLVE's `normalize()`, pinned by a
+  test — not an import.** RESOLVE is `not-started`/unmerged, so importing `chanakya.resolve.normalize`
+  would break this branch's CI and force a merge-order dependency (master §2 Rule 2: "merge order is
+  irrelevant"). The copy (transliterate → casefold → collapse non-alnum → strip, driven by
+  `config.resolution.transliteration`) is pinned by `test_gazetteer_key_matches_resolve_normalize_spec`
+  so a drift is caught. Rejected: the direct import (breaks the branch now) and a lazy-import-with-fallback
+  (nondeterministic keys). → when RESOLVE lands, dedupe both to one shared module (a small follow-up).
+- **`extract(images=…)` is an ADDITIVE, backward-compatible protocol change.** Principle: don't churn
+  siblings (master §2 R3). `images` defaults empty and is passed to the client ONLY when non-empty, so a
+  pure-text source calls `extract` with exactly the old signature (text-only client doubles need no
+  change). `read_image` stays for the standalone-imagery lane. Rejected: a separate multimodal method
+  (duplicates the seam) or requiring every client double to add the param.
+- **`pymupdf` added to core deps (AGPL-3.0, flagged).** Sanctioned by master §2 R1 (pyproject is the one
+  shared file where additive dep lines are welcome). AGPL is fine for a hosted take-home (not distributed
+  as a product) — flagged for the design note (`md/16`). Rejected: `pdfminer.six`+`pypdf` (permissive but
+  loses one-lib page rendering, the whole point of the multimodal path).
+- **Default Gemini model `gemini-flash-latest` (was `gemini-2.5-flash`, now new-user-404).** Live testing
+  surfaced that the pinned `gemini-2.5-flash` returns "no longer available to new users"; the floating
+  `-latest` alias tracks the current flash so a stale pin never dead-ends live extraction. `model_id` stays
+  overridable. `md/07`. Also: `AZURE_ENDPOINT`/`AZURE_API_KEY` accepted alongside `AZURE_DOCINTEL_*` (the
+  project `.env` names). Recorder geocoder defaults offline (deterministic re-record); the CLI builds the
+  live gazetteer→Nominatim chain (`--offline` restricts to the gazetteer).
+
 ### HITL — Adjudication service + writeback + cards (choice · principle invoked · alternative rejected)
 - **`reject` = forced demote (`set_status→probable`) for now; no F0-amendment.** *(User decision
   2026-07-18.)* Principle: demo-reliability + don't unilaterally change a shared contract siblings read.
