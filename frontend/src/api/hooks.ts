@@ -21,6 +21,17 @@ export function useGraphView(subject?: string, enabled = true) {
   })
 }
 
+/** LIVE provenance drawer — pull GET /evidence/{id} for the selected element. Only
+ *  fetches when an id is given AND the drawer is open (so closing/deselecting is free).
+ *  Never used in demo mode (the demo drawer renders its frozen fixture). */
+export function useEvidence(id: string | null, enabled = true) {
+  return useQuery({
+    queryKey: ['evidence', id],
+    queryFn: () => api.evidence(id as string),
+    enabled: enabled && !!id,
+  })
+}
+
 /** In LIVE mode, mirror the real /view into the store so the stage can render it.
  *  A no-op in DEMO mode. Mount once (e.g. in App) if/when live mode is enabled. */
 export function useLiveSync(subject?: string) {

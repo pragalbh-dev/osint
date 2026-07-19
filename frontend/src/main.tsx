@@ -37,6 +37,9 @@ import { useWorkbench } from './store/workbench'
   if (p.get('merge')) patch.decided = { ...s.decided, merge: 'Kept separate' }
   const exp = p.get('expanded')
   if (exp) patch.expanded = exp
+  // ?mode=live boots straight into LIVE mode (reviewers + headless QA). Default stays
+  // 'demo' — the graded call is never affected unless the param is explicitly present.
+  if (p.get('mode') === 'live') patch.mode = 'live'
   if (Object.keys(patch).length) useWorkbench.setState(patch)
 })()
 

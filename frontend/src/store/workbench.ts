@@ -4,17 +4,22 @@
 // identical on every run (the graded non-negotiable); LIVE mode swaps in real API data.
 
 import { create } from 'zustand'
-import type { GraphView } from '@/api/types'
+import { api, ApiError } from '@/api/client'
+import type { LiveReviewItem } from '@/api/adapters'
+import type { AskAnswer, GraphView } from '@/api/types'
 import {
   CRED_DEFAULT_WEIGHTS,
   DECISION_LABELS,
   INGEST_DOCS,
   QUEUE_ITEMS,
+  TARGET_QUERIES,
   type CardId,
 } from '@/demo/scenario'
 
 export type Stage = 'map' | 'graph'
-export type PanelView = 'zero' | 'hero' | 'gaps' | 'card' | 'cred' | 'watch'
+// 'answer' is the LIVE-only unified answer view (POST /ask → answer or refusal);
+// demo keeps its two authored views 'hero' (the walk) and 'gaps' (the refusals).
+export type PanelView = 'zero' | 'hero' | 'gaps' | 'card' | 'cred' | 'watch' | 'answer'
 export type DocId = 'd18' | 'd19' | 'd20'
 export type Mode = 'demo' | 'live'
 
@@ -39,6 +44,21 @@ interface WorkbenchState {
   weights: typeof CRED_DEFAULT_WEIGHTS
   liveView: GraphView | null
 
+  // live ask (POST /ask) — demo never touches these (askHero/askGaps stay scripted)
+  askQuestion: string
+  askResult: AskAnswer | null
+  askPending: boolean
+  askError: boolean
+
+  // live review (queue derived from liveView; decisions POSTed to /hitl/*) — demo uses
+  // the scripted QUEUE_ITEMS + `decided` path and never touches these.
+  liveDecided: Record<string, string> // live review itemId → past-tense label
+  activeLiveItem: LiveReviewItem | null
+
+  // live ingest (POST /ingest keyless bundle path) — demo uses the scripted trace instead
+  liveIngestBusy: boolean
+  liveIngestNote: string | null
+
   // navigation
   setStage: (s: Stage) => void
   askHero: () => void
@@ -47,10 +67,18 @@ interface WorkbenchState {
   openCred: () => void
   openWatch: () => void
 
+  // live ask
+  setAskQuestion: (q: string) => void
+  runAsk: (question: string) => Promise<void>
+
   // review queue
   toggleReview: () => void
   openCard: (id: CardId) => void
   decide: (decisionKey: string) => void
+
+  // live review queue
+  openLiveCard: (item: LiveReviewItem) => void
+  decideLive: (item: LiveReviewItem, decisionKey: string) => Promise<void>
 
   // selection / drawer
   select: (id: string | null) => void
@@ -61,6 +89,11 @@ interface WorkbenchState {
   // ingest (scripted trace)
   startIngest: (doc: DocId) => void
   resetIngest: () => void
+
+  // live ingest (keyless bundle)
+  ingestLive: (bundle: Array<Record<string, unknown>>) => Promise<void>
+  // live ingest (keyed raw document → extract → append)
+  ingestDocLive: (args: { rawText: string; sourceId: string; sourceType: string }) => Promise<void>
 
   // credibility rubric
   setWeight: (key: keyof typeof CRED_DEFAULT_WEIGHTS, val: number) => void
@@ -93,12 +126,53 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   weights: { ...CRED_DEFAULT_WEIGHTS },
   liveView: null,
 
+  askQuestion: '',
+  askResult: null,
+  askPending: false,
+  askError: false,
+
+  liveDecided: {},
+  activeLiveItem: null,
+
+  liveIngestBusy: false,
+  liveIngestNote: null,
+
   setStage: (s) => set({ stage: s }),
-  askHero: () => set({ panelView: 'hero' }),
-  askGaps: () => set({ panelView: 'gaps' }),
+  // DEMO: the two authored views are scripted (byte-identical). LIVE: both target
+  // queries are real natural-language questions — route them through the agent.
+  askHero: () => {
+    const s = get()
+    if (s.mode === 'live') void s.runAsk(TARGET_QUERIES.hero)
+    else set({ panelView: 'hero' })
+  },
+  askGaps: () => {
+    const s = get()
+    if (s.mode === 'live') void s.runAsk(TARGET_QUERIES.gaps)
+    else set({ panelView: 'gaps' })
+  },
   backToZero: () => set({ panelView: 'zero' }),
   openCred: () => set({ panelView: 'cred' }),
   openWatch: () => set({ panelView: 'watch' }),
+
+  // LIVE only — POST /ask and show the structured answer (or refusal) in the panel.
+  // Guarded to live mode so the demo never fetches; the forming answer IS the loading
+  // state (no spinner in the answer grammar). A refusal is a normal result, not an error.
+  setAskQuestion: (q) => set({ askQuestion: q }),
+  runAsk: async (question) => {
+    if (get().mode !== 'live') return
+    const q = question.trim()
+    if (!q) return
+    set({ askQuestion: q, askPending: true, askError: false, askResult: null, panelView: 'answer' })
+    try {
+      const res = await api.ask({ question: q })
+      // Ignore a stale response if the user navigated away or asked again meanwhile.
+      if (get().askQuestion !== q) return
+      set({ askResult: res, askPending: false })
+    } catch {
+      if (get().askQuestion !== q) return
+      set({ askError: true, askPending: false })
+    }
+  },
 
   toggleReview: () => set((s) => ({ reviewOpen: !s.reviewOpen })),
   openCard: (id) => set({ panelView: 'card', activeCard: id, reviewOpen: true }),
@@ -113,9 +187,45 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
       }
     }),
 
-  // Rahwali is the demo's provenance entry point — selecting it opens the drawer.
-  select: (id) =>
-    set(id === 'rahwali' ? { selected: 'rahwali', drawerOpen: true } : { selected: id }),
+  // LIVE review — open a derived queue item into the card slot, and write its decision
+  // through the matching /hitl/* route. The response IS the full rebuilt graph, so we
+  // mirror it into liveView; re-deriving the queue then drops the badge and re-answers
+  // any open question. On error the item stays in the queue (nothing fake is shown).
+  openLiveCard: (item) => set({ activeLiveItem: item, panelView: 'card', reviewOpen: true }),
+  decideLive: async (item, decisionKey) => {
+    if (get().mode !== 'live') return
+    const opt = item.options.find((o) => o.key === decisionKey)
+    const label = opt?.done ?? decisionKey
+    try {
+      const rebuilt = await api.hitl(item.hitlVerb, {
+        item_id: item.itemId,
+        type: item.reviewType,
+        subject: item.subject,
+        decision: decisionKey,
+        actor: 'analyst',
+      })
+      set((s) => ({
+        liveView: rebuilt,
+        liveDecided: { ...s.liveDecided, [item.itemId]: label },
+        panelView: 'zero',
+        lastResolved: label,
+        activeLiveItem: null,
+      }))
+    } catch {
+      set({ activeLiveItem: null, panelView: 'zero' })
+    }
+  },
+
+  // Selecting an element. DEMO: Rahwali is the scripted provenance entry point — only it
+  // opens the drawer. LIVE: any node is traceable, so selecting one opens its provenance
+  // drawer (and deselecting/background-tap closes it). The demo path is unchanged.
+  select: (id) => {
+    if (get().mode === 'live') {
+      set({ selected: id, drawerOpen: id != null })
+      return
+    }
+    set(id === 'rahwali' ? { selected: 'rahwali', drawerOpen: true } : { selected: id })
+  },
   openDrawer: () => set({ drawerOpen: true }),
   closeDrawer: () => set({ drawerOpen: false }),
   toggleChip: (id) => set((s) => ({ expanded: s.expanded === id ? null : id })),
@@ -137,6 +247,79 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   resetIngest: () => {
     clearIngestTimers()
     set({ ingested: { d18: false, d19: false, d20: false }, ingestTrace: null })
+  },
+
+  // LIVE ingest — the keyless bundle path (pre-extracted claim dicts). POST /ingest, then
+  // refetch /view so the new claims land in the graph AND any tripwires that fired surface
+  // into the derived review queue (their alerts ride along in the rebuilt view). The keyed
+  // raw-doc path is 403-guarded server-side and is deliberately not offered here.
+  ingestLive: async (bundle) => {
+    if (get().mode !== 'live') return
+    if (!Array.isArray(bundle) || bundle.length === 0) {
+      set({ liveIngestNote: 'No claims found — expected a JSON array of pre-extracted claims.' })
+      return
+    }
+    set({ liveIngestBusy: true, liveIngestNote: null })
+    try {
+      const res = await api.ingest({ bundle })
+      const fresh = await api.view()
+      const n = res.appended_claim_ids?.length ?? bundle.length
+      const fired = res.alerts_fired?.length ?? 0
+      set({
+        liveView: fresh,
+        liveIngestBusy: false,
+        liveIngestNote: `${n} claim${n === 1 ? '' : 's'} appended${
+          fired ? ` · ${fired} tripwire${fired === 1 ? '' : 's'} fired` : ''
+        }.`,
+      })
+    } catch {
+      set({ liveIngestBusy: false, liveIngestNote: 'Ingest failed — nothing was appended.' })
+    }
+  },
+
+  // LIVE ingest — the KEYED raw-document path: the server runs extraction on the text and
+  // appends the resulting claims. It's guarded by CHANAKYA_ENABLE_EXTRACTION (off by default,
+  // so a public box can't be made to burn model quota) — when off the server 403s and we say
+  // so honestly rather than pretending. On success we refetch /view so the new claims + any
+  // fired tripwires land, same as the bundle path. (source_type ∈ the sources.yaml vocabulary.)
+  ingestDocLive: async ({ rawText, sourceId, sourceType }) => {
+    if (get().mode !== 'live') return
+    if (!rawText.trim()) {
+      set({ liveIngestNote: 'Paste or drop some document text first.' })
+      return
+    }
+    if (!sourceId.trim() || !sourceType) {
+      set({ liveIngestNote: 'Name the source and pick a source type first.' })
+      return
+    }
+    set({ liveIngestBusy: true, liveIngestNote: null })
+    try {
+      const res = await api.ingest({ raw_text: rawText, source_id: sourceId.trim(), source_type: sourceType })
+      const fresh = await api.view()
+      const n = res.appended_claim_ids?.length ?? 0
+      const fired = res.alerts_fired?.length ?? 0
+      set({
+        liveView: fresh,
+        liveIngestBusy: false,
+        liveIngestNote: `${n} claim${n === 1 ? '' : 's'} extracted & appended${
+          fired ? ` · ${fired} tripwire${fired === 1 ? '' : 's'} fired` : ''
+        }.`,
+      })
+    } catch (e) {
+      let note = 'Extraction failed — nothing was appended.'
+      if (e instanceof ApiError) {
+        if (e.status === 403) {
+          note = 'Raw-document extraction is switched off on this server (needs CHANAKYA_ENABLE_EXTRACTION + a model key) — drop a claim bundle instead.'
+        } else {
+          const detail =
+            e.body && typeof e.body === 'object' && 'detail' in e.body
+              ? String((e.body as { detail: unknown }).detail)
+              : ''
+          note = detail || `Ingest rejected (${e.status}).`
+        }
+      }
+      set({ liveIngestBusy: false, liveIngestNote: note })
+    }
   },
 
   setWeight: (key, val) => set((s) => ({ weights: { ...s.weights, [key]: val } })),

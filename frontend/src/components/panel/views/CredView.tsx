@@ -20,6 +20,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 export function CredView() {
   const backToZero = useWorkbench((s) => s.backToZero)
+  const mode = useWorkbench((s) => s.mode)
   const weights = useWorkbench((s) => s.weights)
   const setWeight = useWorkbench((s) => s.setWeight)
 
@@ -101,6 +102,17 @@ export function CredView() {
         </div>
         <div className="mt-[14px] text-[12px] leading-[1.55] text-text-dim">{credVerdictNote}</div>
       </div>
+
+      {/* LIVE: the rubric recompute above is live and honest, but persisting these weights
+          to the backend rubric (so the whole graph re-resolves) needs a config read-modify-
+          write endpoint that doesn't exist yet — filed for the API session. Until then this
+          stays an illustration, not a live write. Demo never shows this note. */}
+      {mode === 'live' && (
+        <div className="mt-[18px] rounded border border-dashed border-hairline-strong px-[13px] py-[11px] text-[11px] leading-[1.55] text-text-faint">
+          The rubric recomputes here live. Saving these weights back to the graph is pending a
+          config read/modify/write endpoint (filed) — nothing is written yet.
+        </div>
+      )}
     </div>
   )
 }
