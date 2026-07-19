@@ -41,11 +41,11 @@
               "source": "coord-parse"
             }
           ],
-          "precision_class": "city",
+          "precision_class": "pad",
           "proposed_alias": null,
           "raw": "24.9012 N, 67.2034 E",
           "resolved_place_ref": null,
-          "surface_format": "DMS",
+          "surface_format": "DD",
           "wgs84_lat": 24.9012,
           "wgs84_lon": 67.2034
         },

@@ -34,7 +34,7 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -493,8 +493,12 @@ class GazetteerGeocoder:
 class ChainedGeocoder:
     """Try each geocoder in order; the first non-``None`` hit wins (gazetteer cache → Nominatim)."""
 
-    def __init__(self, geocoders: Iterable[Geocoder | None]) -> None:
+    def __init__(self, geocoders: Iterable[Geocoder | None],
+                 confidences: Mapping[str, float] | None = None) -> None:
         self._geocoders = [g for g in geocoders if g is not None]
+        # Carried on the geocoder so ``normalize_location`` picks the live config up through the one
+        # seam it already has injected — no extra plumbing through every transform + the emitter.
+        self.confidences: dict[str, float] = dict(confidences or GEOCODE_CONFIDENCE_DEFAULTS)
 
     def geocode(self, query: str) -> GeocodeResult | None:
         for geocoder in self._geocoders:
@@ -543,7 +547,7 @@ def build_geocoder(
     if online:
         live = nominatim if nominatim is not None else _default_geocoder()
         chain.append(_CachingGeocoder(live) if live is not None else None)
-    return ChainedGeocoder(chain)
+    return ChainedGeocoder(chain, geocode_confidences(config))
 
 
 # Compass point → azimuth degrees (clockwise from true north), for the relative-offset math.
@@ -570,7 +574,19 @@ _URL_COORD_RES = [
 _DD_RE = re.compile(
     r"^\s*(-?\d+(?:\.\d+)?)\s*°?\s*([NnSs])?\s*[,;/ ]\s*(-?\d+(?:\.\d+)?)\s*°?\s*([EeWw])?\s*$"
 )
-_MGRS_RE = re.compile(r"^\s*\d{1,2}[C-X]\s*[A-Z]{2}\s*\d+\s*\d+\s*$", re.IGNORECASE)
+# A military grid reference, matched ANYWHERE in the string — a source states it in prose ("Grid: 43S
+# CT 23715 21242 (MGRS, WGS84)"), not as a bare token, and an anchored match silently drops it.
+# Strict on purpose so ordinary prose can never be coerced into a grid:
+#   zone 1-60 · latitude band C-X (I/O never used) · 100 km square col A-Z / row A-V (I/O never used) ·
+#   an even, equal-length easting/northing digit run · not glued to surrounding alphanumerics.
+_MGRS_TOKEN_RE = re.compile(
+    r"(?<![0-9A-Za-z])"
+    r"(?P<zone>\d{1,2})\s*(?P<band>[C-HJ-NP-X])\s*"
+    r"(?P<square>[A-HJ-NP-Z][A-HJ-NP-V])\s*"
+    r"(?P<digits>\d{1,10}(?:\s+\d{1,5})?)"
+    r"(?![0-9A-Za-z])",
+    re.IGNORECASE,
+)
 _UTM_RE = re.compile(
     r"^\s*(\d{1,2})\s*([C-X])\s+(\d+(?:\.\d+)?)\s*(?:m?E)?\s+(\d+(?:\.\d+)?)\s*(?:m?N)?\s*$",
     re.IGNORECASE,
@@ -580,25 +596,98 @@ _UTM_RE = re.compile(
 # (NAVAREA ``34-29.00N``) and packed NOTAM (``495355N``) alike.
 _DMS_LAT_RE = re.compile(r"(\d[\d°′″'\".:\-\s]*\d|\d)[°′″'\"]*\s*([NnSs])")
 _DMS_LON_RE = re.compile(r"(\d[\d°′″'\".:\-\s]*\d|\d)[°′″'\"]*\s*([EeWw])")
+# A sexagesimal marker: a degree/minute/second glyph, or a digit-separated minute field (NAVAREA
+# ``34-29.00N``, ``32:14:20N``). Its ABSENCE is what makes ``24.9012 N, 67.2034 E`` unambiguously
+# decimal-degrees rather than a degrees-only DMS — which matters, because the DD branch derives
+# ``precision_class`` from the stated decimal places (4 dp ≈ 10 m → ``pad``, not ``city``).
+_DMS_MARKER_RE = re.compile(r"[°′″]|\d\s*['\"]|\d\s*[-:]\s*\d")
+
+# Formats whose value comes from parsing the string itself (vs. geocoding a name).
+COORD_FORMATS: frozenset[str] = frozenset(("DD", "DMS", "MGRS", "UTM", "url"))
+SURFACE_FORMATS: frozenset[str] = COORD_FORMATS | {"toponym", "relative"}
+
+# The confidence stamped on a ``GeocodeCandidate``, by how the coordinate was obtained. Config-driven
+# (``places.geocode_confidence``; gate G6 — no bare literals at the call sites) so an analyst can
+# retune how much a Nominatim hit on a vague regional phrase is worth relative to a parsed grid.
+# A *parsed* coordinate is the source's own statement; a gazetteer hit is a curated exact-match; a
+# Nominatim hit on free text ("central Punjab") is a guess at a centroid — they must not read alike.
+GEOCODE_CONFIDENCE_DEFAULTS: dict[str, float] = {
+    "coord-parse": 1.0,
+    "gazetteer": 0.9,
+    "relative-offset": 0.5,
+    "nominatim": 0.4,
+}
 
 
-def _sniff_location_format(s: str) -> SurfaceFormat:
-    """Deterministically classify a raw location string into a ``SurfaceFormat`` (dispatch key)."""
+def geocode_confidences(config: object) -> dict[str, float]:
+    """The per-source geocode-confidence table from live config, over the built-in defaults."""
+    override = getattr(getattr(config, "places", None), "geocode_confidence", None) or {}
+    return {**GEOCODE_CONFIDENCE_DEFAULTS, **{k: float(v) for k, v in dict(override).items()}}
+
+
+def _mgrs_token(s: str) -> str | None:
+    """The packed, upper-cased MGRS token embedded in ``s`` — or ``None`` if the shape isn't a grid.
+
+    Shape-only: it says "this text states a military grid reference", not "this grid is real". A
+    malformed grid (bad zone, unequal easting/northing, odd digit count) is **rejected here** rather
+    than coerced into a coordinate — the caller then treats the string as an ordinary toponym.
+    """
+    for m in _MGRS_TOKEN_RE.finditer(s):
+        if not 1 <= int(m.group("zone")) <= 60:
+            continue
+        parts = m.group("digits").split()
+        if len(parts) == 2:
+            if len(parts[0]) != len(parts[1]) or len(parts[0]) > 5:
+                continue
+        elif len(parts[0]) % 2 or len(parts[0]) > 10:
+            continue
+        return (m.group("zone") + m.group("band") + m.group("square") + "".join(parts)).upper()
+    return None
+
+
+def detect_surface_format(raw: str, declared: str | None = None) -> SurfaceFormat:
+    """The **shape is authoritative**; ``declared`` (the extractor's label) is only a hint.
+
+    Same principle the edge re-lane applies to relations — the endpoints decide the lane, the model's
+    verb is advisory. An LLM that calls ``"Grid: 43S CT 23715 21242 (MGRS, WGS84)"`` a *toponym* sends
+    it down the geocode path, where a grid can never resolve, and the exact coordinate is lost; the
+    mirror bug (a place name labelled ``MGRS``) sends a name into a parser that can never match it.
+    Classifying off the string itself removes both failure modes. ``declared`` survives only when the
+    shape yields nothing *and* the declared format's own parser succeeds on the string.
+    """
+    fmt, parsed = _shape_of(raw)
+    if parsed is None and declared in COORD_FORMATS and declared != fmt:
+        alt = _COORD_PARSERS[declared](raw)
+        if alt is not None:
+            return declared  # type: ignore[return-value]
+    return fmt
+
+
+def _shape_of(s: str) -> tuple[SurfaceFormat, tuple[float, float, PrecisionClass] | None]:
+    """Classify ``s`` by shape and, where the shape is a coordinate, parse it in the same pass.
+
+    Returning the parse alongside the label is what makes the classification *verified*: a format is
+    only claimed when either its parser succeeded or the shape is unmistakable-but-unparseable (a
+    well-formed grid the ``mgrs`` lib rejects), never on a guess.
+    """
     low = s.strip().lower()
     if low.startswith(("http://", "https://", "geo:")) or "maps." in low or "/@" in s:
-        return "url"
+        return "url", _parse_url(s)
     if _REL_LOC_RE.search(s):
-        return "relative"
-    if _MGRS_RE.match(s):
-        return "MGRS"
+        return "relative", None
+    if _mgrs_token(s) is not None:
+        return "MGRS", _parse_mgrs(s)
     if _UTM_RE.match(s):
-        return "UTM"
-    has_deg = bool(re.search(r"[°′″]", s))
-    if has_deg or (_DMS_LAT_RE.search(s) and _DMS_LON_RE.search(s)):
-        return "DMS"
-    if _DD_RE.match(s):
-        return "DD"
-    return "toponym"
+        return "UTM", _parse_utm(s)
+    if _DMS_MARKER_RE.search(s):
+        return "DMS", _parse_dms(s)
+    if _DMS_LAT_RE.search(s) and _DMS_LON_RE.search(s):
+        dd = _parse_dd(s)  # no sexagesimal marker anywhere → a hemisphere-suffixed DD pair
+        return ("DD", dd) if dd is not None else ("DMS", _parse_dms(s))
+    dd = _parse_dd(s)
+    if dd is not None or _DD_RE.match(s):
+        return "DD", dd
+    return "toponym", None
 
 
 def _precision_from_dd(lat_str: str, lon_str: str) -> PrecisionClass:
@@ -675,15 +764,20 @@ def _parse_dms(s: str) -> tuple[float, float, PrecisionClass] | None:
 
 
 def _parse_mgrs(s: str) -> tuple[float, float, PrecisionClass] | None:
+    """Decode the grid reference stated anywhere in ``s`` (prose wrapper and all) → WGS84."""
+    packed = _mgrs_token(s)
+    if packed is None:
+        return None
     try:
         import mgrs  # optional dep (REPORT); grid → WGS84
     except ImportError:
         return None
-    packed = re.sub(r"\s+", "", s.strip()).upper()
     digits = re.sub(r"^\d{1,2}[C-X][A-Z]{2}", "", packed)
     try:
         lat, lon = mgrs.MGRS().toLatLon(packed)
     except Exception:  # noqa: BLE001 - the mgrs lib raises bare errors on malformed grids
+        return None
+    if not (-90 <= lat <= 90 and -180 <= lon <= 180):
         return None
     per_axis = len(digits) // 2
     precision: PrecisionClass = "pad" if per_axis >= 3 else "site" if per_axis == 2 else "city"
@@ -716,11 +810,17 @@ def _parse_url(s: str) -> tuple[float, float, PrecisionClass] | None:
     return None
 
 
+_COORD_PARSERS: dict[str, Callable[[str], tuple[float, float, PrecisionClass] | None]] = {
+    "DD": _parse_dd, "DMS": _parse_dms, "MGRS": _parse_mgrs, "UTM": _parse_utm, "url": _parse_url,
+}
+
+
 def normalize_location(
     raw: str | None,
     *,
     surface_format: str | None = None,
     geocoder: Geocoder | None = None,
+    confidences: Mapping[str, float] | None = None,
 ) -> Location | None:
     """Normalize a stated location — **Stage A** of the location system (md/13 §2), pre-resolution.
 
@@ -733,6 +833,10 @@ def normalize_location(
 
     A blank input → ``None``. An unresolvable but stated location still returns a ``Location`` carrying
     ``raw`` + ``surface_format`` (no coords) so the claim keeps its provenance for RESOLVE to try.
+
+    ``surface_format`` is the extractor's **declared** label and is treated as a hint only: the string's
+    own shape decides the branch (:func:`detect_surface_format`). A grid the model mislabelled a toponym
+    still gets canonicalised; a place name it mislabelled a grid still gets geocoded.
     """
     if raw is None:
         return None
@@ -740,34 +844,36 @@ def normalize_location(
     if not s:
         return None
 
-    fmt: SurfaceFormat
-    if surface_format in ("DD", "DMS", "MGRS", "UTM", "url", "toponym", "relative"):
-        fmt = surface_format  # type: ignore[assignment]
-    else:
-        fmt = _sniff_location_format(s)
+    conf = {**GEOCODE_CONFIDENCE_DEFAULTS,
+            **(getattr(geocoder, "confidences", None) or {}),
+            **(confidences or {})}
 
-    coord_parsers = {"DD": _parse_dd, "DMS": _parse_dms, "MGRS": _parse_mgrs,
-                     "UTM": _parse_utm, "url": _parse_url}
-    parser = coord_parsers.get(fmt)
-    if parser is not None:
-        parsed = parser(s)
-        if parsed is not None:
-            lat, lon, precision = parsed
-            return Location(
-                raw=s, surface_format=fmt, wgs84_lat=lat, wgs84_lon=lon,
-                precision_class=precision,
-                geocode_candidates=[GeocodeCandidate(lat=lat, lon=lon, source="coord-parse",
-                                                     confidence=1.0)],
-            )
+    fmt, parsed = _shape_of(s)
+    if parsed is None and surface_format in COORD_FORMATS and surface_format != fmt:
+        # The shape yielded nothing; honour the declared format only if its parser actually works.
+        alt = _COORD_PARSERS[surface_format](s)
+        if alt is not None:
+            fmt, parsed = surface_format, alt  # type: ignore[assignment]
+
+    if parsed is not None:
+        lat, lon, precision = parsed
+        return Location(
+            raw=s, surface_format=fmt, wgs84_lat=lat, wgs84_lon=lon,
+            precision_class=precision,
+            geocode_candidates=[GeocodeCandidate(lat=lat, lon=lon, source="coord-parse",
+                                                 confidence=conf["coord-parse"])],
+        )
+    if fmt in COORD_FORMATS:
         # A coord we couldn't parse (missing optional dep, malformed) — keep the stated form for RESOLVE.
         return Location(raw=s, surface_format=fmt)
 
     if fmt == "relative":
-        return _resolve_relative_location(s, geocoder)
-    return _resolve_toponym(s, geocoder)
+        return _resolve_relative_location(s, geocoder, conf)
+    return _resolve_toponym(s, geocoder, conf)
 
 
-def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
+def _resolve_relative_location(s: str, geocoder: Geocoder | None,
+                               conf: Mapping[str, float]) -> Location:
     """The Rahwali beat: parse ``<dist> <bearing> of <anchor>``, geocode anchor, offset great-circle."""
     m = _REL_LOC_RE.search(s)
     if not m:
@@ -786,8 +892,9 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
         from geopy.point import Point
     except ImportError:  # pragma: no cover - geopy is a hard dep
         return Location(raw=s, surface_format="relative", proposed_alias=anchor_name,
-                        geocode_candidates=[GeocodeCandidate(lat=hit.latitude, lon=hit.longitude,
-                                            label=anchor_name, source=anchor_source)])
+                        geocode_candidates=[GeocodeCandidate(
+                            lat=hit.latitude, lon=hit.longitude, label=anchor_name,
+                            source=anchor_source, confidence=conf.get(anchor_source))])
     dest = _distance(kilometers=dist_km).destination(Point(hit.latitude, hit.longitude), bearing)
     return Location(
         raw=s, surface_format="relative",
@@ -795,25 +902,27 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
         proposed_alias=anchor_name,
         geocode_candidates=[
             GeocodeCandidate(lat=float(dest.latitude), lon=float(dest.longitude),
-                             label=s, source="coord-parse", confidence=0.5),
+                             label=s, source="coord-parse",
+                             confidence=conf["relative-offset"]),
             GeocodeCandidate(lat=hit.latitude, lon=hit.longitude, label=anchor_name,
-                             source=anchor_source),
+                             source=anchor_source, confidence=conf.get(anchor_source)),
         ],
     )
 
 
-def _resolve_toponym(s: str, geocoder: Geocoder | None) -> Location:
+def _resolve_toponym(s: str, geocoder: Geocoder | None, conf: Mapping[str, float]) -> Location:
     """Geocode a stated place name → freeze WGS84 + a candidate + the proposed alias (RESOLVE adjudicates)."""
     gc = geocoder  # opt-in ONLY: no injected geocoder → offline (no network in the claim path; G1/G2)
     hit = gc.geocode(s) if gc is not None else None
     if hit is None:
         return Location(raw=s, surface_format="toponym", proposed_alias=s)
+    source = getattr(hit, "source", "nominatim")
     return Location(
         raw=s, surface_format="toponym",
         wgs84_lat=hit.latitude, wgs84_lon=hit.longitude, proposed_alias=s,
         geocode_candidates=[GeocodeCandidate(lat=hit.latitude, lon=hit.longitude,
                             label=getattr(hit, "address", None),
-                            source=getattr(hit, "source", "nominatim"))],
+                            source=source, confidence=conf.get(source))],
     )
 
 

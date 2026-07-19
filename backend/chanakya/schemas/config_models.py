@@ -143,6 +143,11 @@ class PlacesConfig(ConfigModel):
     crs: str = "EPSG:4326"  # canonical output frame (WGS84 decimal degrees)
     places: list[PlaceEntry] = []
     proximity_radius_m: dict[str, float] = {}  # precision_class → auto-resolve radius (1x–3x → HITL; beyond → new place)
+    # How much a frozen coordinate is worth, by how INGEST obtained it (``GeocodeCandidate.source`` →
+    # ``confidence``). A parsed grid/DMS is the source's own statement; a Nominatim centroid for a vague
+    # regional phrase ("central Punjab") is a guess — RESOLVE must be able to tell them apart, and an
+    # analyst must be able to retune the gap without a code change. Empty → the INGEST defaults.
+    geocode_confidence: dict[str, float] = {}  # "coord-parse" | "gazetteer" | "relative-offset" | "nominatim"
 
     def as_map(self) -> dict[str, PlaceEntry]:
         return {p.place_id: p for p in self.places}
