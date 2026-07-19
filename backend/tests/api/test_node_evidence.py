@@ -1,0 +1,60 @@
+"""``GET /node/{id}`` (product/03 B) + ``GET /evidence/{id}`` (product/03 C: the provenance drawer)."""
+
+from __future__ import annotations
+
+from chanakya.schemas import NodeView, ProvenanceDrawer
+
+
+def test_node_inspector_returns_frozen_nodeview(hero_client) -> None:
+    r = hero_client.get("/node/comp_ht233")
+    assert r.status_code == 200
+    node = NodeView.model_validate(r.json())
+    assert node.id == "comp_ht233" and node.type == "component"
+    # The load-bearing case: HT-233 is a CANDIDATE chokepoint, never a confirmed sole-source.
+    assert node.materiality is not None
+    assert node.materiality.chokepoint_status == "candidate"
+    assert node.materiality.substitutability_state == "UNKNOWN"
+
+
+def test_node_unknown_id_actionable_404(hero_client) -> None:
+    r = hero_client.get("/node/nope")
+    assert r.status_code == 404
+    assert r.json()["detail"]["id"] == "nope"
+
+
+def test_evidence_drawer_independence_clusters_and_claim_to_docref(hero_client) -> None:
+    # unit_paad is backed by two claims from different origins (imagery + official statement).
+    r = hero_client.get("/evidence/unit_paad")
+    assert r.status_code == 200
+    drawer = ProvenanceDrawer.model_validate(r.json())
+
+    assert drawer.subject_ref == "unit_paad"
+    assert drawer.clusters, "drawer must carry independence-grouped clusters"
+    clustered_ids = {cid for grp in drawer.clusters for cid in grp.claim_ids}
+    assert {"d02-l3", "d17-img1"} <= clustered_ids
+
+    # One-click-to-source: every clustered claim resolves to a full atom carrying its exact doc_ref.
+    resolved = {c.claim_id: c for c in drawer.claims}
+    assert clustered_ids <= set(resolved)
+    for cid in clustered_ids:
+        atom = resolved[cid]
+        refs = atom.doc_refs()
+        assert refs and refs[0].file  # a real file + locator to jump to
+        # observed-vs-inferred is a first-class field on the atom, not inferred.
+        assert atom.kind in {"observation", "inference", "retraction"}
+
+
+def test_evidence_works_for_edges_too(hero_client) -> None:
+    # Edges are assessed elements as well — the drawer resolves them by id.
+    edge_id = "e:comp_ht233:equips:var_hq9p"
+    r = hero_client.get(f"/evidence/{edge_id}")
+    assert r.status_code == 200
+    drawer = ProvenanceDrawer.model_validate(r.json())
+    assert drawer.subject_ref == edge_id
+    assert drawer.claims  # the equips inference cites at least one claim
+
+
+def test_evidence_unknown_id_actionable_404(hero_client) -> None:
+    r = hero_client.get("/evidence/ghost")
+    assert r.status_code == 404
+    assert r.json()["detail"]["id"] == "ghost"

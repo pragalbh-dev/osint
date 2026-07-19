@@ -18,7 +18,7 @@
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | in-review | [#12](https://github.com/pragalbh-dev/osint/pull/12) | F0 | — |
 | INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | in-review | [#17](https://github.com/pragalbh-dev/osint/pull/17) | F0 (+DATA-C soft) | — |
-| API | FastAPI layer | 2 | not-started | — | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
+| API | FastAPI layer | 2 | in-review | [#25](https://github.com/pragalbh-dev/osint/pull/25) | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
 | SHIP | Production packaging & deploy | 2 | not-started | — | API (+X0, DATA-C, INGEST) | — |
 
@@ -450,3 +450,54 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
     `resolve_place()` matching is fully unit-tested against the gazetteer now.
 - **Gate fixtures:** none weakened; added `tests/resolve/**` (incl. `test_review_regressions.py` locking
   7 defects an adversarial review pass caught). G1/G2/G5/G6/G10 re-verified green.
+
+### API (in-review, feat/api): FastAPI layer over the merged Wave-1 modules
+- **Shipped:** the single deployable app (`chanakya/api/**`, 34 API tests; whole suite **529 pass / 6
+  skip**, gates G1–G12 green, ruff+mypy clean). `create_app()` (frozen sig; lazy `fastapi` so
+  `import chanakya.api` stays light) → an `AppState` that seeds the live `ConfigStore` from `config/`,
+  opens the evidence + decision logs, seeds evidence from committed bundles (keyless), and holds the
+  rebuilt view + previous view + an accumulating alert feed. One `rebuild_and_swap()` is the single
+  in-process mechanism behind hot-config / live-ingest / HITL propagation (atomic view swap, MONITOR
+  fired on the delta, `fired_ts` stamped by the API — no restart, §1 inv. 3). Endpoints (master §4.8):
+  `GET /health` (503→200 readiness gate, background boot in lifespan), `GET /view` (+`?subject=` lens),
+  `GET /node/{id}`, `GET /evidence/{id}` (provenance drawer, claim→doc_ref), `POST /ask` (delegates to
+  ASK, passes `claims={c.claim_id:c for c in store.replay()}`), `POST /ingest` (**sync def** — keyless
+  bundle append + guarded keyed live lane), `POST /hitl/{merge|status|alert}` (reconstruct card → dispose
+  → rebuild; effects propagate structurally, G12/G5), `POST /config/{section}` (hot-config + arm-on-save),
+  and the SPA static seam (`frontend/dist/` mount w/ deep-link fallback, else placeholder).
+- **Decisions (principle → choice → alt rejected):**
+  - *Thin API, delegate LLM* → `/ask` + `/ingest` are the only LLM-touching endpoints and only by
+    delegation; the API adds no reasoning and imports no `anthropic` at module load.
+  - *AppState is the single view/alert owner* → the keyed ingest lane runs with `live_rebuild=False`; the
+    API owns the one `rebuild_and_swap` (avoids a double rebuild + a view the app doesn't hold).
+  - *Sync `/ingest` route* → the lane runs its own `asyncio` fan-out; an `async` route would `asyncio.run`
+    from a running loop and crash. A `def` route is threadpooled by FastAPI → concurrency preserved.
+  - *Honest keyless boot* → boot prefers committed bundles, else an **empty** graph the analyst populates
+    via `/ingest` (never a fabricated corpus); seed is source-agnostic so SHIP's baked baseline drops in.
+  - *Public-demo cost guard* → keyed live extraction is gated by `CHANAKYA_ENABLE_EXTRACTION` (default
+    off); visitors land on the instant keyless bundle path (Gemini quota/rate-limit protection).
+  - *Structural HITL (G5/G12)* → no endpoint sets status directly; `dispose` appends a `DecisionRecord`
+    and the following `rebuild()` applies its effects. Status ladder: demote/promote step one level.
+- **F0-amendments (additive/optional; logged below + in `tmp/conv/API-to-FRONTEND-contract-log.md`):**
+  `ProvenanceDrawer.claims` (resolved evidence atoms → one-click-to-source) + `IngestRequest.source_type`
+  (keyed lane needs the source class). Both non-breaking; frontend + siblings gain a field, no rebase.
+- **Deviations / open items:** boot seeds **0 claims today** (no committed bundles yet — `make extract`
+  pending, per EVAL/DATA); the hero-query acceptance is tested against the ASK hero fixture (the true
+  corpus→rebuild→hero end-to-end is EVAL's remit). "`/ask` changes after a HITL demote" is demonstrated as
+  `/view` propagation over HTTP (G12) + ASK determinism; the full ask-delta on the real corpus is EVAL's.
+- **Follow-ups:** (SHIP) point Docker context at repo root, bake the seed + `frontend/dist`, wire `make
+  run`; (DATA/EVAL) commit the extracted bundles so keyless boot yields the seeded baseline; (frontend)
+  generate types from `GET /openapi.json` (the frozen contract); watch the contract-log for changes.
+- **Gate fixtures:** none added/weakened (`api/` is outside the G6/G9/G10/G11 scan scope; G1 unaffected —
+  no `anthropic` at import; the two amendments leave the golden view byte-identical — G2).
+
+## Contract amendments (API, 2026-07-19)
+Both additive/optional in-PR F0-amendments on `feat/api` (only the API + frontend consume these shapes;
+Wave-1 siblings are unaffected → no rebase). Mirrored for the frontend in
+`tmp/conv/API-to-FRONTEND-contract-log.md`.
+- **`ProvenanceDrawer.claims: list[ClaimRecord] = []`** (master §4.8; product/03 C) — the drawer embeds the
+  resolved evidence atoms its `clusters`/`opposing_claims` reference by id, so each claim carries its exact
+  `doc_ref` (one-click-to-source). Rejected: a new lean claim projection (2nd shape) / a per-claim endpoint
+  (N+1 + beyond §4.8).
+- **`IngestRequest.source_type: str | None = None`** (master §4.8) — the keyed live lane needs the source's
+  credibility class (`ingest_document(source_type=…)`); the keyless bundle path ignores it.
