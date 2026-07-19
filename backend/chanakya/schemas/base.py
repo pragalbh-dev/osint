@@ -6,7 +6,7 @@ Two base configs, deliberately different (master §4.2 "shape vs. normalization"
   *forbidden* so a typo or a drifted contract fails loudly rather than silently. **No network,
   parse, clock, or RNG in any validator** — validators here are pure structural checks only, so
   that ``rebuild()`` re-instantiating records from the log stays LLM/network-free (gate G1).
-* ``ConfigModel`` — the eight config surfaces. Extra fields are *allowed*: DATA-C authors the
+* ``ConfigModel`` — the nine config surfaces. Extra fields are *allowed*: DATA-C authors the
   content and may add knobs without an F0-amendment, as long as the load-bearing typed fields
   below stay put. All numeric knobs live in config, never in code (gate G6).
 """

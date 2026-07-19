@@ -1,0 +1,210 @@
+# config/entities.yaml — entity canonical-id registry (D-B; pipeline config, extensible; per CLAUDE.md
+# not hardcoded).
+#
+# This is the pipeline's PRIOR for entity resolution — mirrors config/places.yaml's role for places, one
+# level up the stack (entities, not locations):
+#   - each entry's entity_id is the STABLE canonical id RESOLVE elects as a cluster's canonical node id,
+#     and it is the SAME id the eval oracle (each scenario's answer_key.json) uses — so extractor surface
+#     forms, the resolved graph, subject lenses, and the oracle all share one id namespace (closes the
+#     id-namespace split, D-B).
+#   - the extractor NEVER emits these ids; it only ever emits a surface form + a type. RESOLVE maps
+#     surface -> id via this table's alias-equivalence classes, with fuzzy/attribute scoring + HITL
+#     covering everything this table hasn't seen yet.
+#   - a curated OPEN-WORLD prior, not a closed vocabulary: an entity this table has never seen still mints
+#     its own node at rebuild. This table only pre-resolves the surface forms we already know about, and it
+#     GROWS over time from HITL adjudications and auto-merges — exactly like places.yaml's gazetteer grows
+#     from earned merges.
+#
+# NOT the answer key. The eval oracle (full ground truth, incl. which aliases are withheld on purpose)
+# lives in each scenario's answer_key.json. Two deliberate omissions below mirror places.yaml's own
+# withheld/earned-merge traps and MUST stay withheld here too (do not "complete" them):
+#   * site_rawalpindi: the historical "PAF Base Chaklala" / "Chaklala" / "RAF Chaklala" aliases are
+#     WITHHELD — same earned-merge story as places.yaml's pl_nurkhan (ICAO co-reference + proximity, or an
+#     LLM alias proposal -> HITL, not a free string lookup).
+#   * site_rahwali: the "~N km NW of <town>" relative-bearing form is deliberately NOT seeded as a string
+#     alias here either (places.yaml withholds the coordinate form for the same node) — it must resolve by
+#     geodesic proximity against the seeded coordinate, not by string match.
+#
+# Only CONFIRMED, corpus-attested (or explicit oracle-name) aliases are seeded here — never a corpus's own
+# hedged "candidate to verify" surface forms (e.g. H-200 / Type 305B / FD-2000B for the HT-233/HQ-9P
+# cluster), and never a bare generic noun that would be actively harmful as a blind GLOBAL alias (e.g.
+# "Pakistan Army", "the System") even where a single document's own local scope treats it as a defined
+# term. Coordinate/MGRS/DMS strings are excluded too — those resolve through the deterministic
+# coord-canonicaliser + proximity match (places.yaml), never this name-alias table.
+#
+# distinct_from carries the do-not-merge traps (Army-designated HQ-9/P vs PAF-designated HQ-9BE; either of
+# those vs the FT-2000 anti-radiation variant; the PAAD Army unit vs the PAF fire-unit) as a hard veto,
+# applied before banding — the same mechanism places.yaml uses for its Karachi-Port/Port-Qasim pair.
+#
+# DEFERRED — attrs.foreign_control / DC-3 materiality seeding is intentionally NOT set here. A prior
+# corpus-grounding analysis (tmp/conv/EVAL-RCA-corpus-grounding-basing-and-materiality.md, Item 2) found
+# the corpus never states a sole-source / foreign-control fact for HT-233 — its maker is graded UNKNOWN
+# (gap_ht233_maker) — so hand-seeding foreign_control: true to force a CONFIRMED chokepoint would be
+# un-sourced and would violate the traceability non-negotiable (no node/edge without a source that says
+# it). The honest grounding (hedged techdata-authority configuration-control d21 / no-open-substitute
+# chassis d24, landing at PROBABLE with hedges preserved) is a Phase-2/3 DATA+EVAL corpus-vs-oracle
+# reconciliation — see tmp/conv/PHASE1-DATAC-EVAL-answer_key-reconciliation.md — not a Phase-1 config seed.
+#
+# Entities with zero confirmed corpus-attested aliases in this scenario (comp_interceptor, import_2021,
+# sustain_techdata, sustain_spares) are deliberately NOT seeded here — they are real oracle ids, but
+# registering them with an empty alias list would add nothing (RESOLVE still mints/matches them by type +
+# relational signal); see tmp/conv/eval-rca/phase1-entity-registry-draft.md §1/§4 for the coverage-gap
+# writeup.
+
+version: 1
+
+entities:
+  # ── Manufacturers ──────────────────────────────────────────────────────────────────────────────
+  - entity_id: mfr_casic
+    type: manufacturer
+    canonical_name: "CASIC (2nd Academy / China Academy of Defence Technology / CCFG)"
+    aliases:
+      - "CASIC"
+      - "China Aerospace Science and Industry Corporation"
+      - "CASIC's Second Academy"
+      - "CASIC Second Academy"
+      - "2nd Academy"
+      - "Second Academy"
+      - "China Academy of Defense Technology"
+      - "China Changfeng Group"
+      - "CCFG"
+      - "航天科工二院"
+      - "中国航天科工二院"
+  - entity_id: mfr_23rd_ri
+    type: manufacturer
+    canonical_name: "CASIC 23rd Research Institute (Beijing Institute of Radio Measurement, BIRM)"
+    aliases:
+      - "Beijing Institute of Radio Measurement"
+      - "BIRM"
+      - "23rd Research Institute"
+      - "CASIC's 23rd Research Institute"
+      - "23rd Institute"
+      - "北京无线电测量研究所"
+  - entity_id: mfr_4th_academy
+    type: manufacturer
+    canonical_name: "CASIC 4th Academy / Academy of Rocket Motors Technology (ARMT)"
+    aliases:
+      - "CASIC's 4th Academy"
+      - "4th Academy"
+      - "中国航天科工四院"
+      - "Academy of Rocket Motors Technology"
+      - "ARMT"
+
+  - entity_id: mfr_taian
+    type: manufacturer
+    canonical_name: "Taian (Wanshan) special-vehicle works"
+    aliases:
+      - "Taian (Wanshan) special-vehicle works"
+      - "Taian (Wanshan)"
+      - "Taian/Wanshan"
+  # ── Components ─────────────────────────────────────────────────────────────────────────────────
+  - entity_id: comp_ht233
+    type: component
+    canonical_name: "HT-233 engagement radar"
+    aliases:
+      - "HT-233"
+      - "HT-233 engagement radar"
+      - "HT-233 phased-array engagement radar"
+      - "HT-233 fire control radar"
+      - "engagement/fire-control radar pallet"
+      - "fire-control and guidance radar"
+  - entity_id: comp_tel_chassis
+    type: component
+    canonical_name: "HQ-9/P TEL transporter-erector-launcher chassis (WS-series)"
+    aliases:
+      - "TEL (transporter-erector-launcher)"
+      - "transporter-erector-launcher"
+      - "transporter-erector-launcher (TEL)"
+      - "transporter-erector-launchers (TELs)"
+      - "transporter erector launchers"
+      - "HQ-9/P TEL"
+      - "heavy 8x8 special wheeled chassis"
+      - "heavy 8×8 special wheeled chassis"
+      - "TAS5380"
+      - "WS2400-series"
+      - "canisterized launchers"
+      - "TEL"
+  # ── Variants ───────────────────────────────────────────────────────────────────────────────────
+  - entity_id: var_hq9p
+    type: variant
+    canonical_name: "HQ-9/P (export designator; Pakistan Army; ~125 km)"
+    aliases:
+      - "HQ-9P"
+      - "FD-2000"
+      - "HIMADS"
+      - "FD-2000/HQ-9P"
+      - "HQ-9P long-range air defense system"
+      - "Long Range Surface-to-Air Missile (LR-SAM) system"
+    distinct_from: [var_hq9be, alias_ft2000]
+
+  - entity_id: var_hq9be
+    type: variant
+    canonical_name: "HQ-9BE (export designator; Pakistan Air Force; ~260 km)"
+    aliases:
+      - "HQ-9B"
+      - "HQ-9BE"
+      - "HQ-9B (export)"
+      - "HQ9B"
+    distinct_from: [var_hq9p]
+
+  - entity_id: alias_ft2000
+    type: variant
+    canonical_name: "FT-2000 / FT-2000A (anti-radiation variant, distinct from HQ-9/P)"
+    aliases:
+      - "FT-2000"
+      - "FT-2000A"
+    distinct_from: [var_hq9p]
+
+  # ── Units ──────────────────────────────────────────────────────────────────────────────────────
+  - entity_id: unit_paad
+    type: unit
+    canonical_name: "Pakistan Army Air Defence (PAAD) — HQ-9/P regiment"
+    aliases:
+      - "Pakistan Army Air Defence (PAAD)"
+      - "Pakistan Army Air Defence Command"
+      - "Army Air Defence Command"
+      - "Air Defence Command"
+    distinct_from: [unit_hq9b]
+
+  - entity_id: unit_hq9b
+    type: unit
+    canonical_name: "PAF HQ-9B fire-unit (relocation subject)"
+    aliases:
+      - "PAF"
+      - "Pakistan Air Force"
+      - "PAF air defence squadrons"
+    distinct_from: [unit_paad]
+
+  # ── Basing sites ───────────────────────────────────────────────────────────────────────────────
+  - entity_id: site_karachi
+    type: basing_site
+    canonical_name: "Karachi Army Air Defence site (Malir area)"
+    aliases:
+      - "Malir District, Karachi, Sindh Province, Pakistan"
+      - "Malir AD area"
+      - "Malir"
+
+  - entity_id: site_rawalpindi
+    type: basing_site
+    canonical_name: "PAF Base Nur Khan (fmr Chaklala), Rawalpindi"
+    aliases:
+      - "PAF Base Nur Khan"
+      - "the old Rawalpindi-area site"
+      - "Rawalpindi Cantonment"
+      - "the old Rawalpindi site"
+      # WITHHELD (earned-merge trap, mirrors places.yaml pl_nurkhan): "PAF Base Chaklala", "Chaklala",
+      # "RAF Chaklala" — do NOT seed; must be earned via ICAO OPRN co-reference + proximity, or HITL.
+
+  - entity_id: site_rahwali
+    type: basing_site
+    canonical_name: "Rahwali airfield/cantonment, Gujranwala"
+    aliases:
+      - "Rahwali airfield"
+      - "Rahwali Cantonment"
+      - "Rahwali Cantt"
+      - "Rahwali Air Base"
+      - "Rahwali"
+      - "Rahwali airbase, Gujranwala"
+      - "Gujranwala Cantonment area"
+      # WITHHELD (earned-merge trap, mirrors places.yaml pl_rahwali): the "~10 km NW of Gujranwala along
+      # the GT Road corridor" relative-bearing form — must resolve by geodesic proximity, not string match.

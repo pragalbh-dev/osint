@@ -43,6 +43,8 @@ from .config_models import (
     CONFIG_SECTIONS,
     ConfigBundle,
     CredibilityConfig,
+    EntitiesConfig,
+    EntityEntry,
     EvidenceTemplate,
     ObservableDef,
     ObservablesConfig,
@@ -115,6 +117,7 @@ __all__ = [
     "ConfigBundle", "CONFIG_SECTIONS", "OntologyConfig", "SourcesConfig", "CredibilityConfig",
     "ResolutionConfig", "TemplatesConfig", "SubjectsConfig", "ObservablesConfig", "TypeDef",
     "EvidenceTemplate", "SubjectLens", "ObservableDef", "PlacesConfig", "PlaceEntry",
+    "EntitiesConfig", "EntityEntry",
     # api
     "AskRequest", "AskAnswer", "AnswerHop", "RefusalPayload", "ProvenanceDrawer", "ReviewQueueItem",
     "ReviewContext", "ReviewType", "HitlDecision", "IngestRequest", "IngestResult", "ConfigWrite",
