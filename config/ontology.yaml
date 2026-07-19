@@ -11,6 +11,16 @@
 #   - functional_role values are identifiers; Variant.branch -> operator_branch.
 # freshness_class buckets (spine/04): durable | perishable | semi-durable | force-revalidated | n/a.
 # credibility.yaml half_lives_days is keyed by the precise edge NAME (these categories are documentation).
+#
+# Canonical edge direction (INGEST canonical-edge-direction, 2026-07-19): each directional edge below
+# declares its endpoints as machine-readable `from`/`to` node-types (promoted from the human `# X->Y`
+# comments), read by `chanakya.edge_direction` so every producer writes a given edge the same way and
+# oppositely-phrased claims of one fact co-locate on one edge and corroborate. Both are optional: a
+# polymorphic-object edge (manufactures, sustained-by) declares only `from` (the fixed end is enough to
+# detect a flip); a same-type edge (component-of) cannot be type-disambiguated and is left as written.
+# Structural / symmetric edges (same-as, corroborates, supersedes, …) set `symmetric: true` — they have
+# no natural direction and are never reoriented (extra="allow", so these are plain YAML fields, no F0
+# schema change).
 
 node_types:
   - name: manufacturer
@@ -52,27 +62,27 @@ node_types:
 
 edge_types:
   # flagship trace
-  - {name: based-at, freshness_class: perishable}          # Unit->Site (field 30d / garrison 18mo, see credibility)
-  - {name: inducted-into, freshness_class: semi-durable}   # Variant->Unit
-  - {name: imported-by, freshness_class: durable}          # Contract->Unit
-  - {name: exported-by, freshness_class: durable}          # Contract->Manufacturer/export-agent
-  - {name: equips, freshness_class: durable}               # Component->Variant (the renamed hero edge)
-  - {name: supplies-component, freshness_class: durable}   # Manufacturer->Component (reserved; tier-2/3 sub-case decays)
-  - {name: manufactures, freshness_class: durable}         # Manufacturer->{Component, Variant}
-  - {name: design-authority-for, freshness_class: durable} # techdata_authority->Variant
-  - {name: component-of, freshness_class: durable}         # deep-tier BOM branch (Component->Component)
-  - {name: sustained-by, freshness_class: n/a}             # Unit->{interceptor_stockpile, techdata_authority} — rollup only
-  - {name: replenishes, freshness_class: perishable}       # Contract->interceptor_stockpile (follow-on resupply; observable)
+  - {name: based-at, freshness_class: perishable, from: unit, to: basing_site}          # field 30d / garrison 18mo, see credibility
+  - {name: inducted-into, freshness_class: semi-durable, from: variant, to: unit}
+  - {name: imported-by, freshness_class: durable, from: contract_import_event, to: unit}
+  - {name: exported-by, freshness_class: durable, from: contract_import_event, to: manufacturer}  # object = manufacturer / export-agent
+  - {name: equips, freshness_class: durable, from: component, to: variant}               # the renamed hero edge
+  - {name: supplies-component, freshness_class: durable, from: manufacturer, to: component}  # reserved; tier-2/3 sub-case decays
+  - {name: manufactures, freshness_class: durable, from: manufacturer}                   # object polymorphic: Component | Variant → `from` only
+  - {name: design-authority-for, freshness_class: durable, from: techdata_authority, to: variant}
+  - {name: component-of, freshness_class: durable, from: component, to: component}       # same-type BOM branch → not type-disambiguable (left as written)
+  - {name: sustained-by, freshness_class: n/a, from: unit}                               # object polymorphic: interceptor_stockpile | techdata_authority — rollup only
+  - {name: replenishes, freshness_class: perishable, from: contract_import_event, to: interceptor_stockpile}  # follow-on resupply; observable
   # resolution
-  - {name: same-as, freshness_class: n/a}
-  - {name: distinct-from, freshness_class: n/a}
-  - {name: substitutable-by, freshness_class: semi-durable}  # three-state on the edge; only UNKNOWN seeded (roadmap)
-  # evidence
-  - {name: evidenced-by, freshness_class: n/a}
-  - {name: corroborates, freshness_class: n/a}
-  - {name: contradicts, freshness_class: n/a}
-  - {name: supersedes, freshness_class: n/a}
-  - {name: derived-from, freshness_class: n/a}
+  - {name: same-as, freshness_class: n/a, symmetric: true}
+  - {name: distinct-from, freshness_class: n/a, symmetric: true}
+  - {name: substitutable-by, freshness_class: semi-durable, symmetric: true}  # three-state on the edge; only UNKNOWN seeded (roadmap)
+  # evidence (structural — produced by the pipeline, never reoriented)
+  - {name: evidenced-by, freshness_class: n/a, symmetric: true}
+  - {name: corroborates, freshness_class: n/a, symmetric: true}
+  - {name: contradicts, freshness_class: n/a, symmetric: true}
+  - {name: supersedes, freshness_class: n/a, symmetric: true}
+  - {name: derived-from, freshness_class: n/a, symmetric: true}
 
 event_types:
   - {name: TransferEvent, freshness_class: durable}

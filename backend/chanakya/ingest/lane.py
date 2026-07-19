@@ -41,6 +41,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from chanakya.edge_direction import canonicalize_claims
 from chanakya.ingest import loaders
 from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.dedup import assign_claim_ids, dedup_within_doc
@@ -111,15 +112,20 @@ def _doc_token(source_id: str) -> str:
     return "".join(out).strip("-") or "doc"
 
 
-def _finalize(claims: list[ClaimRecord], source_id: str) -> list[ClaimRecord]:
-    """The pure per-document reshaping: fold restatements → mint canonical ids.
+def _finalize(claims: list[ClaimRecord], source_id: str, config: ConfigBundle) -> list[ClaimRecord]:
+    """The pure per-document reshaping: canonical edge direction → fold restatements → mint canonical ids.
 
-    :func:`~chanakya.ingest.dedup.assign_claim_ids` also remaps any inference ``premises`` / retraction
+    :func:`~chanakya.edge_direction.canonicalize_claims` orients every relationship claim to its type's
+    house direction **first** (using this document's own entity claims + the place gazetteer to type the
+    endpoints), so oppositely-phrased restatements within one doc fold together in ``dedup_within_doc`` and
+    what is appended to the immutable log is already correct (write-side of the canonical-direction fix).
+    :func:`~chanakya.ingest.dedup.assign_claim_ids` then remaps any inference ``premises`` / retraction
     ``targets`` onto the reassigned ids, so the imagery signature→variant inference keeps pointing at its
-    observation. Runs *after* all of a document's extraction I/O has completed (serial + deterministic)
-    yet still upstream of the append; the returned order is the canonical sorted order.
+    observation. Runs *after* all of a document's extraction I/O has completed (serial + deterministic) yet
+    still upstream of the append; the returned order is the canonical sorted order.
     """
-    folded = dedup_within_doc(claims)
+    oriented = canonicalize_claims(claims, config)
+    folded = dedup_within_doc(oriented)
     return assign_claim_ids(folded, doc_id=_doc_token(source_id))
 
 
@@ -200,7 +206,7 @@ async def _extract_doc_claims(
             if c.targets is not None and c.targets in remap:
                 update["targets"] = remap[c.targets]
             claims.append(c.model_copy(update=update))
-    return _finalize(claims, doc.source_id)
+    return _finalize(claims, doc.source_id, config)
 
 
 async def _extract_batch(

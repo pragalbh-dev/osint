@@ -24,6 +24,7 @@ from chanakya.credibility import (
     group_by_independence,
     score_claims,
 )
+from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
 from chanakya.resolve import resolve
 from chanakya.schemas import (
@@ -337,6 +338,13 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # is an honest point-in-time view (is_available_by is clock-free — G1). Unset/future ⇒ no-op (G2).
     if config.credibility.as_of:
         active = [c for c in active if is_available_by(c, config.credibility.as_of)]
+
+    # Read-side canonical-direction net (INGEST canonical-edge-direction): orient any relationship claim
+    # whose producer could not (or did not) canonicalize its endpoints at write-time, so oppositely-phrased
+    # claims of one fact still key to the same edge_instance and corroborate. Pure & deterministic (G1/G2)
+    # and a no-op when the ontology declares no directions — it reorients only this derived view, never the
+    # immutable log (INGEST enforces the convention at write; this is the belt-and-suspenders fallback).
+    active = canonicalize_claims(active, config)
 
     # 1. resolution — resolve() is a pure function of (claims, config, prev_view, decision log): the
     #    decision log carries the offline LLM proposer's frozen merge_proposal records + the analyst's

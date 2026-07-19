@@ -753,3 +753,43 @@ _(2026-07-19, `feat/api`. The thin HTTP layer — master §4.8. Full detail: PRO
   (pushes brittle id-election guarantees into Phase 3 prematurely). Owners: EVAL (bridge); DATA-C/EVAL
   (answer_key reconciliation — a separate follow-up task, not Phase 1). →
   `tmp/conv/eval-rca/00-RCA-index.md`.
+
+### INGEST + F0 — canonical edge direction at write (choice · principle invoked · alternative rejected)
+_(2026-07-19, `feat/ingest-canonical-direction`. Implements the write-time direction/re-lane half of the
+EVAL RCA **D-A** decision above — the ontology `from`/`to`/`symmetric` fields + a deterministic endpoint-type
+canonicalizer — for the corroboration-co-location case; the two decisions converged independently.)_
+- **One canonical direction per relationship type, enforced at claim-production, with a read-side net as a
+  fallback.** Two claims corroborate only on the *same* edge (keyed by the resolved `(s,p,o)` triple), so
+  oppositely-phrased claims of one fact ("unit at site" vs "site hosts unit") silently split into two edges and
+  never corroborate. Fix writes every producer's claim in the same direction. *Principle:* provenance/audit
+  integrity — a backwards claim is a *wrong record*, so fix it at write, not on every read. *Rejected:* read-only
+  normalization (leaves the immutable log internally inconsistent); doing nothing (the silent failure the whole
+  confirmed-vs-probable machinery depends on). **User call (options template):** write-side **+** a read-side net.
+- **Direction promoted from ontology comments to machine-readable `from`/`to` (+ `symmetric`) YAML fields; read
+  via `getattr` — no F0 schema-file change.** `TypeDef` is `extra="allow"`, so the fields ride as extras (exactly
+  as the handoff prescribed). *Principle:* config-driven/extensible, not hardcoded; minimise the F0 contract
+  surface (keeps off the F0 worktrees' `config_models.py`). *Rejected:* adding typed fields to `TypeDef` now (an
+  F0 contract edit + cross-worktree conflict risk for a purely additive knob) — trivial follow-up if wanted.
+- **Endpoint typing reuses the doc's own entity claims + the place gazetteer; genuine unknowns are left as
+  written.** No extractor prompt/schema change. *Principle:* deterministic (G1/G2), minimal LLM surface, no
+  re-record churn. *User call:* chose "reuse in-doc types + gazetteer" over "also tag endpoints in the extractor".
+- **Score-based orientation: flip only on positive type evidence, never guess.** Handles polymorphic-object
+  edges by declaring only `from` (`manufactures`, `sustained-by` — the fixed end alone detects a flip) and leaves
+  same-type edges (`component-of`) and value-object triples (`object_value` set) untouched. *Principle:* the
+  non-negotiable — never fabricate/mangle where evidence is ambiguous. *Rejected:* a strict both-ends-required
+  rule (misses polymorphic edges); relabeling predicates (there's one directional predicate per relationship —
+  re-ordering endpoints is the whole correction).
+- **Shared pure module `chanakya/edge_direction.py` (imports schemas only), called by both the ingest lane
+  (`_finalize`, before dedup) and `rebuild()` (before `resolve`).** *Principle:* gate G9 — `ingest` must not
+  import `view`, and `view` must not drag the extraction client, so the canonicalizer lives in a neutral module
+  both import. No-op on an ontology with no declared directions ⇒ golden fixtures byte-stable (G2), no
+  re-record needed (user: nothing frozen into the graph yet, so no cleanup).
+
+**Cleanup deferred (user: no cleanup this pass — graph is empty):**
+- `imagery.py`'s hardcoded `site→variant` inference and `attribute.py`'s copy-C workaround are now *unnecessary*
+  but left in place; the canonicalizer is conservative and won't mangle them. Simplify when convenient.
+
+**Design-doc tails to enrich:**
+- `spine/01`/`spine/02` — the sourced-claim unit now carries a **canonical edge-direction invariant** at write;
+  edge identity is orientation-free. `spine/08` — record the `from`/`to`/`symmetric` ontology fields + the
+  two-placement (write + read-net) enforcement.
