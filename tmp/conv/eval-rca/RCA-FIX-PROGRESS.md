@@ -13,7 +13,12 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
     entity canonical-id registry, 14 entities / ~76 aliases, distinct-from traps, earned-merges withheld,
     foreign_control seeds removed (D-B, D-B.1, D-C.1).
   - Tests: `backend/tests/test_ontology.py`, `backend/tests/config/test_entities_config.py` (green).
-- **Phase 2 — extraction (INGEST): 🟨 CORE DONE, 2 items remain.**
+- **Phase 2 — extraction (INGEST): 🟨 CODE COMPLETE — only the keyed re-record remains.**
+  Commits **80a8702** (core rework) + **02ad5aa** (ING-8 image co-load: 9 primary sources; ING-7 real
+  per-doc `report_date`: 24 stamped, honesty-verified against the docs, 29 left null — no fabrication).
+  Full backend suite 571✓/6-skip. **Remaining Phase-2 gate:** the keyed re-record of `claims/*.json`
+  (needs API keys; regenerates the frozen bundles so all Phase-2 extraction changes land together). Below
+  is the pre-re-record state.
   Branch `fix/phase2-ingest-extraction` (off `fix/phase1-…`), commit **80a8702**. Delivered (decisions
   D-2.1…D-2.8): enum narrowed to `EdgeLaneIndex.extractor_edges()`; write-time re-lane + endpoint-type
   recovery + `edge_direction` partial-typing fallback; provenance rule (`_as_stated_predicate` + quote +
