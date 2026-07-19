@@ -6,15 +6,19 @@ import { AskBar } from './AskBar'
 import { ZeroView } from './views/ZeroView'
 import { HeroAnswer } from './views/HeroAnswer'
 import { GapsView } from './views/GapsView'
+import { LiveAnswer } from './views/LiveAnswer'
 import { MergeCard } from './views/MergeCard'
 import { OverrideCard } from './views/OverrideCard'
 import { AlertCard } from './views/AlertCard'
+import { LiveCard } from './views/LiveCard'
 import { CredView } from './views/CredView'
 import { WatchView } from './views/WatchView'
 
 export function Panel() {
+  const mode = useWorkbench((s) => s.mode)
   const panelView = useWorkbench((s) => s.panelView)
   const activeCard = useWorkbench((s) => s.activeCard)
+  const live = mode === 'live'
 
   return (
     <section className="flex w-[400px] flex-none flex-col border-l border-hairline bg-surface">
@@ -22,11 +26,14 @@ export function Panel() {
         {panelView === 'zero' && <ZeroView />}
         {panelView === 'hero' && <HeroAnswer />}
         {panelView === 'gaps' && <GapsView />}
+        {panelView === 'answer' && <LiveAnswer />}
         {panelView === 'cred' && <CredView />}
         {panelView === 'watch' && <WatchView />}
-        {panelView === 'card' && activeCard === 'merge' && <MergeCard />}
-        {panelView === 'card' && activeCard === 'override' && <OverrideCard />}
-        {panelView === 'card' && activeCard === 'alert' && <AlertCard />}
+        {/* card slot — LIVE renders the derived review item; DEMO the scripted cards */}
+        {panelView === 'card' && live && <LiveCard />}
+        {panelView === 'card' && !live && activeCard === 'merge' && <MergeCard />}
+        {panelView === 'card' && !live && activeCard === 'override' && <OverrideCard />}
+        {panelView === 'card' && !live && activeCard === 'alert' && <AlertCard />}
       </div>
       <AskBar />
     </section>

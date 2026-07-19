@@ -11,7 +11,9 @@
 
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
-import { AOI, PINS } from '@/demo/scenario'
+import { AOI } from '@/demo/scenario'
+import type { PinDef } from '@/demo/scenario'
+import { useStagePins } from '@/api/viewmodel'
 import { useWorkbench, selMoved, selRahwaliConfirmed } from '@/store/workbench'
 import { COLORS } from '@/design/tokens'
 import { statusBorder } from '@/components/status/util'
@@ -36,7 +38,9 @@ const PIN_UI: Record<
   tel: { labelPos: 'right', dot: 'live', rect: true, dimTitle: true },
 }
 
-const pinById = (id: string) => PINS.find((p) => p.id === id)!
+// Fallback presentation for LIVE pins the demo's PIN_UI doesn't describe (below-label,
+// live centre-dot). Demo pins keep their hand-authored PIN_UI entries.
+const DEFAULT_PIN_UI = { labelPos: 'below', dot: 'live' } as const
 
 // four L-shaped corner ticks around the 34×34 frame (mockup 156-159)
 const CORNERS = `
@@ -59,9 +63,8 @@ function labelHtml(pos: 'below' | 'right' | 'left', title: string, caption: stri
   </div>`
 }
 
-function pinHtml(id: string): string {
-  const pin = pinById(id)
-  const ui = PIN_UI[id]
+function pinHtml(pin: PinDef): string {
+  const ui = PIN_UI[pin.id] ?? DEFAULT_PIN_UI
   const dot = ui.dot === 'history' ? 'var(--history)' : 'var(--live)'
 
   if (ui.rect) {
@@ -102,12 +105,15 @@ export function MapView() {
   const movedLineRef = useRef<L.Polyline | null>(null)
   const movedLabelRef = useRef<L.Marker | null>(null)
 
+  const mode = useWorkbench((s) => s.mode)
+  const pins = useStagePins()
   const selected = useWorkbench((s) => s.selected)
   const moved = useWorkbench(selMoved)
   const confirmed = useWorkbench(selRahwaliConfirmed)
   const select = useWorkbench((s) => s.select)
 
-  // mount — create the map, tiles, and the (stable) pin markers once
+  // mount — create the map, tiles, and pin markers. Rebuilds if the pin set changes
+  // (live data arriving); in demo the pin set is a stable reference, so this runs once.
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
     const map = L.map(containerRef.current, {
@@ -126,11 +132,11 @@ export function MapView() {
     map.fitBounds(AOI.bounds, { padding: [24, 24] })
     mapRef.current = map
 
-    PINS.forEach((pin) => {
-      const ui = PIN_UI[pin.id]
+    pins.forEach((pin) => {
+      const ui = PIN_UI[pin.id] ?? DEFAULT_PIN_UI
       const rect = !!ui.rect
       const icon = L.divIcon({
-        html: pinHtml(pin.id),
+        html: pinHtml(pin),
         className: '', // '' → drop the default .leaflet-div-icon white box
         iconSize: rect ? [34, 26] : [34, 34],
         iconAnchor: rect ? [17, 13] : [17, 17],
@@ -150,14 +156,14 @@ export function MapView() {
       movedLineRef.current = null
       movedLabelRef.current = null
     }
-  }, [select])
+  }, [pins, select])
 
   // apply state — relocation choreography + selection reticle/ring, mutating in place
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
-    PINS.forEach((pin) => {
+    pins.forEach((pin) => {
       const marker = markersRef.current[pin.id]
       const el = marker?.getElement()
       if (!el) return
@@ -165,10 +171,12 @@ export function MapView() {
       const core = el.querySelector('[data-core]') as HTMLElement | null
       const caption = el.querySelector('[data-caption]') as HTMLElement | null
 
-      // selection accent ring (interactive highlight — never status)
+      // selection accent ring (interactive highlight — never status) — both modes
       if (ring) ring.style.boxShadow = selected === pin.id ? '0 0 0 1.5px var(--accent-primary)' : 'none'
 
-      if (pin.id === 'rawalpindi') {
+      // DEMO-only relocation/confirmation choreography, keyed to the hero-thread pins.
+      // LIVE pins carry their status/caption from the adapter and never animate here.
+      if (mode === 'demo' && pin.id === 'rawalpindi') {
         // selMoved → grey to STALE, superseded caption, ~0.55 opacity
         if (core) {
           core.style.border = moved ? 'var(--border-stale)' : 'var(--border-confirmed)'
@@ -177,18 +185,18 @@ export function MapView() {
         el.style.opacity = moved ? '0.55' : '1'
         if (caption) caption.textContent = moved ? 'superseded · 2021' : 'as of 2021'
       }
-      if (pin.id === 'rahwali') {
+      if (mode === 'demo' && pin.id === 'rahwali') {
         // selRahwaliConfirmed → border goes SOLID confirmed, confirmed caption
         if (core) core.style.border = confirmed ? 'var(--border-confirmed)' : 'var(--border-probable)'
         if (caption) caption.textContent = confirmed ? 'confirmed · 2025' : 'single pass · 2025'
       }
     })
 
-    // dashed grey "moved →" link, Rawalpindi → Rahwali
-    if (moved) {
+    // dashed grey "moved →" link, Rawalpindi → Rahwali (DEMO-only choreography)
+    const a = pins.find((p) => p.id === 'rawalpindi')
+    const b = pins.find((p) => p.id === 'rahwali')
+    if (mode === 'demo' && moved && a && b) {
       if (!movedLineRef.current) {
-        const a = pinById('rawalpindi')
-        const b = pinById('rahwali')
         const line = L.polyline(
           [
             [a.lat, a.lon],
@@ -228,7 +236,7 @@ export function MapView() {
     }
 
     // coordinate reticle on the selected pin (only real map pins have a coord)
-    const selPin = PINS.find((p) => p.id === selected)
+    const selPin = pins.find((p) => p.id === selected)
     if (selPin) {
       if (!reticleRef.current) {
         reticleRef.current = L.marker([selPin.lat, selPin.lon], {
@@ -248,7 +256,7 @@ export function MapView() {
       map.removeLayer(reticleRef.current)
       reticleRef.current = null
     }
-  }, [selected, moved, confirmed])
+  }, [pins, selected, moved, confirmed, mode])
 
   return (
     <div className="absolute inset-0">

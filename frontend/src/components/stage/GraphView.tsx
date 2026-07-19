@@ -1,38 +1,43 @@
-// Graph view — Cytoscape, deterministic PRESET layout (mockup ensureGraph/syncGraph,
-// lines 901-1031). The layout NEVER moves: positions are frozen in the scenario and
-// re-used verbatim; only edges/statuses/labels change (layout:'preset', never 'cose').
-// Node status is carried by BORDER + FILL, never hue; the chokepoint halo stays a
-// DASHED ring (candidate only). userZooming/userPanning are disabled to match the
-// mockup; we fit once on mount. Rewire is edges-only, ~200ms.
+// Graph view — Cytoscape. In DEMO mode the layout is a deterministic PRESET (positions
+// frozen in the scenario, re-used verbatim; the layout NEVER moves — only edges/statuses/
+// labels change) exactly as the mockup (ensureGraph/syncGraph, lines 901-1031). In LIVE
+// mode the adapter gives no positions, so we run a force layout ('cose') once and align
+// each candidate-chokepoint halo behind its node afterwards. Node status is carried by
+// BORDER + FILL, never hue; the chokepoint halo stays a DASHED ring (candidate only).
+// userZooming/userPanning are disabled to match the mockup; we fit once after layout.
+// Rewire (syncGraph) is edges/statuses/labels only, ~200ms, and never re-lays-out.
 
 import { useEffect, useRef } from 'react'
 import cytoscape from 'cytoscape'
-import { GRAPH_NODES, GRAPH_EDGES } from '@/demo/scenario'
-import type { GraphKind } from '@/demo/scenario'
+import type { GraphKind, GraphNodeDef, GraphEdgeDef } from '@/demo/scenario'
+import { useStageGraph } from '@/api/viewmodel'
 import { useWorkbench, selMoved, selRahwaliConfirmed } from '@/store/workbench'
 import { COLORS, HALO, fillFor } from '@/design/tokens'
 
 // stale/gap label text — the mockup's lighter grey (#8a949c), between history and text-dim
 const GREY_TEXT = '#8a949c'
 
-function buildElements(): cytoscape.ElementDefinition[] {
-  const nodes: cytoscape.ElementDefinition[] = GRAPH_NODES.map((n) => ({
-    data: { id: n.id, label: n.label },
+function buildElements(nodes: GraphNodeDef[], edges: GraphEdgeDef[]): cytoscape.ElementDefinition[] {
+  const nodeEls: cytoscape.ElementDefinition[] = nodes.map((n) => ({
+    // carry `kind` in node data so syncGraph reads it off the element (works for demo
+    // presets AND live-adapted nodes, with no dependency on the scenario module).
+    data: { id: n.id, label: n.label, kind: n.kind },
     position: { x: n.x, y: n.y },
   }))
-  // non-interactive dashed halo behind the candidate chokepoint (ht233)
-  const choke = GRAPH_NODES.find((n) => n.id === 'ht233')!
-  nodes.push({
-    data: { id: 'ht233_halo', label: '' },
-    position: { x: choke.x, y: choke.y },
-    classes: 'halo',
-    selectable: false,
-    grabbable: false,
-  })
-  const edges: cytoscape.ElementDefinition[] = GRAPH_EDGES.map((e) => ({
+  // non-interactive dashed halo behind EACH candidate-chokepoint node (demo: just ht233).
+  const halos: cytoscape.ElementDefinition[] = nodes
+    .filter((n) => n.kind === 'chokepoint')
+    .map((n) => ({
+      data: { id: `${n.id}_halo`, label: '' },
+      position: { x: n.x, y: n.y },
+      classes: 'halo',
+      selectable: false,
+      grabbable: false,
+    }))
+  const edgeEls: cytoscape.ElementDefinition[] = edges.map((e) => ({
     data: { id: e.id, source: e.source, target: e.target, kind: e.kind },
   }))
-  return nodes.concat(edges)
+  return [...nodeEls, ...halos, ...edgeEls]
 }
 
 function cyStyle(): cytoscape.CytoscapeOptions['style'] {
@@ -81,17 +86,19 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
 
 function syncGraph(
   cy: cytoscape.Core,
-  state: { selected: string | null; moved: boolean; confirmed: boolean },
+  state: { selected: string | null; moved: boolean; confirmed: boolean; mode: 'demo' | 'live' },
 ) {
-  const { selected: sel, moved, confirmed } = state
+  const { selected: sel, moved, confirmed, mode } = state
 
-  const kind: Record<string, GraphKind> = Object.fromEntries(GRAPH_NODES.map((n) => [n.id, n.kind]))
-  kind.rawalpindi = moved ? 'stale' : 'confirmed'
-  kind.rahwali = confirmed ? 'confirmed' : 'probable'
-
-  const label: Record<string, string> = {
-    rawalpindi: 'Rawalpindi\n' + (moved ? 'superseded · 2021' : 'HQ-9B fire-unit'),
-    rahwali: 'Rahwali\n' + (confirmed ? 'confirmed · 2025' : 'single pass · 2025'),
+  // DEMO-only status/label choreography, keyed to the hero-thread nodes. LIVE nodes carry
+  // their status via data(kind) from the adapter and never get relabeled/re-kinded here.
+  const kindOverride: Record<string, GraphKind> = {}
+  const label: Record<string, string> = {}
+  if (mode === 'demo') {
+    kindOverride.rawalpindi = moved ? 'stale' : 'confirmed'
+    kindOverride.rahwali = confirmed ? 'confirmed' : 'probable'
+    label.rawalpindi = 'Rawalpindi\n' + (moved ? 'superseded · 2021' : 'HQ-9B fire-unit')
+    label.rahwali = 'Rahwali\n' + (confirmed ? 'confirmed · 2025' : 'single pass · 2025')
   }
 
   const selNode = sel ? cy.$id(sel) : null
@@ -100,14 +107,16 @@ function syncGraph(
   cy.batch(() => {
     cy.nodes().forEach((n) => {
       const id = n.id()
-      if (id === 'ht233_halo') {
+      if (id.endsWith('_halo')) {
         const cls = ['halo']
-        if (neigh && !neigh.contains(cy.$id('ht233'))) cls.push('faded')
+        const baseId = id.replace(/_halo$/, '')
+        if (neigh && !neigh.contains(cy.$id(baseId))) cls.push('faded')
         n.classes(cls.join(' '))
         return
       }
       if (label[id]) n.data('label', label[id])
-      const cls: string[] = [kind[id] || 'confirmed']
+      const baseKind = kindOverride[id] || (n.data('kind') as GraphKind) || 'confirmed'
+      const cls: string[] = [baseKind]
       if (neigh) {
         if (!neigh.contains(n)) cls.push('faded')
         else if (id === sel) cls.push('sel')
@@ -116,7 +125,7 @@ function syncGraph(
     })
     cy.edges().forEach((e) => {
       const cls = [String(e.data('kind'))]
-      if (e.id() === 'e_moved' && !moved) cls.push('hidden')
+      if (mode === 'demo' && e.id() === 'e_moved' && !moved) cls.push('hidden')
       if (sel && e.source().id() !== sel && e.target().id() !== sel) cls.push('faded')
       e.classes(cls.join(' '))
     })
@@ -127,17 +136,20 @@ export function GraphView() {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const cyRef = useRef<cytoscape.Core | null>(null)
 
+  const mode = useWorkbench((s) => s.mode)
+  const graph = useStageGraph()
   const selected = useWorkbench((s) => s.selected)
   const moved = useWorkbench(selMoved)
   const confirmed = useWorkbench(selRahwaliConfirmed)
   const select = useWorkbench((s) => s.select)
 
-  // mount — build the graph once with the frozen preset
+  // mount — build the graph. In demo the element set is a stable reference so this runs
+  // once (preset never moves). In live it rebuilds when the adapted /view data changes.
   useEffect(() => {
     if (!containerRef.current || cyRef.current) return
     const cy = cytoscape({
       container: containerRef.current,
-      elements: buildElements(),
+      elements: buildElements(graph.nodes, graph.edges),
       style: cyStyle(),
       layout: { name: 'preset' },
       userZoomingEnabled: false,
@@ -150,40 +162,57 @@ export function GraphView() {
 
     cy.on('tap', 'node', (evt) => {
       const id = evt.target.id()
-      if (id === 'ht233_halo') return
+      if (id.endsWith('_halo')) return
       select(id) // store routes rahwali → drawer
     })
     cy.on('tap', (evt) => {
       if (evt.target === cy) select(null)
     })
 
-    // fit once — the layout is a preset and never moves after this
-    setTimeout(() => {
+    const fit = () => {
       try {
         cy.fit(cy.nodes(), 44)
       } catch {
         /* container not sized yet — harmless */
       }
-    }, 0)
+    }
+
+    if (mode === 'demo') {
+      // preset layout — positions are already set; just fit once and never move.
+      setTimeout(fit, 0)
+    } else {
+      // LIVE — no positions from the adapter; run a force layout, then park each halo
+      // behind its chokepoint node (halos aren't edge-linked, so cose scatters them).
+      const l = cy.layout({ name: 'cose', animate: false, padding: 44 })
+      l.one('layoutstop', () => {
+        cy.nodes('.halo').forEach((h) => {
+          const base = cy.$id(h.id().replace(/_halo$/, ''))
+          if (base.nonempty()) h.position(base.position())
+        })
+        fit()
+      })
+      l.run()
+    }
 
     syncGraph(cy, {
       selected: useWorkbench.getState().selected,
       moved: selMoved(useWorkbench.getState()),
       confirmed: selRahwaliConfirmed(useWorkbench.getState()),
+      mode,
     })
 
     return () => {
       cy.destroy()
       cyRef.current = null
     }
-  }, [select])
+  }, [graph, mode, select])
 
   // rewire (edges/statuses/labels only) when state changes — layout never moves
   useEffect(() => {
     const cy = cyRef.current
     if (!cy) return
-    syncGraph(cy, { selected, moved, confirmed })
-  }, [selected, moved, confirmed])
+    syncGraph(cy, { selected, moved, confirmed, mode })
+  }, [graph, selected, moved, confirmed, mode])
 
   return (
     <div style={{ position: 'absolute', inset: 0, paddingTop: 52 }}>

@@ -4,9 +4,14 @@
 import { Rail } from '@/components/rail/Rail'
 import { Stage } from '@/components/stage/Stage'
 import { Panel } from '@/components/panel/Panel'
-import { Drawer } from '@/components/drawer/Drawer'
+import { DrawerHost } from '@/components/drawer/DrawerHost'
+import { ModeToggle } from '@/components/dev/ModeToggle'
+import { useLiveSync } from '@/api/hooks'
 
 export default function App() {
+  // LIVE mode: mirror GET /view into the store so the stage can render real data.
+  // A genuine no-op in DEMO mode (no fetch, liveView stays null) — demo untouched.
+  useLiveSync()
   return (
     <div
       className="relative flex h-screen w-screen overflow-hidden bg-bg text-text"
@@ -15,7 +20,8 @@ export default function App() {
       <Rail />
       <Stage />
       <Panel />
-      <Drawer />
+      <DrawerHost />
+      {import.meta.env.DEV && <ModeToggle />}
     </div>
   )
 }

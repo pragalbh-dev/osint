@@ -54,7 +54,9 @@ export const api = {
   node: (id: string) => req<unknown>(`/node/${encodeURIComponent(id)}`),
   ask: (body: AskRequest) => post<AskAnswer>('/ask', body),
   ingest: (body: IngestRequest) => post<IngestResult>('/ingest', body),
+  // Each /hitl/* verb applies the decision and returns the FULL rebuilt graph, so the
+  // caller can mirror it straight into the store (badge drop + "new answer" fall out).
   hitl: (verb: 'merge' | 'status' | 'alert', body: HitlDecision) =>
-    post<unknown>(`/hitl/${verb}`, body),
+    post<GraphView>(`/hitl/${verb}`, body),
   config: (section: string, body: ConfigWrite) => post<ConfigWriteResult>(`/config/${section}`, body),
 } as const

@@ -18,6 +18,7 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 export function WatchView() {
   const backToZero = useWorkbench((s) => s.backToZero)
+  const mode = useWorkbench((s) => s.mode)
 
   return (
     <div>
@@ -45,6 +46,16 @@ export function WatchView() {
       <div className="mt-4 text-[11px] leading-[1.5] text-text-faint">
         Read-only in this build · definitions are user-set, not hardcoded.
       </div>
+
+      {/* LIVE: defining/arming a tripwire needs a config read-modify-write endpoint (the
+          whole observables list is replaced on write, and there's no GET to read it first)
+          — filed for the API session. Demo never shows this note. */}
+      {mode === 'live' && (
+        <div className="mt-[14px] rounded border border-dashed border-hairline-strong px-[13px] py-[11px] text-[11px] leading-[1.55] text-text-faint">
+          Arming a new tripwire live is pending a config read/modify/write endpoint (filed).
+          Fired tripwires still surface into Review as their alerts ride in with the graph.
+        </div>
+      )}
     </div>
   )
 }
