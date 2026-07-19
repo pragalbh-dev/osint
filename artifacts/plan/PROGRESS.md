@@ -18,7 +18,7 @@
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | in-review | [#12](https://github.com/pragalbh-dev/osint/pull/12) | F0 | — |
 | INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | in-review | [#17](https://github.com/pragalbh-dev/osint/pull/17) | F0 (+DATA-C soft) | — |
-| API | FastAPI layer | 2 | in-review | [#PR](https://github.com/pragalbh-dev/osint/pulls) | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
+| API | FastAPI layer | 2 | in-review | [#25](https://github.com/pragalbh-dev/osint/pull/25) | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
 | SHIP | Production packaging & deploy | 2 | not-started | — | API (+X0, DATA-C, INGEST) | — |
 
