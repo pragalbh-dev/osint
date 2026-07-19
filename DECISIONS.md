@@ -803,3 +803,139 @@ canonicalizer — for the corroboration-co-location case; the two decisions conv
   fields (the "trivial follow-up" that block deferred) + added `symmetric`/`extractor`, and tightened
   `manufactures` to Mfr→Variant; `edge_direction.py` (direction) and `chanakya/ontology.py` (predicate
   re-lane) are complementary and both read the same ontology `from`/`to`.
+
+---
+
+## INGEST — in-document coreference clustering, pass 1 of 2 (2026-07-19, `feat/ingest-coref`)
+
+Implements the **INGEST half** of `tmp/conv/INGEST-RESOLVE-in-document-coreference-clustering-PROPOSAL.md`
+(Option B, derived overlay). Scope set by the user: **emit + persist only** — RESOLVE honouring the clusters
+is a deliberate follow-on ("reconcile RESOLVE to the new INGEST thing"). Handoff:
+`tmp/conv/INGEST-to-RESOLVE-coreference-handoff.md`.
+
+**Trigger satisfied empirically (the proposal's own go/no-go).** On the rebuilt view, **86 of 258 nodes
+(33%) are `unknown`-type dangling relation endpoints** — including `CPMIEC` / `China Precision Machinery
+Import-Export Corporation`, `BIRM` / `Beijing Institute of Radio Measurement`, `CASIC` / `China Aerospace
+Science and Industry Corporation`. The coreference leak the proposal predicted is real and large, so this
+was built on measurement, not on the argument alone.
+
+- **The cluster rides its own predicate `coref-same-as`, NOT `same-as`.** *Principle:* "don't route a
+  decision made with more information through a layer that has less." `resolve.scoring._IDENTITY_PREDICATES`
+  already weighs `same-as`/`aka`/… as **one term of `merge_score`**, so writing the cluster there would
+  silently dilute a context-licensed extractor decision into a partial score that attribute-dissimilarity
+  can outvote — i.e. exactly the option the proposal rejected. On its own lane it is provably inert to
+  today's scorer (asserted in `test_coref_lane_is_inert_to_the_resolvers_merge_scoring`), so this slice
+  changes **no** merge behaviour, and the eventual honor policy keys on a signal that cannot be confused
+  with ordinary identity scoring. *Rejected:* a bare `same-as` triple (dilution, above); a new first-class
+  cluster record in the F0-owned schema (cleaner model, but cross-lane blast radius through store+rebuild
+  for a slice nothing consumes yet — user chose the reversible option).
+- **Pass 2 lives inside `extract_document`, not the lane.** *Principle:* KEYLESS ≡ LIVE. Both callers — the
+  live lane and `seed._extract_source` (the frozen-bundle recorder) — go through `extract_document`, so they
+  inherit the pass in lockstep and offline can never drift from live. It cannot live in `_finalize`, which is
+  the pure no-LLM pass (gate G1).
+- **DORMANT BY DEFAULT** (block commented out in `config/credibility.yaml`). *Principle:* don't pay a cost
+  with no payoff. Enabling costs a **second extraction call per document** and re-records every frozen
+  bundle, while nothing consumes the clusters until the honor policy lands. Turn it on *with* that policy.
+  An explicitly empty `categories: []` means dormant, never a silent fall-back to "all".
+- **Undeclared endpoints are typed from the ontology's edge domain/range.** *Principle:* keep the rail
+  biting where it matters. Most real coreferent mentions reach the graph *only* as relation endpoints, so
+  typing them `unknown` would disable the same-type rail exactly where it is needed — a caught bug: a
+  proposal merging `CPMIEC` with `HQ-9/P` was accepted until `manufactures` (manufacturer→variant) typed
+  them apart.
+- **`kind` follows what the claim can cite:** `inference` with `premises` naming the member mentions when a
+  member is a declared entity; `observation` when the whole cluster is undeclared endpoints (no upstream
+  claim exists to cite, and an explicit "… (CPMIEC)" equivalence is something the document *states*).
+  *Principle:* report what a claim actually rests on — inventing a premise to keep one uniform kind would be
+  a provenance lie. Dropping such clusters instead was tried and rejected: it silently discards the dominant
+  real-corpus case.
+- **Mention-keyed provenance on every relationship claim** (`_subject_mention`/`_object_mention` → the entity
+  claim that named each endpoint, alongside the verbatim surface string). User explicitly pulled this into
+  this slice. Additive and inert (today's rebuild reads the strings), but it means a later split has each
+  relation already anchored — zero re-inference. The refs are **positional**, so `edge_direction` swaps them
+  whenever it reorients a triple, and one shared `dedup.remap_claim_refs` now rewrites *every* cross-claim
+  reference (premises, targets, mention refs) in all three id-reassignment paths — so a new reference type
+  can't be added in one path and silently dangle in another.
+
+**Known limitation (surface in the design note):** a "mention" is keyed by surface form *within a document*,
+because pass 1 already collapses same-name mentions per document. The proposal's per-occurrence mention ids
+are therefore approximated — one document using one string for two different entities is not separable. This
+is an under-reach, never an over-merge.
+
+**Design-doc tails to enrich:** `spine/02` — extraction is now **two passes** (fill, then in-document
+coreference), and the claim carries mention-keyed endpoint provenance. `spine/03` — RESOLVE gains a
+prospective authoritative in-document signal that shortcuts the attribute scorer (pending the honor policy).
+
+---
+
+## RESOLVE — honouring in-document coreference, pass 2 of 2 (2026-07-19, `feat/ingest-coref`)
+
+Completes the coreference feature by reconciling it with the **post-Phase-3** resolver (PR #35). Handoff +
+the full before/after numbers: `tmp/conv/INGEST-to-RESOLVE-coreference-handoff.md`.
+
+**Reassessment first — the case for this feature shrank, and that is recorded rather than glossed.** Phase 3
+took `unknown` nodes 86 → **3** and merges 5 → **53**, resolving `CPMIEC`, `BIRM`/`Beijing Institute of Radio
+Measurement` and `CASIC` deterministically via endpoint-as-mention + a containment/acronym bootstrap. Those
+were the motivating examples in the INGEST-half decision block above; **a deterministic rule beats an LLM
+pass wherever it reaches the answer**, so the honest residual is narrower: of the 9 remaining queue pairs,
+~4 are genuine equivalences a quote could settle (two of them *descriptive ↔ designator* pairs sharing no
+token — the slice no string method can reach) and 5 are traps that must stay apart.
+
+- **`EXPLICIT_EQUIVALENCE` may bootstrap; `NAME_VARIANT` / `UNAMBIGUOUS_ANAPHOR` stay raise-only.** *User
+  decision (options template).* This knowingly crosses Phase-3's **D-2.5** raise-only rule for one narrow
+  category, justified because a coreference claim is *not* an ordinary identity assertion: it is a reading
+  of one document's own discourse that must **quote the licensing span**. What the document *states* can
+  merge; what the extractor *interprets* goes to a human. *Rejected:* full authoritative (reverses D-2.5
+  outright and puts anaphora — the riskiest category — into automatic merging); pure raise-only (safe, but
+  silently clips the proposal's thesis).
+- **Opt-in via `resolution.yaml → coref_authoritative_evidence`, empty by default.** *Principle:* config-
+  driven, and shipping a producer must never change anyone's topology by itself. "How much authority does
+  the extractor's in-document reading carry" is an operator decision, not a code literal.
+- **Authoritative ≠ unconditional.** A stated/configured `distinct-from` **drops** the pair; a type,
+  namespace, or hard-attribute contradiction **demotes** it to the analyst queue rather than deleting it —
+  the evidence still reaches a human. `scoring.has_hard_conflict` deliberately reuses the scorer's own
+  `attribute_rules`, so "what counts as a contradiction" has one definition. Absence ≠ disagreement.
+- **It joins the bootstrap, not the fixpoint.** *Principle:* put like with like — the bootstrap is where
+  direct, high-precision identity statements already live (shared hard-ID, alias equivalence, exact name,
+  containment/acronym), and it runs the same veto checks. The fixpoint's `auto` band still structurally
+  excludes the source-asserted term, so D-2.5's enforcement is untouched for every other signal.
+- **Coreference is consumed, not drawn** (`view/pipeline._assemble`), exactly as `same-as` now is: identity
+  is answered by merging or by a candidate edge, never by a third parallel edge.
+- **`Edge` carries the claim's tier-3 bag** so a triple can say something about *how it was derived*
+  without RESOLVE importing INGEST (which would drag the LLM client into `rebuild()`'s import graph).
+
+**Verified end-to-end:** with both halves enabled, a document stating "… Corporation (CPMIEC)" merges *"the
+export agency"* into it — two mentions sharing **zero** tokens, unreachable by containment, acronym or
+alias — with the coref edge consumed and merge provenance on the node. 658 pass, ruff + mypy clean.
+
+**Still OFF by default.** The RESOLVE knob is set but inert; enabling the INGEST producer costs a second
+extraction call per document and re-records every frozen bundle — **coordinate with EVAL's re-record**.
+
+**Design-doc tails to enrich:** `spine/03` — RESOLVE now has three identity channels (deterministic
+bootstrap, raise-only proposals, and opted-in authoritative in-document coreference), and the bootstrap is
+the documented home for direct identity statements.
+
+### Amendment (same branch, pre-merge): shipped fully gated, and a demo collision found
+
+- **`coref_authoritative_evidence` ships EMPTY, not `[EXPLICIT_EQUIVALENCE]`.** The policy decision above
+  stands and is fully built + tested; what changed is the shipped *default*. Two reasons:
+  1. **Independent switches.** The producer is dormant; a pre-set honor policy would mean enabling the
+     producer silently switches auto-merging on in the same motion — a loaded gun, not two gates.
+  2. **A concrete collision, found by going looking for one.** `d10_sat_cloud_gap` states *"HT-233 (H-200)
+     engagement radar array"* — a textbook `Full Name (SHORT)` apposition, exactly what
+     `EXPLICIT_EQUIVALENCE` is built to catch. But that orphan alias is a **deliberate demo beat an analyst
+     is meant to earn** (`cluster._descriptor_extension` says so in as many words). Auto-merging it would
+     have silently deleted the beat. *Not measured* — the producer is dormant, so this is an exact pattern
+     match, not an observation; that is precisely why it must be measured before opting in.
+
+  Raise-only turns out to be the *better* demo behaviour anyway: the pair reaches the analyst queue **with
+  its licensing quote**, so the human still earns the merge but is handed the exact sentence that justifies
+  it — triage plus citation, which is what the brief grades, rather than an automatic merge.
+
+- **Order of operations when enabling** (all three, together, with EVAL): enable the producer → re-record
+  bundles → measure the false-merge rate on the 6 frozen scenarios (HT-233/H-200 explicitly) → only then
+  consider opting a category into `coref_authoritative_evidence`.
+
+**Design-note disclosure worth carrying:** the strongest honest framing of this feature post-Phase-3 is not
+"it finds merges" — Phase 3's deterministic rules absorbed most of that — but "it reaches the *non-lexical*
+pairs nothing else can, and it hands the analyst a citation for the rest." A deterministic rule beats an
+LLM pass wherever it reaches the answer; the LLM's value is the slice where no string comparison exists.

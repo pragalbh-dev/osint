@@ -650,6 +650,11 @@ class _Emitter:
     # name -> entity_type of every entity emitted *for this document*, so a relation's endpoints can be
     # typed from the entities the same document mentioned (write-time endpoint-type recovery).
     _entity_types: dict[str, str] = field(default_factory=dict)
+    # name -> the claim id of the *first* entity claim emitted for that name in this document: the
+    # document-local **mention id**. Relationship claims carry it per endpoint (mention-keyed provenance),
+    # so a relation stays anchored to the mention that named it — and follows that mention automatically
+    # if the entity is later split. First-writer-wins, mirroring ``_entity_types``, so it is deterministic.
+    _entity_claim_ids: dict[str, str] = field(default_factory=dict)
 
     def location(self, raw: str | None, *, surface_format: str | None = None) -> Location | None:
         """Normalize a stated location, injecting the doc's geocoder — the one location call-site.
@@ -663,7 +668,8 @@ class _Emitter:
 
     def _emit(self, payload: ClaimPayload, asserts: str, ref: DocRef, *,
               kind: str = "observation", polarity: str = "positive",
-              event_time: DateValue | None = None, attributes: dict[str, Any] | None = None) -> None:
+              event_time: DateValue | None = None, attributes: dict[str, Any] | None = None) -> str:
+        """Freeze one claim and return its **provisional** id (the document-local mention/claim handle)."""
         self._n += 1
         cid = make_claim_id(_sanitize_doc_token(self.source_id), _locator(ref), index=self._n)
         attrs = _prune(attributes) if attributes else {}
@@ -681,15 +687,17 @@ class _Emitter:
             extraction=Extraction(method="llm", version=self.model_id, model_conf=1.0),
             attributes=attrs or None,
         ))
+        return cid
 
     def entity(self, entity_type: str, name: str, ref: DocRef, *, attrs: dict[str, Any] | None = None,
                event_time: DateValue | None = None, attributes: dict[str, Any] | None = None) -> None:
         self._entity_types.setdefault(name, entity_type)  # first writer wins → deterministic recovery
         attributes = self._offontology(self.node_types, entity_type, attributes)
-        self._emit(
+        cid = self._emit(
             EntityDescriptor(entity_type=entity_type, name=name, attrs=_prune(attrs or {})),
             "entity", ref, event_time=event_time, attributes=attributes,
         )
+        self._entity_claim_ids.setdefault(name, cid)  # this document's mention id for ``name``
 
     def event(self, event_type: str, ref: DocRef, *, participants: list[str] | None = None,
               time_interval: DateValue | None = None, location: Location | None = None,
@@ -717,12 +725,35 @@ class _Emitter:
         Never re-lanes: identity claims (``same-as`` / ``distinct-from`` from stated aliases/designators)
         and deterministic structural role-edges keep the exact predicate they were given. LLM-asserted
         relationships go through :meth:`relation`, which re-lanes onto the endpoint-implied edge first.
+
+        Each endpoint also carries the **mention** that named it (:meth:`_mention_refs`) whenever this
+        document emitted an entity claim for that surface form — mention-keyed provenance, added on top of
+        the verbatim strings, never in place of them.
         """
         attributes = self._offontology(self.edge_types, predicate, attributes)
+        attributes = self._mention_refs(attributes, subject, obj)
         self._emit(
             Triple(subject=subject, predicate=predicate, object=obj, object_value=object_value),
             "relationship", ref, polarity=polarity, event_time=event_time, attributes=attributes,
         )
+
+    def _mention_refs(self, attributes: dict[str, Any] | None, subject: str,
+                      obj: str) -> dict[str, Any] | None:
+        """Anchor each endpoint to the mention (entity claim) that named it, where this doc has one.
+
+        Positional by construction — ``_subject_mention`` describes ``Triple.subject`` — so any later
+        reorientation must swap them (``edge_direction.swap_mention_refs``). An endpoint the document
+        never declared as an entity (a bare string in a relation) simply gets no ref: the surface form on
+        the payload stays the only handle, exactly as before.
+        """
+        refs = {
+            edge_direction.SUBJECT_MENTION_ATTR: self._entity_claim_ids.get(subject),
+            edge_direction.OBJECT_MENTION_ATTR: self._entity_claim_ids.get(obj),
+        }
+        refs = {k: v for k, v in refs.items() if v is not None}
+        if not refs:
+            return attributes
+        return {**(attributes or {}), **refs}
 
     def relation(self, subject: str, predicate: str, obj: str, ref: DocRef, *,
                  subj_type: str | None = None, obj_type: str | None = None,
@@ -1459,4 +1490,13 @@ def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
         report_time=report_time, ingest_time=ingest_time, model_id=client.model_id,
         geocoder=geocoder,
     )
-    return claims
+    # Pass 2 — in-document coreference (dormant unless configured). Additive by construction: pass 1's
+    # claims are returned untouched and the cluster rides alongside them on its own lane. Living here
+    # rather than in the lane means BOTH callers inherit it in lockstep — the live ingest path and the
+    # keyless bundle-recording path (``seed._extract_source``) — so offline can never drift from live.
+    from chanakya.ingest import coref  # local: keeps the pass off the module import graph
+
+    return claims + coref.propose_coreference(
+        claims, loaded=loaded, source_id=source_id, config=config, client=client,
+        report_time=report_time, ingest_time=ingest_time,
+    )

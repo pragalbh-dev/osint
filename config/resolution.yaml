@@ -86,6 +86,32 @@ identity_source_weight_default: 1.0  # weight for a source the registry has neve
 identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analyst's time. 0.0 = surface them
                                      # all (recall-biased triage); raise it if the merge queue ever floods.
 
+# In-document coreference (INGEST extraction pass 2, ingest/coref.py): which evidence categories may
+# BOOTSTRAP (auto-merge) rather than merely raise. This is the one signal allowed past the raise-only rule
+# above, because it is qualitatively different: the extractor read THIS document's own discourse and must
+# quote the span that licenses the grouping — information no string comparison downstream can recover.
+#
+# Only EXPLICIT_EQUIVALENCE is opted in: the document literally *states* the identity ("Full Name (SHORT)",
+# "also known as", an apposition). NAME_VARIANT and UNAMBIGUOUS_ANAPHOR are the extractor *interpreting*
+# rather than the document asserting, so they stay raise-only and reach the analyst queue with their quote.
+# Empty list => everything coreference proposes is raise-only (Phase-3 D-2.5 behaviour, unchanged).
+#
+# Still gated by every other rail: a distinct-from veto drops the pair outright, and a type / namespace /
+# hard-attribute contradiction demotes it to the queue instead of merging.
+#
+# SHIPPED EMPTY — every coreference cluster is raise-only, i.e. Phase-3 D-2.5 behaviour, unchanged. Two
+# reasons, and the second is the sharp one:
+#   1. Independent switches. The producer (credibility.yaml -> coreference) is dormant; if this were
+#      pre-set, enabling the producer would silently switch auto-merging on in the same motion.
+#   2. A known collision. d10_sat_cloud_gap states "HT-233 (H-200) engagement radar" — textbook
+#      EXPLICIT_EQUIVALENCE — but that orphan alias is a deliberate demo beat an analyst is meant to EARN
+#      (see cluster._descriptor_extension). Auto-merging it would silently delete the beat. Raise-only
+#      keeps it: the pair reaches the queue WITH its licensing quote, so the human still decides but is
+#      handed the exact sentence. Measure the false-merge rate on the frozen scenarios before opting in.
+#
+# To opt in (deliberately, with the producer): coref_authoritative_evidence: [EXPLICIT_EQUIVALENCE]
+coref_authoritative_evidence: []
+
 # Open-world name triggers (P3.3): the tail the alias table + entity registry have NEVER seen — a document
 # naming the same thing more verbosely, or by its initials. Both are high-precision BOOTSTRAP rules, so
 # these gates are what keep them honest. Unset => the trigger is simply off.

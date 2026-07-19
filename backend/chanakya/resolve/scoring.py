@@ -30,6 +30,40 @@ IDENTITY_PREDICATES = {"same-as", "same_as", "aka", "also-known-as", "marketed-a
 # trap has to remain visible to the analyst (an invisible veto is indistinguishable from a missing edge).
 DISTINCT_PREDICATES = {"distinct-from", "distinct_from", "not-same-as"}
 
+# ── in-document coreference (produced by INGEST extraction pass 2, ``ingest/coref.py``) ─────────
+# The strings are duplicated rather than imported: ``rebuild()`` imports this package, and ``ingest``
+# reaches the LLM client, so resolve must never import it (the same reason IDENTITY_PREDICATES are
+# strings). A coreference claim is NOT an ordinary identity assertion — it is the extractor reporting
+# what THIS document's own discourse treats as one entity, with a verbatim span that licenses it. That
+# is strictly more information than a bare ``same-as``, which is why one category of it may bootstrap
+# (see ``ResolveConfig.coref_authoritative_evidence``) instead of merely raising.
+COREF_PREDICATE = "coref-same-as"
+#: Tier-3 keys the producer stamps on each coreference claim.
+COREF_EVIDENCE_ATTR = "_coref_evidence"
+COREF_QUOTE_ATTR = "source_quote"
+
+
+def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """True if a configured hard-conflict attribute is **stated on both sides and different**.
+
+    The over-merge rail for an *authoritative* coreference merge (proposal §4): a cluster that looks
+    coreferent but whose entities disagree on a hard attribute (origin country, designator, a numeric
+    spec beyond tolerance) must go to an analyst rather than merge. Deliberately reads the same
+    ``attribute_rules`` the scorer's conflict penalty uses, so "what counts as a contradiction" has one
+    definition. An attribute stated on only one side is **not** a conflict — absence is not disagreement.
+    """
+    if a.etype != b.etype:
+        return True
+    rules = cfg.attribute_rules(a.etype)
+    for k in rules.get("conflict", []):
+        va, vb = a.attrs.get(k), b.attrs.get(k)
+        if va is not None and vb is not None and va != vb:
+            return True
+    for field_name, spec in rules.get("numeric_conflict", {}).items():
+        if _numeric_conflict(a.attrs.get(field_name), b.attrs.get(field_name), spec.get("rel_tol")):
+            return True
+    return False
+
 Canonical = Callable[[str], str]
 
 

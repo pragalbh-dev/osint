@@ -28,7 +28,7 @@ from chanakya.credibility import (
 )
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
-from chanakya.resolve import IDENTITY_PREDICATES, location_attr, resolve
+from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
 from chanakya.schemas import (
     AssertionInput,
     ClaimRecord,
@@ -281,7 +281,11 @@ def _assemble(
             # designators resolution had just reconciled. The claim itself is untouched in the evidence
             # log and still visible in the merge breakdown that cites it. `distinct-from` is the exact
             # opposite and stays drawn — an invisible veto is indistinguishable from a missing edge.
-            if payload.predicate in IDENTITY_PREDICATES:
+            # In-document coreference is the same kind of statement (an answer about identity), reached by
+            # reading one document's discourse rather than by asserting an alias, so it is consumed on the
+            # same terms: it either became a merge or it is sitting in the candidate queue with its
+            # licensing quote. Drawing it too would re-introduce exactly the twin-node picture above.
+            if payload.predicate in IDENTITY_PREDICATES or payload.predicate == COREF_PREDICATE:
                 continue
             # Remap endpoints through the merge map so build_instance_edges (which reads the raw
             # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.

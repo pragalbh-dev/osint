@@ -89,6 +89,11 @@ class Edge:
     # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
     # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
     source_id: str | None = None
+    # The claim's tier-3 bag, carried through so a triple that says something *about how it was derived*
+    # can be read here. Currently that is in-document coreference: its evidence category decides whether
+    # the pair may bootstrap or only raise, and its licensing quote is the analyst's rationale. Carried
+    # verbatim (never interpreted at build time) so a new signal needs no change to this layer.
+    attributes: dict[str, Any] | None = None
 
 
 @dataclass
@@ -128,6 +133,7 @@ def build(claims: list[ClaimRecord]) -> EntityGraph:
                     edge_instance=rr.edge_instance,
                     latest_iso=canonical_iso_bounds(c.event_time)[1],
                     source_id=c.source_id,
+                    attributes=c.attributes,
                 )
             )
     return EntityGraph(entities=entities, edges=edges)
