@@ -1,0 +1,58 @@
+@import './tokens.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  letter-spacing: -0.005em;
+}
+
+a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+a:hover {
+  color: #7ab8ff;
+}
+
+/* thin dark scrollbars to fit the instrument aesthetic */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  border-radius: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Leaflet dark surround — the container matches the instrument, tiles carry the map */
+.leaflet-container {
+  background: var(--bg);
+  font-family: var(--mono);
+}
+.leaflet-control-attribution {
+  background: rgba(16, 19, 21, 0.7) !important;
+  color: var(--text-faint) !important;
+}
+.leaflet-control-attribution a {
+  color: var(--text-dim) !important;
+}

@@ -1,0 +1,5 @@
+node_modules
+dist
+.contract-watch.sh
+*.local
+.DS_Store
