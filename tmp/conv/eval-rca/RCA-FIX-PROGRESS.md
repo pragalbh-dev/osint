@@ -32,18 +32,21 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
   `PHASE3-RESOLVE-alias-candidates-and-ambiguities.md` (candidates + ambiguities to adjudicate).
 - **Phase 4 — derived + surfaces: PENDING.** `handoff-score.md` · `handoff-arch.md` (lens anchors via
   registry; materiality-filter schema) · `handoff-monitor.md` · `handoff-ask.md` (crash-guard + honest refusal).
-- **Cross-cutting (DATA + EVAL): analysis DONE, answer_key edits PENDING.**
-  - **Answer-key grounding — audit + handoff DONE (2026-07-19, branch `fix/answer-key-grounding`, own PR).**
-    Full node/edge sweep of `answer_key.json` vs all 25 primary docs: `ANSWER-KEY-GROUNDING-AUDIT.md`;
-    analyst-perspective owner handoff + exact edit spec: `handoff-answer-key-grounding.md`. Verdict: ~85%
-    cleanly sourced. Ratified fixes: D-G1 (remove un-sourced `mfr_casic→comp_ht233`; **supersedes**
-    `PHASE1-DATAC-EVAL-answer_key-reconciliation.md` Item 1), D-G2 (soften 3× `based-at` to observed +
-    derived, per-edge confidence), D-G3 (cosmetics), D-G4 (materiality already honest — no key change).
-    **The edits themselves are DATA-C/EVAL's to apply — this session produced the audit + handoff and did
-    NOT touch `answer_key.json`.**
-  - Still open: `PHASE1-DATAC-EVAL-answer_key-reconciliation.md` (id unification — separate from grounding) ·
-    `EVAL-RCA-corpus-grounding-basing-and-materiality.md` (subsumed by the audit above; its Item-2 "confirmed
-    chokepoint" wording is a slip — the key already grades it `candidate`).
+- **Cross-cutting (DATA + EVAL): answer_key edits ✅ APPLIED; downstream (RESOLVE/SCORE/ASK) PENDING.**
+  - **Audit + handoff DONE (PR #30, merged).** Full node/edge sweep: `ANSWER-KEY-GROUNDING-AUDIT.md`;
+    analyst handoff + edit spec: `handoff-answer-key-grounding.md`. Verdict: ~85% cleanly sourced.
+  - **answer_key edits ✅ APPLIED (2026-07-19, branch `fix/answer-key-grounding-apply`, own PR)** at the
+    user's direction (ratified DATA/EVAL reconciliation). D-G1 = **A1 remove** the un-sourced
+    `mfr_casic→comp_ht233` edge (A2 rejected: ontology locks `design-authority-for` to techdata→variant) +
+    re-lane 23rd_ri → `supplies-component` + worked-query terminates at `comp_ht233`; D-G2 = 3× `based-at`
+    now `basis:derived` with `observed_layer`/`attribution_layer`; D-G3 = cosmetics; D-G4 = no change
+    (chokepoint stays `candidate`; verified no `foreign_control` seed). Chaff scenario: 0 edges, untouched.
+  - **Downstream PENDING:** `handoff-resolve-score-grounding.md` — RESOLVE derives the two-layer `based-at`
+    + CASIC-via-program (RES-G1); SCORE basing-stale / supersede-floor / 2-signal gate / candidate-chokepoint
+    (SC-G1..G4). **NEW coupling:** ASK hero-path code (`agent/loop.py`) embeds the same false narrative →
+    ASK fix (overlaps `handoff-ask.md`; does NOT block this PR — fixture-based tests untouched).
+  - Still open (separate): `PHASE1-DATAC-EVAL-answer_key-reconciliation.md` (id unification only — grounding
+    part superseded by D-G1); `EVAL-RCA-corpus-grounding-basing-and-materiality.md` (subsumed by the audit).
 
 ## Handoff index
 | Doc | Owner | Phase | Status |
@@ -63,8 +66,9 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
 | `../PHASE1-DATAC-EVAL-answer_key-reconciliation.md` | DATA-C/EVAL | 1→x | pending (id-unification part only; grounding part superseded by D-G1) |
 | `../INGEST-edge-direction-UNCOMMITTED-risk.md` | INGEST | 2 | pending |
 | `../EVAL-RCA-corpus-grounding-basing-and-materiality.md` | DATA-C/EVAL | 2/3 | subsumed by `ANSWER-KEY-GROUNDING-AUDIT.md` |
-| `handoff-answer-key-grounding.md` | DATA-C/EVAL | x | **audit+handoff DONE; answer_key edits pending** |
+| `handoff-answer-key-grounding.md` | DATA-C/EVAL | x | **answer_key edits ✅ APPLIED (fix/answer-key-grounding-apply)** |
 | `ANSWER-KEY-GROUNDING-AUDIT.md` | DATA-C/EVAL | x | reference (full node/edge grounding sweep) |
+| `handoff-resolve-score-grounding.md` | RESOLVE/SCORE (+ASK note) | 3/4 | **pending — derive the softened oracle** |
 
 ## Verify after each phase
 `export CHANAKYA_ROOT=<worktree>; backend/.venv/bin/python tmp/conv/eval-rca/rca_evidence.py` — regenerates

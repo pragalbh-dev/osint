@@ -1,5 +1,37 @@
 # EVAL RCA handoff → DATA-C + EVAL: ground the answer_key to the corpus (analyst reasoning + exact edits)
 
+> **STATUS — APPLIED to `answer_key.json` on branch `fix/answer-key-grounding-apply` (2026-07-19).**
+> The DATA-C/EVAL edits below were executed by the grounding session at the user's direction (the
+> ratified DATA/EVAL reconciliation — no *code* agent touched the oracle). What actually changed:
+> - **D-G1 → decision A1 (remove).** Deleted the `mfr_casic --manufactures--> comp_ht233 (confirmed)`
+>   edge. Chosen over re-typing to `design-authority-for` because the ontology locks that edge to
+>   `techdata_authority → variant` — a manufacturer→component design-authority edge would be an ontology
+>   contract change (widening domain/range, re-opening Phase-1 edge-uniqueness, pulling in INGEST). Removal
+>   is ontology-clean: a manufacturer reaches a *component* only via `supplies-component` (a maker claim),
+>   and CASIC isn't a confirmable maker — so it correctly has no direct radar edge. Also re-laned
+>   `mfr_23rd_ri manufactures comp_ht233 (possible)` → `supplies-component (possible)`, and rewrote
+>   `worked_query.expected_path` to **terminate at `comp_ht233`** (the chokepoint), with CASIC reached as
+>   the program prime via `var_hq9p`. `expected_answer` was already honest → unchanged.
+> - **D-G2 → applied.** The three `based-at` edges now carry `basis: "derived"` + explicit
+>   `observed_layer` (equipment@site, imagery confidence) and `attribution_layer` (unit↔site, probable),
+>   with notes. Graded `status` kept (Karachi confirmed-occupancy, Rawalpindi derived-stale, Rahwali
+>   probable→confirmed) so the hero anchor + observable still work; `supersedes` marked derived-with-floor.
+> - **D-G3 → applied.** `unit_paad` "regiment"→"unit/formation"; `unit_hq9b` name de-PAF'd + hedged
+>   `operator_branch` note; `sustained-by` note flagging d06 is a PAF/system-level tender, not unit-specific.
+> - **D-G4 → verified, no change.** Chokepoint stays `candidate`; confirmed no `foreign_control: true`
+>   seed exists (`config/entities.yaml` explicitly defers it; `credibility.yaml` `gated_attrs` is the
+>   mechanism, not a seed). Chaff scenario has 0 edges — nothing to change there.
+>
+> **DOWNSTREAM still open (this is what remains):** RESOLVE + SCORE must be able to *derive* what the
+> softened oracle now expects — see `handoff-resolve-score-grounding.md`. **NEW coupling found:** the ASK
+> hero-path **code** (`backend/chanakya/agent/loop.py::run_fixed_hero_path`, L167-174) is itself coded to
+> the false narrative — it finds the chokepoint's maker via a `manufactures` edge and *defaults* `mfr_id`
+> to `"mfr_casic"`, i.e. it will assert CASIC as the HT-233 maker. The ASK unit tests run against a
+> self-contained fixture (`backend/tests/agent/fixtures.py`), not the oracle, so this edit does **not**
+> break them — but ASK needs its own fix (find the maker via `supplies-component`, surface the Known Gap
+> honestly, reach CASIC as prime). This overlaps the existing `handoff-ask.md` (Phase 4). Flagged there +
+> in `handoff-resolve-score-grounding.md` §ASK-coupling.
+
 **From:** grounding-audit session, 2026-07-19 (`fix/answer-key-grounding`, off `origin/main`).
 **Owns:** **DATA-C** (answer_key content + corpus) and **EVAL** (oracle assertions). Per the working rule
 and D-C, **a code agent must not edit `answer_key.json`** — this is the deliberate DATA/EVAL reconciliation.
