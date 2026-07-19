@@ -10,7 +10,7 @@ spine/04, master §4.3).
 ``config.credibility``. These stubs contain no scoring literals.
 
 Frozen signatures:
-    score_claims(resolved_claims, sources, config) -> {claim_id: claim_credibility}
+    score_claims(resolved_claims, sources, config, decisions=None) -> {claim_id: claim_credibility}
     group_by_independence(claim_ids, claims, sources, config) -> [IndependenceGroup]
     assign_status(assertions, config) -> {element_id: AssertionAssessment}
 """
@@ -22,6 +22,7 @@ from chanakya.schemas import (
     AssertionInput,
     ClaimRecord,
     ConfigBundle,
+    DecisionRecord,
     IndependenceGroup,
     SourceRegistryEntry,
 )
@@ -31,8 +32,15 @@ def score_claims(
     resolved_claims: list[ClaimRecord],
     sources: dict[str, SourceRegistryEntry],
     config: ConfigBundle,
+    decisions: list[DecisionRecord] | None = None,
 ) -> dict[str, float]:
-    """STUB: compute no per-claim credibilities yet. SCORE fills reliability×integrity×freshness."""
+    """STUB: compute no per-claim credibilities yet. SCORE fills reliability×integrity×freshness.
+
+    ``decisions`` (the replayed decision log, optional) is SCORE's channel for analyst integrity flags:
+    an ``flag_origin`` effect must penalise **every** claim sharing that ``primary_origin_id`` — including
+    claims ingested *after* the flag (the monitoring beat) — not just the flagged element. Additive &
+    optional, so the existing ``rebuild()`` / API caller is unaffected (master §2 Rule 3).
+    """
     return {}
 
 
