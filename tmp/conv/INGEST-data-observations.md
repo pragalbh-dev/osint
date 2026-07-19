@@ -36,3 +36,15 @@ handle itself are listed at the bottom so there's no double-work.
 - **Runtime format routing.** `sources.yaml source_type` (credibility axis) and `answer_key source_class`
   (native-format axis) are not 1:1. INGEST authors a deterministic raw-text **format sniffer** (official→
   PR|NOTAM, customs-tender→BoL|tender) + documents the routing spec; no corpus change needed.
+
+## For the data agent — an ontology gap surfaced by INGEST's adversarial review
+
+4. **No generic commercial-org node type.** `config/ontology.yaml` has `manufacturer` as the only org-shaped
+   node type, so INGEST types a customs **consignee** (an importing/receiving party, e.g. a shell trading
+   company) as `manufacturer` with `role: consignee` in the attrs bag. That mis-labels a receiving party as
+   a producer on a *traversed* axis, and — since `resolution.yaml` lists `manufacturer` in
+   `high_alias_risk_types` — a shell consignee could be name-resolved into the manufacturer entity space.
+   INGEST does **not** mint any `manufactures`/`supplies-component` edge for the consignee (it only appears
+   as a `TransferEvent` participant), so an edge-following producer traversal won't reach it — hence LOW.
+   **Ask:** add a generic **commercial-org / importer** node type (e.g. `trading_company` or `organization`)
+   to `ontology.yaml` so consignees/forwarders/notify-parties get a correct type; INGEST will route to it.

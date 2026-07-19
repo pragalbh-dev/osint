@@ -416,6 +416,31 @@ section of the design note, not the build.
   `append` + `rebuild()` serialized. Rejected: assigning ids during the parallel fan-out (nondeterministic
   order → breaks G2 byte-stability).
 
+**Build decisions (feat/ingest, appended at implementation):**
+- **The lane triggers `rebuild`/`observe` via INJECTED callables, never an import (G9).** The G9 gate
+  forbids `chanakya/ingest` importing `chanakya.view`/`observe`/`resolve`/materiality-scoring; the lane
+  legitimately orchestrates rebuild+observe, so `ingest_document(rebuild_fn=, observe_fn=)` takes them as
+  params (the `/ingest` API passes the real ones). Rejected: importing the stages (fails G9) / a
+  function-local lazy import (evades the scanner but keeps the coupling). This also makes the lane offline-
+  unit-testable.
+- **Geocoding at extraction is OPT-IN (offline by default); revises the earlier "INGEST owns the bearing+
+  distance offset" note.** `adapters.normalize_location(geocoder=None)` does offline coord-canonicalisation
+  only — it never makes an unexpected live Nominatim call in the claim path (determinism / G2 / keyless).
+  The Rahwali bearing-offset for a *named* anchor is computed only when a geocoder is injected at
+  `make extract` (frozen into the bundle), else deferred to RESOLVE's gazetteer at rebuild. Recommended
+  injected geocoder = a **gazetteer-backed** offline resolver over `config/places.yaml` (byte-stable). This
+  supersedes the earlier "pure geo-math, no network at extraction" wording for named anchors. Rejected: an
+  unconditional live Nominatim call at claim-mint time (the adversarial-review HIGH finding).
+- **Imagery corroboration eligibility = an affirmative-occupancy ALLOWLIST.** The "no fabrication on an
+  empty site" guardrail gates on `occupancy_state ∈ {occupied, garrison, …}`, not a bare `"empty" in occ`
+  denylist, so "vacant"/"unoccupied"/"dormant"/blank can't slip a deployment/variant read. Rejected: a
+  substring denylist (misses reworded emptiness). (Adversarial-review HIGH.)
+- **Cross-claim references (`premises`/`targets`) are remapped in `dedup.assign_claim_ids`, not per-caller.**
+  A general fix so the imagery signature→variant inference keeps pointing at its observation in BOTH the
+  live lane and the frozen-bundle seed; the lane additionally namespaces each concurrent extraction chunk's
+  provisional ids so multiple co-located images can't collide + cross-wire. Rejected: a lane-only remap
+  (leaves the seed path broken).
+
 ### HITL — Adjudication service + writeback + cards (choice · principle invoked · alternative rejected)
 - **`reject` = forced demote (`set_status→probable`) for now; no F0-amendment.** *(User decision
   2026-07-18.)* Principle: demo-reliability + don't unilaterally change a shared contract siblings read.

@@ -17,7 +17,7 @@
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | in-review | [#12](https://github.com/pragalbh-dev/osint/pull/12) | F0 | — |
-| INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | not-started | — | F0 (+DATA-C soft) | — |
+| INGEST | Source-typed LLM extraction + live-ingest + seed bundles | 1 | in-review | feat/ingest | F0 (+DATA-C soft) | — |
 | API | FastAPI layer | 2 | not-started | — | RESOLVE, SCORE, ASK, HITL, MONITOR, INGEST | — |
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
 | SHIP | Production packaging & deploy | 2 | not-started | — | API (+X0, DATA-C, INGEST) | — |
@@ -288,3 +288,49 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
 - **Board note:** F0/DATA-C rows read stale at branch time (F0 `not-started`, DATA-C `in-review`) though
   both were merged (PR #1/#8); left others' rows untouched per Rule 4 — the amendment PR #9 has since
   corrected them, picked up on rebase.
+### INGEST (in-review, feat/ingest): Source-typed extraction + live lane + keyless bundles
+- **Shipped:** the full `chanakya/ingest/**` (12 modules, ~4.3k LOC, 172 tests; whole suite 337 pass, all
+  gates G1–G12 green, ruff+mypy clean): source-typed **loaders** (`text, regions[]` + exact char-span+line /
+  page+bbox provenance; Azure DocIntel OCR seam + born-digital poppler fallback); a **2-method extraction
+  client** (Gemini-primary + Anthropic + scripted; provider-native forced-tool function-calling, no sampling
+  params); **6 native-format extraction schemas + transformers** (prose / NOTAM / customs-BoL / tender /
+  social / imagery-geoint) with a deterministic format sniffer, node-typing, 3-tier attribute promotion,
+  verbatim-first `doc_ref`, and the **extract-raw guardrail**; **Date/Location/Quantity adapters** (explicit
+  pre-append, opt-in geocoding); **image two-hash** (sha256 + PDQ + EXIF); the **subject-blind imagery VLM
+  lane** (observation + guided signature→variant inference); **within-doc dedup + byte-stable readable ids**
+  (with premise/target remap); the **concurrent live lane** (`ingest_document`: parallel extraction
+  across+within docs → serial single-writer append → **injected** rebuild/observe); the **keyless seed**
+  (`ingest_bundle`, `seed_store_from_bundles`, `extract_corpus` byte-stable bundles + `python -m
+  chanakya.ingest` CLI).
+- **Decisions (principle → choice → alt rejected):**
+  - *G9 source-typed + decoupled* → the lane triggers rebuild/observe via **injected callables**, never an
+    import (the `/ingest` API passes `chanakya.view.rebuild` + `chanakya.observe.evaluate`); the G9 gate
+    caught the coupling, and the DI both satisfies it and makes the lane trivially unit-testable. Rejected:
+    importing the stages.
+  - *Native record format, not credibility `source_type`* → 6 format-keyed schemas + a deterministic text
+    sniffer. Rejected: one schema per source_type (mis-routes NOTAM/tender).
+  - *All-optional = anti-fabrication* → permissive schemas (no strict/required), empty fill → 0 claims;
+    imagery count is a range-with-abstention (no single-integer slot → a fabricated count is structurally
+    impossible).
+  - *Concurrency without breaking determinism (G2)* → parallel extraction (`asyncio.to_thread` under a
+    semaphore) then a serial deterministic id pass; ids byte-stable regardless of the race.
+  - *Fix the general case, not the caller* → premise/target remap lives in `dedup.assign_claim_ids` (covers
+    the lane AND the seed), not a per-caller patch.
+- **Adversarial review:** a 6-lens review (→ verify) found 7 confirmed defects; **5 fixed** (imagery empty-
+  site guardrail → affirmative-occupancy allowlist; provisional-id collision → per-chunk namespacing;
+  network-in-claim-path → opt-in offline geocoding; event-type mistype → inferred from participants;
+  stale-bundle drift → prune). Regression tests added.
+- **Deviations from plan:** `doc_ref` shorthand `{file,span|row|frame}` → the full frozen `DocRef`;
+  `observe.evaluate` is 3-arg `(prev_view, view, config)` (not the doc's 1-arg) — the lane binds the real
+  signature; extraction ontology-org catch-all = `manufacturer` (no generic org type — see follow-ups).
+- **Follow-ups:** (1) **real frozen bundles** need a keyed `make extract` (no API key in env now) — the seed
+  CODE + CLI are built + tested with scripted clients; the committed `corpus/scenarios/*/claims/*.json` await
+  the user's Gemini model id + key. (2) **geocoding is opt-in/offline by default** — for byte-stable Rahwali
+  coords, inject a **gazetteer-backed geocoder** (`config/places.yaml`) at `make extract`; the bearing-offset
+  is computed only when a geocoder is injected, else deferred to RESOLVE's gazetteer. (3) the `/ingest`
+  endpoint should be a **sync `def`** (or add an async lane entrypoint) so `asyncio.run` isn't called from a
+  running loop. (4) LOW review items: the customs **consignee is typed `manufacturer`** (routed to DATA-C via
+  `tmp/conv` — needs a generic commercial-org node type); a quote-not-found `doc_ref` fallback may cite the
+  entity name's first occurrence (minor mis-cite).
+- **Gate fixtures:** none added/weakened; INGEST owns `chanakya/ingest/**` + `tests/ingest/**`. G9's meaning
+  is preserved (the lane's DI keeps it green rather than weakening the gate).
