@@ -808,11 +808,21 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
 def _emit_event(em: _Emitter, m: dict[str, Any]) -> None:
     """A prose/social ``EventMention`` → an ``EventDescriptor`` (TransferEvent / Induction / Sighting…)."""
     kind = _str(m, "event_kind")
-    event_type = _EVENT_KIND_TO_TYPE.get(kind or "", "SightingEvent")
-    participants = [p for p in (_str(m, "system"), _str(m, "supplier"), _str(m, "recipient"),
-                                _str(m, "unit")) if p]
+    supplier, recipient, unit = _str(m, "supplier"), _str(m, "recipient"), _str(m, "unit")
+    participants = [p for p in (_str(m, "system"), supplier, recipient, unit) if p]
     if not participants:
         return
+    # Infer the event TYPE from the stated participant structure when the LLM left `event_kind` empty —
+    # never blind-default a supplier→recipient transfer to a SightingEvent (which silently mis-types the
+    # supply-chain / order-of-battle edges the use case is graded on).
+    if kind:
+        event_type = _EVENT_KIND_TO_TYPE.get(kind, "SightingEvent")
+    elif supplier and recipient:
+        event_type = "TransferEvent"
+    elif unit and _str(m, "system"):
+        event_type = "InductionEvent"
+    else:
+        event_type = "SightingEvent"
     ref = _resolve_doc_ref(em.loaded, _str(m, "source_quote"), fallback=participants[0])
     when = adapters.normalize_date(_str(m, "date_text"), report_time=em.report_time)
     where = adapters.normalize_location(_str(m, "location_text"))

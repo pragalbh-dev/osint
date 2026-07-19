@@ -186,7 +186,20 @@ async def _extract_doc_claims(
     if not tasks:
         return []
     results = await asyncio.gather(*tasks)
-    claims: list[ClaimRecord] = [c for chunk in results for c in chunk]
+    # Provisional claim ids are unique only *within* one extraction call; a doc with several images makes
+    # several calls that can mint colliding provisional ids (each imagery call mints its own obs/inf pair).
+    # Namespace each chunk before ``assign_claim_ids`` remaps premises off those ids — rewriting each
+    # chunk's own inference ``premises`` / retraction ``targets`` in lockstep so the linkage survives.
+    claims: list[ClaimRecord] = []
+    for k, chunk in enumerate(results):
+        remap = {c.claim_id: f"chunk{k}-{c.claim_id}" for c in chunk}
+        for c in chunk:
+            update: dict[str, Any] = {"claim_id": remap[c.claim_id]}
+            if c.premises:
+                update["premises"] = [remap.get(p, p) for p in c.premises]
+            if c.targets is not None and c.targets in remap:
+                update["targets"] = remap[c.targets]
+            claims.append(c.model_copy(update=update))
     return _finalize(claims, doc.source_id)
 
 

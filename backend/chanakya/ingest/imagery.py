@@ -255,6 +255,10 @@ def _count_quantity(filled: dict[str, Any]) -> Quantity:
 # Framings on which a deployment/variant read is *possible* at all — an oblique/ground/map frame cannot
 # carry an overhead deployment signature, so a stated non-overhead framing suppresses the inference.
 _OVERHEAD_FRAMES = frozenset({"overhead", "satellite", "nadir", "near-nadir", "top-down", "vertical"})
+# Affirmative-occupancy allowlist for corroboration eligibility. A variant read is permitted ONLY when
+# the model's occupancy word is one of these — anything else (empty-pads / unoccupied / vacant / dormant
+# / cleared / blank / unknown) fails the gate: an empty or not-clearly-occupied site is not a deployment.
+_OCCUPIED_TOKENS = frozenset({"occupied", "garrison", "active", "deployed", "manned", "present", "occupation"})
 
 
 def _corroboration_eligible(filled: dict[str, Any], *, geometry_tokens: list[str],
@@ -268,8 +272,8 @@ def _corroboration_eligible(filled: dict[str, Any], *, geometry_tokens: list[str
     if not geometry_tokens and not features:
         return False  # nothing observed to corroborate against literature
     occ = (_str(filled, "occupancy_state") or "").lower()
-    if "empty" in occ:  # "empty-pads": an empty site is not a deployment
-        return False
+    if not any(tok in occ for tok in _OCCUPIED_TOKENS):  # allowlist: only an affirmatively-occupied site
+        return False  # empty-pads / unoccupied / vacant / dormant / blank → not a deployment (guardrail)
     if (_str(filled, "resolution_sufficiency") or "").lower().startswith("insuff"):
         return False  # resolution floor (e.g. the deliberate Sentinel-2 10 m beat)
     frame = (_str(filled, "frame_kind") or "").lower()

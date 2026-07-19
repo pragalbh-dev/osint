@@ -177,6 +177,7 @@ def extract_corpus(
     target.mkdir(parents=True, exist_ok=True)
 
     written: list[Path] = []
+    kept: set[str] = set()
     for entry in config.sources.sources:
         if not entry.citation_url or not _under_scenario(entry.citation_url, scenario):
             continue
@@ -184,4 +185,11 @@ def extract_corpus(
         out_path = target / f"{entry.source_id}.json"
         _write_bundle(out_path, claims)
         written.append(out_path)
+        kept.add(out_path.name)
+    # Prune stale bundles: a source removed from config (or re-scoped to another scenario) must not leave
+    # an orphan ``<source_id>.json`` that :func:`seed_store_from_bundles` still globs + appends — that
+    # would drift the keyless baseline away from the current config (keyless ≢ live).
+    for stale in target.glob("*.json"):
+        if stale.name not in kept:
+            stale.unlink()
     return written

@@ -627,7 +627,7 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
     if not m:
         return Location(raw=s, surface_format="relative")
     anchor_name = m.group("anchor").strip().rstrip(".,;")
-    gc = geocoder if geocoder is not None else _default_geocoder()
+    gc = geocoder  # opt-in ONLY: no injected geocoder → offline (no network in the claim path; G1/G2)
     hit = gc.geocode(anchor_name) if gc is not None else None
     if hit is None:
         return Location(raw=s, surface_format="relative", proposed_alias=anchor_name)
@@ -657,7 +657,7 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
 
 def _resolve_toponym(s: str, geocoder: Geocoder | None) -> Location:
     """Geocode a stated place name → freeze WGS84 + a candidate + the proposed alias (RESOLVE adjudicates)."""
-    gc = geocoder if geocoder is not None else _default_geocoder()
+    gc = geocoder  # opt-in ONLY: no injected geocoder → offline (no network in the claim path; G1/G2)
     hit = gc.geocode(s) if gc is not None else None
     if hit is None:
         return Location(raw=s, surface_format="toponym", proposed_alias=s)
