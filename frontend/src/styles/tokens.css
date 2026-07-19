@@ -1,0 +1,116 @@
+/* ============================================================
+   Chanakya OSINT — status visual-language tokens.
+   Authoritative values taken from the handoff mockup :root
+   (Analyst Workbench.dc.html), the primary design artifact.
+   Spec + rationale: design docs 05 (state inventory) / 06 (status tile).
+
+   THE ONE RULE:  dashed = provisional   ·   solid = settled
+   (borders AND lids AND halos). Learn once, read everywhere.
+
+   Status is carried by BORDER STYLE and FILL VALUE, never hue —
+   colourblind-safe by construction, survives a projector.
+   ============================================================ */
+
+:root {
+  /* --- surfaces: dark instrument, not a dashboard --- */
+  --bg: #0a0c0d;
+  --surface: #101315;
+  --surface-raised: #171b1e;
+  --hairline: #22282c;
+  --hairline-strong: #333c42;
+
+  --text: #e6e9ec;
+  --text-dim: #828c94;
+  --text-faint: #525c64;
+
+  /* --- the three families ---
+     chromatic teal = live knowledge · achromatic grey = history/absence
+     · coral = something is wrong. The chromatic/achromatic split survives
+     compression AND colourblindness. */
+  --live: #2fb89b;
+  --history: #6b757c;
+  --problem: #e0704a;
+  --live-rgb: 47, 184, 155;
+  --history-rgb: 107, 117, 124;
+  --problem-rgb: 224, 112, 74;
+
+  /* interactive / selected — NEVER status */
+  --accent-primary: #4a9eff;
+  --accent-primary-rgb: 74, 158, 255;
+
+  /* alert-triage severity ramp — ONLY on alert-disposition cards, always with a text label */
+  --sev-high: #e0574f;
+  --sev-watch: #d6a44a;
+  --sev-clear: #4fb477;
+
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* ===== AXIS A · STATUS → border style ===== */
+  --stroke-confirmed: 2px;
+  --stroke-probable: 1.5px;
+  --stroke-possible: 1.5px;
+  --stroke-contradicted: 2px;
+
+  --border-confirmed: 2px solid var(--live);
+  --border-probable: 1.5px dashed var(--live);
+  --border-possible: 1.5px dotted var(--live);
+  --border-contradicted: 2px solid var(--problem);
+  --border-stale: 2px solid var(--history);
+
+  /* ===== AXIS B · FRESHNESS → fill value (VSUP "confidence fog") ===== */
+  --fill-fresh: rgba(var(--live-rgb), 0.18);
+  --fill-aging: rgba(var(--live-rgb), 0.07);
+  --fill-stale: rgba(var(--history-rgb), 0.10);
+  --fill-problem: rgba(var(--problem-rgb), 0.18);
+  --fill-none: transparent; /* absence — a Known Gap has no fill */
+
+  --opacity-fresh: 1;
+  --opacity-aging: 0.72;
+  --opacity-stale: 0.55;
+
+  /* ===== AXIS D · CAP → the lid ===== */
+  --lid-offset: 6px;
+  --lid-liftable-width: 2px;
+  --lid-liftable-dash: 5 3;
+  --lid-liftable-color: rgba(var(--history-rgb), 0.85);
+  --lid-welded-width: 2.5px;
+  --lid-welded-dash: none;
+  --lid-welded-color: var(--text-dim);
+
+  /* ===== AXIS F · KNOWN GAP ===== */
+  --gap-border-confirmable: 1.5px dashed rgba(var(--history-rgb), 0.9);
+  --gap-border-probable-max: 1.5px dashed rgba(var(--history-rgb), 0.9);
+  --gap-border-never: 2px solid var(--text-dim);
+  --gap-hatch-angle: 45deg;
+  --gap-hatch-gap: 6px;
+  --gap-hatch-color: rgba(var(--history-rgb), 0.45);
+
+  /* ===== AXIS H · EMPHASIS — the halo MUST stay dashed (candidate only) ===== */
+  --halo-chokepoint-dash: 4 4;
+  --halo-chokepoint-width: 1.5px;
+  --halo-chokepoint-color: rgba(var(--live-rgb), 0.55);
+  --halo-chokepoint-offset: 5px;
+
+  --integrity-mark-size: 14px;
+  --integrity-mark-color: var(--problem);
+
+  /* ===== AXIS C · SOURCE TIER → dot ladder (chips + drawer only, never a pin) ===== */
+  --tier-dot-size: 4px;
+  --tier-dot-gap: 3px;
+  --tier-dot-on: var(--text);
+  --tier-dot-off: rgba(230, 233, 236, 0.2);
+  --tier-official: 4;
+  --tier-analysis: 3;
+  --tier-named-social: 2;
+  --tier-anonymous: 1;
+  /* strike = tier discounted (same-side / too-clean / adversary-denial). NOT dimming. */
+  --tier-strike-width: 1.5px;
+  --tier-strike-color: var(--problem);
+
+  /* ===== geometry ===== */
+  --radius-node: 4px;
+  --radius-chip: 3px;
+  --node-h: 34px;
+  --chip-h: 22px;
+  --pin-r: 15px;
+}
