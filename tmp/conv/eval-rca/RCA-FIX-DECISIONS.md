@@ -74,3 +74,52 @@ produced the audit + handoff, did **not** touch `answer_key.json`.
   do **not** seed `foreign_control`/`SOLE_SOURCE` to force CONFIRMED (upholds D-C.1). If material at all,
   rest it on the hedged techdata-authority (d21) + no-open-substitute-chassis (d24) axis at **probable**.
   *Absence of evidence ≠ evidence of absence.* Config-side owner: SCORE (no credibility retune).
+
+## Phase-2 build-time sub-decisions (INGEST — extraction rework, commit 80a8702)
+- **D-2.1 — Extraction enum driven from `EdgeLaneIndex.extractor_edges()`, injected at tool-schema build.**
+  `RelationMention.relation` is now a plain `str`; the allowed edge set comes from the live ontology, not a
+  hardcoded literal. *Config-driven/extensible; single source of truth.* *Rejected:* keeping the 19-value
+  `EdgeTypeName` literal (drifts from the ontology; re-introduces off-vocab predicates).
+- **D-2.2 — Re-lane at write time, endpoints authoritative.** Endpoint types are recovered from the
+  entities the *same document* emitted (an `_Emitter` name→type map); both-typed → `relane()` (name +
+  orientation); one-typed → `edge_direction.reversed_for_types()` (orientation only, predicate kept);
+  neither-typed → keep as-stated + tier-3 flag. Rejected endpoints → tier-3 note, **never** an ad-hoc-
+  predicate edge. *Deterministic; model-to-queries.* *Rejected:* trusting the LLM's verb.
+- **D-2.3 — Provenance rule (non-negotiable).** A re-laned claim preserves `_as_stated_predicate` + verbatim
+  `source_quote` + `_relane_reason`. *Traceability non-negotiable — normalize the label, never overwrite the
+  source.* *Rejected:* silently rewriting the predicate.
+- **D-2.4 — Denials/negations DROPPED (not routed to the merge channel).** The edge-relane handoff's
+  "denials → merge-proposal channel" is a **category error** (a denial is not an identity assertion) and is
+  overridden. Denials no longer emit any edge or `unknown` node; because `view/pipeline` draws *every*
+  triple, even a retained non-rendered negative triple would still pollute, and nothing consumes denials
+  today, so they are dropped outright. *Minimal correct path; kill the junk.* *Consequence:* the "X denied Y"
+  text is fully removed from the evidence log — the **richer contradiction-scoring path (roadmap / design
+  note)** would need to re-enable a proper negative-evidence channel. *Rejected:* misrouting to merge; or a
+  new non-triple negative-claim type now (deferred to the richer path).
+- **D-2.5 — Identity kept as source-weighted evidence claims; view/RESOLVE handling deferred to Phase 3.**
+  `same-as`/`distinct-from` (incl. `aka`/`designators`) still emit verbatim as claims (they carry the
+  asserting source's grade). Target design (Phase 3): `same-as` → a merge signal, **not drawn**;
+  `distinct-from` → veto **and** drawn; RESOLVE reads them from the *claim stream* weighted by source.
+  *Bi-level model: identity is evidence-layer, the merge is knowledge-layer.* *Rejected:* flattening identity
+  into decision-log `merge_proposal` records (loses source credibility weighting — refines the P1 handoff);
+  ripping identity out of extraction.
+- **D-2.6 — Customs role-edges emitted verbatim, NOT re-laned.** `exported-by`(→shipper)/`imported-by`
+  (→consignee) come from the *document field* the value sat in — the role IS the edge. Endpoint types
+  cannot disambiguate them (both ends are `trading_org`); broadening both edges' ranges to include
+  `trading_org` would create an `EdgeLaneIndex` collision. INGEST emits contract→shell only; the transient
+  range mismatch (shell vs the ontology's manufacturer/unit range) resolves in Phase-3 when RESOLVE maps
+  shell→real entity. *Structural transforms are document-determined, not endpoint-determined; extract-raw
+  guardrail.* *Rejected:* routing role-edges through `relane()` (rejects them); range-broadening (collision).
+- **D-2.7 — `trading_org` node type added; `based-at`/`sustained-by` NOT emitted by INGEST.** Customs
+  consignee/shipper are typed `trading_org` (new ontology node type), reserving `manufacturer` for OEMs.
+  `based-at` is **not** extracted (no doc states unit→site; it is derived — Phase 3) and the `sustained-by`
+  edge is **not** emitted (SCORE-derived rollup — Phase 4); INGEST mints the `interceptor_stockpile` /
+  `techdata_authority` **nodes** only. *Extract only what is stated; keep derivations in the deriving layer.*
+  See `../EVAL-RCA-corpus-grounding-basing-and-materiality.md`.
+- **D-2.8 — Collection gaps: no verbose-sentence nodes.** `known_gap` entity nodes are minted only when a
+  `missing_slot` is stated, keyed by the slot — never the raw sentence. The SCORE sufficiency-template engine
+  already emits the correctly-shaped `gap:*` items. *One mechanism, not a duplicate.* *Rejected:* keying a
+  node by the full `GapMention.description`.
+- **Known minor limitation:** a *rejected* relation's tier-3 note lives in `ClaimRecord.attributes`, which
+  `dedup` excludes from its signature, so through the full lane the note can be absorbed into a restatement.
+  Primary guarantees (no ad-hoc edge, no `unknown` node) hold; rejected relations are rare. Logged, not fixed.

@@ -13,9 +13,18 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
     entity canonical-id registry, 14 entities / ~76 aliases, distinct-from traps, earned-merges withheld,
     foreign_control seeds removed (D-B, D-B.1, D-C.1).
   - Tests: `backend/tests/test_ontology.py`, `backend/tests/config/test_entities_config.py` (green).
-- **Phase 2 — extraction (INGEST): PENDING.** `PHASE2-INGEST-edge-relane-enum-provenance.md` (wire enum +
-  re-lane + provenance rule; reconcile ontology) · `PHASE2-INGEST-DATAC-extraction-typing-and-coverage-gaps.md`
-  (typing bugs + coverage) · `INGEST-edge-direction-UNCOMMITTED-risk.md` (rescue + reconcile edge_direction).
+- **Phase 2 — extraction (INGEST): 🟨 CORE DONE, 2 items remain.**
+  Branch `fix/phase2-ingest-extraction` (off `fix/phase1-…`), commit **80a8702**. Delivered (decisions
+  D-2.1…D-2.8): enum narrowed to `EdgeLaneIndex.extractor_edges()`; write-time re-lane + endpoint-type
+  recovery + `edge_direction` partial-typing fallback; provenance rule (`_as_stated_predicate` + quote +
+  reason); denials/gap-sentences no longer emit edges/nodes; customs `contract_import_event` +
+  `exported-by`/`imported-by` role-edges + `trading_org` type; tender `interceptor_stockpile`/
+  `techdata_authority` nodes. Validated by unit tests (transforms are pure): ingest+ontology 247✓/4-skip,
+  full backend 568✓/6-skip. **Remaining Phase-2 items (pending):** ING-8 satellite-image co-load
+  (`seed.py` + a `sources.yaml` image pointer — DATA-C) · ING-7 real per-doc `report_time`/event dates
+  (DATA-C) · then **one keyed re-record** of `claims/*.json` to reflect all Phase-2 extraction changes.
+  Deferred by design: identity render/consume → P3; `based-at`/`sustained-by` → derived (P3/P4). See
+  `PHASE2-INGEST-RESULT.md` + `RCA-FIX-DECISIONS.md` §Phase-2.
 - **Phase 3 — resolution (RESOLVE): PENDING.** `handoff-resolve.md` (RES-1 endpoint-linking master fix;
   RES-2 band recalibration + containment bootstrap; consume the registry) ·
   `PHASE3-RESOLVE-alias-candidates-and-ambiguities.md`.
@@ -38,13 +47,13 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
 | Doc | Owner | Phase | Status |
 |---|---|---|---|
 | `handoff-resolve.md` | RESOLVE | 3 | pending |
-| `handoff-ingest.md` | INGEST | 2 | pending |
+| `handoff-ingest.md` | INGEST | 2 | 🟨 core done (80a8702); ING-7/ING-8 + re-record pending |
 | `handoff-data-c.md` | DATA-C | 1/2 | Phase-1 parts DONE |
 | `handoff-score.md` | SCORE | 4 | pending |
 | `handoff-arch.md` | ARCH | 1/4 | contract DONE; lens code pending |
 | `handoff-ask.md` | ASK | 4 | pending |
 | `handoff-monitor.md` | MONITOR | 4 | pending |
-| `../PHASE2-INGEST-edge-relane-enum-provenance.md` | INGEST | 2 | pending |
+| `../PHASE2-INGEST-edge-relane-enum-provenance.md` | INGEST | 2 | ✅ done (80a8702) |
 | `../PHASE2-INGEST-DATAC-extraction-typing-and-coverage-gaps.md` | INGEST/DATA-C | 2 | pending |
 | `../PHASE3-RESOLVE-alias-candidates-and-ambiguities.md` | RESOLVE | 3 | pending |
 | `../PHASE1-DATAC-EVAL-answer_key-reconciliation.md` | DATA-C/EVAL | 1→x | pending (id-unification part only; grounding part superseded by D-G1) |
