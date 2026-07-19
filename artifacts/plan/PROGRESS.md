@@ -253,7 +253,6 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
 - **Gate fixtures:** none added/weakened (ASK owns `chanakya/agent/**` + `tests/agent/**`; G1 still green —
   runtime LLM is import-lazy and outside the rebuild call-path).
 
-<<<<<<< HEAD
 ### HITL (in-review, feat/hitl):
 - **Shipped:** the one cross-cutting adjudication service under `backend/chanakya/hitl/` —
   `service.py` (`enqueue` triage-gate + `dispose` analyst path) · `triage.py` (recall-biased
