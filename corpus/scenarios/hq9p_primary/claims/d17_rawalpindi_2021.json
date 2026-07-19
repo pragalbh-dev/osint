@@ -32,14 +32,22 @@
     "payload": {
       "attrs": {
         "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
+          "geocode_candidates": [
+            {
+              "confidence": 1.0,
+              "label": null,
+              "lat": 33.61638816251397,
+              "lon": 73.09971192513768,
+              "source": "coord-parse"
+            }
+          ],
+          "precision_class": "pad",
+          "proposed_alias": null,
           "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
           "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
+          "surface_format": "MGRS",
+          "wgs84_lat": 33.61638816251397,
+          "wgs84_lon": 73.09971192513768
         },
         "occupancy_state": "active or near-active",
         "site_type": "prepared revetment complex"

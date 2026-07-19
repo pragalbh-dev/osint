@@ -265,10 +265,104 @@ def test_relative_without_geocoder_keeps_stated_form(monkeypatch: pytest.MonkeyP
     assert loc.proposed_alias == "Nowhere"
 
 
-def test_forced_surface_format_overrides_sniffer() -> None:
-    # Caller-supplied format hint wins over the deterministic sniff.
+def test_declared_format_agreeing_with_shape_is_kept() -> None:
     loc = normalize_location("32°14′20″N 074°07′52″E", surface_format="DMS")
     assert loc is not None and loc.surface_format == "DMS"
+
+
+# ── Shape-authoritative surface-format detection ───────────────────────────────────────────────
+#
+# The extractor's declared ``surface_format`` is a HINT; the string's own shape decides the branch.
+# The regression these pin: a grid the model called a "toponym" was sent to the geocoder, where a grid
+# can never resolve, and the exact coordinate was silently dropped.
+
+def test_grid_stated_in_prose_is_detected_and_decoded_despite_a_toponym_label() -> None:
+    raw = "Grid: 43S CT 23715 21242 (MGRS, WGS84)"
+    assert adapters.detect_surface_format(raw, declared="toponym") == "MGRS"
+    loc = normalize_location(raw, surface_format="toponym", geocoder=None)
+    assert loc is not None
+    assert loc.surface_format == "MGRS"
+    # The seeded pl_nurkhan anchor — the grid must land on the base, not merely somewhere plausible.
+    assert geodesic((33.61639, 73.09972), (loc.wgs84_lat, loc.wgs84_lon)).m < 5
+    assert loc.precision_class == "pad"
+    assert loc.proposed_alias is None  # a grid is not a place-name proposal for RESOLVE
+
+
+def test_place_name_mislabelled_as_a_grid_still_geocodes() -> None:
+    # The mirror bug: a declared coordinate format must not send a name into a parser it can't match.
+    gc = _FakeGeocoder({"Rahwali airfield": (32.239, 74.131, "Rahwali, Punjab, PK")})
+    loc = normalize_location("Rahwali airfield", surface_format="MGRS", geocoder=gc)
+    assert loc is not None
+    assert loc.surface_format == "toponym"
+    assert loc.wgs84_lat == pytest.approx(32.239)
+
+
+@pytest.mark.parametrize("raw", [
+    "Karachi coastal defense belt",
+    "Rahwali cantt, just outside Gujranwala",
+    "PORT MUHAMMAD BIN QASIM (PQ)",
+    "Yongding Road, Haidian District, in western Beijing",
+    "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+    "Sector 12 Blk 4",
+])
+def test_ordinary_place_text_is_never_read_as_a_coordinate(raw: str) -> None:
+    assert adapters.detect_surface_format(raw) in ("toponym", "relative")
+    assert adapters._mgrs_token(raw) is None
+
+
+@pytest.mark.parametrize("raw", [
+    "Grid: 99S CT 23715 21242",        # zone 99 does not exist (1-60)
+    "Grid: 43I CT 23715 21242",        # band I is never used
+    "Grid: 43S CO 23715 21242",        # 100 km square letter O is never used
+    "Grid: 43S CT 23715 2124",         # easting/northing of unequal length
+    "Grid: 43S CT 2371521242123",      # digit run longer than 10
+    "Grid: 43S CT 237152124",          # odd-length packed digit run
+])
+def test_malformed_grid_is_rejected_not_coerced(raw: str) -> None:
+    # Rejected means "treated as ordinary text", never "forced into a coordinate".
+    assert adapters._mgrs_token(raw) is None
+    loc = normalize_location(raw, surface_format="MGRS", geocoder=None)
+    assert loc is not None and loc.wgs84_lat is None
+
+
+def test_decimal_pair_with_hemispheres_is_dd_not_dms() -> None:
+    # No degree/minute glyph anywhere → the surface really is decimal, and its 4 dp mean pad-level
+    # precision. Reading it as a degrees-only DMS would have thrown that resolution away.
+    loc = normalize_location("24.9012 N, 67.2034 E", surface_format="DMS")
+    assert loc is not None
+    assert loc.surface_format == "DD"
+    assert loc.precision_class == "pad"
+    assert (loc.wgs84_lat, loc.wgs84_lon) == pytest.approx((24.9012, 67.2034))
+
+
+def test_packed_notam_is_still_dms_not_dd() -> None:
+    # ``495355N`` also matches the DD shape, but 495355 is not a latitude — the range check keeps it DMS.
+    assert adapters.detect_surface_format("495355N 0380155E") == "DMS"
+
+
+def test_detection_is_pure_and_repeatable() -> None:
+    raw = "Grid: 43S CT 23715 21242 (MGRS, WGS84)"
+    first = normalize_location(raw, geocoder=None)
+    for _ in range(3):
+        assert normalize_location(raw, geocoder=None) == first
+
+
+def test_geocode_candidates_always_carry_a_confidence() -> None:
+    # RESOLVE reads an *unstated* confidence as UNKNOWN, so every candidate must state one — and a
+    # geocoded name must be worth visibly less than a coordinate the source itself printed.
+    gc = _FakeGeocoder({"central Punjab": (31.0, 73.0, "Punjab, PK")})
+    vague = normalize_location("central Punjab", geocoder=gc)
+    exact = normalize_location("Grid: 43S CT 23715 21242 (MGRS, WGS84)", geocoder=None)
+    assert vague is not None and exact is not None
+    assert vague.geocode_candidates[0].confidence is not None
+    assert exact.geocode_candidates[0].confidence is not None
+    assert vague.geocode_candidates[0].confidence < exact.geocode_candidates[0].confidence
+
+
+def test_geocode_confidence_is_config_driven() -> None:
+    gc = _FakeGeocoder({"central Punjab": (31.0, 73.0, "Punjab, PK")})
+    loc = normalize_location("central Punjab", geocoder=gc, confidences={"nominatim": 0.11})
+    assert loc is not None and loc.geocode_candidates[0].confidence == pytest.approx(0.11)
 
 
 def test_blank_location_returns_none() -> None:

@@ -105,6 +105,28 @@ def _cmd_attribute(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_renormalize(args: argparse.Namespace) -> int:
+    """Re-run the deterministic location canonicaliser over a scenario's frozen bundles.
+
+    Offline and key-free by construction (no geocoder is injected), so it can only recover coordinates
+    the source's own ``raw`` string already states — the recovery path for a coordinate an earlier
+    recorder mis-classified. Dry-run by default; ``--apply`` writes, and either way every field edit is
+    printed as a ``before -> after`` audit row.
+    """
+    bundles_dir = settings.corpus_dir() / "scenarios" / args.scenario / "claims"
+    if not bundles_dir.is_dir():
+        print(f"no claim bundles at {bundles_dir}", file=sys.stderr)
+        return 2
+    from chanakya.ingest import renormalize
+
+    changes = renormalize.renormalize_bundles(bundles_dir, apply=args.apply)
+    for change in changes:
+        print(change)
+    verb = "rewrote" if args.apply else "would rewrite (dry run; pass --apply)"
+    print(f"{verb} {len({c.bundle for c in changes})} bundle(s), {len(changes)} field(s)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Parse args and dispatch. Returns the process exit code."""
     parser = argparse.ArgumentParser(
@@ -129,6 +151,14 @@ def main(argv: list[str] | None = None) -> int:
     p_attr.add_argument("--record", action="store_true",
                         help="freeze proposed inferences as *__attr.json bundles; else append + re-rebuild")
     p_attr.set_defaults(func=_cmd_attribute)
+
+    p_renorm = sub.add_parser(
+        "renormalize",
+        help="re-canonicalise locations in a scenario's frozen bundles (offline, keyless, auditable)")
+    p_renorm.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
+    p_renorm.add_argument("--apply", action="store_true",
+                          help="write the bundles; without it the pass only reports what would change")
+    p_renorm.set_defaults(func=_cmd_renormalize)
 
     args = parser.parse_args(argv)
     return int(args.func(args))
