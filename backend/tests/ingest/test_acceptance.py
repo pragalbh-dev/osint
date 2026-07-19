@@ -97,6 +97,11 @@ def test_customs_guardrail_and_traceability_through_the_lane() -> None:
     for node in view.nodes:
         assert node.claim_ids, f"node {node.id} has no claim provenance (G4)"
     for edge in view.edges:
+        # Resolution-decision edges (a candidate `same-as` awaiting adjudication, a `distinct-from` trap)
+        # cite a MERGE decision, not a claim, and are G4-exempt by construction — see
+        # view/pipeline._resolution_edges. Every knowledge edge still has to carry its provenance.
+        if edge.type in ("same-as", "distinct-from"):
+            continue
         assert edge.claim_ids, f"edge {edge.id} has no claim provenance (G4)"
     # every cited claim id resolves back to a real claim → a real doc_ref file (one-click-to-source).
     by_id = {c.claim_id: c for c in claims}

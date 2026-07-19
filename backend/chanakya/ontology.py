@@ -53,11 +53,15 @@ class EdgeLaneIndex:
         self._extractor: list[str] = []
         self._names: set[str] = set()
         self._symmetric: set[str] = set()
+        self._endpoints: dict[str, tuple[list[str], list[str]]] = {}
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
             self._names.add(e.name)
             if e.symmetric:
                 self._symmetric.add(e.name)
+            # domain/range is declared on every directional edge, extractor or not — RESOLVE types a
+            # triple ENDPOINT from it (RES-1), which is a separate concern from the extraction enum.
+            self._endpoints[e.name] = (e.from_types(), e.to_types())
             if not e.extractor:
                 continue
             self._extractor.append(e.name)
@@ -75,6 +79,18 @@ class EdgeLaneIndex:
         if not subject_type or not object_type:
             return None
         return self._by_endpoints.get((subject_type, object_type))
+
+    def endpoint_types(self, predicate: str) -> tuple[list[str], list[str]]:
+        """``predicate → (from_types, to_types)`` — the declared domain/range of one edge.
+
+        The endpoint-typing primitive RESOLVE's RES-1 mention-linking uses: a triple's subject *is* an
+        instance of the edge's domain and its object an instance of the range, so an endpoint that no
+        entity-form claim ever declared can still be minted as a **typed** node rather than ``unknown``.
+        Returns ``([], [])`` for an unknown edge and for a symmetric/structural edge that declares
+        neither end (``same-as``) — the caller must then leave the endpoint an untyped mention.
+        """
+        f, t = self._endpoints.get(predicate, ([], []))
+        return (list(f), list(t))
 
     def extractor_edges(self) -> list[str]:
         """The extraction enum — the relationship edges the LLM is allowed to assert (declaration order)."""

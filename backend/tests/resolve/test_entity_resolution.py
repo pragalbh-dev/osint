@@ -160,6 +160,100 @@ def test_llm_proposal_is_raise_only() -> None:
     assert part.same_as == []
 
 
+# ── AC (D-2.5): identity read from the claim stream — source-weighted, raise-only, never auto ───
+
+def _identity_pair(source: str, grades: dict[str, str]):
+    """A pair one source calls the same thing, with nothing else linking them but the assertion."""
+    cfg = mk_config(source_grades=grades)
+    claims = [
+        entity("var_a", "variant", "Alpha SAM"),
+        entity("var_b", "variant", "Bravo SAM"),
+        triple("var_a", "same-as", "var_b", source=source),
+    ]
+    return cfg, resolve(claims, cfg)
+
+
+def test_identity_assertion_is_weighted_by_the_asserting_source() -> None:
+    # The SAME assertion from a curated register and from an anonymous post are not the same evidence.
+    grades = {"src-register": "curated-register", "src-anon": "anon-social"}
+    _, strong = _identity_pair("src-register", grades)
+    _, weak = _identity_pair("src-anon", grades)
+    key = pair_key("var_a", "var_b")
+    assert strong.merge_breakdown[key]["source_asserted"] > weak.merge_breakdown[key]["source_asserted"]
+    assert strong.merge_breakdown[key]["total"] > weak.merge_breakdown[key]["total"]
+
+
+def test_identity_assertion_reaches_the_analyst_but_never_auto_merges() -> None:
+    # Even the best-graded source's `same-as` only PROPOSES: the corpus plants false identities, so the
+    # merge itself has to be earned by the deterministic terms (or by an analyst).
+    _, part = _identity_pair("src-register", {"src-register": "curated-register"})
+    assert part.same_as == []
+    assert frozenset({"var_a", "var_b"}) in {frozenset(p) for p in part.candidates}
+
+
+def test_identity_assertion_cannot_cross_the_auto_line_at_any_weight() -> None:
+    # Property: crank the identity weight past the auto band; the pair must STILL only reach HITL.
+    cfg = mk_config()
+    cfg.resolution.merge_weights = {"source_asserted": 1.0}
+    claims = [
+        entity("var_a", "variant", "Alpha SAM"),
+        entity("var_b", "variant", "Bravo SAM"),
+        triple("var_a", "same-as", "var_b"),
+    ]
+    part = resolve(claims, cfg)
+    assert part.same_as == []
+    assert frozenset({"var_a", "var_b"}) in {frozenset(p) for p in part.candidates}
+
+
+def test_claim_asserted_distinct_from_is_a_hard_veto_and_stays_visible() -> None:
+    # The mirror image: a source SEPARATING two things is honoured immediately, and stays inspectable.
+    cfg = mk_config(alias_table={"Alpha SAM": ["Bravo SAM"]})  # an alias that would otherwise auto-merge
+    claims = [
+        entity("var_a", "variant", "Alpha SAM"),
+        entity("var_b", "variant", "Bravo SAM"),
+        triple("var_a", "distinct-from", "var_b"),
+    ]
+    part = resolve(claims, cfg)
+    assert part.same_as == []  # the veto beats an alias-equivalence bootstrap merge
+    assert ("var_a", "var_b") in part.distinct_from
+
+
+# ── AC (P3.3): the open-world containment / acronym trigger, and what it refuses ─────────────────
+
+def test_containment_merges_a_descriptive_extension_but_not_a_designator_extension() -> None:
+    cfg = mk_config(containment_min_descriptor_len=3, containment_min_short_tokens=2, acronym_min_len=3)
+    claims = [
+        entity("c_short", "component", "HT-233"),
+        entity("c_long", "component", "HT-233 engagement radar"),
+        entity("v_hq9", "variant", "HQ-9"),
+        entity("v_hq9p", "variant", "HQ-9/P"),
+    ]
+    part = resolve(claims, cfg)
+    assert {"c_short", "c_long"} <= _cluster_of(part, "c_short")  # a WORD added ⇒ same radar
+    assert "v_hq9p" not in _cluster_of(part, "v_hq9")             # a MARK added ⇒ a different missile
+
+
+def test_containment_refuses_a_bare_one_word_hook() -> None:
+    # "Pakistan" is a prefix of half the order of battle — far too generic to bootstrap identity on.
+    cfg = mk_config(containment_min_descriptor_len=3, containment_min_short_tokens=2, acronym_min_len=3)
+    claims = [
+        entity("u_bare", "unit", "Pakistan"),
+        entity("u_paf", "unit", "Pakistan Air Force"),
+    ]
+    part = resolve(claims, cfg)
+    assert part.same_as == []
+
+
+def test_acronym_expansion_merges_initials_to_their_expansion() -> None:
+    cfg = mk_config(containment_min_descriptor_len=3, containment_min_short_tokens=2, acronym_min_len=3)
+    claims = [
+        entity("u_acr", "unit", "PAAD"),
+        entity("u_full", "unit", "Pakistan Army Air Defence"),
+    ]
+    part = resolve(claims, cfg)
+    assert {"u_acr", "u_full"} <= _cluster_of(part, "u_acr")
+
+
 # ── fixpoint cascade: one merge unlocks the next; converges to a single cluster ─────────────────
 
 def test_fixpoint_cascade_converges() -> None:
