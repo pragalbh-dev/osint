@@ -2,15 +2,29 @@
 # Validates against F0 ResolutionConfig {merge_weights, bands, blocking_keys, alias_table, transliteration}
 # (+ extra knobs, extra="allow"). RESOLVE consumes this; the seeded alias table grows from HITL merges.
 
-merge_weights:            # merge_score = Σ w·signal (spine/08 §3.9)
-  attribute: 0.30
+# merge_score = Σ w·signal (spine/08 §3.9). TUNED 2026-07-19 (P3.3) to a stated invariant rather than to a
+# list of example pairs: EITHER a perfect name/attribute match alone OR a perfect shared-neighbourhood match
+# alone must reach the analyst, and NEITHER alone may merge.
+#   name only        0.40·1 + 0.40·0 + 0.05·1 + 0.15·0 = 0.45 == hitl_low  -> always queued
+#   neighbourhood    0.40·0 + 0.40·1 + 0.05·1 + 0.15·0 = 0.45 == hitl_low  -> always queued
+#   deterministic ceiling (everything except the raise-only identity term) = 0.85 == auto_merge, so the
+#   fuzzy path can only auto-merge on SIMULTANEOUS perfection; in practice auto-merges come from the
+#   bootstrap rules (hard id / alias class / exact name / containment), which is precision-first by design.
+# What moved and why: `temporal_consistency` was a constant 1.0 on every non-relocation pair, i.e. a hidden
+# +0.15 floor under every score — which made the printed hitl_low of 0.55 behave like 0.40. It is kept as a
+# LIVE discriminator (a relocation pair still scores 0 on it) but shrunk to 0.05, and the freed weight went
+# to `attribute`; hitl_low then drops to 0.45 so effective strictness is UNCHANGED (0.55−0.15 = 0.45−0.05).
+# The numbers now mean what they say. `relational` (the collective-ER signal) and `source_asserted` are
+# untouched, and no new auto-merge fires at these weights.
+merge_weights:
+  attribute: 0.40
   relational: 0.40
-  temporal_consistency: 0.15
+  temporal_consistency: 0.05
   source_asserted: 0.15
 
 bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge) -> HITL; < hitl_low -> keep separate
   auto_merge: 0.85
-  hitl_low: 0.55
+  hitl_low: 0.45
 
 blocking_keys:            # candidate generation scope (demo scale: all-pairs-within-block is fine)
   - type
@@ -64,6 +78,27 @@ transliteration:          # script -> latin (rule-based normalizer seed; spine/0
   "北京无线电测量研究所": "Beijing Institute of Radio Measurement"
 
 # ── extra knobs (extra="allow") ─────────────────────────────────────────────────────────────────
+# Identity read from the CLAIM STREAM, source-weighted (D-2.5 / D-P3.4). A `same-as` is ordinary evidence,
+# so its weight in merge_score's `source_asserted` term is R(asserting source) — the credibility rubric's
+# own output (sources.yaml class x credibility.yaml factors), never a second, divergent scale.
+identity_source_weight_default: 1.0  # weight for a source the registry has never heard of. Neutral is safe
+                                     # because a same-as is structurally raise-only: HITL, never auto-merge.
+identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analyst's time. 0.0 = surface them
+                                     # all (recall-biased triage); raise it if the merge queue ever floods.
+
+# Open-world name triggers (P3.3): the tail the alias table + entity registry have NEVER seen — a document
+# naming the same thing more verbosely, or by its initials. Both are high-precision BOOTSTRAP rules, so
+# these gates are what keep them honest. Unset => the trigger is simply off.
+containment_min_descriptor_len: 3    # "HT-233" + "engagement" (a WORD) is the same radar described more
+                                     # fully; "HQ-9" + "P" (a MARK) is a different missile. The knob is the
+                                     # length of the first token the longer name adds.
+containment_min_short_tokens: 2      # ...and the SHORT side must be more than one bare word. "China" is a
+                                     # prefix of half the manufacturer list and bridged CPMIEC into CASIC;
+                                     # "Pakistan" walks straight at the PAAD-vs-PAF unit trap. A one-word
+                                     # hook is ambiguous evidence -> it belongs in the queue, not a merge.
+acronym_min_len: 3                   # "PAAD" == the initials of "Pakistan Army Air Defence". Under three
+                                     # letters an initialism collides with far too much to bootstrap on.
+
 high_alias_risk_types:    # blocks of these types get the LLM candidate-gen recall pass (spine/08 §3.11)
   - variant
   - component
@@ -83,6 +118,44 @@ place_proximity_radius_m:        # from config/places.yaml (md/13) — same-plac
   district: 5000
   city: 15000
 place_proximity_hitl_multiplier: 3   # 1x-3x radius -> HITL; beyond -> new place (places.yaml)
+
+# ── place-matching gates (P3.5 / RES-5) ─────────────────────────────────────────────────────────
+# The radii above are JITTER absorption: a coord a few hundred metres off is the same pad. With no
+# compatibility gate around them, jitter absorption becomes GARBAGE absorption — an "Army Air Defence
+# Centre" sitting 4.5 km from the Port of Karachi was being pulled into a container terminal. These two
+# gates apply to the PROXIMITY path only: a hard ID (ICAO/LOCODE) or an exact toponym/alias match states
+# identity outright, and gating those would also disarm the Karachi-Port != Port-Qasim trap (both ports
+# have to resolve before the gazetteer's distinct_from can veto them apart).
+#
+# What an entity type may be pulled onto. A statement about the WORLD (an air-defence site is not a
+# port), so it is config, not code. A type with no row here (and no `default` row) is unconstrained.
+place_allowed_precision_classes:
+  basing_site: [pad, site]     # a battery/base snaps to a pad or a site — never a port terminal, and
+                               # never a district/city (those are AREAS; snapping to one is a fiction).
+
+# A vague geocode must not be snapped into a precise pad: "central Punjab" geocodes to a fuzzy regional
+# point, and INGEST records how much it trusts each candidate. Below this floor the mention keeps its own
+# coordinate and stands as an honest pin. A candidate with NO stated confidence is UNKNOWN, not low —
+# RESOLVE does not invent doubt INGEST never expressed (the class gate above still applies to it).
+place_min_geocode_confidence: 0.6
+
+# A toponym is a NAME, not a description of where something is. A display string carrying one of these
+# markers ("Malir District, Karachi, Sindh Province, Pakistan"; "Air Defence Depot, ~12 km NNW of Kala
+# Chitta / Attock Cantt area") is not usable as a place name — RESOLVE falls back to INGEST's frozen
+# proposed_alias, and otherwise matches on coordinates/hard-ID alone. Empty => every name is accepted.
+toponym_descriptive_markers: [",", "~", "/", " km "]
+
+# May a mention carrying NO coordinate bind to an anchor whose curated name it states EXACTLY? Yes (P3.6).
+# "PAF Base Nur Khan" is a seeded alias of pl_nurkhan, so a document using that string is naming an
+# analyst-curated anchor, not inferring one from distance — the same precision standard the entity alias
+# table already merges on. It matters because a grid reference frozen unparsed leaves the entity with no
+# point at all, and the origin end of the Rawalpindi -> Rahwali relocation would otherwise render
+# unanchored. EXACT curated canonical_name/alias only: no fuzzy, no substring, no proximity — so the
+# withheld earned-merge traps ("Chaklala" / "PAF Base Chaklala" / "RAF Chaklala"; Rahwali's relative-
+# bearing form) stay EARNED-only, and vague mentions ("Sargodha", "central Punjab") still bind to
+# nothing. The gazetteer's distinct_from veto applies to these matches exactly as to any other.
+# false / absent => off.
+place_bind_on_curated_toponym: true
 
 # Non-place keep-separate traps (the geographic Karachi-Port vs Port-Qasim pair lives in places.yaml's
 # own distinct_from field — intentionally NOT duplicated here).

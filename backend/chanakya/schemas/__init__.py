@@ -60,7 +60,7 @@ from .config_models import (
 )
 from .decision import Actor, DecisionRecord, DecisionType, Stage
 from .ids import is_claim_id, make_claim_id
-from .stage_io import AssertionAssessment, AssertionInput, Partition, pair_key
+from .stage_io import AssertionAssessment, AssertionInput, Partition, PlaceRef, pair_key
 from .values import (
     BoundarySource,
     CountState,
@@ -108,7 +108,7 @@ __all__ = [
     # decision log
     "DecisionRecord", "Actor", "Stage", "DecisionType",
     # stage io
-    "Partition", "AssertionInput", "AssertionAssessment", "pair_key",
+    "Partition", "PlaceRef", "AssertionInput", "AssertionAssessment", "pair_key",
     # view
     "GraphView", "NodeView", "EdgeView", "EventView", "KnownGap", "Alert",
     "ConfidenceBreakdown", "IndependenceGroup", "Freshness", "SufficiencyEval", "MaterialityAttrs",

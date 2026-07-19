@@ -23,6 +23,24 @@ def pair_key(a: str, b: str) -> str:
     return "|".join(sorted((a, b)))
 
 
+class PlaceRef(Record):
+    """RESOLVE's gazetteer match for one entity — the *evidence* for a place binding, not just a pointer.
+
+    ``distance_m``/``band``/``via`` ride along because they are what makes the binding auditable:
+    "snapped to Rahwali from 16 m on its own name" and "pulled to it from 2.8 km on coordinates alone"
+    are different claims, and an analyst has to be able to tell them apart before trusting a location.
+
+    Only **curated** gazetteer anchors (``config/places.yaml``) are ever referenced. A mention that
+    matches no anchor gets no ``PlaceRef`` at all and keeps its own raw coordinate — an honest pin,
+    not a failure; growing the gazetteer is an analyst promotion, never a machine mint (D-P3.3).
+    """
+
+    place_id: str  # an existing config/places.yaml anchor — never auto-minted
+    band: str  # "auto" (inside the class radius / hard-ID / toponym) | "hitl" (within the multiplier)
+    distance_m: float | None = None  # geodesic metres to the anchor; None when matched without a coord
+    via: str = ""  # "hard-id" | "toponym" | "proximity" — which evidence carried the match
+
+
 class Partition(Record):
     """RESOLVE's output: which claim resolves to which entity/edge instance + the merge decisions.
 
@@ -43,9 +61,23 @@ class Partition(Record):
     merge_confidence: dict[str, float] = {}  # pair_key(a, b) → identity confidence (same_as + candidates)
     merge_breakdown: dict[str, dict[str, float]] = {}  # pair_key(a, b) → {attribute, relational, temporal_consistency, source_asserted, total}
     # Edges attach to nodes by the RAW triple subject/object string (supersede.py), not by resolved_ref —
-    # so a merged-away entity's edges would dangle. This maps every merged raw entity ref → its canonical
-    # id; rebuild()/_assemble applies it to triple endpoints so a merge reconnects edges. Empty ⇒ no-op.
-    entity_canonical: dict[str, str] = {}  # raw entity ref → canonical entity id (merged refs only)
+    # so a raw endpoint mention would dangle. This maps every resolvable entity ref → its canonical id,
+    # for BOTH a merged cluster member (``ent:type:name`` ref) AND a raw triple-endpoint mention (the LLM
+    # surface string a triple used for subject/object — RES-1 endpoint-as-mention). rebuild()/_assemble
+    # applies it to triple endpoints so a merge/mention reconnects edges to the resolved typed node.
+    # Empty ⇒ no-op. (P3.1 broadened this from "merged refs only" to "canonical id for any ref".)
+    entity_canonical: dict[str, str] = {}  # raw entity ref OR endpoint mention → canonical entity id
+    # RES-1: a triple endpoint the ontology could TYPE (via edge domain/range) but that no entity-form
+    # claim ever created a node for is minted here as a TYPED node, never ``unknown``. Maps a resolved
+    # (post-merge) canonical id → its ontology node type, so _assemble types the minted endpoint node
+    # from the edge instead of falling back to ``unknown``. Empty ⇒ every endpoint had a claim-backed node
+    # (or was un-typable) ⇒ view unchanged (gate G2). Provenance for such a node is the triple's claim_ids.
+    endpoint_node_types: dict[str, str] = {}  # canonical entity id → ontology node type (minted endpoints)
+    # RES-3: the place-resolution channel. ``resolve_place`` always computed a match and threw it away,
+    # so ``Location.resolved_place_ref`` — declared "filled by RESOLVE", read by observe/dsl.py and the
+    # map — had a reader and no writer. Keyed by the POST-merge canonical entity id so ``rebuild()`` can
+    # stamp it straight onto the node. Empty ⇒ nothing matched a curated anchor ⇒ view unchanged (G2).
+    place_refs: dict[str, PlaceRef] = {}  # canonical entity id → its curated-gazetteer anchor + evidence
 
 
 class AssertionInput(Record):

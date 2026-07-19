@@ -130,3 +130,67 @@ produced the audit + handoff, did **not** touch `answer_key.json`.
   `GEMINI_API_KEY`/`ANTHROPIC_API_KEY` exported. *Keyless≡live reproducibility; no optional-dep coupling on
   the extract path.* *Rejected:* installing the Azure extra just to read a born-digital PDF. See
   `PHASE2-VERIFY-DELTA-AND-HANDOFF.md`.
+
+## Phase-3 (RESOLVE) — `fix/phase3-resolve`
+
+Plan: `phase3-resolve-PLAN.md`. Master defect: the edge/entity id-namespace split (RES-1).
+
+- **D-3.1 — Endpoint-as-mention, resolved at the graph-construction layer.** A triple's subject/object is a
+  *mention*, not a string: it is inducted through the same normalize + `AliasIndex` + scoring machinery as an
+  entity-form claim, and `Edge.subject`/`Edge.object` are rewritten to entity ids **before** the fixpoint
+  runs. *Only this ordering revives `relational_score`/`source_asserted_score` inside the resolver — a
+  view-layer remap fixes the picture but leaves the scoring dead.* *Rejected:* populating the view's
+  `to_canonical` map only (the original handoff's framing); it would have left RES-2 permanently broken.
+- **D-3.2 — The registry is a resolution *prior*, not a lookup oracle; ids are re-derived, never persisted.**
+  `config/entities.yaml` entries seed the candidate space as **claim-less** stable-id entities, so a registry
+  entry becomes a view node only when a real claim resolves onto it and supplies the provenance (G4 holds: 0
+  nodes without a `claim_id`). Resolution is one attach-or-mint pass; a cluster containing a registry entry
+  adopts its stable oracle id, a new cluster mints a deterministic `ent:<type>:<name>`. *Determinism (G2):
+  ids are a pure function of the claim set; the register grows via the append-only decision log and analyst
+  promotion, not a mutate-during-rebuild.* *Rejected:* a persistent mutable register (makes rebuild N+1
+  depend on rebuild N's writes).
+- **D-3.3 — An endpoint's type comes from the entity it matches first, the edge's domain/range second.** An
+  entity-form claim or registry entry is authoritative about what a surface form *is*; the ontology range is
+  the fallback. *A mis-laned edge would otherwise re-type a known entity — it typed `HQ-9/P` as a
+  `contract_import_event`.* Un-typable endpoints stay untyped tier-3 mentions; a match spanning a veto becomes
+  an adjudication candidate, never a silent pick. *Rejected:* domain/range-only typing.
+- **D-3.4 — The customs front-company shells stay unresolved; no oracle id invented.**
+  `PHASE2-VERIFY-DELTA-AND-HANDOFF.md` instructed Phase 3 to resolve shell→`mfr_casic`/`unit_paad` so
+  `import_2021` would form. **That instruction was refused.** The scenario's D7 design
+  (`phase1-entity-registry-draft.md` §4) states the cluster is deliberately unresolved-to-any-subject-entity
+  and that no id should be invented; there is no corpus signal (no alias, no `same-as`, no shared neighbour)
+  linking them, and the types are incompatible. *Forcing it would assert an attribution the corpus never
+  states — the disqualifying failure mode.* `import_2021` remains `[MISSING]` for an unrelated reason (oracle
+  name vs corpus designator) — a DATA-C/EVAL id-unification matter, written up in
+  `../RESOLVE-to-DATAC-EVAL-import-event-and-shells.md`. **Strike that line from the Phase-2 handoff.**
+- **D-3.5 — Identity read from the claim stream, source-grade-weighted; `same-as` raise-only and undrawn,
+  `distinct-from` veto and drawn.** Implements D-2.5. `source_asserted_score` is now the max asserting
+  source's grade rather than binary. **Raise-only is enforced structurally** — `_band` tests auto-merge
+  against a total that *excludes* the source-asserted term, so no future re-tune can let an asserted identity
+  auto-merge (property-tested at weight 1.0). *The one planted false identity comes from a credible B-grade
+  source, so credibility weighting can never be the safeguard — the hard veto is; grading re-ranks the queue,
+  it does not re-decide it.* *Rejected:* flattening identity into `merge_proposal` records; relying on the
+  `has_llm` flag alone (the source-asserted score could itself cross the auto line).
+- **D-3.6 — Band geometry tuned to a stated symmetric invariant, not to examples.** `attribute 0.40 /
+  relational 0.40 / temporal 0.05 / source_asserted 0.15`; `hitl_low 0.45`, `auto_merge 0.85` (unchanged):
+  name-alone = neighbourhood-alone = `hitl_low` (always queued); deterministic ceiling = `auto_merge`, so the
+  fuzzy path effectively cannot auto-merge and every auto-merge comes from a bootstrap rule.
+  `temporal_consistency` was not dead but was a constant `+0.15` floor that made a printed `hitl_low` of 0.55
+  behave like 0.40 — kept live at 0.05 with effective strictness unchanged, so *the numbers now mean what they
+  say*. Added a containment / head-token / acronym-expansion bootstrap (veto-gated, min-2-token hook — a
+  one-word hook bridged `China`→CASIC and walked at the PAAD/PAF trap). *Rejected:* every geometry raising the
+  deterministic ceiling — each auto-merges customs contracts `KPQA-HC-2020-118834` and `-118835` (0.98
+  name-similar, identical neighbourhood); scoring cannot tell a serial-number difference from a spelling
+  variant, so that pair must stay a candidate (it now sits at 0.8416, just under the line).
+- **D-3.7 — Places: match curated anchors only; never auto-mint the gazetteer.** `Partition.place_refs` +
+  `NodeView.resolved_place_ref` finally give the computed match a writer, carrying `distance_m`/`band` as the
+  *evidence* for the snap ("380 m" is a confident bind; "2.8 km" is one an analyst should eyeball). Proximity
+  is gated on place-type/precision compatibility and geocode confidence (RES-5). A mention matching no anchor
+  keeps its raw coord and stands as an honest pin. An exact match on a **seeded** `canonical_name`/alias may
+  bind without a coordinate (config knob) — this anchors `site_rawalpindi`→`pl_nurkhan`; the withheld
+  earned-merge traps (Chaklala; Rahwali's relative-bearing form) stay unreachable by string lookup, pinned by
+  test. *`config/places.yaml` is the analyst's curated set — it is what distinguishes a main named anchor from
+  an incidental pin; machine-writing to it destroys that curation and mutates a human-owned config. The
+  gazetteer grows by analyst promotion.* *Rejected:* open-world place minting; back-filling an anchor's
+  coordinate onto the node (that coordinate is the anchor's provenance, not the document's — copying it would
+  launder a fix the source never asserted; the honest close is INGEST's MGRS parse).

@@ -60,8 +60,16 @@ def build(
     alias_table: dict[str, list[str]],
     transliteration: dict[str, str],
     decisions: list[DecisionRecord] | None,
+    registry_alias_table: dict[str, list[str]] | None = None,
 ) -> AliasIndex:
-    """Seed ∪ replayed accepts → an :class:`AliasIndex`. ``reject``/``split`` accepts feed distinct."""
+    """Seed ∪ registry ∪ replayed accepts → an :class:`AliasIndex`. ``reject``/``split`` feed distinct.
+
+    ``registry_alias_table`` is ``config/entities.yaml``'s ``canonical_name → aliases`` (P3.0). It is
+    linked into the *same* equivalence closure as the seeded table, so the two surfaces fuse wherever they
+    share a form (``resolution.yaml`` "HQ-9/P"→"FD-2000" and the registry's ``var_hq9p``→"FD-2000" land in
+    one class). That is what lets a registry entry attract every one of its known surface forms at
+    confidence 1.0 through the existing alias bootstrap — no new merge path. Absent ⇒ unchanged (gate G2).
+    """
     idx = AliasIndex()
 
     def norm(s: str) -> str:
@@ -69,6 +77,12 @@ def build(
 
     # 1. seeded alias table: every alias is equivalent to its canonical.
     for canonical, aliases in alias_table.items():
+        c = norm(canonical)
+        for alias in aliases:
+            idx.link(c, norm(alias))
+
+    # 1b. the entity registry's own classes (P3.0) — same closure, so seed ∪ registry unify transitively.
+    for canonical, aliases in (registry_alias_table or {}).items():
         c = norm(canonical)
         for alias in aliases:
             idx.link(c, norm(alias))

@@ -24,12 +24,27 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
   **Unchanged by design → downstream:** fragmentation (P3 RES-1), lens `0/0` (P4 ARCH AR-2), hero crash
   (P4 ASK AS-1), `as_of=2021` rewind empty (P4 MONITOR MON-2 valid-time) — see the handoff. Decisions
   D-2.1…D-2.9; full backend suite 571✓/6-skip.
-- **Phase 3 — resolution (RESOLVE): PLANNED (ready to build).** `phase3-resolve-PLAN.md` — the build plan
-  (refines `handoff-resolve.md`; folds in the 2026-07-19 design review + Phase-2 D-2.5: endpoint-as-mention
-  at the graph layer, register consumed as candidates, re-derive-not-persist ids, no gazetteer auto-mint,
-  identity read source-weighted from the claim stream / same-as raise-only + not-drawn, band re-tune to an
-  invariant). Supporting: `handoff-resolve.md` (evidence/probes) ·
-  `PHASE3-RESOLVE-alias-candidates-and-ambiguities.md` (candidates + ambiguities to adjudicate).
+- **Phase 3 — resolution (RESOLVE): ✅ DONE.** Branch `fix/phase3-resolve` (off main @ ea392c6). Plan:
+  `phase3-resolve-PLAN.md`; decisions **D-3.1…D-3.7**. Delivered in 4 waves: registry plumbing +
+  **endpoint-as-mention at the graph layer** (the master fix — edges carry entity ids *before* the fixpoint,
+  which is what revives the relational/source-asserted terms) · identity read source-weighted from the claim
+  stream (`same-as` raise-only + **undrawn**, `distinct-from` veto + drawn; raise-only enforced structurally)
+  · band geometry re-tuned to a symmetric invariant + containment/acronym bootstrap · place-ref write-back
+  with the two RES-5 gates and exact curated-alias binding (no gazetteer auto-mint).
+  **Verified delta** (RCA baseline → Phase-2 → Phase-3): nodes 294→258→**162**; `unknown` 109→86→**3**;
+  lens **0/0 → 23n/34e**; merges 5→5→**53**; HITL queue 0→0→**20**; `entity_canonical` 5→**120**;
+  `resolved_place_ref` `{}` → **3 anchors bound** (`pl_karachi_ad`, `pl_rahwali`, `pl_nurkhan`); relational
+  score >0 on 51 pairs and source-asserted on 30 (both were uniformly 0). All flagship distinct-from traps
+  still separate **and** render, now under stable registry ids. Suite **595 pass / 6 skip / 0 fail**; G2
+  determinism byte-identical across `PYTHONHASHSEED` 0/1/7/42/12345; G4 clean (0 nodes without a claim_id);
+  ruff + mypy clean.
+  **Refused by design (D-3.4):** the customs shell→real-entity link the Phase-2 handoff asked for — the D7
+  scenario design says those stay unresolved and no id should be invented; forcing it would fabricate an
+  attribution. **Open for DATA-C/EVAL** (neither self-fixed): `../RESOLVE-to-DATAC-EVAL-import-event-and-shells.md`
+  (import-event naming) · `../RESOLVE-to-DATA-EVAL-same-as-no-longer-drawn.md` (the oracle's now-unsatisfiable
+  `same-as` edge assertion). **Open for INGEST:** `../RESOLVE-to-INGEST-mislaned-edge-endpoints.md` ·
+  `../RESOLVE-to-INGEST-frozen-location-gaps.md` (MGRS frozen as toponym — fix in flight on
+  `fix/ingest-mgrs-surface-format`).
 - **Phase 4 — derived + surfaces: PENDING.** `handoff-score.md` · `handoff-arch.md` (lens anchors via
   registry; materiality-filter schema) · `handoff-monitor.md` · `handoff-ask.md` (crash-guard + honest refusal).
 - **Cross-cutting (DATA + EVAL): analysis DONE, answer_key edits PENDING.**
@@ -48,8 +63,12 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
 ## Handoff index
 | Doc | Owner | Phase | Status |
 |---|---|---|---|
-| `phase3-resolve-PLAN.md` | RESOLVE | 3 | 📋 **build plan ready** (refines handoff-resolve; folds in D-2.5) |
-| `handoff-resolve.md` | RESOLVE | 3 | superseded-by-plan (evidence/probes still valid) |
+| `phase3-resolve-PLAN.md` | RESOLVE | 3 | ✅ **DONE** — built in 4 waves on `fix/phase3-resolve` (D-3.1…D-3.7) |
+| `handoff-resolve.md` | RESOLVE | 3 | ✅ superseded-by-plan; RES-1…RES-5 all addressed |
+| `../RESOLVE-to-DATAC-EVAL-import-event-and-shells.md` | DATA-C/EVAL | 3→x | **open** — import-event naming; shells stay unresolved (D-3.4) |
+| `../RESOLVE-to-DATA-EVAL-same-as-no-longer-drawn.md` | DATA-C/EVAL | 3→x | **open** — oracle asserts a `same-as` edge that is now unsatisfiable |
+| `../RESOLVE-to-INGEST-mislaned-edge-endpoints.md` | INGEST | 3→2 | **open** — variant→country mis-lane mints wrong-typed nodes |
+| `../RESOLVE-to-INGEST-frozen-location-gaps.md` | INGEST | 3→2 | 🟨 MGRS-as-toponym fix in flight (`fix/ingest-mgrs-surface-format`) |
 | `handoff-ingest.md` | INGEST | 2 | ✅ DONE (80a8702 + 02ad5aa + e597891 + re-record) |
 | `PHASE2-VERIFY-DELTA-AND-HANDOFF.md` | INGEST→P3/P4 | 2 | ✅ delta verified; downstream inheritance + repro gotcha |
 | `handoff-data-c.md` | DATA-C | 1/2 | Phase-1 parts DONE |

@@ -1,14 +1,14 @@
 """Two-phase iterative collective ER: candidate-gen → bootstrap → relational fixpoint.
 
-Candidate-generation maximises **recall** (blocking + hard-IDs + alias-equivalence + LLM proposals);
+Candidate-generation maximises **recall** (blocking + hard-IDs + alias-equivalence + proposals);
 the merge decision is **precision-first** (spine/03). A high-precision **bootstrap** pass (shared unique
-hard-ID / alias-equivalence / exact name) seeds the partition with no relational term; then the
-**relational fixpoint** recomputes ``merge_score`` over the current partition and auto-merges/HITL/
-separates, iterating until a full pass fires no new auto-merge. It terminates because merges are
-**monotone** — clusters only grow within a rebuild — so a no-new-merge pass *is* the fixed point.
-``distinct_from`` is a **hard veto** applied before any band decision; the LLM signal is **raise-only**
-(it can lift a pair into the HITL band but never reach auto-merge — that stays reachable by the
-deterministic terms alone).
+hard-ID / alias-equivalence / exact name / containment-or-acronym) seeds the partition with no relational
+term; then the **relational fixpoint** recomputes ``merge_score`` over the current partition and
+auto-merges/HITL/separates, iterating until a full pass fires no new auto-merge. It terminates because
+merges are **monotone** — clusters only grow within a rebuild — so a no-new-merge pass *is* the fixed
+point. ``distinct_from`` is a **hard veto** applied before any band decision; the *proposal* signals
+(frozen LLM proposals, source-asserted ``same-as`` claims) are **raise-only** — they can lift a pair into
+the HITL band but never reach auto-merge, which stays reachable by the deterministic terms alone.
 """
 
 from __future__ import annotations
@@ -18,9 +18,9 @@ from dataclasses import dataclass, field
 from chanakya.schemas import pair_key
 
 from .aliases import AliasIndex
-from .entities import Entity, EntityGraph, as_pair, unordered_pairs
+from .entities import Entity, EntityGraph, as_pair, namespace_compatible, unordered_pairs
 from .normalize import normalize, tokens
-from .rconfig import ATTRIBUTE, RELATIONAL, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
+from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
 from .scoring import merge_score
 
 Pair = frozenset[str]
@@ -57,21 +57,42 @@ class ResolveResult:
     merge_breakdown: dict[str, dict[str, float]] = field(default_factory=dict)
 
 
-def _band(total: float, cfg: ResolveConfig, has_llm: bool) -> str:
-    """auto ≥ auto_merge · hitl in [hitl_low, auto_merge) OR raised-by-LLM · else separate.
+def _deterministic_total(bd: dict[str, float], cfg: ResolveConfig) -> float:
+    """``merge_score`` minus the source-asserted term — the only total the auto-merge line may be crossed on.
 
-    Raise-only is structural: ``has_llm`` can only reach *hitl*, never *auto* — so the LLM can never
-    push a pair across the auto-merge line (the mandatory red-team patch, spine/08 §3.11).
+    A ``same-as`` in the claim stream is somebody's *assertion* that two things are one thing, and the
+    corpus plants false ones (an Army↔PAF variant cross-wiring that walks straight into a distinct-from
+    trap). So the identity term is raise-only in the same structural sense the LLM proposal is: it can
+    lift a pair into the analyst's queue, but auto-merge must be earned by name/attribute + neighbourhood
+    + temporal coherence alone. Subtracting the term (rather than trusting the clamped total) keeps that
+    true whatever the weights are re-tuned to.
     """
-    if total >= cfg.auto_merge:
+    return sum(cfg.weight(sig) * bd[sig] for sig in SIGNALS if sig != SOURCE_ASSERTED)
+
+
+def _band(bd: dict[str, float], cfg: ResolveConfig, has_raise: bool) -> str:
+    """auto ≥ auto_merge (deterministic subtotal) · hitl in [hitl_low, auto_merge) OR raised · else separate.
+
+    Raise-only is structural on **both** raise-only channels: ``has_raise`` (the frozen LLM proposal, and
+    now the source-asserted identity pair) can only reach *hitl*, and the source-asserted *score* is
+    excluded from the auto test — so neither can push a pair across the auto-merge line (the mandatory
+    red-team patch, spine/08 §3.11, extended to identity claims by D-2.5).
+    """
+    if _deterministic_total(bd, cfg) >= cfg.auto_merge:
         return "auto"
-    if total >= cfg.hitl_low or has_llm:
+    if bd["total"] >= cfg.hitl_low or has_raise:
         return "hitl"
     return "separate"
 
 
-def _candidate_pairs(graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, llm: set[Pair]) -> set[Pair]:
-    """Recall-max candidate generation: block on (type, namespace, name-token) + hard-IDs + aliases + LLM."""
+def _candidate_pairs(
+    graph: EntityGraph,
+    cfg: ResolveConfig,
+    alias_idx: AliasIndex,
+    raise_only: set[Pair],
+    toks: dict[str, list[str]],
+) -> set[Pair]:
+    """Recall-max candidate generation: block on (type, namespace, name-token) + hard-IDs + aliases + proposals."""
     keys = set(cfg.blocking_keys)
     blocks: dict[tuple, set[str]] = {}
     trans = cfg.transliteration
@@ -107,15 +128,16 @@ def _candidate_pairs(graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasInd
         for a, b in unordered_pairs(sorted(members)):
             pairs.add(frozenset((a, b)))
 
-    # Alias-equivalent entities may share no name token (FD-2000 ↔ HQ-9/P): add them explicitly.
+    # Two names can denote one thing while sharing no token at all — an alias (FD-2000 ↔ HQ-9/P) or an
+    # acronym (PAAD ↔ Pakistan Army Air Defence). Neither is reachable by token blocking, so add them here.
     eids = sorted(graph.entities)
     for a, b in unordered_pairs(eids):
         if alias_idx.equivalent(
             normalize(graph.entities[a].name, trans), normalize(graph.entities[b].name, trans)
-        ):
+        ) or _name_containment(graph.entities[a], graph.entities[b], cfg, toks):
             pairs.add(frozenset((a, b)))
 
-    return pairs | llm
+    return pairs | raise_only
 
 
 def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
@@ -126,14 +148,83 @@ def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     return False
 
 
+# ── the open-world name trigger (P3.3): containment + acronym expansion ────────────────────────
+
+def _descriptor_extension(short: list[str], long_: list[str], cfg: ResolveConfig) -> bool:
+    """True when the longer name is the shorter one plus a *descriptive* word ("HT-233 engagement radar").
+
+    Head-anchored (a prefix, not a bag of tokens) and judged on the **first added token**: a name extended
+    by a word is the same thing described more fully; a name extended by a mark or a number is a different
+    model (``HQ-9`` → ``HQ-9/P`` is a whole other missile, ``HT-233`` → ``HT-233 (H-200)`` is precisely the
+    orphan alias the demo requires an analyst to earn).
+
+    The second gate is on the **short** side: a single bare word ("China", "Pakistan") is a prefix of half
+    the graph and bridges things that are not the same — it fused CPMIEC into CASIC and walked "Pakistan"
+    straight at the PAAD/PAF unit trap. Such a form is genuinely ambiguous evidence, so it belongs in the
+    queue, not in a confidence-1.0 bootstrap. Those two tests together are what make this safe to bootstrap.
+    """
+    min_len, min_tokens = cfg.containment_min_descriptor_len, cfg.containment_min_short_tokens
+    if min_len is None or min_tokens is None or len(short) < min_tokens:
+        return False
+    if len(short) >= len(long_) or long_[: len(short)] != short:
+        return False
+    head = long_[len(short)]
+    return head.isalpha() and len(head) >= min_len
+
+
+def _acronym_expansion(short: list[str], long_: list[str], cfg: ResolveConfig) -> bool:
+    """True when a one-token name is exactly the initials of a multi-token one (``PAAD`` ⇄ Pakistan Army…).
+
+    Strict initials of *every* token, so a stop-word in the expansion (ARMT ≠ "Academy **of** Rocket…")
+    fails closed and stays a scored candidate rather than a silent merge.
+    """
+    min_len = cfg.acronym_min_len
+    if min_len is None or len(short) != 1 or len(long_) < min_len:
+        return False
+    acronym = short[0]
+    if not acronym.isalpha() or len(acronym) < min_len or len(acronym) != len(long_):
+        return False
+    return acronym == "".join(t[0] for t in long_)
+
+
+def _token_index(graph: EntityGraph, cfg: ResolveConfig) -> dict[str, list[str]]:
+    """``eid → normalised tokens``, computed once: the containment trigger is consulted per candidate pair."""
+    return {eid: tokens(ent.name, cfg.transliteration) for eid, ent in graph.entities.items()}
+
+
+def _name_containment(a: Entity, b: Entity, cfg: ResolveConfig, toks: dict[str, list[str]]) -> bool:
+    """High-precision open-world name equivalence: containment or acronym, same type + namespace.
+
+    The registry (P3.0) pre-resolves every surface form we have *already seen*; this is the tail it has
+    never seen — a document naming the same thing more verbosely, or by its initials. Type + namespace
+    gated, and (in the bootstrap) veto-gated like every other merge, so it can never fuse a trap pair.
+
+    Note it is consulted **twice**: once to *generate* the candidate pair (an acronym shares no name token
+    with its expansion, so ordinary blocking would never propose "PAAD" against "Pakistan Army Air
+    Defence"), and again to *decide* the bootstrap merge.
+    """
+    if a.etype != b.etype or not namespace_compatible(a, b):
+        return False
+    ta, tb = toks.get(a.eid, []), toks.get(b.eid, [])
+    if not ta or not tb or ta == tb:
+        return False
+    short, long_ = (ta, tb) if len(ta) < len(tb) else (tb, ta)
+    return _descriptor_extension(short, long_, cfg) or _acronym_expansion(short, long_, cfg)
+
+
 def resolve_entities(
     graph: EntityGraph,
     cfg: ResolveConfig,
     alias_idx: AliasIndex,
     veto: set[Pair],
-    llm: set[Pair],
+    raise_only: set[Pair],
 ) -> ResolveResult:
-    """Run the full two-phase resolution over the entity graph; returns the partition + decisions."""
+    """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
+
+    ``raise_only`` is the union of the *proposal* channels — the frozen offline LLM ``merge_proposal``
+    records and the source-asserted ``same-as`` pairs from the claim stream (D-2.5). Both may lift a pair
+    into the HITL band and neither may ever reach auto-merge.
+    """
     res = ResolveResult()
     if not cfg.scorable:
         return res  # no bands configured ⇒ inert (identity partition) — no code literal needed
@@ -141,7 +232,8 @@ def resolve_entities(
     eids = sorted(graph.entities)
     uf = _UnionFind(eids)
     trans = cfg.transliteration
-    pairs = sorted(tuple(sorted(p)) for p in _candidate_pairs(graph, cfg, alias_idx, llm))
+    toks = _token_index(graph, cfg)
+    pairs = sorted(tuple(sorted(p)) for p in _candidate_pairs(graph, cfg, alias_idx, raise_only, toks))
 
     def vetoed(a: str, b: str) -> bool:
         return frozenset((a, b)) in veto or alias_idx.barred(
@@ -171,7 +263,12 @@ def resolve_entities(
         na, nb = normalize(ea.name, trans), normalize(eb.name, trans)
         same_ns = ea.namespace() == eb.namespace()
         # exact-name merge is gated on matching namespace + a non-empty name (China ≠ Pakistan; "" ≠ "").
-        if _shared_unique_id(ea, eb, cfg) or alias_idx.equivalent(na, nb) or (bool(na) and na == nb and same_ns):
+        if (
+            _shared_unique_id(ea, eb, cfg)
+            or alias_idx.equivalent(na, nb)
+            or (bool(na) and na == nb and same_ns)
+            or _name_containment(ea, eb, cfg, toks)
+        ):
             bd = merge_score(ea, eb, graph, uf.find, cfg, alias_idx)
             merge(a, b, 1.0, bd)  # unambiguous evidence → identity confidence 1.0
 
@@ -183,7 +280,7 @@ def resolve_entities(
             if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
                 continue
             bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
-            if _band(bd["total"], cfg, has_llm=False) == "auto":
+            if _band(bd, cfg, has_raise=False) == "auto":
                 merge(a, b, bd["total"], bd)
                 changed = True
 
@@ -192,7 +289,7 @@ def resolve_entities(
         if uf.find(a) == uf.find(b) or vetoed(a, b):
             continue
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
-        if _band(bd["total"], cfg, has_llm=frozenset((a, b)) in llm) == "hitl":
+        if _band(bd, cfg, has_raise=frozenset((a, b)) in raise_only) == "hitl":
             res.candidates.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
             res.merge_breakdown[pair_key(a, b)] = bd
@@ -308,13 +405,21 @@ def _rep[T](raw: dict[str, T], m: str, key: str, default: T) -> T:
 
 
 def _preferred(members: list[str], graph: EntityGraph, cfg: ResolveConfig) -> str:
-    """Canonical = alias-table canonical name > most connected > lexicographically smallest id (stable)."""
+    """Canonical = registry stable id > alias-table canonical name > most connected > smallest id (stable).
+
+    A cluster that contains a **registry** entry (``config/entities.yaml``) adopts that entry's stable
+    ``entity_id`` (P3.0/D-B): it is the same id the subject lenses, the observables and the eval oracle
+    use, so electing it is what actually closes the id-namespace split. With no registry seeded every
+    entity ranks ``False`` on that key, so the ordering — and the golden view — is unchanged (gate G2).
+    """
     alias_canon = {normalize(k, cfg.transliteration) for k in cfg.alias_table}
 
-    def rank(eid: str) -> tuple[bool, int]:
-        is_canon = eid in graph.entities and normalize(graph.entities[eid].name, cfg.transliteration) in alias_canon
+    def rank(eid: str) -> tuple[bool, bool, int]:
+        ent = graph.entities.get(eid)
+        is_registry = ent is not None and ent.registry
+        is_canon = ent is not None and normalize(ent.name, cfg.transliteration) in alias_canon
         degree = len(graph.incident(eid)) if eid in graph.entities else 0
-        return (is_canon, degree)
+        return (is_registry, is_canon, degree)
 
     best = max(rank(e) for e in members)
     return min(e for e in members if rank(e) == best)  # lexicographic-min among the best-ranked
