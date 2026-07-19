@@ -119,6 +119,10 @@ corrected stale rows — F0 (merged #1/`7a9e87b`) and DATA-C (merged #8/`407f1c2
   overlap, not id-exact, until the entity canonical-id registry (DECISIONS §6 "EVAL" D-B) is consumed
   end-to-end and the answer_key is reconciled onto it (separate follow-up) — then eval switches to
   id-exact and the bridge retires. See DECISIONS.md §6 "EVAL" D-C; `tmp/conv/eval-rca/00-RCA-index.md`.
+- **RCA-fix tracking (EVAL RCA):** the four-phase fix is tracked in `tmp/conv/eval-rca/RCA-FIX-PROGRESS.md`
+  (phase status + full handoff index) with decisions in `RCA-FIX-DECISIONS.md`. Phase 1 (edge domain/range +
+  entity canonical-id registry) is **DONE** on branch `fix/phase1-edge-vocab-and-entity-registry`; Phases 2–4
+  (INGEST / RESOLVE / SCORE·ARCH·MONITOR·ASK) pending per the handoff docs.
 - **`make extract`** is SHIP's Makefile target; INGEST ships only the CLI entrypoint it invokes (INGEST flag #2).
 
 ## Handoff notes

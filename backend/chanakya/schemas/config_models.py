@@ -1,9 +1,13 @@
-"""The eight config surfaces + the ``ConfigBundle`` (master §4.4).
+"""The nine config surfaces + the ``ConfigBundle`` (master §4.4).
 
 F0 freezes the *shapes* and the **load-bearing typed fields** (weights, thresholds, half-lives) so
 code can read them typed and gate G6 can assert "no magic numbers in code — all read from config".
 DATA-C authors the *content*. Every model is a ``ConfigModel`` (``extra="allow"``) so DATA-C may add
 knobs without an F0-amendment; only the typed fields below are a frozen contract.
+
+F0-amendment (EVAL RCA, DECISIONS §6 "EVAL" D-A/D-B): edge types carry ``from``/``to``/``symmetric``/
+``extractor`` (domain/range for the write-time re-lane + the extraction enum), and a 9th surface —
+``entities.yaml`` (the entity canonical-id registry) — mirrors ``places.yaml``.
 """
 
 from __future__ import annotations
@@ -18,12 +22,38 @@ from .values import PrecisionClass
 
 # ── ontology.yaml ──────────────────────────────────────────────────────────────────────────────
 
+def _as_list(v: str | list[str] | None) -> list[str]:
+    """Normalise a scalar/list/None domain-or-range spec to a list of node-type names."""
+    if v is None:
+        return []
+    return [v] if isinstance(v, str) else list(v)
+
+
 class TypeDef(ConfigModel):
-    """A node/edge/event type definition — schema designed, instances discovered (DECISIONS)."""
+    """A node/edge/event type definition — schema designed, instances discovered (DECISIONS).
+
+    Edge types additionally declare a **domain/range** — ``from``/``to`` node types — plus ``symmetric``
+    and ``extractor`` flags (D-A, the edge-vocabulary collision fix). Endpoint types make each *extractor*
+    edge uniquely determinable, so a write-time re-lane can put a fact on the edge its endpoints imply
+    regardless of the verb the model chose (``manufactures``↔``supplies-component``, ``equips``'s
+    direction), and ``extractor: true`` marks the relationship edges the LLM is allowed to assert (the
+    extraction enum). These fields are inert on node/event types. Read via :mod:`chanakya.ontology`.
+    """
 
     name: str
     freshness_class: str | None = None  # → a half-life key in credibility.yaml
     attrs: list[str] = []
+    # edge-only (ignored on node/event types) — D-A:
+    from_type: str | list[str] | None = Field(default=None, alias="from")  # domain: subject node type(s)
+    to_type: str | list[str] | None = Field(default=None, alias="to")      # range:  object  node type(s)
+    symmetric: bool = False   # same-as / distinct-from / substitutable-by / corroborates / contradicts
+    extractor: bool = False   # part of the extraction enum (a relationship edge the LLM may assert)
+
+    def from_types(self) -> list[str]:
+        return _as_list(self.from_type)
+
+    def to_types(self) -> list[str]:
+        return _as_list(self.to_type)
 
 
 class OntologyConfig(ConfigModel):
@@ -118,6 +148,41 @@ class PlacesConfig(ConfigModel):
         return {p.place_id: p for p in self.places}
 
 
+# ── entities.yaml (the entity canonical-id registry — 9th surface; RESOLVE consumes at rebuild) ──
+
+class EntityEntry(ConfigModel):
+    """One canonical entity in the registry (``config/entities.yaml``; mirrors :class:`PlaceEntry`, D-B).
+
+    The stable semantic-id target RESOLVE resolves surface forms onto — via alias-equivalence (this
+    table ∪ learned merges) + fuzzy/attribute scoring — so the graph, subject lenses, observables, and
+    the oracle share ONE id space (closing the id-namespace split). A curated *prior*, not a closed
+    world: an unknown entity still mints its own node. The extractor never emits these ids; it emits
+    surface form + type, and RESOLVE maps surface→id. Consumed at rebuild like the place gazetteer.
+    """
+
+    entity_id: str                  # stable canonical id (== the oracle id, e.g. comp_ht233, unit_paad)
+    type: str                       # ontology node type (component | variant | manufacturer | unit | …)
+    canonical_name: str
+    aliases: list[str] = []         # known surface forms that resolve to this entity
+    distinct_from: list[str] = []   # explicit do-not-merge entity_ids (hard veto, before banding)
+    attrs: dict[str, Any] = {}      # optional seeded node attrs (e.g. foreign_control) — DATA-C-authored
+
+
+class EntitiesConfig(ConfigModel):
+    """The seed entity registry (``config/entities.yaml``; hot-config extensible, mirrors PlacesConfig).
+
+    Loaded through the live store like every other surface, so an analyst can add an entity or fix an
+    alias with no restart. RESOLVE consumes it to (a) seed the alias index with each entry's
+    canonical/alias equivalence class and (b) elect the ``entity_id`` as a cluster's canonical node id.
+    Open-world: entries are a prior, never a closed vocabulary.
+    """
+
+    entities: list[EntityEntry] = []
+
+    def as_map(self) -> dict[str, EntityEntry]:
+        return {e.entity_id: e for e in self.entities}
+
+
 # ── templates.yaml ─────────────────────────────────────────────────────────────────────────────
 
 class EvidenceTemplate(ConfigModel):
@@ -178,7 +243,7 @@ class ObservablesConfig(ConfigModel):
 # ── the bundle ─────────────────────────────────────────────────────────────────────────────────
 
 class ConfigBundle(ConfigModel):
-    """All eight surfaces + a monotonic ``version`` the config store bumps on every hot write."""
+    """All nine surfaces + a monotonic ``version`` the config store bumps on every hot write."""
 
     version: int = 0
     ontology: OntologyConfig = OntologyConfig()
@@ -189,9 +254,10 @@ class ConfigBundle(ConfigModel):
     subjects: SubjectsConfig = SubjectsConfig()
     observables: ObservablesConfig = ObservablesConfig()
     places: PlacesConfig = PlacesConfig()
+    entities: EntitiesConfig = EntitiesConfig()
 
 
-# The eight surface filenames, in the fixed load order (config store reads these from config/).
+# The nine surface filenames, in the fixed load order (config store reads these from config/).
 CONFIG_SECTIONS: dict[str, type[ConfigModel]] = {
     "ontology": OntologyConfig,
     "sources": SourcesConfig,
@@ -201,4 +267,5 @@ CONFIG_SECTIONS: dict[str, type[ConfigModel]] = {
     "subjects": SubjectsConfig,
     "observables": ObservablesConfig,
     "places": PlacesConfig,
+    "entities": EntitiesConfig,
 }

@@ -793,3 +793,13 @@ canonicalizer — for the corroboration-co-location case; the two decisions conv
 - `spine/01`/`spine/02` — the sourced-claim unit now carries a **canonical edge-direction invariant** at write;
   edge identity is orientation-free. `spine/08` — record the `from`/`to`/`symmetric` ontology fields + the
   two-placement (write + read-net) enforcement.
+
+- **RCA-fix hub.** Build-time sub-decisions (manufactures tightening D-A.1; the re-lane provenance rule
+  D-A.2; registry-as-open-world-prior D-B.1; the foreign_control/materiality-seeding deferral D-C.1; and the
+  keep-Phase-1-self-contained reconciliation with INGEST's uncommitted `edge_direction.py`) are logged in
+  `tmp/conv/eval-rca/RCA-FIX-DECISIONS.md`; phase tracking + the handoff index in
+  `tmp/conv/eval-rca/RCA-FIX-PROGRESS.md`. Phase 1 shipped on branch `fix/phase1-edge-vocab-and-entity-registry`
+  (PR #29). **Reconciled with the INGEST block above:** Phase 1 promoted `from`/`to` to *typed* `TypeDef`
+  fields (the "trivial follow-up" that block deferred) + added `symmetric`/`extractor`, and tightened
+  `manufactures` to Mfr→Variant; `edge_direction.py` (direction) and `chanakya/ontology.py` (predicate
+  re-lane) are complementary and both read the same ontology `from`/`to`.
