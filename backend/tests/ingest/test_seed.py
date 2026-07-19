@@ -12,6 +12,10 @@ geocoder is stubbed to ``None`` so no adapter touches the network. All bundles a
 * **seed == the claims** — ``seed_store_from_bundles`` appends exactly the bundles' claims, in order.
 * **byte-stability** — two recorder runs with the same pinned ``ingest_time`` produce byte-identical JSON.
 * **scenario filter** — a source cited under a different scenario is skipped.
+* **co-loaded imagery (ING-8)** — a text-citation source carrying a registry ``images`` pointer runs
+  *both* the text lane and the VLM lane for its sibling frame, mirroring the live lane's ``DocInput.images``.
+* **report_date → report_time (ING-7)** — a registry ``report_date`` lands on every emitted claim's
+  ``report_time``; an unset ``report_date`` yields ``report_time=None`` (no fabrication).
 """
 
 from __future__ import annotations
@@ -201,3 +205,76 @@ def test_extract_corpus_filters_by_scenario(tmp_path: Any) -> None:
 
     assert [p.name for p in written] == ["t01_prose.json"]
     assert not (out / "o01_prose.json").exists()
+
+
+# ── ING-8: a registry ``images`` pointer co-loads the sibling frame through the VLM lane ────────────
+
+def _tiny_coload_scenario(tmp_path: Any, *, report_date: str | None = None) -> tuple[str, ConfigBundle]:
+    """A GEOINT-style source: a prose ``.txt`` citation plus a sibling ``.png`` named via ``images``."""
+    scenario = "coloadscn"
+    docs = tmp_path / "scenarios" / scenario / "docs"
+    docs.mkdir(parents=True)
+
+    prose = docs / "g01_geoint.txt"
+    prose.write_text(_PROSE_TEXT, encoding="utf-8")
+    img = docs / "g01_geoint.png"
+    img.write_bytes(_png())
+
+    sources = [
+        SourceRegistryEntry(
+            source_id="g01_geoint", source_type="trade-media", citation_url=str(prose),
+            images=[str(img)], report_date=report_date,
+        )
+    ]
+    return scenario, ConfigBundle(sources=SourcesConfig(sources=sources))
+
+
+def test_coloaded_image_runs_both_text_and_vlm_lane(tmp_path: Any) -> None:
+    """A source whose citation is ``.txt`` but which carries an ``images`` pointer yields claims from
+    *both* the text lane (``method='llm'``) and the co-loaded frame's subject-blind VLM lane
+    (``method='vlm'``) — the prose write-up is never dropped in favour of the image, or vice versa."""
+    scenario, config = _tiny_coload_scenario(tmp_path)
+    out = tmp_path / "claims"
+    client = ScriptedExtractionClient([_PROSE_FILLED, _IMAGE_FILLED])
+
+    written = seed.extract_corpus(scenario, client=client, config=config, out_dir=out)
+
+    assert [p.name for p in written] == ["g01_geoint.json"]
+    claims = seed.ingest_bundle(out / "g01_geoint.json")
+    methods = sorted(c.extraction.method for c in claims)
+    assert methods == ["llm", "vlm"]
+
+    vlm_claim = next(c for c in claims if c.extraction.method == "vlm")
+    assert vlm_claim.kind == "observation"
+    assert "image_fingerprint" in (vlm_claim.attributes or {})
+    # claim ids are canonical + collision-free despite two extraction calls for one source.
+    assert len({c.claim_id for c in claims}) == len(claims)
+
+
+# ── ING-7: ``report_date`` → every emitted claim's ``report_time`` (or honestly absent) ─────────────
+
+def test_report_date_flows_to_report_time_on_every_claim(tmp_path: Any) -> None:
+    scenario, config = _tiny_coload_scenario(tmp_path, report_date="2022-03-14")
+    out = tmp_path / "claims"
+    client = ScriptedExtractionClient([_PROSE_FILLED, _IMAGE_FILLED])
+
+    seed.extract_corpus(scenario, client=client, config=config, out_dir=out)
+    claims = seed.ingest_bundle(out / "g01_geoint.json")
+
+    assert claims
+    for claim in claims:
+        assert claim.report_time is not None
+        assert claim.report_time.model_dump(mode="json")["iso_date"] == "2022-03-14"
+
+
+def test_unset_report_date_yields_no_report_time(tmp_path: Any) -> None:
+    """No ``report_date`` on the registry entry ⇒ ``report_time=None`` on every claim — never a guess."""
+    scenario, config = _tiny_coload_scenario(tmp_path, report_date=None)
+    out = tmp_path / "claims"
+    client = ScriptedExtractionClient([_PROSE_FILLED, _IMAGE_FILLED])
+
+    seed.extract_corpus(scenario, client=client, config=config, out_dir=out)
+    claims = seed.ingest_bundle(out / "g01_geoint.json")
+
+    assert claims
+    assert all(claim.report_time is None for claim in claims)

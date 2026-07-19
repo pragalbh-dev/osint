@@ -163,3 +163,16 @@ class SourceRegistryEntry(Record):
     adversary_denial_flag: bool = False  # a GATE, not a multiplier (§3.4)
     cadence: str | None = None  # revisit interval → generates next_coverage_due (§3.7)
     citation_url: str | None = None
+    # Co-located imagery (ING-8): sibling frame(s) for a citation whose primary payload is prose/records
+    # (e.g. a GEOINT write-up beside its satellite frame). Repo-relative paths, same convention as
+    # ``citation_url``. A list (not a single pointer) so a source with several frames stays representable;
+    # each is co-loaded into extraction via the VLM lane alongside the primary text lane — never a
+    # replacement for it. Empty for a source with no sibling imagery (the common case).
+    images: list[str] = []
+    # The date the document ITSELF states (a "DATE OF REPORT:" line, a post timestamp, a filing/issue
+    # date) — ISO ``YYYY-MM-DD`` (ING-7). Populated only from a verbatim, unambiguous statement in the
+    # source; left unset when the document carries no usable day-level date (never inferred/approximated
+    # — a fabricated date is a disqualifying failure, master non-negotiable). Threaded through to
+    # ``report_time`` at extraction; distinct from ``ingest_time`` (when *we* received it, pinned) and
+    # from ``event_time`` (when the fact was true in the world, extracted per-transform from doc content).
+    report_date: str | None = None
