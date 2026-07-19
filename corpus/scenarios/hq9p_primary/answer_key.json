@@ -112,14 +112,15 @@
       {
         "id": "unit_paad",
         "type": "unit",
-        "name": "Pakistan Army Air Defence — HQ-9/P regiment",
+        "name": "Pakistan Army Air Defence — HQ-9/P unit/formation",
         "status": "confirmed",
         "evidence_date": "2021-10-14"
       },
       {
         "id": "unit_hq9b",
         "type": "unit",
-        "name": "PAF HQ-9B fire-unit (relocation subject)",
+        "name": "HQ-9B fire-unit (relocation subject)",
+        "operator_branch": "PAF/Army — ambiguous in sources (d18 'Pakistan Army Air Defence Command'; d19 'PAF/Army Air Defence Command'; d17 site is 'PAF Base Nur Khan' but names no operator)",
         "status": "confirmed",
         "evidence_date": "2021"
       },
@@ -170,12 +171,6 @@
         "status": "confirmed"
       },
       {
-        "rel": "manufactures",
-        "from": "mfr_casic",
-        "to": "comp_ht233",
-        "status": "confirmed"
-      },
-      {
         "rel": "equips",
         "from": "comp_ht233",
         "to": "var_hq9p",
@@ -189,11 +184,11 @@
         "status": "confirmed"
       },
       {
-        "rel": "manufactures",
+        "rel": "supplies-component",
         "from": "mfr_23rd_ri",
         "to": "comp_ht233",
         "status": "possible",
-        "note": "inferred institutional logic (CASI 2025); NOT confirmed — candidate-ness carried as edge status=possible, not an edge type"
+        "note": "candidate HT-233 maker (23rd RI / BIRM), inferred institutional logic (d22/d24, CASI 2025); NOT confirmed — the HT-233 maker stays a Known Gap. Mfr->Component = supplies-component per the ontology (D-A); candidate-ness carried as edge status=possible, not an edge type."
       },
       {
         "rel": "supplies-component",
@@ -275,7 +270,19 @@
         "to": "site_karachi",
         "status": "confirmed",
         "confirmed_by": "imagery",
-        "freshness": "perishable"
+        "freshness": "perishable",
+        "basis": "derived",
+        "observed_layer": {
+          "claim": "HQ-9/P petal/ring SAM pad at Malir, Karachi (multi-pass, 4 collects)",
+          "status": "confirmed",
+          "via": "imagery/d07"
+        },
+        "attribution_layer": {
+          "claim": "the pad is operated by unit_paad (PAAD)",
+          "status": "probable",
+          "via": "d02 ISPR (PAAD induction at Karachi) + d07 hedged 'reportedly PAAD Command'"
+        },
+        "note": "DERIVED edge — no document states a named unit at a named site. Equipment@site is confirmed (d07, 4 passes); attributing it to the named PAAD unit is the inferential layer (probable). d07's system-type ID is only MODERATE. The demo separates observed (occupancy) from inferred (unit-attribution)."
       },
       {
         "rel": "based-at",
@@ -283,7 +290,18 @@
         "to": "site_rawalpindi",
         "status": "stale",
         "freshness": "perishable",
-        "note": "confirmed 2021 -> stale after relocation"
+        "basis": "derived",
+        "observed_layer": {
+          "claim": "HQ-9B fire-unit / battery element at PAF Base Nur Khan (fmr Chaklala), 2021 (multi-pass, 3 collects)",
+          "status": "confirmed-as-of-2021",
+          "via": "imagery/d17"
+        },
+        "attribution_layer": {
+          "claim": "operated by unit_hq9b",
+          "status": "probable",
+          "via": "d17 equipment read (no unit designator)"
+        },
+        "note": "confirmed 2021 -> STALE. Staleness is INFERRED from the 2025 redeployment narrative (d19) plus perishable freshness decay — NOT from a negative observation at Rawalpindi (no 2025 imagery shows it vacated)."
       },
       {
         "rel": "based-at",
@@ -291,20 +309,33 @@
         "to": "site_rahwali",
         "status": "confirmed",
         "freshness": "perishable",
-        "note": "2025 probable->confirmed"
+        "basis": "derived",
+        "observed_layer": {
+          "claim": "HQ-9B site signature at Rahwali; single-pass 2025 (d18, decoy-flagged) -> 2nd independent signal repeat-EO + ELINT emitter fix (d19)",
+          "status": "probable->confirmed",
+          "via": "imagery+ELINT/d18,d19"
+        },
+        "attribution_layer": {
+          "claim": "operated by unit_hq9b",
+          "status": "probable",
+          "via": "d18/d19 hedged 'PAAD / PAF Air Defence Command' association"
+        },
+        "note": "2025 probable (single-pass, decoy cap) -> confirmed via a discipline-INDEPENDENT + cross-interest 2nd signal (d19). The flagship 2-independent-signal gate."
       },
       {
         "rel": "supersedes",
         "from": "site_rahwali",
         "to": "site_rawalpindi",
         "status": "confirmed",
-        "note": "state-change; needs confidence-floor to resist D8 spoof"
+        "basis": "derived",
+        "note": "DERIVED state-change from d19's hedged 'recent redeployment'; held at a confidence FLOOR so the d20 single-source reverse rumor cannot flip it (the counter-deception headline)."
       },
       {
         "rel": "sustained-by",
         "from": "unit_paad",
         "to": "sustain_spares",
-        "status": "probable"
+        "status": "probable",
+        "note": "single-source (d06). NB: d06 is a PAF Air HQ tender for the fielded LR-SAM 'System' and names no unit; attaching sustainment to the Army unit_paad is nominal — the dependency is system-level, not unit-specific."
       }
     ],
     "places": [
@@ -492,8 +523,7 @@
       "site_karachi",
       "unit_paad",
       "var_hq9p",
-      "comp_ht233",
-      "mfr_casic"
+      "comp_ht233"
     ],
     "expected_path_edges": [
       {
@@ -510,14 +540,9 @@
         "from": "comp_ht233",
         "rel": "equips",
         "to": "var_hq9p"
-      },
-      {
-        "from": "mfr_casic",
-        "rel": "manufactures",
-        "to": "comp_ht233"
       }
     ],
-    "expected_path_edges_note": "edges are the CANONICAL stored direction (== ground_truth.edges); expected_path lists node traversal order (observed battery -> origin), i.e. the reverse walk. The agent traverses edges bidirectionally by node id.",
+    "expected_path_edges_note": "edges are the CANONICAL stored direction (== ground_truth.edges); expected_path lists node traversal order (observed battery -> origin), i.e. the reverse walk. The agent traverses edges bidirectionally by node id. The trace TERMINATES at comp_ht233 (the chokepoint): HT-233's specific maker is a Known Gap (candidate mfr_23rd_ri via supplies-component, possible) — there is NO confirmed CASIC->HT-233 maker edge (d22/d24: the HT-233 maker is UNKNOWN). CASIC is reached as the confirmed PROGRAM prime / design authority via var_hq9p (mfr_casic manufactures var_hq9p) + sustain_techdata design-authority-for var_hq9p — never as the radar's maker.",
     "expected_answer": "Chokepoint = HT-233 engagement radar — CANDIDATE. CASIC/2nd Academy is the confirmed program design authority; the specific HT-233 maker is a Known Gap (best open-source candidate = CASIC 23rd Research Institute, inferred/unconfirmed per CASI 2025). Substitutability UNKNOWN → collection requirement, not a confirmed sole-source.",
     "must": "cite the exact source at every hop; separate observed (basing/imagery) from inferred (chokepoint candidacy)."
   },

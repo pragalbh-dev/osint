@@ -45,12 +45,16 @@ Format: **choice · principle invoked · alternative rejected**.
   doesn't couple to INGEST's larger in-flight work. *Clean ownership; keep the tested contract independent.*
   See `../INGEST-edge-direction-UNCOMMITTED-risk.md`.
 
-## Answer-key grounding sub-decisions (session 2026-07-19, branch `fix/answer-key-grounding` off main)
+## Answer-key grounding sub-decisions (session 2026-07-19)
 Full analyst reasoning + exact edits: `handoff-answer-key-grounding.md`; complete node/edge sweep:
-`ANSWER-KEY-GROUNDING-AUDIT.md`. Trigger: the complaint that the oracle asserts things "not makeable from
-the data." Finding: ~85% of the key is cleanly sourced; the issues are one un-sourced edge + an
-over-flattened basing cluster + cosmetics. These are DATA-C/EVAL edits (not a code agent's) — this session
-produced the audit + handoff, did **not** touch `answer_key.json`.
+`ANSWER-KEY-GROUNDING-AUDIT.md`; downstream derivation: `handoff-resolve-score-grounding.md`. Trigger: the
+complaint that the oracle asserts things "not makeable from the data." Finding: ~85% of the key is cleanly
+sourced; the issues are one un-sourced edge + an over-flattened basing cluster + cosmetics.
+
+**STATUS: APPLIED to `answer_key.json` on branch `fix/answer-key-grounding-apply` (2026-07-19), at the
+user's direction** — the ratified DATA/EVAL reconciliation (no *code* agent touched the oracle). The audit
++ handoff landed first on `fix/answer-key-grounding` (PR #30, merged). D-G1 resolved to **A1 (remove)**
+after checking the ontology; RESOLVE/SCORE (+ a newly-found ASK coupling) are handed off, not applied here.
 - **D-G1 — Remove the `mfr_casic --manufactures--> comp_ht233 (confirmed)` edge.** The corpus (d22 IISS,
   d24 CSIS) states the HT-233 maker is **unknown** and explicitly warns against the export-agent/integrator
   → maker conflation; the key itself grades the maker `unknown` + mints `gap_ht233_maker`, so the edge
@@ -59,6 +63,18 @@ produced the audit + handoff, did **not** touch `answer_key.json`.
   assessments (the non-negotiable).* *Rejected:* the prior Item-1 re-lane-only (`manufactures`→
   `supplies-component`) — relabelling leaves a *confirmed* CASIC→HT-233 supply edge that is still
   un-sourced. **This supersedes `../PHASE1-DATAC-EVAL-answer_key-reconciliation.md` Item 1.**
+  **Resolution = A1 (remove), APPLIED.** *A2 (re-type to `design-authority-for`) rejected on inspection:*
+  the ontology locks `design-authority-for` to `techdata_authority → variant`, so a manufacturer→component
+  design-authority edge would be an ontology contract change (widening domain/range, re-opening Phase-1
+  edge-uniqueness, pulling in INGEST) — bigger blast radius, not smaller. A1 is ontology-clean: a
+  manufacturer reaches a *component* only via `supplies-component` (a maker claim), which CASIC can't
+  confirmably make, so it correctly has no direct radar edge. Also **applied:** re-laned
+  `mfr_23rd_ri manufactures comp_ht233 (possible)` → `supplies-component (possible)`; `worked_query`
+  expected_path now **terminates at `comp_ht233`** (chokepoint), CASIC reached as program prime via
+  `var_hq9p`; `expected_answer` already honest (unchanged). **Coupling found:** ASK's hero-path code
+  (`agent/loop.py`) embeds the same false narrative (defaults the chokepoint maker to `mfr_casic`) — ASK
+  fix needed (does not break this PR; fixture-based tests untouched). See `handoff-resolve-score-grounding.md`
+  §ASK-coupling + `handoff-ask.md`.
 - **D-G2 — Soften the three `based-at` unit→site edges to observed-occupancy + derived unit-attribution.**
   No doc states a named unit at a named site; each is equipment@site (imagery) + a hedged formation
   reference. Model both layers at their own confidence (Karachi confirmed-occupancy/strong-attribution;
@@ -74,6 +90,18 @@ produced the audit + handoff, did **not** touch `answer_key.json`.
   do **not** seed `foreign_control`/`SOLE_SOURCE` to force CONFIRMED (upholds D-C.1). If material at all,
   rest it on the hedged techdata-authority (d21) + no-open-substitute-chassis (d24) axis at **probable**.
   *Absence of evidence ≠ evidence of absence.* Config-side owner: SCORE (no credibility retune).
+- **D-G5 — ASK grounding follow-on kept as its own handoff, bundled post-Phase-4.** D-G1 removed the
+  un-sourced CASIC→HT-233 maker edge from the oracle, but ASK's deterministic hero path still *speaks* it:
+  `agent/loop.py:170-171` looks up the maker via `manufactures` (which post-D-A can never match a component)
+  and then falls back to the literal `"mfr_casic"` — an unconditional, un-sourced attribution. Written up as
+  `handoff-ask-grounding.md` (ASK-G1 blocks-demo, ASK-G2/G3 major) rather than fixed here.
+  *An honest store + a confabulating answer layer is still a fabricated assessment (the non-negotiable);
+  clean ownership — ASK owns its surface.* *Rejected:* folding the ASK fix into the answer_key PR (would mix
+  a DATA/EVAL oracle change with ASK code + 4 coupled test files, and ASK's tests are fixture-based so they
+  stay green either way — no urgency to couple them). **Bundle into the post-Phase-4 ASK work alongside
+  `handoff-ask.md`**, whose "honest refusal" machinery is the same mechanism ASK-G1 needs.
+  NB: D-2.7 (INGEST) independently reached the same conclusion for `based-at` — "no doc states unit→site;
+  it is derived" — which corroborates D-G2 from the extraction side.
 
 ## Phase-2 build-time sub-decisions (INGEST — extraction rework, commit 80a8702)
 - **D-2.1 — Extraction enum driven from `EdgeLaneIndex.extractor_edges()`, injected at tool-schema build.**
