@@ -82,3 +82,17 @@ half_lives_days:
   substitutable-by: 540                  # 18mo (authored default; no doc number)
   # sustained-by -> OMITTED (coarse rollup, not independently scored)
   # same-as, distinct-from, evidenced-by, corroborates, contradicts, supersedes, derived-from -> OMITTED (structural)
+
+# INGEST attribution proposer (ingest/attribute.py) — offline, connection-triggered enrichment that turns an
+# unattributed subject-blind VLM shape into a cited variant-identity `inference` claim D. Namespaced knobs on
+# this surface (extra="allow", no F0-amendment; mirrors resolution.yaml's llm_candidate_gen). Model id is NOT
+# here — it flows from the extraction client (client.model_id), same as imagery. Absent block => proposer stays
+# dormant (no code-literal defaults). reference_source_classes uses source_class_factors keys (no "reference").
+attribution_proposer:
+  max_calls_per_rebuild: 8        # budget cap per enrichment pass; every non-firing candidate is logged
+  log_skips: true
+  candidate:
+    presence_edge_types: [based-at]                                    # deployment edges the co-location hangs on
+    reference_source_classes: [curated-register, think-tank, trade-media]  # what counts as fingerprint literature
+    fingerprint_attrs: [site_signature_geometry, observable_fingerprint, equipment_fingerprint]  # geometry-bearing attrs
+    variant_hop_edges: [inducted-into, equips]                         # 1-hop from the variant to reach unit/component fingerprints

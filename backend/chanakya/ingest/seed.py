@@ -196,6 +196,10 @@ def extract_corpus(
     # an orphan ``<source_id>.json`` that :func:`seed_store_from_bundles` still globs + appends — that
     # would drift the keyless baseline away from the current config (keyless ≢ live).
     for stale in target.glob("*.json"):
-        if stale.name not in kept:
+        # Preserve attribution-inference bundles (``*__attr.json``): they are produced by the separate
+        # offline enrichment pass (``python -m chanakya.ingest attribute --record``), not this per-source
+        # recorder, so they are never in ``kept`` — but they belong to the frozen baseline and must survive
+        # a re-record of the source documents.
+        if stale.name not in kept and not stale.name.endswith("__attr.json"):
             stale.unlink()
     return written

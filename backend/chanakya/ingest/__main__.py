@@ -64,6 +64,47 @@ def _cmd_seed(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_attribute(args: argparse.Namespace) -> int:
+    """Propose attribution inferences over the frozen resolved view for a scenario (offline enrichment).
+
+    Seeds the scenario's frozen claims, rebuilds the resolved view, and runs the connection-triggered
+    proposer over it. ``--record`` freezes the proposed inferences as ``*__attr.json`` bundles (keyless boot
+    then materialises them); otherwise the inferences are appended and the view re-rebuilt to show them
+    co-located. Needs an extraction key (like ``extract``) — keyless boot already loads any frozen bundles.
+    """
+    bundles_dir = settings.corpus_dir() / "scenarios" / args.scenario / "claims"
+    if not bundles_dir.is_dir():
+        print(f"no claim bundles at {bundles_dir}", file=sys.stderr)
+        return 2
+    client = build_extraction_client()
+    if client is None:
+        print(
+            "no extraction client: set GEMINI_API_KEY or ANTHROPIC_API_KEY to propose attributions "
+            "(keyless boot already materialises any frozen *__attr.json inference bundles)",
+            file=sys.stderr,
+        )
+        return 2
+    config = _load_config()
+    store = EvidenceLog()
+    seed.seed_store_from_bundles(store, bundles_dir)
+
+    from chanakya.ingest import attribute
+    from chanakya.view.pipeline import rebuild
+
+    if args.record:
+        prev = rebuild(store, [], config)
+        run = attribute.propose_attributions(
+            prev, {c.claim_id: c for c in store.replay()}, config, client=client)
+        for path in attribute.freeze_bundles(run, bundles_dir):
+            print(f"wrote {path}")
+    else:
+        run = attribute.enrich(store, config, client=client)
+    for skip in run.skipped:
+        print(f"skip {skip.site_id}: {skip.reason}", file=sys.stderr)
+    print(f"proposed {len(run.claims)} attribution(s); fired {len(run.fired)}, skipped {len(run.skipped)}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Parse args and dispatch. Returns the process exit code."""
     parser = argparse.ArgumentParser(
@@ -81,6 +122,13 @@ def main(argv: list[str] | None = None) -> int:
     p_seed = sub.add_parser("seed", help="load a scenario's frozen bundles into a store (keyless)")
     p_seed.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
     p_seed.set_defaults(func=_cmd_seed)
+
+    p_attr = sub.add_parser(
+        "attribute", help="propose attribution inferences over the frozen resolved view (offline, keyed)")
+    p_attr.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
+    p_attr.add_argument("--record", action="store_true",
+                        help="freeze proposed inferences as *__attr.json bundles; else append + re-rebuild")
+    p_attr.set_defaults(func=_cmd_attribute)
 
     args = parser.parse_args(argv)
     return int(args.func(args))
