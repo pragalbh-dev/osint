@@ -35,9 +35,11 @@ from chanakya.schemas import (
     KnownGap,
     NodeView,
     Partition,
+    SourceRegistryEntry,
     pair_key,
 )
 from chanakya.sufficiency import check
+from chanakya.timeref import is_available_by
 
 from .export import sorted_view
 from .supersede import build_instance_edges
@@ -61,6 +63,54 @@ def apply_retractions(claims: list[ClaimRecord]) -> list[ClaimRecord]:
     """
     retracted = {c.targets for c in claims if c.kind == "retraction" and c.targets}
     return [c for c in claims if c.kind != "retraction" and c.claim_id not in retracted]
+
+
+def apply_claim_exclusions(
+    claims: list[ClaimRecord], decisions: list[DecisionRecord]
+) -> list[ClaimRecord]:
+    """Drop claims a HITL decision rejected — sourced from the decision log, applied like a retraction.
+
+    The richer *reject* beat (SCORE pickup #1): rejecting a look **excludes** it upstream of scoring so
+    the status machine re-derives the verdict from fewer independent groups (confirmed→probable), instead
+    of force-flipping the label post-machine. HITL emits an ``exclude_claims`` effect; rebuild applies it
+    here — the claim is never mutated or deleted from the log (append-only, gate G3), just left out of the
+    view on this rebuild. Empty when no decision excludes anything → view unchanged (gate G2).
+    """
+    excluded: set[str] = set()
+    for d in decisions:
+        effect = (d.effects or {}).get("exclude_claims")
+        if isinstance(effect, str):
+            excluded.add(effect)
+        elif isinstance(effect, (list, tuple)):
+            excluded.update(str(cid) for cid in effect)
+    return [c for c in claims if c.claim_id not in excluded] if excluded else claims
+
+
+def deception_gate_flags(
+    element: NodeView | EdgeView | EventView,
+    claims_by_id: dict[str, ClaimRecord],
+    sources: dict[str, SourceRegistryEntry],
+) -> list[str]:
+    """Deception gates that cap an assertion at *probable* (spine/04 §3.4) — **gates, not multipliers**.
+
+    Populated here, where the supporting claims + the source registry are in scope, so that
+    ``assign_status`` (which sees only the ``AssertionInput``) can enforce the caps. ``adversary-denial``
+    if any supporting claim's source carries ``adversary_denial_flag`` (a fake second-source or a denial
+    of a known dependency); ``decoy-risk`` if the element is flagged as a single-pass basing signature
+    that cannot confirm. Empty on clean elements → golden view unchanged (gate G2). Order is deterministic.
+    """
+    flags: list[str] = []
+    for cid in element.claim_ids:
+        claim = claims_by_id.get(cid)
+        if claim is None:
+            continue
+        src = sources.get(claim.source_id)
+        if src is not None and src.adversary_denial_flag:
+            flags.append("adversary-denial")
+            break
+    if getattr(element, "attrs", {}).get("decoy_risk_flag"):
+        flags.append("decoy-risk")
+    return flags
 
 
 # ── partition application ────────────────────────────────────────────────────────────────────
@@ -245,6 +295,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     claims: list[ClaimRecord] = _replay(evidence, ClaimRecord)
     decisions: list[DecisionRecord] = _replay(decision, DecisionRecord)
     active = apply_retractions(claims)
+    active = apply_claim_exclusions(active, decisions)  # HITL reject → drop the look upstream of scoring
+
+    # Rewind: a *past* ``config.credibility.as_of`` hides claims not yet available then, so "as of DATE"
+    # is an honest point-in-time view (is_available_by is clock-free — G1). Unset/future ⇒ no-op (G2).
+    if config.credibility.as_of:
+        active = [c for c in active if is_available_by(c, config.credibility.as_of)]
 
     # 1. resolution — resolve() is a pure function of (claims, config, prev_view, decision log): the
     #    decision log carries the offline LLM proposer's frozen merge_proposal records + the analyst's
@@ -259,8 +315,8 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
 
-    # 3. credibility (per-claim)
-    credibility = score_claims(resolved, sources, config)
+    # 3. credibility (per-claim) — decisions carry analyst integrity flags (origin-wide, incl. future claims)
+    credibility = score_claims(resolved, sources, config, decisions)
 
     # 4. per-assertion inputs: independence groups attached to each element
     elements: dict[str, NodeView | EdgeView | EventView] = {}
@@ -278,6 +334,11 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         per_claim = {cid: credibility[cid] for cid in el.claim_ids if cid in credibility}
         kind = "node" if isinstance(el, NodeView) else ("edge" if isinstance(el, EdgeView) else "event")
         contradiction = bool(getattr(el, "attrs", {}).get("contradiction"))
+        # Deception gates (adversary-denial / decoy-risk) computed where claims + sources are in scope,
+        # so assign_status can enforce the caps from the AssertionInput alone (spine/04 §3.4).
+        gate_flags = deception_gate_flags(el, claims_by_id, sources)
+        if contradiction:
+            gate_flags.append("contradiction")
         assertions.append(
             AssertionInput(
                 element_id=eid,
@@ -286,7 +347,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                 groups=groups,
                 opposing_claims=list(el.opposing_claims),
                 has_unresolved_contradiction=contradiction,
-                gate_flags=["contradiction"] if contradiction else [],
+                gate_flags=gate_flags,
             )
         )
 

@@ -57,6 +57,12 @@ class CredibilityConfig(ConfigModel):
     integrity_penalties: dict[str, float] = {}  # flag → multiplier (recycled, too-clean, …)
     thresholds: dict[str, float] = {}  # {"confirmed":0.80, "probable":0.50}
     half_lives_days: dict[str, float] = {}  # edge/event type → half-life in days (∞ = durable, omit)
+    # The evaluation "now" for freshness/staleness (age = as_of − event_time). rebuild() is clock-free
+    # (G1/G2), so "now" is an explicit input, never a wall-clock read: an ISO ``YYYY-MM-DD`` pinned here
+    # (retro-analysis / reproducible demo), stamped by the API at request time for a live "now", or —
+    # left null — the newest available claim date is the fallback (see ``chanakya.timeref``). A *past*
+    # ``as_of`` also rewinds the graph: rebuild hides claims not yet available then (point-in-time view).
+    as_of: str | None = None
 
 
 # ── resolution.yaml ────────────────────────────────────────────────────────────────────────────
