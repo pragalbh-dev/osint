@@ -11,6 +11,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from .base import Record
+from .claim import ClaimRecord
 from .view import (
     ConfidenceBreakdown,
     Freshness,
@@ -70,6 +71,10 @@ class ProvenanceDrawer(Record):
     clusters: list[IndependenceGroup] = []  # "5 sources · 2 independent looks"
     opposing_claims: list[str] = []
     sufficiency: SufficiencyEval | None = None
+    # F0-amend (API, 2026-07-19): the resolved evidence atoms (product/03 A) the ``clusters`` +
+    # ``opposing_claims`` reference by id — each carries its exact ``doc_ref``, so the drawer is
+    # self-contained one-click-to-source. Additive/optional: consumers that ignore it are unaffected.
+    claims: list[ClaimRecord] = []
 
 
 # ── POST /hitl/* (product/03 D) ────────────────────────────────────────────────────────────────
@@ -121,6 +126,10 @@ class IngestRequest(Record):
     doc_path: str | None = None  # a raw doc to extract (needs a key)
     raw_text: str | None = None
     source_id: str | None = None
+    # F0-amend (API, 2026-07-19): the keyed live lane requires the source's credibility class to route
+    # extraction + score the claims (INGEST ``ingest_document(source_type=…)``). Additive/optional — the
+    # keyless bundle path ignores it. One of the ``sources.yaml`` ``source_type`` vocabulary values.
+    source_type: str | None = None
     bundle: list[dict[str, Any]] | None = None  # pre-extracted ClaimRecord dicts (keyless lane)
 
 

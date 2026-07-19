@@ -689,3 +689,34 @@ three-state `substitutability_state` faithful (never a single collapsed count).
 node — recommended `observable_fingerprint` on `comp_tel_chassis` via `equips`), the reading-prompt checklist,
 the figure/multimodal path, and the proposer config knobs to verify. **FYI drift:** d22/d24 `source_type:
 think-tank` vs `source_class: "reference"` label mismatch (cosmetic, unrelated to firing).
+
+### API — FastAPI layer over the merged Wave-1 modules (choice · principle invoked · alternative rejected)
+_(2026-07-19, `feat/api`. The thin HTTP layer — master §4.8. Full detail: PROGRESS "API" handoff note.)_
+- *Thin API, delegate the LLM* → `/ask` + `/ingest` are the only LLM-touching endpoints, and only by
+  delegation to ASK / INGEST; the API adds no reasoning and imports no `anthropic` at module load
+  (`create_app` lazy-imports `fastapi`, keeping `import chanakya.api` side-effect-free). *Rejected:* the
+  API re-deriving any stage logic.
+- *One owner of the held view + alert feed* → a single `AppState.rebuild_and_swap()` is the sole
+  in-process mechanism behind hot-config / live-ingest / HITL propagation (atomic swap, MONITOR fired on
+  the delta, wall-clock `fired_ts` stamped by the API so `evaluate` stays deterministic — G2). The keyed
+  ingest lane runs with `live_rebuild=False` so it never rebuilds a view the app doesn't hold. *Rejected:*
+  letting the lane rebuild internally (double rebuild + a divergent view).
+- *`/ingest` is a sync `def`* → the lane runs its own `asyncio` fan-out; an `async` route would call
+  `asyncio.run` inside the running loop and crash. FastAPI threadpools a `def` route, so many users ingest
+  concurrently. *Principle:* honour how the merged code actually behaves. *Rejected:* an `async` route.
+- *Honest keyless boot* → boot seeds from committed bundles if present, else stands up an **empty** graph
+  the analyst fills via `/ingest` — never a fabricated corpus (the non-negotiable). The seed is
+  source-agnostic, so SHIP's baked baseline / DATA's extracted bundles drop in with no code change.
+- *Public-demo cost guard* → keyed live extraction is gated by `CHANAKYA_ENABLE_EXTRACTION` (default off);
+  visitors land on the instant keyless bundle path (Gemini quota/rate-limit protection). *Rejected:*
+  always-on extraction (cost/abuse exposure on a hosted demo).
+- *Structural HITL only (G5/G12)* → no endpoint sets status directly; `dispose` appends a `DecisionRecord`
+  and the following `rebuild()` applies its effects. The card is reconstructed from live view state (no
+  queue endpoint in §4.8). Demote/promote step one level along the confidence ladder. *Rejected:* mutating
+  node status in the handler.
+- *One-click-to-source needs the atoms* → **F0-amendment** `ProvenanceDrawer.claims: list[ClaimRecord]`
+  (additive) so the drawer embeds each cited claim with its exact `doc_ref`. *Rejected:* a new lean claim
+  projection (2nd shape) / a per-claim endpoint (N+1, beyond §4.8). Plus **F0-amendment**
+  `IngestRequest.source_type` (the keyed lane needs the source credibility class). Both additive/optional;
+  logged in PROGRESS + `tmp/conv/API-to-FRONTEND-contract-log.md` (user-approved "best decision + inform
+  the frontend via the contract log", 2026-07-19).
