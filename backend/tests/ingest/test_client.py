@@ -88,7 +88,7 @@ def test_build_client_prefers_gemini(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic")
     client = build_extraction_client()
     assert isinstance(client, GeminiExtractionClient)
-    assert client.model_id == "gemini-2.5-flash"
+    assert client.model_id == "gemini-flash-latest"
 
 
 def test_build_client_falls_back_to_anthropic(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -225,3 +225,49 @@ def test_gemini_live_forced_extraction() -> None:
         text="An HQ-9/P battery was reported near Gujranwala in 2021.",
     )
     assert isinstance(out, dict)
+
+
+# ── extract with page images (the PDF multimodal path) ────────────────────────────────────────────
+
+def test_scripted_client_extract_ignores_images() -> None:
+    client = ScriptedExtractionClient([{"n": 1}, {"n": 2}])
+    # images is a pure passthrough on the scripted client (replay is input-blind).
+    assert client.extract(tool_name="t", input_schema={}, system="", text="x",
+                          images=[(b"\x89PNG", "image/png")]) == {"n": 1}
+    assert client.extract(tool_name="t", input_schema={}, system="", text="y") == {"n": 2}
+
+
+@respx.mock
+def test_anthropic_extract_attaches_page_images() -> None:
+    route = respx.post(_ANTHROPIC_URL).mock(
+        return_value=_tool_use_response("extract_prose_claim", {"sources": []})
+    )
+    client = AnthropicExtractionClient(api_key="sk-test")
+    out = client.extract(
+        tool_name="extract_prose_claim", input_schema=_SCHEMA, system="sys",
+        text="page text", images=[(b"\x89PNG\r\n\x1a\n", "image/png")],
+    )
+    assert out == {"sources": []}
+
+    body = json.loads(route.calls.last.request.content)
+    content = body["messages"][0]["content"]
+    # a text block followed by the image block — prose + figure read together
+    assert content[0] == {"type": "text", "text": "page text"}
+    assert content[1]["type"] == "image" and content[1]["source"]["media_type"] == "image/png"
+    assert base64.standard_b64decode(content[1]["source"]["data"]) == b"\x89PNG\r\n\x1a\n"
+    # still no sampling params, still the forced tool
+    assert body["tool_choice"] == {"type": "tool", "name": "extract_prose_claim"}
+    for banned in ("temperature", "top_p", "top_k"):
+        assert banned not in body
+
+
+@respx.mock
+def test_anthropic_extract_text_only_stays_bare_string() -> None:
+    route = respx.post(_ANTHROPIC_URL).mock(
+        return_value=_tool_use_response("extract_prose_claim", {"sources": []})
+    )
+    client = AnthropicExtractionClient(api_key="sk-test")
+    client.extract(tool_name="extract_prose_claim", input_schema=_SCHEMA, system="s", text="only text")
+    body = json.loads(route.calls.last.request.content)
+    # no images → the content is a plain string (unchanged wire shape, back-compatible)
+    assert body["messages"][0]["content"] == "only text"

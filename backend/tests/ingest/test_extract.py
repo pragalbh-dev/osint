@@ -374,3 +374,52 @@ def test_offontology_type_flagged_when_absent_from_config() -> None:
     claims2 = extract_document(loaded, source_id="d01", source_type="curated-register",
                                config=bare, client=_client(filled))
     assert not (claims2[0].attributes or {}).get("_offontology_type")
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+# Geocoder threading — extract_document → em.location → normalize_location, all sites in one place.
+# A seeded name resolves offline to its gazetteer coordinate (frozen onto the claim); default = offline.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+def _basing_site_coords(claims: list[ClaimRecord]) -> dict[str, Any] | None:
+    for c in claims:
+        p = c.payload
+        if isinstance(p, EntityDescriptor) and p.entity_type == "basing_site":
+            return p.attrs.get("coordinates")
+    return None
+
+
+def test_geocoder_threads_to_site_location(config: ConfigBundle) -> None:
+    gaz = adapters.GazetteerGeocoder(config.places.places, config.resolution.transliteration)
+    loaded = loaders.load_document(
+        "A battery was reported at PAF Base Nur Khan.", file="g01.txt"
+    )
+    filled = {"basing_sites": [{
+        "name": "the reported base", "location_text": "PAF Base Nur Khan",
+        "source_quote": "PAF Base Nur Khan",
+    }]}
+    claims = extract_document(loaded, source_id="g01", source_type="curated-register",
+                              config=config, client=_client(filled), geocoder=gaz)
+    coords = _basing_site_coords(claims)
+    assert coords is not None
+    assert coords["wgs84_lat"] == pytest.approx(33.61639)
+    assert coords["geocode_candidates"][0]["source"] == "gazetteer"
+    # INGEST freezes the coordinate only — identity stays RESOLVE's, at rebuild.
+    assert coords.get("resolved_place_ref") is None
+
+
+def test_default_no_geocoder_keeps_toponym_raw(config: ConfigBundle) -> None:
+    # No geocoder passed (+ the autouse offline default) → the toponym is preserved, no coordinate.
+    loaded = loaders.load_document(
+        "A battery was reported at PAF Base Nur Khan.", file="g02.txt"
+    )
+    filled = {"basing_sites": [{
+        "name": "the reported base", "location_text": "PAF Base Nur Khan",
+        "source_quote": "PAF Base Nur Khan",
+    }]}
+    claims = extract_document(loaded, source_id="g02", source_type="curated-register",
+                              config=config, client=_client(filled))
+    coords = _basing_site_coords(claims)
+    assert coords is not None
+    assert coords.get("wgs84_lat") is None  # offline: no network, no gazetteer → raw toponym only
+    assert coords["raw"] == "PAF Base Nur Khan"

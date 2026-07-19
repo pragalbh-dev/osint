@@ -86,12 +86,29 @@ class Region(BaseModel):
         )
 
 
+class PageImage(BaseModel):
+    """One rendered PDF page image — the visual half of a page, fed to the multimodal extract call.
+
+    A PDF page carries **both** its text (``regions``) and a rendered raster of the whole page, so the
+    one multimodal extraction call reads prose, tables and figures together with full-page context. The
+    ``page`` number ties it back to the page's text regions (and to a claim's ``DocRef.page``); the bytes
+    never enter the frozen bundle (only the *claims* do) — they exist purely to feed the extract call.
+    """
+
+    model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
+
+    page: int  # 1-indexed
+    data: bytes
+    media_type: str = "image/png"
+
+
 class LoadedDoc(BaseModel):
     """The uniform loader output: assembled ``text`` + located ``regions`` + modality.
 
-    ``raw_bytes`` is populated only for images (the VLM reads them downstream). ``locate`` / ``doc_ref``
-    are the helpers the extractor+transformer use to attach exact provenance to a claim given the char
-    span the extraction identified.
+    ``raw_bytes`` is populated only for images (the VLM reads them downstream). ``page_images`` carries
+    every rendered PDF page (the multimodal read's visual half). ``locate`` / ``doc_ref`` are the helpers
+    the extractor+transformer use to attach exact provenance to a claim given the char span the
+    extraction identified.
     """
 
     model_config = ConfigDict(extra="forbid", arbitrary_types_allowed=True)
@@ -102,6 +119,7 @@ class LoadedDoc(BaseModel):
     text: str = ""
     regions: list[Region] = []
     raw_bytes: bytes | None = None
+    page_images: list[PageImage] = []
     meta: dict[str, object] = {}
 
     # ── provenance helpers ──────────────────────────────────────────────────────────────────────
@@ -144,22 +162,23 @@ class OcrProvider(Protocol):
 
 
 def get_ocr_provider() -> OcrProvider | None:
-    """Return a configured OCR provider, or ``None`` when no key is present (keyless boot).
+    """Return a configured OCR provider, or ``None`` when no key is present (pymupdf-text fallback).
 
-    Env-gated on ``AZURE_DOCINTEL_ENDPOINT`` + ``AZURE_DOCINTEL_KEY`` (like the LLM key). Constructed
-    lazily and tolerantly: a missing key yields ``None`` (→ born-digital fallback), never an exception,
-    so the loader is never taken down by an absent optional provider.
+    Env-gated on ``AZURE_DOCINTEL_ENDPOINT`` + ``AZURE_DOCINTEL_KEY`` (the specific names), falling back
+    to the generic ``AZURE_ENDPOINT`` + ``AZURE_API_KEY``. Constructed lazily and tolerantly: a missing
+    key yields ``None`` (→ pymupdf text + page render), never an exception, so the loader is never taken
+    down by an absent optional provider. The concrete provider is imported lazily to avoid an import
+    cycle (``ocr_azure`` imports :class:`Region` from here) and to keep the SDK dep off the keyless path.
     """
     import os
 
-    endpoint = os.getenv("AZURE_DOCINTEL_ENDPOINT")
-    key = os.getenv("AZURE_DOCINTEL_KEY")
+    endpoint = os.getenv("AZURE_DOCINTEL_ENDPOINT") or os.getenv("AZURE_ENDPOINT")
+    key = os.getenv("AZURE_DOCINTEL_KEY") or os.getenv("AZURE_API_KEY")
     if not endpoint or not key:
         return None
-    # Concrete Azure provider is a separate slice (needs the azure-ai-documentintelligence SDK dep);
-    # the seam + selection logic + born-digital fallback are what this module owns. Until it lands,
-    # a configured-but-unbuilt provider still degrades gracefully rather than crashing the loader.
-    return None
+    from chanakya.ingest.ocr_azure import AzureDocIntelProvider
+
+    return AzureDocIntelProvider(endpoint=endpoint, key=key)
 
 
 # ── text ─────────────────────────────────────────────────────────────────────────────────────────
@@ -286,7 +305,33 @@ def load_image(data: bytes, file: str, *, media_type: str | None = None) -> Load
     )
 
 
-# ── pdf (born-digital keyless path + OCR seam) ───────────────────────────────────────────────────
+# ── pdf (one non-brittle path: OCR-when-keyed / pymupdf text, ALWAYS render page images) ──────────
+#
+# One decision, no born-digital detection (it was a premature optimisation): an OCR provider present
+# (``AZURE_*``) → OCR the whole doc in one call (rich text + tables + figure regions, already paged);
+# otherwise the pymupdf text layer (poppler ``pdftotext`` as a deeper fallback). EITHER way, every page
+# is **also** rendered to an image locally (pymupdf, no key, no network) so the one multimodal extract
+# call reads prose + tables + figures together. Rendering degrades gracefully — a failed render yields
+# no page image for that page, never a crash (and a text-only read still happens).
+
+#: Render DPI for page rasters fed to the multimodal read (an INGEST tunable; readable vs payload size).
+PDF_RENDER_DPI = 150
+
+
+def _pymupdf() -> object | None:
+    """Import pymupdf (``import pymupdf`` ≥1.24, else legacy ``import fitz``), or ``None`` if absent."""
+    try:
+        import pymupdf
+
+        return pymupdf
+    except ImportError:
+        try:
+            import fitz
+
+            return fitz
+        except ImportError:
+            return None
+
 
 def _pdftotext_available() -> bool:
     import shutil
@@ -295,16 +340,23 @@ def _pdftotext_available() -> bool:
 
 
 def _pdf_page_texts(data: bytes) -> list[str]:
-    """Born-digital per-page text via poppler ``pdftotext`` (keyless). One string per page.
+    """Per-page text layer — pymupdf first, poppler ``pdftotext`` as a deeper fallback. One str/page.
 
-    Isolated in its own function so tests monkeypatch it instead of needing a real PDF on disk.
-    Raises ``RuntimeError`` if poppler is unavailable (the caller decides whether OCR can cover it).
+    Isolated in its own function so tests monkeypatch it instead of needing a real PDF on disk. Raises
+    ``RuntimeError`` only if *neither* pymupdf nor poppler is available (the caller decides whether an OCR
+    provider can cover it). A scanned page simply yields an empty text layer here — the rendered page
+    image (and OCR, if keyed) carry it, so there is no born-digital/scanned branch to get wrong.
     """
+    pymupdf = _pymupdf()
+    if pymupdf is not None:
+        with pymupdf.open(stream=data, filetype="pdf") as doc:  # type: ignore[attr-defined]
+            return [page.get_text() for page in doc]
+
+    if not _pdftotext_available():
+        raise RuntimeError("no PDF text backend: install pymupdf (or poppler's pdftotext)")
     import subprocess
     import tempfile
 
-    if not _pdftotext_available():
-        raise RuntimeError("pdftotext (poppler) not available for the born-digital PDF path")
     with tempfile.NamedTemporaryFile(suffix=".pdf") as tf:
         tf.write(data)
         tf.flush()
@@ -316,26 +368,34 @@ def _pdf_page_texts(data: bytes) -> list[str]:
     return out.stdout.decode("utf-8", errors="replace").split("\f")
 
 
-def load_pdf(data: bytes, file: str, *, ocr: OcrProvider | None = None) -> LoadedDoc:
-    """Load a PDF to (text, regions). Born-digital pages via ``pdftotext``; scanned pages via ``ocr``.
+def _pdf_render_pages(data: bytes, *, dpi: int = PDF_RENDER_DPI) -> list[PageImage]:
+    """Render every PDF page to a PNG (pymupdf, local, no network) → one :class:`PageImage` per page.
 
-    Per page: use the born-digital text layer when present; if a page has no text layer **and** an OCR
-    provider is configured, hand that page to OCR (page + bbox regions). With neither, the page yields
-    no regions (a coverage gap, surfaced — never a fabricated read).
-    """
-    ocr = ocr if ocr is not None else get_ocr_provider()
+    Wholly graceful: no pymupdf, an unreadable stream, or a single page that fails to rasterise yields
+    *fewer* (or zero) page images — never an exception. The text path stands on its own if this returns
+    nothing (the multimodal read simply has no visual half for that doc)."""
+    pymupdf = _pymupdf()
+    if pymupdf is None:
+        return []
+    images: list[PageImage] = []
     try:
-        page_texts = _pdf_page_texts(data)
-    except RuntimeError:
-        page_texts = []
+        doc = pymupdf.open(stream=data, filetype="pdf")  # type: ignore[attr-defined]
+    except Exception:  # noqa: BLE001 - a malformed/again-non-PDF stream must not take the loader down
+        return []
+    try:
+        for index, page in enumerate(doc, start=1):
+            try:
+                pixmap = page.get_pixmap(dpi=dpi)
+                images.append(PageImage(page=index, data=pixmap.tobytes("png"), media_type="image/png"))
+            except Exception:  # noqa: BLE001 - skip a single un-rasterisable page, keep the rest
+                continue
+    finally:
+        doc.close()
+    return images
 
-    if not any(p.strip() for p in page_texts) and ocr is not None:
-        ocr_regions = ocr.perform(data, file=file)
-        text = "\n".join(r.text for r in ocr_regions)
-        return LoadedDoc(file=file, media_type="application/pdf", modality="text",
-                         text=text, regions=ocr_regions, meta={"ocr": True, "empty": not ocr_regions})
 
-    # Born-digital: assemble one text string across pages, tracking per-page + per-line spans.
+def _assemble_born_digital(page_texts: list[str], file: str) -> tuple[list[Region], str]:
+    """Assemble one text string across pages, tracking per-page + per-line spans (born-digital layer)."""
     regions: list[Region] = []
     parts: list[str] = []
     cursor = 0
@@ -353,9 +413,54 @@ def load_pdf(data: bytes, file: str, *, ocr: OcrProvider | None = None) -> Loade
             cursor = end + 1
         parts.append(ptext)
         cursor = page_start + len(ptext)
-    text = "".join(parts)
+    return regions, "".join(parts)
+
+
+def _assemble_ocr_regions(ocr_regions: list[Region]) -> tuple[list[Region], str]:
+    """Assemble OCR ``Region``\\ s into one text string, **assigning each a char span** into it.
+
+    Azure returns paged text/table/figure regions with ``page``/``bbox``/``row`` but no char ``span``.
+    Concatenating their content newline-joined and stamping each region's span is what lets a claim's
+    ``loaded.text.find(source_quote)`` resolve back to the region's ``page``/``bbox`` (gate G4) — without
+    it, an OCR'd doc would lose its per-page provenance."""
+    parts: list[str] = []
+    spanned: list[Region] = []
+    cursor = 0
+    for region in ocr_regions:
+        content = region.text or ""
+        start = cursor
+        spanned.append(region.model_copy(update={"span": (start, start + len(content))}))
+        parts.append(content)
+        cursor = start + len(content) + 1  # +1 for the "\n" joiner
+    return spanned, "\n".join(parts)
+
+
+def load_pdf(data: bytes, file: str, *, ocr: OcrProvider | None = None) -> LoadedDoc:
+    """Load a PDF to (text, regions, page_images) — OCR-when-keyed / pymupdf text, always page-rendered.
+
+    One branch on a single decision — an OCR provider configured (``AZURE_*``, or one passed in) or not —
+    with **no** text-density heuristic. With a provider: OCR the whole document in one call (paged text +
+    tables + figure regions, char-spanned so their page/bbox provenance survives). Without: the pymupdf
+    text layer (poppler fallback). Either way every page is rendered to an image (``page_images``) for the
+    downstream multimodal read. Runs upstream of the append; never inside ``rebuild`` (gate G1)."""
+    ocr = ocr if ocr is not None else get_ocr_provider()
+    page_images = _pdf_render_pages(data)
+
+    if ocr is not None:
+        regions, text = _assemble_ocr_regions(ocr.perform(data, file=file))
+        pages = {r.page for r in regions if r.page is not None} or {pi.page for pi in page_images}
+        return LoadedDoc(file=file, media_type="application/pdf", modality="text", text=text,
+                         regions=regions, page_images=page_images,
+                         meta={"ocr": True, "pages": len(pages), "empty": not regions})
+
+    try:
+        page_texts = _pdf_page_texts(data)
+    except RuntimeError:
+        page_texts = []
+    regions, text = _assemble_born_digital(page_texts, file)
     return LoadedDoc(file=file, media_type="application/pdf", modality="text", text=text,
-                     regions=regions, meta={"pages": len(page_texts), "empty": not regions})
+                     regions=regions, page_images=page_images,
+                     meta={"pages": len(page_texts), "empty": not regions})
 
 
 # ── dispatch ─────────────────────────────────────────────────────────────────────────────────────

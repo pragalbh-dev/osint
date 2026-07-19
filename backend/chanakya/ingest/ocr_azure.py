@@ -32,9 +32,13 @@ from typing import TYPE_CHECKING, Any
 from chanakya.ingest.loaders import Region
 
 # Azure model + env gates (mirrors ``loaders.get_ocr_provider``). Kept as constants — no magic strings.
+# Two accepted name pairs: the specific ``AZURE_DOCINTEL_*`` and the generic ``AZURE_ENDPOINT``/
+# ``AZURE_API_KEY`` (what the project ``.env`` ships), the specific taking precedence.
 _LAYOUT_MODEL = "prebuilt-layout"
 _ENDPOINT_ENV = "AZURE_DOCINTEL_ENDPOINT"
 _KEY_ENV = "AZURE_DOCINTEL_KEY"
+_ENDPOINT_ENV_ALT = "AZURE_ENDPOINT"
+_KEY_ENV_ALT = "AZURE_API_KEY"
 
 
 # ── pure transform (SDK-free, fixture-testable) ──────────────────────────────────────────────────
@@ -190,8 +194,8 @@ class AzureDocIntelProvider:
     """
 
     def __init__(self, endpoint: str | None = None, key: str | None = None) -> None:
-        self.endpoint = endpoint or os.getenv(_ENDPOINT_ENV)
-        self.key = key or os.getenv(_KEY_ENV)
+        self.endpoint = endpoint or os.getenv(_ENDPOINT_ENV) or os.getenv(_ENDPOINT_ENV_ALT)
+        self.key = key or os.getenv(_KEY_ENV) or os.getenv(_KEY_ENV_ALT)
         self.model_id = _LAYOUT_MODEL
 
     def _build_client(self) -> Any:

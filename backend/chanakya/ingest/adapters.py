@@ -34,8 +34,11 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import re
+from collections.abc import Iterable
+from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
+from chanakya.schemas.config_models import PlaceEntry
 from chanakya.schemas.values import (
     CountState,
     DateValue,
@@ -400,6 +403,149 @@ def _default_geocoder() -> Geocoder | None:
     return Nominatim(user_agent="chanakya-osint-ingest")
 
 
+# ── the two-stage geocoder: gazetteer coordinate-cache → Nominatim open world ─────────────────────
+#
+# INGEST produces COORDINATES; RESOLVE produces IDENTITY (the 2026-07-19 RESOLVE coordination note).
+# So the gazetteer here is a strict, offline **coordinate cache**: an exact-match mention → the seeded
+# node's ``canonical_dd``, frozen onto the claim's ``Location`` (``resolved_place_ref`` still left
+# ``None`` — picking the canonical node, the geodesic proximity, and the distinct-from traps are
+# RESOLVE's, at rebuild). Gazetteer-first is what makes the demo anchors' coordinates byte-stable
+# offline (G2); Nominatim covers the open world for everything the seed does not name.
+
+# The gazetteer EXACT-match key normaliser. This MUST stay byte-identical to RESOLVE's
+# ``chanakya.resolve.normalize.normalize()`` so INGEST's coordinate-cache key and RESOLVE's
+# identity-match key can never drift (RESOLVE note 2026-07-19: "reuse it, don't re-implement, so keys
+# can't drift"). RESOLVE is unmerged (its package ships only an identity stub on this branch), so it
+# cannot be imported yet — this is a deliberate, spec-pinned copy; when RESOLVE lands, dedupe both to
+# one shared module. ``tests/ingest/test_adapters.py`` pins the exact outputs so a drift is caught.
+_GAZ_NON_ALNUM = re.compile("[^0-9a-z一-鿿Ѐ-ӿ؀-ۿऀ-ॿ]+")
+
+
+def _gaz_transliterate(text: str, rules: dict[str, str]) -> str:
+    """Apply script→latin substitution rules (longest key first) — RESOLVE ``transliterate`` twin."""
+    out = text
+    for src in sorted(rules, key=len, reverse=True):
+        if src in out:
+            out = out.replace(src, rules[src])
+    return out
+
+
+def gazetteer_key(name: str, rules: dict[str, str] | None = None) -> str:
+    """Canonical comparison form for the exact gazetteer lookup — RESOLVE ``normalize`` twin.
+
+    transliterate (config rules) → casefold → collapse every non-alphanumeric run to one space → strip.
+    An empty / unsupported-script name normalises to ``""`` (treated as non-matching everywhere).
+    """
+    t = _gaz_transliterate(name, rules or {}).casefold()
+    return _GAZ_NON_ALNUM.sub(" ", t).strip()
+
+
+@dataclass
+class GazetteerHit:
+    """A gazetteer coordinate hit — structurally a :class:`GeocodeResult`, plus a ``source`` tag.
+
+    A plain (non-frozen) dataclass so its fields are settable attributes and it therefore *structurally*
+    satisfies the :class:`GeocodeResult` protocol (a frozen dataclass's read-only fields would not).
+    """
+
+    latitude: float
+    longitude: float
+    address: str
+    source: str = "gazetteer"
+
+
+class GazetteerGeocoder:
+    """Offline EXACT-match coordinate cache over ``config/places.yaml`` (RESOLVE note 2026-07-19).
+
+    :meth:`geocode` returns a node's ``canonical_dd`` **iff** the normalised mention exactly equals the
+    node's normalised ``canonical_name``, a normalised seeded ``alias``, or a hard-ID (``icao`` /
+    ``locode``). **No fuzzy, no proximity, no nearest** — those are RESOLVE's at rebuild. It reads ONLY
+    ``canonical_name`` / ``aliases`` / ``icao`` / ``locode`` / ``canonical_dd``; never
+    ``proximity_radius_m`` / ``distinct_from`` (RESOLVE-only knobs). A withheld alias (e.g. "Chaklala",
+    deliberately absent from the seed for the earned-merge demo) therefore never hits here — it falls to
+    Nominatim / stays raw, and RESOLVE earns it later. Fully deterministic; no network, no clock.
+    """
+
+    def __init__(self, places: Iterable[PlaceEntry], rules: dict[str, str] | None = None) -> None:
+        self._rules = dict(rules or {})
+        # normalised key → (lat, lon, canonical_name). First seeded form wins on a key collision, in
+        # config order, so the index is deterministic. canonical_dd-less nodes are skipped (no coord).
+        self._index: dict[str, tuple[float, float, str]] = {}
+        for place in places:
+            if place.canonical_dd is None:
+                continue
+            lat, lon = place.canonical_dd
+            forms = [place.canonical_name, *place.aliases]
+            forms += [hid for hid in (place.icao, place.locode) if hid]
+            for form in forms:
+                key = gazetteer_key(form, self._rules)
+                if key:
+                    self._index.setdefault(key, (float(lat), float(lon), place.canonical_name))
+
+    def geocode(self, query: str) -> GeocodeResult | None:
+        hit = self._index.get(gazetteer_key(query, self._rules))
+        if hit is None:
+            return None
+        lat, lon, name = hit
+        return GazetteerHit(latitude=lat, longitude=lon, address=name)
+
+
+class ChainedGeocoder:
+    """Try each geocoder in order; the first non-``None`` hit wins (gazetteer cache → Nominatim)."""
+
+    def __init__(self, geocoders: Iterable[Geocoder | None]) -> None:
+        self._geocoders = [g for g in geocoders if g is not None]
+
+    def geocode(self, query: str) -> GeocodeResult | None:
+        for geocoder in self._geocoders:
+            hit = geocoder.geocode(query)
+            if hit is not None:
+                return hit
+        return None
+
+
+class _CachingGeocoder:
+    """A within-run cache + polite wrapper around a live geocoder (Nominatim etiquette).
+
+    Deduplicates identical queries within one recorder run (so re-mentions of the same place hit the
+    network once) and, when geopy's ``RateLimiter`` is available, throttles to ≤1 request/second — the
+    Nominatim usage policy. Only the keyed recorder ever constructs this; tests inject fakes/None.
+    """
+
+    def __init__(self, inner: Geocoder, *, min_delay_seconds: float = 1.0) -> None:
+        self._cache: dict[str, GeocodeResult | None] = {}
+        try:
+            from geopy.extra.rate_limiter import RateLimiter
+
+            self._geocode = RateLimiter(inner.geocode, min_delay_seconds=min_delay_seconds)
+        except ImportError:  # pragma: no cover - geopy is a hard dep
+            self._geocode = inner.geocode
+
+    def geocode(self, query: str) -> GeocodeResult | None:
+        if query not in self._cache:
+            self._cache[query] = self._geocode(query)
+        return self._cache[query]
+
+
+def build_geocoder(
+    config: object, *, online: bool = True, nominatim: Geocoder | None = None
+) -> ChainedGeocoder:
+    """Assemble the two-stage geocoder from the live config: gazetteer coord-cache → Nominatim.
+
+    ``online=True`` (the keyed recorder / live ingest) appends a within-run-cached Nominatim after the
+    gazetteer; ``online=False`` yields a gazetteer-only, fully-offline, byte-stable geocoder (tests +
+    the deterministic seed path). Reads ``config.places.places`` + ``config.resolution.transliteration``
+    only — never a subject/anchor (gate G9). Never called inside ``rebuild()`` (gate G1).
+    """
+    places = getattr(getattr(config, "places", None), "places", []) or []
+    rules = getattr(getattr(config, "resolution", None), "transliteration", {}) or {}
+    chain: list[Geocoder | None] = [GazetteerGeocoder(places, rules)]
+    if online:
+        live = nominatim if nominatim is not None else _default_geocoder()
+        chain.append(_CachingGeocoder(live) if live is not None else None)
+    return ChainedGeocoder(chain)
+
+
 # Compass point → azimuth degrees (clockwise from true north), for the relative-offset math.
 _BEARINGS = {
     "N": 0.0, "NNE": 22.5, "NE": 45.0, "ENE": 67.5, "E": 90.0, "ESE": 112.5, "SE": 135.0,
@@ -632,6 +778,7 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
     if hit is None:
         return Location(raw=s, surface_format="relative", proposed_alias=anchor_name)
 
+    anchor_source = getattr(hit, "source", "nominatim")  # gazetteer coord-cache vs Nominatim open world
     dist_km = float(m.group("dist")) * _UNIT_KM[m.group("unit").lower()]
     bearing = _BEARINGS[m.group("bearing").upper()]
     try:
@@ -640,7 +787,7 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
     except ImportError:  # pragma: no cover - geopy is a hard dep
         return Location(raw=s, surface_format="relative", proposed_alias=anchor_name,
                         geocode_candidates=[GeocodeCandidate(lat=hit.latitude, lon=hit.longitude,
-                                            label=anchor_name, source="nominatim")])
+                                            label=anchor_name, source=anchor_source)])
     dest = _distance(kilometers=dist_km).destination(Point(hit.latitude, hit.longitude), bearing)
     return Location(
         raw=s, surface_format="relative",
@@ -650,7 +797,7 @@ def _resolve_relative_location(s: str, geocoder: Geocoder | None) -> Location:
             GeocodeCandidate(lat=float(dest.latitude), lon=float(dest.longitude),
                              label=s, source="coord-parse", confidence=0.5),
             GeocodeCandidate(lat=hit.latitude, lon=hit.longitude, label=anchor_name,
-                             source="nominatim"),
+                             source=anchor_source),
         ],
     )
 
@@ -665,7 +812,8 @@ def _resolve_toponym(s: str, geocoder: Geocoder | None) -> Location:
         raw=s, surface_format="toponym",
         wgs84_lat=hit.latitude, wgs84_lon=hit.longitude, proposed_alias=s,
         geocode_candidates=[GeocodeCandidate(lat=hit.latitude, lon=hit.longitude,
-                            label=getattr(hit, "address", None), source="nominatim")],
+                            label=getattr(hit, "address", None),
+                            source=getattr(hit, "source", "nominatim"))],
     )
 
 

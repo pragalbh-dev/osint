@@ -41,7 +41,10 @@ from typing import Any, Protocol, runtime_checkable
 # ── model + call defaults (config-adjacent constants, no magic numbers buried in logic) ───────────
 
 MODEL = "claude-opus-4-8"  # Anthropic extraction model (md/07); forced tool_use, no sampling params
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"  # PRIMARY extractor: native function-calling, fast, keyed
+# PRIMARY extractor: native function-calling + multimodal, fast, keyed. The floating ``-latest`` alias
+# tracks the current Gemini flash so a pinned id going "no longer available to new users" (which is what
+# happened to gemini-2.5-flash) never dead-ends live extraction; overridable via ``build_extraction_client``.
+DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 MAX_TOKENS = 8192  # a single doc's worth of tool arguments; well under the streaming/timeout threshold
 
 
@@ -77,9 +80,16 @@ class ExtractionClient(Protocol):
     model_id: str
 
     def extract(
-        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
+        images: Sequence[tuple[bytes, str]] = (),
     ) -> dict[str, Any]:
-        """Force one tool call over ``text`` and return the tool's filled ``input`` dict."""
+        """Force one tool call over ``text`` (+ optional page ``images``) → the tool's filled ``input``.
+
+        ``images`` is a sequence of ``(bytes, media_type)`` — the rendered PDF pages the multimodal read
+        looks at alongside the prose (INGEST PDF-multimodal path). Empty for a pure-text source, so a
+        text-only call is unchanged. This is a document read where the surrounding text is legitimate
+        context — distinct from :meth:`read_image`, the *subject-blind* standalone-imagery lane.
+        """
         ...
 
     def read_image(
@@ -91,11 +101,12 @@ class ExtractionClient(Protocol):
         image: bytes,
         media_type: str,
     ) -> dict[str, Any]:
-        """Force one tool call over ``image`` and return the tool's filled ``input`` dict.
+        """Force one tool call over a **standalone** ``image`` → the tool's filled ``input`` dict.
 
-        The extraction instruction rides on ``system``; the image is attached to the user turn. The VLM
-        is *never* told the subject (G11) and *never* geolocates from pixels (that is ``imagery.py``'s
-        contract, upstream text coords stay authoritative) — this seam only carries the bytes.
+        The adversarial-imagery lane only (satellite / social ``.png``): the extraction instruction rides
+        on ``system``; the image is attached to the user turn. The VLM is *never* told the subject (G11)
+        and *never* geolocates from pixels (that is ``imagery.py``'s contract, upstream text coords stay
+        authoritative) — this seam only carries the bytes. PDF page images ride on :meth:`extract`.
         """
         ...
 
@@ -126,7 +137,8 @@ class ScriptedExtractionClient:
         return out
 
     def extract(
-        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
+        images: Sequence[tuple[bytes, str]] = (),
     ) -> dict[str, Any]:
         return self._next()
 
@@ -196,9 +208,17 @@ class GeminiExtractionClient:
         raise RuntimeError(f"Gemini returned no forced function call for tool {tool_name!r}")
 
     def extract(
-        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
+        images: Sequence[tuple[bytes, str]] = (),
     ) -> dict[str, Any]:
-        return self._call(tool_name=tool_name, input_schema=input_schema, system=system, contents=text)
+        if images:
+            from google.genai import types
+
+            contents: Any = [text, *(types.Part.from_bytes(data=d, mime_type=m) for d, m in images)]
+        else:
+            contents = text
+        return self._call(tool_name=tool_name, input_schema=input_schema, system=system,
+                          contents=contents)
 
     def read_image(
         self,
@@ -248,10 +268,29 @@ class AnthropicExtractionClient:
                 return dict(block.input)
         raise RuntimeError(f"Anthropic returned no forced tool_use for tool {tool_name!r}")
 
+    @staticmethod
+    def _image_block(image: bytes, media_type: str) -> dict[str, Any]:
+        """A base64 image content block (the Anthropic Messages image shape)."""
+        return {
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": media_type,
+                "data": base64.standard_b64encode(image).decode("ascii"),
+            },
+        }
+
     def extract(
-        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
+        images: Sequence[tuple[bytes, str]] = (),
     ) -> dict[str, Any]:
-        return self._call(tool_name=tool_name, input_schema=input_schema, system=system, content=text)
+        # Text-only stays a bare string (unchanged wire shape); page images become a text block + image
+        # blocks so the model reads prose, tables and figures together.
+        content: Any = text
+        if images:
+            content = [{"type": "text", "text": text},
+                       *(self._image_block(d, m) for d, m in images)]
+        return self._call(tool_name=tool_name, input_schema=input_schema, system=system, content=content)
 
     def read_image(
         self,
@@ -262,16 +301,9 @@ class AnthropicExtractionClient:
         image: bytes,
         media_type: str,
     ) -> dict[str, Any]:
-        image_block = {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "media_type": media_type,
-                "data": base64.standard_b64encode(image).decode("ascii"),
-            },
-        }
         return self._call(
-            tool_name=tool_name, input_schema=input_schema, system=system, content=[image_block]
+            tool_name=tool_name, input_schema=input_schema, system=system,
+            content=[self._image_block(image, media_type)],
         )
 
 

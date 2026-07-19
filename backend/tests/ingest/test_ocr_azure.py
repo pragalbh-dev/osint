@@ -234,9 +234,29 @@ def test_provider_reads_env_when_unset(monkeypatch: pytest.MonkeyPatch) -> None:
     assert provider.model_id == "prebuilt-layout"
 
 
-def test_provider_unconfigured_perform_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_provider_reads_generic_azure_env_names(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The generic AZURE_ENDPOINT / AZURE_API_KEY names (the project .env) are accepted as a fallback …
     monkeypatch.delenv("AZURE_DOCINTEL_ENDPOINT", raising=False)
     monkeypatch.delenv("AZURE_DOCINTEL_KEY", raising=False)
+    monkeypatch.setenv("AZURE_ENDPOINT", "https://generic-endpoint")
+    monkeypatch.setenv("AZURE_API_KEY", "generic-key")
+    provider = AzureDocIntelProvider()
+    assert provider.endpoint == "https://generic-endpoint" and provider.key == "generic-key"
+
+
+def test_provider_specific_env_names_take_precedence(monkeypatch: pytest.MonkeyPatch) -> None:
+    # … but the specific AZURE_DOCINTEL_* names win when both are present.
+    monkeypatch.setenv("AZURE_DOCINTEL_ENDPOINT", "https://specific")
+    monkeypatch.setenv("AZURE_DOCINTEL_KEY", "specific-key")
+    monkeypatch.setenv("AZURE_ENDPOINT", "https://generic")
+    monkeypatch.setenv("AZURE_API_KEY", "generic-key")
+    provider = AzureDocIntelProvider()
+    assert provider.endpoint == "https://specific" and provider.key == "specific-key"
+
+
+def test_provider_unconfigured_perform_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("AZURE_DOCINTEL_ENDPOINT", "AZURE_DOCINTEL_KEY", "AZURE_ENDPOINT", "AZURE_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
     provider = AzureDocIntelProvider()
     with pytest.raises(RuntimeError, match="not configured"):
         provider.perform(b"%PDF-fake", file="scan.pdf")

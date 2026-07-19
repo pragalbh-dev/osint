@@ -116,10 +116,23 @@ def test_image_carries_bytes_and_whole_image_region() -> None:
 
 # ── pdf ──────────────────────────────────────────────────────────────────────────────────────────
 
+def _real_pdf(pages: list[str]) -> bytes:
+    """Build a real born-digital PDF (one text block per page) via pymupdf — no fixture on disk."""
+    pymupdf = loaders._pymupdf()
+    assert pymupdf is not None, "pymupdf must be installed for the PDF loader tests"
+    doc = pymupdf.open()
+    for text in pages:
+        page = doc.new_page()
+        page.insert_text((72, 72), text)
+    data: bytes = doc.tobytes()
+    doc.close()
+    return data
+
+
 def test_pdf_born_digital_multipage_spans(monkeypatch: pytest.MonkeyPatch) -> None:
-    # Monkeypatch the poppler call so the test needs no real PDF and no subprocess.
+    # Monkeypatch the text-layer call so the span logic needs no real PDF; ocr=None isolates the path.
     monkeypatch.setattr(loaders, "_pdf_page_texts", lambda data: ["line1\nline2", "page2 only line"])
-    doc = load_pdf(b"%PDF-fake", "spec.pdf")
+    doc = load_pdf(b"%PDF-fake", "spec.pdf", ocr=None)
     assert doc.media_type == "application/pdf"
     assert doc.meta["pages"] == 2
     # page + line locators on every region, and exact span alignment across the page break.
@@ -127,22 +140,41 @@ def test_pdf_born_digital_multipage_spans(monkeypatch: pytest.MonkeyPatch) -> No
         (1, 1, "line1"), (1, 2, "line2"), (2, 1, "page2 only line"),
     ]
     _assert_spans_exact(doc)
+    assert doc.page_images == []  # fake bytes don't rasterise — graceful, never a crash
 
 
-def test_pdf_scanned_falls_back_to_ocr_provider(monkeypatch: pytest.MonkeyPatch) -> None:
-    # A born-digital extract with no text layer (scanned) + a configured OCR provider → OCR regions.
-    monkeypatch.setattr(loaders, "_pdf_page_texts", lambda data: ["", "  \n "])
+def test_pdf_renders_every_page_to_an_image(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("AZURE_ENDPOINT", raising=False)
+    monkeypatch.delenv("AZURE_API_KEY", raising=False)
+    data = _real_pdf(["First page text here.", "Second page text.", "Third."])
+    doc = load_pdf(data, "reference.pdf")  # no OCR key → pymupdf text + render
+    # one rendered PNG per page, numbered 1..n
+    assert [pi.page for pi in doc.page_images] == [1, 2, 3]
+    assert all(pi.media_type == "image/png" and pi.data[:4] == b"\x89PNG" for pi in doc.page_images)
+    # the text layer is still extracted (born-digital), with page provenance
+    assert "First page text" in doc.text
+    assert {r.page for r in doc.regions} == {1, 2, 3}
 
+
+def test_pdf_ocr_path_assigns_spans_for_page_provenance() -> None:
+    # Azure returns paged regions WITHOUT a char span; the loader assigns one so find→page works (G4).
     class FakeOcr:
         def perform(self, data: bytes, *, file: str) -> list[Region]:
-            return [Region(kind="paragraph", file=file, text="OCR read", page=1,
-                           bbox=(0.1, 0.1, 0.9, 0.2), span=(0, 8))]
+            return [
+                Region(kind="paragraph", file=file, text="Consignee: ORIENT", page=1,
+                       bbox=(0.1, 0.1, 0.9, 0.2)),
+                Region(kind="table_cell", file=file, text="HQ-9 spares", page=2, row=3),
+            ]
 
     doc = load_pdf(b"%PDF-scanned", "scan.pdf", ocr=FakeOcr())
-    assert doc.meta["ocr"] is True
-    assert doc.text == "OCR read"
-    assert doc.regions[0].bbox == (0.1, 0.1, 0.9, 0.2)
-    assert doc.regions[0].to_doc_ref().page == 1
+    assert doc.meta["ocr"] is True and doc.meta["pages"] == 2
+    # every region now carries a span that slices back to its own text …
+    _assert_spans_exact(doc)
+    # … so a source_quote resolves through find → locate → the page it was on.
+    idx = doc.text.find("HQ-9 spares")
+    assert idx >= 0
+    hit = doc.locate(idx, idx + len("HQ-9 spares"))[0]
+    assert hit.page == 2 and hit.row == 3
 
 
 def test_pdf_no_text_no_ocr_is_explicit_empty(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -153,9 +185,22 @@ def test_pdf_no_text_no_ocr_is_explicit_empty(monkeypatch: pytest.MonkeyPatch) -
 
 
 def test_get_ocr_provider_none_without_key(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("AZURE_DOCINTEL_ENDPOINT", "AZURE_DOCINTEL_KEY", "AZURE_ENDPOINT", "AZURE_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    assert loaders.get_ocr_provider() is None
+
+
+def test_get_ocr_provider_wires_azure_when_keyed(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The generic AZURE_ENDPOINT / AZURE_API_KEY names (what the project .env ships) construct the provider.
     monkeypatch.delenv("AZURE_DOCINTEL_ENDPOINT", raising=False)
     monkeypatch.delenv("AZURE_DOCINTEL_KEY", raising=False)
-    assert loaders.get_ocr_provider() is None
+    monkeypatch.setenv("AZURE_ENDPOINT", "https://example.cognitiveservices.azure.com/")
+    monkeypatch.setenv("AZURE_API_KEY", "fake-key")
+    from chanakya.ingest.ocr_azure import AzureDocIntelProvider
+
+    provider = loaders.get_ocr_provider()
+    assert isinstance(provider, AzureDocIntelProvider)
+    assert provider.endpoint and provider.key == "fake-key"
 
 
 # ── dispatch ─────────────────────────────────────────────────────────────────────────────────────
