@@ -43,8 +43,10 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
     (chokepoint stays `candidate`; verified no `foreign_control` seed). Chaff scenario: 0 edges, untouched.
   - **Downstream PENDING:** `handoff-resolve-score-grounding.md` — RESOLVE derives the two-layer `based-at`
     + CASIC-via-program (RES-G1); SCORE basing-stale / supersede-floor / 2-signal gate / candidate-chokepoint
-    (SC-G1..G4). **NEW coupling:** ASK hero-path code (`agent/loop.py`) embeds the same false narrative →
-    ASK fix (overlaps `handoff-ask.md`; does NOT block this PR — fixture-based tests untouched).
+    (SC-G1..G4). **NEW coupling:** ASK hero-path code (`agent/loop.py:170-171`) still *speaks* the removed
+    claim — it looks up the maker via `manufactures` (never matches a component post-D-A) then falls back to
+    the literal `"mfr_casic"`. Written up as `handoff-ask-grounding.md` (D-G5); **bundle post-Phase-4** with
+    `handoff-ask.md`. Does NOT block any PR — ASK's tests are fixture-based, so they stay green.
   - Still open (separate): `PHASE1-DATAC-EVAL-answer_key-reconciliation.md` (id unification only — grounding
     part superseded by D-G1); `EVAL-RCA-corpus-grounding-basing-and-materiality.md` (subsumed by the audit).
 
@@ -69,6 +71,7 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
 | `handoff-answer-key-grounding.md` | DATA-C/EVAL | x | **answer_key edits ✅ APPLIED (fix/answer-key-grounding-apply)** |
 | `ANSWER-KEY-GROUNDING-AUDIT.md` | DATA-C/EVAL | x | reference (full node/edge grounding sweep) |
 | `handoff-resolve-score-grounding.md` | RESOLVE/SCORE (+ASK note) | 3/4 | **pending — derive the softened oracle** |
+| `handoff-ask-grounding.md` | ASK | post-4 | **pending — bundle with `handoff-ask.md` (D-G5)** |
 
 ## Verify after each phase
 `export CHANAKYA_ROOT=<worktree>; backend/.venv/bin/python tmp/conv/eval-rca/rca_evidence.py` — regenerates

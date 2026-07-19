@@ -90,6 +90,18 @@ after checking the ontology; RESOLVE/SCORE (+ a newly-found ASK coupling) are ha
   do **not** seed `foreign_control`/`SOLE_SOURCE` to force CONFIRMED (upholds D-C.1). If material at all,
   rest it on the hedged techdata-authority (d21) + no-open-substitute-chassis (d24) axis at **probable**.
   *Absence of evidence ≠ evidence of absence.* Config-side owner: SCORE (no credibility retune).
+- **D-G5 — ASK grounding follow-on kept as its own handoff, bundled post-Phase-4.** D-G1 removed the
+  un-sourced CASIC→HT-233 maker edge from the oracle, but ASK's deterministic hero path still *speaks* it:
+  `agent/loop.py:170-171` looks up the maker via `manufactures` (which post-D-A can never match a component)
+  and then falls back to the literal `"mfr_casic"` — an unconditional, un-sourced attribution. Written up as
+  `handoff-ask-grounding.md` (ASK-G1 blocks-demo, ASK-G2/G3 major) rather than fixed here.
+  *An honest store + a confabulating answer layer is still a fabricated assessment (the non-negotiable);
+  clean ownership — ASK owns its surface.* *Rejected:* folding the ASK fix into the answer_key PR (would mix
+  a DATA/EVAL oracle change with ASK code + 4 coupled test files, and ASK's tests are fixture-based so they
+  stay green either way — no urgency to couple them). **Bundle into the post-Phase-4 ASK work alongside
+  `handoff-ask.md`**, whose "honest refusal" machinery is the same mechanism ASK-G1 needs.
+  NB: D-2.7 (INGEST) independently reached the same conclusion for `based-at` — "no doc states unit→site;
+  it is derived" — which corroborates D-G2 from the extraction side.
 
 ## Phase-2 build-time sub-decisions (INGEST — extraction rework, commit 80a8702)
 - **D-2.1 — Extraction enum driven from `EdgeLaneIndex.extractor_edges()`, injected at tool-schema build.**
