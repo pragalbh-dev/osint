@@ -1,0 +1,693 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "14h"
+    },
+    "claim_id": "d11-recycled-image-l4",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 4,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          105,
+          789
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 12,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1127,
+          1272
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 21,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1837,
+          1977
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 30,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2549,
+          2815
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 42,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3395,
+          3568
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "u/Falcon_ISR_watch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l4-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        161,
+        306
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "fresh deployment"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Rahwali cantt, just outside Gujranwala",
+        "raw": "Rahwali cantt, just outside Gujranwala",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l4-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        624,
+        659
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "strikes on"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "Lahore/Sargodha AD nodes"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "13h"
+    },
+    "claim_id": "d11-recycled-image-l9",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 9,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          818,
+          1092
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 18,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1616,
+          1802
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 33,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2843,
+          3014
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "u/paktank_09"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1147,
+        1215
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "moved into"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "Rahwali Airfield / Cantonment, Gujranwala",
+            "lat": 32.239,
+            "lon": 74.131,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Rahwali",
+        "raw": "Rahwali",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 32.239,
+        "wgs84_lon": 74.131
+      },
+      "participants": [
+        "HQ-9 units"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "12h"
+    },
+    "claim_id": "d11-recycled-image-l15",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1305,
+          1587
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 27,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2308,
+          2515
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 45,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3600,
+          3752
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "u/desert_hawk_77"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_offontology_type": "never confirmed"
+    },
+    "claim_id": "d11-recycled-image-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1528,
+        1587
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "exact variant count for northern sector",
+      "object_value": null,
+      "predicate": "never confirmed",
+      "subject": "PAF"
+    },
+    "polarity": "negative",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "10h"
+    },
+    "claim_id": "d11-recycled-image-l24",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 24,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2012,
+          2276
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+        "frame": null,
+        "line": 39,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3152,
+          3361
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "u/ac_militarywatch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l24-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2030,
+        2135
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "hosted"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "Rahwali Airfield / Cantonment, Gujranwala",
+            "lat": 32.239,
+            "lon": 74.131,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Rahwali",
+        "raw": "Rahwali",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 32.239,
+        "wgs84_lon": 74.131
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_offontology_type": "has"
+    },
+    "claim_id": "d11-recycled-image-l33",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 33,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2852,
+        2884
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Triumf",
+      "object_value": null,
+      "predicate": "has",
+      "subject": "Pak"
+    },
+    "polarity": "negative",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "6h"
+    },
+    "claim_id": "d11-recycled-image-l36",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 36,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3048,
+        3118
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "u/random_lurker223"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  }
+]

@@ -1,0 +1,1163 @@
+[
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        23
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "HIT??"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "SITE, اسٹریٹ 5, شہری لاہور, Qadri Colony, Charr, تحصیل لاہور کنٹونمنٹ, ضلع لاہور, لاہور ڈویژن, پنجاب, 54791, پاکستان",
+            "lat": 31.4861707,
+            "lon": 74.3691691,
+            "source": "nominatim"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "LAHORE SITE",
+        "raw": "LAHORE SITE",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 31.4861707,
+        "wgs84_lon": 74.3691691
+      },
+      "participants": [
+        "HQ9/P"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l1-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        275
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@Raj_DefenceEye"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 2,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        103,
+        113
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "strike"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "IAF"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l2-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 2,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        178,
+        204
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "neutralized"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HIMADS battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        277,
+        555
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@BharatStrikeWatch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        557,
+        857
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@IndoPacGuardian"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        695,
+        723
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "neutralized!!"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HIMADS battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        859,
+        1175
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@SentinelDesiOSINT"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1177,
+        1201
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "hit??"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "SITE, اسٹریٹ 5, شہری لاہور, Qadri Colony, Charr, تحصیل لاہور کنٹونمنٹ, ضلع لاہور, لاہور ڈویژن, پنجاب, 54791, پاکستان",
+            "lat": 31.4861707,
+            "lon": 74.3691691,
+            "source": "nominatim"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Lahore site",
+        "raw": "Lahore site",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 31.4861707,
+        "wgs84_lon": 74.3691691
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l23-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1177,
+        1423
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@ArmchairGeneral_IN"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l23-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1307,
+        1321
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "down!!"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l27",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1425,
+        1656
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@DefenceBuzzIndia"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l27-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1511
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "hit"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
+            "lat": 31.5656822,
+            "lon": 74.3141829,
+            "source": "nominatim"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 31.5656822,
+        "wgs84_lon": 74.3141829
+      },
+      "participants": [
+        "HQ9/P",
+        "battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l33",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 33,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1663,
+        1951
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@quiet_watcher77"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l37",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 37,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1953,
+        2218
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@fauji_factcheck"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_offontology_type": "turned into"
+    },
+    "claim_id": "d12-reshare-a-l37-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 37,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2000,
+        2067
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "a fertilizer plant fire",
+      "object_value": null,
+      "predicate": "turned into",
+      "subject": "Sargodha strike"
+    },
+    "polarity": "negative",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l41",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 41,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2220,
+        2490
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@SAObserverDesk"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l41-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 41,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2228,
+        2254
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": null,
+            "label": "لاہور, تحصیل لاہور شہر, ضلع لاہور, لاہور ڈویژن, پنجاب, 54100, پاکستان",
+            "lat": 31.5656822,
+            "lon": 74.3141829,
+            "source": "nominatim"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 31.5656822,
+        "wgs84_lon": 74.3141829
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_offontology_type": "has not acknowledged"
+    },
+    "claim_id": "d12-reshare-a-l45",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2492,
+        2558
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "any HQ-9/P site loss near Lahore",
+      "object_value": null,
+      "predicate": "has not acknowledged",
+      "subject": "Pakistan MoD"
+    },
+    "polarity": "negative",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l45-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2492,
+        2784
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@ISPR_Watch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  }
+]

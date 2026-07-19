@@ -1,0 +1,581 @@
+[
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        38
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-09",
+      "kind": "exact",
+      "raw": "2022-03-09"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "pad and revetment layout, Perimeter berm, secondary access road, rectangular objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "pad and revetment layout, Perimeter berm, secondary access road, rectangular objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2022-03-09",
+        "kind": "exact",
+        "raw": "2022-03-09"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        231,
+        280
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [
+            {
+              "confidence": 1.0,
+              "label": null,
+              "lat": 24.9012,
+              "lon": 67.2034,
+              "source": "coord-parse"
+            }
+          ],
+          "precision_class": "city",
+          "proposed_alias": null,
+          "raw": "24.9012 N, 67.2034 E",
+          "resolved_place_ref": null,
+          "surface_format": "DMS",
+          "wgs84_lat": 24.9012,
+          "wgs84_lon": 67.2034
+        },
+        "occupancy_state": "possibly not yet fully operational as of the March pass",
+        "site_signature_geometry": "petal/ring-pattern surface-to-air missile pad",
+        "site_type": "fortified air defense site / active or newly constructed long-range SAM battery position"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Malir District, Karachi, Sindh Province, Pakistan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        405,
+        875
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "MODERATE-HIGH confidence",
+        "family": "CASIC HQ-9"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l13-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        700,
+        734
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "launcher",
+        "functional_role": "deployment schemes"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "transporter-erector-launcher (TEL)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1105,
+        1448
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-11-02",
+      "kind": "exact",
+      "raw": "2021-11-02"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "dimensions": "approximate diameter 90-110m",
+        "object_type": "roughly circular graded pad with six radial spurs terminating in what are believed to be TEL revetments"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "roughly circular graded pad with six radial spurs terminating in what are believed to be TEL revetments"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-11-02",
+        "kind": "exact",
+        "raw": "2021-11-02"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1778,
+        1961
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-12-19",
+      "kind": "exact",
+      "raw": "2021-12-19"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "dimensions": "approx. 15-20m diameter",
+        "object_type": "raised circular foundation"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "raised circular foundation"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-12-19",
+        "kind": "exact",
+        "raw": "2021-12-19"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l23-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1845,
+        2022
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement/guidance radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "engagement radar"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l25",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 25,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2141,
+        2278
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-01-27",
+      "kind": "exact",
+      "raw": "2022-01-27"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 2.0
+        },
+        "dimensions": "approx. 9-11m in length",
+        "object_type": "object(s)"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "object(s)"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2022-01-27",
+        "kind": "exact",
+        "raw": "2022-01-27"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l43",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 43,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4444,
+        4535
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "No SAR pass available to confirm object presence under cloud cover (Pass 3 northern arc)."
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l44",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 44,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4536,
+        4660
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "No imagery collect between 2022-01-27 and 2022-03-09 (41-day gap) — construction/emplacement activity in interval unknown."
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l45",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4661,
+        4759
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "Radar emitter identification would require ELINT/SIGINT cross-cue not available to this analyst."
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  }
+]
