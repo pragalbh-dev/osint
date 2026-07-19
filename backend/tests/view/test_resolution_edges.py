@@ -15,14 +15,16 @@ from chanakya.schemas import (
     DocRef,
     EntityDescriptor,
     GraphView,
+    Location,
     NodeView,
     Partition,
+    PlaceRef,
     ResolvedRef,
     Triple,
     pair_key,
 )
 from chanakya.view import pipeline
-from chanakya.view.pipeline import _merge_provenance, _resolution_edges, rebuild
+from chanakya.view.pipeline import _merge_provenance, _resolution_edges, _stamp_place_refs, rebuild
 
 
 def test_resolution_edges_emitted_for_candidates_and_distinct() -> None:
@@ -65,6 +67,55 @@ def test_merge_provenance_stamped_on_canonical_node() -> None:
     ]
 
 
+def test_place_ref_is_stamped_onto_the_node_with_its_evidence() -> None:
+    """RES-3: the writer ``Location.resolved_place_ref`` never had — plus the distance/band that earned it."""
+    nodes = {
+        "site_rahwali": NodeView(
+            id="site_rahwali", type="basing_site", name="Rahwali airfield", claim_ids=["d1-l1"],
+            location=Location(raw="32°14′20″N 074°07′52″E", wgs84_lat=32.239, wgs84_lon=74.131),
+        ),
+        "site_pin": NodeView(id="site_pin", type="basing_site", name="an unnamed compound", claim_ids=["d1-l2"]),
+    }
+    frozen = nodes["site_rahwali"].location
+    part = Partition(
+        place_refs={"site_rahwali": PlaceRef(place_id="pl_rahwali", band="auto", distance_m=16.17, via="toponym")}
+    )
+    _stamp_place_refs(nodes, part)
+
+    stamped = nodes["site_rahwali"]
+    assert stamped.location is not None and stamped.location.resolved_place_ref == "pl_rahwali"
+    assert stamped.location.wgs84_lat == 32.239  # the frozen coord survives the stamp
+    assert frozen is not None and frozen.resolved_place_ref is None  # the value object was NOT mutated
+    assert stamped.attrs["place_match_band"] == "auto"
+    assert stamped.attrs["place_match_distance_m"] == 16.17
+    assert stamped.attrs["place_match_via"] == "toponym"
+    # A mention that matched no curated anchor stays an honest pin: no ref, no place attrs.
+    assert nodes["site_pin"].location is None
+    assert "place_match_band" not in nodes["site_pin"].attrs
+
+
+def test_frozen_location_reaches_the_node_from_the_claim() -> None:
+    """The coordinate was always on the claim; it just had no home on the view element (RES-3)."""
+    claim = ClaimRecord(
+        claim_id="d1-l1", source_id="s", doc_ref=DocRef(file="f", span=(0, 1)),
+        kind="observation", asserts="entity",
+        payload=EntityDescriptor(
+            entity_type="basing_site", name="Rahwali airfield",
+            attrs={"coordinates": {"raw": "32°14′20″N 074°07′52″E", "wgs84_lat": 32.239, "wgs84_lon": 74.131}},
+        ),
+    )
+    nodes, _, _ = pipeline._assemble([claim], {})
+    node = nodes["ent:basing_site:Rahwali airfield"]
+    assert node.location is not None and node.location.wgs84_lat == 32.239
+    assert node.location.resolved_place_ref is None  # RESOLVE's slot, still unfilled at assembly
+
+
+def test_entity_without_a_coordinate_keeps_no_location() -> None:
+    claim = _entity_claim("d1-l1", "HQ-9P")
+    nodes, _, _ = pipeline._assemble([claim], {})
+    assert nodes["ent:variant:HQ-9P"].location is None  # golden path unchanged (gate G2)
+
+
 def _entity_claim(cid: str, name: str) -> ClaimRecord:
     return ClaimRecord(
         claim_id=cid,
@@ -88,7 +139,9 @@ def test_merge_reconnects_edges_to_canonical_node() -> None:
     edge = ClaimRecord(
         claim_id="d2-l1", source_id="s", doc_ref=DocRef(file="f", span=(0, 1)),
         kind="observation", asserts="relationship",
-        payload=Triple(subject="var_fd2000", predicate="marketed-as", object="var_export"),
+        # A real RELATIONSHIP predicate. An *identity* predicate ("marketed-as", "same-as") is consumed as
+        # a merge signal and deliberately never drawn (D-2.5), so it could not show reconnection at all.
+        payload=Triple(subject="var_fd2000", predicate="equips", object="var_export"),
     )
     part = Partition(
         resolved_ref={"d1-e1": ResolvedRef(entity_id="var_hq9p")},
@@ -96,7 +149,7 @@ def test_merge_reconnects_edges_to_canonical_node() -> None:
         entity_canonical={"var_fd2000": "var_hq9p"},
     )
     nodes, edges, _ = pipeline._assemble([entity, edge], part.entity_canonical)
-    e = next(e for e in edges if e.type == "marketed-as")
+    e = next(e for e in edges if e.type == "equips")
     assert e.source == "var_hq9p"  # reconnected, not the merged-away "var_fd2000"
     assert "var_fd2000" not in {n.id for n in nodes.values()}
 

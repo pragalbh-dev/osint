@@ -52,6 +52,11 @@ class Entity:
     attrs: dict[str, Any] = field(default_factory=dict)
     claim_ids: list[str] = field(default_factory=list)
     source_ids: set[str] = field(default_factory=set)
+    # True only for an entry seeded from the entity registry (``config/entities.yaml``, P3.0). It is a
+    # *candidate* with a STABLE id, carrying no claims of its own: it never becomes a view node unless a
+    # real claim resolves onto it, but when it does, its cluster adopts its id (see ``cluster._preferred``)
+    # so the graph, the lenses and the oracle share one id namespace.
+    registry: bool = False
 
     def namespace(self) -> str | None:
         """The 'country / domain namespace' blocking dimension, read from stated attrs (None ⇒ wildcard)."""
@@ -62,6 +67,17 @@ class Entity:
         return None
 
 
+def namespace_compatible(a: Entity, b: Entity) -> bool:
+    """Same declared namespace, or at least one side unstated.
+
+    Weaker than the exact-name bootstrap's ``==`` on purpose: an unstated namespace is a **wildcard**,
+    not a conflict (most minted endpoint mentions carry no attrs at all), so a missing attribute never
+    fabricates a difference. Two *stated* and different namespaces (China vs Pakistan) still block.
+    """
+    na, nb = a.namespace(), b.namespace()
+    return na is None or nb is None or na == nb
+
+
 @dataclass
 class Edge:
     subject: str  # raw entity ref (an entity_id)
@@ -69,6 +85,10 @@ class Edge:
     object: str
     edge_instance: str | None
     latest_iso: str | None  # event_time upper bound (for relocation/temporal reasoning)
+    # The source that asserted this triple. Load-bearing for identity (D-2.5/D-P3.4): a ``same-as`` is an
+    # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
+    # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
+    source_id: str | None = None
 
 
 @dataclass
@@ -107,6 +127,7 @@ def build(claims: list[ClaimRecord]) -> EntityGraph:
                     object=p.object,
                     edge_instance=rr.edge_instance,
                     latest_iso=canonical_iso_bounds(c.event_time)[1],
+                    source_id=c.source_id,
                 )
             )
     return EntityGraph(entities=entities, edges=edges)

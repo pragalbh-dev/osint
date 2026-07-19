@@ -159,7 +159,13 @@ def test_opposite_phrasings_corroborate_on_one_edge_after_rebuild() -> None:
     based_at = [e for e in view.edges if e.type == "based-at"]
     assert len(based_at) == 1, "the two phrasings must resolve to a single edge"
     assert set(based_at[0].claim_ids) == {"src_a", "src_b"}  # one edge, two corroborating looks
-    assert based_at[0].source == "8th Bn" and based_at[0].target == "Rahwali"  # canonical direction
+    # Canonical direction is unit -> site. Assert it by NODE TYPE, not by designator string: RESOLVE
+    # inducts each endpoint as a mention and rewrites it to the resolved entity id (RES-1), so the edge
+    # now carries ids rather than the raw text — the direction is the invariant, the spelling is not.
+    by_id = {n.id: n for n in view.nodes}
+    assert by_id[based_at[0].source].type == "unit"
+    assert by_id[based_at[0].target].type == "basing_site"
+    assert (by_id[based_at[0].source].name, by_id[based_at[0].target].name) == ("8th Bn", "Rahwali")
 
 
 def test_without_the_convention_phrasings_split_into_two_edges() -> None:

@@ -20,9 +20,15 @@ from .entities import Entity, EntityGraph
 from .normalize import name_similarity, normalize
 from .rconfig import ATTRIBUTE, RELATIONAL, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
 
-# predicates by which a *source* directly asserts an identity (feeds source_asserted — an identity
+# Predicates by which a *source* directly asserts an identity (feeds source_asserted — an identity
 # signal, never claim credibility, gate G5). Strings, not numbers — G6 bans only numeric literals.
-_IDENTITY_PREDICATES = {"same-as", "same_as", "aka", "also-known-as", "marketed-as", "is"}
+# These claims are CONSUMED as merge signals rather than drawn as relationships (D-2.5): the view
+# suppresses them (``view/pipeline._assemble``) because a "same-as" is a statement *about identity*,
+# which the knowledge layer expresses by merging, not by an edge.
+IDENTITY_PREDICATES = {"same-as", "same_as", "aka", "also-known-as", "marketed-as", "is"}
+# …and the negative form. Unlike the positive, a distinct-from is a **hard veto AND stays drawn**: the
+# trap has to remain visible to the analyst (an invisible veto is indistinguishable from a missing edge).
+DISTINCT_PREDICATES = {"distinct-from", "distinct_from", "not-same-as"}
 
 Canonical = Callable[[str], str]
 
@@ -122,12 +128,23 @@ def temporal_score(reloc: bool) -> float:
     return 0.0 if reloc else 1.0
 
 
-def source_asserted_score(graph: EntityGraph, a: str, b: str) -> float:
-    """1.0 iff a source directly asserts the identity a≡b (an identity signal, never truth — G5)."""
+def source_asserted_score(
+    graph: EntityGraph, a: str, b: str, weight_of: Callable[[str | None], float] | None = None
+) -> float:
+    """How strongly a *source* asserts the identity a≡b — the best asserting source's grade (D-2.5).
+
+    Identity assertions are ordinary evidence claims and therefore carry their source's credibility:
+    a curated register saying "FD-2000 is HQ-9/P" is not the same evidence as an anonymous repost saying
+    it. So this returns the **maximum** source weight over the asserting claims rather than a flat 1.0
+    (best-source semantics, matching how corroboration treats the strongest look). Still an *identity*
+    signal, never claim truth (gate G5), and still structurally incapable of reaching auto-merge on its
+    own (``cluster._band``). ``weight_of`` absent ⇒ the old binary behaviour.
+    """
+    best = 0.0
     for e in graph.edges:
-        if e.predicate in _IDENTITY_PREDICATES and {e.subject, e.object} == {a, b}:
-            return 1.0
-    return 0.0
+        if e.predicate in IDENTITY_PREDICATES and {e.subject, e.object} == {a, b}:
+            best = max(best, weight_of(e.source_id) if weight_of is not None else 1.0)
+    return best
 
 
 def merge_score(
@@ -145,7 +162,7 @@ def merge_score(
         ATTRIBUTE: attribute_score(a, b, cfg, alias_idx),
         RELATIONAL: relational_score(graph, a.eid, b.eid, canonical, exclude),
         TEMPORAL: temporal_score(reloc),
-        SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid),
+        SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid, cfg.identity_source_weight),
     }
     total = sum(cfg.weight(sig) * parts[sig] for sig in parts)
     return {**parts, "total": _clamp(total)}

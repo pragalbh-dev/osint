@@ -18,6 +18,8 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, cast
 
+from pydantic import ValidationError
+
 from chanakya.credibility import (
     assertion_freshness,
     assign_status,
@@ -26,7 +28,7 @@ from chanakya.credibility import (
 )
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
-from chanakya.resolve import resolve
+from chanakya.resolve import IDENTITY_PREDICATES, location_attr, resolve
 from chanakya.schemas import (
     AssertionInput,
     ClaimRecord,
@@ -39,6 +41,7 @@ from chanakya.schemas import (
     EventView,
     GraphView,
     KnownGap,
+    Location,
     NodeView,
     Partition,
     SourceRegistryEntry,
@@ -226,7 +229,9 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
 # ── graph assembly (+ supersede/contradict) ──────────────────────────────────────────────────
 
 def _assemble(
-    resolved: list[ClaimRecord], entity_canonical: dict[str, str] | None = None
+    resolved: list[ClaimRecord],
+    entity_canonical: dict[str, str] | None = None,
+    endpoint_node_types: dict[str, str] | None = None,
 ) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
@@ -253,6 +258,8 @@ def _assemble(
                 node.claim_ids.append(c.claim_id)
             for k, v in payload.attrs.items():
                 node.attrs.setdefault(k, v)  # first claim wins; deterministic in replay order
+            if node.location is None:
+                node.location = _node_location(payload.attrs)  # first claim wins, as the attrs do
         elif isinstance(payload, EventDescriptor):
             eid = rr.entity_id if rr and rr.entity_id else f"event:{c.claim_id}"
             events.append(
@@ -267,6 +274,15 @@ def _assemble(
                 )
             )
         else:  # Triple (relationship)
+            # An identity assertion is CONSUMED, not drawn (D-2.5/P3.2). "A same-as B" is a statement
+            # about who two names refer to, and the knowledge layer already expresses that answer — by
+            # merging them, or by leaving them apart with a candidate edge the analyst can adjudicate.
+            # Drawing it as well produced a third thing: dozens of self-loops and twin nodes for the very
+            # designators resolution had just reconciled. The claim itself is untouched in the evidence
+            # log and still visible in the merge breakdown that cites it. `distinct-from` is the exact
+            # opposite and stays drawn — an invisible veto is indistinguishable from a missing edge.
+            if payload.predicate in IDENTITY_PREDICATES:
+                continue
             # Remap endpoints through the merge map so build_instance_edges (which reads the raw
             # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
             subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
@@ -280,13 +296,81 @@ def _assemble(
         edges.extend(build_instance_edges(ei, cs))
 
     # Never leave an edge dangling: materialise a referenced-but-undeclared node, citing the edge's
-    # claims as its (weak) provenance so gate G4 (every node carries ≥1 claim_id) still holds.
+    # claims as its (weak) provenance so gate G4 (every node carries ≥1 claim_id) still holds. RESOLVE
+    # types such an endpoint from the edge's own domain/range where the ontology allows it (RES-1), so
+    # this materialises a real typed node; ``unknown`` now means only "the ontology could not type it",
+    # which is an honest gap rather than the id-namespace artefact it used to be.
+    ep_types = endpoint_node_types or {}
     for e in edges:
         for endpoint in (e.source, e.target):
             if endpoint not in nodes:
-                nodes[endpoint] = NodeView(id=endpoint, type="unknown", claim_ids=list(e.claim_ids))
+                node_type = ep_types.get(endpoint, "unknown")
+                nodes[endpoint] = NodeView(
+                    id=endpoint,
+                    type=node_type,
+                    name=_minted_name(endpoint) if node_type != "unknown" else None,
+                    claim_ids=list(e.claim_ids),
+                )
 
     return nodes, edges, events
+
+
+def _node_location(attrs: dict[str, Any]) -> Location | None:
+    """Surface the frozen ``Location`` INGEST stamped into an entity's attrs as the node's ``location``.
+
+    The canonical coordinate was always on the claim; it simply had no home on the view element, so the
+    map, ``observe/dsl``'s ``location.*`` fields and ``agent/tools`` had nothing to read — and RESOLVE's
+    place match had nowhere to land. Anything that is not a well-formed frozen ``Location`` is left alone
+    rather than guessed at (an entity with no coordinate keeps ``location = None``, gate G2).
+    """
+    value = location_attr(attrs)
+    if not isinstance(value, dict):
+        return None
+    try:
+        return Location.model_validate(value)
+    except ValidationError:
+        return None
+
+
+# Where the *evidence* for a place binding is rendered. Not bookkeeping: "snapped to Rahwali from 16 m"
+# and "pulled to it from 2.8 km" are different claims, and the analyst is the one who has to tell them
+# apart before trusting a location. Kept as node attrs so any consumer reads them without a new schema.
+PLACE_MATCH_BAND = "place_match_band"
+PLACE_MATCH_DISTANCE_M = "place_match_distance_m"
+PLACE_MATCH_VIA = "place_match_via"
+
+
+def _stamp_place_refs(nodes: dict[str, NodeView], partition: Partition) -> None:
+    """Write RESOLVE's gazetteer match onto the node — the writer ``resolved_place_ref`` never had (RES-3).
+
+    Only **curated** ``config/places.yaml`` anchors are ever referenced. A mention that matched none is
+    absent from ``place_refs``: it keeps its own raw coordinate and carries no ref, which is the honest
+    outcome (an incidental pin, not a named anchor) rather than a failure to fix. The frozen ``Location``
+    is a value object, so it is replaced with a copy, never mutated in passing. Empty map ⇒ no-op (G2).
+    """
+    for nid, ref in sorted(partition.place_refs.items()):
+        node = nodes.get(nid)
+        if node is None:
+            continue  # a match on an entity no claim materialised as a node — nothing to stamp
+        base = node.location or Location(raw=node.name or node.id)
+        node.location = base.model_copy(update={"resolved_place_ref": ref.place_id})
+        node.attrs[PLACE_MATCH_BAND] = ref.band
+        if ref.distance_m is not None:
+            node.attrs[PLACE_MATCH_DISTANCE_M] = ref.distance_m
+        if ref.via:
+            node.attrs[PLACE_MATCH_VIA] = ref.via
+
+
+def _minted_name(node_id: str) -> str | None:
+    """The display name inside a minted endpoint id (``ent:<type>:<name>``), else None.
+
+    RESOLVE mints an endpoint node as ``ent:<type>:<surface form>``, so the designator the document
+    actually used is recoverable for display/search without a second channel. Split is bounded at 2 so a
+    name containing ``:`` survives intact. A stable-id node (``var_hq9p``) never reaches here — it is
+    claim-backed and already materialised above.
+    """
+    parts = node_id.split(":", 2)
+    return parts[2] if len(parts) == 3 and parts[0] == "ent" and parts[2] else None
 
 
 # ── HITL decision effects (real F0, gate G12) ─────────────────────────────────────────────────
@@ -354,8 +438,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
     #    merged-away entity's edges to its canonical node (no-op when nothing merged).
-    nodes, edges, events = _assemble(resolved, partition.entity_canonical)
+    nodes, edges, events = _assemble(resolved, partition.entity_canonical, partition.endpoint_node_types)
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
+    _stamp_place_refs(nodes, partition)  # RES-3: the curated-anchor binding + the evidence for it
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
 

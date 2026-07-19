@@ -7,6 +7,7 @@ from typing import Any
 from chanakya.schemas import (
     ClaimRecord,
     ConfigBundle,
+    CredibilityConfig,
     DocRef,
     EntityDescriptor,
     ExactDate,
@@ -14,12 +15,14 @@ from chanakya.schemas import (
     PlacesConfig,
     ResolutionConfig,
     ResolvedRef,
+    SourceRegistryEntry,
+    SourcesConfig,
     Triple,
 )
 
 # The canonical C weights/bands, so tests exercise the real defaults (DATA-C authors the same numbers).
-WEIGHTS = {"attribute": 0.30, "relational": 0.40, "temporal_consistency": 0.15, "source_asserted": 0.15}
-BANDS = {"auto_merge": 0.85, "hitl_low": 0.55}
+WEIGHTS = {"attribute": 0.40, "relational": 0.40, "temporal_consistency": 0.05, "source_asserted": 0.15}
+BANDS = {"auto_merge": 0.85, "hitl_low": 0.45}
 
 
 def mk_config(
@@ -37,6 +40,14 @@ def mk_config(
     places: list[PlaceEntry] | None = None,
     proximity_radius_m: dict[str, float] | None = None,
     place_proximity_hitl_multiplier: float | None = None,
+    place_allowed_precision_classes: dict[str, list[str]] | None = None,
+    place_min_geocode_confidence: float | None = None,
+    toponym_descriptive_markers: list[str] | None = None,
+    place_bind_on_curated_toponym: bool = False,
+    containment_min_descriptor_len: int | None = None,
+    containment_min_short_tokens: int | None = None,
+    acronym_min_len: int | None = None,
+    source_grades: dict[str, str] | None = None,
 ) -> ConfigBundle:
     resolution = ResolutionConfig(
         merge_weights=dict(WEIGHTS),
@@ -52,9 +63,31 @@ def mk_config(
         orphan_block_threshold_k=orphan_block_threshold_k,
         llm_candidate_gen=llm_candidate_gen or {},
         place_proximity_hitl_multiplier=place_proximity_hitl_multiplier,
+        place_allowed_precision_classes=place_allowed_precision_classes or {},
+        place_min_geocode_confidence=place_min_geocode_confidence,
+        toponym_descriptive_markers=toponym_descriptive_markers or [],
+        place_bind_on_curated_toponym=place_bind_on_curated_toponym,
+        containment_min_descriptor_len=containment_min_descriptor_len,
+        containment_min_short_tokens=containment_min_short_tokens,
+        acronym_min_len=acronym_min_len,
     )
     places_cfg = PlacesConfig(places=places or [], proximity_radius_m=proximity_radius_m or {})
-    return ConfigBundle(version=1, resolution=resolution, places=places_cfg)
+    # ``source_grades``: {source_id: source_class} + a one-factor rubric, so R(source) == the number below
+    # and a test can state "this class is worth X" without restating the whole credibility surface.
+    sources_cfg = SourcesConfig(
+        sources=[SourceRegistryEntry(source_id=sid, source_type=cls) for sid, cls in (source_grades or {}).items()]
+    )
+    credibility = CredibilityConfig(
+        factor_weights={"authority": 1.0} if source_grades else {},
+        source_class_factors=CLASS_AUTHORITY if source_grades else {},
+    )
+    return ConfigBundle(
+        version=1, resolution=resolution, places=places_cfg, sources=sources_cfg, credibility=credibility
+    )
+
+
+# One-factor stand-in for the real rubric: R(class) == its authority score (see mk_config).
+CLASS_AUTHORITY = {"curated-register": {"authority": 0.9}, "anon-social": {"authority": 0.2}}
 
 
 _counter = {"n": 0}
