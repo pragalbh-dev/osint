@@ -31,12 +31,12 @@ def test_appended_override_changes_the_view() -> None:
     cfg = loaders.golden_config_store().snapshot()
 
     before = rebuild(loaders.golden_evidence_log(), [], cfg)
-    assert _status_of(before, _TARGET) is None  # nothing overrides it yet
+    assert _status_of(before, _TARGET) == "probable"  # the machine's own verdict for this edge
 
     dl = DecisionLog()
-    dl.append(_override("ovr-1", "probable"))
+    dl.append(_override("ovr-1", "possible"))
     after = rebuild(loaders.golden_evidence_log(), dl, cfg)
-    assert _status_of(after, _TARGET) == "probable"  # the override propagated on rebuild
+    assert _status_of(after, _TARGET) == "possible"  # the override propagated on rebuild (probable→possible)
 
 
 def test_a_later_override_supersedes_the_earlier() -> None:

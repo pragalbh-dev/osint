@@ -18,7 +18,12 @@ from collections import defaultdict
 from collections.abc import Iterable
 from typing import Any, cast
 
-from chanakya.credibility import assign_status, group_by_independence, score_claims
+from chanakya.credibility import (
+    assertion_freshness,
+    assign_status,
+    group_by_independence,
+    score_claims,
+)
 from chanakya.materiality import precompute
 from chanakya.resolve import resolve
 from chanakya.schemas import (
@@ -39,7 +44,7 @@ from chanakya.schemas import (
     pair_key,
 )
 from chanakya.sufficiency import check
-from chanakya.timeref import is_available_by
+from chanakya.timeref import effective_as_of, is_available_by
 
 from .export import sorted_view
 from .supersede import build_instance_edges
@@ -91,26 +96,57 @@ def deception_gate_flags(
     claims_by_id: dict[str, ClaimRecord],
     sources: dict[str, SourceRegistryEntry],
 ) -> list[str]:
-    """Deception gates that cap an assertion at *probable* (spine/04 §3.4) — **gates, not multipliers**.
+    """The unconditional deception gate — ``adversary-denial`` (spine/04 §3.4) — computed where claims +
+    the source registry are in scope, so ``assign_status`` can cap from the ``AssertionInput`` alone.
 
-    Populated here, where the supporting claims + the source registry are in scope, so that
-    ``assign_status`` (which sees only the ``AssertionInput``) can enforce the caps. ``adversary-denial``
-    if any supporting claim's source carries ``adversary_denial_flag`` (a fake second-source or a denial
-    of a known dependency); ``decoy-risk`` if the element is flagged as a single-pass basing signature
-    that cannot confirm. Empty on clean elements → golden view unchanged (gate G2). Order is deterministic.
+    Fires if any supporting claim's source carries ``adversary_denial_flag`` (a fake second-source / a
+    denial of a known dependency). Empty on clean elements → golden view unchanged (gate G2). The
+    *decoy* gate is separate (single-pass-conditional — see :func:`has_decoy_look`).
     """
-    flags: list[str] = []
     for cid in element.claim_ids:
         claim = claims_by_id.get(cid)
         if claim is None:
             continue
         src = sources.get(claim.source_id)
         if src is not None and src.adversary_denial_flag:
-            flags.append("adversary-denial")
-            break
+            return ["adversary-denial"]
+    return []
+
+
+def has_decoy_look(
+    element: NodeView | EdgeView | EventView, claims_by_id: dict[str, ClaimRecord]
+) -> bool:
+    """True if a single-pass decoy signal rides this element — on the element itself, or on a supporting
+    claim's ``attributes`` (e.g. INGEST's attribution ``inference`` claim D, which carries
+    ``decoy_risk_flag`` on ``ClaimRecord.attributes``, never on the edge). The *cap* is applied only when
+    the assertion is single-pass (< the min independent looks); a second independent look resolves it.
+    """
     if getattr(element, "attrs", {}).get("decoy_risk_flag"):
-        flags.append("decoy-risk")
-    return flags
+        return True
+    for cid in element.claim_ids:
+        claim = claims_by_id.get(cid)
+        attrs = (claim.attributes or {}) if claim is not None else {}
+        if attrs.get("decoy_risk_flag") or attrs.get("decoy_risk"):
+            return True
+    return False
+
+
+def gated_attr_flags(
+    element: NodeView | EdgeView | EventView, config: ConfigBundle
+) -> list[str]:
+    """``gated-attr-unknown`` if a configured gated attr (foreign_control/readiness) is present-but-UNKNOWN.
+
+    Such an element cannot reach *confirmed* (spine/04 §3.4: gated attrs not UNKNOWN; C/01 "never
+    default-to-OEM"). An absent attr is not applicable → no flag. The gated-attr list is config-driven
+    (default the two C/01 gated attrs). Empty on clean elements → golden view unchanged (gate G2).
+    """
+    gated = getattr(config.credibility, "gated_attrs", None) or ("foreign_control", "readiness")
+    attrs = getattr(element, "attrs", {})
+    for attr in gated:
+        value = attrs.get(attr)
+        if isinstance(value, str) and value.strip().upper() == "UNKNOWN":
+            return ["gated-attr-unknown"]
+    return []
 
 
 # ── partition application ────────────────────────────────────────────────────────────────────
@@ -327,6 +363,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     for ev in events:
         elements[ev.id] = ev
 
+    # The clock-free evaluation "now" for freshness/staleness (pinned as_of, else newest claim).
+    as_of = effective_as_of(config, resolved)
+
     assertions: list[AssertionInput] = []
     for eid, el in elements.items():
         groups = group_by_independence(el.claim_ids, claims_by_id, sources, config)
@@ -334,32 +373,48 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         per_claim = {cid: credibility[cid] for cid in el.claim_ids if cid in credibility}
         kind = "node" if isinstance(el, NodeView) else ("edge" if isinstance(el, EdgeView) else "event")
         contradiction = bool(getattr(el, "attrs", {}).get("contradiction"))
-        # Deception gates (adversary-denial / decoy-risk) computed where claims + sources are in scope,
-        # so assign_status can enforce the caps from the AssertionInput alone (spine/04 §3.4).
+        # Gates computed where claims + sources are in scope, so assign_status can enforce the caps
+        # from the AssertionInput alone (spine/04 §3.4): deception (adversary-denial/decoy-risk),
+        # freshness (aging/stale), and gated-attr-unknown (foreign_control/readiness).
+        fresh_summary, fresh_flags = assertion_freshness(el.claim_ids, claims_by_id, as_of, config)
         gate_flags = deception_gate_flags(el, claims_by_id, sources)
+        # Single-pass decoy: caps at probable only when the assertion is a lone look; a second
+        # independent, clean look resolves it (spine/04 "single-pass"; keeps gate G7 satisfiable).
+        if has_decoy_look(el, claims_by_id):
+            min_g = getattr(config.credibility, "min_independent_groups", None)
+            effective_looks = sum(g.weight for g in groups)
+            if min_g is None or effective_looks < min_g:
+                gate_flags.append("decoy-risk")
+        gate_flags.extend(fresh_flags)
+        gate_flags.extend(gated_attr_flags(el, config))
         if contradiction:
             gate_flags.append("contradiction")
-        assertions.append(
-            AssertionInput(
-                element_id=eid,
-                element_kind=kind,
-                per_claim_credibility=per_claim,
-                groups=groups,
-                opposing_claims=list(el.opposing_claims),
-                has_unresolved_contradiction=contradiction,
-                gate_flags=gate_flags,
-            )
+        a = AssertionInput(
+            element_id=eid,
+            element_kind=kind,
+            per_claim_credibility=per_claim,
+            groups=groups,
+            opposing_claims=list(el.opposing_claims),
+            has_unresolved_contradiction=contradiction,
+            gate_flags=gate_flags,
+            freshness=fresh_summary,
         )
+        # Sufficiency runs BEFORE status so the confirmed gate can require it + the machine owns the
+        # `insufficient` label (assessability ⊥ magnitude — spine/04 §3.7). AssertionInput.sufficiency
+        # is the F0-frozen channel for exactly this (§4.3 "illustrative" order reconciled here).
+        a.sufficiency = check(a, claims_by_id, config)
+        assertions.append(a)
 
-    # 5. status (batch) — fixed order: assign_status precedes check (master §4.3)
+    # 5. status (batch) — reads a.sufficiency + a.gate_flags for the gate machine
     assessments = assign_status(assertions, config)
 
-    # 6. sufficiency (per-assertion) + attach status/confidence; emit Known Gaps on failure
+    # 6. attach status/confidence/freshness/sufficiency; emit a first-class Known Gap on a failed template
     known_gaps: list[KnownGap] = []
     for a in assertions:
         el = elements[a.element_id]
-        suff = check(a, claims_by_id, config)
+        suff = a.sufficiency
         el.sufficiency = suff
+        el.freshness = a.freshness
         assess = assessments.get(a.element_id)
         if assess is not None:
             el.status = assess.status
@@ -367,9 +422,10 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                 per_claim_credibility=a.per_claim_credibility,
                 independence_groups=a.groups,
                 integrity_flags=a.gate_flags,
+                freshness_factor=a.freshness.decay_factor if a.freshness else None,
                 assertion_confidence=assess.assertion_confidence,
             )
-        if not suff.satisfied:
+        if suff is not None and not suff.satisfied:
             known_gaps.append(
                 KnownGap(
                     id=f"gap:{a.element_id}",

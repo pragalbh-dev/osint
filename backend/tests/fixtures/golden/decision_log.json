@@ -6,10 +6,10 @@
     "stage": "credibility",
     "type": "status_override",
     "subject_ref": "e:mfr_foundry:supplies-component:comp_gizmo",
-    "context": {"note": "single customs row; analyst downgrades to probable pending a 2nd origin"},
+    "context": {"note": "single customs row; the machine rates it probable — analyst downgrades to a mere lead pending a 2nd origin"},
     "options": ["promote", "demote", "reject"],
-    "decision": {"chosen": "demote", "rationale": "consignee != end user; one aggregator source"},
-    "effects": {"set_status": {"e:mfr_foundry:supplies-component:comp_gizmo": "probable"}}
+    "decision": {"chosen": "demote", "rationale": "consignee != end user; one aggregator source — not yet actionable"},
+    "effects": {"set_status": {"e:mfr_foundry:supplies-component:comp_gizmo": "possible"}}
   },
   {
     "event_id": "dec-coverage-1",

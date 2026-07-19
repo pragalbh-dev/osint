@@ -57,6 +57,16 @@ thresholds:
   probable: 0.50
   # "possible" has no separate cutoff: assessable AND assertion_confidence < 0.50.
 
+# ── SCORE resolver knobs (introduced by SCORE; DATA-C owns/tunes the values) ──────────────────────
+# Every numeric knob the Confidence Resolver reads lives here, never in code (gate G6).
+decay_base: 2                 # freshness = decay_base^(-age/half_life) → exactly halves at one half-life
+min_independent_groups: 2     # ≥2 independent looks required to reach `confirmed`
+same_class_weight: 0.5        # a same-discipline ("same-class-but-passing") corroborating look = half weight
+pdq_recycled_hamming: 10      # PDQ Hamming radius under which a re-seen image counts as recycled (first_seen)
+aligned_bias_vectors: [operator-state, exporter-state]  # parties to the deal → interest-dependent (one look)
+disciplines: {satellite: IMINT}   # source_type → collection discipline (default: textual)
+gated_attrs: [foreign_control, readiness]  # must be KNOWN (not UNKNOWN) for an element to reach `confirmed`
+
 half_lives_days:
   # Convention: 1 month = 30d, 1 year = 365d. A type/sub-key with NO entry is DURABLE (freshness=1.0,
   # no decay). Sub-variants: "<edge_type>.<variant>" (SCORE tries the specific key, then the bare edge,

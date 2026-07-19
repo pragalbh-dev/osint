@@ -42,8 +42,10 @@ def test_rebuild_emits_known_gap_when_sufficiency_fails(monkeypatch) -> None:
     view = rebuild(loaders.golden_evidence_log(), [], loaders.golden_config_store().snapshot())
 
     assert view.known_gaps, "sufficiency failure must emit a first-class Known Gap"
-    for gap in view.known_gaps:
+    # Isolate the sufficiency-driven gaps — the materiality stage may also emit chokepoint Known Gaps.
+    suff_gaps = [g for g in view.known_gaps if g.next_coverage_due == "2026-10-01"]
+    assert suff_gaps, "a failed evidence template must emit a first-class Known Gap"
+    for gap in suff_gaps:
         assert gap.missing_slots == ["imagery_confirmation"]
-        assert gap.next_coverage_due == "2026-10-01"
         assert gap.observability_ceiling == "confirmable"
         assert gap.related_ref  # hangs off the assertion that failed

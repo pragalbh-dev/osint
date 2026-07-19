@@ -13,7 +13,7 @@
 | X0 | Walking-skeleton deploy (EC2 + tunnel + GHCR) | 0 | merged | [#5](https://github.com/pragalbh-dev/osint/pull/5) | — | 0c364be |
 | DATA-C | Corpus freeze + C config YAML | 0 | merged | [#8](https://github.com/pragalbh-dev/osint/pull/8) | F0 (soft) | 407f1c2 |
 | RESOLVE | Iterative relational entity resolution | 1 | not-started | — | F0 | — |
-| SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | not-started | — | F0 | — |
+| SCORE | Confidence Resolver + Sufficiency/Known-Gap + materiality | 1 | in-review | [#20](https://github.com/pragalbh-dev/osint/pull/20) | F0 (+ F0-amend [#18](https://github.com/pragalbh-dev/osint/pull/18)) | — |
 | MONITOR | Observable DSL engine | 1 | in-review | [#11](https://github.com/pragalbh-dev/osint/pull/11) | F0 | — |
 | ASK | Bounded ReAct agent + citation validator | 1 | in-review | [#14](https://github.com/pragalbh-dev/osint/pull/14) | F0 | — |
 | HITL | Adjudication service + writeback + 3 cards | 1 | in-review | [#12](https://github.com/pragalbh-dev/osint/pull/12) | F0 | — |
@@ -369,3 +369,40 @@ decisions (principle→choice→alternative) · deviations from plan · follow-u
 - **Follow-ups still open:** (1) re-record the frozen bundles with a keyed `make extract` now that the geocoder
   freezes anchor coords; (2) dedupe `gazetteer_key` ↔ RESOLVE `normalize` into one shared module once RESOLVE
   merges; (3) the chunk thresholds could graduate to a config section.
+
+### SCORE (in-review, feat/score — PR #20; F0-amend PR #18):
+- **Shipped:** the four scoring stages of `rebuild()` — `chanakya/credibility/**` (score_claims R×Π(integrity)×
+  freshness · 3-axis independence grouping · noisy-OR + the confirmed/probable/possible/insufficient/
+  contradicted/stale machine), `chanakya/sufficiency/**` (template eval → first-class Known Gap with generated
+  `next_coverage_due`), `chanakya/materiality/**` (chokepoint criteria #1/#4/#6/#7/#10; UNKNOWN→candidate, never
+  sole-source). **423 pass / 5 skip; ruff + mypy + gates G1–G12 green.** 43 SCORE acceptance tests.
+- **F0-amendment (PR #18, `f0/score-amendments`; merge first, or SCORE carries it):** additive/optional +
+  inert on the golden — `CredibilityConfig.as_of` + `chanakya/timeref.py` (clock-free eval "now"); rebuild
+  rewind filter (past as_of hides not-yet-available claims); `apply_claim_exclusions` (HITL reject → drop the
+  look upstream); `deception_gate_flags` + `score_claims(…, decisions)`. Also folded into SCORE's PR: pipeline
+  reorder `check→assign_status` (so the status machine owns `insufficient` + enforces the sufficiency gate).
+- **Decisions (principle → choice → alt rejected):** see DECISIONS.md §6 "SCORE". Headlines: freshness `as_of`
+  = explicit config input (pinned / API-`now` / max-timestamp fallback), clock-free (G1/G2), past-as_of rewinds
+  — *user-approved*; decoy cap is **single-pass-conditional** (a 2nd independent look resolves it — reconciles
+  spine/04 "single-pass" + the INGEST inference net-effect + G7); `decay_base`/look-count/etc. are config knobs
+  (G6), never code; inference claims share their premises' group (derivation ≠ corroboration).
+- **HITL pickups landed (both):** analyst origin-flag penalises every claim of a `primary_origin_id` incl.
+  claims ingested *after* the flag; reject-claim excludes the look so the machine re-derives confirmed→probable.
+- **Fixture reconciliation (stages now compute real values):** regenerated `expected_view.json`; golden HITL
+  override `probable→possible` (the machine already rates that edge probable, so the override was invisible);
+  updated stub-baseline assertions in `test_stages_smoke`/`test_rebuild(meta)`/`test_lens`/G5/G8/G12 — **gate
+  intents preserved (propagation, two-scores, first-class Known Gap, no-invalid-confirmed); none weakened.**
+- **Follow-ups (EVAL):** re-verify reject→confirmed→probable + origin fan-out on the real corpus; confirm
+  HT-233 stays candidate end-to-end. **(DATA-C):** own/tune the new `credibility.yaml` SCORE knobs. **(INGEST):**
+  attribution-inference D asks answered (`tmp/conv` ACK) — grouping + single-pass decoy consume D as shaped.
+- **Gate fixtures:** extended G7 (confirmed-gate property test in `tests/credibility/test_status.py`) + G8
+  (materiality/sufficiency Known-Gap paths) coverage in SCORE's own tests; F0's `tests/gates/*` kept green
+  (G8/G12/G5 baselines updated for real-stage output, never weakened).
+
+## Contract amendments (SCORE, 2026-07-19)
+- **F0-amend #18 (`f0/score-amendments`):** `CredibilityConfig.as_of` (master §4.4); new `chanakya/timeref.py`;
+  `score_claims(resolved_claims, sources, config, decisions=None)` (master §4.3); rebuild gains a rewind filter
+  + `apply_claim_exclusions` + `deception_gate_flags` populating `AssertionInput.gate_flags`. All additive/
+  optional → siblings (RESOLVE/MONITOR/ASK/API) rebase with no code change; golden view byte-identical until
+  the stages fill. **Pipeline reorder `check→assign_status`** rides in the SCORE PR (view/-internal; §4.3
+  "illustrative" order reconciled so the confirmed gate can require sufficiency).

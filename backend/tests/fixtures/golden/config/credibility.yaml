@@ -17,6 +17,14 @@ integrity_penalties:
 thresholds:
   confirmed: 0.80
   probable: 0.50
+# SCORE resolver knobs (values in config, never code — gate G6).
+decay_base: 2
+min_independent_groups: 2
+same_class_weight: 0.5
+pdq_recycled_hamming: 10
+aligned_bias_vectors: [operator-state, exporter-state]
+disciplines: {satellite: IMINT}
+gated_attrs: [foreign_control, readiness]
 half_lives_days:
   based-at: 365
   fields: 540
