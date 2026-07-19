@@ -43,6 +43,31 @@ from chanakya.schemas.claim import EntityDescriptor, Triple
 #: can still be typed. A single named default (not magic), overridable by callers of :func:`type_index`.
 _PLACE_NODE_TYPE = "basing_site"
 
+#: Tier-3 provenance keys naming the **mention** (the entity claim id) that supplied each endpoint of a
+#: relationship claim — INGEST's mention-keyed provenance (``ingest/coref.py``). They are *positional*:
+#: ``_subject_mention`` describes ``Triple.subject``, so anything that reorders the endpoints must swap
+#: them too, or a relation silently points at the wrong mention. That invariant is why the names live
+#: here, beside the one function that reorders endpoints, rather than in ``ingest/`` (which this module
+#: must never import — ``rebuild()`` calls it, and the ingest package reaches the LLM client).
+SUBJECT_MENTION_ATTR = "_subject_mention"
+OBJECT_MENTION_ATTR = "_object_mention"
+
+
+def swap_mention_refs(attributes: dict | None) -> dict | None:
+    """Swap the positional mention refs so they follow a subject/object flip. ``None``/absent ⇒ unchanged."""
+    if not attributes:
+        return attributes
+    subject, obj = attributes.get(SUBJECT_MENTION_ATTR), attributes.get(OBJECT_MENTION_ATTR)
+    if subject is None and obj is None:
+        return attributes
+    swapped = dict(attributes)
+    for key, value in ((SUBJECT_MENTION_ATTR, obj), (OBJECT_MENTION_ATTR, subject)):
+        if value is None:
+            swapped.pop(key, None)
+        else:
+            swapped[key] = value
+    return swapped
+
 #: A ``designator -> node type`` lookup returning ``None`` for an untypable designator.
 TypeOf = Callable[[str], str | None]
 
@@ -172,7 +197,11 @@ def canonicalize_claim(claim: ClaimRecord, rules: dict[str, DirectionRule], type
     if rule is None or not _is_reversed(payload, rule, type_of):
         return claim
     flipped = payload.model_copy(update={"subject": payload.object, "object": payload.subject})
-    return claim.model_copy(update={"payload": flipped})
+    # The mention refs are positional (they name which mention supplied each endpoint), so they flip with
+    # the endpoints — otherwise a reoriented relation would point at the wrong mention's cluster.
+    return claim.model_copy(
+        update={"payload": flipped, "attributes": swap_mention_refs(claim.attributes)}
+    )
 
 
 def canonicalize_claims(claims: list[ClaimRecord], config: ConfigBundle, *,
@@ -192,10 +221,13 @@ def canonicalize_claims(claims: list[ClaimRecord], config: ConfigBundle, *,
 
 
 __all__ = [
+    "OBJECT_MENTION_ATTR",
+    "SUBJECT_MENTION_ATTR",
     "DirectionRule",
     "canonicalize_claim",
     "canonicalize_claims",
     "direction_map",
     "reversed_for_types",
+    "swap_mention_refs",
     "type_index",
 ]

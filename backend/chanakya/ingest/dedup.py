@@ -34,7 +34,13 @@ import math
 from collections import defaultdict
 from typing import Any
 
+from chanakya.edge_direction import OBJECT_MENTION_ATTR, SUBJECT_MENTION_ATTR
 from chanakya.schemas import ClaimRecord, DocRef, make_claim_id
+
+#: Tier-3 attribute keys whose values are **claim ids** and therefore must follow every id reassignment,
+#: exactly like ``premises``/``targets``. Keeping the list here (with the one function that rewrites them)
+#: is what stops a new cross-reference from being added in one path and silently dangling in another.
+_REF_ATTRS = (SUBJECT_MENTION_ATTR, OBJECT_MENTION_ATTR)
 
 # A total-order key over a ``DocRef``: the exact span, then the coarser locators, then the image
 # locators, then file — missing numeric locators sort last via ``+inf`` so a precise span always
@@ -158,6 +164,38 @@ def _locator_for_claim(claim: ClaimRecord) -> str:
     return _base_locator(refs[0]) if refs else "c0"
 
 
+# ── cross-claim reference rewriting (one definition, every id-reassignment path) ─────────────────
+
+def remap_claim_refs(claim: ClaimRecord, remap: dict[str, str]) -> dict[str, Any]:
+    """The ``model_copy`` update rewriting **every** claim-id reference on ``claim`` through ``remap``.
+
+    A claim points at other claims in three ways: an inference's ``premises``, a retraction's ``targets``,
+    and the tier-3 mention refs a relationship carries for its endpoints (:data:`_REF_ATTRS` — INGEST's
+    mention-keyed provenance). All three must be rewritten together wherever ids are reassigned: the
+    canonical minting in :func:`assign_claim_ids`, and the per-chunk namespacing in the ingest lane and the
+    corpus seed. Ids absent from ``remap`` are left alone, so this is safe to apply to any claim.
+
+    Returns only the keys that actually change, so an untouched claim copies nothing.
+    """
+    update: dict[str, Any] = {}
+    if claim.premises:
+        remapped = [remap.get(p, p) for p in claim.premises]
+        if remapped != list(claim.premises):
+            update["premises"] = remapped
+    if claim.targets is not None and claim.targets in remap:
+        update["targets"] = remap[claim.targets]
+    attributes = claim.attributes
+    if attributes:
+        changed = {
+            key: remap[attributes[key]]
+            for key in _REF_ATTRS
+            if isinstance(attributes.get(key), str) and attributes[key] in remap
+        }
+        if changed:
+            update["attributes"] = {**attributes, **changed}
+    return update
+
+
 # ── public passes ───────────────────────────────────────────────────────────────────────────────
 
 def dedup_within_doc(claims: list[ClaimRecord]) -> list[ClaimRecord]:
@@ -199,12 +237,13 @@ def assign_claim_ids(claims: list[ClaimRecord], *, doc_id: str) -> list[ClaimRec
     the order and the counts are derived from content, the same claim set mints byte-identical IDs on
     every run (gates G9/G10). Inputs are not mutated; the returned list is in the deterministic order.
 
-    **Cross-claim references follow the reassignment.** An ``inference`` claim's ``premises`` and a
-    ``retraction``'s ``targets`` name *other claims by id*; those provisional ids change here, so this
-    pass remaps them onto the reassigned ids (an old→new map built while stamping). Without this, the
-    imagery signature→variant inference (premises = [observation_id, literature_id]) — and any future
-    inference/retraction — would dangle after id assignment. This is why the fix lives here, not in a
-    single caller: every path that assigns ids (the live lane *and* the frozen-bundle seed) inherits it.
+    **Cross-claim references follow the reassignment.** An ``inference`` claim's ``premises``, a
+    ``retraction``'s ``targets``, and a relationship's endpoint **mention refs** name *other claims by id*;
+    those provisional ids change here, so this pass remaps them onto the reassigned ids via
+    :func:`remap_claim_refs` (an old→new map built while stamping). Without this, the imagery
+    signature→variant inference (premises = [observation_id, literature_id]), the coreference cluster, and
+    any future inference/retraction would dangle after id assignment. This is why the fix lives here, not
+    in a single caller: every path that assigns ids (the live lane *and* the frozen-bundle seed) inherits it.
     """
     ordered = sorted(claims, key=lambda c: (_earliest_docref_key(c), _claim_signature(c)))
     seen: dict[str, int] = {}
@@ -220,10 +259,6 @@ def assign_claim_ids(claims: list[ClaimRecord], *, doc_id: str) -> list[ClaimRec
 
     out: list[ClaimRecord] = []
     for claim, new_id in staged:
-        update: dict[str, Any] = {"claim_id": new_id}
-        if claim.premises:
-            update["premises"] = [remap.get(p, p) for p in claim.premises]
-        if claim.targets is not None and claim.targets in remap:
-            update["targets"] = remap[claim.targets]
+        update: dict[str, Any] = {"claim_id": new_id, **remap_claim_refs(claim, remap)}
         out.append(claim.model_copy(update=update))
     return out

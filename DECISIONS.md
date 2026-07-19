@@ -803,3 +803,64 @@ canonicalizer — for the corroboration-co-location case; the two decisions conv
   fields (the "trivial follow-up" that block deferred) + added `symmetric`/`extractor`, and tightened
   `manufactures` to Mfr→Variant; `edge_direction.py` (direction) and `chanakya/ontology.py` (predicate
   re-lane) are complementary and both read the same ontology `from`/`to`.
+
+---
+
+## INGEST — in-document coreference clustering, pass 1 of 2 (2026-07-19, `feat/ingest-coref`)
+
+Implements the **INGEST half** of `tmp/conv/INGEST-RESOLVE-in-document-coreference-clustering-PROPOSAL.md`
+(Option B, derived overlay). Scope set by the user: **emit + persist only** — RESOLVE honouring the clusters
+is a deliberate follow-on ("reconcile RESOLVE to the new INGEST thing"). Handoff:
+`tmp/conv/INGEST-to-RESOLVE-coreference-handoff.md`.
+
+**Trigger satisfied empirically (the proposal's own go/no-go).** On the rebuilt view, **86 of 258 nodes
+(33%) are `unknown`-type dangling relation endpoints** — including `CPMIEC` / `China Precision Machinery
+Import-Export Corporation`, `BIRM` / `Beijing Institute of Radio Measurement`, `CASIC` / `China Aerospace
+Science and Industry Corporation`. The coreference leak the proposal predicted is real and large, so this
+was built on measurement, not on the argument alone.
+
+- **The cluster rides its own predicate `coref-same-as`, NOT `same-as`.** *Principle:* "don't route a
+  decision made with more information through a layer that has less." `resolve.scoring._IDENTITY_PREDICATES`
+  already weighs `same-as`/`aka`/… as **one term of `merge_score`**, so writing the cluster there would
+  silently dilute a context-licensed extractor decision into a partial score that attribute-dissimilarity
+  can outvote — i.e. exactly the option the proposal rejected. On its own lane it is provably inert to
+  today's scorer (asserted in `test_coref_lane_is_inert_to_the_resolvers_merge_scoring`), so this slice
+  changes **no** merge behaviour, and the eventual honor policy keys on a signal that cannot be confused
+  with ordinary identity scoring. *Rejected:* a bare `same-as` triple (dilution, above); a new first-class
+  cluster record in the F0-owned schema (cleaner model, but cross-lane blast radius through store+rebuild
+  for a slice nothing consumes yet — user chose the reversible option).
+- **Pass 2 lives inside `extract_document`, not the lane.** *Principle:* KEYLESS ≡ LIVE. Both callers — the
+  live lane and `seed._extract_source` (the frozen-bundle recorder) — go through `extract_document`, so they
+  inherit the pass in lockstep and offline can never drift from live. It cannot live in `_finalize`, which is
+  the pure no-LLM pass (gate G1).
+- **DORMANT BY DEFAULT** (block commented out in `config/credibility.yaml`). *Principle:* don't pay a cost
+  with no payoff. Enabling costs a **second extraction call per document** and re-records every frozen
+  bundle, while nothing consumes the clusters until the honor policy lands. Turn it on *with* that policy.
+  An explicitly empty `categories: []` means dormant, never a silent fall-back to "all".
+- **Undeclared endpoints are typed from the ontology's edge domain/range.** *Principle:* keep the rail
+  biting where it matters. Most real coreferent mentions reach the graph *only* as relation endpoints, so
+  typing them `unknown` would disable the same-type rail exactly where it is needed — a caught bug: a
+  proposal merging `CPMIEC` with `HQ-9/P` was accepted until `manufactures` (manufacturer→variant) typed
+  them apart.
+- **`kind` follows what the claim can cite:** `inference` with `premises` naming the member mentions when a
+  member is a declared entity; `observation` when the whole cluster is undeclared endpoints (no upstream
+  claim exists to cite, and an explicit "… (CPMIEC)" equivalence is something the document *states*).
+  *Principle:* report what a claim actually rests on — inventing a premise to keep one uniform kind would be
+  a provenance lie. Dropping such clusters instead was tried and rejected: it silently discards the dominant
+  real-corpus case.
+- **Mention-keyed provenance on every relationship claim** (`_subject_mention`/`_object_mention` → the entity
+  claim that named each endpoint, alongside the verbatim surface string). User explicitly pulled this into
+  this slice. Additive and inert (today's rebuild reads the strings), but it means a later split has each
+  relation already anchored — zero re-inference. The refs are **positional**, so `edge_direction` swaps them
+  whenever it reorients a triple, and one shared `dedup.remap_claim_refs` now rewrites *every* cross-claim
+  reference (premises, targets, mention refs) in all three id-reassignment paths — so a new reference type
+  can't be added in one path and silently dangle in another.
+
+**Known limitation (surface in the design note):** a "mention" is keyed by surface form *within a document*,
+because pass 1 already collapses same-name mentions per document. The proposal's per-occurrence mention ids
+are therefore approximated — one document using one string for two different entities is not separable. This
+is an under-reach, never an over-merge.
+
+**Design-doc tails to enrich:** `spine/02` — extraction is now **two passes** (fill, then in-document
+coreference), and the claim carries mention-keyed endpoint provenance. `spine/03` — RESOLVE gains a
+prospective authoritative in-document signal that shortcuts the attribute scorer (pending the honor policy).

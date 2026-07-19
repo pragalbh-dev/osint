@@ -96,3 +96,20 @@ attribution_proposer:
     reference_source_classes: [curated-register, think-tank, trade-media]  # what counts as fingerprint literature
     fingerprint_attrs: [site_signature_geometry, observable_fingerprint, equipment_fingerprint]  # geometry-bearing attrs
     variant_hop_edges: [inducted-into, equips]                         # 1-hop from the variant to reach unit/component fingerprints
+
+# INGEST in-document coreference (ingest/coref.py) — extraction pass 2. A second, scoped forced-tool call per
+# document that groups mentions the document itself treats as one entity ("CPMIEC" / "the export agency"), each
+# group licensed by a verbatim quote. Emits `coref-same-as` claims only; it never merges anything itself — the
+# merge is derived at rebuild, so a split stays native.
+#
+# DORMANT BY DEFAULT — deliberately left commented out. Enabling it costs a SECOND extraction call per document
+# and re-records every frozen bundle, while nothing consumes the clusters yet: RESOLVE does not honour
+# `coref-same-as` until the reconciliation lands (it is not in resolve.scoring's identity predicates, so it is
+# inert to merge scoring by design). Turn it on together with that honor policy, not before. With no extraction
+# key it emits nothing rather than guessing, in any case.
+#
+# coreference:
+#   # Which evidence kinds may be emitted. Drop UNAMBIGUOUS_ANAPHOR to run conservative (stated equivalences and
+#   # name variants only) — anaphora is the highest-reach, highest-risk category. Order is not significance.
+#   categories: [EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR]
+#   max_mentions: 120             # cost guard: a document offering more mentions is skipped whole, never truncated

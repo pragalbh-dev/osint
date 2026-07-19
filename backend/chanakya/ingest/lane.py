@@ -44,7 +44,7 @@ from typing import Any
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.ingest import loaders
 from chanakya.ingest.client import ExtractionClient
-from chanakya.ingest.dedup import assign_claim_ids, dedup_within_doc
+from chanakya.ingest.dedup import assign_claim_ids, dedup_within_doc, remap_claim_refs
 from chanakya.ingest.extract import extract_document
 from chanakya.ingest.imagery import LiteratureRef, read_image_document
 from chanakya.schemas import Alert, ClaimRecord, ConfigBundle, GraphView, IngestResult
@@ -200,11 +200,7 @@ async def _extract_doc_claims(
     for k, chunk in enumerate(results):
         remap = {c.claim_id: f"chunk{k}-{c.claim_id}" for c in chunk}
         for c in chunk:
-            update: dict[str, Any] = {"claim_id": remap[c.claim_id]}
-            if c.premises:
-                update["premises"] = [remap.get(p, p) for p in c.premises]
-            if c.targets is not None and c.targets in remap:
-                update["targets"] = remap[c.targets]
+            update: dict[str, Any] = {"claim_id": remap[c.claim_id], **remap_claim_refs(c, remap)}
             claims.append(c.model_copy(update=update))
     return _finalize(claims, doc.source_id, config)
 

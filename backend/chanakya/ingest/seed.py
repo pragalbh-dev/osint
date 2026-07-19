@@ -130,19 +130,17 @@ def _merge_chunks(chunks: list[list[ClaimRecord]]) -> list[ClaimRecord]:
     ``read_image_document`` read); a source whose text lane runs alongside one or more co-loaded images
     makes several such calls, each minting its own provisional ids that can collide once concatenated.
     Mirrors the identical namespacing the live lane applies in ``lane._extract_doc_claims`` (chunk-prefix
-    each call's ids, then remap that call's own inference ``premises`` / retraction ``targets`` in
-    lockstep) — the seed path must reshape multi-call output exactly like the live path does, or the two
-    would diverge on a source with co-loaded imagery (breaking KEYLESS ≡ LIVE).
+    each call's ids, then rewrite that call's own cross-claim references — inference ``premises``,
+    retraction ``targets``, endpoint mention refs — in lockstep via the one shared
+    :func:`~chanakya.ingest.dedup.remap_claim_refs`) — the seed path must reshape multi-call output exactly
+    like the live path does, or the two would diverge on a source with co-loaded imagery (breaking
+    KEYLESS ≡ LIVE).
     """
     claims: list[ClaimRecord] = []
     for k, chunk in enumerate(chunks):
         remap = {c.claim_id: f"chunk{k}-{c.claim_id}" for c in chunk}
         for c in chunk:
-            update: dict[str, Any] = {"claim_id": remap[c.claim_id]}
-            if c.premises:
-                update["premises"] = [remap.get(p, p) for p in c.premises]
-            if c.targets is not None and c.targets in remap:
-                update["targets"] = remap[c.targets]
+            update: dict[str, Any] = {"claim_id": remap[c.claim_id], **dedup.remap_claim_refs(c, remap)}
             claims.append(c.model_copy(update=update))
     return claims
 

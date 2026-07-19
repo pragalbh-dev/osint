@@ -95,6 +95,11 @@ edge_types:
   # resolution — NOT extractor-emitted (same-as/distinct-from route through the MERGE channel, not triples)
   - {name: same-as,              freshness_class: n/a, symmetric: true}
   - {name: distinct-from,        freshness_class: n/a, symmetric: true}
+  # in-document coreference (INGEST extraction pass 2, ingest/coref.py) — NOT extractor-emitted. On a lane
+  # of its own, deliberately NOT `same-as`: resolve.scoring reads same-as/aka/... as one weighted term of
+  # merge_score, so writing it there would dilute a context-licensed extractor decision into a partial score
+  # attribute-dissimilarity can outvote. Inert to today's scorer; the RESOLVE honor policy keys on this.
+  - {name: coref-same-as,        freshness_class: n/a, symmetric: true}
   - {name: substitutable-by,     freshness_class: semi-durable, symmetric: true}                             # three-state on the edge; only UNKNOWN seeded (roadmap)
   # evidence layer — NOT extractor-emitted (structural, never reoriented)
   - {name: evidenced-by,         freshness_class: n/a, symmetric: true}
