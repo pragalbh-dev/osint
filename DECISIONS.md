@@ -580,3 +580,54 @@ as a view-internal reconciliation. Both logged in PROGRESS.md → "Contract amen
 **Open questions closed (moved from §3):** freshness-reference "now" mechanism (→ config `as_of`); the
 chokepoint honesty fork stays at query-time (ASK) while precompute keeps the confirmed/candidate partition +
 three-state `substitutability_state` faithful (never a single collapsed count).
+
+### INGEST — attribution proposer (VLM shape → variant inference) (choice · principle · alternative rejected)
+- **Offline, connection-triggered proposer over the *previous frozen resolved view*, upstream of append, never
+  reachable from `rebuild()` (G1).** New module `ingest/attribute.py`, sibling of `imagery.py` (which
+  `view/pipeline` never imports → structurally G1-safe); reuses imagery's corroboration machinery
+  (`SignatureCorroboration`/`_corroboration_prompt`/`_corroboration_eligible`) at a *new trigger*. Built as the
+  general engine (sweeps every `basing_site`, budget-capped, skips logged) per user's scope call. Rejected: a
+  thin single-beat hardcode; emitting the inference at extraction time (the imagery precedent — dead code from
+  the main lane, and it can't see the co-location that only exists after resolution).
+- **D copies the textual claim C's exact `(subject,predicate,object)` — inverting imagery's hardcoded
+  `site→variant`.** Co-location keys on the resolved triple, so D and C must be byte-identical to land on one
+  edge (the "second look"). Copying C's already-resolved strings makes this hold **even under the current
+  identity-resolver stub**. Rejected: reusing imagery's orientation (lands on a *different* edge → silent
+  no-corroboration). **Root-cause flagged out of lane:** a canonical edge-direction-at-write invariant (fixes
+  the whole class, incl. two text sources disagreeing) → `tmp/conv/INGEST-canonical-edge-direction-at-write.md`;
+  once it lands the copy-C workaround is removed and `imagery.py`'s backwards inference is flipped.
+- **D cites BOTH the image region AND the literature line (a `doc_ref` list).** G4 "one click to truth" for a
+  two-source inference; extends the imagery precedent (image-only). → `attribute._build_inference`.
+- **Decoy signal carried as both `decoy_risk` and `decoy_risk_flag`; `premises=[A,B]` is the SCORE grouping
+  signal.** SCORE reads `decoy_risk_flag` on the assembled edge and unions `{A,D}` via the premise link (so an
+  inference never corroborates its own premise). `single_pass`/`fingerprint_match`/`attributed_variant` are
+  provenance-only. **SCORE confirmed** it does the grouping (`_derivation_linked`) + a **single-pass-conditional
+  cap** (fires only at <2 independent looks — G7-safe: lone pixel→probable, pixel+independent text→confirmed).
+  → `tmp/conv/INGEST-to-SCORE-inference-decoy-and-grouping.md`.
+- **Convergence gate: an observation already used as an inference premise is skipped.** Makes the standing
+  enrichment pass idempotent (real work once, silence on re-runs). The premise link does triple duty: audit
+  trail + don't-double-count + already-done. Rejected: re-proposing every rebuild (duplicate inferences, wasted
+  LLM calls, never converges).
+- **Config knobs under `credibility.yaml: attribution_proposer` (`extra="allow"`), model id from the client.**
+  No F0-amendment (mirrors `resolution.yaml`'s `llm_candidate_gen`); absent block ⇒ dormant, no code-literal
+  defaults (G6). Rejected: a 9th `CONFIG_SECTION` (an F0 contract change for a proposer's tunables).
+- **Fingerprint (clause c) searched on the variant + 1 hop; reference classes are the real source_types.** The
+  ontology puts fingerprint attrs on `component`/`unit`/`basing_site`, never the `variant` type, so B is reached
+  within one hop (`equips`/`inducted-into`). `reference_source_classes = [curated-register, think-tank,
+  trade-media]` — there is no `reference` source_type. Corrected in the DATA handoff.
+- **Keyless / unconfigured ⇒ an empty run (honest refusal, never a guess); KEYLESS≡LIVE via a frozen recorder.**
+  `freeze_bundles` writes `*__attr.json` bundles the keyless boot materialises; a one-line prune guard in
+  `seed.extract_corpus` preserves them across a re-record. → `attribute.freeze_bundles`, `seed.py`.
+
+**Cross-lane coordination filed (tmp/conv — INGEST does not self-fix corpus/credibility):**
+- **DATA:** author the HQ-9 TEL site-geometry fingerprint reference doc (B, reachable from the variant) + a
+  clean variant→site textual C at Rahwali → `tmp/conv/INGEST-to-DATA-attribution-fingerprint-doc.md`.
+- **SCORE:** decoy-attr→edge promotion + `{A,D}` independence grouping (both confirmed done) →
+  `tmp/conv/INGEST-to-SCORE-inference-decoy-and-grouping.md`.
+- **Extraction lane + F0:** canonical edge direction at write → `tmp/conv/INGEST-canonical-edge-direction-at-write.md`.
+
+**Design-doc tails to enrich (flagged per the working agreement):**
+- `spine/07` / `md/15` §2.4 — the signature→variant bridge now also runs as an *offline, connection-triggered*
+  enrichment over the frozen view (not only per-frame at ingest); note the trigger + convergence.
+- **Working agreement added to `CLAUDE.md`:** talk to the user (orchestrator) in plain/intuitive language —
+  no verbatim code/schema in chat; depth stays in files, design docs, and handoff notes.

@@ -149,6 +149,13 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 - **Data issues → `tmp/conv/`, don't self-fix.** When any agent hits a corpus / `answer_key.json` / data-model
   issue it shouldn't fix itself, write an observation MD to `tmp/conv/` for the **data agent** to resolve —
   don't edit the frozen corpus or answer_key unilaterally.
+- **Talk to the user (the orchestrator) in plain, intuitive language — never dump code/schema at them.** The
+  user directs the work and reasons about it conceptually; they are *not* reading the source. In any message
+  to the user, explain the *why*, the tradeoff, and the *so-what* using concepts and analogies — not verbatim
+  code, schema/field lists, YAML, or `file:line` dumps. When a mechanism matters, describe what it does, not
+  how it's spelled. Raw code, schemas, and precise citations belong in the files, the design docs, and the
+  handoff notes for other agents — translate them out of the chat. (Depth is still expected; keep it in the
+  artifacts, keep the conversation human.)
 - **Commits: no AI co-author.** Do **not** add a `Co-Authored-By: Claude …` trailer (or any AI/assistant
   co-author / "Generated with" line) to commit messages or PR bodies. Author commits as the human committer only.
 
