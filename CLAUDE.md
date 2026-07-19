@@ -146,6 +146,10 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
   ration *capability* as if one dev were typing it all. And remember this is an **assignment: push as far
   toward a real, production-grade system as the time allows** — the brief itself calls for that, not a toy
   demo.
+- **Choose subagent models deliberately.** Match the model to the task's reasoning demands: assign
+  **Sonnet** when the task is genuinely Sonnet-level, and assign **Opus** when it needs Opus-level
+  judgement or complexity. Never assign **Fable** to a subagent. Do not treat model choice as a default;
+  make an informed choice for each delegated task.
 - **Data issues → `tmp/conv/`, don't self-fix.** When any agent hits a corpus / `answer_key.json` / data-model
   issue it shouldn't fix itself, write an observation MD to `tmp/conv/` for the **data agent** to resolve —
   don't edit the frozen corpus or answer_key unilaterally.
