@@ -10,6 +10,8 @@ Stated as invariants, never as counts — a count would turn a data improvement 
 
 from __future__ import annotations
 
+from collections import Counter
+
 from chanakya.schemas import GraphView
 
 AREA_TYPE = "area_of_operations"
@@ -129,3 +131,22 @@ def test_merge_candidates_are_not_dominated_by_single_shared_neighbours(view: Gr
         assert bd.get("attribute", 0.0) > 0.0 or bd.get("source_asserted", 0.0) > 0.0, (
             f"{e.source} vs {e.target} rests on the relational term alone: {bd}"
         )
+
+
+# ── G. one logical edge is one row — corroboration pools, it does not fragment ───────────────────
+
+def test_no_two_edges_share_an_id_after_a_full_rebuild(view: GraphView) -> None:
+    """An EdgeView ``id`` is the edge's resolved identity; two rows under one ``id`` is a fragmented edge.
+
+    ``rebuild()`` buckets corroborating claims into edge rows by an ``edge_instance`` key, then mints each
+    row's ``id`` from its canonical (post-merge) endpoints. When the key was read from a claim's
+    PRE-resolution surface strings while the ``id`` came from the canonical endpoints, a single logical
+    edge whose endpoint had merged split across several keys — several rows carrying one ``id``. Scoring
+    then re-keys by ``id`` and keeps only the last row, stranding the other rows' claims (among them the
+    ISPR induction announcement on ``e:var_hq9p:inducted-into:unit_paad``) on unscored duplicates that
+    never contribute to corroboration (residual #16). The invariant that guards it, and that the unit
+    suite never saw because the graph was green while the corroboration silently leaked away: after a full
+    rebuild of the shipped corpus, an ``id`` names exactly one edge.
+    """
+    duplicated = {eid: n for eid, n in Counter(e.id for e in view.edges).items() if n > 1}
+    assert not duplicated, f"one id names several edge rows (fragmented corroboration): {duplicated}"
