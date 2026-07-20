@@ -14,6 +14,65 @@ Newest entries on top.
 
 ---
 
+## 2026-07-20 · new `GET /config/{section}` + optional `ConfigWrite.if_version` (additive, non-breaking)
+
+**Endpoints:** `GET /config/{section}` (new, read-only). `POST /config/{section}` unchanged except for
+one **optional** new request field.
+
+**Change:**
+
+* `GET /config/{section}` → `ConfigRead {section, version, value}`. `section` is the resolved *plural*
+  store key; `value` is the stored pydantic section **dumped verbatim** (no per-section DTO), so a GET
+  round-trips straight back into a `ConfigWrite`. Same path, same alias table and same 404 body as the
+  POST (`observable→observables`, `source→sources`, `place→places`, `subject→subjects`,
+  `template→templates`), so read and write share one vocabulary by construction.
+* **All nine sections are readable** — `ontology`, `sources`, `credibility`, `resolution`, `templates`,
+  `subjects`, `observables`, `places`, `entities`. Nothing is withheld: `config/` holds no secrets by
+  construction (keys live in `.env`, read through `chanakya.settings`, never through `ConfigBundle`),
+  and a config editor that cannot read a section cannot edit it.
+* Served from the **live `ConfigStore`**, never `config/*.yaml` on disk — an in-app write is visible to
+  the very next read, no restart. `version` is the store version at read time.
+* `ConfigWrite` gains optional **`if_version: int | None`** — echo the `version` the GET returned and a
+  stale write is rejected **409** instead of clobbering. Omitted ⇒ last-writer-wins, i.e. the exact
+  pre-existing behaviour, so nothing that works today breaks.
+
+**Why:** `POST /config/{section}` replaces a *whole* section, so with no read there was no safe
+read-modify-write — exactly the blocker filed in `tmp/conv/FRONTEND-to-API-config-readmodifywrite.md`
+(option 1, the one FRONTEND preferred). Second, the *armed* observable catalogue was unreachable:
+`/view` carries only alerts that have **fired**, so the rail derived "Watching" from the alert feed and
+rendered **`0 — none fired`** on a cold boot of a system with three armed tripwires. An underclaim, but
+still a false statement, and the worst possible one on a monitoring system.
+
+**Impact on frontend:** **additive.** `ConfigRead` + `ObservablesConfig` added to
+`frontend/src/api/types.ts`; `ConfigWrite` gained optional `if_version`; `api.configSection(section)` in
+`client.ts`; `useArmedObservables()` in `hooks.ts` (live-mode only, 30 s refetch because the catalogue is
+hot). `/config/` was already in the Vite dev-proxy list. `Rail.tsx`'s Watching row now states two
+independent numbers — **armed** from the catalogue, **fired** from the feed (`3 armed · none fired` →
+`3 armed · 1 fired`); if the catalogue read fails it degrades to `— · armed count unavailable`, never to
+a confident `0`. Demo mode is untouched (`3 · armed` from the frozen `TRIPWIRES`).
+
+**Two config surfaces this unblocks (FRONTEND, please pick these up):** the credibility rubric editor
+and define-a-tripwire can now GET → edit one field → POST the section back, with `if_version` for the
+guard. Neither needs a hardcoded copy of the config in the client. `WatchView`'s "the armed catalogue
+has no read endpoint yet" note is now stale and can list armed-but-quiet tripwires — deliberately **not**
+done here (file ownership: T11 touched only `Rail.tsx`, `client.ts`, `hooks.ts`, `types.ts`).
+
+**Decision (principle → choice → alternative rejected):** *config-driven & extensible — "a configuration
+/ framework layer for decision-making and HITL at any spine layer"* + the *hot-config rule* → **a generic
+read mirroring the generic write**. Rejected: (a) a bespoke `GET /observables` — solves the rail and
+nothing else, and leaves the config editor still blocked; (b) per-section read DTOs — read and write
+would drift the first time a section grew a field; (c) making the POST shallow-merge instead — narrower
+(credibility only), and it makes *deleting* a key impossible; (d) a required `If-Match` header — would
+break every existing caller for a single-analyst demo, so the guard is opt-in.
+
+**Refs:** `backend/chanakya/api/routes/config.py`; `backend/chanakya/schemas/api_models.py`
+(`ConfigRead`, `ConfigWrite.if_version`); `backend/tests/api/test_config.py` (+9, incl.
+`test_config_get_reflects_a_post_with_no_restart` and the one-weight read-modify-write round-trip);
+`frontend/src/components/rail/watchSummary.ts` (+`.test.ts`, 7 tests). Note:
+`tmp/conv/T11-config-read.md`. Branch `qa/t11-config-read`.
+
+---
+
 ## 2026-07-20 · new `GET /pending` + `GET /pending/{doc_id}` (additive, non-breaking)
 
 **Endpoints:** `GET /pending`, `GET /pending/{doc_id}` (new; read-only, keyless, offline).

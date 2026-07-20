@@ -6,6 +6,7 @@
 import type {
   AskAnswer,
   AskRequest,
+  ConfigRead,
   ConfigWrite,
   ConfigWriteResult,
   GraphView,
@@ -65,4 +66,9 @@ export const api = {
   hitl: (verb: 'merge' | 'status' | 'alert', body: HitlDecision) =>
     post<GraphView>(`/hitl/${verb}`, body),
   config: (section: string, body: ConfigWrite) => post<ConfigWriteResult>(`/config/${section}`, body),
+  // The read half of the hot-config seam. A config write replaces a WHOLE section, so editing one
+  // weight (or arming one extra tripwire) is a read-modify-write: GET → edit → POST the section back,
+  // optionally passing `version` as `if_version` so a stale write 409s instead of clobbering.
+  // It is also the only way to know what is ARMED — /view carries only what has FIRED.
+  configSection: (section: string) => req<ConfigRead>(`/config/${encodeURIComponent(section)}`),
 } as const

@@ -394,11 +394,28 @@ export interface ObservableDef {
 export interface ConfigWrite {
   section: string // ontology | sources | credibility | resolution | templates | subjects | observables | places
   value: Record<string, unknown>
+  /** Optimistic-concurrency guard for read-modify-write: echo the `version` GET /config/{section}
+   *  returned and the write 409s if the store moved. Omitted = last-writer-wins (unchanged contract). */
+  if_version?: number
 }
 
 export interface ConfigWriteResult {
   section: string
   version: number
+}
+
+/** GET /config/{section} — the read half of the hot-config seam. `value` is the stored section
+ *  verbatim, so it round-trips straight back into a ConfigWrite. Serving the ARMED observable
+ *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed. */
+export interface ConfigRead {
+  section: string
+  version: number
+  value: Record<string, unknown>
+}
+
+/** The `observables` section, as GET /config/observables returns it. */
+export interface ObservablesConfig {
+  observables?: ObservableDef[]
 }
 
 // ───────────────────────── health ─────────────────────────

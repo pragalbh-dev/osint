@@ -9,6 +9,8 @@ import { useWorkbench, type DocId } from '@/store/workbench'
 import { INGEST_DOCS, QUEUE_ITEMS, TRIPWIRES } from '@/demo/scenario'
 import { groupReviewQueue, viewToReviewQueue, type LiveReviewGroup } from '@/api/adapters'
 import { useTripwires } from '@/api/viewmodel'
+import { useArmedObservables } from '@/api/hooks'
+import { watchSummary } from './watchSummary'
 import { LiveIngest } from './LiveIngest'
 
 /** One queue row — the same shape in both modes. A row has to be readable WITHOUT opening it:
@@ -173,17 +175,17 @@ export function Rail() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const toggleGroup = (key: string) => setExpanded((e) => ({ ...e, [key]: !e[key] }))
 
-  // Watching — count + caption are DERIVED, never a hardcoded "3 · armed". Demo reports its
-  // frozen tripwire set (unchanged output); live reports what the alert feed actually says,
-  // and says "none fired" rather than claiming an armed catalogue it cannot read.
+  // Watching — count + caption are DERIVED, never a hardcoded "3 · armed", and now from TWO
+  // sources rather than one: the ARMED catalogue (GET /config/observables, the live config store)
+  // and the FIRED feed (/view.alerts). Deriving both from the feed is what used to render
+  // "Watching 0 — none fired" on a cold boot of a system watching three things. If the catalogue
+  // can't be read we say so instead of printing 0 — see watchSummary(). Demo output is unchanged.
   const tripwires = useTripwires()
-  const watch = useMemo(() => {
-    if (!tripwires) return { count: TRIPWIRES.length, note: 'armed' }
-    const open = tripwires.filter((t) => t.state === 'fired').length
-    if (open > 0) return { count: tripwires.length, note: `${open} fired` }
-    if (tripwires.length > 0) return { count: tripwires.length, note: 'fired · all decided' }
-    return { count: 0, note: 'none fired' }
-  }, [tripwires])
+  const armed = useArmedObservables()
+  const watch = useMemo(
+    () => watchSummary(armed, tripwires, TRIPWIRES.length),
+    [armed, tripwires],
+  )
 
   // Drag payload backup — some browsers restrict dataTransfer.getData on dragover,
   // and this mirrors the mockup's own fallback (this._dragDoc) for the drop handler.

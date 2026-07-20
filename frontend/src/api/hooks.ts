@@ -7,6 +7,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { api } from './client'
+import type { ObservableDef, ObservablesConfig } from './types'
 import { useWorkbench } from '@/store/workbench'
 
 export function useHealth() {
@@ -30,6 +31,28 @@ export function useEvidence(id: string | null, enabled = true) {
     queryFn: () => api.evidence(id as string),
     enabled: enabled && !!id,
   })
+}
+
+/** LIVE armed-observable catalogue — GET /config/observables from the live config store.
+ *
+ *  This is what a tripwire count should be counted from: `/view.alerts` says what has FIRED, and on a
+ *  cold boot that is empty even though observables are armed and being evaluated on every rebuild.
+ *  Returns `null` while unknown (demo mode, in flight, or the fetch failed) so callers can degrade to
+ *  something honest rather than to a confident `0` — never claim a catalogue you could not read.
+ *
+ *  Refetches on an interval because the catalogue is HOT: an observable defined in-app takes effect
+ *  without a restart, so a cached count would go stale against a live config store. */
+export function useArmedObservables(): ObservableDef[] | null {
+  const mode = useWorkbench((s) => s.mode)
+  const { data } = useQuery({
+    queryKey: ['config', 'observables'],
+    queryFn: () => api.configSection('observables'),
+    enabled: mode === 'live',
+    refetchInterval: 30_000,
+  })
+  if (mode !== 'live' || !data) return null
+  const list = (data.value as ObservablesConfig | undefined)?.observables
+  return Array.isArray(list) ? list : null
 }
 
 /** In LIVE mode, mirror the real /view into the store so the stage can render it.
