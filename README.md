@@ -9,7 +9,7 @@ Its governing rule: **where the evidence is absent, ambiguous, or contradictory,
 system says so and names what is missing, rather than filling the gap with a guess.**
 
 This README covers running the app and finding your way around it. For *why* it's built
-this way, see `artifacts/design-note.md`.
+this way, see the [design note](https://github.com/pragalbh-dev/osint/blob/main/artifacts/design-note.md).
 
 **Live demo:** [compliantly-coky-candace.ngrok-free.dev/?mode=live](https://compliantly-coky-candace.ngrok-free.dev/?mode=live)
 — a hosted instance, in the same clean starting state described below. Sections 1–3 are
@@ -207,7 +207,8 @@ else you add during a session.
 
 ## 8. Going deeper
 
-- `artifacts/design-note.md` — the design writeup: why the system is built this way.
+- [`artifacts/design-note.md`](https://github.com/pragalbh-dev/osint/blob/main/artifacts/design-note.md)
+  — the design writeup: why the system is built this way.
 - `deploy/README.md` — the full operations runbook (publishing the image, hosting it
   with a public URL, rollback) — only relevant if you're standing up your own copy
   rather than using the one already running.
