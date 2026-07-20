@@ -1,0 +1,31 @@
+Proving
+Pakistan Air Force moved from PAF Base Nur Khan to Rahwali airfield — the earlier basing is now history
+replaced by · e:site_rahwali:supersedes:site_rawalpindi
+✕
+Provenance
+This link carries no status of its own — it records a change of state, not a fact about the world. The two assertions it connects are each scored separately.
+3 sources · 3 claims on file
+What changed
+Pakistan Air Force was based at PAF Base Nur Khan and is now based at Rahwali airfield. PAF Base Nur Khan itself is unchanged — it was not replaced; the basing there was.
+the earlier basing (now history)
+the basing that replaced it
+Also cited · not counted as an independent look
+Commercial satellite imagery
+d17_rawalpindi_2021 · reliability B · third party interest · dated 2021-10-14
+Commercial satellite imagery
+d18_rahwali_pass1 · reliability B · third party interest
+Think-tank / analytic report
+d19_rahwali_confirm · reliability B · third party interest · dated 2025-04-04
+3 claims
+Inferred · L12
+▸
+Pakistan Air Force is based at PAF Base Nur Khan
+Inferred · about a connection · L12
+Inferred · L10
+▸
+Pakistan Air Force is based at Rahwali airfield
+Inferred · about a connection · L10
+Inferred · L11
+▸
+Pakistan Air Force is based at Rahwali airfield
+Inferred · about a connection · L11

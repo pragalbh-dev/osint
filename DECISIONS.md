@@ -939,3 +939,62 @@ the documented home for direct identity statements.
 "it finds merges" — Phase 3's deterministic rules absorbed most of that — but "it reaches the *non-lexical*
 pairs nothing else can, and it hands the analyst a citation for the rest." A deterministic rule beats an
 LLM pass wherever it reaches the answer; the LLM's value is the slice where no string comparison exists.
+
+---
+
+## QA T6 — the provenance drawer's semantics (branch `qa/t6-drawer-semantics`, 2026-07-20)
+
+Triggered by the orchestrator reading the live drawer and asking two things it could not answer:
+*"what exactly is confirmed?"* and *"the replaced-by edge is between 2 bases — what is replaced?"*.
+Full defect-by-defect account in `tmp/conv/T6-drawer-semantics.md`.
+
+- **The drawer states the PROPOSITION, not the element name.** *Principle: every claim is one-click
+  traceable, and nothing is asserted without provenance — a status hung over a bare node name grades
+  nothing an analyst can judge.* Choice: derive the assertion under assessment (and each claim's own
+  assertion) from the graph's own names/types and the claim payloads, strictly derivationally — a
+  payload shape we cannot phrase renders nothing and lets the verbatim quote speak. Rejected: an LLM
+  or template-generated summary of the claim (a paraphrase between the analyst and the evidence, and
+  a fabrication surface in exactly the place the system exists to be trustworthy).
+
+- **A status-less edge is not an evidence gap.** *Principle: "confirmed" is structurally separated
+  from "probable", and an absence of evidence must never be drawn as knowledge — or vice versa.*
+  `supersedes` / `same-as` / `distinct-from` carry no status **by design**; the UI was defaulting
+  `null → insufficient` and so claimed a gap that does not exist. Now stated in words, with the
+  independent-looks term dropped rather than printed as `0`.
+
+- **The relocation names its subject everywhere it is drawn.** *Principle: never overclaim.* The
+  backend's site→site `supersedes` edge is a deliberate projection of a supersession that lives on the
+  `based-at` edge, and it already carries `attrs.subject`. Every consumer was discarding it, so the
+  map read "base A was replaced by base B" — false. Fixed in the presentation layer (label, caption,
+  drawer copy, and a click-through into the version link); the backend supersede logic is untouched.
+  Rejected: removing the drawn edge (it is oracle-backed and it is the thing an analyst clicks).
+
+- **Cited-but-unclustered claims are shown, labelled honestly.** *Principle: nothing the system rests
+  on may be invisible.* The drawer model only walked independence clusters, so a status-less element's
+  citations were silently dropped. They now render in an explicit *"Also cited · not counted as an
+  independent look"* bucket — visible, and not miscounted as corroboration.
+
+- **`GET /evidence/{id}` returns the source registry entry, and no invented name.** *Principle: the
+  analyst must be able to weigh a source, and the system never invents what it does not hold.* A raw
+  `source_id` was being shown as an attribution (`d17b_withheld_gap` — a filename). The registry has
+  class + reliability grade but **no publisher name**, so the API returns the entry verbatim and the UI
+  renders the class; an unregistered id shows as the bare id, marked unregistered. Rejected: a
+  `GET /config/sources` route (outside the frozen endpoint list, ships 51 entries to render two chips),
+  a server-side display string (puts English in the contract), and bundling `sources.yaml` into the SPA
+  (drifts from the live hot-config store). Logged in `tmp/conv/API-to-FRONTEND-contract-log.md`.
+
+**Left open, deliberately (not silently):** the retired `based-at` assertion still shows its
+"To raise this / next coverage due" block, because that is the backend's computed `sufficiency` and
+hiding a computed field in the UI is worse than showing an odd one — whether sufficiency should behave
+differently for a superseded assertion is SCORE's call. And `stale` reads "aged past its shelf life"
+even when the cause was supersession; distinguishing them needs a backend signal for *why*.
+
+**Design-doc tails to enrich:** `product/00 §5.6` (the drawer's information hierarchy — the answer to
+its OPEN question is *proposition first, then verdict, then the looks, then the claims*) and
+`product/00 §3` (the supersede-vs-contradict visual language must carry the **subject** of the move,
+not just the two endpoints).
+
+**Data issue raised, not self-fixed:** `unit_hq9b` is named "Pakistan Air Force" in the live graph, so
+the now-correct copy reads "Pakistan Air Force moved from PAF Base Nur Khan to Rahwali airfield" —
+faithful to the graph, wrong about the world. Filed for DATA/RESOLVE in
+`tmp/conv/T6-to-DATA-unit-hq9b-named-pakistan-air-force.md`.

@@ -84,7 +84,22 @@ const VIEW: GraphView = {
     { id: 'e6', type: 'based-at', source: 'gap_node', target: 'ht233', status: 'contradicted' },
     // status-LESS by design — nothing may assume every edge carries a status
     { id: 'sa1', type: 'same-as', source: 'karachi', target: 'paad', status: null },
-    { id: 'sup1', type: 'supersedes', source: 'rahwali_stale', target: 'karachi', status: null, confidence: null },
+    // The backend draws supersession site→site but the fact lives on the `based-at` edge, so the
+    // drawn edge carries `attrs.subject` — WHO moved. Consumers must use it or they assert that
+    // one site replaced another.
+    {
+      id: 'sup1',
+      type: 'supersedes',
+      source: 'rahwali_stale',
+      target: 'karachi',
+      status: null,
+      confidence: null,
+      attrs: {
+        subject: 'paad',
+        older_edge: 'e:paad:based-at:karachi',
+        newer_edge: 'e:paad:based-at:rahwali_stale',
+      },
+    },
   ],
   events: [],
   known_gaps: [],
@@ -225,7 +240,24 @@ describe('viewToPins', () => {
   // story the Graph stage tells. VIEW's `sup1` is `rahwali_stale supersedes karachi`.
   it('marks the TARGET of a settled supersedes edge as history, naming its successor', () => {
     expect(pins[0]).toMatchObject({ id: 'karachi', superseded: true, supersededBy: 'rahwali_stale' })
-    expect(pins[0].caption).toBe('superseded · 2022')
+  })
+
+  // A bare "superseded" caption on a SITE reads as "this place was replaced", which is false —
+  // the place is still there, its occupant left. The caption must be about the occupancy and it
+  // must name the occupant, which the drawn edge carries in `attrs.subject`.
+  it('captions a left-behind site by its former OCCUPANCY, naming the occupant', () => {
+    expect(pins[0].caption).toBe('former PA Air Defence basing · 2022')
+    expect(pins[0].supersedeSubject).toBe('PA Air Defence')
+    expect(pins[0].supersedeEdgeId).toBe('sup1')
+  })
+
+  it('falls back to a subject-free caption rather than naming the site as replaced', () => {
+    const anon = viewToPins({
+      ...VIEW,
+      edges: [{ id: 'sup1', type: 'supersedes', source: 'rahwali_stale', target: 'karachi' }],
+    })
+    expect(anon[0].caption).toBe('former basing on record · 2022')
+    expect(anon[0].supersedeSubject).toBeNull()
   })
 
   it('does NOT mark a pin superseded on an unadjudicated (candidate/held) supersession', () => {
@@ -488,9 +520,13 @@ describe('evidenceToDrawerModel', () => {
     expect(model.clusters[0].rows[1].docRefs).toEqual([{ file: 'b.pdf' }, { file: 'c.pdf' }])
   })
 
-  it('builds row detail from kind + asserts', () => {
-    expect(model.clusters[0].rows[0].detail).toBe('observation · relationship')
-    expect(model.clusters[0].rows[1].detail).toBe('inference · entity')
+  // "observation · entity" names the claim's FILING CATEGORY, not its content — an analyst reads
+  // it and still cannot tell what is being asserted. The detail line is the internal enum pair
+  // translated; the CONTENT lives in `proposition` (below).
+  it('translates kind + asserts into analyst English', () => {
+    expect(model.clusters[0].rows[0].detail).toBe('Observed · about a connection')
+    expect(model.clusters[0].rows[1].detail).toBe('Inferred · about a thing')
+    expect(model.clusters[0].rows[0].kindLabel).toBe('Observed')
   })
 
   it('formats each date form through dateValueToString', () => {
@@ -549,6 +585,189 @@ describe('evidenceToDrawerModel', () => {
     expect(bare.opposingCount).toBe(0)
     expect(bare.integrityFlags).toEqual([])
     expect(bare.clusters).toEqual([])
+  })
+
+  // ── what the drawer is a verdict ABOUT ───────────────────────────────────────────────────
+  // A status hung over a bare node name grades no proposition. The headline states the assertion
+  // under assessment, built from the graph's own name + type — never invented.
+
+  it('heads a node with the proposition that node exists, as its own type', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'karachi' }, VIEW)
+    expect(m.subject).toMatchObject({ kind: 'node', typeLabel: 'basing site', statusless: false })
+    expect(m.subject?.headline).toBe('“Karachi” exists, as a basing site')
+  })
+
+  it('heads an edge with the relationship it asserts, both ends named', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'e1' }, VIEW)
+    expect(m.subject?.headline).toBe('Karachi — based at → PA Air Defence')
+  })
+
+  it('falls back to the bare ref when the view does not know the id — never a description', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'nope' }, VIEW)
+    expect(m.subject).toMatchObject({ kind: 'unknown', headline: 'nope' })
+  })
+
+  // The drawn `supersedes` edge runs site→site, but what was overtaken is the OCCUPANCY. Copy
+  // that stops at "Karachi replaced by Rahwali (old)" asserts the site was replaced — false.
+  it('narrates a supersedes edge as a relocation of its subject, not of the sites', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'sup1' }, VIEW)
+    expect(m.subject?.statusless).toBe(true)
+    expect(m.subject?.headline).toContain('PA Air Defence moved from Karachi to Rahwali (old)')
+    expect(m.supersession).toEqual({
+      role: 'link',
+      subjectName: 'PA Air Defence',
+      fromName: 'Karachi',
+      toName: 'Rahwali (old)',
+      olderEdgeId: 'e:paad:based-at:karachi',
+      newerEdgeId: 'e:paad:based-at:rahwali_stale',
+    })
+  })
+
+  // "Stale" on the retired basing assertion, with no successor named, is the same failure as
+  // "replaced by" with no subject named — so the relocation is reachable from either side of it.
+  it('explains the relocation from the retired assertion as well as from the link', () => {
+    const older = evidenceToDrawerModel({ subject_ref: 'e:paad:based-at:karachi' }, VIEW)
+    expect(older.supersession).toMatchObject({ role: 'older', fromName: 'Karachi', toName: 'Rahwali (old)' })
+    const newer = evidenceToDrawerModel({ subject_ref: 'e:paad:based-at:rahwali_stale' }, VIEW)
+    expect(newer.supersession?.role).toBe('newer')
+    expect(evidenceToDrawerModel({ subject_ref: 'e1' }, VIEW).supersession).toBeUndefined()
+  })
+
+  it('marks identity links status-less too, so a null status is never drawn as a gap', () => {
+    expect(evidenceToDrawerModel({ subject_ref: 'sa1' }, VIEW).subject?.statusless).toBe(true)
+    expect(evidenceToDrawerModel({ subject_ref: 'e1' }, VIEW).subject?.statusless).toBe(false)
+  })
+
+  // ── claim content ────────────────────────────────────────────────────────────────────────
+
+  it('reads each claim proposition off its own payload, resolving ids to names', () => {
+    const withPayloads = evidenceToDrawerModel(
+      {
+        subject_ref: 'karachi',
+        claims: [
+          {
+            claim_id: 't1',
+            source_id: 's1',
+            doc_ref: { file: 'a.txt', line: 4 },
+            kind: 'observation',
+            asserts: 'relationship',
+            payload: { form: 'triple', subject: 'paad', predicate: 'based-at', object: 'karachi' },
+          },
+          {
+            claim_id: 't2',
+            source_id: 's1',
+            doc_ref: { file: 'a.txt', line: 22 },
+            kind: 'observation',
+            asserts: 'entity',
+            payload: {
+              form: 'entity',
+              entity_type: 'basing_site',
+              name: 'the old Rawalpindi-area site',
+              attrs: { occupancy_state: 'negative TEL presence', coordinates: { wgs84_lat: 1 } },
+            },
+          },
+        ],
+      },
+      VIEW,
+    )
+    const [t1, t2] = withPayloads.clusters[0].rows
+    expect(t1.proposition).toBe('PA Air Defence is based at Karachi')
+    expect(t2.proposition).toBe('“the old Rawalpindi-area site” is a basing site')
+    // scalars only — a nested coordinate block is structure, not a line of prose
+    expect(t2.attrLines).toEqual(['occupancy state — negative TEL presence'])
+    // two claims from ONE document must be tellable apart on the chip itself
+    expect([t1.locatorShort, t2.locatorShort]).toEqual(['L4', 'L22'])
+  })
+
+  // Two claims lifted from the SAME line of one document collide on "L22" — the defect being
+  // fixed was three chips that read identically over three different claims.
+  it('falls through to the character span when two claims share a line', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [
+        { claim_id: 'a', source_id: 's', doc_ref: { file: 'd.txt', line: 22, span: [1359, 1486] }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'b', source_id: 's', doc_ref: { file: 'd.txt', line: 22, span: [1487, 1630] }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'c', source_id: 's', doc_ref: { file: 'd.txt', line: 9 }, kind: 'observation', asserts: 'entity' },
+      ],
+    })
+    const labels = m.clusters[0].rows.map((r) => r.locatorShort)
+    expect(labels).toEqual(['L22 · 1359–1486', 'L22 · 1487–1630', 'L9'])
+    expect(new Set(labels).size).toBe(labels.length)
+  })
+
+  it('emits no proposition (rather than a guess) for a payload shape it cannot phrase', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [{ claim_id: 'c', source_id: 's', doc_ref: { file: 'a' }, kind: 'observation', asserts: 'entity' }],
+    })
+    expect(m.clusters[0].rows[0].proposition).toBe('')
+  })
+
+  // Claims outside every independence group used to be DROPPED — a status-less edge carries all
+  // of its citations that way, so the drawer showed an element with three sources as having none.
+  it('keeps cited claims that no cluster contains, in an explicitly-ungrouped bucket', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'sup1',
+      claims: [
+        { claim_id: 'a', source_id: 's1', doc_ref: { file: 'x' }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'b', source_id: 's2', doc_ref: { file: 'y' }, kind: 'observation', asserts: 'entity' },
+      ],
+      clusters: [],
+    })
+    expect(m.looks).toBe(0) // an ungrouped bucket is NOT an independent look
+    expect(m.clusters).toHaveLength(1)
+    expect(m.clusters[0]).toMatchObject({ groupId: 'ungrouped', ungrouped: true })
+    expect(m.claimCount).toBe(2)
+  })
+
+  // The header arithmetic has to survive comparison with the body: "2 sources" over four chips
+  // was the bug. claimCount counts the rows actually rendered.
+  it('counts claims as the rows actually rendered, so the header cannot contradict the body', () => {
+    expect(model.claimCount).toBe(3) // c1, c2, c3 — c_missing has no record and is not rendered
+    expect(model.sources).toBe(2)
+    expect(model.looks).toBe(2)
+  })
+
+  // A source id is an internal key; "who says so?" needs the class + grade from the registry.
+  it('describes each cluster source by CLASS and grade, never by an invented name', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [
+        { claim_id: 'a', source_id: 'd17b', doc_ref: { file: 'x' }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'b', source_id: 'mystery', doc_ref: { file: 'y' }, kind: 'observation', asserts: 'entity' },
+      ],
+      sources: {
+        d17b: {
+          source_id: 'd17b',
+          source_type: 'satellite',
+          reliability_grade: 'B',
+          bias_vector: 'third-party',
+          report_date: '2025-06-11',
+          coordinated_inauthenticity_flag: false,
+        },
+      },
+    })
+    const [known, unknown] = m.clusters[0].sources
+    expect(known).toMatchObject({
+      label: 'Commercial satellite imagery',
+      grade: 'B',
+      bias: 'third party',
+      reportDate: '2025-06-11',
+      known: true,
+    })
+    // an id the registry does not carry is shown as the id, described as nothing
+    expect(unknown).toEqual({ sourceId: 'mystery', label: 'mystery', flags: [], known: false })
+  })
+
+  it('surfaces registry gate flags on the source that carries them', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [{ claim_id: 'a', source_id: 'r', doc_ref: { file: 'x' }, kind: 'observation', asserts: 'entity' }],
+      sources: {
+        r: { source_id: 'r', source_type: 'named-social', coordinated_inauthenticity_flag: true },
+      },
+    })
+    expect(m.clusters[0].sources[0].flags).toEqual(['coordinated inauthenticity'])
   })
 })
 

@@ -275,12 +275,18 @@ export function MapView() {
       }
     }
 
-    // LIVE supersession — a solid grey "replaced by →" connector from the superseded site to
-    // the one that replaced it. Same treatment the Graph stage gives a settled `supersedes`
-    // edge (solid, --history, arrow, ~0.75) so one story reads the same on both stages. It is
-    // deliberately quiet: the line IS the whole treatment — no flash, no pulse, no animation.
-    // Solid (not the demo's dashed "moved →") because a settled supersession is history we
-    // KNOW, and dashed grey is reserved for an evidence gap.
+    // LIVE supersession — a solid grey connector from the site that was left behind to the one
+    // the occupant moved to. Same treatment the Graph stage gives a settled `supersedes` edge
+    // (solid, --history, ~0.75) so one story reads the same on both stages. Deliberately quiet:
+    // the line IS the whole treatment — no flash, no pulse, no animation. Solid (not the demo's
+    // dashed "moved →") because a settled supersession is history we KNOW, and dashed grey is
+    // reserved for an evidence gap.
+    //
+    // The LABEL names what moved. The backend draws this link site→site (a projection of a
+    // supersession that actually lives on the `based-at` edge), so an unqualified "replaced by →"
+    // between two bases asserts that one BASE replaced the other — which is false: Nur Khan did
+    // not stop existing, the battery left it. The connector is also clickable, straight into the
+    // version link's own provenance drawer, so "what exactly moved?" is one click, not a guess.
     {
       const byId = new Map(pins.map((p) => [p.id, p]))
       const wanted = new Map<string, [StagePin, StagePin]>()
@@ -296,25 +302,33 @@ export function MapView() {
       }
       for (const [key, [from, to]] of wanted) {
         if (supersedeLayersRef.current[key]) continue
-        const group = L.layerGroup([
-          L.polyline(
-            [
-              [from.lat, from.lon],
-              [to.lat, to.lon],
-            ],
-            { color: COLORS.history, weight: 1, interactive: false, opacity: 0.75 },
-          ),
-          L.marker([(from.lat + to.lat) / 2, (from.lon + to.lon) / 2], {
-            interactive: false,
-            icon: L.divIcon({
-              html: `<span style="font:10px/1 ui-monospace,Menlo,monospace;color:var(--text-dim);white-space:nowrap;">replaced by →</span>`,
-              className: '',
-              iconSize: [0, 0],
-              iconAnchor: [-6, 12],
-            }),
+        const edgeId = from.supersedeEdgeId ?? null
+        // Never "replaced by": say what moved. With no named subject on the edge we still refuse
+        // to name the site as the thing replaced — "basing moved" is the weakest true statement.
+        const moved = from.supersedeSubject ? `${from.supersedeSubject} moved →` : 'basing moved →'
+        const line = L.polyline(
+          [
+            [from.lat, from.lon],
+            [to.lat, to.lon],
+          ],
+          { color: COLORS.history, weight: 1, interactive: !!edgeId, opacity: 0.75 },
+        )
+        const label = L.marker([(from.lat + to.lat) / 2, (from.lon + to.lon) / 2], {
+          interactive: !!edgeId,
+          icon: L.divIcon({
+            html: `<span style="font:10px/1 ui-monospace,Menlo,monospace;color:var(--text-dim);white-space:nowrap;${
+              edgeId ? 'cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--hairline-strong);' : ''
+            }">${moved}</span>`,
+            className: '',
+            iconSize: [0, 0],
+            iconAnchor: [-6, 12],
           }),
-        ]).addTo(map)
-        supersedeLayersRef.current[key] = group
+        })
+        if (edgeId) {
+          line.on('click', () => select(edgeId))
+          label.on('click', () => select(edgeId))
+        }
+        supersedeLayersRef.current[key] = L.layerGroup([line, label]).addTo(map)
       }
     }
 
@@ -339,7 +353,7 @@ export function MapView() {
       map.removeLayer(reticleRef.current)
       reticleRef.current = null
     }
-  }, [pins, selected, moved, confirmed, mode])
+  }, [pins, selected, moved, confirmed, mode, select])
 
   return (
     <div className="absolute inset-0">
