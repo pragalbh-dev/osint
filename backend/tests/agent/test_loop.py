@@ -5,8 +5,16 @@ from __future__ import annotations
 from chanakya.agent.assemble import assemble_answer
 from chanakya.agent.context import ToolContext
 from chanakya.agent.loop import AgentTrace, RecordedCall, run_fixed_hero_path, run_react_loop
+from chanakya.schemas import ConfigBundle
+from chanakya.schemas.config_models import SubjectsConfig
 
 from .mock_llm import final, planner, tool_turn
+
+
+def _relens(config: ConfigBundle, anchors: list[str]) -> ConfigBundle:
+    """The same bundle with the hero lens re-anchored — exercises the no-basing-site refusal branch."""
+    lens = config.subjects.subjects[0].model_copy(update={"anchors": anchors})
+    return config.model_copy(update={"subjects": SubjectsConfig(subjects=[lens])})
 
 
 def test_errored_calls_are_invisible_to_builders(view, claims, config) -> None:
@@ -56,3 +64,32 @@ def test_fixed_hero_path_builds_the_full_chain(view, claims, config) -> None:
     # it also gathers the chokepoint via query_graph and checks sufficiency (the non-negotiable)
     assert trace.last("query_graph") is not None
     assert trace.last("check_sufficiency") is not None
+
+
+def test_missing_basing_anchor_refuses_in_analyst_prose(view, claims, config) -> None:
+    """R-9: the refusal body is read by an analyst — it must name entities, not print a Python list
+    repr or an internal lens id. Anchors that resolve are rendered as their node names, comma-joined."""
+    ctx = ToolContext.build(view, claims, _relens(config, ["unit_paad", "var_hq9p"]))
+    trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
+
+    assert trace.refusal is not None
+    reason = trace.refusal.reason
+    assert "Pakistan Army Air Defence — HQ-9/P Regiment, HQ-9P" in reason  # names, comma-joined
+    assert "lens-hq9p-pk" not in reason        # no internal lens id in analyst-facing text
+    assert "[" not in reason and "'" not in reason  # no Python container/str repr
+    # the machine-readable ids still travel in `missing` (the UI resolves them to names itself)
+    assert trace.refusal.missing == ["unit_paad", "var_hq9p"]
+
+
+def test_unresolved_anchor_refusal_names_what_is_absent(view, claims, config) -> None:
+    """The other branch: an anchor the rebuilt view does not hold at all. Still no repr, no lens id —
+    an id with no node falls back to itself rather than being dressed up as a name."""
+    ctx = ToolContext.build(view, claims, _relens(config, ["unit_paad", "site_not_in_view"]))
+    trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
+
+    assert trace.refusal is not None
+    reason = trace.refusal.reason
+    assert "not present in the rebuilt view: site_not_in_view" in reason
+    assert "lens-hq9p-pk" not in reason
+    assert "[" not in reason and "'" not in reason
+    assert trace.refusal.missing == ["site_not_in_view"]

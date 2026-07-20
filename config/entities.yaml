@@ -45,11 +45,12 @@
 # chassis d24, landing at PROBABLE with hedges preserved) is a Phase-2/3 DATA+EVAL corpus-vs-oracle
 # reconciliation — see tmp/conv/PHASE1-DATAC-EVAL-answer_key-reconciliation.md — not a Phase-1 config seed.
 #
-# Entities with zero confirmed corpus-attested aliases in this scenario (comp_interceptor, import_2021,
-# sustain_techdata, sustain_spares) are deliberately NOT seeded here — they are real oracle ids, but
-# registering them with an empty alias list would add nothing (RESOLVE still mints/matches them by type +
-# relational signal); see tmp/conv/eval-rca/phase1-entity-registry-draft.md §1/§4 for the coverage-gap
-# writeup.
+# Entities with zero confirmed corpus-attested aliases in this scenario (comp_interceptor, import_2021)
+# are deliberately NOT seeded here — they are real oracle ids, but registering them with an empty alias
+# list would add nothing (RESOLVE still mints/matches them by type + relational signal); see
+# tmp/conv/eval-rca/phase1-entity-registry-draft.md §1/§4 for the coverage-gap writeup.
+# (`sustain_techdata` / `sustain_spares` were listed here too until Phase 4 removed them from the oracle
+# entirely — the corpus yields no techdata_authority or interceptor_stockpile instance to register.)
 
 version: 1
 

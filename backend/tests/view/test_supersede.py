@@ -18,6 +18,7 @@ from chanakya.schemas import (
     DocRef,
     EntityDescriptor,
     ExactDate,
+    LabelDate,
     OntologyConfig,
     ResolvedRef,
     SourcesConfig,
@@ -79,6 +80,12 @@ def _based_at(
         event_time=ExactDate(iso_date=iso) if iso else None,
         attributes=attributes,
     )
+
+
+def _vague(cid: str, target: str, year: int) -> ClaimRecord:
+    """A claim dated only to a YEAR — the shape that used to win an ordering it had no right to."""
+    c = _based_at(cid, target, "2000-01-01")
+    return c.model_copy(update={"event_time": LabelDate(raw=str(year), granularity="year", year=year)})
 
 
 def _view(cfg: ConfigBundle, *claims: ClaimRecord):
@@ -179,6 +186,62 @@ def test_missing_time_yields_candidate_supersede() -> None:
     assert a.attrs.get("candidate_supersede") and b.attrs.get("candidate_supersede")
     # can't order → do NOT overwrite either position
     assert a.superseded_by is None and b.superseded_by is None
+
+
+def test_vague_year_cannot_outrank_a_precise_date_it_contains() -> None:
+    """D-P4.4 (iii), R-5: a claim dated only "2025" has an upper bound of 2025-12-31, which under a
+    bare upper-bound comparison made it *newer* than a precise 2025-03-27 — a vague restatement could
+    retire a precisely-dated confirmation. Their intervals overlap, so the honest answer is a
+    contradiction for the analyst, never an arrow either way."""
+    edges = _edges(_cfg(functional=True), _vague("cVague", "site_a", 2025),
+                   _based_at("cPrecise", "site_b", "2025-03-27"))
+    a, b = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
+    assert a.superseded_by is None and b.superseded_by is None
+    assert a.supersedes is None and b.supersedes is None
+    assert a.attrs.get("contradiction") and b.attrs.get("contradiction")
+    assert "cPrecise" in a.opposing_claims and "cVague" in b.opposing_claims
+
+
+def test_equally_vague_targets_are_unorderable_not_contradictory() -> None:
+    """Two claims that both say only "2025" share an upper bound. String equality read that as "same
+    instant → contradiction"; the truth is that there is no ordering signal at all → candidate → HITL."""
+    edges = _edges(_cfg(functional=True), _vague("c1", "site_a", 2025), _vague("c2", "site_b", 2025))
+    a, b = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
+    assert a.attrs.get("candidate_supersede") and b.attrs.get("candidate_supersede")
+    assert not a.attrs.get("contradiction") and not b.attrs.get("contradiction")
+    assert a.superseded_by is None and b.superseded_by is None
+
+
+def test_a_late_restatement_of_an_old_fact_does_not_reverse_the_arrow() -> None:
+    """R-5: ordering took ``max`` over a target's claims, so a 2026 document *restating* the 2021
+    position made the OLD site the "newest" one and retired the 2025 relocation. Taking the union
+    interval instead widens the old fact into overlap — contradiction, not a reversed supersession."""
+    edges = _edges(
+        _cfg(functional=True),
+        _based_at("c21", "site_a", "2021-01-01"),
+        _based_at("c26restate", "site_a", "2026-01-01"),   # a late restatement of the OLD position
+        _based_at("c25", "site_b", "2025-01-01"),
+    )
+    old, new = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
+    assert new.superseded_by is None                 # the 2025 relocation is NOT retired by a restatement
+    assert old.superseded_by is None                 # and no arrow is drawn the other way either
+    assert old.attrs.get("contradiction") and new.attrs.get("contradiction")
+    assert not [e for e in _view(_cfg(functional=True),
+                                 _based_at("c21", "site_a", "2021-01-01"),
+                                 _based_at("c26restate", "site_a", "2026-01-01"),
+                                 _based_at("c25", "site_b", "2025-01-01")).edges if e.type == "supersedes"]
+
+
+def test_disjoint_intervals_still_order_even_when_one_is_vague() -> None:
+    """The flagship shape: the retired position is precisely dated (2021), the current one is a vague
+    "2025" plus a precise confirmation. The intervals do not overlap, so the supersession still fires —
+    the fix tightens ordering without disarming the demo beat."""
+    view = _view(_cfg(functional=True), _based_at("c21", "site_a", "2021-10-09"),
+                 _vague("c25vague", "site_b", 2025), _based_at("c25exact", "site_b", "2025-03-29"))
+    edges = {e.id: e for e in view.edges}
+    old, new = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
+    assert old.superseded_by == new.id and new.supersedes == old.id
+    assert old.status == "stale"
 
 
 def test_same_target_is_plain_corroboration() -> None:

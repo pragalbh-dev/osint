@@ -43,12 +43,42 @@ from chanakya.credibility.supersession import (
 from chanakya.schemas import ClaimRecord, EdgeView, Triple, canonical_iso_bounds
 
 
-def _latest_iso(claims: list[ClaimRecord]) -> str | None:
-    """The freshest ``event_time`` upper-bound across a target's claims (None if any is undated)."""
-    bounds = [canonical_iso_bounds(c.event_time)[1] for c in claims]
-    if any(b is None for b in bounds):
+def _interval(claims: list[ClaimRecord]) -> tuple[str, str] | None:
+    """The ``event_time`` **interval** a target is asserted over — ``None`` when any claim is undated
+    or only half-bounded (D-P4.4 iii: *missing* ⇒ unorderable, never guessed).
+
+    Both bounds matter. Taking only the upper bound let a vague ``"2025"`` (upper ``2025-12-31``)
+    outrank a precise ``2025-03-27``; and the span is the **union** across the target's claims rather
+    than ``max``, so a late *restatement* of an old fact widens that fact's interval into overlap
+    (→ contradiction → HITL) instead of silently making the old fact "newest" and reversing the arrow.
+    """
+    bounds = [canonical_iso_bounds(c.event_time) for c in claims]
+    if any(lo is None or hi is None for lo, hi in bounds):
         return None
-    return max(b for b in bounds if b is not None)
+    return min(lo for lo, _ in bounds if lo), max(hi for _, hi in bounds if hi)
+
+
+# How two targets' intervals relate — the (iii) branch of the supersede rule.
+ORDERED, CONTRADICTION, UNORDERABLE = "ordered", "contradiction", "unorderable"
+
+
+def _relation(older: tuple[str, str], newer: tuple[str, str]) -> str:
+    """Classify a pair of intervals, given ``older`` sorts at or before ``newer`` (D-P4.4 iii).
+
+    * **disjoint, older strictly earlier** → ``ordered`` (the only shape that may nominate a retirement)
+    * **identical and exact** (same instant, both precisely pinned) → ``contradiction`` — a unit cannot be
+      in two places at one instant
+    * **identical but vague** (e.g. two claims that say only "2025") → ``unorderable``: there is no
+      ordering signal at all, so neither retire nor assert a clash — hand it to HITL
+    * **any other overlap** → ``contradiction``: the two facts are asserted over intersecting time on a
+      slot that is single-valued
+    """
+    (o_lo, o_hi), (n_lo, _) = older, newer
+    if o_hi < n_lo:
+        return ORDERED
+    if older == newer:
+        return CONTRADICTION if o_lo == o_hi else UNORDERABLE
+    return CONTRADICTION
 
 
 def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[EdgeView]:
@@ -78,18 +108,24 @@ def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[
     if len(edges) <= 1:
         return edges  # single target → plain corroboration, nothing to supersede
 
-    # Order the targets by freshness; resolve state-change vs contradiction vs uncertainty.
-    timed = [(e, _latest_iso(by_target[(e.source, e.type, e.target)])) for e in edges]
-    if any(iso is None for _, iso in timed):
+    # Order the targets by their asserted intervals; resolve state-change vs contradiction vs uncertainty.
+    timed = [(e, _interval(by_target[(e.source, e.type, e.target)])) for e in edges]
+    if any(iv is None for _, iv in timed):
         for e, _ in timed:
             e.attrs[CANDIDATE] = True  # can't order → don't overwrite; HITL adjudicates
         return edges
 
-    timed.sort(key=lambda pair: pair[1] or "")  # oldest → newest
-    newest_edge, newest_iso = timed[-1]
-    for older_edge, older_iso in timed[:-1]:
-        if older_iso == newest_iso:
-            # same instant, different target → contradiction (a unit can't be two places at once)
+    timed.sort(key=lambda pair: pair[1] or ("", ""))  # oldest → newest, by (start, end)
+    newest_edge, newest_iv = timed[-1]
+    for older_edge, older_iv in timed[:-1]:
+        relation = _relation(cast(tuple[str, str], older_iv), cast(tuple[str, str], newest_iv))
+        if relation == UNORDERABLE:
+            # Indistinguishable intervals (e.g. both claims say only "2025"): no ordering signal and no
+            # basis to assert a clash either. Nominate nothing, claim nothing — HITL adjudicates.
+            older_edge.attrs[CANDIDATE] = True
+            newest_edge.attrs[CANDIDATE] = True
+        elif relation == CONTRADICTION:
+            # overlapping time on a single-valued slot → contradiction (a unit can't be two places at once)
             older_edge.attrs["contradiction"] = True
             newest_edge.attrs["contradiction"] = True
             older_edge.opposing_claims = sorted(set(older_edge.opposing_claims) | set(newest_edge.claim_ids))

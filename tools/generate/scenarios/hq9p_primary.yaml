@@ -40,6 +40,18 @@ observable:
 
 # ---------------------------------------------------------------------------
 # GROUND TRUTH graph (answer key — eval only, never ingested). Clean type strings.
+#
+# !! THE FROZEN KEY IS NO LONGER A PURE FUNCTION OF THIS SPEC. !!  `generate.py` writes
+# `corpus/scenarios/hq9p_primary/answer_key.json` as a straight copy of the blocks below, so a
+# regeneration OVERWRITES the key wholesale. The key has since been hand-curated (Phase 1–4) and this
+# spec was not kept in step. Even now that the dropped sustainment items are gone from here, a
+# regeneration would still: revert the Phase-1 lane renames (manufacturer→component became
+# `supplies-component`; component→variant became `equips`); delete the deep-tier nodes `mfr_taian` /
+# `comp_tel_chassis` and their edges; delete the `deep_tier_confirmed` flex and documents d24/d25;
+# drop the whole `attribution_inference` block (`answer_key()` does not even emit that field); and
+# revert the reworded `single_source` / `adversary_denial_bypass` flexes. Reconciling the two is a
+# DATA-C job — see `tmp/conv/QA-T7-answer-key-generator-drift.md`. Until it is done, regenerate
+# DOCUMENTS only (`--only <doc ids>`) and restore `answer_key.json` from git afterwards.
 # ---------------------------------------------------------------------------
 ground_truth:
   nodes:
@@ -54,9 +66,12 @@ ground_truth:
        status: candidate, why: "CASIC's house solid-rocket-motor academy; plausible interceptor-motor supplier, not HQ-9-named (US MTCR sanction 2022 is generic)"}
     - {id: gap_ht233_maker, type: known_gap, name: "HT-233 manufacturer + substitutability", observability_ceiling: probable_max,
        note: "best open-source study (CASI 2025) states maker Unknown; deeper radar T/R-module / seeker / datalink tiers not open-source-attributable -> collection requirement"}
-    - {id: sustain_techdata, type: sustainment, subtype: techdata_authority, name: "Technical-Data / Software & Calibration Authority",
-       status: probable, why: "the invisible dependency — controls software/calibration (A2 default node)"}
-    - {id: sustain_spares, type: sustainment, subtype: interceptor_stockpile, name: "spares / maintenance tender implication", status: probable}
+    # `sustain_techdata` / `sustain_spares` were REMOVED (Phase 4). Their inputs do not exist in the
+    # corpus: 0 replenishes edges, 0 interceptor_stockpile, 0 techdata_authority instances are ever
+    # extracted, so asserting them as ground truth made the key demand facts the evidence cannot
+    # support. d21 does state a technical-data authority, but the prose-claim form has no slot for it
+    # and it is scoped to the RADAR, not the variant — re-add only when the extractor emits it, on a
+    # component-scoped lane. See tmp/conv/EVAL-DATAC-sustainment-nodes-dropped.md.
     - {id: var_hq9p,       type: variant, export_designator: "HQ-9/P", branch: "Pakistan Army", range_km: 125,
        aliases: ["HQ-9P", "FD-2000"]}
     - {id: var_hq9be,      type: variant, export_designator: "HQ-9BE", branch: "Pakistan Air Force", range_km: 260}
@@ -77,7 +92,6 @@ ground_truth:
     - {rel: supplies-component,   from: comp_interceptor, to: var_hq9p,     status: confirmed}
     - {rel: candidate-manufactures, from: mfr_23rd_ri,    to: comp_ht233,   status: candidate, note: "inferred institutional logic (CASI 2025); NOT confirmed"}
     - {rel: candidate-supplies-component, from: mfr_4th_academy, to: comp_interceptor, status: candidate, note: "plausible CASIC SRM house; not HQ-9-named"}
-    - {rel: design-authority-for, from: sustain_techdata, to: var_hq9p,     status: probable, note: "candidate invisible chokepoint"}
     - {rel: variant-of,           from: var_hq9p,       to: "HQ-9",         status: confirmed}
     - {rel: variant-of,           from: var_hq9be,      to: "HQ-9",         status: confirmed}
     # resolution edges (flagship merge — H-CONSIST-3 fix)
@@ -95,8 +109,8 @@ ground_truth:
     - {rel: based-at,             from: unit_hq9b,      to: site_rawalpindi, status: stale, freshness: perishable, note: "confirmed 2021 -> stale after relocation"}
     - {rel: based-at,             from: unit_hq9b,      to: site_rahwali,   status: confirmed, freshness: perishable, note: "2025 probable->confirmed"}
     - {rel: supersedes,           from: site_rahwali,   to: site_rawalpindi, status: confirmed, note: "state-change; needs confidence-floor to resist D8 spoof"}
-    # sustainment
-    - {rel: sustained-by,         from: unit_paad,      to: sustain_spares, status: probable}
+    # sustainment: no edges. `sustained-by` was removed with its endpoints (see the nodes note above);
+    # the rollup it fed would have summarised a path the corpus does not contain.
   # ------------------------------------------------------------------------
   # PLACE GAZETTEER (answer-key oracle for location normalization; see md/13).
   # canonical_dd = WGS84 decimal degrees; provenance real|synthetic|approximate.
@@ -452,8 +466,10 @@ flexes:
     docs: [d16_adversary_denial]
     expect: "gated out — neither corroborates the indigenisation claim nor downgrades the techdata dependency (D5 bypass)."
   single_source:
-    docs: [d06_spares_tender]
-    expect: "sustain_spares stays PROBABLE (single source)."
+    # Re-pointed off the removed sustain_spares node onto the basing fact it actually demonstrates,
+    # matching the wording already frozen in answer_key.json.
+    docs: [d17_rawalpindi_2021]
+    expect: "d17 is the ONLY source for the 2021 Nur Khan basing, and it reads equipment, not a unit designator. The observed layer (an HQ-9B fire unit at PAF Base Nur Khan) is confirmed-as-of-2021 on a multi-pass read; the attribution layer (that unit_hq9b operates it) stays PROBABLE and cannot be raised on this document alone — one source, however good, does not confirm an inferential layer. Verified single-source: d17_rawalpindi_2021 is the sole doc asserting unit_hq9b based-at site_rawalpindi."
   contradiction:
     docs: [d08_social_sighting, d09_official_routine]
     expect: "same site+date opposing claims -> CONTRADICTED -> HITL (not auto-resolved) (D9)."
