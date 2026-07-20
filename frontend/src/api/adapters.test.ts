@@ -118,6 +118,12 @@ describe('statusToGraphKind', () => {
     expect(statusToGraphKind(VIEW.nodes[4])).toBe('gap')
   })
 
+  it('maps contradicted → contradicted, NOT gap — disagreement is not absence', () => {
+    const kind = statusToGraphKind({ id: 'x', type: 'unit', status: 'contradicted' })
+    expect(kind).toBe('contradicted')
+    expect(kind).not.toBe('gap')
+  })
+
   it('falls back to probable when status is missing', () => {
     expect(statusToGraphKind({ id: 'x', type: 'unit' })).toBe('probable')
   })
@@ -156,6 +162,26 @@ describe('edgeToKind', () => {
   it('gives a status-less supersedes the "replaced by" kind, never a contradiction', () => {
     expect(edgeToKind(VIEW.edges[7])).toBe('e-supersede')
     expect(edgeToKind(VIEW.edges[7])).not.toBe('e-contradicted')
+  })
+
+  it('draws an UNADJUDICATED supersession dashed — candidate, not settled', () => {
+    const candidate = {
+      id: 'sup2',
+      type: 'supersedes',
+      source: 'a',
+      target: 'b',
+      status: null,
+      attrs: { candidate_supersede: true },
+    }
+    expect(edgeToKind(candidate)).toBe('e-supersede-candidate')
+    // a pending/held gate is the same fact by another name
+    expect(edgeToKind({ id: 'sup3', type: 'supersedes', source: 'a', target: 'b', attrs: { supersede_gate: 'held' } })).toBe(
+      'e-supersede-candidate',
+    )
+    // …and a promoted one is settled: solid.
+    expect(edgeToKind({ id: 'sup4', type: 'supersedes', source: 'a', target: 'b', attrs: { supersede_gate: 'promoted' } })).toBe(
+      'e-supersede',
+    )
   })
 
   it('does not throw on an edge with no status at all', () => {

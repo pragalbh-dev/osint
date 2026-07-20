@@ -49,8 +49,12 @@ export function statusToGraphKind(node: NodeView): GraphKind {
     case 'stale':
       return 'stale'
     case 'insufficient':
-    case 'contradicted':
       return 'gap'
+    // "credible sources disagree" is not "we don't know" — a contradiction is loud
+    // (solid coral, filled), a Known Gap is quiet (dashed grey, no fill). Folding one
+    // into the other drew a problem as an absence.
+    case 'contradicted':
+      return 'contradicted'
     default:
       return 'probable'
   }
@@ -72,9 +76,22 @@ export function isStatuslessEdge(edge: EdgeView): boolean {
  *  3. `stale` / `superseded_by` = HISTORY: we know this assertion was overtaken.
  *  4. `insufficient` = an EVIDENCE GAP: we do NOT know. It must NOT look like `stale`
  *     (history) and must not fall through to `probable` (a live teal assertion).
- *  5. `contradicted` is its own thing — sources disagree, which is a problem, not a gap. */
+ *  5. `contradicted` is its own thing — sources disagree, which is a problem, not a gap.
+ *
+ *  A `supersedes` edge splits on adjudication: PROMOTED is settled ("this replaced that")
+ *  and draws solid; a CANDIDATE — flagged `candidate_supersede`, or still sitting behind a
+ *  pending/held gate — is provisional ("something moved, but we are not sure it is the same
+ *  unit") and draws DASHED. Same arrowhead, so it still reads as a version link and never
+ *  as an alarm; THE ONE RULE carries the uncertainty. */
+const UNSETTLED_SUPERSEDE_GATES = new Set(['pending', 'held'])
+
 export function edgeToKind(edge: EdgeView): EdgeKind {
-  if (edge.type === 'supersedes') return 'e-supersede'
+  if (edge.type === 'supersedes') {
+    const gate = supersedeGate(edge)
+    if (isCandidateSupersede(edge) || (gate != null && UNSETTLED_SUPERSEDE_GATES.has(gate)))
+      return 'e-supersede-candidate'
+    return 'e-supersede'
+  }
   if (isStatuslessEdge(edge)) return 'e-link'
   if (edge.superseded_by || edge.status === 'stale') return 'e-stale'
   if (edge.status === 'insufficient') return 'e-gap'

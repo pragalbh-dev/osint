@@ -43,6 +43,7 @@ function buildElements(nodes: GraphNodeDef[], edges: GraphEdgeDef[]): cytoscape.
 function cyStyle(): cytoscape.CytoscapeOptions['style'] {
   const fresh = fillFor('fresh')
   const staleFill = fillFor('stale', 'history')
+  const problemFill = fillFor('fresh', 'problem') // === --fill-problem
   const style = [
     {
       selector: 'node',
@@ -72,12 +73,14 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
     { selector: '.chokepoint', style: { 'border-width': 1.5, 'border-style': 'dashed', 'border-color': COLORS.live, 'background-color': fresh } },
     { selector: '.stale', style: { 'border-width': 2, 'border-style': 'solid', 'border-color': COLORS.history, 'background-color': staleFill, color: GREY_TEXT } },
     { selector: '.gap', style: { 'border-width': 1.5, 'border-style': 'dashed', 'border-color': COLORS.history, 'background-opacity': 0, color: GREY_TEXT } },
+    // CONTRADICTED — sources disagree. Loud and settled: solid 2px coral with a coral
+    // fill (--border-contradicted / --fill-problem). It must NOT rhyme with `.gap`
+    // (dashed grey, unfilled): a problem is not an absence. Text stays full-strength.
+    { selector: '.contradicted', style: { 'border-width': 2, 'border-style': 'solid', 'border-color': COLORS.problem, 'background-color': problemFill, 'background-opacity': 1, color: COLORS.text } },
     { selector: '.halo', style: { width: 176, height: 70, shape: 'rectangle', 'background-opacity': 0, 'border-width': HALO.width, 'border-style': 'dashed', 'border-color': HALO.color, label: '', 'z-index': 0, events: 'no' } },
     { selector: 'edge', style: { width: 1, 'curve-style': 'straight', 'line-color': COLORS.live, opacity: 0.7, 'target-arrow-shape': 'none' } },
     { selector: '.e-confirmed', style: { 'line-style': 'solid', 'line-color': COLORS.live } },
     { selector: '.e-probable', style: { 'line-style': 'dashed', 'line-color': COLORS.live } },
-    // demo-only legacy kind (the frozen fixtures' history edges) — live never emits it
-    { selector: '.e-history', style: { 'line-style': 'dashed', 'line-color': COLORS.history, opacity: 0.55 } },
     // STALE vs GAP are different facts and must not look alike: stale is SOLID grey
     // (settled history — the assertion was overtaken, matching --border-stale on nodes);
     // a gap is DASHED grey (provisional/absent — we do not know), matching the Known-Gap
@@ -91,6 +94,20 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
       selector: '.e-supersede',
       style: {
         'line-style': 'solid',
+        'line-color': COLORS.history,
+        opacity: 0.75,
+        'target-arrow-shape': 'triangle',
+        'target-arrow-color': COLORS.history,
+        'arrow-scale': 0.7,
+      },
+    },
+    // CANDIDATE supersession — the analyst has not adjudicated it yet, so we are not sure
+    // the two things are the same unit. Same arrow (still a version link, still not an
+    // alarm), DASHED (provisional). THE ONE RULE makes "not sure" undrawable as certain.
+    {
+      selector: '.e-supersede-candidate',
+      style: {
+        'line-style': 'dashed',
         'line-color': COLORS.history,
         opacity: 0.75,
         'target-arrow-shape': 'triangle',
@@ -252,8 +269,15 @@ export function GraphView() {
           pointerEvents: 'none',
         }}
       >
-        border = status · fill = freshness · dashed ring = candidate chokepoint
-        {mode === 'live' && <> · grey arrow = replaced by</>}
+        {/* DEMO keeps the mockup's legend verbatim (its stale node really does carry a
+            stale fill). LIVE drops "fill = freshness": the live adapter has no freshness
+            band, so every live fill is the fresh one — claiming otherwise would teach a
+            distinction the screen isn't drawing. */}
+        {mode === 'live' ? (
+          <>border = status · dashed ring = candidate chokepoint · grey arrow = replaced by</>
+        ) : (
+          <>border = status · fill = freshness · dashed ring = candidate chokepoint</>
+        )}
       </div>
     </div>
   )

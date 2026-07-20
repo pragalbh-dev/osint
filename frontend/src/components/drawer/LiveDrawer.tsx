@@ -56,20 +56,13 @@ function whySentence(m: LiveDrawerModel): string {
   return `Held at ${STATUS_WORD[m.status].toLowerCase()} — ${bits.join('; ')}.`
 }
 
+// The demo drawer's KICKER, verbatim (Drawer.tsx) — 10.5px sans, 0.06em tracking,
+// SENTENCE CASE. The copy deck is explicit: "Sentence case. Always. No ALL CAPS."
+// A mono/uppercase variant here was a second visual language for the same object.
+const KICKER = { fontSize: 10.5, color: 'var(--text-faint)', letterSpacing: '0.06em' } as const
+
 function Kicker({ children }: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        font: '10px/1 ui-monospace,Menlo,monospace',
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: 'var(--text-faint)',
-        marginBottom: 8,
-      }}
-    >
-      {children}
-    </div>
-  )
+  return <div style={{ ...KICKER, marginBottom: 8 }}>{children}</div>
 }
 
 function Section({ children }: { children: ReactNode }) {
@@ -96,7 +89,7 @@ function ClaimRow({ row, expanded, onToggle, status }: { row: LiveClaimRow; expa
             marginTop: 8,
             padding: '10px 12px',
             border: '1px solid var(--hairline)',
-            borderRadius: 6,
+            borderRadius: 4, // --radius-node; 6 was off-system
             background: 'var(--bg)',
             font: '10.5px/1.6 ui-monospace,Menlo,monospace',
             color: 'var(--text-dim)',
@@ -136,19 +129,18 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
             {STATUS_WORD[model.status]}
           </span>
         </div>
-        <div style={{ font: '11px/1 ui-monospace,Menlo,monospace', color: 'var(--text-faint)' }}>
-          {model.subjectRef}
-        </div>
+        {/* the ref itself now leads the header block above — not repeated here */}
         <div style={{ font: '12px/1.4 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginTop: 10 }}>
           {model.sources} source{model.sources === 1 ? '' : 's'} · {model.looks} independent look
           {model.looks === 1 ? '' : 's'}
         </div>
       </Section>
 
-      {/* why not confirmed / what's missing */}
+      {/* the sufficiency check — the pack's own copy ("To raise this", doc 09 §hierarchy
+          item 7). It names the next action and its date rather than the shortfall. */}
       {why && (
         <Section>
-          <Kicker>Why not confirmed</Kicker>
+          <Kicker>To raise this</Kicker>
           <div style={{ font: '12.5px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>{why}</div>
           {model.sufficiency?.nextCoverageDue && (
             <div style={{ font: '11px/1.4 ui-monospace,Menlo,monospace', color: 'var(--text-faint)', marginTop: 8 }}>
@@ -224,23 +216,49 @@ export function LiveDrawer() {
         width: 560,
         maxWidth: '92vw',
         background: 'var(--surface)',
-        borderLeft: '1px solid var(--hairline)',
+        borderLeft: '1px solid var(--hairline-strong)',
         boxShadow: '-8px 0 24px rgba(0,0,0,0.35)',
         transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 300ms ease',
+        // doc 12's drawer budget — 160ms ease-out. It overlays, it never pushes.
+        transition: 'transform 160ms ease-out',
         zIndex: 50,
         overflowY: 'auto',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 16px 0' }}>
-        <button
-          type="button"
-          onClick={closeDrawer}
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}
-          aria-label="Close provenance drawer"
-        >
-          ✕
-        </button>
+      {/* header — restates what is being proved, so covering the answer is safe (doc 08).
+          Ported from the demo drawer: "Proving" kicker + the claim line + a bordered
+          30x30 close control. Live has no prose claim, so the element ref IS the claim. */}
+      {/* no borderBottom here: the first <Section> below already draws that one hairline,
+          and two adjacent 1px rules read as a 2px rule that means nothing. */}
+      <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <div style={{ ...KICKER, marginBottom: 7 }}>Proving</div>
+            <div style={{ fontSize: 16, lineHeight: 1.35, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
+              {selected ?? '—'}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={closeDrawer}
+            title="Dismiss"
+            style={{
+              flex: 'none',
+              width: 30,
+              height: 30,
+              border: '1px solid var(--hairline)',
+              borderRadius: 4,
+              background: 'transparent',
+              color: 'var(--text-dim)',
+              fontSize: 15,
+              cursor: 'pointer',
+              lineHeight: 1,
+            }}
+            aria-label="Close provenance drawer"
+          >
+            ✕
+          </button>
+        </div>
       </div>
       {!selected ? null : isLoading ? (
         <Section>

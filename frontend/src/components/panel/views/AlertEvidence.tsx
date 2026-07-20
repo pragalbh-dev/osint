@@ -64,15 +64,12 @@ export function AlertEvidence({
         </div>
       ) : (
         <>
-          {(provenance.status || provenance.assertionConfidence != null) && (
+          {provenance.status && (
+            // The status word IS the verdict. No score is rendered beside it: the
+            // numbers are uncalibrated, so a printed "0.79" is false precision
+            // (copy deck §2) and the drawer rule "no percentages, not one" (doc 09).
             <div className="mb-[9px] text-[12px] leading-[1.5] text-text-dim">
-              The new state reads {provenance.status ?? 'unset'}
-              {provenance.assertionConfidence != null && (
-                <span className="font-mono text-[11px] text-text-faint">
-                  {' '}
-                  · confidence {provenance.assertionConfidence.toFixed(2)}
-                </span>
-              )}
+              The new state reads {provenance.status}
             </div>
           )}
 
@@ -116,7 +113,9 @@ export function AlertEvidence({
             Held for review rather than retired automatically, because:
           </div>
           {holdReasons.map((reason) => (
-            <div key={reason} className="font-mono text-[11px] leading-[1.6] text-text">
+            // verbatim, but at the dim text token — it reads as evidence on the record,
+            // not as headline copy the interface is asserting in its own voice.
+            <div key={reason} className="font-mono text-[11px] leading-[1.6] text-text-dim">
               · {reason}
             </div>
           ))}

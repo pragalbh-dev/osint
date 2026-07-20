@@ -48,7 +48,10 @@ export const AOI = {
 
 // ─────────────────────────── graph (Cytoscape preset) ───────────────────────────
 
-export type GraphKind = 'confirmed' | 'probable' | 'chokepoint' | 'stale' | 'gap'
+// `contradicted` is its OWN kind, never folded into `gap`: "credible sources disagree"
+// (loud — solid coral) and "we do not know" (quiet — dashed grey, no fill) are opposite
+// facts, and drawing one as the other is a lie about the evidence.
+export type GraphKind = 'confirmed' | 'probable' | 'chokepoint' | 'stale' | 'gap' | 'contradicted'
 
 export interface GraphNodeDef {
   id: string
@@ -78,15 +81,20 @@ export const GRAPH_NODES: GraphNodeDef[] = [
  *  assertion was overtaken) while `e-gap` is an EVIDENCE GAP (dashed grey — we do not
  *  know). Conflating them is a correctness bug in the visual language, not a style nit.
  *  `e-supersede` is the status-LESS "replaced by →" version link (never an alarm), and
- *  `e-link` the other status-less identity edges (same-as / distinct-from). */
+ *  `e-link` the other status-less identity edges (same-as / distinct-from).
+ *
+ *  `e-supersede-candidate` is the same arrow, DASHED: an un-adjudicated supersession —
+ *  "something moved, and we are not yet sure it is the same thing". THE ONE RULE decides
+ *  it: promoted = settled = solid; pending/held = provisional = dashed. Like the dashed
+ *  chokepoint halo, this makes "we're not sure" undrawable as certain. */
 export type EdgeKind =
   | 'e-confirmed'
   | 'e-probable'
-  | 'e-history'
   | 'e-stale'
   | 'e-gap'
   | 'e-contradicted'
   | 'e-supersede'
+  | 'e-supersede-candidate'
   | 'e-link'
 
 export interface GraphEdgeDef {
@@ -103,8 +111,11 @@ export const GRAPH_EDGES: GraphEdgeDef[] = [
   { id: 'e4', source: 'casic', target: 'ht233', kind: 'e-confirmed' },
   { id: 'e5', source: 'ht233', target: 'paad', kind: 'e-probable' },
   { id: 'e6', source: 'techdata', target: 'ht233', kind: 'e-probable' },
-  { id: 'e7', source: 'paad', target: 'tel', kind: 'e-history' },
-  { id: 'e_moved', source: 'rawalpindi', target: 'rahwali', kind: 'e-history' }, // hidden until relocation
+  // the regiment's TEL count is a Known Gap — the edge into it is an evidence GAP (dashed
+  // grey, "we do not know"), not history.
+  { id: 'e7', source: 'paad', target: 'tel', kind: 'e-gap' },
+  // the relocation is an adjudicated supersession — "replaced by →": solid grey + arrow.
+  { id: 'e_moved', source: 'rawalpindi', target: 'rahwali', kind: 'e-supersede' }, // hidden until relocation
 ]
 
 // ─────────────────────────── target queries (screen zero) ───────────────────────────

@@ -62,19 +62,6 @@
         "note": "best open-source study (CASI 2025) states maker Unknown; deeper radar T/R-module / seeker / datalink tiers not open-source-attributable -> collection requirement"
       },
       {
-        "id": "sustain_techdata",
-        "type": "techdata_authority",
-        "name": "Technical-Data / Software & Calibration Authority",
-        "status": "probable",
-        "why": "the invisible dependency — controls software/calibration (A2 default node)"
-      },
-      {
-        "id": "sustain_spares",
-        "type": "interceptor_stockpile",
-        "name": "spares / maintenance tender implication",
-        "status": "probable"
-      },
-      {
         "id": "var_hq9p",
         "type": "variant",
         "export_designator": "HQ-9/P",
@@ -212,13 +199,6 @@
         "note": "the TEL chassis is an integral part of the HQ-9/P fire unit"
       },
       {
-        "rel": "design-authority-for",
-        "from": "sustain_techdata",
-        "to": "var_hq9p",
-        "status": "probable",
-        "note": "candidate invisible chokepoint"
-      },
-      {
         "rel": "distinct-from",
         "from": "var_hq9p",
         "to": "var_hq9be",
@@ -329,13 +309,6 @@
         "status": "confirmed",
         "basis": "derived",
         "note": "DERIVED state-change from d19's hedged 'recent redeployment'; held at a confidence FLOOR so the d20 single-source reverse rumor cannot flip it (the counter-deception headline)."
-      },
-      {
-        "rel": "sustained-by",
-        "from": "unit_paad",
-        "to": "sustain_spares",
-        "status": "probable",
-        "note": "single-source (d06). NB: d06 is a PAF Air HQ tender for the fielded LR-SAM 'System' and names no unit; attaching sustainment to the Army unit_paad is nominal — the dependency is system-level, not unit-specific."
       }
     ],
     "places": [
@@ -542,7 +515,7 @@
         "to": "var_hq9p"
       }
     ],
-    "expected_path_edges_note": "edges are the CANONICAL stored direction (== ground_truth.edges); expected_path lists node traversal order (observed battery -> origin), i.e. the reverse walk. The agent traverses edges bidirectionally by node id. The trace TERMINATES at comp_ht233 (the chokepoint): HT-233's specific maker is a Known Gap (candidate mfr_23rd_ri via supplies-component, possible) — there is NO confirmed CASIC->HT-233 maker edge (d22/d24: the HT-233 maker is UNKNOWN). CASIC is reached as the confirmed PROGRAM prime / design authority via var_hq9p (mfr_casic manufactures var_hq9p) + sustain_techdata design-authority-for var_hq9p — never as the radar's maker.",
+    "expected_path_edges_note": "edges are the CANONICAL stored direction (== ground_truth.edges); expected_path lists node traversal order (observed battery -> origin), i.e. the reverse walk. The agent traverses edges bidirectionally by node id. The trace TERMINATES at comp_ht233 (the chokepoint): HT-233's specific maker is a Known Gap (candidate mfr_23rd_ri via supplies-component, possible) — there is NO confirmed CASIC->HT-233 maker edge (d22/d24: the HT-233 maker is UNKNOWN). CASIC is reached as the confirmed PROGRAM prime / design authority via var_hq9p (mfr_casic manufactures var_hq9p) — never as the radar's maker.",
     "expected_answer": "Chokepoint = HT-233 engagement radar — CANDIDATE. CASIC/2nd Academy is the confirmed program design authority; the specific HT-233 maker is a Known Gap (best open-source candidate = CASIC 23rd Research Institute, inferred/unconfirmed per CASI 2025). Substitutability UNKNOWN → collection requirement, not a confirmed sole-source.",
     "must": "cite the exact source at every hop; separate observed (basing/imagery) from inferred (chokepoint candidacy)."
   },
@@ -633,13 +606,13 @@
       "docs": [
         "d16_adversary_denial"
       ],
-      "expect": "gated out — neither corroborates the indigenisation claim nor downgrades the techdata dependency (D5 bypass)."
+      "expect": "gated out — an adversary-bias denial neither corroborates the indigenisation claim nor moves any standing assessment (D5 bypass)."
     },
     "single_source": {
       "docs": [
-        "d06_spares_tender"
+        "d17_rawalpindi_2021"
       ],
-      "expect": "sustain_spares stays PROBABLE (single source)."
+      "expect": "d17 is the ONLY source for the 2021 Nur Khan basing, and it reads equipment, not a unit designator. The observed layer (an HQ-9B fire unit at PAF Base Nur Khan) is confirmed-as-of-2021 on a multi-pass read; the attribution layer (that unit_hq9b operates it) stays PROBABLE and cannot be raised on this document alone — one source, however good, does not confirm an inferential layer. Verified single-source: d17_rawalpindi_2021 is the sole doc asserting unit_hq9b based-at site_rawalpindi."
     },
     "contradiction": {
       "docs": [
@@ -909,7 +882,14 @@
         "bias_vector": "third-party"
       },
       "expect": {
-        "contributes_to": "design-authority-for (probable) — candidate invisible chokepoint"
+        "contributes_to": [
+          "comp_ht233 equips var_hq9p (the HT-233 is the HQ-9/P engagement radar) + the 'fire-control and guidance radar' alias for HT-233",
+          "mfr_casic identity — 'China Aerospace Science and Industry Corporation' same-as CASIC, and the CASIC/CPMIEC export-administration chain as context for CPMIEC = export agent, not maker (supports d22/d23 disambiguation)",
+          "var_hq9p range figure ~100-125 km (with the 200 km extended-range figure explicitly flagged unverifiable by the publication itself)",
+          "var_hq9p presence in the Karachi and central Punjab air defence sectors (hedged, PAF-attributed — contributes an operator-branch ambiguity signal against d02's Army attribution)"
+        ],
+        "known_limitation": "d21's headline fact — that radar mode libraries, waveform parameters and calibration tables are configuration-controlled by a Chinese state technical-data authority — is NOT extracted today. The prose-claim form has no slot for a technical-data / configuration-control dependency (the tender form does), so the model has nowhere to put it and no techdata_authority instance is minted. Additionally d21 scopes that control to the HT-233 RADAR, whereas the ontology types design-authority-for as techdata_authority -> variant; a faithful record would need a component-scoped lane. Do NOT add a design-authority-for expectation here until the extractor actually emits it (see tmp/conv/EVAL-DATAC-sustainment-nodes-dropped.md).",
+        "note": "hedged trade media (grade C): everything it contributes is corroborative/identity-level, not a standalone confirmation."
       }
     },
     {
@@ -1048,8 +1028,13 @@
         "primary_origin_id": "dgdp_tender"
       },
       "expect": {
-        "contributes_to": "sustained-by",
-        "note": "SINGLE source -> stays PROBABLE; tender implies, never confirms"
+        "contributes_to": [
+          "a contract_import_event of kind sustainment/annual-maintenance-support (the procurement-signal beat) — a recurring R&O tender, NOT a fresh buy",
+          "the LR-SAM <-> HQ-9/P <-> HQ-9P <-> FD-2000 alias chain (the tender's own nomenclature paragraph) + the S-300PMU / S-400 distinct-from traps",
+          "line-item component signals: TVM uplink/downlink test sets, erector-launcher chassis spares, engagement-radar cabin power modules, waveguide/RF assemblies, missile-canister environmental consumables",
+          "an already-fielded inference: a sustenance tender presupposes an in-service system (corroborative of induction, never confirmatory of it)"
+        ],
+        "note": "d06 does NOT establish an interceptor stockpile and must not mint one. The tender states its requirement 'pertains solely to sustenance/repair-and-overhaul (R&O) support of equipment already fielded and does NOT constitute procurement of a new weapon system, launcher, missile round, or fire-control radar', and reiterates 'No new launcher units, radar sets, or missile rounds form part of this requirement.' Inferring magazine depth / days-of-supply / force posture from a maintenance contract is the fabrication the non-negotiable forbids. Also note the service mismatch: d06 is a PAF Air HQ tender naming no unit, so it cannot be attached to the Army unit_paad. SINGLE source -> anything it does support stays PROBABLE; a tender implies, never confirms."
       }
     },
     {
@@ -1389,7 +1374,7 @@
         "adversary_denial_flag": true
       },
       "expect": {
-        "note": "GATE: discounted before grouping — neither corroborates the indigenisation nor downgrades the techdata dependency"
+        "note": "GATE: discounted before grouping — an adversary-bias denial corroborates nothing and moves no standing assessment; the indigenisation assertion cites a 'second independent source' that is never shown, so it cannot raise confidence, and its denial of the Chinese software/calibration dependency cannot lower any assessment either (nothing is asserted on that dependency in the first place)"
       }
     },
     {

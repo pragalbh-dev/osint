@@ -63,9 +63,35 @@ function labelHtml(pos: 'below' | 'right' | 'left', title: string, caption: stri
   </div>`
 }
 
+// Fill PRESENCE carries knowledge-vs-absence, and the centre dot carries the family —
+// so both must come off the pin's STATUS, not off a hand-authored default. A stale pin
+// filled teal would draw history as live knowledge; an insufficient pin with a filled
+// core would draw an absence of evidence as knowledge. Demo pins are unaffected: their
+// hero statuses are confirmed/probable, which keep the fresh fill and the live dot.
+function pinCore(pin: PinDef, ui: { dot: 'live' | 'history' }): {
+  fill: string
+  dot: string
+  opacity: string
+} {
+  if (pin.status === 'stale')
+    return { fill: 'var(--fill-stale)', dot: 'var(--history)', opacity: 'var(--opacity-stale)' }
+  // insufficient = a Known Gap: hollow core, grey dot. Nothing is asserted.
+  if (pin.status === 'insufficient')
+    return { fill: 'var(--fill-none)', dot: 'var(--history)', opacity: 'var(--opacity-fresh)' }
+  // contradicted keeps a fill (evidence exists — it disagrees), but in the problem family,
+  // so the pin reads the same way its graph node does rather than coral-on-teal.
+  if (pin.status === 'contradicted')
+    return { fill: 'var(--fill-problem)', dot: 'var(--problem)', opacity: 'var(--opacity-fresh)' }
+  return {
+    fill: 'var(--fill-fresh)',
+    dot: ui.dot === 'history' ? 'var(--history)' : 'var(--live)',
+    opacity: 'var(--opacity-fresh)',
+  }
+}
+
 function pinHtml(pin: PinDef): string {
   const ui = PIN_UI[pin.id] ?? DEFAULT_PIN_UI
-  const dot = ui.dot === 'history' ? 'var(--history)' : 'var(--live)'
+  const core = pinCore(pin, ui)
 
   if (ui.rect) {
     // TEL count — hollow, dashed Known-Gap rectangle, no fill (mockup 201-206)
@@ -81,8 +107,8 @@ function pinHtml(pin: PinDef): string {
     <div style="position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
       <span data-ring style="position:absolute;inset:0;border:1px solid rgba(138,148,156,0.32);box-shadow:none;transition:box-shadow 200ms ease;"></span>
       ${CORNERS}
-      <span data-core style="width:16px;height:16px;border-radius:50%;border:${border};background:var(--fill-fresh);display:flex;align-items:center;justify-content:center;transition:border-color 400ms ease, background-color 400ms ease;">
-        <span style="width:2.5px;height:2.5px;border-radius:50%;background:${dot};"></span>
+      <span data-core style="width:16px;height:16px;border-radius:50%;border:${border};background:${core.fill};opacity:${core.opacity};display:flex;align-items:center;justify-content:center;transition:border-color 400ms ease, background-color 400ms ease;">
+        <span style="width:2.5px;height:2.5px;border-radius:50%;background:${core.dot};"></span>
       </span>
     </div>
     ${labelHtml(ui.labelPos, pin.label, pin.caption, ui.dimTitle)}`
