@@ -1,0 +1,1113 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        53
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "Weekly Imagery & Signals Digest"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "IISS Military Balance+ / Open-Source Airpower Monitor"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        329,
+        444
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Gujranwala along the GT Road corridor, Punjab",
+          "raw": "~10 km NW of Gujranwala along the GT Road corridor, Punjab",
+          "resolved_place_ref": null,
+          "surface_format": "relative",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "Pakistan Army/PAF joint-use facility"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Rahwali airfield"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        347,
+        383
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        347,
+        383
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Army"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        446,
+        508
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "commercial EO imagery"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Planet SkySat"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        446,
+        715
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-27",
+      "kind": "exact",
+      "raw": "27 March"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "quantity": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 6.0
+        }
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Rahwali Airfield / Cantonment, Gujranwala",
+            "lat": 32.239,
+            "lon": 74.131,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Rahwali airfield",
+        "raw": "Rahwali airfield",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 32.239,
+        "wgs84_lon": 74.131
+      },
+      "participants": [
+        "HQ-9B"
+      ],
+      "time_interval": {
+        "boundary_source": "relative",
+        "iso_date": "2025-03-27",
+        "kind": "exact",
+        "raw": "27 March"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        687
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "TEL"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        843,
+        912
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "fire-control/engagement radar",
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        843,
+        912
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d19-rahwali-confirm-l11-8",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d19-rahwali-confirm-l11-7",
+      "source_quote": "HT-233 fire-control/engagement radar associated with the HQ-9B system"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        843,
+        912
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9B",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1250,
+        1522
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Rahwali Airfield / Cantonment, Gujranwala",
+            "lat": 32.239,
+            "lon": 74.131,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Rahwali airfield",
+        "raw": "Rahwali airfield",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 32.239,
+        "wgs84_lon": 74.131
+      },
+      "participants": [
+        "HT-233"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l13-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1690,
+        1842
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-29",
+      "kind": "exact",
+      "raw": "29 March"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Rahwali Airfield / Cantonment, Gujranwala",
+            "lat": 32.239,
+            "lon": 74.131,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Rahwali airfield",
+        "raw": "Rahwali airfield",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 32.239,
+        "wgs84_lon": 74.131
+      },
+      "participants": [
+        "HT-233"
+      ],
+      "time_interval": {
+        "boundary_source": "relative",
+        "iso_date": "2025-03-29",
+        "kind": "exact",
+        "raw": "29 March"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "d19-rahwali-confirm-l11",
+      "_subject_mention": "d19-rahwali-confirm-l15-4"
+    },
+    "claim_id": "d19-rahwali-confirm-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2418,
+        2604
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Rahwali airfield",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2468,
+        2503
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Army Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "report_time",
+      "_object_mention": "d19-rahwali-confirm-l15-2",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d19-rahwali-confirm-l15-4",
+      "source_quote": "PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2468,
+        2586
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Army Air Defence Command",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l15-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2497,
+        2578
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l15-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2497,
+        2578
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d19-rahwali-confirm-l15-5",
+      "_subject_mention": "d19-rahwali-confirm-l15-4"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2497,
+        2578
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3122,
+        3161
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "site_type": "dispersal site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pasrur dispersal site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3122,
+        3161
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "site_type": "dispersal site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Sialkot-area dispersal site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-04",
+      "kind": "exact",
+      "raw": "2025-04-04"
+    },
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  }
+]
