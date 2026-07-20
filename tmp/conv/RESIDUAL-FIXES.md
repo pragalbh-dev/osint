@@ -44,7 +44,31 @@ breaks and the flagship demo stops tracing.**
 
 ---
 
-## 2. 🔴 Alert → provenance click-through is unverified in the UI
+## 2. ✅ RESOLVED (2026-07-20) — Alert → provenance click-through, verified in a browser
+
+**Walked end to end for the first time, and it holds. No code changes were needed** — the alert's
+evidence chips already routed through the same `GET /evidence/{id}` drawer that node selection uses,
+so there was never a second drill-down path to drift.
+
+Verified: cold boot 171/105/0-alerts → reviewer clicks **Ingest** on a withheld document in the
+Awaiting-ingest panel → "13 claims appended · 1 tripwire fired" → Watch renders the alert with
+`based-at: site_rawalpindi → based-at: site_rahwali` → clicking the after-side claim chip opens the
+**correct** element (`e:unit_hq9b:based-at:site_rahwali`, Probable) showing the **verbatim quote**
+with file, line and character span. The before-side chip independently opens the Rawalpindi edge as
+**Stale**, with its own quote and a *"To raise this"* block naming what is missing and a dated next
+coverage. Both sides of "what changed" are separately checkable, which is the point. Ingesting the
+second document appended 29 claims and correctly fired nothing. Zero console errors.
+
+**One nuance worth knowing on the call:** the UI-fired alert carries **2** claim ids (the before and
+the arriving after) where `make beat` shows **3**, because a reviewer ingests the two documents as
+separate arrivals while `make beat` stages both as one delta. Both are correct — the alert records
+what was on the table when it fired, and the second document then strengthens the edge without
+re-firing. Only if we wanted the UI to reproduce `make beat` byte-for-byte would both bundles need
+to go in a single POST.
+
+Screenshots: `tmp/qa/fixshots/01..05` (gitignored, local only).
+
+### Original entry, for the record
 
 **What.** A fired alert has never been clicked through to its evidence in a browser. The served
 cold-boot view legitimately has **0 alerts**, and the staged ingest that produces one exists only
