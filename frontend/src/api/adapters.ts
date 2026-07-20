@@ -38,6 +38,11 @@ export function formatCoord(lat: number, lon: number): string {
   return `${Math.abs(lat).toFixed(2)}°${latHemi}  ${Math.abs(lon).toFixed(2)}°${lonHemi}`
 }
 
+/** "500 m" / "15 km" — the uncertainty envelope, in the unit a reader thinks in. */
+export function formatRadius(metres: number): string {
+  return metres >= 1000 ? `${Math.round(metres / 1000)} km` : `${Math.round(metres)} m`
+}
+
 /** A candidate chokepoint outranks its own status; otherwise status maps directly. */
 export function statusToGraphKind(node: NodeView): GraphKind {
   if (node.materiality?.chokepoint_status === 'candidate') return 'chokepoint'
@@ -180,9 +185,76 @@ export interface StagePinExtras {
   superseded?: boolean
   /** the node id that replaced it (the connector's other end), when known */
   supersededBy?: string | null
+  /** gazetteer precision class — pad | site | terminal | district | city | province */
+  precision?: string | null
+  /** radius of the honest uncertainty envelope around the drawn point, in metres */
+  uncertaintyRadiusM?: number | null
+  /** 'stated-coordinate' (the source gave a position) | 'gazetteer-anchor' (we looked the
+   *  place up). Two very different claims; the map must not draw them identically. */
+  locationSource?: string | null
+  /** node ids folded into this marker when several entities share one area anchor */
+  members?: string[]
 }
 
 export type StagePin = PinDef & StagePinExtras
+
+// Which precision classes denote a POINT and which denote an AREA. This is the whole
+// honesty rule of the map in one table: a pad/site/terminal is a thing you could put a
+// reticle on, so it gets a pin; a district/city/province is a region a source vaguely
+// gestured at, so it gets an envelope and a deliberately unpinned centroid marker.
+// Drawing "somewhere in Punjab" as a sharp dot would assert ~150 km of precision nobody
+// ever claimed — the exact class of fabrication this system is not allowed to commit.
+export const AREA_PRECISIONS = new Set(['district', 'city', 'province'])
+
+/** Does this pin denote a region rather than a point? Unknown precision is treated as a
+ *  point only when the coordinate was stated by a source; an anchor-derived point with no
+ *  precision class is an area, because we cannot say how big it is. */
+export function isAreaPin(pin: StagePin): boolean {
+  if (pin.precision) return AREA_PRECISIONS.has(pin.precision)
+  return pin.locationSource === 'gazetteer-anchor'
+}
+
+// Node attrs the backend stamps alongside the location (view/pipeline.py). Read by name
+// rather than typed into GraphView, matching how place_match_* is already carried.
+const ATTR_LOCATION_SOURCE = 'location_source'
+const ATTR_UNCERTAINTY_RADIUS = 'location_uncertainty_radius_m'
+
+function numAttr(node: NodeView, key: string): number | null {
+  const v = node.attrs?.[key]
+  return typeof v === 'number' && Number.isFinite(v) ? v : null
+}
+
+function strAttr(node: NodeView, key: string): string | null {
+  const v = node.attrs?.[key]
+  return typeof v === 'string' && v.length > 0 ? v : null
+}
+
+/** A node the graph KNOWS has a location, and that we cannot honestly draw.
+ *  "Insufficient evidence to place" is a legitimate output — but only if it is
+ *  visible. Silently omitting these would let the map imply the graph is smaller
+ *  than it is, which is the same lie as a fabricated pin, told the other way. */
+export interface UnplacedLocation {
+  id: string
+  label: string
+  /** what the source actually said — the reason it cannot be resolved to a point */
+  stated: string
+  type: string
+}
+
+/** Located-but-unplottable nodes: a location was asserted, no coordinate survives it. */
+export function unplacedLocations(view: GraphView): UnplacedLocation[] {
+  const out: UnplacedLocation[] = []
+  for (const node of view.nodes) {
+    const loc = node.location
+    if (!loc) continue
+    if (typeof loc.wgs84_lat === 'number' && typeof loc.wgs84_lon === 'number') continue
+    const raw = loc.raw
+    const stated = typeof raw === 'string' ? raw : Array.isArray(raw) ? raw.join('; ') : ''
+    if (!stated) continue
+    out.push({ id: node.id, label: node.name ?? node.id, stated, type: node.type })
+  }
+  return out.sort((a, b) => a.label.localeCompare(b.label))
+}
 
 /** target-of-a-settled-`supersedes`-edge → the successor's node id. */
 export function supersededSites(view: GraphView): Map<string, string> {
@@ -205,8 +277,15 @@ export function viewToPins(view: GraphView): StagePin[] {
     if (typeof lat !== 'number' || !Number.isFinite(lat)) continue
     if (typeof lon !== 'number' || !Number.isFinite(lon)) continue
 
+    // The reticle readout states the point AND how well we know it. Showing the surface
+    // format alone (the old behaviour) hid the coordinate; showing the coordinate alone
+    // hides that it may be a 150 km province centroid. Both, always, when both are known.
     const surface = node.location?.surface_format
-    const coord = typeof surface === 'string' && surface.length > 0 ? surface : formatCoord(lat, lon)
+    const radiusM = numAttr(node, ATTR_UNCERTAINTY_RADIUS)
+    const coord =
+      formatCoord(lat, lon) +
+      (typeof surface === 'string' && surface.length > 0 ? `  ${surface}` : '') +
+      (radiusM !== null ? `  ±${formatRadius(radiusM)}` : '')
     const year = yearOf(node.freshness?.last_support_time)
     const successor = superseded.get(node.id)
 
@@ -227,9 +306,52 @@ export function viewToPins(view: GraphView): StagePin[] {
           : '',
       superseded: successor != null,
       supersededBy: successor ?? null,
+      precision: node.location?.precision_class ?? null,
+      uncertaintyRadiusM: numAttr(node, ATTR_UNCERTAINTY_RADIUS),
+      locationSource: strAttr(node, ATTR_LOCATION_SOURCE),
     })
   }
   return pins
+}
+
+/** Fold AREA pins that share one anchor into a single marker (a "clutter cluster").
+ *
+ *  Three different entities all reported as being "in Punjab" resolve to the same province
+ *  centroid, and there are only two ways to draw that. Fanning them out around the centroid
+ *  invents three positions nobody stated. Stacking them hides two of the three. So they are
+ *  drawn as what they are: ONE area, with a count — the marker says "we know of 3 things here
+ *  and cannot separate them", which is exactly the state of the evidence.
+ *
+ *  Point pins (pad/site/terminal) are never clustered: those ARE distinguishable positions.
+ *  Deterministic — members sort by id, the survivor is the first, and the key is the exact
+ *  coordinate pair, so two anchors that merely sit near each other stay separate.
+ */
+export function clusterAreaPins(pins: StagePin[]): StagePin[] {
+  const groups = new Map<string, StagePin[]>()
+  const out: StagePin[] = []
+  for (const pin of pins) {
+    if (!isAreaPin(pin)) {
+      out.push(pin)
+      continue
+    }
+    const key = `${pin.lat},${pin.lon},${pin.uncertaintyRadiusM ?? ''}`
+    groups.set(key, [...(groups.get(key) ?? []), pin])
+  }
+  for (const group of groups.values()) {
+    const members = [...group].sort((a, b) => a.id.localeCompare(b.id))
+    const head = members[0]
+    if (members.length === 1) {
+      out.push({ ...head, members: [head.id] })
+      continue
+    }
+    out.push({
+      ...head,
+      label: `${members.length} entities`,
+      caption: 'located to this area only',
+      members: members.map((m) => m.id),
+    })
+  }
+  return out
 }
 
 /** Every node becomes a graph node, located or not; positions are 0/0 (see header). */

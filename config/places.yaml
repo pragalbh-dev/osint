@@ -14,7 +14,16 @@
 #
 # provenance: real = public open-source coord (airbase/seaport); synthetic = invented scenario pad
 # (we do not publish real battery fixes); approximate = district-level anchor only.
-# precision_class: pad|site|terminal|district|city  — the coarsest identity the node needs (md/13 §1).
+# precision_class: pad|site|terminal|district|city|province  — the coarsest identity the node needs
+# (md/13 §1). It is BOTH a merge radius AND, downstream, the size of the uncertainty envelope the map
+# draws: a `province` anchor is never rendered as a point, because "somewhere in Punjab" is not a point.
+#
+# AREA anchors (city / district / province) are deliberately part of this table. A source that says
+# "central Punjab" HAS told us something; refusing to record it leaves an empty map and pretends we know
+# less than we do. What must never happen is the opposite error — drawing that as a pin, or letting two
+# things that share a province fuse into one place. Both are handled: the envelope is drawn from
+# `proximity_radius_m`, and `place_identity_precision_classes` (config/resolution.yaml) bars anything
+# coarser than a terminal from ever CONSTITUTING identity.
 
 version: 1
 crs: EPSG:4326            # canonical output frame (WGS84 decimal degrees)
@@ -90,11 +99,157 @@ places:
     aliases: ["BIRM", "Beijing Institute of Radio Measurement", "23rd Research Institute", "23rd Institute", "北京无线电测量研究所"]
     admin: "50 Yongding Road, Haidian District, Beijing, China"
 
+  # ── AREA anchors (T5) ────────────────────────────────────────────────────────────────────────
+  # Added because the corpus states these forms verbatim and the pipeline had nowhere to put them, so
+  # ten located entities sat coordinate-less and the map showed three pins. Each carries the COARSEST
+  # honest class, never a flattering one: a province is a province. `aliases` list the surface forms
+  # that actually occur in the corpus (an analyst-curated exact-match list — no fuzzy inference), which
+  # is why an ugly string like "Kala Chitta / Attock Cantt area" appears here: it is what a document
+  # said, and curating it is how a human teaches the gazetteer a form it did not know.
+
+  - place_id: pl_islamabad
+    canonical_name: "Islamabad"
+    kind: city
+    precision_class: city
+    canonical_dd: [33.6844, 73.0479]
+    provenance: real
+    aliases: ["Islamabad Capital Territory", "ICT", "Islamabad, Pakistan"]
+    admin: "Islamabad Capital Territory, Pakistan"
+
+  - place_id: pl_kahuta
+    canonical_name: "Kahuta"
+    kind: town
+    precision_class: city
+    canonical_dd: [33.5906, 73.3872]
+    provenance: real
+    aliases: ["Kahuta area", "Kahuta, Rawalpindi District"]
+    admin: "Rawalpindi District, Punjab, Pakistan"
+
+  - place_id: pl_karachi_metro
+    canonical_name: "Karachi (metropolitan area)"
+    kind: city
+    precision_class: city
+    canonical_dd: [24.8607, 67.0011]
+    provenance: real
+    # The parent-city catch-all md/13 §2 requires: a bare "Karachi" denotes the METRO, never one of the
+    # two terminals and never the Malir pad. Distinct-from all three, so the geographic FT-2000 trap
+    # holds from the ambiguous side too — a metro mention can corroborate neither terminal by itself.
+    aliases: ["Karachi", "Karachi outskirts", "Karachi, Pakistan", "Karachi, Sindh"]
+    admin: "Karachi Division, Sindh, Pakistan"
+    distinct_from: [pl_port_qasim, pl_karachi_port, pl_karachi_ad,
+                    pl_punjab_pk, pl_sindh, pl_sargodha]      # see AREA NON-IDENTITY below
+
+  - place_id: pl_lahore
+    canonical_name: "Lahore"
+    kind: city
+    precision_class: city
+    canonical_dd: [31.5204, 74.3587]
+    provenance: real
+    aliases: ["Lahore site", "Lahore sector", "near Lahore", "Lahore, Punjab"]
+    admin: "Lahore District, Punjab, Pakistan"
+
+  - place_id: pl_sargodha
+    canonical_name: "Sargodha"
+    kind: city
+    precision_class: city
+    canonical_dd: [32.0836, 72.6711]
+    provenance: real
+    # NB: the city, NOT PAF Base Mushaf. A decoy claim that says "near Sargodha" has named a city-sized
+    # area; binding it to an airbase would manufacture the very precision the claim lacks.
+    aliases: ["near Sargodha", "Sargodha, Punjab"]
+    admin: "Sargodha District, Punjab, Pakistan"
+    distinct_from: [pl_karachi_metro, pl_punjab_pk, pl_sindh]
+
+  - place_id: pl_gujranwala
+    canonical_name: "Gujranwala"
+    kind: city
+    precision_class: city
+    canonical_dd: [32.1877, 74.1945]
+    provenance: real
+    aliases: ["Gujranwala, Punjab", "Gujranwala District"]
+    admin: "Gujranwala District, Punjab, Pakistan"
+
+  - place_id: pl_attock
+    canonical_name: "Attock Cantonment"
+    kind: town
+    precision_class: city
+    canonical_dd: [33.7660, 72.3600]
+    provenance: real
+    # The relative-bearing anchor md/13 §3 form (8): "~12 km NNW of Kala Chitta / Attock Cantt area".
+    # INGEST froze that anchor string verbatim, so it is curated verbatim; the offset itself is NOT
+    # applied here (that would invent a point) — the entity lands on the anchor with the anchor's
+    # city-sized envelope, which does contain the stated ~12 km offset.
+    aliases: ["Attock", "Attock Cantt", "Attock Cantt area", "Kala Chitta", "Kala Chitta / Attock Cantt area"]
+    admin: "Attock District, Punjab, Pakistan"
+
+  - place_id: pl_sialkot
+    canonical_name: "Sialkot"
+    kind: city
+    precision_class: city
+    canonical_dd: [32.4945, 74.5229]
+    provenance: real
+    aliases: ["Sialkot-area", "Sialkot area", "Pasrur"]
+    admin: "Sialkot District, Punjab, Pakistan"
+
+  - place_id: pl_haidian
+    canonical_name: "Haidian District, Beijing"
+    kind: district
+    precision_class: district
+    canonical_dd: [39.9075, 116.2900]
+    provenance: approximate
+    # Distinct from pl_casic_2nd / pl_birm on purpose: "a road in Haidian" is the district, not the
+    # institute that happens to sit on it. Same coordinate neighbourhood, different identity.
+    aliases: ["Haidian", "Haidian District", "Yongding Road", "western Beijing",
+              "Haidian District, in western Beijing"]
+    admin: "Haidian District, Beijing, China"
+
+  - place_id: pl_punjab_pk
+    canonical_name: "Punjab province, Pakistan"
+    kind: province
+    precision_class: province
+    canonical_dd: [31.1471, 72.7097]
+    provenance: approximate
+    # A ~200 km-wide administrative unit. Recorded so the claim is not lost; rendered as an envelope,
+    # never a pin; barred from constituting identity, so two units "in Punjab" never fuse.
+    aliases: ["Punjab", "Punjab Province", "central Punjab", "northern Punjab",
+              "Punjab Province, Pakistan", "Punjab, Pakistan"]
+    admin: "Punjab, Pakistan"
+    distinct_from: [pl_sindh, pl_karachi_metro, pl_sargodha]
+
+  - place_id: pl_sindh
+    canonical_name: "Sindh province, Pakistan"
+    kind: province
+    precision_class: province
+    canonical_dd: [25.8943, 68.5247]
+    provenance: approximate
+    aliases: ["Sindh", "Sindh Province", "Sindh Province, Pakistan", "Sindh, Pakistan"]
+    admin: "Sindh, Pakistan"
+    distinct_from: [pl_punjab_pk, pl_karachi_metro, pl_sargodha]
+
+# ── AREA NON-IDENTITY (T5, and why it is here rather than in code) ───────────────────────────────
+# Giving an area anchor a coordinate makes a latent bug visible. The ENTITY resolver scores names,
+# attributes and neighbourhoods; none of them knows that Karachi and Sargodha are ~1,000 km apart, so
+# it proposes "Army Air Defence Centre, Karachi" ~ "central Punjab air defence sector" on shared
+# wording alone. While neither side had a coordinate, accepting that card merely fused two unplotted
+# nodes. Once both sides resolve to an anchor, accepting it redraws a Karachi site in Punjab — the map
+# lying about where something is, which is worse than the map omitting it.
+#
+# `distinct_from` is a HARD veto (resolve/places.place_distinct_pairs), applied before banding, so
+# these four mutually-exclusive area anchors can never be fused into each other by any score. The
+# statements are simply true — a province is not another province, and a city is not the province it
+# sits in — and they are curated here rather than inferred, so an analyst can see and revise them.
+# The GENERAL rule (any two entities whose own stated coordinates are implausibly far apart cannot be
+# one entity) belongs in the resolver as a geographic compatibility veto, not in this table; these
+# rows cover the specific non-identities this corpus actually proposes.
+
 # Proximity thresholds for coordinate->place resolution (analyst-tunable), by precision_class.
 # A parsed coordinate within radius_m of a canonical_dd auto-resolves; 1x-3x -> HITL; beyond -> new place.
+# Downstream this same number is the UNCERTAINTY ENVELOPE the map draws around an anchor-derived point,
+# which is why the coarse rungs are honest orders-of-magnitude rather than tidy round merge radii.
 proximity_radius_m:
   pad: 500
   site: 1500
   terminal: 3000
   district: 5000
   city: 15000
+  province: 150000

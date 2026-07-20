@@ -158,6 +158,7 @@ place_proximity_radius_m:        # from config/places.yaml (md/13) — same-plac
   terminal: 3000
   district: 5000
   city: 15000
+  province: 150000                 # an admin-level-1 area; an envelope, never a merge target (T5)
 place_proximity_hitl_multiplier: 3   # 1x-3x radius -> HITL; beyond -> new place (places.yaml)
 
 # ── geographic compatibility veto on ENTITY same-as (T2) ────────────────────────────────────────
@@ -185,6 +186,14 @@ place_proximity_hitl_multiplier: 3   # 1x-3x radius -> HITL; beyond -> new place
 entity_geo_conflict_max_km:
   default: 100
   basing_site: 25
+# Which gazetteer precision classes may CONSTITUTE identity — i.e. when "these two mentions resolved to
+# the same anchor" is allowed to become "these two mentions are the same place" (places.augment). The
+# area rungs are deliberately excluded: two batteries both described as being in Punjab, or both "in
+# Karachi", are not one battery, and auto-fusing them on a shared province would corrupt the ORBAT far
+# more cheaply than it could ever enrich it. Coarse anchors still resolve, still carry a place_ref, and
+# still place the node on the map inside an honest envelope — they simply never merge anything.
+# Absent / empty => unconstrained, i.e. the pre-T5 behaviour byte-for-byte (gate G2).
+place_identity_precision_classes: [pad, site, terminal]
 
 # ── place-matching gates (P3.5 / RES-5) ─────────────────────────────────────────────────────────
 # The radii above are JITTER absorption: a coord a few hundred metres off is the same pad. With no

@@ -48,6 +48,7 @@ from chanakya.schemas import (
     Location,
     NodeView,
     Partition,
+    PlacesConfig,
     SourceRegistryEntry,
     pair_key,
 )
@@ -385,26 +386,106 @@ PLACE_MATCH_BAND = "place_match_band"
 PLACE_MATCH_DISTANCE_M = "place_match_distance_m"
 PLACE_MATCH_VIA = "place_match_via"
 
+# Where the DRAWN point came from, and how big the honest doubt around it is (T5). A coordinate is a
+# claim like any other, and these two attrs are the only thing standing between "we read a grid
+# reference off the document" and "we looked its province up in a table" — which a map that renders
+# both as the same pin quietly erases.
+#   stated-coordinate → the source itself gave a position; the node's own frozen WGS84 point is used.
+#   gazetteer-anchor  → the source named a curated place; the ANCHOR's coordinate is borrowed, and the
+#                       anchor's precision class is what the node may claim (never finer).
+LOCATION_SOURCE = "location_source"
+LOCATION_SOURCE_STATED = "stated-coordinate"
+LOCATION_SOURCE_ANCHOR = "gazetteer-anchor"
+LOCATION_UNCERTAINTY_RADIUS_M = "location_uncertainty_radius_m"
 
-def _stamp_place_refs(nodes: dict[str, NodeView], partition: Partition) -> None:
+# The precision ladder, finest first (md/13 §1 + the ``province`` rung T5 added). Ordering it here is
+# what lets the view weigh two *independent* statements of how well a thing is located: what the
+# surface form pinned ("a 5-digit grid reference" → pad) and what the curated anchor is known to
+# ("PAF Base Nur Khan" → site). Both are evidence, so a node that resolves cleanly keeps the finer of
+# the two — otherwise adopting an anchor would silently DOWNGRADE a document that handed us a grid.
+PRECISION_LADDER: tuple[str, ...] = ("pad", "site", "terminal", "district", "city", "province")
+
+
+def _finer_precision(a: str | None, b: str | None) -> str | None:
+    """The finer of two precision classes; an unknown/unranked class never wins over a ranked one."""
+    ranked = [p for p in (a, b) if p in PRECISION_LADDER]
+    if not ranked:
+        return a or b
+    return min(ranked, key=PRECISION_LADDER.index)
+
+
+def _stamp_place_refs(
+    nodes: dict[str, NodeView], partition: Partition, places: PlacesConfig | None = None
+) -> None:
     """Write RESOLVE's gazetteer match onto the node — the writer ``resolved_place_ref`` never had (RES-3).
 
     Only **curated** ``config/places.yaml`` anchors are ever referenced. A mention that matched none is
     absent from ``place_refs``: it keeps its own raw coordinate and carries no ref, which is the honest
     outcome (an incidental pin, not a named anchor) rather than a failure to fix. The frozen ``Location``
     is a value object, so it is replaced with a copy, never mutated in passing. Empty map ⇒ no-op (G2).
+
+    **Anchor adoption (T5).** When the matched node holds no coordinate of its own — the ordinary case
+    for a stated toponym, since the keyless boot path has no geocoder and a gazetteer lookup is not
+    INGEST's to make on the evidence layer — it adopts the anchor's ``canonical_dd`` and the anchor's
+    ``precision_class``. This is a *derived-layer* inference and is labelled as one: the frozen claim
+    still says only "central Punjab", and the node says "placed at the Punjab anchor, province
+    precision, ±150 km". Nothing is invented — an entity that matches no anchor gets no coordinate and
+    stays deliberately unplotted rather than being nudged onto the nearest thing with a number.
     """
+    by_id = places.as_map() if places is not None else {}
+    radii = dict(places.proximity_radius_m) if places is not None else {}
     for nid, ref in sorted(partition.place_refs.items()):
         node = nodes.get(nid)
         if node is None:
             continue  # a match on an entity no claim materialised as a node — nothing to stamp
         base = node.location or Location(raw=node.name or node.id)
-        node.location = base.model_copy(update={"resolved_place_ref": ref.place_id})
+        update: dict[str, Any] = {"resolved_place_ref": ref.place_id}
+        anchor = by_id.get(ref.place_id)
+        adopted = (
+            anchor is not None and anchor.canonical_dd is not None and base.wgs84_lat is None
+        )
+        if adopted and anchor is not None and anchor.canonical_dd is not None:
+            lat, lon = anchor.canonical_dd
+            update.update(wgs84_lat=float(lat), wgs84_lon=float(lon),
+                          precision_class=anchor.precision_class)
+        elif anchor is not None and ref.band == "auto":
+            # The node brought its own coordinate AND cleanly resolved to a curated anchor: two
+            # statements about the same fix. Keep the finer. This is what stops a 4-decimal DD pair
+            # buried in prose — parsed, correctly, as a degree-scale DMS by shape — from being drawn
+            # as a 15 km blob when the analyst has curated that very spot as a pad.
+            update["precision_class"] = _finer_precision(base.precision_class,
+                                                         anchor.precision_class)
+        node.location = base.model_copy(update=update)
         node.attrs[PLACE_MATCH_BAND] = ref.band
         if ref.distance_m is not None:
             node.attrs[PLACE_MATCH_DISTANCE_M] = ref.distance_m
         if ref.via:
             node.attrs[PLACE_MATCH_VIA] = ref.via
+        if node.location.wgs84_lat is not None:
+            node.attrs[LOCATION_SOURCE] = (
+                LOCATION_SOURCE_ANCHOR if adopted else LOCATION_SOURCE_STATED
+            )
+    _stamp_uncertainty(nodes, radii)
+
+
+def _stamp_uncertainty(nodes: dict[str, NodeView], radii: dict[str, float]) -> None:
+    """Attach the uncertainty envelope every plotted point is entitled to, from the config radii.
+
+    Runs over *every* located node, not only anchor-matched ones, so a coordinate parsed straight out
+    of a document is described on the same axis as one borrowed from the gazetteer: a 4-decimal DD pair
+    is a ``pad`` (±500 m), a degree-only DMS is a ``city`` (±15 km). A node whose precision class is
+    unknown gets no radius rather than a guessed one — the map draws that as an explicitly unsized pin.
+    """
+    if not radii:
+        return
+    for node in nodes.values():
+        loc = node.location
+        if loc is None or loc.wgs84_lat is None or not loc.precision_class:
+            continue
+        radius = radii.get(loc.precision_class)
+        if radius is not None:
+            node.attrs[LOCATION_UNCERTAINTY_RADIUS_M] = float(radius)
+        node.attrs.setdefault(LOCATION_SOURCE, LOCATION_SOURCE_STATED)
 
 
 def _minted_name(node_id: str) -> str | None:
@@ -509,7 +590,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         {e.entity_id: e.display_name for e in config.entities.entities if e.display_name},
     )
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
-    _stamp_place_refs(nodes, partition)  # RES-3: the curated-anchor binding + the evidence for it
+    _stamp_place_refs(nodes, partition, config.places)  # RES-3: curated-anchor binding + its evidence
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
 

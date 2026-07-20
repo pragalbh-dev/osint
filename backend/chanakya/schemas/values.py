@@ -125,7 +125,11 @@ def canonical_iso_bounds(value: DateValue | None) -> tuple[str | None, str | Non
 # ── Locations ────────────────────────────────────────────────────────────────────────────────
 
 # Coarsest identity a place node needs (md/13; matches config/places.yaml precision_class).
-PrecisionClass = Literal["pad", "site", "terminal", "district", "city"]
+# Ordered coarsest-last. ``province`` is the admin-level-1 rung the corpus forced open: sources really
+# do say "central Punjab" / "Sindh province, Pakistan", and the only two honest renderings of that are
+# an area envelope or nothing at all — calling it a ``city`` would draw a ~150 km uncertainty as a
+# 15 km one, i.e. assert a precision no source stated.
+PrecisionClass = Literal["pad", "site", "terminal", "district", "city", "province"]
 # How the location was stated in the source (drives the coord-canonicaliser branch in INGEST).
 SurfaceFormat = Literal["DD", "DMS", "MGRS", "UTM", "url", "toponym", "relative"]
 

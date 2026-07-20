@@ -38,7 +38,8 @@ export type DateValue =
 // ───────────────────────── value objects ─────────────────────────
 
 export interface Location {
-  raw?: string | null
+  // values.py: `raw: str | list[str]` — a source may state one place several ways in one claim.
+  raw?: string | string[] | null
   surface_format?: string | null
   wgs84_lat?: number | null
   wgs84_lon?: number | null

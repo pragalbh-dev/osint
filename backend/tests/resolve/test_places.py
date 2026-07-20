@@ -368,3 +368,125 @@ def test_no_gazetteer_means_no_place_refs() -> None:
     """The golden/empty-config path is untouched — no gazetteer, no refs, no view change (gate G2)."""
     part = resolve([entity("site_x", "basing_site", "Anywhere", coordinates=[1.0, 1.0])], mk_config())
     assert part.place_refs == {}
+
+
+# ── T5: a STATED location that names a curated anchor is read, even when it is not the display name ──
+#
+# The map showed three pins because ten located entities never reached the gazetteer at all. Their
+# display names are descriptions of things ("a fenced compound near a PAF airbase"), and the actual
+# place statement lives on the frozen Location — where it was being discarded for containing a comma
+# or a slash. The descriptive-marker filter is right about display strings and wrong about a
+# `Location.raw`, which is a location statement by construction; an EXACT match against a name an
+# analyst curated is not an inference from anything.
+
+PUNJAB = PlaceEntry(
+    place_id="pl_punjab_pk", canonical_name="Punjab province, Pakistan", kind="province",
+    precision_class="province", canonical_dd=(31.1471, 72.7097),
+    aliases=["Punjab", "central Punjab", "Punjab Province, Pakistan"],
+)
+KARACHI_METRO = PlaceEntry(
+    place_id="pl_karachi_metro", canonical_name="Karachi (metropolitan area)", kind="city",
+    precision_class="city", canonical_dd=(24.8607, 67.0011), aliases=["Karachi", "Karachi outskirts"],
+    distinct_from=["pl_karachi_ad"],
+)
+ATTOCK = PlaceEntry(
+    place_id="pl_attock", canonical_name="Attock Cantonment", kind="town", precision_class="city",
+    canonical_dd=(33.7660, 72.3600), aliases=["Attock Cantt area", "Kala Chitta / Attock Cantt area"],
+)
+AREA_RADII = {**RADII, "province": 150000.0}
+POINT_IDENTITY = ["pad", "site", "terminal"]
+
+
+def _stated(eid: str, name: str, raw: str, *, alias: str | None = None) -> Any:
+    """A mention whose display name describes a THING and whose Location states the PLACE."""
+    loc = _frozen_location(None, None, raw, None)
+    loc["proposed_alias"] = alias if alias is not None else raw
+    return entity(eid, "basing_site", name, coordinates=loc)
+
+
+def _area_bundle(places: list[PlaceEntry], **gates: Any) -> Any:
+    return mk_config(
+        places=places, proximity_radius_m=AREA_RADII, place_proximity_hitl_multiplier=3.0,
+        place_allowed_precision_classes=SITE_CLASSES, toponym_descriptive_markers=MARKERS,
+        place_bind_on_curated_toponym=True, **gates,
+    )
+
+
+def test_stated_location_binds_when_the_display_name_is_a_description() -> None:
+    bundle = _area_bundle([PUNJAB, KARACHI_METRO, ATTOCK],
+                          place_identity_precision_classes=POINT_IDENTITY)
+    part = resolve(
+        [
+            # raw carries a comma → the descriptive filter used to throw the whole statement away
+            _stated("site_node", "air defence node in vicinity of a PAF base", "Punjab Province, Pakistan"),
+            _stated("site_compound", "fenced compound near a PAF airbase", "central Punjab"),
+            # a relative-bearing form: INGEST froze the ANCHOR as proposed_alias; the anchor is curated
+            _stated("site_depot", "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+                    "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+                    alias="Kala Chitta / Attock Cantt area"),
+            # the parent-city catch-all: the display name is descriptive, the alias is the metro
+            _stated("site_aadc", "Army Air Defence Centre, Karachi", "Karachi", alias="Karachi"),
+        ],
+        bundle,
+    )
+    assert part.place_refs["site_node"].place_id == "pl_punjab_pk"
+    assert part.place_refs["site_compound"].place_id == "pl_punjab_pk"
+    assert part.place_refs["site_depot"].place_id == "pl_attock"
+    assert part.place_refs["site_aadc"].place_id == "pl_karachi_metro"
+    for ref in part.place_refs.values():
+        assert ref.band == "auto" and ref.via == "toponym"  # a curated NAME, never a distance guess
+
+
+def test_an_uncurated_stated_location_still_binds_to_nothing() -> None:
+    """The widening is exact-match only: an area the analyst never curated is still unplottable."""
+    bundle = _area_bundle([PUNJAB, KARACHI_METRO], place_identity_precision_classes=POINT_IDENTITY)
+    part = resolve(
+        [_stated("site_cn", "garrison in China's western military district",
+                 "China's western military district")],
+        bundle,
+    )
+    assert part.place_refs == {}
+
+
+# ── T5: an AREA anchor resolves, and never constitutes identity ─────────────────────────────────
+
+def test_sharing_a_province_never_fuses_two_entities() -> None:
+    """Two batteries both reported "in Punjab" are two unknowns, not one battery."""
+    bundle = _area_bundle([PUNJAB], place_identity_precision_classes=POINT_IDENTITY)
+    part = resolve(
+        [
+            _stated("site_a", "air defence node A", "Punjab Province, Pakistan"),
+            _stated("site_b", "fenced compound B", "central Punjab"),
+        ],
+        bundle,
+    )
+    assert part.place_refs["site_a"].place_id == "pl_punjab_pk"  # both still RESOLVE …
+    assert part.place_refs["site_b"].place_id == "pl_punjab_pk"
+    assert part.same_as == [] and part.candidates == []          # … and are never fused
+    assert part.entity_canonical.get("site_b", "site_b") == "site_b"
+
+
+def test_two_mentions_of_one_SITE_do_still_fuse() -> None:
+    """The gate is about area anchors only — a pad/site/terminal anchor still merges as it always did."""
+    bundle = _area_bundle([RAHWALI], place_identity_precision_classes=POINT_IDENTITY)
+    part = resolve(
+        [
+            entity("site_r1", "basing_site", "Rahwali", coordinates=[32.239, 74.131]),
+            entity("site_r2", "basing_site", "Rahwali Cantonment", coordinates=[32.2395, 74.1312]),
+        ],
+        bundle,
+    )
+    assert {frozenset(p) for p in part.same_as} == {frozenset({"site_r1", "site_r2"})}
+
+
+def test_identity_gate_absent_leaves_the_old_behaviour(  ) -> None:
+    """No policy configured ⇒ unconstrained, byte-for-byte the pre-T5 path (gate G2)."""
+    bundle = _area_bundle([PUNJAB])  # note: no place_identity_precision_classes
+    part = resolve(
+        [
+            _stated("site_a", "air defence node A", "Punjab Province, Pakistan"),
+            _stated("site_b", "fenced compound B", "central Punjab"),
+        ],
+        bundle,
+    )
+    assert {frozenset(p) for p in part.same_as} == {frozenset({"site_a", "site_b"})}

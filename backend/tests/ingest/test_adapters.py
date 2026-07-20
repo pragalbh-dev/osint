@@ -176,6 +176,26 @@ def test_dms_seconds() -> None:
     assert loc.precision_class == "pad"
 
 
+def test_decimal_pair_in_prose_keeps_its_stated_precision() -> None:
+    """A hemisphere-suffixed DD pair inside an admin sentence must not be blurred to `city` (T5).
+
+    The string carries no sexagesimal glyph, so the anchored DD pattern cannot see it and the shape
+    classifier reads it — correctly — as a degree-only DMS. Read literally that is a whole-degree fix;
+    read honestly the source stated four decimals, i.e. ~10 m. This is the real d07 Karachi line, and
+    the old answer (`city`, a 15 km blob) understated the best-located node in the corpus.
+    """
+    loc = normalize_location("Malir District, Karachi, Sindh Province, Pakistan (24.9012 N, 67.2034 E)")
+    assert loc is not None
+    assert loc.wgs84_lat == pytest.approx(24.9012) and loc.wgs84_lon == pytest.approx(67.2034)
+    assert loc.precision_class == "pad"
+
+
+def test_a_genuinely_degree_only_dms_is_still_city_scale() -> None:
+    """The exception is narrow: no fraction stated ⇒ nothing to upgrade, the old answer stands."""
+    loc = normalize_location("33N 73E")
+    assert loc is not None and loc.precision_class == "city"
+
+
 def test_mgrs_grid_resolves_to_nur_khan() -> None:
     loc = normalize_location("43S CT 23715 21242")
     assert loc is not None
@@ -571,14 +591,16 @@ def test_gazetteer_skips_places_without_coords() -> None:
 
 def test_chained_geocoder_prefers_gazetteer_then_falls_back(real_config: object) -> None:
     gaz = GazetteerGeocoder(real_config.places.places, real_config.resolution.transliteration)
-    fake_nominatim = _FakeGeocoder({"Gujranwala": (32.157, 74.19, "Gujranwala, Punjab, PK")})
+    # NB: a name the seed genuinely does not carry. Gujranwala used to serve here and no longer can —
+    # T5 curated it (and the other area anchors the corpus names) into config/places.yaml.
+    fake_nominatim = _FakeGeocoder({"Multan": (30.157, 71.52, "Multan, Punjab, PK")})
     chain = ChainedGeocoder([gaz, fake_nominatim])
 
     seeded = chain.geocode("PAF Base Nur Khan")  # gazetteer wins
     assert seeded.source == "gazetteer" and seeded.latitude == pytest.approx(33.61639)
 
-    open_world = chain.geocode("Gujranwala")  # not seeded → Nominatim fallback
-    assert open_world is not None and open_world.latitude == pytest.approx(32.157)
+    open_world = chain.geocode("Multan")  # not seeded → Nominatim fallback
+    assert open_world is not None and open_world.latitude == pytest.approx(30.157)
     assert getattr(open_world, "source", "nominatim") == "nominatim"  # fake has no source attr
 
     assert chain.geocode("Nowhere At All") is None
@@ -595,7 +617,7 @@ def test_chained_geocoder_filters_none_geocoders(real_config: object) -> None:
 def test_build_geocoder_offline_is_gazetteer_only(real_config: object) -> None:
     geocoder = build_geocoder(real_config, online=False)
     assert geocoder.geocode("PAF Base Nur Khan") is not None  # seeded, offline
-    assert geocoder.geocode("Gujranwala") is None             # open world needs Nominatim (offline → miss)
+    assert geocoder.geocode("Multan") is None                 # open world needs Nominatim (offline → miss)
 
 
 def test_normalize_location_via_gazetteer_freezes_coord_and_source(real_config: object) -> None:

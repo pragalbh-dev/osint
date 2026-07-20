@@ -3,6 +3,7 @@ import type { AskAnswer, GraphView, ProvenanceDrawer } from './types'
 import {
   alertToFiring,
   askToAnswerModel,
+  clusterAreaPins,
   credibilityToDots,
   dateValueToString,
   displayNameOf,
@@ -10,7 +11,9 @@ import {
   edgeToKind,
   evidenceToDrawerModel,
   formatCoord,
+  formatRadius,
   hopLine,
+  isAreaPin,
   humanizeEdge,
   humanizeObservableId,
   isKnownElementId,
@@ -22,6 +25,7 @@ import {
   viewToGraphEdges,
   viewToGraphNodes,
   viewToPins,
+  unplacedLocations,
   viewToReviewQueue,
   viewToTripwires,
 } from './adapters'
@@ -918,5 +922,134 @@ describe('viewToTripwires / alertToFiring', () => {
       'newer-below-probable',
       'newer-deception-gate:decoy-risk',
     ])
+  })
+})
+
+// ─────────────────────── location precision, honestly rendered (T5) ───────────────────────
+// The map used to draw three pins because the backend resolved almost nothing to a
+// coordinate. Now that it does, the risk flips: everything gets drawn, and a province
+// centroid starts to look like a fix. These tests pin the distinction the map exists to
+// make — a point you could put a reticle on vs. an area a source vaguely gestured at.
+
+const PRECISION_VIEW: GraphView = {
+  nodes: [
+    {
+      id: 'pad_site',
+      type: 'basing_site',
+      name: 'Malir emplacement',
+      status: 'confirmed',
+      location: { wgs84_lat: 24.9012, wgs84_lon: 67.2034, precision_class: 'pad', surface_format: 'DMS' },
+      attrs: { location_uncertainty_radius_m: 500, location_source: 'stated-coordinate' },
+    },
+    {
+      id: 'punjab_a',
+      type: 'basing_site',
+      name: 'air defence node',
+      status: 'possible',
+      location: { wgs84_lat: 31.1471, wgs84_lon: 72.7097, precision_class: 'province', raw: 'Punjab Province, Pakistan' },
+      attrs: { location_uncertainty_radius_m: 150000, location_source: 'gazetteer-anchor' },
+    },
+    {
+      id: 'punjab_b',
+      type: 'basing_site',
+      name: 'fenced compound',
+      status: 'possible',
+      location: { wgs84_lat: 31.1471, wgs84_lon: 72.7097, precision_class: 'province', raw: 'central Punjab' },
+      attrs: { location_uncertainty_radius_m: 150000, location_source: 'gazetteer-anchor' },
+    },
+    {
+      id: 'unplaced',
+      type: 'basing_site',
+      name: 'garrison in a western military district',
+      status: 'insufficient',
+      location: { raw: "China's western military district", surface_format: 'toponym' },
+    },
+  ],
+  edges: [],
+  events: [],
+  known_gaps: [],
+  alerts: [],
+}
+
+describe('location precision', () => {
+  const pins = viewToPins(PRECISION_VIEW)
+
+  it('carries precision, uncertainty radius and coordinate provenance onto every pin', () => {
+    expect(pins).toHaveLength(3) // the unplaced node is not a pin
+    expect(pins.find((p) => p.id === 'pad_site')).toMatchObject({
+      precision: 'pad',
+      uncertaintyRadiusM: 500,
+      locationSource: 'stated-coordinate',
+    })
+  })
+
+  it('states BOTH the point and how well it is known in the coord readout', () => {
+    // showing the coordinate alone hides a 150 km envelope; showing the format alone hides the point
+    expect(pins.find((p) => p.id === 'pad_site')!.coord).toBe('24.90°N  67.20°E  DMS  ±500 m')
+    expect(pins.find((p) => p.id === 'punjab_a')!.coord).toContain('±150 km')
+  })
+
+  it('separates points from areas — a province is never a point', () => {
+    expect(isAreaPin(pins.find((p) => p.id === 'pad_site')!)).toBe(false)
+    expect(isAreaPin(pins.find((p) => p.id === 'punjab_a')!)).toBe(true)
+  })
+
+  it('treats an anchor-derived point of unknown precision as an area, not a point', () => {
+    expect(isAreaPin({ ...pins[0], precision: null, locationSource: 'gazetteer-anchor' })).toBe(true)
+    expect(isAreaPin({ ...pins[0], precision: null, locationSource: 'stated-coordinate' })).toBe(false)
+  })
+
+  it('formats a radius in the unit a reader thinks in', () => {
+    expect(formatRadius(500)).toBe('500 m')
+    expect(formatRadius(15000)).toBe('15 km')
+  })
+})
+
+describe('clusterAreaPins', () => {
+  const clustered = clusterAreaPins(viewToPins(PRECISION_VIEW))
+
+  it('folds two entities that share one area anchor into a single counted marker', () => {
+    expect(clustered).toHaveLength(2)
+    const area = clustered.find((p) => p.id !== 'pad_site')!
+    expect(area.label).toBe('2 entities')
+    expect(area.caption).toBe('located to this area only')
+    expect(area.members).toEqual(['punjab_a', 'punjab_b'])
+  })
+
+  it('never clusters point pins — those ARE distinguishable positions', () => {
+    const point = clustered.find((p) => p.id === 'pad_site')!
+    expect(point.label).toBe('Malir emplacement')
+    expect(point.members).toBeUndefined()
+  })
+
+  it('is deterministic — members sort by id and the first is the survivor', () => {
+    const reversed = clusterAreaPins([...viewToPins(PRECISION_VIEW)].reverse())
+    const area = reversed.find((p) => p.members && p.members.length > 1)!
+    expect(area.id).toBe('punjab_a')
+    expect(area.members).toEqual(['punjab_a', 'punjab_b'])
+  })
+
+  it('leaves a lone area pin naming itself', () => {
+    const single = clusterAreaPins(
+      viewToPins({ ...PRECISION_VIEW, nodes: PRECISION_VIEW.nodes.filter((n) => n.id !== 'punjab_b') }),
+    )
+    expect(single.find((p) => p.id === 'punjab_a')!.label).toBe('air defence node')
+  })
+})
+
+describe('unplacedLocations', () => {
+  it('surfaces a node the graph knows is somewhere and the map will not draw', () => {
+    expect(unplacedLocations(PRECISION_VIEW)).toEqual([
+      {
+        id: 'unplaced',
+        label: 'garrison in a western military district',
+        stated: "China's western military district",
+        type: 'basing_site',
+      },
+    ])
+  })
+
+  it('ignores nodes with no location at all — those are not a placement failure', () => {
+    expect(unplacedLocations(VIEW).map((u) => u.id)).not.toContain('paad')
   })
 })
