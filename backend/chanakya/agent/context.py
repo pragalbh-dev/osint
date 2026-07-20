@@ -77,6 +77,7 @@ class ToolContext:
     lane: EdgeLaneIndex | None = None          # ontology edge machinery (canonical_edge / traversable_edges)
     traversable: set[str] = field(default_factory=set)  # find_paths' default whitelist (empty → traverse all)
     bm25: BM25Okapi | None = None             # built ONCE over ``names`` (find_entity reuses it per call)
+    display_names: dict[str, str] = field(default_factory=dict)  # node id → registry-declared prose name
 
     @classmethod
     def build(
@@ -98,6 +99,9 @@ class ToolContext:
         ctx.sources = config.sources.as_map()
         ctx.lane = EdgeLaneIndex(config.ontology)
         ctx.traversable = set(ctx.lane.traversable_edges())
+        ctx.display_names = {
+            e.entity_id: e.display_name for e in config.entities.entities if e.display_name
+        }
         ctx.names = cls._build_name_index(view, config)
         # BM25 over every searchable surface, built ONCE here (not rebuilt per find_entity call).
         corpus = [e.norm.split() for e in ctx.names]
@@ -137,6 +141,20 @@ class ToolContext:
                     NameEntry(norm=normalize(m), node_id=target_id, surface=m, kind="config_alias", squashed=squash(m))
                 )
         return entries
+
+    def display_name(self, node_id: str) -> str:
+        """The name to show an ANALYST for a node — never its internal id if anything better exists.
+
+        Order: the entity registry's ``display_name`` (an analyst-declared prose name, more specific than
+        the surface form a document happened to use) → the node's own resolved name → the id as the last
+        resort. Ids stay on the structured payload (``AnswerHop.src``/``dst``, citations) for the UI to key
+        on; they do not belong in a sentence. The single naming rule for every answer surface.
+        """
+        declared = self.display_names.get(node_id)
+        if declared:
+            return declared
+        n = self.nodes_by_id.get(node_id)
+        return n.name if n is not None and n.name else node_id
 
     def bm25_scores(self, query_norm: str) -> list[float]:
         """BM25 relevance of ``query_norm`` against every surface in :attr:`names` (index-aligned)."""

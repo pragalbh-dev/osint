@@ -431,6 +431,19 @@ def hero_config() -> ConfigBundle:
         ]
     )
     templates = TemplatesConfig(
+        # mirrors config/templates.yaml's edge_phrasing so the fixture hero renders through the SAME
+        # answer-prose path as the shipped one (a hop reads as a clause, not as its edge identifier);
+        # an edge with no entry falls back to the bare edge name.
+        edge_phrasing={
+            "based-at": {"forward": "is based at", "inverse": "is the basing site of"},
+            "inducted-into": {"forward": "is in service with", "inverse": "operates"},
+            "equips": {
+                "forward": "is fitted to", "inverse": "is equipped with",
+                "by_from_type": {"unit": {"forward": "fields", "inverse": "is fielded by"}},
+            },
+            "supplies-component": {"forward": "supplies", "inverse": "is supplied by"},
+            "manufactures": {"forward": "manufactures", "inverse": "is manufactured by"},
+        },
         templates=[
             EvidenceTemplate(
                 assertion_type="sole-source",

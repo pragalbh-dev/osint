@@ -168,6 +168,13 @@ class EntityEntry(ConfigModel):
     entity_id: str                  # stable canonical id (== the oracle id, e.g. comp_ht233, unit_paad)
     type: str                       # ontology node type (component | variant | manufacturer | unit | …)
     canonical_name: str
+    # Optional PROSE name for answer text. ``canonical_name`` is an *identity* string — it carries
+    # disambiguating annotations ("(relocation subject)", "(export designator; …; ~260 km)") that read
+    # badly mid-sentence, and the surface form a document happened to use can be vaguer than the entity
+    # the registry resolved it to ("Pakistan Air Force" for a specific fire unit). ``display_name`` lets
+    # the registry declare the most specific *accurate* name to show, without inventing specificity the
+    # sources do not support. Opt-in: absent → the node's own resolved name is shown unchanged.
+    display_name: str | None = None
     aliases: list[str] = []         # known surface forms that resolve to this entity
     distinct_from: list[str] = []   # explicit do-not-merge entity_ids (hard veto, before banding)
     attrs: dict[str, Any] = {}      # optional seeded node attrs (e.g. foreign_control) — DATA-C-authored
@@ -200,10 +207,53 @@ class EvidenceTemplate(ConfigModel):
 
 
 class TemplatesConfig(ConfigModel):
+    """Analyst-authored ANSWER COPY: the evidence-requirement templates + their refusal strings, the
+    no-coverage phrase, and how a relation reads out loud. Presentation, deliberately separate from
+    ``ontology.yaml`` — the ontology is the *semantic* contract (types, domain/range, freshness_class,
+    instance_key, supplier_end) that extraction, resolution, rebuild, scoring and materiality reason over,
+    and wording churn does not belong in a file half the pipeline depends on. Answer prose is still
+    resolved backend-side because it is cited and entailment-validated there (``agent/validate.py``)."""
+
     templates: list[EvidenceTemplate] = []
+    # What ``{next_coverage_due}`` renders as when no revisit date is derivable (no providing source
+    # declares a numeric cadence, or the gap was raised by a stage that schedules nothing). "unscheduled"
+    # alone half-undercuts the promise to name *when next coverage is due*; the honest reading is that the
+    # gap is an untasked collection requirement — itself a finding. Analyst-editable, never a date the
+    # code invents (§3.7: next_coverage_due is generated from cadence or it does not exist).
+    unscheduled_coverage_phrase: str = "unscheduled"
+    # edge type → {forward, inverse, by_from_type?} — the natural clause an answer uses instead of the
+    # machine identifier ("X is linked to Y via 'based-at'"). See :meth:`edge_clause`.
+    edge_phrasing: dict[str, dict[str, Any]] = {}
 
     def as_map(self) -> dict[str, EvidenceTemplate]:
         return {t.assertion_type: t for t in self.templates}
+
+    def edge_clause(
+        self, edge_type: str, *, forward: bool = True, from_type: str | None = None
+    ) -> str | None:
+        """The human clause for reading an edge — ``"is based at"`` rather than ``"via 'based-at'"``.
+
+        ``forward`` reads the edge in its declared ``from -> to`` direction; ``forward=False`` reads it the
+        other way, which a multi-hop trace needs because it walks bidirectionally and often enters a hop at
+        the object end. ``from_type`` is the *actual* subject node's type: a ``by_from_type`` override for
+        it wins, since one lane can be entered by different kinds of subject (a ``unit`` on the ``equips``
+        lane *fields* a variant; a ``component`` *is fitted to* one).
+
+        Returns ``None`` when nothing is declared, so the caller falls back to the bare edge name and an
+        analyst-added edge never breaks an answer. Rendering only — never changes the asserted fact, its
+        status, or its citations.
+        """
+        block = self.edge_phrasing.get(edge_type)
+        if not block:
+            return None
+        key = "forward" if forward else "inverse"
+        overrides = block.get("by_from_type")
+        if from_type and isinstance(overrides, dict):
+            override = overrides.get(from_type)
+            if isinstance(override, dict) and isinstance(override.get(key), str):
+                return str(override[key])
+        value = block.get(key)
+        return str(value) if isinstance(value, str) else None
 
 
 # ── subjects.yaml ──────────────────────────────────────────────────────────────────────────────

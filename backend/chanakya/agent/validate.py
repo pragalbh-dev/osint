@@ -25,7 +25,11 @@ from .context import ToolContext
 from .loop import AgentTrace
 
 _CITE_RE = re.compile(r"\[([^\]]+)\]")
-_COUNT_RE = re.compile(r"\b(\d+)\s+(chokepoints?|components?|suppliers?|sources?|units?|matches?)\b")
+# A COUNT is a standalone number before a counted noun ("3 components"). The lookbehind excludes the tail
+# of a designator — "HT-233 matches the criteria" asserts no count of 233, and "Type 305B" none of 305 —
+# which would otherwise be checked against the tool's count ceiling and rejected as fabricated. Narrows
+# what counts as a count; it does not narrow the check applied to a real one.
+_COUNT_RE = re.compile(r"(?<![\w-])(\d+)\s+(chokepoints?|components?|suppliers?|sources?|units?|matches?)\b")
 
 JUDGE_SYSTEM = (
     "You are a strict entailment judge for cited intelligence claims. Given a source CLAIM and a "

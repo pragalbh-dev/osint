@@ -560,19 +560,21 @@ def _render_refusal(ctx: ToolContext, subject: str, missing: list[str], next_due
 
     Fires the first authored template whose required slots intersect ``missing``; both ``{missing}`` and
     ``{missing_slots}`` placeholders are supplied so the fixture and the shipped templates both render.
+
+    With no derivable revisit date, ``{next_coverage_due}`` renders the config's
+    ``unscheduled_coverage_phrase`` instead of a bare "unscheduled" — an untasked gap stated as the
+    collection requirement it is, never an invented date (the date only ever comes from a source cadence).
     """
     missing_str = ", ".join(missing) if missing else "corroborating coverage"
-    fmt = _Blanks(
-        subject=subject, missing=missing_str, missing_slots=missing_str,
-        next_coverage_due=next_due or "unscheduled",
-    )
+    due = next_due or ctx.config.templates.unscheduled_coverage_phrase
+    fmt = _Blanks(subject=subject, missing=missing_str, missing_slots=missing_str, next_coverage_due=due)
     missing_set = set(missing)
     for tmpl in ctx.config.templates.templates:
         if tmpl.refusal_template and (_template_slots(tmpl.require) & missing_set):
             return tmpl.refusal_template.format_map(fmt)
     return (
         f"Insufficient evidence to assess {subject}: missing {missing_str}. "
-        f"Next coverage due {next_due or 'unscheduled'}."
+        f"Next coverage due {due}."
     )
 
 
@@ -624,7 +626,9 @@ def check_sufficiency(ctx: ToolContext, scope: str) -> dict[str, Any]:
         "missing_slots": missing,
         "next_coverage_due": next_due,
         "observability_ceiling": ceiling,
-        "reason": _render_refusal(ctx, scope, missing, next_due),
+        # the refusal is read by an ANALYST — name the subject, not its internal id (the id is already on
+        # ``scope``/``known_gap.related_ref`` for the UI to key on).
+        "reason": _render_refusal(ctx, ctx.display_name(scope), missing, next_due),
     }
 
 
