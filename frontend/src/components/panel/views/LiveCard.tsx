@@ -7,8 +7,8 @@
 
 import { useWorkbench } from '@/store/workbench'
 import type { LiveReviewItem } from '@/api/adapters'
-import { TierDots } from '@/components/status/TierDots'
 import { AlertEvidence } from './AlertEvidence'
+import { MergeCardView, type MergeCardData } from './MergeCard'
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -22,28 +22,64 @@ function BackButton({ onClick }: { onClick: () => void }) {
   )
 }
 
-function MergeContext({ item }: { item: LiveReviewItem }) {
-  const c = item.context
+/** LIVE queue item → the SAME merge card the demo renders, fed from the real proposal.
+ *  Every field is derived in `viewToReviewQueue` off the two records and the resolver's own
+ *  per-signal breakdown; nothing here authors a number. When a value is genuinely unavailable
+ *  the card is given the absence to print (`unknowns`), never a stand-in. */
+export function mergeCardDataFromItem(item: LiveReviewItem): MergeCardData {
+  const m = item.context.merge
+  const left = m?.left
+  const right = m?.right
+  // A proposal that is one of a connected run is not independent evidence — that belongs with
+  // the case AGAINST, where the analyst is actually deciding.
+  const differsOn = [
+    ...(m?.differsOn ?? []),
+    ...(item.cluster
+      ? [
+          `One of ${item.cluster.size} proposals across ${item.cluster.records} records — ${
+            item.cluster.complete
+              ? 'every possible pair among them is proposed, so this one is not independent evidence'
+              : 'the proposals overlap, so this one is not independent evidence'
+          }.`,
+        ]
+      : []),
+  ]
+  return {
+    badges: item.badges,
+    subject: item.question,
+    subtitle: item.title,
+    left: { name: left?.label ?? item.context.left?.label ?? '—', sub: left?.sub ?? item.context.left?.id ?? '' },
+    right: { name: right?.label ?? item.context.right?.label ?? '—', sub: right?.sub ?? item.context.right?.id ?? '' },
+    matchedOn: (m?.matchedOn ?? []).map((row) => ({ label: row.label, dots: row.dots, score: row.score })),
+    differsOn,
+    ifYou: m?.consequence ?? [],
+    unknowns: m?.unknowns ?? [],
+    options: item.options.map((o) => ({ key: o.key, label: o.label })),
+    splitNote: 'Split separates one record that is really two.',
+    footer: 'Flagged by the resolver’s merge check · routed to review · reversible',
+  }
+}
+
+/** "If you decide" — what the decision demonstrably does, then what this card cannot say.
+ *  The unknown is printed as plainly as the consequence: a fabricated number beside real data
+ *  is the one thing the brief calls disqualifying. */
+function Consequence({ item, verb }: { item: LiveReviewItem; verb: string }) {
+  const lines = item.context.consequence ?? []
+  const unknowns = item.context.unknowns ?? []
+  if (lines.length === 0 && unknowns.length === 0) return null
   return (
     <div className="mb-5">
-      <div className="mb-5 flex items-stretch gap-[9px]">
-        <div className="flex-1 rounded border border-hairline bg-surface-raised p-3">
-          <div className="text-[13.5px] text-text">{c.left?.label}</div>
-          <div className="mt-[3px] font-mono text-[10.5px] text-text-dim">{c.left?.id}</div>
+      <div className="mb-[7px] text-[10.5px] tracking-[0.06em] text-text-faint">{verb}</div>
+      {lines.map((line) => (
+        <div key={line} className="text-[13px] leading-[1.5] text-text">
+          {line}
         </div>
-        <div className="flex-none self-center text-[13px] text-text-faint">↔</div>
-        <div className="flex-1 rounded border border-hairline bg-surface-raised p-3">
-          <div className="text-[13.5px] text-text">{c.right?.label}</div>
-          <div className="mt-[3px] font-mono text-[10.5px] text-text-dim">{c.right?.id}</div>
+      ))}
+      {unknowns.map((line) => (
+        <div key={line} className="mt-[6px] text-[12px] leading-[1.45] text-text-faint">
+          Not known from here — {line}
         </div>
-      </div>
-      {typeof c.dots === 'number' && (
-        <div className="flex items-center justify-between gap-3 py-[7px]">
-          <span className="text-[12.5px] text-text-dim">Identity match</span>
-          <TierDots n={c.dots} />
-        </div>
-      )}
-      <div className="text-[13px] leading-[1.5] text-text-dim">{c.summary}</div>
+      ))}
     </div>
   )
 }
@@ -99,21 +135,39 @@ export function LiveCard() {
 
   if (!item) return null
 
+  // A merge is the ★ marquee control point and has its own authored layout (matched-on quiet,
+  // differs-on loud). LIVE feeds that same component with the clicked proposal's real evidence.
+  if (item.reviewType === 'merge') {
+    return (
+      <MergeCardView
+        data={mergeCardDataFromItem(item)}
+        onBack={backToZero}
+        onDecide={(key) => void decideLive(item, key)}
+      />
+    )
+  }
+
   return (
     <div>
-      <div className="mb-[15px] flex items-center gap-[10px]">
+      <div className="mb-[15px] flex flex-wrap items-center gap-[6px]">
         <BackButton onClick={backToZero} />
-        <span className="whitespace-nowrap rounded border border-hairline-strong px-[8px] py-[2px] text-[10.5px] text-text-dim">
-          {item.badge}
-        </span>
+        {item.badges.map((b) => (
+          <span
+            key={b}
+            className="whitespace-nowrap rounded border border-hairline-strong px-[8px] py-[2px] text-[10.5px] text-text-dim"
+          >
+            {b}
+          </span>
+        ))}
         <span className="text-[10.5px] tracking-[0.04em] text-text-faint">{item.kicker}</span>
       </div>
 
-      <div className="mb-4 text-[17px] text-text">{item.title}</div>
+      <div className="mb-1 text-[17px] text-text">{item.question}</div>
+      <div className="mb-4 text-[12.5px] leading-[1.4] text-text-dim">{item.title}</div>
 
-      {item.reviewType === 'merge' && <MergeContext item={item} />}
       {item.reviewType === 'status-override' && <OverrideContext item={item} />}
       {item.reviewType === 'alert-disposition' && <AlertContext item={item} />}
+      <Consequence item={item} verb={item.reviewType === 'status-override' ? 'If you override' : 'If you decide'} />
 
       <div className="flex gap-2">
         {item.options.map((opt) => (
