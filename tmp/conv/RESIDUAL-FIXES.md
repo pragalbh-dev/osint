@@ -171,6 +171,36 @@ defensible on the evidence-gate argument; the *wording* is not supported by the 
 
 ---
 
+## Open decisions and not-yet-done (as of the Phase-4 PR)
+
+**D1. 🔴 What should a reviewer's FIRST query do?** Raised by SHIP. With the 2025 evidence
+withheld from the boot seed (so the beat can fire on demand), a reviewer's first `/ask` is an honest
+refusal until they ingest. That is the designed beat, but **the flagship demo looks broken on
+arrival unless the UI leads them to the ingest.** The Awaiting-ingest panel in the left rail does
+this, but nobody has watched a cold reviewer use it. Two verified options, both seams exist:
+(a) keep it withheld and make the SPA prompt the ingest more loudly; (b) ship full-corpus by setting
+`CHANAKYA_SEED_WITHHOLD=` in compose, and treat the beat as a separate deliberate action.
+**Needs a call before the demo.**
+
+**D2. Not exercised in SHIP** (stated, not hidden): the GHCR **push** (no credentials assumed — the
+pull path was proven by running the tag from outside the repo, i.e. everything but the network hop);
+**EC2 + Cloudflare Tunnel** deploy to `ec2-3-142-96-102.us-east-2.compute.amazonaws.com`; the
+**rollback drill** (needs two pushed tags); and the recorded **screencast** (needs the live URL).
+
+**D3. `make run` defaults to PORT=8000**, which on the dev box is the user's company vLLM server.
+Fine for reviewers and EC2; always pass `PORT=…` locally.
+
+**D4. Still to write:** the README (now writable — the commands exist and are verified by both
+paths), the ledger reconciliation (D-P4.1…D-P4.14 are in NO decision ledger; `artifacts/plan/PROGRESS.md`
+shows six merged sessions as in-review and EVAL as not-started), and the design note (the user's
+`artifacts/design-note-v2.md` is in progress and deliberately untracked).
+
+**D5. The two design notes are untracked on purpose** — `artifacts/design-note.md` (agent-written,
+fact-checked against the running system) and `artifacts/design-note-v2.md` (the user's, still being
+edited). Neither is committed; the merge of the two is the last graded deliverable.
+
+---
+
 ## Also worth knowing (not defects)
 
 - **The evaluation numbers are not a score.** The fragmentation/MISSING counts come from a probe
