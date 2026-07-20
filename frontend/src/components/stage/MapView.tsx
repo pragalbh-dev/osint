@@ -12,7 +12,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import { AOI } from '@/demo/scenario'
-import type { PinDef } from '@/demo/scenario'
+import type { StagePin } from '@/api/adapters'
 import { useStagePins } from '@/api/viewmodel'
 import { useWorkbench, selMoved, selRahwaliConfirmed } from '@/store/workbench'
 import { COLORS } from '@/design/tokens'
@@ -68,12 +68,16 @@ function labelHtml(pos: 'below' | 'right' | 'left', title: string, caption: stri
 // filled teal would draw history as live knowledge; an insufficient pin with a filled
 // core would draw an absence of evidence as knowledge. Demo pins are unaffected: their
 // hero statuses are confirmed/probable, which keep the fresh fill and the live dot.
-function pinCore(pin: PinDef, ui: { dot: 'live' | 'history' }): {
+function pinCore(pin: StagePin, ui: { dot: 'live' | 'history' }): {
   fill: string
   dot: string
   opacity: string
 } {
-  if (pin.status === 'stale')
+  // A site whose occupancy was overtaken reads as SETTLED HISTORY — the same solid-grey,
+  // reduced-opacity treatment `stale` gets. Deliberately NOT the dashed grey of a Known
+  // Gap: "we know this moved" and "we don't know" are opposite claims. Supersession lives
+  // on the edge, so the node's own status never carries it (see supersededSites).
+  if (pin.superseded || pin.status === 'stale')
     return { fill: 'var(--fill-stale)', dot: 'var(--history)', opacity: 'var(--opacity-stale)' }
   // insufficient = a Known Gap: hollow core, grey dot. Nothing is asserted.
   if (pin.status === 'insufficient')
@@ -89,7 +93,7 @@ function pinCore(pin: PinDef, ui: { dot: 'live' | 'history' }): {
   }
 }
 
-function pinHtml(pin: PinDef): string {
+function pinHtml(pin: StagePin): string {
   const ui = PIN_UI[pin.id] ?? DEFAULT_PIN_UI
   const core = pinCore(pin, ui)
 
@@ -102,7 +106,7 @@ function pinHtml(pin: PinDef): string {
       ${labelHtml(ui.labelPos, pin.label, pin.caption, ui.dimTitle, 32)}`
   }
 
-  const border = statusBorder(pin.status)
+  const border = pin.superseded ? 'var(--border-stale)' : statusBorder(pin.status)
   return `
     <div style="position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center;">
       <span data-ring style="position:absolute;inset:0;border:1px solid rgba(138,148,156,0.32);box-shadow:none;transition:box-shadow 200ms ease;"></span>
@@ -130,6 +134,8 @@ export function MapView() {
   const reticleRef = useRef<L.Marker | null>(null)
   const movedLineRef = useRef<L.Polyline | null>(null)
   const movedLabelRef = useRef<L.Marker | null>(null)
+  // LIVE supersession connectors, keyed "<superseded>→<successor>" so they survive re-renders.
+  const supersedeLayersRef = useRef<Record<string, L.LayerGroup>>({})
 
   const mode = useWorkbench((s) => s.mode)
   const pins = useStagePins()
@@ -170,7 +176,14 @@ export function MapView() {
       const marker = L.marker([pin.lat, pin.lon], { icon, riseOnHover: true }).addTo(map)
       marker.on('click', () => select(pin.id))
       const el = marker.getElement()
-      if (el) el.style.transition = 'opacity 400ms ease'
+      if (el) {
+        el.style.transition = 'opacity 400ms ease'
+        // whole-pin dim (core AND label) for a superseded site, so it recedes as history
+        // rather than competing with the live one. Demo pins never set this flag.
+        // (numeric, not var(--opacity-stale): CSSOM var() substitution on `opacity` is not
+        // reliable across engines. 0.55 IS --opacity-stale — same value the demo pin uses.)
+        if (pin.superseded) el.style.opacity = '0.55'
+      }
       markersRef.current[pin.id] = marker
     })
 
@@ -181,6 +194,7 @@ export function MapView() {
       reticleRef.current = null
       movedLineRef.current = null
       movedLabelRef.current = null
+      supersedeLayersRef.current = {}
     }
   }, [pins, select])
 
@@ -258,6 +272,49 @@ export function MapView() {
       if (movedLabelRef.current) {
         map.removeLayer(movedLabelRef.current)
         movedLabelRef.current = null
+      }
+    }
+
+    // LIVE supersession — a solid grey "replaced by →" connector from the superseded site to
+    // the one that replaced it. Same treatment the Graph stage gives a settled `supersedes`
+    // edge (solid, --history, arrow, ~0.75) so one story reads the same on both stages. It is
+    // deliberately quiet: the line IS the whole treatment — no flash, no pulse, no animation.
+    // Solid (not the demo's dashed "moved →") because a settled supersession is history we
+    // KNOW, and dashed grey is reserved for an evidence gap.
+    {
+      const byId = new Map(pins.map((p) => [p.id, p]))
+      const wanted = new Map<string, [StagePin, StagePin]>()
+      for (const pin of pins) {
+        if (!pin.superseded || !pin.supersededBy) continue
+        const successor = byId.get(pin.supersededBy)
+        if (successor) wanted.set(`${pin.id}→${successor.id}`, [pin, successor])
+      }
+      for (const [key, layer] of Object.entries(supersedeLayersRef.current)) {
+        if (wanted.has(key)) continue
+        map.removeLayer(layer)
+        delete supersedeLayersRef.current[key]
+      }
+      for (const [key, [from, to]] of wanted) {
+        if (supersedeLayersRef.current[key]) continue
+        const group = L.layerGroup([
+          L.polyline(
+            [
+              [from.lat, from.lon],
+              [to.lat, to.lon],
+            ],
+            { color: COLORS.history, weight: 1, interactive: false, opacity: 0.75 },
+          ),
+          L.marker([(from.lat + to.lat) / 2, (from.lon + to.lon) / 2], {
+            interactive: false,
+            icon: L.divIcon({
+              html: `<span style="font:10px/1 ui-monospace,Menlo,monospace;color:var(--text-dim);white-space:nowrap;">replaced by →</span>`,
+              className: '',
+              iconSize: [0, 0],
+              iconAnchor: [-6, 12],
+            }),
+          }),
+        ]).addTo(map)
+        supersedeLayersRef.current[key] = group
       }
     }
 

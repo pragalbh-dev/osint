@@ -40,8 +40,18 @@ class AnswerHop(Record):
 
 
 class RefusalPayload(Record):
-    """First-class refusal (product/03 E / G) — what's missing + when coverage is due + the Known Gap."""
+    """First-class refusal (product/03 E / G) — what's missing + when coverage is due + the Known Gap.
 
+    ``kind`` separates three refusals an analyst must never see conflated. "We looked and the evidence
+    is thin" (``evidence``) is a statement about the WORLD; "we could not look at all" (``capability`` —
+    no key, no recorded trace, a dead tool) is a statement about the SYSTEM; "we looked, found something,
+    and would not stand behind the wording" (``withheld`` — failed citation/entailment) is a statement
+    about the ANSWER. Rendering all three as "insufficient evidence to assess" overstates a gap in the
+    world that may not exist — the same mislabelling family as stale-vs-insufficient, and a correctness
+    bug rather than copy. Default stays ``evidence`` so existing producers are unchanged.
+    """
+
+    kind: Literal["evidence", "capability", "withheld"] = "evidence"
     missing: list[str] = []
     next_coverage_due: str | None = None
     known_gap: KnownGap | None = None
@@ -75,6 +85,13 @@ class ProvenanceDrawer(Record):
     # ``opposing_claims`` reference by id — each carries its exact ``doc_ref``, so the drawer is
     # self-contained one-click-to-source. Additive/optional: consumers that ignore it are unaffected.
     claims: list[ClaimRecord] = []
+    # F0-amend (API, 2026-07-20): the VERBATIM cited span, ``claim_id -> [text per doc_ref]``,
+    # positionally parallel to that claim's ``doc_refs()``. A file path + byte offset is a POINTER,
+    # not a source — an analyst cannot audit a claim from ``d19…txt · L11 · 843–849``. The text is
+    # read back out of the cited document at request time and never stored, so it cannot drift from
+    # the append-only log; an unreadable/absent span yields ``""`` (never a paraphrase, never a
+    # reconstruction). Additive/optional.
+    quotes: dict[str, list[str]] = {}
 
 
 # ── POST /hitl/* (product/03 D) ────────────────────────────────────────────────────────────────

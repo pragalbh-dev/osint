@@ -5,6 +5,7 @@ import {
   askToAnswerModel,
   credibilityToDots,
   dateValueToString,
+  displayNameOf,
   docRefsOf,
   edgeToKind,
   evidenceToDrawerModel,
@@ -12,7 +13,10 @@ import {
   hopLine,
   humanizeEdge,
   humanizeObservableId,
+  isKnownElementId,
+  nameResolver,
   statusToGraphKind,
+  supersededSites,
   supersedeHoldReasons,
   viewToGraph,
   viewToGraphEdges,
@@ -209,7 +213,75 @@ describe('viewToPins', () => {
   })
 
   it('derives the caption year from freshness.last_support_time', () => {
-    expect(pins[0].caption).toBe('as of 2022')
+    // VIEW's `sup1` supersedes this node, so read the plain as-of line off a view without it
+    const plain = viewToPins({ ...VIEW, edges: VIEW.edges.filter((e) => e.type !== 'supersedes') })
+    expect(plain[0].caption).toBe('as of 2022')
+    expect(plain[0].superseded).toBe(false)
+    expect(plain[0].supersededBy).toBeNull()
+  })
+
+  // Supersession lives on the EDGE — a node's own status never carries it — so the map has to
+  // derive "this location is history now" from the graph, or it silently loses the relocation
+  // story the Graph stage tells. VIEW's `sup1` is `rahwali_stale supersedes karachi`.
+  it('marks the TARGET of a settled supersedes edge as history, naming its successor', () => {
+    expect(pins[0]).toMatchObject({ id: 'karachi', superseded: true, supersededBy: 'rahwali_stale' })
+    expect(pins[0].caption).toBe('superseded · 2022')
+  })
+
+  it('does NOT mark a pin superseded on an unadjudicated (candidate/held) supersession', () => {
+    const candidate = viewToPins({
+      ...VIEW,
+      edges: [
+        {
+          id: 'sup1',
+          type: 'supersedes',
+          source: 'rahwali_stale',
+          target: 'karachi',
+          status: null,
+          attrs: { candidate_supersede: true },
+        },
+      ],
+    })
+    expect(candidate[0].superseded).toBe(false)
+    expect(candidate[0].caption).toBe('as of 2022')
+  })
+})
+
+describe('supersededSites', () => {
+  it('maps superseded → successor for settled supersessions only', () => {
+    expect([...supersededSites(VIEW).entries()]).toEqual([['karachi', 'rahwali_stale']])
+  })
+
+  it('ignores a held/pending/candidate supersession — that adjudication has not been made', () => {
+    const held: GraphView = {
+      ...VIEW,
+      edges: [{ id: 's', type: 'supersedes', source: 'a', target: 'b', attrs: { supersede_gate: 'held' } }],
+    }
+    expect(supersededSites(held).size).toBe(0)
+  })
+})
+
+// Raw internal ids are keys, not names. Analyst-facing copy renders the node's OWN name,
+// with the id demoted to technical detail — and never invents one.
+describe('displayNameOf / nameResolver', () => {
+  it('renders a node id as its own name — never a paraphrase', () => {
+    expect(displayNameOf(VIEW, 'karachi')).toBe('Karachi')
+    expect(nameResolver(VIEW)('gap_node')).toBe('Unknown reserve unit')
+  })
+
+  it('falls back to the id when the graph has no name for it — shows the key, never a guess', () => {
+    expect(displayNameOf(VIEW, 'site_nowhere')).toBe('site_nowhere')
+    expect(nameResolver(null)('site_nowhere')).toBe('site_nowhere')
+  })
+
+  it('reads an edge id as its named endpoints', () => {
+    expect(displayNameOf(VIEW, 'e1')).toBe('Karachi — based at → PA Air Defence')
+  })
+
+  it('knows which strings are element ids, so free-text slots pass through untouched', () => {
+    expect(isKnownElementId(VIEW, 'karachi')).toBe(true)
+    expect(isKnownElementId(VIEW, 'e1')).toBe(true)
+    expect(isKnownElementId(VIEW, 'an unobscured pass')).toBe(false)
   })
 })
 
@@ -375,6 +447,8 @@ describe('evidenceToDrawerModel', () => {
       next_coverage_due: '2026-08-01',
       ceiling: 'probable-max',
     },
+    // the verbatim text at each doc_ref — c2's SECOND ref is unreadable, c3 has none at all
+    quotes: { c1: ['array present at Rahwali'], c2: ['a second look', ''] },
   }
 
   const model = evidenceToDrawerModel(DRAWER)
@@ -431,6 +505,20 @@ describe('evidenceToDrawerModel', () => {
     expect(model.clusters[0].rows[0].dots).toBe(1) // 0.1
     expect(model.clusters[0].rows[1].dots).toBe(2) // 0.4
     expect(model.clusters[1].rows[0].dots).toBe(4) // 0.9
+  })
+
+  // A file path + byte range is a POINTER, not a source — the analyst has to be able to read
+  // the words. The quote array is positionally parallel to docRefs so index i always answers
+  // "what does ref i say?", and an unreadable span is '' (the row shows the locator alone),
+  // never a paraphrase.
+  it('carries the verbatim quote per docRef, parallel to docRefs', () => {
+    expect(model.clusters[0].rows[0].quotes).toEqual(['array present at Rahwali'])
+    expect(model.clusters[0].rows[1].quotes).toEqual(['a second look', ''])
+    expect(model.clusters[0].rows[1].quotes).toHaveLength(model.clusters[0].rows[1].docRefs.length)
+  })
+
+  it('emits an empty quote (never a paraphrase) when the backend returned none', () => {
+    expect(model.clusters[1].rows[0].quotes).toEqual([''])
   })
 
   it('counts opposingCount from opposing_claims', () => {
@@ -522,6 +610,8 @@ describe('askToAnswerModel', () => {
     expect(m.kind).toBe('refusal')
     expect(m.answer).toBe('')
     expect(m.refusal).toEqual({
+      // untagged → 'evidence', the pre-`kind` contract
+      kind: 'evidence',
       reason: 'Needs an unobscured overhead pass.',
       missing: ['unobscured pass', 'SAR correlation'],
       nextCoverageDue: '2026-05-14',
@@ -529,10 +619,28 @@ describe('askToAnswerModel', () => {
     })
   })
 
+  // "we have no evidence" and "we could not look" are different claims to an analyst; the
+  // renderer must be able to tell them apart, so the kind survives the adapter verbatim.
+  it('carries a capability refusal through as capability, not as an evidence gap', () => {
+    const m = askToAnswerModel({
+      question: 'q',
+      answer: null,
+      refusal: { kind: 'capability', missing: ['a model key (ANTHROPIC_API_KEY)'], reason: 'could not run' },
+    })
+    expect(m.refusal!.kind).toBe('capability')
+    expect(m.refusal!.kind).not.toBe('evidence')
+  })
+
+  it('carries a withheld refusal through as withheld', () => {
+    const m = askToAnswerModel({ question: 'q', answer: null, refusal: { kind: 'withheld', missing: ['uncited'] } })
+    expect(m.refusal!.kind).toBe('withheld')
+  })
+
   it('treats a null answer with no refusal payload as a refusal too', () => {
     const m = askToAnswerModel({ question: 'q', answer: null })
     expect(m.kind).toBe('refusal')
-    expect(m.refusal).toEqual({ reason: undefined, missing: [], nextCoverageDue: null, knownGap: null })
+    expect(m.refusal!.kind).toBe('evidence')
+    expect(m.refusal).toEqual({ kind: 'evidence', reason: undefined, missing: [], nextCoverageDue: null, knownGap: null })
   })
 
   it('defaults hops/citations/subQuestions to empty on a bare answer', () => {

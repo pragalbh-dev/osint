@@ -9,6 +9,7 @@
 import type { ReactNode } from 'react'
 import { useWorkbench } from '@/store/workbench'
 import { useEvidence } from '@/api/hooks'
+import { useDisplayName } from '@/api/viewmodel'
 import { evidenceToDrawerModel } from '@/api/adapters'
 import type { LiveDrawerModel, LiveClaimRow } from '@/api/adapters'
 import type { DocRef, Status } from '@/api/types'
@@ -31,8 +32,9 @@ function chipStatusFor(status: Status): ChipStatus {
 }
 
 // One claim's exact source pointer, rendered as a precise locator string (file + page/line/
-// row/frame/region/span). This IS the traceable reference; deep-linking into a served source
-// viewer is a follow-up once a doc route exists.
+// row/frame/region/span). The locator is the ADDRESS of the evidence; the verbatim span the
+// backend reads back from that address (see chanakya.api.quotes) is the evidence itself, and
+// leads the block. Deep-linking into a served source viewer is a follow-up once a doc route exists.
 function docRefLabel(ref: DocRef): string {
   const parts: string[] = [ref.file]
   if (ref.page != null) parts.push(`p.${ref.page}`)
@@ -98,15 +100,39 @@ function ClaimRow({ row, expanded, onToggle, status }: { row: LiveClaimRow; expa
           {row.dates.event && <div>event · {row.dates.event}</div>}
           {row.dates.reported && <div>reported · {row.dates.reported}</div>}
           {row.dates.ingested && <div>ingested · {row.dates.ingested}</div>}
-          {row.docRefs.length > 0 && (
-            <div style={{ marginTop: 6 }}>
-              {row.docRefs.map((ref, i) => (
-                <div key={i} style={{ color: 'var(--live)' }} title="exact source locator">
+          {/* The cited source, quote first. Same order the demo drawer uses: dates, hairline,
+              then the words. The locator drops underneath as technical detail — an analyst
+              audits the claim by READING it, not by reading a byte range. */}
+          {row.docRefs.map((ref, i) => {
+            const quote = row.quotes[i] ?? ''
+            return (
+              <div
+                key={i}
+                style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--hairline)' }}
+              >
+                {quote ? (
+                  <div
+                    style={{
+                      font: '12px/1.5 ui-sans-serif,system-ui,sans-serif',
+                      color: 'var(--text)',
+                      textWrap: 'pretty',
+                    }}
+                  >
+                    “{quote}”
+                  </div>
+                ) : (
+                  // No quote is never papered over with a paraphrase — say the span could not
+                  // be read and leave the locator as the only claim being made.
+                  <div style={{ color: 'var(--text-faint)' }}>
+                    (the cited span could not be read back from this document)
+                  </div>
+                )}
+                <div style={{ marginTop: 6, color: 'var(--text-faint)' }} title="exact source locator">
                   → {docRefLabel(ref)}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
@@ -204,7 +230,13 @@ export function LiveDrawer() {
   const drawerOpen = useWorkbench((s) => s.drawerOpen)
   const selected = useWorkbench((s) => s.selected)
   const closeDrawer = useWorkbench((s) => s.closeDrawer)
+  const displayName = useDisplayName()
   const { data, isLoading, isError } = useEvidence(selected, drawerOpen)
+  // `site_rahwali` is a database key, not a name. The analyst-facing headline is the node's OWN
+  // name (never a paraphrase, never invented — an unnamed node falls back to its id), with the id
+  // kept underneath as the technical handle for anyone reading a log or a citation.
+  const heading = selected ? displayName(selected) : '—'
+  const showId = selected != null && heading !== selected
 
   return (
     <aside
@@ -234,9 +266,20 @@ export function LiveDrawer() {
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
           <div>
             <div style={{ ...KICKER, marginBottom: 7 }}>Proving</div>
-            <div style={{ fontSize: 16, lineHeight: 1.35, color: 'var(--text)', fontFamily: 'var(--mono)' }}>
-              {selected ?? '—'}
-            </div>
+            <div style={{ fontSize: 16, lineHeight: 1.35, color: 'var(--text)' }}>{heading}</div>
+            {showId && (
+              <div
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 10.5,
+                  lineHeight: 1.4,
+                  color: 'var(--text-faint)',
+                  marginTop: 5,
+                }}
+              >
+                {selected}
+              </div>
+            )}
           </div>
           <button
             type="button"

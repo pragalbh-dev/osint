@@ -18,7 +18,10 @@ export function ModeToggle() {
       title="Dev only — toggle DEMO / LIVE data source"
       style={{
         position: 'fixed',
-        left: 10,
+        // Clear of the 240px rail: at left:10 this chip sat on top of the rail's own
+        // "Credibility" row (both bottom-anchored), obscuring a real nav label at every
+        // viewport height. It now floats over the Stage's empty bottom-left gutter instead.
+        left: 252,
         bottom: 10,
         zIndex: 9999,
         padding: '4px 10px',

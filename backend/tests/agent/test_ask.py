@@ -53,6 +53,24 @@ def test_keyless_nonhero_refuses_never_fabricates(view, claims, config) -> None:
     assert a.refusal.reason
 
 
+def test_keyless_refusal_is_a_capability_outage_not_an_evidence_gap(view, claims, config) -> None:
+    """"We have no evidence" and "we could not look" are different claims to an analyst.
+
+    Nothing was consulted on this path, so reporting a shortfall in the world's evidence overstates a
+    gap that may not exist — the same mislabelling family as stale-vs-insufficient, and a correctness
+    bug rather than copy. The refusal must say the SYSTEM could not run, name what would fix it, and
+    not put an internal token where the analyst reads "missing".
+    """
+    a = ask("What is HT-233?", view, config, claims=claims)
+    assert a.refusal is not None
+    assert a.refusal.kind == "capability" != "evidence"
+    assert "insufficient evidence" not in a.refusal.reason.lower()
+    assert "could not run" in a.refusal.reason.lower()
+    # honest-refusal discipline: name what is missing and what would fix it, in analyst-facing words
+    assert any("ANTHROPIC_API_KEY" in m for m in a.refusal.missing)
+    assert "live_llm_or_recorded_trace" not in a.refusal.missing
+
+
 def test_free_loop_point_lookup_answers_with_citation(view, claims, config) -> None:
     llm = planner(
         tool_turn("graph_find_entity", {"text": "HT-233"}),

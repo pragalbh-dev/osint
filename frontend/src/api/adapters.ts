@@ -26,6 +26,7 @@ import type {
   NodeView,
   ObservabilityCeiling,
   ProvenanceDrawer,
+  RefusalKind,
   Status,
 } from './types'
 import type { EdgeKind, GraphEdgeDef, GraphKind, GraphNodeDef, PinDef } from '@/demo/scenario'
@@ -130,9 +131,74 @@ function yearOf(value?: string | null): number | null {
   return parsed.getFullYear()
 }
 
+// ───────────────────── analyst-facing naming (no raw ids in copy) ─────────────────────
+// `site_rahwali` is a key, not a name. Analyst-facing copy renders the node's OWN `name`
+// and keeps the id as secondary/technical detail; nothing here paraphrases or invents a
+// label — a node with no `name` falls back to its id rather than to a guess.
+
+/** id → node.name, or the id itself when the graph has no name for it. Never invents one. */
+export function displayNameOf(view: GraphView | null | undefined, id: string): string {
+  if (!view) return id
+  const node = view.nodes.find((n) => n.id === id)
+  if (node?.name) return node.name
+  const edge = view.edges.find((e) => e.id === id)
+  if (edge) {
+    // an edge has no name of its own — read it as "source — type → target", each side named.
+    return `${displayNameOf(view, edge.source)} — ${humanizeEdge(edge.type)} → ${displayNameOf(view, edge.target)}`
+  }
+  return id
+}
+
+/** Build a reusable resolver over one view (avoids re-scanning per lookup). */
+export function nameResolver(view: GraphView | null | undefined): (id: string) => string {
+  if (!view) return (id) => id
+  const names = new Map(view.nodes.map((n) => [n.id, n.name ?? n.id]))
+  return (id) => names.get(id) ?? displayNameOf(view, id)
+}
+
+/** True when `s` is an element id the live view knows — i.e. safe to swap for a name.
+ *  Free-text slots ("an unobscured pass") must pass through untouched. */
+export function isKnownElementId(view: GraphView | null | undefined, s: string): boolean {
+  if (!view) return false
+  return view.nodes.some((n) => n.id === s) || view.edges.some((e) => e.id === s)
+}
+
+// ───────────────────────────── map pins + supersession ─────────────────────────────
+// Supersession lives on the EDGE, not the node — a site that a unit left is still a real
+// site, it is the *occupancy* that was overtaken. So the map has to derive "this location
+// is history now" from the graph rather than read it off a node status, or the relocation
+// story that the Graph stage tells correctly is silently lost on the default stage.
+//
+// Only a SETTLED supersession greys a pin. A candidate/pending/held one means "something
+// moved, but we are not sure it is the same unit" — drawing that as settled history would
+// assert an adjudication the analyst has not made.
+
+/** LIVE-only pin extras the frozen demo fixture does not carry. Optional, so `PinDef[]`
+ *  (the demo's own pins) is assignable wherever a `StagePin[]` is expected. */
+export interface StagePinExtras {
+  /** this location was overtaken by another — settled history, not an evidence gap */
+  superseded?: boolean
+  /** the node id that replaced it (the connector's other end), when known */
+  supersededBy?: string | null
+}
+
+export type StagePin = PinDef & StagePinExtras
+
+/** target-of-a-settled-`supersedes`-edge → the successor's node id. */
+export function supersededSites(view: GraphView): Map<string, string> {
+  const out = new Map<string, string>()
+  for (const edge of view.edges) {
+    if (edge.type !== 'supersedes') continue
+    if (edgeToKind(edge) !== 'e-supersede') continue // candidate/pending/held → not settled
+    out.set(edge.target, edge.source)
+  }
+  return out
+}
+
 /** Nodes without a resolved location live only in the graph, not on the map. */
-export function viewToPins(view: GraphView): PinDef[] {
-  const pins: PinDef[] = []
+export function viewToPins(view: GraphView): StagePin[] {
+  const pins: StagePin[] = []
+  const superseded = supersededSites(view)
   for (const node of view.nodes) {
     const lat = node.location?.wgs84_lat
     const lon = node.location?.wgs84_lon
@@ -142,6 +208,7 @@ export function viewToPins(view: GraphView): PinDef[] {
     const surface = node.location?.surface_format
     const coord = typeof surface === 'string' && surface.length > 0 ? surface : formatCoord(lat, lon)
     const year = yearOf(node.freshness?.last_support_time)
+    const successor = superseded.get(node.id)
 
     pins.push({
       id: node.id,
@@ -150,7 +217,16 @@ export function viewToPins(view: GraphView): PinDef[] {
       lon,
       coord,
       status: node.status ?? 'insufficient',
-      caption: year !== null ? `as of ${year}` : '',
+      // "superseded" states the subtraction; it never claims the site ceased to exist.
+      caption: successor
+        ? year !== null
+          ? `superseded · ${year}`
+          : 'superseded'
+        : year !== null
+          ? `as of ${year}`
+          : '',
+      superseded: successor != null,
+      supersededBy: successor ?? null,
     })
   }
   return pins
@@ -196,6 +272,9 @@ export interface LiveClaimRow {
   detail: string // short human line from kind + asserts (e.g. "observation · relationship")
   dates: { event?: string; reported?: string; ingested?: string }
   docRefs: DocRef[] // ALWAYS an array (normalize DocRef | DocRef[] → DocRef[]); the jump-to-source targets
+  /** the VERBATIM text at each docRef, same order/length as `docRefs`. '' = unreadable span —
+   *  the row then shows the locator alone. Never a paraphrase: this is the evidence itself. */
+  quotes: string[]
   dots: number // 1..4 credibility tier
 }
 
@@ -267,6 +346,8 @@ export function evidenceToDrawerModel(data: ProvenanceDrawer): LiveDrawerModel {
     rows: group.claim_ids.reduce<LiveClaimRow[]>((rows, claimId) => {
       const claim = claimsById.get(claimId)
       if (!claim) return rows
+      const refs = docRefsOf(claim.doc_ref)
+      const quotes = data.quotes?.[claimId] ?? []
       rows.push({
         claimId: claim.claim_id,
         sourceId: claim.source_id,
@@ -277,7 +358,9 @@ export function evidenceToDrawerModel(data: ProvenanceDrawer): LiveDrawerModel {
           reported: dateValueToString(claim.report_time),
           ingested: dateValueToString(claim.ingest_time),
         },
-        docRefs: docRefsOf(claim.doc_ref),
+        docRefs: refs,
+        // pad/trim to docRefs length so index i always answers "what does ref i say?"
+        quotes: refs.map((_, i) => quotes[i] ?? ''),
         dots: credibilityToDots(data.confidence?.per_claim_credibility?.[claimId]),
       })
       return rows
@@ -324,6 +407,7 @@ export interface LiveAnswerHop {
 }
 
 export interface LiveAnswerRefusal {
+  kind: RefusalKind
   reason?: string
   missing: string[]
   nextCoverageDue?: string | null
@@ -372,6 +456,9 @@ export function askToAnswerModel(data: AskAnswer): LiveAnswerModel {
     citations: data.citations ?? [],
     refusal: isRefusal
       ? {
+          // Absent `kind` → 'evidence', the pre-`kind` contract. A capability outage that arrives
+          // untagged still reads as an evidence gap, so the tag is set at the producer, not guessed here.
+          kind: data.refusal?.kind ?? 'evidence',
           reason: data.refusal?.reason,
           missing: data.refusal?.missing ?? [],
           nextCoverageDue: data.refusal?.next_coverage_due ?? null,
@@ -661,7 +748,11 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
       badge: 'First seen',
       options: ALERT_OPTIONS,
       context: {
-        summary: `Tripwire ${alert.observable_id} fired${alert.subject ? ` on ${alert.subject}` : ''}.`,
+        // named, not keyed: "Basing relocation fired on HQ-9B battery", not "obs-basing-relocation
+        // fired on unit_hq9b". nodeLabel falls back to the id when the graph has no name for it.
+        summary: `Tripwire ${humanizeObservableId(alert.observable_id)} fired${
+          alert.subject ? ` on ${nodeLabel(alert.subject)}` : ''
+        }.`,
         changed: firing.changed ?? undefined,
         severity: alert.severity,
         provenance: firing.provenance,

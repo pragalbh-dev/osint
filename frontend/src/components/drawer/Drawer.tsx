@@ -125,6 +125,9 @@ export function Drawer() {
             type="button"
             onClick={closeDrawer}
             title="Dismiss"
+            // a bare ✕ has no accessible name; matches LiveDrawer's close control.
+            // Attribute-only — no pixel changes to the frozen demo drawer.
+            aria-label="Close provenance drawer"
             className="text-text-dim hover:border-hairline-strong hover:text-text"
             style={{
               flex: 'none',

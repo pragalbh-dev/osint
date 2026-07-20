@@ -15,17 +15,26 @@
 import { useMemo } from 'react'
 import { useWorkbench } from '@/store/workbench'
 import { PINS, GRAPH_NODES, GRAPH_EDGES } from '@/demo/scenario'
-import type { PinDef, GraphNodeDef, GraphEdgeDef } from '@/demo/scenario'
-import { viewToPins, viewToGraph, viewToTripwires } from './adapters'
-import type { LiveTripwire } from './adapters'
+import type { GraphNodeDef, GraphEdgeDef } from '@/demo/scenario'
+import { viewToPins, viewToGraph, viewToTripwires, nameResolver } from './adapters'
+import type { LiveTripwire, StagePin } from './adapters'
 
-export function useStagePins(): PinDef[] {
+export function useStagePins(): StagePin[] {
   const mode = useWorkbench((s) => s.mode)
   const liveView = useWorkbench((s) => s.liveView)
   return useMemo(() => {
     if (mode !== 'live') return PINS
     return liveView ? viewToPins(liveView) : PINS
   }, [mode, liveView])
+}
+
+/** `(id) => human name` over the live graph. In DEMO (or before the first /view lands) it is
+ *  the identity function: the demo's own copy is hand-authored and carries no raw ids. Never
+ *  invents a name — an id the graph does not know comes back unchanged. */
+export function useDisplayName(): (id: string) => string {
+  const mode = useWorkbench((s) => s.mode)
+  const liveView = useWorkbench((s) => s.liveView)
+  return useMemo(() => (mode === 'live' ? nameResolver(liveView) : (id: string) => id), [mode, liveView])
 }
 
 export function useStageGraph(): { nodes: GraphNodeDef[]; edges: GraphEdgeDef[] } {

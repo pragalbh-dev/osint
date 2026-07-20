@@ -4,13 +4,16 @@ drawer (product/03 C). Both are pure reads off the held view + the evidence-log 
 ``/node`` returns the resolved entity with its computed status/confidence/freshness/materiality;
 ``/evidence`` renders the "how do you know that?" breakdown for any assessed element (node/edge/event),
 with claim clusters grouped by independence and **every cited claim resolved to its exact ``doc_ref``**
-(claim → doc_ref: the one-click-to-source non-negotiable).
+(claim → doc_ref: the one-click-to-source non-negotiable) *and* to the **verbatim text at that
+locator** — a byte offset is a pointer, not a source, and an analyst must be able to read the
+evidence without leaving the drawer (see ``chanakya.api.quotes``).
 """
 
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from chanakya.api.quotes import quotes_for
 from chanakya.api.routes.deps import get_state
 from chanakya.api.routes.lookup import find_assessed
 from chanakya.api.state import AppState
@@ -76,4 +79,5 @@ def get_evidence(element_id: str, state: AppState = Depends(get_state)) -> Prove
         opposing_claims=element.opposing_claims,
         sufficiency=element.sufficiency,
         claims=claims,
+        quotes=quotes_for(claims),
     )

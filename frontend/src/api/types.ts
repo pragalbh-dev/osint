@@ -234,7 +234,15 @@ export interface AnswerHop {
   observed_or_inferred?: 'observed' | 'inferred'
 }
 
+/** Which of the three refusals this is. `evidence` = we looked and the world is thin.
+ *  `capability` = we could not look at all (no model key, no recorded trace, a dead tool).
+ *  `withheld` = we looked and would not stand behind the wording (failed citation/entailment).
+ *  Conflating them overstates a gap in the world that may not exist — see the backend's
+ *  RefusalPayload docstring. Absent → 'evidence' (the pre-`kind` contract). */
+export type RefusalKind = 'evidence' | 'capability' | 'withheld'
+
 export interface RefusalPayload {
+  kind?: RefusalKind
   missing?: string[]
   next_coverage_due?: string | null
   known_gap?: KnownGap | null
@@ -268,6 +276,10 @@ export interface ProvenanceDrawer {
   opposing_claims?: string[]
   sufficiency?: SufficiencyEval | null
   claims?: ClaimRecord[] // added 2026-07-19 — resolved evidence atoms, index by claim_id for doc_ref deep-links
+  // added 2026-07-20 — claim_id -> the VERBATIM text at each of that claim's doc_refs, in doc_ref
+  // order. A file+offset is a pointer, not a source; this is what the analyst actually audits.
+  // Absent claim / empty string = the span could not be read; render the locator alone, never a guess.
+  quotes?: Record<string, string[]>
 }
 
 // ───────────────────────── review queue / HITL ─────────────────────────
