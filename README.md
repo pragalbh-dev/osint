@@ -74,7 +74,7 @@ or share the `?mode=live` link.
 **Keyless (the default, nothing to configure) already runs the full worked demo** —
 graph, map, citations, and one scripted multi-hop question all work with no API key,
 because that question's answer was pre-computed once and is replayed deterministically.
-This is intentional: the graded demo must run the same way every time.
+This is intentional: the demo must run the same way every time.
 
 **Keyed** additionally unlocks:
 - **Free-form questions** — anything typed into the ask bar beyond the one pre-computed
@@ -82,21 +82,16 @@ This is intentional: the graded demo must run the same way every time.
   "I need a key for that" message).
 - **Extracting a brand-new document live** — pasting in a document's text and having the
   system read it and add it to the graph in real time, instead of only ingesting the
-  pre-packaged documents described in §4.
+  pre-packaged documents described in §5.
 
-To enable it, put one line in a `.env` file at the repo root before `make run` (or pass
-`--env-file .env` to `docker run` for Path B):
+A key is shared with you separately. To use it, put one line in a `.env` file at the repo
+root before `make run` (or pass `--env-file .env` to `docker run` for Path B):
 
 ```
-ANTHROPIC_API_KEY=<the key>
+ANTHROPIC_API_KEY=<the key you were sent>
 ```
 
-**Give instructors only `ANTHROPIC_API_KEY` — do not also hand out a Gemini key.** A
-second, optional key (`GEMINI_API_KEY`) exists in the codebase for the *maintainer's*
-offline re-extraction workflow only; it has no purpose in the reviewer path, and setting
-it currently makes the live-document-extraction feature above fail (a real packaging gap,
-filed for a fix, not something to work around by hand). Anthropic-only is the tested,
-working configuration — verified by running the keyed path twice end-to-end.
+That is the only key this app needs — nothing else goes in that file.
 
 Without any key, nothing breaks — free-form questions get an honest refusal explaining
 that a key is needed, never a guess.
@@ -123,7 +118,9 @@ Four regions, all visible at once (no tabs, no modals except one detail overlay)
 **On first open**, the right panel suggests three starting points — click any of them:
 - *"Trace the long-range SAM battery now based at Rahwali back to the organisation that
   builds its missile system, and name the fire-control chokepoint."* — the flagship
-  question. Works immediately, no key needed.
+  question. **On a fresh start this deliberately refuses**, because the evidence it needs
+  hasn't been added yet — that refusal is the point, and §5 walks you through making it
+  answerable. No key needed either way.
 - *"Is this node confirmed or probable — and on what evidence?"* — click any pin on the
   map to see this answered for that specific fact.
 - *"What do we not know here?"* — the system naming its own gaps, rather than guessing
@@ -170,14 +167,16 @@ decision on. Clicking one opens it in the right panel as one of three question t
 - **"A tripwire fired — is it real?"** — you triage a fired alert (like the relocation in
   §5): accept it, dismiss it as noise, or hold it for a second look.
 
-**In live mode, this is real** — a decision is sent to the server, recorded, and the
-graph is rebuilt around it before the panel updates; it isn't a UI toggle that forgets
-itself. **One exception, worth knowing before a reviewer relies on it:** deciding
-*"Same system, or two?"* does not currently persist — the two records are not actually
-linked, and the same pair can resurface as a question later in the session. The other two
-decision types work as expected. Like everything else that isn't part of the frozen
-starting corpus, review decisions live only in the running container and reset on
-restart — there is no database to inspect afterward.
+**In live mode these are real decisions** — each one is sent to the server, recorded, and
+the graph rebuilt around it before the panel updates; it isn't a UI toggle that forgets
+itself.
+
+**One known limitation:** *"Same system, or two?"* does not currently stick. The decision
+is recorded, but the two records aren't actually linked, so the same pair can resurface
+later in the session. The other two decision types behave as described.
+
+Review decisions live only in the running container and reset on restart, like everything
+else you add during a session.
 
 ---
 
@@ -190,8 +189,8 @@ restart — there is no database to inspect afterward.
   `ANTHROPIC_API_KEY` set; the one flagship question above always works regardless.
 - **A restart resets everything** — by design. Nothing you do in the app (ingesting a
   document, making a review decision) is written outside the container, so
-  `docker restart chanakya` is always a guaranteed clean reset back to the graded
-  starting state.
+  `docker restart chanakya` is always a guaranteed clean reset back to the starting
+  state.
 - **The app looks like a fixed slideshow that ignores my clicks** — you're missing
   `?mode=live` in the URL; see §2.
 
