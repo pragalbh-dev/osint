@@ -1284,12 +1284,49 @@ status-gated, and that rejected candidates are reported rather than filtered).
   The derivation lives in a pure `watchSummary()` precisely so these rules are unit-tested rather than
   trapped in a component.
 
-**Left open, deliberately:** `WatchView` still lists only tripwires that have *fired* and still carries
-a now-stale "the armed catalogue has no read endpoint" note; it can enumerate armed-but-quiet observables
-against the new route. Not done here on file-ownership grounds (another agent was live in that
-directory). Likewise the two config-editing surfaces (credibility rubric, define-a-tripwire) are now
-unblocked but remain unwired — handed to FRONTEND in `tmp/conv/T11-config-read.md`.
+**Left open, deliberately:** ~~`WatchView` still lists only tripwires that have *fired*~~ — **closed by
+the 2026-07-20 live-QA remnant sweep** (below): the panel now enumerates armed-but-quiet observables
+against the new route and the stale note is gone. The two config-editing surfaces (credibility rubric,
+define-a-tripwire) are now unblocked but remain unwired — handed to FRONTEND in `tmp/conv/T11-config-read.md`.
 
 **Design-doc tails to enrich:** `spine/09 §"Hot-config & live-rebuild"` (the table lists what a user
 *does*; it should also say that the configuration layer is **readable**, because read-modify-write is the
 only safe way to edit a whole-section write) and `plan/sessions/API.md` scope 7 (now `GET|POST`).
+
+---
+
+### 2026-07-20 · Live-QA remnant sweep (frontend worktree, `feat/frontend-live`)
+
+- **Demo-scripted affordances are hidden in live mode, not deleted.** *Principle: keep the demo
+  deterministic & reproducible; demo narrative is hand-authored graded content.* The zero screen's two
+  lower query chips are demo-script bindings (one opens the scripted Rahwali drawer by a demo-only id,
+  one poses a subject-less question); in live mode they produced a 404 drawer and a context-free
+  refusal. Live now shows only the hero query. Rejected: deleting them outright (destroys the scripted
+  walk while residual #17's demo-vs-live boot decision is still open).
+- **Map overzoom (z8–z10) over vendoring more tiles.** *Principle: reproducibility / no un-vendored
+  requests.* Leaflet scales the vendored z7 tiles past their native ceiling — blurry basemap, crisp
+  pins, zero new tile requests, one-line revert. Rejected: vendoring z8–z10 tiles for the AOI
+  (heavier image, new asset pipeline, deadline-day risk).
+- **`/node` + `/evidence` id params became `:path` converters.** *Principle: one-click-to-source is
+  the non-negotiable.* Extraction mints descriptive ids containing `/`; ASGI decodes `%2F` before
+  routing, so the drawer 404'd on a node that HAS provenance — an honesty bug wearing an
+  infrastructure costume. OpenAPI path list unchanged; contract-log entry added. Rejected: renaming
+  ids in the frozen corpus (a data mutation to dodge a routing fix).
+- **The Watch panel now lists the armed catalogue.** *Principle: never overclaim, never underclaim.*
+  "Watching 3" with no way to see the three was an unnamed claim; the panel now renders
+  armed-but-quiet observables from the same `GET /config/observables` read the rail counts from, and
+  the catalogue-unreadable case says so instead of rendering a confident nothing. (Closes the
+  previous session's "left open" item.)
+- **Withheld hero answer root-caused, deliberately NOT patched.** *Principle: borderline-harmful →
+  ask first with options.* The entailment judge rejects 4/5 assembled sentences because it is shown
+  raw surface-form claim text while the answer speaks at the resolved layer (FD-2000 ≡ HQ-9/P,
+  LR-SAM ≡ HQ-9/P are the corpus's own alias traps), plus two sentence classes (derived metrics,
+  weighed-and-rejected) that are structurally not NLI-checkable. Options A–D in
+  `tmp/conv/QA-ask-withheld-entailment.md`; changing it changes flagship demo behaviour → user's call.
+- **d18 imagery provenance is faithful, filed for DATA-C.** The frozen bundle extracted the imagery
+  ANALYSIS SUMMARY text; the `.png` is a specimen, never machine-read (bbox/frame slots null). Claim
+  cards could surface source class (imagery · B) without any re-record —
+  `tmp/conv/QA-d18-imagery-claim-provenance.md`.
+
+**Design-doc tails to enrich:** `spine/09` (entailment validator: state the altitude problem and the
+chosen fix once decided); `product/00-ux-brief` (watch panel = armed + fired, two sources).
