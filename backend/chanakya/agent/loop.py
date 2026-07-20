@@ -205,6 +205,29 @@ def _typed_anchor(ctx: ToolContext, anchors: list[str], node_type: str) -> str |
     return None
 
 
+def _chokepoint_rank(ctx: ToolContext, match: dict[str, Any]) -> tuple[float, int, str]:
+    """Sort key for the nominated chokepoint components — best first under ``min()``.
+
+    Ordering, in priority: (1) highest **assessed node confidence** — an id sort would hand the flagship
+    trace whichever node happened to sort first, which on the real graph is a weaker, single-source
+    component; (2) among equally-confident candidates, the one whose supporting evidence is the most
+    *explanatory* (longest cited document span — a full sourced sentence beats a bare name-drop, so the
+    analyst clicking the citation lands on prose that justifies the pick); (3) node id, so the choice is
+    byte-stable across runs. Nothing here is graph-specific — no node is named.
+    """
+    node_id = str(match.get("node_id", ""))
+    node = ctx.nodes_by_id.get(node_id)
+    conf = node.confidence.assertion_confidence if (node is not None and node.confidence) else None
+    claim_ids = list(match.get("claim_ids") or (node.claim_ids if node is not None else []))
+    span_len = 0
+    for cid in claim_ids:
+        claim = ctx.claims.get(cid)
+        span = getattr(getattr(claim, "doc_ref", None), "span", None)
+        if span and len(span) == 2:
+            span_len += max(0, int(span[1]) - int(span[0]))
+    return (-(conf or 0.0), -span_len, node_id)
+
+
 def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens-hq9p-pk") -> AgentTrace:
     """The scripted ``link → gather → query_graph → cite`` plan for the flagship trace — no LLM.
 
@@ -251,7 +274,7 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
             f"No chokepoint component is currently identified near {vname} in the rebuilt view "
             f"(materiality has nominated none): insufficient evidence to name the fire-control chokepoint.",
         )
-    comp_id = pool[0]["node_id"]
+    comp_id = min(pool, key=lambda m: _chokepoint_rank(ctx, m))["node_id"]
 
     # who makes it → the canonical Manufacturer→Component edge (supplies-component), derived from the
     # ontology, NOT the literal 'manufactures' (Phase-1 tightened that to Manufacturer→Variant).
@@ -267,13 +290,16 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
             mfr_id = nb["neighbour_id"]
             break
 
-    # find_paths: the flagship basing → origin chain — only when the maker actually resolved.
-    if mfr_id is not None:
-        _call(ctx, trace, "graph_find_paths", {"src": site, "dst": mfr_id})
-        path = trace.last("find_paths")
-        if path is not None and path.result.get("hops"):
-            for hop in path.result["hops"]:
-                _call(ctx, trace, "graph_get_evidence", {"ref_id": hop["edge_id"]})
+    # find_paths: the flagship basing → origin chain. Trace to the origin MAKER when one resolved; when the
+    # maker is itself a Known Gap (no supplies-component edge in the view), still trace basing → the
+    # chokepoint COMPONENT — the chain the evidence does support — and report the missing supplier as the
+    # gap. Refusing outright would throw away a fully-sourced multi-hop answer to punish a known unknown.
+    dst = mfr_id if mfr_id is not None else comp_id
+    _call(ctx, trace, "graph_find_paths", {"src": site, "dst": dst})
+    path = trace.last("find_paths")
+    if path is not None and path.result.get("hops"):
+        for hop in path.result["hops"]:
+            _call(ctx, trace, "graph_get_evidence", {"ref_id": hop["edge_id"]})
 
     # cite the chokepoint + the non-negotiable: confirmed sole-source, or a Known Gap? (comp_id exists.)
     _call(ctx, trace, "graph_get_node", {"node_id": comp_id})
@@ -295,12 +321,16 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
             )
             missing = missing or [f"path:{site}->{mfr_id}"]
         else:
+            # No maker edge AND no basing→component path either — name both, not just the maker gap.
             edge_name = maker_edge or "manufacturer→component"
+            fp = trace.last("find_paths", ok_only=False)
+            detail = (fp.result.get("error") if fp is not None else None) or "no path found"
             reason = suff.get("reason") or (
                 f"Traced the fire-control chokepoint to {cname}, but the rebuilt view has no {edge_name} "
-                f"edge to a manufacturer, so the component's origin maker is unresolved."
+                f"edge to a manufacturer, and no path connects the basing site {_name(ctx, site)} to "
+                f"{cname} either: {detail}."
             )
-            missing = missing or [f"{edge_name}:{comp_id}"]
+            missing = missing or [f"{edge_name}:{comp_id}", f"path:{site}->{comp_id}"]
         return _refuse(trace, missing, reason, next_due=suff.get("next_coverage_due"), known_gap=suff.get("known_gap"))
     return trace
 

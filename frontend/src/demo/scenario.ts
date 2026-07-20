@@ -120,8 +120,13 @@ export const GRAPH_EDGES: GraphEdgeDef[] = [
 
 // ─────────────────────────── target queries (screen zero) ───────────────────────────
 
+// `hero` is BOTH the label the Ask affordance shows and the exact payload it POSTs to /ask (one string,
+// one source — a label/payload divergence is how the button silently fell off the hero path before).
+// It must stay byte-identical to `config/subjects.yaml` → lens-hq9p-pk → target_queries[0]: the backend's
+// primary hero matcher is an exact match on that string; the "trace…chokepoint" keyword rule is only the
+// safety net. Change one, change the other.
 export const TARGET_QUERIES = {
-  hero: 'Trace this battery back to its component supplier',
+  hero: 'Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint.',
   provenance: 'Is this node confirmed or probable — and on what evidence?',
   gaps: 'What do we not know here?',
 } as const

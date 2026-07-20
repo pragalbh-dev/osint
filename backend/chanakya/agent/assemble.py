@@ -71,7 +71,14 @@ def _from_paths(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
     if node_call is not None and node_call.result.get("materiality"):
         mat = node_call.result["materiality"]
         comp_id = node_call.result["node_id"]
-        refs = list(mat.get("contributing_refs") or node_call.result.get("claim_ids", []))
+        # ``contributing_refs`` carries claim ids AND edge ids by design (schemas/view.py MaterialityAttrs),
+        # but a citation must resolve to a real CLAIM or ``validate_answer`` flags citation_missing and the
+        # whole positive answer is withheld as a refusal. Keep only the refs that are claims; fall back to
+        # the node's own claim ids when materiality contributed none.
+        raw_refs = list(mat.get("contributing_refs") or []) or list(node_call.result.get("claim_ids", []))
+        refs = [r for r in raw_refs if r in ctx.claims]
+        if not refs:
+            refs = [c for c in node_call.result.get("claim_ids", []) if c in ctx.claims]
         suff = next((c for c in trace.all_of("check_sufficiency") if c.result.get("sufficient") is False), None)
         gap = f" — {suff.result.get('reason', '')}" if suff else ""
         built.sentences.append(

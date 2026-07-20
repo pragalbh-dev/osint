@@ -35,7 +35,15 @@ _CONSTRAINT_ITEM = {
         "attr": {"type": "string", "description": "attribute name: a raw attr, 'status', or a materiality "
                  "attr (chokepoint_status | chokepoint_count | substitutability_state)"},
         "op": {"type": "string", "enum": ["<", "<=", "=", "!=", ">", ">=", "in", "exists", "not_exists"]},
-        "value": {"description": "the comparison value (number / string / list); omit for exists/not_exists"},
+        # A type is MANDATORY here even though the value is polymorphic: the Anthropic API rejects the
+        # whole tool list with "tools.N.custom: Schema type is missing" if any property omits it, which
+        # takes the entire ReAct agent down the moment a key is present (keyless is unaffected, which is
+        # why this survived — the flagship path never exercises it).
+        "value": {
+            "type": ["number", "string", "boolean", "array"],
+            "items": {"type": ["number", "string", "boolean"]},
+            "description": "the comparison value (number / string / list); omit for exists/not_exists",
+        },
     },
     "required": ["attr", "op"],
     "additionalProperties": False,

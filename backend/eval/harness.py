@@ -248,12 +248,17 @@ def fire_relocation_observable(
 def run_hero_query(inp: ScenarioInputs, view: GraphView | None = None) -> AskAnswer:
     """Run the worked multi-hop query through ASK's deterministic fixed hero path (keyless-reproducible).
 
-    Uses the oracle's ``worked_query.text`` — which normalises to the subject lens's flagship
-    ``target_query`` — so ASK takes the scripted ``link→gather→query_graph→cite`` hero path with no LLM
-    call, giving a byte-stable answer/path on every run. ``claims`` is passed so each hop cites a real
-    source span and observed/inferred tags resolve.
+    Asks the **subject lens's** flagship ``target_queries[0]`` — the one string ASK matches exactly to take
+    the scripted ``link→gather→query_graph→cite`` hero path with no LLM call, giving a byte-stable
+    answer/path on every run. Deliberately NOT the oracle's ``worked_query.text``: the answer key is frozen
+    ground truth we grade against and must never double as the system's own input. Re-pointing the flagship
+    query is then a config edit (``config/subjects.yaml``), not an oracle edit. ``claims`` is passed so each
+    hop cites a real source span and observed/inferred tags resolve.
     """
     if view is None:
         view = build_view(inp)
-    question = inp.answer_key["worked_query"]["text"]
-    return ask(question, view, inp.config_store.snapshot(), llm=None, claims=inp.claims)
+    config = inp.config_store.snapshot()
+    lens = config.subjects.as_map().get(DEFAULT_LENS)
+    if lens is None or not lens.target_queries:
+        raise ValueError(f"subject lens {DEFAULT_LENS!r} declares no target_queries to run as the worked query")
+    return ask(lens.target_queries[0], view, config, llm=None, claims=inp.claims)
