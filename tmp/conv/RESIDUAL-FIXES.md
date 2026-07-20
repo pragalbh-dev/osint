@@ -204,17 +204,28 @@ deliberately**, since the failure is environment-dependent in both directions: t
 `frontend/dist` at all *and* with a stub `frontend/dist/index.html` present. No change needed. The
 register entry was stale.
 
-## 11. 🟢 D-P4.14 — the independence weight is applied twice — ⚠️ CONFIRMED, STILL NOT RATIFIED
+## 11. 🟢 D-P4.14 — the independence weight is applied twice — ✅ DECIDED (2026-07-20): KEEP, AND DISCLOSE
 
-Diagnosis verified: `group_confidence()` multiplies the strongest claim credibility by `group.weight`
-(magnitude) and `_effective_looks()` sums the same weights against `min_independent_groups` = 2 (count),
-while `spine/04` defines `c_g` as the max credibility with no weight factor and the gate as *≥2 groups*.
-The implementation is therefore **stricter** than the ratified design — it under-claims, never
-over-claims, which is why leaving it is safe. Now quantified: 86 of 334 groups weigh 0.5; **26 of 294
-assessed elements** would move confidence if corrected, and some sit near the 0.80 cut, so statuses could
-flip. **The flagship path is untouched either way** — both Rahwali groups weigh 1.0. Four options with a
-recommendation are in `tmp/conv/QA-T7-independence-weight-decision.md`. **Still needs the user's explicit
-call, as its own change.**
+**User's call, 2026-07-20: keep the current behaviour, and keep it stated here.** This is no longer an
+open question — it is a *deliberate, disclosed conservatism*, and it should be said out loud on the call
+and in the design note rather than quietly corrected:
+
+> The credibility layer applies the independence weight twice — once to the magnitude of a group's
+> contribution and once to the count of independent looks — which makes it **stricter** than `spine/04`
+> as written. It therefore **under-claims** confidence and never over-claims.
+
+Given the brief treats fabricated or inflated assessment as disqualifying, strict is the right direction
+to err, and saying so is stronger than a silent fix. The correction, if ever made, is a credibility
+retune that must land as **its own change with a before/after status table** — never folded into a QA
+sweep, which is exactly why it was not folded into one.
+
+Diagnosis, verified and retained as the record of what is being disclosed: `group_confidence()`
+multiplies the strongest claim credibility by `group.weight` (magnitude) and `_effective_looks()` sums
+the same weights against `min_independent_groups` = 2 (count), while `spine/04` defines `c_g` as the max
+credibility with no weight factor and the gate as *≥2 groups*. Quantified: 86 of 334 groups weigh 0.5;
+**26 of 294 assessed elements** would move confidence if corrected, and some sit near the 0.80 cut, so
+statuses could flip. **The flagship path is untouched either way** — both Rahwali groups weigh 1.0. The
+four options and the reasoning are preserved in `tmp/conv/QA-T7-independence-weight-decision.md`.
 
 ## 12. 🟢 DATA-C / answer-key items
 
