@@ -426,7 +426,7 @@ export interface LiveAnswerModel {
 
 /** "supplies-component" / "based_at" → "supplies component" / "based at". */
 export function humanizeEdge(edge: string): string {
-  return edge.replace(/[-_]/g, ' ').trim()
+  return humanizeToken(edge)
 }
 
 /** One hop → a readable "src — edge → dst" line (the walk's rungs). */
@@ -638,6 +638,45 @@ export interface LiveReviewOption {
   done: string // past-tense resolved marker
 }
 
+/** One weighted merge signal, as the resolver actually scored it (edge `attrs.breakdown`).
+ *  `score` is the raw 0..1 signal; `dots` is the same number in the app's tier grammar. */
+export interface MergeSignalRow {
+  key: string
+  label: string
+  score: number
+  dots: number
+}
+
+/** The identity case, split the way the merge card argues it: `matchedOn` is the long quiet
+ *  case FOR (every signal the resolver scored above zero), `differsOn` is the short loud case
+ *  AGAINST — derived from the two records themselves (type, stated location, coordinates,
+ *  conflicting attributes) plus every signal that scored EXACTLY zero, which is the resolver
+ *  telling us in its own words what it could not find. Both are computed; nothing is authored. */
+export interface LiveMergeEvidence {
+  confidence: number | null
+  matchedOn: MergeSignalRow[]
+  differsOn: string[]
+  /** what the merge demonstrably DOES — counted off the graph, never estimated */
+  consequence: string[]
+  /** what this card cannot tell the analyst. Printed instead of a plausible number (CLAUDE.md:
+   *  a fabricated consequence next to real data is worse than an admitted gap). */
+  unknowns: string[]
+  left: LiveReviewSide
+  right: LiveReviewSide
+}
+
+/** One side of a merge — the record itself, in analyst-facing terms. */
+export interface LiveReviewSide {
+  id: string
+  label: string
+  /** "basing site · probable · 1 claim" — the record's own facts, not a paraphrase */
+  sub: string
+  type: string
+  status: Status | null
+  claimCount: number
+  chokepoint: boolean
+}
+
 export interface LiveReviewContext {
   summary: string
   left?: { id: string; label: string }
@@ -650,6 +689,11 @@ export interface LiveReviewContext {
   // provenance drawer) and, when a supersession was held back, the gate's own words.
   provenance?: LiveAlertProvenanceModel | null
   holdReasons?: string[]
+  // merge only — the full identity case (see LiveMergeEvidence).
+  merge?: LiveMergeEvidence
+  // status-override / alert only — what the decision demonstrably changes, and what it cannot say.
+  consequence?: string[]
+  unknowns?: string[]
 }
 
 export interface LiveReviewItem {
@@ -657,11 +701,25 @@ export interface LiveReviewItem {
   reviewType: LiveReviewType // HitlDecision.type
   hitlVerb: 'merge' | 'status' | 'alert' // which /hitl/* route
   subject: string // the element's own id → HitlDecision.subject
-  kicker: string // small type label in the rail
-  title: string // one-line question
-  badge: string // priority-ish chip
+  kicker: string // small type label in the rail ("Merge · basing site")
+  /** WHAT this item is about — the two candidate records, the node, the observable. A queue row
+   *  has to be readable without opening it, so this is the entities, never the question. */
+  title: string
+  /** the one-line question the card asks ("Same system, or two?") — the card's headline */
+  question: string
+  note: string // second rail line: the one fact that most separates this row from its neighbours
+  badge: string // primary chip (confidence band / contradiction / first seen)
+  badges: string[] // badge + any materiality chips ("Touches a chokepoint")
+  /** ranking inputs — the three dimensions spine/05 triage is keyed on. Materiality and
+   *  confidence are real values off the graph; `null` confidence means unknown, which sorts
+   *  as *more* urgent, never less (recall-biased: unknown is never treated as safe). */
+  material: boolean
+  confidence: number | null
   options: LiveReviewOption[]
   context: LiveReviewContext
+  /** set by `groupReviewQueue` when this proposal is one of a connected run — carried onto the
+   *  card so the analyst sees, while deciding, that the proposal is not independent evidence. */
+  cluster?: { size: number; records: number; complete: boolean; note: string }
 }
 
 const MERGE_OPTIONS: LiveReviewOption[] = [
@@ -680,28 +738,221 @@ const ALERT_OPTIONS: LiveReviewOption[] = [
   { key: 'needs-more', label: 'Hold for a second look', done: 'Held' },
 ]
 
+// ── merge evidence, derived off the two records + the resolver's own breakdown ──────────────
+// `attrs.breakdown` on a candidate same-as edge is the resolver's per-signal merge score
+// (resolve/rconfig SIGNALS). Reading it is what turns "Close call" into an argument the analyst
+// can check. Nothing here re-scores or re-weights — it renders what the resolver recorded.
+
+/** The four merge signals, in analyst language (keys = resolve/rconfig SIGNALS). */
+const MERGE_SIGNAL_LABEL: Record<string, string> = {
+  attribute: 'Name & attributes',
+  relational: 'Shared neighbours in the graph',
+  temporal_consistency: 'Timeline consistent',
+  source_asserted: 'A source calls them the same',
+}
+
+/** What a signal scoring EXACTLY zero means, stated as an absence. This is the case AGAINST
+ *  merging in the resolver's own terms — it is not a paraphrase of the score, it is the score. */
+const MERGE_SIGNAL_ABSENT: Record<string, string> = {
+  attribute: 'Names and attributes do not match.',
+  relational: 'Nothing in the graph connects them — no shared neighbour.',
+  temporal_consistency: 'Their timelines are not consistent.',
+  source_asserted: 'No source states they are the same.',
+}
+
+/** dots → the band an analyst reads on the row. Uses the app's existing credibility tiers
+ *  (credibilityToDots) rather than a second, private set of thresholds. */
+const MERGE_BAND: Record<number, string> = {
+  4: 'Strong match',
+  3: 'Close call',
+  2: 'Weak match',
+  1: 'Very weak',
+}
+
+/** 'basing_site' / 'temporal_consistency' → 'basing site' / 'temporal consistency'. */
+export function humanizeToken(token: string): string {
+  return token.replace(/[-_]/g, ' ').trim()
+}
+
+function attrsBreakdown(edge: EdgeView): Record<string, number> {
+  const raw = edge.attrs?.breakdown
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {}
+  const out: Record<string, number> = {}
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (k !== 'total' && typeof v === 'number' && Number.isFinite(v)) out[k] = v
+  }
+  return out
+}
+
+function isChokepoint(node: NodeView | undefined): boolean {
+  const s = node?.materiality?.chokepoint_status
+  return s === 'candidate' || s === 'confirmed'
+}
+
+function reviewSide(id: string, node: NodeView | undefined): LiveReviewSide {
+  const claimCount = node?.claim_ids?.length ?? 0
+  const type = node?.type ?? 'record'
+  const status = node?.status ?? null
+  return {
+    id,
+    label: node?.name ?? id,
+    type,
+    status,
+    claimCount,
+    chokepoint: isChokepoint(node),
+    sub: [humanizeToken(type), status ?? 'unassessed', `${claimCount} claim${claimCount === 1 ? '' : 's'}`].join(' · '),
+  }
+}
+
+/** Great-circle distance in km — only ever used to state a difference the graph already holds. */
+function haversineKm(aLat: number, aLon: number, bLat: number, bLon: number): number {
+  const R = 6371
+  const toRad = (d: number) => (d * Math.PI) / 180
+  const dLat = toRad(bLat - aLat)
+  const dLon = toRad(bLon - aLon)
+  const h =
+    Math.sin(dLat / 2) ** 2 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)))
+}
+
+/** Scalar attribute values only — an object/array difference is not a sentence an analyst can read. */
+function scalarAttr(v: unknown): string | null {
+  if (typeof v === 'string') return v
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v)
+  return null
+}
+
+/** Attribute keys that are plumbing, not description — never rendered as a difference. */
+const ATTR_NOT_A_DIFFERENCE = new Set(['coordinates', 'resolved_from', 'merge_band', 'breakdown'])
+
+/** The case AGAINST, computed: what the two records actually disagree about, plus every
+ *  merge signal the resolver scored at exactly zero. Returns [] when nothing separates them —
+ *  the card then says so rather than manufacturing a doubt. */
+export function mergeDiffersOn(
+  left: NodeView | undefined,
+  right: NodeView | undefined,
+  breakdown: Record<string, number>,
+): string[] {
+  const out: string[] = []
+  if (left && right && left.type !== right.type) {
+    out.push(`Type — ${humanizeToken(left.type)} vs ${humanizeToken(right.type)}.`)
+  }
+
+  const lRaw = left?.location?.raw ?? null
+  const rRaw = right?.location?.raw ?? null
+  if (lRaw && rRaw && lRaw.trim().toLowerCase() !== rRaw.trim().toLowerCase()) {
+    out.push(`Stated location — “${lRaw}” vs “${rRaw}”.`)
+  } else if (lRaw && !rRaw) {
+    out.push(`Stated location — “${lRaw}” on one side, none recorded on the other.`)
+  } else if (rRaw && !lRaw) {
+    out.push(`Stated location — “${rRaw}” on one side, none recorded on the other.`)
+  }
+
+  const lLat = left?.location?.wgs84_lat
+  const lLon = left?.location?.wgs84_lon
+  const rLat = right?.location?.wgs84_lat
+  const rLon = right?.location?.wgs84_lon
+  if (
+    typeof lLat === 'number' && typeof lLon === 'number' &&
+    typeof rLat === 'number' && typeof rLon === 'number'
+  ) {
+    const km = haversineKm(lLat, lLon, rLat, rLon)
+    if (km >= 1) out.push(`Coordinates — ${Math.round(km).toLocaleString()} km apart.`)
+  }
+
+  const lAttrs = left?.attrs ?? {}
+  const rAttrs = right?.attrs ?? {}
+  for (const key of Object.keys(lAttrs)) {
+    if (ATTR_NOT_A_DIFFERENCE.has(key) || !(key in rAttrs)) continue
+    const a = scalarAttr(lAttrs[key])
+    const b = scalarAttr(rAttrs[key])
+    if (a != null && b != null && a !== b) out.push(`${humanizeToken(key)} — ${a} vs ${b}.`)
+  }
+
+  for (const [key, score] of Object.entries(breakdown)) {
+    if (score !== 0) continue
+    out.push(MERGE_SIGNAL_ABSENT[key] ?? `No ${humanizeToken(key)} signal.`)
+  }
+  return out
+}
+
 export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   const items: LiveReviewItem[] = []
-  const nodeLabel = (id: string): string => view.nodes.find((n) => n.id === id)?.name ?? id
+  const nodeIndex = new Map(view.nodes.map((n) => [n.id, n]))
+  const nodeLabel = (id: string): string => nodeIndex.get(id)?.name ?? id
   const edgeIndex = new Map(view.edges.map((e) => [e.id, e]))
 
-  // 1. Identity merges — a same-as edge is a live "are these one record or two?".
+  // How many real (assertional) edges hang off each node — "what reconnects if you merge".
+  // Identity/version links are excluded: merging does not re-point a same-as onto anything.
+  const degree = new Map<string, number>()
+  for (const edge of view.edges) {
+    if (isStatuslessEdge(edge)) continue
+    degree.set(edge.source, (degree.get(edge.source) ?? 0) + 1)
+    degree.set(edge.target, (degree.get(edge.target) ?? 0) + 1)
+  }
+
+  // 1. Identity merges — a same-as edge is a live "are these one record or two?". The row
+  //    names both candidates; the card carries the resolver's own per-signal case.
   for (const edge of view.edges) {
     if (edge.type !== 'same-as') continue
+    const leftNode = nodeIndex.get(edge.source)
+    const rightNode = nodeIndex.get(edge.target)
+    const left = reviewSide(edge.source, leftNode)
+    const right = reviewSide(edge.target, rightNode)
+    const breakdown = attrsBreakdown(edge)
+    const dots = edge.merge_confidence != null ? credibilityToDots(edge.merge_confidence) : undefined
+    const band = dots != null ? (MERGE_BAND[dots] ?? 'Close call') : 'Confidence not recorded'
+
+    const matchedOn: MergeSignalRow[] = Object.entries(breakdown)
+      .filter(([, score]) => score > 0)
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([key, score]) => ({
+        key,
+        label: MERGE_SIGNAL_LABEL[key] ?? humanizeToken(key),
+        score,
+        dots: credibilityToDots(score),
+      }))
+    const differsOn = mergeDiffersOn(leftNode, rightNode, breakdown)
+
+    const joinedClaims = new Set([...(leftNode?.claim_ids ?? []), ...(rightNode?.claim_ids ?? [])]).size
+    const reconnects = (degree.get(edge.source) ?? 0) + (degree.get(edge.target) ?? 0)
+    const consequence = [
+      `Joins ${joinedClaims} sourced claim${joinedClaims === 1 ? '' : 's'} onto one record (${left.label} ${left.claimCount}, ${right.label} ${right.claimCount}).`,
+      `${reconnects} graph edge${reconnects === 1 ? ' re-points' : 's re-point'} at the merged record.`,
+    ]
+    if (left.chokepoint || right.chokepoint) {
+      const which = left.chokepoint && right.chokepoint ? 'Both records are' : `${(left.chokepoint ? left : right).label} is a`
+      consequence.push(`${which} candidate chokepoint — merging changes what the chokepoint set contains.`)
+    }
+    // NEVER a predicted status. Statuses are recomputed by rebuild() from the joined claim set;
+    // printing a number here would be exactly the fabricated consequence the brief disqualifies.
+    const unknowns = [
+      `Status is recomputed at rebuild from the joined claims — this card does not predict what ${left.label} and ${right.label} become.`,
+    ]
+
     items.push({
       itemId: `merge:${edge.id}`,
       reviewType: 'merge',
       hitlVerb: 'merge',
       subject: edge.id,
-      kicker: 'Merge',
-      title: 'Same system, or two?',
-      badge: 'Close call',
+      kicker: left.type === right.type ? `Merge · ${humanizeToken(left.type)}` : `Merge · ${humanizeToken(left.type)} ↔ ${humanizeToken(right.type)}`,
+      title: `${left.label} ↔ ${right.label}`,
+      question: 'Same system, or two?',
+      note:
+        edge.merge_confidence != null
+          ? `identity match ${edge.merge_confidence.toFixed(2)} · ${matchedOn.length} of ${Object.keys(breakdown).length || 4} signals`
+          : 'identity match not recorded',
+      badge: band,
+      badges: [band, ...(left.chokepoint || right.chokepoint ? ['Touches a chokepoint'] : [])],
+      material: left.chokepoint || right.chokepoint,
+      confidence: edge.merge_confidence ?? null,
       options: MERGE_OPTIONS,
       context: {
-        summary: `${nodeLabel(edge.source)} and ${nodeLabel(edge.target)} may be one record.`,
-        left: { id: edge.source, label: nodeLabel(edge.source) },
-        right: { id: edge.target, label: nodeLabel(edge.target) },
-        dots: edge.merge_confidence != null ? credibilityToDots(edge.merge_confidence) : undefined,
+        summary: `${left.label} and ${right.label} may be one record.`,
+        left: { id: edge.source, label: left.label },
+        right: { id: edge.target, label: right.label },
+        dots,
+        merge: { confidence: edge.merge_confidence ?? null, matchedOn, differsOn, consequence, unknowns, left, right },
       },
     })
   }
@@ -712,21 +963,38 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
     const opposing = el.opposing_claims ?? []
     const contradicted = el.status === 'contradicted'
     if (opposing.length === 0 && !contradicted) continue
-    const label = 'name' in el ? (el.name ?? el.id) : el.id
+    const isNode = 'name' in el
+    const label = isNode ? ((el as NodeView).name ?? el.id) : displayNameOf(view, el.id)
+    const type = isNode ? (el as NodeView).type : (el as EdgeView).type
+    const material = isNode ? isChokepoint(el as NodeView) : false
+    const badge = contradicted ? 'Contradiction' : 'Close call'
     items.push({
       itemId: `ovr:${el.id}`,
       reviewType: 'status-override',
       hitlVerb: 'status',
       subject: el.id,
-      kicker: 'Status override',
-      title: 'Is this really confirmed?',
-      badge: contradicted ? 'Contradiction' : 'Close call',
+      kicker: `Status override · ${humanizeToken(type)}`,
+      title: label,
+      question: 'Is this really confirmed?',
+      note: contradicted
+        ? `reads contradicted — credible sources disagree`
+        : `reads ${el.status ?? 'unset'} · ${opposing.length} opposing claim${opposing.length === 1 ? '' : 's'}`,
+      badge,
+      badges: [badge, ...(material ? ['Touches a chokepoint'] : [])],
+      material,
+      confidence: el.confidence?.assertion_confidence ?? null,
       options: OVERRIDE_OPTIONS,
       context: {
         summary: `${label} reads ${el.status ?? 'unset'} — ${
           opposing.length ? `${opposing.length} opposing claim${opposing.length === 1 ? '' : 's'} on file` : 'a contradiction routed it to you'
         }.`,
         detail: opposing,
+        consequence: [
+          `Overriding sets ${label}'s status by hand and propagates it — every answer that walks through ${label} is re-answered from the new status.`,
+        ],
+        unknowns: [
+          'How many downstream answers change is not counted here — it depends on which questions get asked.',
+        ],
       },
     })
   }
@@ -738,28 +1006,204 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
     if (alert.disposition != null) continue
     const subject = alert.subject ?? alert.observable_id
     const firing = alertToFiring(alert, edgeIndex)
+    const observable = humanizeObservableId(alert.observable_id)
+    const subjectName = alert.subject ? nodeLabel(alert.subject) : null
+    const material = alert.subject ? isChokepoint(nodeIndex.get(alert.subject)) : false
     items.push({
       itemId: `alrt:${firing.key}`,
       reviewType: 'alert-disposition',
       hitlVerb: 'alert',
       subject,
-      kicker: 'Alert',
-      title: 'A tripwire fired. Is it real?',
+      kicker: `Alert · ${observable.toLowerCase()}`,
+      title: subjectName ? `${observable} · ${subjectName}` : observable,
+      question: 'A tripwire fired. Is it real?',
+      note: firing.changed
+        ? `${firing.changed.from || '—'} → ${firing.changed.to || '—'}`
+        : firing.firedTs
+          ? `fired ${firing.firedTs}`
+          : 'fired · no before/after recorded',
       badge: 'First seen',
+      badges: ['First seen', ...(alert.severity ? [alert.severity] : []), ...(material ? ['Touches a chokepoint'] : [])],
+      material,
+      confidence: firing.provenance?.assertionConfidence ?? null,
       options: ALERT_OPTIONS,
       context: {
         // named, not keyed: "Basing relocation fired on HQ-9B battery", not "obs-basing-relocation
         // fired on unit_hq9b". nodeLabel falls back to the id when the graph has no name for it.
-        summary: `Tripwire ${humanizeObservableId(alert.observable_id)} fired${
-          alert.subject ? ` on ${nodeLabel(alert.subject)}` : ''
-        }.`,
+        summary: `Tripwire ${observable} fired${subjectName ? ` on ${subjectName}` : ''}.`,
         changed: firing.changed ?? undefined,
         severity: alert.severity,
         provenance: firing.provenance,
         holdReasons: firing.holdReasons,
+        consequence: [
+          'Accepting records the change as real; dismissing marks it noise. Either way the disposition is written back and feeds tripwire tuning.',
+        ],
+        unknowns: firing.provenance
+          ? []
+          : ['No evidence was recorded for this firing — there is nothing to open behind it.'],
       },
     })
   }
 
   return items
+}
+
+// ───────────────── queue triage: deterministic order + identity clustering ─────────────────
+// A wall of near-identical proposals defeats attention-triage as thoroughly as no queue at all.
+// Two moves, neither of which removes or auto-decides ANYTHING (spine/05: escalation recall
+// stays ≈ 1.0 — the job is to make the escalation legible, not smaller):
+//
+//   1. ORDER — the ★ control points lead in the backend's own deterministic priority
+//      (hitl/triage STAR_TYPES + star_priority), then materiality, then confidence. No LLM,
+//      no clock: the same view always yields the same order (the demo must replay identically).
+//   2. CLUSTER — merge proposals that share a record are one connected identity question, not
+//      N unrelated ones. They are grouped under a header that STATES the shape of the cluster
+//      (how many records, how many of the possible pairs are proposed); every member row is
+//      still individually present and individually decidable underneath it.
+
+/** Backend hitl/triage.TriageConfig.star_priority — mirrored so the client cannot drift from it. */
+const STAR_PRIORITY: Record<LiveReviewType, number> = {
+  'status-override': 0,
+  merge: 1,
+  'alert-disposition': 2,
+}
+
+/** Smallest cluster worth collapsing. Two proposals are a pair, not a blob. */
+const CLUSTER_MIN_ITEMS = 3
+
+export interface LiveReviewGroup {
+  key: string
+  kind: 'single' | 'cluster'
+  kicker: string
+  /** cluster only — what the cluster IS, counted: records involved, proposals, density */
+  title: string
+  note: string
+  badges: string[]
+  items: LiveReviewItem[]
+  material: boolean
+}
+
+/** Deterministic analyst-presentation order: ★ priority, then materiality, then the most
+ *  confident identity claim first (an unknown confidence sorts as urgent, never as safe). */
+export function orderReviewQueue(items: LiveReviewItem[]): LiveReviewItem[] {
+  return [...items].sort((a, b) => {
+    const star = STAR_PRIORITY[a.reviewType] - STAR_PRIORITY[b.reviewType]
+    if (star !== 0) return star
+    if (a.material !== b.material) return a.material ? -1 : 1
+    const ac = a.confidence ?? Number.POSITIVE_INFINITY
+    const bc = b.confidence ?? Number.POSITIVE_INFINITY
+    if (ac !== bc) return bc - ac
+    return a.itemId.localeCompare(b.itemId)
+  })
+}
+
+/** Union-find over the merge proposals' endpoints → connected identity clusters. */
+function mergeComponents(items: LiveReviewItem[]): Map<string, string> {
+  const parent = new Map<string, string>()
+  const find = (x: string): string => {
+    let root = parent.get(x) ?? x
+    if (!parent.has(x)) parent.set(x, x)
+    while (root !== (parent.get(root) ?? root)) root = parent.get(root) ?? root
+    return root
+  }
+  const union = (a: string, b: string) => {
+    const ra = find(a)
+    const rb = find(b)
+    if (ra !== rb) parent.set(ra, rb)
+  }
+  for (const item of items) {
+    const l = item.context.left?.id
+    const r = item.context.right?.id
+    if (l && r) union(l, r)
+  }
+  const out = new Map<string, string>()
+  for (const item of items) {
+    const l = item.context.left?.id
+    if (l) out.set(item.itemId, find(l))
+  }
+  return out
+}
+
+/** The queue as an analyst should meet it: ordered, with runs of connected identity proposals
+ *  collapsed into one cluster each. Nothing is dropped — `groups.flatMap(g => g.items)` is a
+ *  permutation of the input. */
+export function groupReviewQueue(items: LiveReviewItem[]): LiveReviewGroup[] {
+  const ordered = orderReviewQueue(items)
+  const merges = ordered.filter((i) => i.reviewType === 'merge')
+  const component = mergeComponents(merges)
+
+  const clusters = new Map<string, LiveReviewItem[]>()
+  for (const item of merges) {
+    const key = component.get(item.itemId)
+    if (!key) continue
+    const bucket = clusters.get(key)
+    if (bucket) bucket.push(item)
+    else clusters.set(key, [item])
+  }
+
+  const groups: LiveReviewGroup[] = []
+  const clustered = new Set<string>()
+  for (const [key, members] of clusters) {
+    if (members.length < CLUSTER_MIN_ITEMS) continue
+    members.forEach((m) => clustered.add(m.itemId))
+    const records = new Set<string>()
+    for (const m of members) {
+      if (m.context.left) records.add(m.context.left.id)
+      if (m.context.right) records.add(m.context.right.id)
+    }
+    const n = records.size
+    const possiblePairs = (n * (n - 1)) / 2
+    const complete = members.length >= possiblePairs && possiblePairs > 0
+    const names = members
+      .flatMap((m) => [m.context.merge?.left, m.context.merge?.right])
+      .filter((s): s is LiveReviewSide => s != null)
+    const uniqueNames = [...new Map(names.map((s) => [s.id, s.label])).values()]
+    const type = members[0].context.merge?.left.type
+    // The density is the finding: when every possible pair is proposed, the proposals are not
+    // independent evidence, and saying so is the difference between 28 decisions and one.
+    const note = complete
+      ? `every one of the ${possiblePairs} possible pairs is proposed — these are not independent proposals`
+      : `${members.length} of ${possiblePairs} possible pairs proposed — ${uniqueNames.slice(0, 3).join(', ')}${uniqueNames.length > 3 ? `, +${uniqueNames.length - 3}` : ''}`
+    const cluster = { size: members.length, records: n, complete, note }
+    groups.push({
+      key: `cluster:${key}`,
+      kind: 'cluster',
+      kicker: `Identity cluster${type ? ` · ${humanizeToken(type)}` : ''}`,
+      title: `${n} records, ${members.length} merge proposals`,
+      note,
+      badges: members.some((m) => m.material) ? ['Touches a chokepoint'] : [],
+      // members carry their cluster with them, so the card the analyst opens says the same
+      // thing the group header said — the proposal is one of a connected run.
+      items: members.map((m) => ({ ...m, cluster })),
+      material: members.some((m) => m.material),
+    })
+  }
+
+  for (const item of ordered) {
+    if (clustered.has(item.itemId)) continue
+    groups.push({
+      key: item.itemId,
+      kind: 'single',
+      kicker: item.kicker,
+      title: item.title,
+      note: item.note,
+      badges: item.badges,
+      items: [item],
+      material: item.material,
+    })
+  }
+
+  // Group order: ★ priority of the lead item, materiality, then SMALL first — a crisp two-record
+  // decision is answerable now; a large cluster is one systemic question that can be met as a
+  // unit. Ties break on key so the order replays identically.
+  return groups.sort((a, b) => {
+    const star = STAR_PRIORITY[a.items[0].reviewType] - STAR_PRIORITY[b.items[0].reviewType]
+    if (star !== 0) return star
+    if (a.material !== b.material) return a.material ? -1 : 1
+    if (a.items.length !== b.items.length) return a.items.length - b.items.length
+    const ac = a.items[0].confidence ?? Number.POSITIVE_INFINITY
+    const bc = b.items[0].confidence ?? Number.POSITIVE_INFINITY
+    if (ac !== bc) return bc - ac
+    return a.key.localeCompare(b.key)
+  })
 }

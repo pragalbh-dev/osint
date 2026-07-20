@@ -236,12 +236,27 @@ export interface QueueItem {
   type: string // shown as the small kicker
   subject: string
   badge: string // priority badge
+  /** WHICH records this row is about — a queue row must be readable without opening it.
+   *  Taken from the card each row opens, so the rail and the card cannot disagree. */
+  detail: string
 }
 
 export const QUEUE_ITEMS: QueueItem[] = [
-  { id: 'merge', type: 'Merge', subject: 'Same system, or two?', badge: 'Close call' },
-  { id: 'override', type: 'Status override', subject: 'Is this really confirmed?', badge: 'Close call' },
-  { id: 'alert', type: 'Alert', subject: 'A tripwire fired. Is it real?', badge: 'First seen' },
+  { id: 'merge', type: 'Merge · variant', subject: 'Same system, or two?', badge: 'Close call', detail: 'HQ-9/P ↔ HQ-9BE' },
+  {
+    id: 'override',
+    type: 'Status override · basing site',
+    subject: 'Is this really confirmed?',
+    badge: 'Close call',
+    detail: 'Karachi-East · 09 May 2025',
+  },
+  {
+    id: 'alert',
+    type: 'Alert · basing relocation',
+    subject: 'A tripwire fired. Is it real?',
+    badge: 'First seen',
+    detail: 'occupied @ Rawalpindi → occupied @ Rahwali',
+  },
 ]
 
 // Merge card — HQ-9/P vs HQ-9BE. Matched-on is long & quiet; differs-on short & loud.

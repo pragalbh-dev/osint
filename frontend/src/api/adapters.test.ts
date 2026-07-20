@@ -10,7 +10,10 @@ import {
   edgeToKind,
   evidenceToDrawerModel,
   formatCoord,
+  groupReviewQueue,
   hopLine,
+  mergeDiffersOn,
+  orderReviewQueue,
   humanizeEdge,
   humanizeObservableId,
   isKnownElementId,
@@ -918,5 +921,217 @@ describe('viewToTripwires / alertToFiring', () => {
       'newer-below-probable',
       'newer-deception-gate:decoy-risk',
     ])
+  })
+})
+
+// ─────────────── review-queue legibility: row identity, evidence, triage ───────────────
+// The failure this covers: 40+ rows all reading "Merge · Close call · Same system, or two?".
+// A row must name its own subject, the card must be built from the clicked item, and a run of
+// connected proposals must read as one cluster — WITHOUT anything being dropped or auto-decided.
+
+describe('review queue — rows identify themselves', () => {
+  const RVIEW: GraphView = {
+    nodes: [
+      {
+        id: 'karachi_adc',
+        type: 'basing_site',
+        name: 'Army Air Defence Centre, Karachi',
+        status: 'probable',
+        claim_ids: ['c1'],
+        location: { raw: 'Karachi' },
+        attrs: { site_type: 'air defence centre' },
+      },
+      {
+        id: 'sargodha',
+        type: 'basing_site',
+        name: 'Sargodha',
+        status: 'probable',
+        claim_ids: ['c2'],
+        attrs: { site_type: 'deployment site' },
+      },
+      {
+        id: 'ht233',
+        type: 'component',
+        name: 'HT-233',
+        status: 'confirmed',
+        claim_ids: ['c3', 'c4'],
+        materiality: { chokepoint_status: 'candidate' },
+      },
+      { id: 'type305b', type: 'component', name: 'Type 305B', status: 'probable', claim_ids: ['c5'] },
+    ],
+    edges: [
+      {
+        id: 'sa:karachi',
+        type: 'same-as',
+        source: 'karachi_adc',
+        target: 'sargodha',
+        merge_confidence: 0.63,
+        attrs: {
+          merge_band: 'candidate',
+          breakdown: { attribute: 0.46, relational: 1, temporal_consistency: 1, source_asserted: 0, total: 0.63 },
+        },
+      },
+      {
+        id: 'sa:radar',
+        type: 'same-as',
+        source: 'ht233',
+        target: 'type305b',
+        merge_confidence: 0.82,
+        attrs: { breakdown: { attribute: 0.9, relational: 0, temporal_consistency: 1, source_asserted: 0, total: 0.82 } },
+      },
+      { id: 'e1', type: 'supplies-component', source: 'ht233', target: 'type305b', status: 'confirmed' },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  const queue = viewToReviewQueue(RVIEW)
+  const karachi = queue.find((i) => i.subject === 'sa:karachi')!
+  const radar = queue.find((i) => i.subject === 'sa:radar')!
+
+  it('titles a merge row with BOTH candidate records, not a generic question', () => {
+    expect(karachi.title).toBe('Army Air Defence Centre, Karachi ↔ Sargodha')
+    expect(radar.title).toBe('HT-233 ↔ Type 305B')
+    // the question moves to the card headline; it is no longer what distinguishes a row
+    expect(karachi.question).toBe('Same system, or two?')
+    expect(karachi.title).not.toBe(radar.title)
+  })
+
+  it('bands the badge off the recorded identity confidence instead of a fixed "Close call"', () => {
+    expect(karachi.badge).toBe('Close call') // credibilityToDots(0.63) === 3
+    expect(radar.badge).toBe('Strong match') // credibilityToDots(0.82) === 4
+    expect(karachi.note).toContain('0.63')
+  })
+
+  it('flags materiality so triage can lead with it', () => {
+    expect(radar.material).toBe(true)
+    expect(radar.badges).toContain('Touches a chokepoint')
+    expect(karachi.material).toBe(false)
+  })
+
+  it('renders the resolver’s own per-signal breakdown as the case FOR', () => {
+    const labels = karachi.context.merge!.matchedOn.map((r) => r.label)
+    // zero-scored signals are NOT in matched-on — they are the case against
+    expect(labels).not.toContain('A source calls them the same')
+    expect(labels).toContain('Shared neighbours in the graph')
+    expect(karachi.context.merge!.matchedOn[0].score).toBe(1)
+  })
+
+  it('derives the case AGAINST from the records themselves + the zero-scored signals', () => {
+    const differs = karachi.context.merge!.differsOn
+    expect(differs.some((d) => d.includes('Stated location'))).toBe(true)
+    expect(differs.some((d) => d.includes('air defence centre') && d.includes('deployment site'))).toBe(true)
+    expect(differs).toContain('No source states they are the same.')
+  })
+
+  it('counts the consequence off the graph and admits what it cannot predict', () => {
+    const m = karachi.context.merge!
+    expect(m.consequence[0]).toContain('Joins 2 sourced claims')
+    expect(m.consequence[1]).toContain('0 graph edges') // neither basing site has an assertional edge
+    // the radar pair DOES have one real edge on each endpoint
+    expect(radar.context.merge!.consequence[1]).toContain('2 graph edges re-point')
+    // never a predicted status — the one number this card must not invent
+    expect(m.unknowns.join(' ')).toContain('recomputed at rebuild')
+    expect(JSON.stringify(m.consequence)).not.toContain('node statuses')
+  })
+
+  it('names the chokepoint consequence when a candidate chokepoint is involved', () => {
+    expect(radar.context.merge!.consequence.join(' ')).toContain('candidate chokepoint')
+  })
+})
+
+describe('mergeDiffersOn', () => {
+  it('states a coordinate distance when both sides are located', () => {
+    const left = { id: 'a', type: 'basing_site', location: { wgs84_lat: 24.86, wgs84_lon: 67.01 } }
+    const right = { id: 'b', type: 'basing_site', location: { wgs84_lat: 32.05, wgs84_lon: 72.67 } }
+    const out = mergeDiffersOn(left, right, {})
+    expect(out.some((d) => /Coordinates — [\d,]+ km apart\./.test(d))).toBe(true)
+  })
+
+  it('says a type mismatch out loud', () => {
+    expect(mergeDiffersOn({ id: 'a', type: 'unit' }, { id: 'b', type: 'basing_site' }, {})).toContain(
+      'Type — unit vs basing site.',
+    )
+  })
+
+  it('returns nothing when the two records genuinely do not conflict', () => {
+    const same = { id: 'a', type: 'variant', attrs: { family: 'HQ-16' } }
+    expect(mergeDiffersOn(same, { ...same, id: 'b' }, { attribute: 0.9, relational: 0.5 })).toEqual([])
+  })
+})
+
+describe('orderReviewQueue / groupReviewQueue', () => {
+  // one 4-record blob (all 6 pairs proposed) + two unrelated pairs + one override
+  const names = ['Punjab', 'Sindh', 'Sargodha', 'Karachi']
+  const blobNodes = names.map((n, i) => ({ id: `b${i}`, type: 'basing_site', name: n, claim_ids: [`c${i}`] }))
+  const blobEdges = []
+  for (let i = 0; i < 4; i++) {
+    for (let j = i + 1; j < 4; j++) {
+      blobEdges.push({
+        id: `sa:b${i}|b${j}`,
+        type: 'same-as',
+        source: `b${i}`,
+        target: `b${j}`,
+        merge_confidence: 0.6,
+        attrs: { breakdown: { attribute: 0.5, relational: 1, temporal_consistency: 1, source_asserted: 0 } },
+      })
+    }
+  }
+  const GVIEW: GraphView = {
+    nodes: [
+      ...blobNodes,
+      { id: 'cpmiec', type: 'manufacturer', name: 'CPMIEC', claim_ids: ['x1'] },
+      { id: 'cnpmiec', type: 'manufacturer', name: 'China National Precision Machinery', claim_ids: ['x2'] },
+      { id: 'ly80', type: 'variant', name: 'LY-80', claim_ids: ['y1'] },
+      { id: 'hq16', type: 'variant', name: 'HQ-16', claim_ids: ['y2'] },
+      { id: 'contra', type: 'unit', name: 'HQ-9B fire unit', status: 'contradicted' },
+    ],
+    edges: [
+      ...blobEdges,
+      { id: 'sa:org', type: 'same-as', source: 'cpmiec', target: 'cnpmiec', merge_confidence: 0.9 },
+      { id: 'sa:var', type: 'same-as', source: 'ly80', target: 'hq16', merge_confidence: 0.7 },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  const queue = viewToReviewQueue(GVIEW)
+  const groups = groupReviewQueue(queue)
+
+  it('never loses an item — the groups are a permutation of the queue', () => {
+    const flat = groups.flatMap((g) => g.items.map((i) => i.itemId)).sort()
+    expect(flat).toEqual(queue.map((i) => i.itemId).sort())
+    expect(groups.flatMap((g) => g.items)).toHaveLength(9) // 8 merges + 1 override
+  })
+
+  it('collapses the connected run into ONE cluster and leaves the isolated pairs alone', () => {
+    const clusters = groups.filter((g) => g.kind === 'cluster')
+    expect(clusters).toHaveLength(1)
+    expect(clusters[0].items).toHaveLength(6)
+    expect(clusters[0].title).toBe('4 records, 6 merge proposals')
+    // the density IS the finding: every possible pair proposed ⇒ not independent evidence
+    expect(clusters[0].note).toContain('every one of the 6 possible pairs is proposed')
+    expect(groups.filter((g) => g.kind === 'single')).toHaveLength(3) // 2 pairs + the override
+  })
+
+  it('carries the cluster onto each member so the card says what the header said', () => {
+    const member = groups.find((g) => g.kind === 'cluster')!.items[0]
+    expect(member.cluster).toMatchObject({ size: 6, records: 4, complete: true })
+  })
+
+  it('leads with the ★ pinned order (status-override, merge, alert), then materiality', () => {
+    expect(groups[0].items[0].reviewType).toBe('status-override')
+    const ordered = orderReviewQueue(queue)
+    expect(ordered[0].reviewType).toBe('status-override')
+    // among merges, the most confident identity claim comes first
+    const merges = ordered.filter((i) => i.reviewType === 'merge')
+    expect(merges[0].subject).toBe('sa:org')
+  })
+
+  it('puts a crisp two-record decision ahead of the systemic cluster', () => {
+    const kinds = groups.map((g) => g.kind)
+    expect(kinds.lastIndexOf('cluster')).toBe(kinds.length - 1)
   })
 })
