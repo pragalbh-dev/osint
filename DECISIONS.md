@@ -1172,3 +1172,56 @@ not just the two endpoints).
 the now-correct copy reads "Pakistan Air Force moved from PAF Base Nur Khan to Rahwali airfield" —
 faithful to the graph, wrong about the world. Filed for DATA/RESOLVE in
 `tmp/conv/T6-to-DATA-unit-hq9b-named-pakistan-air-force.md`.
+
+## QA T11 — a read side for the config layer (branch `qa/t11-config-read`, 2026-07-20)
+
+- **A generic `GET /config/{section}`, not a `GET /observables`.** *Principle: config-driven &
+  extensible — "architecture explicitly includes a configuration / framework layer for decision-making
+  and HITL at any spine layer that needs it".* The presenting symptom was one rail label, but the
+  cause was that the whole config layer was write-only. One generic read closes three logged gaps at
+  once: the watching-catalogue bug, the frontend's read-modify-write blocker
+  (`tmp/conv/FRONTEND-to-API-config-readmodifywrite.md`), and the T6-shaped "the SPA can't read
+  section X" hole. Rejected: a narrow observables route (fixes the label, leaves the config editor
+  blocked), per-section read DTOs (drift from the write shape on the first new field), and making the
+  POST shallow-merge instead (credibility-only, and makes deleting a key impossible).
+
+- **The read serves the live store, never `config/*.yaml`.** *Principle: the hot-config rule — nothing
+  a user does in-app requires a restart.* A read off disk would be a different value from the one the
+  next `rebuild()` uses the moment anyone edits config in-app. The test that proves the seam is
+  `test_config_get_reflects_a_post_with_no_restart`; the product-level proof is a 4th observable armed
+  over HTTP showing up in the rail after the refetch, with no restart and no page reload.
+
+- **Optimistic concurrency is opt-in, not mandated.** *Principle: don't break a frozen contract for a
+  hazard the demo doesn't have.* The POST expected no version handle, so `if_version` is optional:
+  present ⇒ a stale write 409s instead of clobbering; absent ⇒ exactly the previous last-writer-wins
+  behaviour. Rejected: a required `If-Match` (breaks every existing caller for a single-analyst app).
+
+- **Every config section is readable — verified, not assumed.** *Principle: secrets live in `.env`,
+  never in code, logs or config.* `config/*.yaml` greps clean of credential-shaped keys and
+  `ConfigBundle` has no env-sourced field, so there is nothing to withhold — and a section that cannot
+  be read cannot be edited, since editing is read-modify-write. The invariant to preserve going forward
+  is "config carries no secrets", not "this endpoint happens to be safe".
+
+- **Two true numbers beat one ambiguous one.** *Principle: never overclaim — and an underclaim is the
+  same failure, quieter.* The rail derived "Watching" from the alert feed, so a system with three armed
+  tripwires and nothing yet fired rendered `0 — none fired`, which a reviewer reads as "nothing is being
+  monitored". It now states **armed** (from the catalogue) and **fired** (from the feed) separately:
+  `3 armed · none fired` → `3 armed · 1 fired`. Rejected: showing the armed count alone (loses the
+  fired distinction the review queue depends on) and inferring armed from the seeded demo constant
+  (hardcoding config into the client).
+
+- **Unknown is rendered as unknown, not as zero.** *Principle: where evidence is absent, say what is
+  missing.* If the catalogue read fails the row degrades to an em-dash plus "armed count unavailable" —
+  never a confident `0`. An empty catalogue that *was* read is a genuine `0 armed` and looks different.
+  The derivation lives in a pure `watchSummary()` precisely so these rules are unit-tested rather than
+  trapped in a component.
+
+**Left open, deliberately:** `WatchView` still lists only tripwires that have *fired* and still carries
+a now-stale "the armed catalogue has no read endpoint" note; it can enumerate armed-but-quiet observables
+against the new route. Not done here on file-ownership grounds (another agent was live in that
+directory). Likewise the two config-editing surfaces (credibility rubric, define-a-tripwire) are now
+unblocked but remain unwired — handed to FRONTEND in `tmp/conv/T11-config-read.md`.
+
+**Design-doc tails to enrich:** `spine/09 §"Hot-config & live-rebuild"` (the table lists what a user
+*does*; it should also say that the configuration layer is **readable**, because read-modify-write is the
+only safe way to edit a whole-section write) and `plan/sessions/API.md` scope 7 (now `GET|POST`).
