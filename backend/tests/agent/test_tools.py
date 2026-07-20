@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from chanakya.agent.context import ToolContext
 from chanakya.agent.tools import run_tool
-from chanakya.schemas import ClaimRecord, ConfigBundle, GraphView
+from chanakya.schemas import ClaimRecord, ConfigBundle, EvidenceTemplate, GraphView
 
 
 def _ctx(view: GraphView, claims: dict[str, ClaimRecord], config: ConfigBundle) -> ToolContext:
@@ -18,23 +18,36 @@ def _ctx(view: GraphView, claims: dict[str, ClaimRecord], config: ConfigBundle) 
 
 # ── find_entity ──────────────────────────────────────────────────────────────────────────────
 
-def test_find_entity_exact_and_alias(view, claims, config) -> None:
+def test_find_entity_exact_by_name(view, claims, config) -> None:
     ctx = _ctx(view, claims, config)
-    r = run_tool(ctx, "graph_find_entity", {"text": "HQ-9/P"})
-    assert r["resolved"] is True
-    assert r["candidates"][0]["node_id"] == "var_hq9p"
-    # config-alias resolves too (HT233 is a table alias of HT-233)
+    r = run_tool(ctx, "graph_find_entity", {"text": "CASIC"})
+    assert r["resolution"] == "exact" and r["resolved"] is True
+    assert r["candidates"][0]["node_id"] == "mfr_casic"
+    # config-alias table resolves too (HT233 → HT-233, via the squashed/alias tier)
     r2 = run_tool(ctx, "graph_find_entity", {"text": "HT233"})
     assert r2["candidates"][0]["node_id"] == "comp_ht233"
 
 
-def test_find_entity_did_you_mean_fires_on_hq9p(view, claims, config) -> None:
-    """Acceptance: the 'did you mean' error fires on HQ9P (no silent wrong bind)."""
+def test_find_entity_near_miss_returns_candidates_for_hq9p(view, claims, config) -> None:
+    """AS-6: node is named 'HQ-9P'; the query 'HQ-9/P' RESOLVES via the punctuation-squashed key to a
+    ranked near-miss candidate (not a raise, not a wrong bind). This is the hero-anchor fix."""
     ctx = _ctx(view, claims, config)
-    r = run_tool(ctx, "graph_find_entity", {"text": "HQ9P"})
-    assert "error" in r
-    assert "did you mean" in r["error"].lower()
-    assert "HQ-9/P" in r["error"]
+    r = run_tool(ctx, "graph_find_entity", {"text": "HQ-9/P"})
+    assert r["resolution"] == "near_miss"
+    assert r["candidates"][0]["node_id"] == "var_hq9p"
+    assert "error" not in r
+    # the candidate is self-describing (why it matched + look-alike siblings)
+    assert r["candidates"][0]["why"]["matched_surface"]
+    assert r["candidates"][0]["type"] == "variant"
+
+
+def test_find_entity_alias_index_bug_fixed_fd2000(view, claims, config) -> None:
+    """AS-6 (b): the alias-table entry 'HQ-9/P'→[…FD-2000] must attach even though NO node is named
+    'HQ-9/P' (the node is 'HQ-9P') — the old name-equality rule dropped the whole class."""
+    ctx = _ctx(view, claims, config)
+    r = run_tool(ctx, "graph_find_entity", {"text": "FD-2000"})
+    assert "error" not in r
+    assert r["candidates"][0]["node_id"] == "var_hq9p"
 
 
 def test_find_entity_surfaces_distinct_from(view, claims, config) -> None:
@@ -42,6 +55,13 @@ def test_find_entity_surfaces_distinct_from(view, claims, config) -> None:
     r = run_tool(ctx, "graph_find_entity", {"text": "HQ-9/P"})
     sibs = r["candidates"][0]["distinct_from"]
     assert any(s["node_id"] == "var_hq9be" for s in sibs)
+
+
+def test_find_entity_no_match_is_resolution_none_with_error(view, claims, config) -> None:
+    ctx = _ctx(view, claims, config)
+    r = run_tool(ctx, "graph_find_entity", {"text": "zzzznonsense-designator"})
+    assert r["resolution"] == "none"
+    assert "error" in r and r["suggestion"]
 
 
 def test_find_entity_type_hint_filters(view, claims, config) -> None:
@@ -87,15 +107,27 @@ def test_neighbors_edge_type_filter(view, claims, config) -> None:
 # ── find_paths (the flagship trace) ─────────────────────────────────────────────────────────────
 
 def test_find_paths_hero_chain(view, claims, config) -> None:
-    """Acceptance: the hero query traces based-at → inducted-into → equips → manufactures, citing a
-    real claim at each hop (answer_key edge names)."""
+    """Acceptance: the hero query traces based-at → inducted-into → equips → supplies-component, citing a
+    real claim at each hop (Mfr→Component is `supplies-component`, Phase-1 tightened `manufactures`)."""
     ctx = _ctx(view, claims, config)
     r = run_tool(ctx, "graph_find_paths", {"src": "site_karachi", "dst": "mfr_casic"})
     edge_types = [h["edge"] for h in r["hops"]]
-    assert edge_types == ["based-at", "inducted-into", "equips", "manufactures"]
+    assert edge_types == ["based-at", "inducted-into", "equips", "supplies-component"]
     for h in r["hops"]:
         assert h["claim_ids"], f"hop {h['edge']} has no citation"
     assert r["hop_count"] == 4
+
+
+def test_find_paths_default_whitelist_excludes_resolution_lane(view, claims, config) -> None:
+    """AS-4: with no explicit whitelist, find_paths defaults to the ontology's traversable relations —
+    a path through the distinct-from resolution lane (a NON-identity assertion) is not a fact chain."""
+    ctx = _ctx(view, claims, config)
+    # var_hq9p and var_hq9be are joined ONLY by distinct-from → default whitelist finds no path.
+    r = run_tool(ctx, "graph_find_paths", {"src": "var_hq9p", "dst": "var_hq9be"})
+    assert "error" in r
+    # explicitly widening the whitelist to distinct-from re-enables it (the tool default, not a hack).
+    r2 = run_tool(ctx, "graph_find_paths", {"src": "var_hq9p", "dst": "var_hq9be", "edge_whitelist": ["distinct-from"]})
+    assert r2["hops"][0]["edge"] == "distinct-from"
 
 
 def test_find_paths_respects_hop_cap(view, claims, config) -> None:
@@ -179,6 +211,44 @@ def test_check_sufficiency_never_observable(view, claims, config) -> None:
     # var_hq9p has a never-observable gap (magazine depth)
     assert r["sufficient"] is False
     assert r["observability_ceiling"] == "never-observable"
+
+
+def test_check_sufficiency_unknown_id_raises(view, claims, config) -> None:
+    """AS-3: an unknown id is a LOOKUP FAILURE (like every sibling tool), not a fabricated
+    'insufficient evidence' verdict about a phantom node."""
+    ctx = _ctx(view, claims, config)
+    r = run_tool(ctx, "graph_check_sufficiency", {"scope": "comp_does_not_exist"})
+    assert "error" in r and r["suggestion"]
+
+
+def test_check_sufficiency_accepts_a_gap_id(view, claims, config) -> None:
+    """AS-3 caveat: a KnownGap.id is itself a valid scope (a gap id is not a node/edge id) — it must
+    still return the reasoned insufficiency, not raise."""
+    ctx = _ctx(view, claims, config)
+    r = run_tool(ctx, "graph_check_sufficiency", {"scope": "gap:comp_ht233:sole_source"})
+    assert "error" not in r
+    assert r["sufficient"] is False
+    assert r["known_gap"] is not None
+
+
+def test_refusal_template_fires_for_dict_shaped_require(view, claims, config) -> None:
+    """AS-5: the config/templates.yaml `require` shape is a list of {slot: {…}} DICTS. The matcher must
+    read that shape (the old str-vs-dict compare was always False → every authored template was dead)."""
+    from chanakya.agent.tools import _render_refusal
+
+    ctx = _ctx(view, claims, config)
+    # isolate the dict-entry shape (the real config/templates.yaml shape) so we prove IT fires.
+    ctx.config.templates.templates = [
+        EvidenceTemplate(
+            assertion_type="based-at",
+            require={"any_of": [{"imagery_confirmation": {"within_days": 365}},
+                               {"independent_text_groups": {"min": 2}}]},
+            on_fail="insufficient_evidence",
+            refusal_template="Cannot confirm basing of {subject}: missing {missing_slots}. Next coverage due {next_coverage_due}.",
+        )
+    ]
+    out = _render_refusal(ctx, "unit_paad", ["imagery_confirmation"], "2026-09-01")
+    assert out == "Cannot confirm basing of unit_paad: missing imagery_confirmation. Next coverage due 2026-09-01."
 
 
 # ── determinism + dispatcher hygiene ─────────────────────────────────────────────────────────────

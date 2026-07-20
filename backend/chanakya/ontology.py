@@ -52,10 +52,13 @@ class EdgeLaneIndex:
         self._by_endpoints: dict[tuple[str, str], str] = {}
         self._extractor: list[str] = []
         self._names: set[str] = set()
+        self._ordered: list[str] = []  # declaration order (deterministic accessors)
         self._symmetric: set[str] = set()
         self._endpoints: dict[str, tuple[list[str], list[str]]] = {}
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
+            if e.name not in self._names:
+                self._ordered.append(e.name)
             self._names.add(e.name)
             if e.symmetric:
                 self._symmetric.add(e.name)
@@ -95,6 +98,19 @@ class EdgeLaneIndex:
     def extractor_edges(self) -> list[str]:
         """The extraction enum — the relationship edges the LLM is allowed to assert (declaration order)."""
         return list(self._extractor)
+
+    def traversable_edges(self) -> list[str]:
+        """The edges safe to walk as *directed relations* in a multi-hop trace (declaration order).
+
+        Every declared edge **minus the symmetric lanes** — the resolution lane (``same-as`` /
+        ``distinct-from`` / ``coref-same-as`` / ``substitutable-by``) and the evidence/derived lane
+        (``evidenced-by`` / ``corroborates`` / ``contradicts`` / ``derived-from`` / ``supersedes``). A
+        ``distinct-from`` edge asserts **non**-identity and an evidence edge is provenance, so a path
+        through either is a false fact-chain, not a relation (spine/09 AS-4). This is the ontology
+        *declaring* which lanes are relations, read by :func:`chanakya.agent.tools.find_paths` as its
+        default whitelist — never a hardcoded edge list on any one query.
+        """
+        return [name for name in self._ordered if name not in self._symmetric]
 
     def is_known(self, name: str) -> bool:
         """True if ``name`` is any declared edge type (extractor or not)."""

@@ -4,23 +4,38 @@ from __future__ import annotations
 
 from chanakya.agent.assemble import assemble_answer
 from chanakya.agent.context import ToolContext
-from chanakya.agent.loop import run_fixed_hero_path, run_react_loop
+from chanakya.agent.loop import AgentTrace, RecordedCall, run_fixed_hero_path, run_react_loop
 
 from .mock_llm import final, planner, tool_turn
+
+
+def test_errored_calls_are_invisible_to_builders(view, claims, config) -> None:
+    """AS-1: an error-shaped result must fall through to the refusal path, never reach a builder as a
+    success payload. The exact crasher was a failed get_node (no 'node_id' key) → KeyError."""
+    ctx = ToolContext.build(view, claims, config)
+    trace = AgentTrace(question="q")
+    trace.calls.append(
+        RecordedCall(name="get_node", input={"node_id": "nope"}, result={"error": "no node", "suggestion": "x"})
+    )
+    assert trace.last("get_node") is None                    # ok-filtered by default
+    assert trace.last("get_node", ok_only=False) is not None  # still reachable when asked
+    assert len(trace.failures()) == 1
+    ans = assemble_answer(trace, ctx)                         # must NOT raise KeyError
+    assert ans.answer is None and ans.refusal is not None
 
 
 def test_free_loop_runs_tools_and_records_the_trace(view, claims, config) -> None:
     ctx = ToolContext.build(view, claims, config)
     llm = planner(
         tool_turn("graph_find_entity", {"text": "HT-233"}),
-        tool_turn("graph_neighbors", {"node_id": "comp_ht233", "edge_types": ["manufactures"]}),
+        tool_turn("graph_neighbors", {"node_id": "comp_ht233", "edge_types": ["supplies-component"]}),
         final(),
     )
     trace = run_react_loop(ctx, "Who manufactures HT-233?", llm)
     assert trace.terminated == "end_turn"
     assert [c.name for c in trace.calls] == ["find_entity", "neighbors"]
     a = assemble_answer(trace, ctx)
-    assert a.answer is not None and "d21-l2" in a.citations  # the manufactures edge's claim
+    assert a.answer is not None and "d21-l2" in a.citations  # the supplies-component edge's claim
 
 
 def test_loop_respects_hard_iteration_cap(view, claims, config) -> None:
@@ -37,7 +52,7 @@ def test_fixed_hero_path_builds_the_full_chain(view, claims, config) -> None:
     trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
     path = trace.last("find_paths")
     assert path is not None
-    assert [h["edge"] for h in path.result["hops"]] == ["based-at", "inducted-into", "equips", "manufactures"]
+    assert [h["edge"] for h in path.result["hops"]] == ["based-at", "inducted-into", "equips", "supplies-component"]
     # it also gathers the chokepoint via query_graph and checks sufficiency (the non-negotiable)
     assert trace.last("query_graph") is not None
     assert trace.last("check_sufficiency") is not None

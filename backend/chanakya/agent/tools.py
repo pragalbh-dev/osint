@@ -18,12 +18,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from rank_bm25 import BM25Okapi
 from rapidfuzz import fuzz, process
 
 from chanakya.schemas import DateValue, EdgeView, NodeView, canonical_iso_bounds
 
-from .context import ToolContext, normalize
+from .context import ToolContext, normalize, squash
 
 # ── tuning knobs (agent-local; gate G6 scopes credibility/resolve/materiality/observe, not agent) ──
 DEFAULT_TOP_K = 3          # spine/09 beam ≈ 3
@@ -144,77 +143,123 @@ def _distinct_from(ctx: ToolContext, node_id: str) -> list[dict[str, Any]]:
     return siblings
 
 
-def find_entity(ctx: ToolContext, text: str, type_hint: str | None = None) -> dict[str, Any]:
-    """Entity linking: alias table + BM25 + fuzzy → ranked candidate node IDs, with distinct-from siblings.
+def _aliases_of(ctx: ToolContext, node_id: str) -> list[str]:
+    """The node's non-name surface forms (attr + config-table aliases), deduped, ≤5."""
+    seen: list[str] = []
+    for e in ctx.names:
+        if e.node_id == node_id and e.kind != "name" and e.surface not in seen:
+            seen.append(e.surface)
+    return seen[:5]
 
-    Never silently binds: a non-exact query returns a *"did you mean"* suggestion, so HQ-9/P vs HQ-9BE is
-    an explicit disambiguation, not a wrong bind.
+
+def _candidate(ctx: ToolContext, node_id: str, score: float, matched_surface: str, how: str) -> dict[str, Any]:
+    """A ranked find_entity candidate — self-describing: which surface matched, how it scored, and the
+    distinct-from siblings the caller must not confuse it with (the look-alike traps)."""
+    n = ctx.nodes_by_id.get(node_id)
+    return {
+        "node_id": node_id,
+        "name": n.name if n else None,
+        "type": n.type if n else None,
+        "status": n.status if n else None,
+        "claim_count": len(n.claim_ids) if n else 0,
+        "score": round(float(score), 2),
+        "why": {"matched_surface": matched_surface, "how": how},
+        "aliases": _aliases_of(ctx, node_id),
+        "distinct_from": _distinct_from(ctx, node_id),
+    }
+
+
+def _resolve_result(
+    ctx: ToolContext, text: str, candidates: list[dict[str, Any]], resolution: str, *, auto_bindable: bool = True
+) -> dict[str, Any]:
+    """Assemble a find_entity result and decide ``resolved`` (auto-bind safety).
+
+    Never auto-bind when the winner has more than one candidate (``ambiguous``), when a ``distinct-from``
+    sibling of the winner is itself in the candidate set (a planted look-alike → structural veto), or on
+    a fuzzy-only hit (``auto_bindable=False`` — suggest, never bind) — spine/09 AS-6.
+    """
+    if not candidates:
+        return {"query": text, "resolution": "none", "resolved": False, "candidates": []}
+    cand_ids = {c["node_id"] for c in candidates}
+    winner = candidates[0]
+    vetoed = bool({s["node_id"] for s in winner["distinct_from"]} & cand_ids)
+    if len(candidates) > 1 and resolution in ("exact", "near_miss"):
+        resolution = "ambiguous"
+    resolved = auto_bindable and resolution in ("exact", "near_miss") and len(candidates) == 1 and not vetoed
+    return {"query": text, "resolution": resolution, "resolved": resolved, "candidates": candidates}
+
+
+def find_entity(ctx: ToolContext, text: str, type_hint: str | None = None) -> dict[str, Any]:
+    """Entity linking → a RANKED CANDIDATE LIST (never a raise on a near-miss): exact → punctuation-
+    squashed → blended fuzzy+BM25.
+
+    ``resolution`` ∈ ``exact`` | ``near_miss`` | ``ambiguous`` | ``none``. Each candidate is
+    self-describing (type/status/claim_count/why/aliases/distinct_from) so a near-miss is answered in
+    one turn — the planner (or the fixed hero path) reads the top candidate instead of paying for a
+    "did you mean" round-trip. An ``error`` key appears ONLY for ``resolution == none`` (spine/09 AS-6).
     """
     norm = normalize(text)
-    exact_ids: list[str] = []
-    for entry in ctx.names:
-        if entry.norm == norm and entry.node_id not in exact_ids:
-            exact_ids.append(entry.node_id)
+    sq = squash(text)
 
     def _keep(node_id: str) -> bool:
         n = ctx.nodes_by_id.get(node_id)
         return type_hint is None or (n is not None and n.type == type_hint)
 
-    exact_ids = [nid for nid in exact_ids if _keep(nid)]
+    # tier 1 — exact by node NAME (punctuation kept). Alias/canonical surfaces are softer tiers below,
+    # so an aliased canonical string never masquerades as an exact identity.
+    exact_ids: list[str] = []
+    for e in ctx.names:
+        if e.kind == "name" and e.norm == norm and _keep(e.node_id) and e.node_id not in exact_ids:
+            exact_ids.append(e.node_id)
     if exact_ids:
-        exact_ids.sort()
-        candidates = [
-            {
-                "node_id": nid,
-                "name": (ctx.nodes_by_id[nid].name if nid in ctx.nodes_by_id else None),
-                "type": (ctx.nodes_by_id[nid].type if nid in ctx.nodes_by_id else None),
-                "score": 1.0,
-                "match": "exact",
-                "distinct_from": _distinct_from(ctx, nid),
-            }
-            for nid in exact_ids
-        ]
-        return {"query": text, "resolved": True, "candidates": candidates}
+        cands = [_candidate(ctx, nid, 100.0, ctx.nodes_by_id[nid].name or nid, "name == query (exact)")
+                 for nid in sorted(exact_ids)]
+        return _resolve_result(ctx, text, cands, "exact")
 
-    # No exact hit → rank surface forms by blended BM25 + fuzzy, then SUGGEST (never auto-bind).
-    surfaces = [(e.norm, e.node_id, e.surface) for e in ctx.names if _keep(e.node_id)]
-    if not surfaces:
-        raise ToolError(f"no entity matches '{text}'", suggestion="broaden the term or drop type_hint")
-    # fuzzy leg
-    scored: dict[str, tuple[float, str]] = {}  # node_id -> (best_score, surface)
-    choices = [s[0] for s in surfaces]
-    for _match, score, idx in process.extract(norm, choices, scorer=fuzz.WRatio, limit=len(choices)):
-        _n, node_id, surface = surfaces[idx]
-        cur = scored.get(node_id)
-        if cur is None or score > cur[0]:
-            scored[node_id] = (float(score), surface)
-    # BM25 leg (token overlap over name+aliases) — a light second signal, blended in
-    docs = [choices[i].split() for i in range(len(choices))]
-    bm25 = BM25Okapi(docs)
-    bm_scores = bm25.get_scores(norm.split())
-    bm_max = max(bm_scores) if len(bm_scores) and max(bm_scores) > 0 else 1.0
-    for i, (_n, node_id, surface) in enumerate(surfaces):
-        blended = 0.85 * scored.get(node_id, (0.0, surface))[0] + 0.15 * (100.0 * bm_scores[i] / bm_max)
-        prev = scored.get(node_id)
-        if prev is None or blended > prev[0]:
-            scored[node_id] = (blended, prev[1] if prev else surface)
+    # tier 2 — punctuation-squashed on ANY surface (HQ-9/P ≡ HQ-9P; also catches exact aliases like HT233).
+    squashed: dict[str, tuple[str, str]] = {}  # node_id → (surface, how)
+    for e in ctx.names:
+        if e.squashed and e.squashed == sq and _keep(e.node_id) and e.node_id not in squashed:
+            squashed[e.node_id] = (e.surface, f"punctuation-squashed ({e.kind})")
+    if squashed:
+        cands = [_candidate(ctx, nid, 95.0, surf, how) for nid, (surf, how) in sorted(squashed.items())]
+        return _resolve_result(ctx, text, cands, "near_miss")
 
-    ranked = sorted(scored.items(), key=lambda kv: (-kv[1][0], kv[0]))
-    top = [(nid, sc, surf) for nid, (sc, surf) in ranked if sc >= FUZZY_SUGGEST_CUTOFF][:DEFAULT_TOP_K]
+    # tier 3 — blended fuzzy + BM25 (prebuilt), suggest-only (never auto-bind a fuzzy hit).
+    keep_idx = [i for i, e in enumerate(ctx.names) if _keep(e.node_id)]
+    if not keep_idx:
+        return {
+            "query": text, "resolution": "none", "resolved": False, "candidates": [],
+            "error": f"no entity matches '{text}'", "suggestion": "broaden the term or drop type_hint",
+        }
+    scored: dict[str, tuple[float, str, str]] = {}  # node_id → (fuzzy_score, surface, how)
+    choices = [ctx.names[i].norm for i in keep_idx]
+    for _match, fscore, ci in process.extract(norm, choices, scorer=fuzz.WRatio, limit=len(choices)):
+        e = ctx.names[keep_idx[ci]]
+        cur = scored.get(e.node_id)
+        if cur is None or fscore > cur[0]:
+            scored[e.node_id] = (float(fscore), e.surface, f"fuzzy WRatio {fscore:.0f} on {e.kind}")
+    bm = ctx.bm25_scores(norm)
+    bm_by_node: dict[str, float] = {}
+    for i in keep_idx:
+        nid = ctx.names[i].node_id
+        v = bm[i] if i < len(bm) else 0.0
+        if v > bm_by_node.get(nid, 0.0):
+            bm_by_node[nid] = v
+    bm_max = max(bm_by_node.values(), default=0.0) or 1.0
+    blended: dict[str, tuple[float, str, str]] = {}
+    for nid, (fscore, surf, how) in scored.items():
+        b = 100.0 * bm_by_node.get(nid, 0.0) / bm_max
+        blended[nid] = (0.85 * fscore + 0.15 * b, surf, how)
+    ranked = sorted(blended.items(), key=lambda kv: (-kv[1][0], kv[0]))
+    top = [(nid, sc, surf, how) for nid, (sc, surf, how) in ranked if sc >= FUZZY_SUGGEST_CUTOFF][:DEFAULT_TOP_K]
     if not top:
-        raise ToolError(f"no match for '{text}'", suggestion="check the designator spelling")
-    # Suggest the *canonical* designator (node name), not the raw matched alias — matches the spine/09
-    # example ("did you mean 'HQ-9/P'?") and is the cleanest string to re-issue with.
-    def _display(node_id: str, surface: str) -> str:
-        n = ctx.nodes_by_id.get(node_id)
-        return n.name if (n is not None and n.name) else surface
-
-    displays = [_display(nid, surf) for nid, _sc, surf in top]
-    # Actionable "did you mean" — the disambiguation surfaces here, never a silent wrong bind.
-    raise ToolError(
-        f"no exact match for '{text}' — did you mean '{displays[0]}'?",
-        suggestion=f"re-issue find_entity with one of: {', '.join(displays)}",
-    )
+        return {
+            "query": text, "resolution": "none", "resolved": False, "candidates": [],
+            "error": f"no match for '{text}'", "suggestion": "check the designator spelling",
+        }
+    cands = [_candidate(ctx, nid, sc, surf, how) for nid, sc, surf, how in top]
+    return _resolve_result(ctx, text, cands, "near_miss", auto_bindable=False)
 
 
 # ── 2. get_node ──────────────────────────────────────────────────────────────────────────────
@@ -290,7 +335,16 @@ def find_paths(
     if dst not in ctx.nodes_by_id:
         raise ToolError(f"no node with id '{dst}'", suggestion="call find_entity to resolve dst")
     hop_cap = min(max_hops, MAX_HOPS_CAP)
-    allow = set(edge_whitelist) if edge_whitelist else None
+    # Default the traversable set from the ontology (spine/09 AS-4): a path is a chain of *relations*, so
+    # exclude the symmetric resolution/evidence lanes (distinct-from asserts NON-identity; evidenced-by is
+    # provenance) unless the caller explicitly widens it. This is the tool default, so the free ReAct loop
+    # is covered too — never a literal edge list on any one query.
+    if edge_whitelist:
+        allow: set[str] | None = set(edge_whitelist)
+    elif ctx.traversable:
+        allow = set(ctx.traversable)
+    else:
+        allow = None  # empty/absent ontology → traverse all (no lane info to constrain by)
 
     # Deterministic BFS over the bidirectional graph; record the first (shortest) path per dst.
     best: list[dict[str, Any]] | None = None
@@ -475,12 +529,47 @@ def get_evidence(ctx: ToolContext, ref_id: str) -> dict[str, Any]:
 
 # ── 7. check_sufficiency ─────────────────────────────────────────────────────────────────────
 
+class _Blanks(dict):
+    """A format mapping that blanks unknown placeholders instead of raising — so an analyst-authored
+    template referencing an unexpected slot degrades to a gap in the string, never a crash (extra="allow"
+    spirit; a raise would be the only failing surface)."""
+
+    def __missing__(self, key: str) -> str:
+        return ""
+
+
+def _template_slots(require: dict[str, Any]) -> set[str]:
+    """The slot NAMES a template requires, from ``all_of`` + ``any_of``.
+
+    Each entry is either a ``{slot: {constraints}}`` dict (config/templates.yaml's real shape) or a bare
+    ``slot`` string — the matcher must read both. The old code compared each *string* slot against the
+    list of *dicts*, which was always False, so every analyst-authored template was unreachable dead code
+    (spine/09 AS-5; CLAUDE.md names these templates as the mechanism enforcing the non-negotiable).
+    """
+    slots: set[str] = set()
+    for entry in list(require.get("all_of", []) or []) + list(require.get("any_of", []) or []):
+        if isinstance(entry, dict):
+            slots.update(entry.keys())
+        elif isinstance(entry, str):
+            slots.add(entry)
+    return slots
+
+
 def _render_refusal(ctx: ToolContext, subject: str, missing: list[str], next_due: str | None) -> str:
-    """Render the refusal from a config template (fill-in-the-blank; never regenerated prose — G8)."""
+    """Render the refusal from a config template (fill-in-the-blank; never regenerated prose — G8).
+
+    Fires the first authored template whose required slots intersect ``missing``; both ``{missing}`` and
+    ``{missing_slots}`` placeholders are supplied so the fixture and the shipped templates both render.
+    """
     missing_str = ", ".join(missing) if missing else "corroborating coverage"
+    fmt = _Blanks(
+        subject=subject, missing=missing_str, missing_slots=missing_str,
+        next_coverage_due=next_due or "unscheduled",
+    )
+    missing_set = set(missing)
     for tmpl in ctx.config.templates.templates:
-        if tmpl.refusal_template and any(slot in (tmpl.require.get("all_of", []) or tmpl.require.get("any_of", []) or []) for slot in missing):
-            return tmpl.refusal_template.format(subject=subject, missing=missing_str, next_coverage_due=next_due or "unscheduled")
+        if tmpl.refusal_template and (_template_slots(tmpl.require) & missing_set):
+            return tmpl.refusal_template.format_map(fmt)
     return (
         f"Insufficient evidence to assess {subject}: missing {missing_str}. "
         f"Next coverage due {next_due or 'unscheduled'}."
@@ -492,6 +581,14 @@ def check_sufficiency(ctx: ToolContext, scope: str) -> dict[str, Any]:
     ``missing_slots`` + ``next_coverage_due``, never a confident negative or a fabrication."""
     el = ctx.nodes_by_id.get(scope) or ctx.edges_by_id.get(scope)
     gaps = [g for g in ctx.view.known_gaps if g.related_ref == scope or g.id == scope]
+    # Existence guard (AS-3): match every sibling id-taking tool — an unknown id is a LOOKUP FAILURE, not
+    # a fabricated "insufficient evidence" verdict about a phantom node. A KnownGap.id is itself a valid
+    # scope (a live gap id like ``gap:HQ-9/P`` is not a node/edge id), so accept it when `gaps` is non-empty.
+    if el is None and not gaps:
+        raise ToolError(
+            f"no node, edge, or known-gap with id '{scope}'",
+            suggestion="resolve a real id via find_entity / neighbors / find_paths first",
+        )
 
     satisfied = el is not None and el.sufficiency is not None and el.sufficiency.satisfied and not gaps
     if satisfied:

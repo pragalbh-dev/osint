@@ -208,6 +208,15 @@ def _refusal(trace: AgentTrace) -> RefusalPayload:
 
 def assemble_answer(trace: AgentTrace, ctx: ToolContext) -> AskAnswer:
     """Build the cited answer for whatever shape the trace covers, or a first-class refusal."""
+    # An explicit scripted refusal (the hero path could not build the chain) wins over the builders — it
+    # names the actual unresolved input, so we never let a positive builder paper over a broken chain (AS-2).
+    if trace.refusal is not None:
+        return AskAnswer(
+            question=trace.question,
+            sub_questions=list(trace.sub_questions),
+            answer=None,
+            refusal=trace.refusal,
+        )
     for builder in _BUILDERS:
         built = builder(trace, ctx)
         if built is not None and built.sentences:

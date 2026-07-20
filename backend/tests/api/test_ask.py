@@ -17,7 +17,7 @@ def test_ask_hero_query_cited_multihop_answer(hero_client) -> None:
     assert r.status_code == 200
     a = AskAnswer.model_validate(r.json())
     assert a.answer is not None and a.refusal is None
-    assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips", "manufactures"]
+    assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips", "supplies-component"]
     # per-hop citations resolve to real claim ids; observed-vs-inferred is read structurally.
     assert all(h.claim_ids for h in a.hops)
     assert next(h for h in a.hops if h.edge == "based-at").observed_or_inferred == "observed"

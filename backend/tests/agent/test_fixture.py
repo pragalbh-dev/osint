@@ -23,7 +23,7 @@ def test_hero_chain_present(view: GraphView) -> None:
         ("unit_paad", "based-at", "site_karachi"),
         ("var_hq9p", "inducted-into", "unit_paad"),
         ("comp_ht233", "equips", "var_hq9p"),
-        ("mfr_casic", "manufactures", "comp_ht233"),
+        ("mfr_casic", "supplies-component", "comp_ht233"),  # Mfr→Component lane (Phase-1 tightened `manufactures`)
     }
     have = {(e.source, e.type, e.target) for e in view.edges}
     assert want <= have

@@ -12,7 +12,7 @@ HERO_Q = "trace this deployed HQ-9/P battery back to its component supplier and 
 def test_hero_query_traces_the_chain_and_cites_each_hop(view, claims, config) -> None:
     a = ask(HERO_Q, view, config, claims=claims)
     assert a.answer is not None and a.refusal is None
-    assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips", "manufactures"]
+    assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips", "supplies-component"]
     for h in a.hops:
         assert h.claim_ids and all(c in claims for c in h.claim_ids), f"hop {h.edge} not cited to real claims"
     # observed-vs-inferred read structurally from each claim's kind
