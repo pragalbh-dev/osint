@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from .base import Record
-from .claim import ClaimRecord
+from .claim import ClaimRecord, SourceRegistryEntry
 from .view import (
     ConfidenceBreakdown,
     Freshness,
@@ -92,6 +92,14 @@ class ProvenanceDrawer(Record):
     # the append-only log; an unreadable/absent span yields ``""`` (never a paraphrase, never a
     # reconstruction). Additive/optional.
     quotes: dict[str, list[str]] = {}
+    # F0-amend (API, 2026-07-20, T6): ``source_id -> SourceRegistryEntry`` for every source cited by
+    # ``claims``. A raw source id (``d17b_withheld_gap``) is an internal key, not an attribution — an
+    # analyst asked "who says so?" needs the source's CLASS and reliability grade, and those live only
+    # in ``config/sources.yaml``, unreachable from any GET route until now. Returned VERBATIM from the
+    # registry: no display string is synthesised server-side and no publisher NAME is invented, because
+    # the registry does not carry one. Additive/optional — a source missing from the registry is simply
+    # absent here and the UI falls back to the bare id rather than to a guess.
+    sources: dict[str, SourceRegistryEntry] = {}
 
 
 # ── POST /hitl/* (product/03 D) ────────────────────────────────────────────────────────────────

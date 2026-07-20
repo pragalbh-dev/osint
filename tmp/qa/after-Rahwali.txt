@@ -1,0 +1,29 @@
+hit=true
+
+Proving
+“Rahwali airfield” exists, as a basing site
+basing site · site_rahwali
+✕
+Provenance
+Confirmed
+Independent, credible sources agree — briefable.
+2 sources · 2 independent looks · 2 claims on file
+Independent look 1 of 2 · IMINT / third-party
+Commercial satellite imagery
+d18_rahwali_pass1 · reliability B · third party interest
+1 claim from this look
+Observed · L16
+▸
+“Rahwali airfield” is a basing site
+site signature geometry — Center of signature: 32°14′20″N 074°07′52″E
+site type — airfield
+Observed · about a thing · L16
+Independent look 2 of 2 · textual / third-party
+Think-tank / analytic report
+d19_rahwali_confirm · reliability B · third party interest · dated 2025-04-04
+1 claim from this look
+Observed · L11
+▸
+“Rahwali airfield” is a basing site
+site type — Pakistan Army/PAF joint-use facility
+Observed · about a thing · L11

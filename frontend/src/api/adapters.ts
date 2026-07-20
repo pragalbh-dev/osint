@@ -27,6 +27,7 @@ import type {
   ObservabilityCeiling,
   ProvenanceDrawer,
   RefusalKind,
+  SourceCard,
   Status,
 } from './types'
 import type { EdgeKind, GraphEdgeDef, GraphKind, GraphNodeDef, PinDef } from '@/demo/scenario'
@@ -194,6 +195,11 @@ export interface StagePinExtras {
   locationSource?: string | null
   /** node ids folded into this marker when several entities share one area anchor */
   members?: string[]
+  /** the id of the `supersedes` edge itself, so the connector is one click from its evidence */
+  supersedeEdgeId?: string | null
+  /** WHAT moved — the subject of the underlying `based-at` assertion, named. NEVER the site: a
+   *  site does not get "replaced", an occupant relocates. Null when the graph does not record one. */
+  supersedeSubject?: string | null
 }
 
 export type StagePin = PinDef & StagePinExtras
@@ -256,21 +262,51 @@ export function unplacedLocations(view: GraphView): UnplacedLocation[] {
   return out.sort((a, b) => a.label.localeCompare(b.label))
 }
 
-/** target-of-a-settled-`supersedes`-edge → the successor's node id. */
-export function supersededSites(view: GraphView): Map<string, string> {
-  const out = new Map<string, string>()
+/** What a settled `supersedes` edge actually says, resolved into names.
+ *
+ *  The link the backend draws runs *site → site* (`credibility/supersession.py::_drawn_edge`), but it
+ *  is a PROJECTION of a supersession that lives on a `based-at` edge: what was overtaken is the
+ *  **occupant's basing**, not the site. Rendering the projection without naming the occupant asserts
+ *  "PAF Base Nur Khan was replaced by Rahwali airfield", which is false — Nur Khan did not stop
+ *  existing. So every consumer of this edge gets the subject with it, and the copy says what moved. */
+export interface SupersessionFact {
+  edgeId: string
+  fromRef: string // the site left behind
+  toRef: string // the site moved to
+  subjectRef: string | null // the occupant that moved (attrs.subject on the drawn edge)
+  olderEdgeId: string | null // the retired `based-at` assertion
+  newerEdgeId: string | null // the assertion that replaced it
+}
+
+/** Every settled supersession in the view, keyed by the site that was left behind. */
+export function supersessions(view: GraphView): Map<string, SupersessionFact> {
+  const out = new Map<string, SupersessionFact>()
   for (const edge of view.edges) {
     if (edge.type !== 'supersedes') continue
     if (edgeToKind(edge) !== 'e-supersede') continue // candidate/pending/held → not settled
-    out.set(edge.target, edge.source)
+    const attrs = edge.attrs ?? {}
+    out.set(edge.target, {
+      edgeId: edge.id,
+      fromRef: edge.target,
+      toRef: edge.source,
+      subjectRef: typeof attrs.subject === 'string' ? attrs.subject : null,
+      olderEdgeId: typeof attrs.older_edge === 'string' ? attrs.older_edge : null,
+      newerEdgeId: typeof attrs.newer_edge === 'string' ? attrs.newer_edge : null,
+    })
   }
   return out
+}
+
+/** target-of-a-settled-`supersedes`-edge → the successor's node id. */
+export function supersededSites(view: GraphView): Map<string, string> {
+  return new Map([...supersessions(view)].map(([from, fact]) => [from, fact.toRef]))
 }
 
 /** Nodes without a resolved location live only in the graph, not on the map. */
 export function viewToPins(view: GraphView): StagePin[] {
   const pins: StagePin[] = []
-  const superseded = supersededSites(view)
+  const superseded = supersessions(view)
+  const name = nameResolver(view)
   for (const node of view.nodes) {
     const lat = node.location?.wgs84_lat
     const lon = node.location?.wgs84_lon
@@ -287,7 +323,11 @@ export function viewToPins(view: GraphView): StagePin[] {
       (typeof surface === 'string' && surface.length > 0 ? `  ${surface}` : '') +
       (radiusM !== null ? `  ±${formatRadius(radiusM)}` : '')
     const year = yearOf(node.freshness?.last_support_time)
-    const successor = superseded.get(node.id)
+    const fact = superseded.get(node.id)
+    // The caption of a site that was left behind must be about the OCCUPANCY, not the site: the
+    // site is still there. A bare "superseded" read as "this place was replaced", which is false.
+    const subject = fact?.subjectRef ? name(fact.subjectRef) : null
+    const vacated = subject ? `former ${subject} basing` : 'former basing on record'
 
     pins.push({
       id: node.id,
@@ -296,18 +336,19 @@ export function viewToPins(view: GraphView): StagePin[] {
       lon,
       coord,
       status: node.status ?? 'insufficient',
-      // "superseded" states the subtraction; it never claims the site ceased to exist.
-      caption: successor
+      caption: fact
         ? year !== null
-          ? `superseded · ${year}`
-          : 'superseded'
+          ? `${vacated} · ${year}`
+          : vacated
         : year !== null
           ? `as of ${year}`
           : '',
-      superseded: successor != null,
-      supersededBy: successor ?? null,
+      superseded: fact != null,
+      supersededBy: fact?.toRef ?? null,
+      supersedeEdgeId: fact?.edgeId ?? null,
+      supersedeSubject: subject,
       precision: node.location?.precision_class ?? null,
-      uncertaintyRadiusM: numAttr(node, ATTR_UNCERTAINTY_RADIUS),
+      uncertaintyRadiusM: radiusM,
       locationSource: strAttr(node, ATTR_LOCATION_SOURCE),
     })
   }
@@ -391,7 +432,17 @@ export interface LiveClaimRow {
   claimId: string
   sourceId: string
   kind: ClaimKind
-  detail: string // short human line from kind + asserts (e.g. "observation · relationship")
+  /** WHAT this claim asserts, in words, read straight off its payload (never a paraphrase, never
+   *  generated). This is the proposition the status is a verdict on — a row that only said
+   *  "observation · entity" told the analyst the claim's FILING CATEGORY and hid its content. */
+  proposition: string
+  /** the extra attributes the claim carries, as "label — value" lines. Same rule: verbatim values. */
+  attrLines: string[]
+  kindLabel: string // 'Observed' | 'Inferred' | 'Retracted' — kind, in analyst English
+  detail: string // kindLabel + the claim form, e.g. "Observed · about an entity"
+  /** short, per-claim locator suffix (e.g. "L22") so two claims from ONE document are told apart
+   *  on the chip itself, not only in the expanded box. '' when the doc_ref carries no line/page/row. */
+  locatorShort: string
   dates: { event?: string; reported?: string; ingested?: string }
   docRefs: DocRef[] // ALWAYS an array (normalize DocRef | DocRef[] → DocRef[]); the jump-to-source targets
   /** the VERBATIM text at each docRef, same order/length as `docRefs`. '' = unreadable span —
@@ -400,17 +451,65 @@ export interface LiveClaimRow {
   dots: number // 1..4 credibility tier
 }
 
+export interface LiveDrawerSource {
+  sourceId: string
+  /** the source's CLASS in analyst English ("Commercial satellite imagery"), from the registry's
+   *  `source_type`. Never a publisher name: the registry does not carry one, so we do not invent one. */
+  label: string
+  grade?: string | null // STANAG reliability grade
+  bias?: string | null
+  reportDate?: string | null
+  flags: string[] // registry gates worth surfacing (coordinated inauthenticity, adversary denial, …)
+  known: boolean // false = this id is not in the source registry; show the bare id, claim nothing
+}
+
 export interface LiveDrawerCluster {
   groupId: string
   axis?: { origin?: string; discipline?: string; interest?: string }
   rows: LiveClaimRow[]
+  /** the sources inside this look — the header attribution, so a per-claim chip no longer has to
+   *  repeat (and thereby over-count) the document it came from. */
+  sources: LiveDrawerSource[]
+  /** true for the residual bucket: claims the response carried that NO independence group contains.
+   *  They are cited evidence but were not counted as a look — saying so is the honest rendering;
+   *  dropping them (the previous behaviour) silently hid every claim on a status-less edge. */
+  ungrouped?: boolean
+}
+
+/** What the drawer is a verdict ABOUT, stated as a proposition. A status over a bare node name
+ *  ("PAF Base Nur Khan is Probable") names no claim, so it cannot be judged. */
+export interface LiveDrawerSubject {
+  ref: string
+  kind: 'node' | 'edge' | 'unknown'
+  headline: string // the proposition, e.g. '"Rahwali airfield" exists, as a basing site'
+  typeLabel: string // 'basing site' / 'based at' — the ontology type in analyst English
+  /** true for edge types that carry NO status by design (`supersedes`, `same-as`, `distinct-from`).
+   *  Rendering their null status as "insufficient evidence" claimed an evidence gap that does not
+   *  exist — the link is simply not the kind of thing that gets scored. */
+  statusless: boolean
+}
+
+/** A relocation, told the way an analyst narrates it: what moved, from where, to where, and which
+ *  two assertions the move is made of. Present only when the drawer's element IS the version link. */
+export interface LiveDrawerSupersession {
+  /** which side of the relocation the OPEN element is: the version link itself, the assertion that
+   *  was overtaken, or the one that replaced it. The same three facts read differently from each. */
+  role: 'link' | 'older' | 'newer'
+  subjectName: string | null
+  fromName: string
+  toName: string
+  olderEdgeId: string | null
+  newerEdgeId: string | null
 }
 
 export interface LiveDrawerModel {
   subjectRef: string
+  subject?: LiveDrawerSubject
+  supersession?: LiveDrawerSupersession
   status: Status
   sources: number // count of DISTINCT source_id across claims
   looks: number // clusters.length (independent looks)
+  claimCount: number // rows actually rendered — so the header arithmetic matches the body
   sufficiency?: {
     satisfied: boolean
     missingSlots: string[]
@@ -448,52 +547,297 @@ export function docRefsOf(ref: DocRef | DocRef[] | null | undefined): DocRef[] {
   return Array.isArray(ref) ? ref : [ref]
 }
 
-/** Structured /evidence/{id} response → display model for the live provenance drawer. */
-export function evidenceToDrawerModel(data: ProvenanceDrawer): LiveDrawerModel {
+// ── analyst English for the internal vocabulary ────────────────────────────────────────────────
+// `observation · entity` names the claim's FILING CATEGORY, not its content. These maps translate
+// the internal enums; anything unrecognised falls through to a humanised form of the raw token, so
+// a new ontology type degrades to something readable instead of disappearing.
+
+const KIND_LABEL: Record<ClaimKind, string> = {
+  observation: 'Observed',
+  inference: 'Inferred',
+  retraction: 'Retracted',
+}
+
+const FORM_LABEL: Record<string, string> = {
+  entity: 'about a thing',
+  relationship: 'about a connection',
+  event: 'about an event',
+}
+
+/** `source_type` → the source CLASS in analyst English. Not a publisher name — the registry has
+ *  none, and inventing a masthead would be exactly the fabrication the non-negotiable forbids. */
+const SOURCE_CLASS_LABEL: Record<string, string> = {
+  satellite: 'Commercial satellite imagery',
+  official: 'Official government statement',
+  'trade-media': 'Trade press / defence media',
+  'think-tank': 'Think-tank / analytic report',
+  'curated-register': 'Curated reference register',
+  'customs-tender': 'Customs / tender record',
+  'exporter-state-media': 'Exporter-state media',
+  'named-social': 'Named social-media account',
+  'anon-social': 'Anonymous social-media post',
+}
+
+const REGISTRY_FLAG_LABEL: Record<string, string> = {
+  coordinated_inauthenticity_flag: 'coordinated inauthenticity',
+  adversary_denial_flag: 'adversary denial',
+}
+
+/** `basing_site` / `supplies-component` → `basing site` / `supplies component`. */
+export function humanizeToken(token: string): string {
+  return token.replace(/[-_]/g, ' ').trim()
+}
+
+export function claimKindLabel(kind: ClaimKind): string {
+  return KIND_LABEL[kind] ?? humanizeToken(kind)
+}
+
+/** One doc_ref → the shortest handle that tells two claims from the same document apart. */
+export function shortLocator(ref: DocRef | undefined): string {
+  if (!ref) return ''
+  if (ref.line != null) return `L${ref.line}`
+  if (ref.page != null) return `p.${ref.page}`
+  if (ref.row != null) return `row ${ref.row}`
+  if (ref.frame != null) return `frame ${ref.frame}`
+  if (ref.region) return ref.region
+  if (ref.span) return `${ref.span[0]}–${ref.span[1]}`
+  return ''
+}
+
+function scalarString(v: unknown): string | null {
+  if (typeof v === 'string') return v.trim() || null
+  if (typeof v === 'number' || typeof v === 'boolean') return String(v)
+  return null
+}
+
+/** The claim's payload → the sentence it asserts. Every word comes from the payload or from the
+ *  fixed vocabulary above; nothing is summarised, inferred or generated. Unknown payload shapes
+ *  return '' and the caller shows the verbatim quote instead of a guess. */
+export function claimProposition(claim: ClaimRecord, resolve: (id: string) => string = (i) => i): string {
+  const p = claim.payload as Record<string, unknown> | undefined
+  if (!p || typeof p !== 'object') return ''
+  const negated = claim.polarity === 'negative'
+  if (p.form === 'triple') {
+    const subject = resolve(String(p.subject ?? ''))
+    const object = resolve(String(p.object ?? ''))
+    const predicate = humanizeToken(String(p.predicate ?? ''))
+    if (!subject || !object) return ''
+    return `${subject} ${negated ? 'is not' : 'is'} ${predicate} ${object}`.replace(/\s+/g, ' ')
+  }
+  if (p.form === 'entity') {
+    const name = scalarString(p.name)
+    const type = humanizeToken(String(p.entity_type ?? 'entity'))
+    if (!name) return ''
+    return negated ? `“${name}” is not a ${type}` : `“${name}” is a ${type}`
+  }
+  if (p.form === 'event') {
+    const type = humanizeToken(String(p.event_type ?? 'event'))
+    const parts = Array.isArray(p.participants) ? p.participants.map((x) => resolve(String(x))) : []
+    return parts.length ? `${type} involving ${parts.join(', ')}` : type
+  }
+  return ''
+}
+
+/** The payload's own attributes as "label — value" lines. Scalars only: a nested object (a
+ *  coordinate block, a geocode candidate list) is structure the drawer renders elsewhere, and
+ *  flattening it here would produce noise that reads like content. */
+export function claimAttrLines(claim: ClaimRecord): string[] {
+  const p = claim.payload as Record<string, unknown> | undefined
+  const attrs = p && typeof p === 'object' ? (p.attrs as Record<string, unknown> | undefined) : undefined
+  if (!attrs || typeof attrs !== 'object') return []
+  return Object.entries(attrs).reduce<string[]>((lines, [k, v]) => {
+    const value = scalarString(v)
+    if (value) lines.push(`${humanizeToken(k)} — ${value}`)
+    return lines
+  }, [])
+}
+
+/** A registry entry → the attribution the drawer shows. `known: false` means the id was not in the
+ *  registry, and the UI must then say only the id: describing an unknown source is a fabrication. */
+export function sourceCardToDisplay(sourceId: string, card: SourceCard | undefined): LiveDrawerSource {
+  if (!card) return { sourceId, label: sourceId, flags: [], known: false }
+  const flags = Object.entries(REGISTRY_FLAG_LABEL).reduce<string[]>((out, [key, label]) => {
+    if ((card as unknown as Record<string, unknown>)[key] === true) out.push(label)
+    return out
+  }, [])
+  return {
+    sourceId,
+    label: SOURCE_CLASS_LABEL[card.source_type] ?? humanizeToken(card.source_type),
+    grade: card.reliability_grade ?? null,
+    bias: card.bias_vector ? humanizeToken(card.bias_vector) : null,
+    reportDate: card.report_date ?? null,
+    flags,
+    known: true,
+  }
+}
+
+/** What the drawer's element actually asserts, resolved against the live view. Falls back to the
+ *  bare ref when the view does not know the id — never to an invented description. */
+export function drawerSubject(view: GraphView | null | undefined, ref: string): LiveDrawerSubject {
+  const resolve = nameResolver(view)
+  const node = view?.nodes.find((n) => n.id === ref)
+  if (node) {
+    const typeLabel = humanizeToken(node.type)
+    return {
+      ref,
+      kind: 'node',
+      headline: `“${node.name ?? node.id}” exists, as a ${typeLabel}`,
+      typeLabel,
+      statusless: false,
+    }
+  }
+  const edge = view?.edges.find((e) => e.id === ref)
+  if (edge) {
+    const typeLabel = humanizeToken(edge.type)
+    const statusless = isStatuslessEdge(edge)
+    const src = resolve(edge.source)
+    const dst = resolve(edge.target)
+    if (edge.type === 'supersedes') {
+      const subject = typeof edge.attrs?.subject === 'string' ? resolve(edge.attrs.subject) : null
+      // The link runs site→site, but what was overtaken is the OCCUPANCY. Say so, or the arrow
+      // reads "this base was replaced by that base", which is false.
+      return {
+        ref,
+        kind: 'edge',
+        headline: subject
+          ? `${subject} moved from ${dst} to ${src} — the earlier basing is now history`
+          : `The recorded basing moved from ${dst} to ${src} — the earlier one is now history`,
+        typeLabel: 'replaced by',
+        statusless,
+      }
+    }
+    return { ref, kind: 'edge', headline: `${src} — ${typeLabel} → ${dst}`, typeLabel, statusless }
+  }
+  return { ref, kind: 'unknown', headline: ref, typeLabel: '', statusless: false }
+}
+
+/** The relocation behind a `supersedes` edge, named end to end — reachable from any of its three
+ *  elements. Selecting the retired `based-at` assertion has to explain itself too: "stale" with no
+ *  successor named is the same failure as "replaced by" with no subject named. */
+export function drawerSupersession(
+  view: GraphView | null | undefined,
+  ref: string,
+): LiveDrawerSupersession | undefined {
+  const link = view?.edges.find((e) => {
+    if (e.type !== 'supersedes') return false
+    return e.id === ref || e.attrs?.older_edge === ref || e.attrs?.newer_edge === ref
+  })
+  if (!link) return undefined
+  const resolve = nameResolver(view)
+  const subject = typeof link.attrs?.subject === 'string' ? link.attrs.subject : null
+  const olderEdgeId = typeof link.attrs?.older_edge === 'string' ? link.attrs.older_edge : null
+  const newerEdgeId = typeof link.attrs?.newer_edge === 'string' ? link.attrs.newer_edge : null
+  return {
+    role: ref === olderEdgeId ? 'older' : ref === newerEdgeId ? 'newer' : 'link',
+    subjectName: subject ? resolve(subject) : null,
+    fromName: resolve(link.target), // target = the site the occupant left
+    toName: resolve(link.source),
+    olderEdgeId,
+    newerEdgeId,
+  }
+}
+
+/** Structured /evidence/{id} response → display model for the live provenance drawer.
+ *
+ *  `view` is optional: with it the drawer can state the PROPOSITION under assessment (and, for a
+ *  `supersedes` link, what moved where); without it the model still renders, headed by the ref. */
+export function evidenceToDrawerModel(data: ProvenanceDrawer, view?: GraphView | null): LiveDrawerModel {
   const claims = data.claims ?? []
   const claimsById = new Map<string, ClaimRecord>(claims.map((c) => [c.claim_id, c]))
   const clusters = data.clusters ?? []
+  const resolve = nameResolver(view)
+  const cards = data.sources ?? {}
 
   const sourceIds = new Set(claims.map((c) => c.source_id))
 
-  const liveClusters: LiveDrawerCluster[] = clusters.map((group) => ({
-    groupId: group.group_id,
-    axis: group.axis_key
-      ? {
-          origin: group.axis_key.origin,
-          discipline: group.axis_key.discipline,
-          interest: group.axis_key.interest,
-        }
-      : undefined,
-    rows: group.claim_ids.reduce<LiveClaimRow[]>((rows, claimId) => {
-      const claim = claimsById.get(claimId)
-      if (!claim) return rows
-      const refs = docRefsOf(claim.doc_ref)
-      const quotes = data.quotes?.[claimId] ?? []
-      rows.push({
-        claimId: claim.claim_id,
-        sourceId: claim.source_id,
-        kind: claim.kind,
-        detail: [claim.kind, claim.asserts].filter(Boolean).join(' · '),
-        dates: {
-          event: dateValueToString(claim.event_time),
-          reported: dateValueToString(claim.report_time),
-          ingested: dateValueToString(claim.ingest_time),
-        },
-        docRefs: refs,
-        // pad/trim to docRefs length so index i always answers "what does ref i say?"
-        quotes: refs.map((_, i) => quotes[i] ?? ''),
-        dots: credibilityToDots(data.confidence?.per_claim_credibility?.[claimId]),
-      })
-      return rows
-    }, []),
-  }))
+  const rowFor = (claim: ClaimRecord): LiveClaimRow => {
+    const refs = docRefsOf(claim.doc_ref)
+    const quotes = data.quotes?.[claim.claim_id] ?? []
+    const kindLabel = claimKindLabel(claim.kind)
+    return {
+      claimId: claim.claim_id,
+      sourceId: claim.source_id,
+      kind: claim.kind,
+      proposition: claimProposition(claim, resolve),
+      attrLines: claimAttrLines(claim),
+      kindLabel,
+      detail: [kindLabel, FORM_LABEL[claim.asserts] ?? humanizeToken(claim.asserts)]
+        .filter(Boolean)
+        .join(' · '),
+      locatorShort: shortLocator(refs[0]),
+      dates: {
+        event: dateValueToString(claim.event_time),
+        reported: dateValueToString(claim.report_time),
+        ingested: dateValueToString(claim.ingest_time),
+      },
+      docRefs: refs,
+      // pad/trim to docRefs length so index i always answers "what does ref i say?"
+      quotes: refs.map((_, i) => quotes[i] ?? ''),
+      dots: credibilityToDots(data.confidence?.per_claim_credibility?.[claim.claim_id]),
+    }
+  }
 
+  /** Two claims lifted from the SAME line of the same document collide on `L22`. Fall through to
+   *  the character span for exactly those, so no two chips in one look ever read identically —
+   *  the defect this replaces was three indistinguishable chips over three different claims. */
+  const disambiguate = (rows: LiveClaimRow[]): LiveClaimRow[] => {
+    const seen = new Map<string, number>()
+    for (const r of rows) {
+      const key = `${r.sourceId}|${r.locatorShort}`
+      seen.set(key, (seen.get(key) ?? 0) + 1)
+    }
+    return rows.map((r) => {
+      if ((seen.get(`${r.sourceId}|${r.locatorShort}`) ?? 0) < 2) return r
+      const span = r.docRefs[0]?.span
+      return span ? { ...r, locatorShort: `${r.locatorShort} · ${span[0]}–${span[1]}` } : r
+    })
+  }
+
+  const sourcesOf = (rows: LiveClaimRow[]): LiveDrawerSource[] =>
+    [...new Set(rows.map((r) => r.sourceId))].map((id) => sourceCardToDisplay(id, cards[id]))
+
+  const grouped = new Set<string>()
+  const liveClusters: LiveDrawerCluster[] = clusters.map((group) => {
+    const rows = disambiguate(
+      group.claim_ids.reduce<LiveClaimRow[]>((acc, claimId) => {
+        const claim = claimsById.get(claimId)
+        if (!claim) return acc
+        grouped.add(claimId)
+        acc.push(rowFor(claim))
+        return acc
+      }, []),
+    )
+    return {
+      groupId: group.group_id,
+      axis: group.axis_key
+        ? {
+            origin: group.axis_key.origin,
+            discipline: group.axis_key.discipline,
+            interest: group.axis_key.interest,
+          }
+        : undefined,
+      rows,
+      sources: sourcesOf(rows),
+    }
+  })
+
+  // Residual bucket: claims the response cited that no independence group contains. On a status-less
+  // edge (a `supersedes` version link) EVERY claim lands here, and the previous model dropped them —
+  // the drawer showed an element with three citations as if it had none.
+  const loose = disambiguate(claims.filter((c) => !grouped.has(c.claim_id)).map(rowFor))
+  if (loose.length) {
+    liveClusters.push({ groupId: 'ungrouped', rows: loose, sources: sourcesOf(loose), ungrouped: true })
+  }
+
+  const subject = drawerSubject(view, data.subject_ref)
   return {
     subjectRef: data.subject_ref,
+    subject,
+    supersession: drawerSupersession(view, data.subject_ref),
     status: data.status ?? 'insufficient',
     sources: sourceIds.size,
     looks: clusters.length,
+    claimCount: liveClusters.reduce((n, c) => n + c.rows.length, 0),
     sufficiency: data.sufficiency
       ? {
           satisfied: data.sufficiency.satisfied,
@@ -548,7 +892,7 @@ export interface LiveAnswerModel {
 
 /** "supplies-component" / "based_at" → "supplies component" / "based at". */
 export function humanizeEdge(edge: string): string {
-  return edge.replace(/[-_]/g, ' ').trim()
+  return humanizeToken(edge)
 }
 
 /** One hop → a readable "src — edge → dst" line (the walk's rungs). */

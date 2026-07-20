@@ -54,6 +54,32 @@ def test_evidence_works_for_edges_too(hero_client) -> None:
     assert drawer.claims  # the equips inference cites at least one claim
 
 
+def test_evidence_names_the_registry_entry_behind_every_cited_source(hero_client) -> None:
+    """"Who says so?" — a source id is an internal key, not an attribution.
+
+    The drawer renders a source by CLASS + reliability grade, and those live only in
+    ``config/sources.yaml``. Until now no GET route exposed them, so the UI had nothing to show but
+    ``d17b_withheld_gap`` — a filename presented to an analyst as if it were a publisher.
+    """
+    drawer = ProvenanceDrawer.model_validate(hero_client.get("/evidence/unit_paad").json())
+    cited = {c.source_id for c in drawer.claims}
+    assert cited, "fixture must cite at least one source"
+    # Only cited ids appear, and each entry is keyed by its own id — no invented attribution.
+    assert set(drawer.sources) <= cited
+    assert all(sid == entry.source_id for sid, entry in drawer.sources.items())
+    assert "src-imagery-2024" in drawer.sources
+    assert drawer.sources["src-imagery-2024"].source_type == "satellite"
+    assert drawer.sources["src-imagery-2024"].reliability_grade == "B"
+
+
+def test_evidence_omits_a_source_the_registry_does_not_know(hero_client, hero_state) -> None:
+    """An unregistered source is ABSENT, never described — the UI then shows the bare id."""
+    hero_state.config.set_section("sources", {"sources": []})
+    drawer = ProvenanceDrawer.model_validate(hero_client.get("/evidence/unit_paad").json())
+    assert drawer.claims  # still one-click-to-source
+    assert drawer.sources == {}
+
+
 def test_evidence_unknown_id_actionable_404(hero_client) -> None:
     r = hero_client.get("/evidence/ghost")
     assert r.status_code == 404

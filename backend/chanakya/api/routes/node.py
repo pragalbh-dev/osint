@@ -70,6 +70,13 @@ def get_evidence(element_id: str, state: AppState = Depends(get_state)) -> Prove
             ordered_ids.append(cid)
     claims = [claims_map[cid] for cid in ordered_ids if cid in claims_map]
 
+    # "Who says so?" — the registry entry behind every cited source_id. A source id is an internal key
+    # (``d17b_withheld_gap`` is a filename, not an attribution); the class + reliability grade that make
+    # it readable live in config/sources.yaml, which no GET route previously exposed. Verbatim passthrough
+    # of the registry entry: an id with no entry is omitted rather than described from guesswork.
+    registry = state.config.snapshot().sources.as_map()
+    sources = {cid: registry[cid] for cid in {c.source_id for c in claims} if cid in registry}
+
     return ProvenanceDrawer(
         subject_ref=element.id,
         status=element.status,
@@ -80,4 +87,5 @@ def get_evidence(element_id: str, state: AppState = Depends(get_state)) -> Prove
         sufficiency=element.sufficiency,
         claims=claims,
         quotes=quotes_for(claims),
+        sources=sources,
     )

@@ -268,6 +268,24 @@ export interface AskAnswer {
 
 // ───────────────────────── provenance drawer ─────────────────────────
 
+/** A cited source's registry entry (config/sources.yaml → SourceRegistryEntry). Deliberately has NO
+ *  publisher/display name: the registry does not carry one, so the UI describes a source by its CLASS
+ *  and reliability grade and never invents a masthead. Added 2026-07-20 (T6). */
+export interface SourceCard {
+  source_id: string
+  source_type: string
+  reliability_grade?: string | null // STANAG A–F
+  primary_origin_id?: string | null // circular-reporting detection
+  aggregator_of?: string[]
+  bias_vector?: string | null
+  coordinated_inauthenticity_flag?: boolean
+  adversary_denial_flag?: boolean
+  cadence?: string | null
+  citation_url?: string | null
+  images?: string[]
+  report_date?: string | null
+}
+
 export interface ProvenanceDrawer {
   subject_ref: string
   status?: Status | null
@@ -281,6 +299,10 @@ export interface ProvenanceDrawer {
   // order. A file+offset is a pointer, not a source; this is what the analyst actually audits.
   // Absent claim / empty string = the span could not be read; render the locator alone, never a guess.
   quotes?: Record<string, string[]>
+  // added 2026-07-20 (T6) — source_id -> its registry entry, for every source cited by `claims`.
+  // A source id is an internal key; "who says so?" needs the class + grade behind it. Absent id =
+  // not in the registry; show the bare id rather than a description we cannot support.
+  sources?: Record<string, SourceCard>
 }
 
 // ───────────────────────── review queue / HITL ─────────────────────────
