@@ -19,6 +19,9 @@ from dataclasses import dataclass
 
 from chanakya.schemas import OntologyConfig
 
+_FROM_END = "from"  # default supplier end (supplier == source; the dominant sustainment convention)
+_TO_END = "to"
+
 
 @dataclass(frozen=True)
 class RelaneResult:
@@ -55,6 +58,7 @@ class EdgeLaneIndex:
         self._ordered: list[str] = []  # declaration order (deterministic accessors)
         self._symmetric: set[str] = set()
         self._endpoints: dict[str, tuple[list[str], list[str]]] = {}
+        self._supplier_end: dict[str, str] = {}  # sustainment edge → which endpoint holds the supplier
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
             if e.name not in self._names:
@@ -62,6 +66,11 @@ class EdgeLaneIndex:
             self._names.add(e.name)
             if e.symmetric:
                 self._symmetric.add(e.name)
+            # supplier_end is a plain YAML field (ConfigModel extra="allow"), read for the chokepoint
+            # direction (D-P4.7); only from/to are meaningful, anything else is ignored.
+            end = getattr(e, "supplier_end", None)
+            if isinstance(end, str) and end in (_FROM_END, _TO_END):
+                self._supplier_end[e.name] = end
             # domain/range is declared on every directional edge, extractor or not — RESOLVE types a
             # triple ENDPOINT from it (RES-1), which is a separate concern from the extraction enum.
             self._endpoints[e.name] = (e.from_types(), e.to_types())
@@ -111,6 +120,18 @@ class EdgeLaneIndex:
         default whitelist — never a hardcoded edge list on any one query.
         """
         return [name for name in self._ordered if name not in self._symmetric]
+
+    def supplier_end(self, edge_type: str) -> str:
+        """Which endpoint of a sustainment edge holds the **supplier** — ``"from"`` (source) or ``"to"``
+        (target); the *dependent* end is the other one.
+
+        Declared per-edge in ``config/ontology.yaml`` (``supplier_end``); defaults to ``"from"`` (supplier
+        == source, the dominant convention) for any edge that doesn't declare it. Read by
+        :func:`chanakya.materiality.precompute` so the sole-source in-degree TEST runs on the dependent
+        end while the chokepoint FINDING attaches to the supplier end — one direction of truth for both
+        the nomination pass and the dependency-closure pass (``exported-by`` puts the supplier on ``to``).
+        """
+        return self._supplier_end.get(edge_type, _FROM_END)
 
     def is_known(self, name: str) -> bool:
         """True if ``name`` is any declared edge type (extractor or not)."""

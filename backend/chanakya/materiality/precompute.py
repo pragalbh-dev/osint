@@ -23,6 +23,7 @@ Criteria (C/01 §"topology nominates; evidence confirms"):
 
 from __future__ import annotations
 
+from chanakya.ontology import EdgeLaneIndex
 from chanakya.schemas import ConfigBundle, EdgeView, GraphView, KnownGap, MaterialityAttrs, NodeView
 
 # Ontology edge roles (names, not scoring numbers — G6). Overridable via config.materiality if present.
@@ -31,6 +32,8 @@ _SUSTAINMENT = (
     "exported-by", "design-authority-for",
 )  # sustained-by deliberately EXCLUDED (coarse rollup, C/01:163)
 _SUBSTITUTABLE_BY = "substitutable-by"
+_TO_END = "to"                                  # supplier is the edge's target (e.g. exported-by)
+_DEFAULT_FUNCTION_ATTR = "functional_role"      # component attr that partitions sole-source by function
 _CONFIRMED, _CANDIDATE, _NONE = "confirmed", "candidate", "none"
 _SOLE_SOURCE, _ALTERNATES, _UNKNOWN = "known-sole-source", "known-alternates", "UNKNOWN"
 _POSSIBLE = "possible"  # an inferred/candidate edge status (never confirmed)
@@ -41,6 +44,22 @@ def _role_edges(config: ConfigBundle) -> tuple[tuple[str, ...], str]:
     sustainment = getattr(materiality, "sustainment_edges", None) if materiality else None
     substitutable = getattr(materiality, "substitutable_edge", None) if materiality else None
     return tuple(sustainment) if sustainment else _SUSTAINMENT, substitutable or _SUBSTITUTABLE_BY
+
+
+def _function_attr(config: ConfigBundle) -> str:
+    """The node attr that partitions a dependent's sole-source count by *function* (C/01 #1/#9).
+
+    Config-driven (``ontology.materiality.function_attr``); falls back to the declared component
+    ``functional_role`` slot. So a variant equipped by one acquisition radar + one engagement radar + one
+    launcher exposes three sole-source functions (each a SPOF), not in-degree 3 on one ``equips`` lane;
+    a supplier with no such attr degrades gracefully to per-edge-type counting so nothing regresses.
+    """
+    materiality = getattr(config.ontology, "materiality", None)
+    if isinstance(materiality, dict):
+        attr = materiality.get("function_attr")
+        if isinstance(attr, str) and attr:
+            return attr
+    return _DEFAULT_FUNCTION_ATTR
 
 
 def _foreign_control_backed(node: NodeView) -> bool:
@@ -80,26 +99,69 @@ def _all_inferred(in_edges: list[EdgeView]) -> bool:
 
 
 def precompute(view: GraphView, config: ConfigBundle) -> GraphView:
-    """Materialise chokepoint/substitutability attrs on every node (config-driven, cite-preserving)."""
+    """Materialise chokepoint/substitutability attrs on every node (config-driven, cite-preserving).
+
+    Direction (D-P4.7): a sustainment edge has a *supplier* end and a *dependent* end, declared per-edge
+    via ``supplier_end`` (``exported-by`` puts the supplier on ``to``, the rest on ``from``). The
+    sole-source in-degree TEST is a fact about the **dependent** (does it have exactly one supplier on a
+    given function?); the chokepoint FINDING attaches to the **supplier** — the node that fails the
+    sustainment if it disappears. Both passes read one accessor (:meth:`EdgeLaneIndex.supplier_end`).
+    """
     sustainment, substitutable_edge = _role_edges(config)
+    lanes = EdgeLaneIndex(config.ontology)
+    function_attr = _function_attr(config)
     nodes = {n.id: n for n in view.nodes}
 
-    # Index sustainment in-edges (who supplies whom) + substitutable-by out-edges, per node.
-    sustain_in: dict[str, dict[str, list[EdgeView]]] = {n.id: {} for n in view.nodes}
+    def ends(edge: EdgeView) -> tuple[str, str]:
+        """``(supplier_id, dependent_id)`` for a sustainment edge — from the ontology, not orientation."""
+        if lanes.supplier_end(edge.type) == _TO_END:
+            return edge.target, edge.source
+        return edge.source, edge.target
+
+    def function_slot(edge: EdgeView, supplier_id: str) -> tuple[str, str | None]:
+        """The dependent's supply is counted per ``(edge type, supplier's functional role)`` — 'one
+        engagement radar' is a SPOF even when the variant has many other components; role absent →
+        per-edge-type so a supplier tier that declares no role never regresses."""
+        supplier = nodes.get(supplier_id)
+        role = supplier.attrs.get(function_attr) if supplier else None
+        return (edge.type, role if isinstance(role, str) and role else None)
+
+    def supplier_type_ok(edge: EdgeView, supplier_id: str) -> bool:
+        """The supplier-end node type must be a declared endpoint of this edge — the read-time mirror of
+        the write-time re-lane's off-ontology rejection. A ``unit`` sitting in ``equips``'s component slot
+        is a mis-lane that slipped past the extractor, not a supplier, and must not be nominated. When the
+        edge declares no endpoints (empty) or the node is missing, don't over-reject — keep it."""
+        frm, to = lanes.endpoint_types(edge.type)
+        allowed = to if lanes.supplier_end(edge.type) == _TO_END else frm
+        supplier = nodes.get(supplier_id)
+        return not allowed or supplier is None or supplier.type in allowed
+
+    # Index each dependent's sustainment edges by function slot; substitutable-by out-edges per node.
+    dep_by_fn: dict[str, dict[tuple[str, str | None], list[EdgeView]]] = {n.id: {} for n in view.nodes}
     sub_out: dict[str, list[EdgeView]] = {n.id: [] for n in view.nodes}
     for edge in view.edges:
-        if edge.type in sustainment and edge.target in sustain_in:
-            sustain_in[edge.target].setdefault(edge.type, []).append(edge)
+        if edge.type in sustainment:
+            supplier, dependent = ends(edge)
+            if dependent in dep_by_fn and supplier_type_ok(edge, supplier):
+                dep_by_fn[dependent].setdefault(function_slot(edge, supplier), []).append(edge)
         elif edge.type == substitutable_edge and edge.source in sub_out:
             sub_out[edge.source].append(edge)
 
-    # Pass 1: per-node substitutability + own chokepoint classification.
+    # #1: a dependent with exactly one supplier on a function slot ⇒ that SUPPLIER is a sole-source SPOF.
+    # The finding is collected on the supplier end (not the dependent that carried the in-degree fact).
+    supplier_sole: dict[str, list[EdgeView]] = {n.id: [] for n in view.nodes}
+    for by_fn in dep_by_fn.values():
+        for edges in by_fn.values():
+            if len(edges) == 1:
+                supplier, _dependent = ends(edges[0])
+                if supplier in supplier_sole:
+                    supplier_sole[supplier].append(edges[0])
+
+    # Pass 1: per-supplier substitutability + chokepoint classification.
     status_by_node: dict[str, str] = {}
     for node in view.nodes:
         sub_state, sub_refs = _substitutability(node, sub_out[node.id], nodes)
-        by_type = sustain_in[node.id]
-        # #1: sole-source in-degree — exactly one supplier on some sustainment function.
-        sole_edges = [edges[0] for edges in by_type.values() if len(edges) == 1]
+        sole_edges = supplier_sole[node.id]
         contributing: list[str] = list(sub_refs)
 
         if not sole_edges:
@@ -128,10 +190,13 @@ def precompute(view: GraphView, config: ConfigBundle) -> GraphView:
 
     # Pass 2: chokepoint_count = confirmed chokepoints in each node's sustainment-dependency closure
     # (#10: candidates are NOT folded into the confirmed count — they surface via status + Known Gap).
+    # Same direction accessor as pass 1: a dependent depends on its supplier end.
     supplies: dict[str, list[str]] = {n.id: [] for n in view.nodes}
     for edge in view.edges:
-        if edge.type in sustainment and edge.target in supplies:
-            supplies[edge.target].append(edge.source)  # target depends on source
+        if edge.type in sustainment:
+            supplier, dependent = ends(edge)
+            if dependent in supplies and supplier_type_ok(edge, supplier):
+                supplies[dependent].append(supplier)  # dependent depends on supplier
 
     def confirmed_in_closure(start: str) -> int:
         seen: set[str] = set()

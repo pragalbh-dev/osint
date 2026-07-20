@@ -1,10 +1,10 @@
 # EVAL RCA — evidence bundle (real pipeline over frozen bundles)
 
-- repo root: `/home/synaptic/data-science/research/rough/osint/wt-RESOLVE-p3`
+- repo root: `/home/synaptic/data-science/research/rough/osint/wt-EVAL`
 - claims seeded: **452**
-- full view: **162 nodes / 57 edges / 79 events / 22 known_gaps**
+- full view: **162 nodes / 57 edges / 79 events / 23 known_gaps**
 - lens view (`lens-hq9p-pk`): **23 nodes / 34 edges**
-- oracle: 20 nodes / 22 edges / 7 places
+- oracle: 20 nodes / 21 edges / 7 places
 
 ## view node-type histogram
 - source: 56
@@ -116,10 +116,9 @@ For each oracle node: view nodes of same type whose name/alias overlaps. >1 hit 
 ## ORACLE EDGE -> VIEW (by type)
 - **mfr_casic -manufactures-> var_hq9p** (want confirmed): 5 view edges of type 'manufactures'
 - **mfr_casic -manufactures-> var_hq9be** (want confirmed): 5 view edges of type 'manufactures'
-- **mfr_casic -manufactures-> comp_ht233** (want confirmed): 5 view edges of type 'manufactures'
 - **comp_ht233 -equips-> var_hq9p** (want confirmed): 11 view edges of type 'equips'
 - **comp_interceptor -equips-> var_hq9p** (want confirmed): 11 view edges of type 'equips'
-- **mfr_23rd_ri -manufactures-> comp_ht233** (want possible): 5 view edges of type 'manufactures'
+- **mfr_23rd_ri -supplies-component-> comp_ht233** (want possible): 1 view edges of type 'supplies-component'
 - **mfr_4th_academy -supplies-component-> comp_interceptor** (want possible): 1 view edges of type 'supplies-component'
 - **mfr_taian -supplies-component-> comp_tel_chassis** (want confirmed): 1 view edges of type 'supplies-component'
 - **comp_tel_chassis -equips-> var_hq9p** (want confirmed): 11 view edges of type 'equips'
@@ -154,10 +153,10 @@ For each oracle node: view nodes of same type whose name/alias overlaps. >1 hit 
 - same-as: ent:variant:HQ-16 -> ent:variant:LY-80  (merge_conf=0.497125, status=None)
 
 ## HERO QUERY
-- answer: transporter-erector-launcher (TEL) platform (ent:component:transporter-erector-launcher (TEL) platform) matches the criteria [d24-tel-chassis-attribution-l11]
+- answer: <REFUSAL>
 - hops: []
-- citations: ['d24-tel-chassis-attribution-l11']
-- refusal: None
+- citations: []
+- refusal: missing=['named_supplier', 'substitutability'] next_coverage_due=None known_gap=KnownGap(id='gap:chokepoint:comp_ht233', what_missing='confirmed sole-source supplier / substitutability for HT-233', observability_ceiling='probable-max', next_coverage_due=None, related_ref='comp_ht233', missing_slots=['named_supplier', 'substitutability']) reason='Insufficient evidence to assess comp_ht233: missing named_supplier, substitutability. Next coverage due unscheduled.'
 
 ## RELOCATION OBSERVABLE
 - alerts fired: 0

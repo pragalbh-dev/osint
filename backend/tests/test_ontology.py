@@ -73,3 +73,13 @@ def test_relane_handles_backwards_written_fact() -> None:
 def test_relane_rejects_offontology_endpoints() -> None:
     r = _index().relane("equips", "source", "known_gap")
     assert r.edge is None and r.action == "rejected" and not r.ok
+
+
+def test_supplier_end_direction_is_declared_per_edge() -> None:
+    # D-P4.7: the supplier is the `from` end for most sustainment edges, the `to` end for exported-by.
+    idx = _index()
+    for etype in ("equips", "supplies-component", "manufactures", "component-of", "design-authority-for"):
+        assert idx.supplier_end(etype) == "from", etype
+    assert idx.supplier_end("exported-by") == "to"
+    # an edge that declares nothing defaults to "from" (supplier == source, the dominant convention).
+    assert idx.supplier_end("based-at") == "from"

@@ -336,15 +336,15 @@
   ],
   "known_gaps": [
     {
-      "id": "gap:chokepoint:comp_gizmo",
+      "id": "gap:chokepoint:mfr_foundry",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "comp_gizmo",
-      "what_missing": "confirmed sole-source supplier / substitutability for Gizmo engagement radar"
+      "related_ref": "mfr_foundry",
+      "what_missing": "confirmed sole-source supplier / substitutability for Foundry Corp"
     }
   ],
   "meta": {
@@ -394,11 +394,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d03-row7",
-          "e:mfr_foundry:supplies-component:comp_gizmo"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Gizmo engagement radar",
@@ -466,8 +463,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d03-row7",
+          "e:mfr_foundry:supplies-component:comp_gizmo"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Foundry Corp",

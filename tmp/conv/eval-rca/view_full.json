@@ -9536,26 +9536,15 @@
       "what_missing": "imagery_confirmation"
     },
     {
-      "id": "gap:chokepoint:China HQ-9 battery",
+      "id": "gap:chokepoint:comp_ht233",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "China HQ-9 battery",
-      "what_missing": "confirmed sole-source supplier / substitutability for China HQ-9 battery"
-    },
-    {
-      "id": "gap:chokepoint:HT-233 radar",
-      "missing_slots": [
-        "named_supplier",
-        "substitutability"
-      ],
-      "next_coverage_due": null,
-      "observability_ceiling": "probable-max",
-      "related_ref": "HT-233 radar",
-      "what_missing": "confirmed sole-source supplier / substitutability for HT-233 radar"
+      "related_ref": "comp_ht233",
+      "what_missing": "confirmed sole-source supplier / substitutability for HT-233"
     },
     {
       "id": "gap:chokepoint:comp_tel_chassis",
@@ -9567,6 +9556,72 @@
       "observability_ceiling": "probable-max",
       "related_ref": "comp_tel_chassis",
       "what_missing": "confirmed sole-source supplier / substitutability for HQ-9/P TEL"
+    },
+    {
+      "id": "gap:chokepoint:ent:component:India",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "ent:component:India",
+      "what_missing": "confirmed sole-source supplier / substitutability for India"
+    },
+    {
+      "id": "gap:chokepoint:ent:component:Pakistan Army Air Defence (PAAD) unit",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "ent:component:Pakistan Army Air Defence (PAAD) unit",
+      "what_missing": "confirmed sole-source supplier / substitutability for Pakistan Army Air Defence (PAAD) unit"
+    },
+    {
+      "id": "gap:chokepoint:ent:component:Type 305B",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "ent:component:Type 305B",
+      "what_missing": "confirmed sole-source supplier / substitutability for Type 305B"
+    },
+    {
+      "id": "gap:chokepoint:ent:component:Type 305B (HT-233) fire-control set",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "ent:component:Type 305B (HT-233) fire-control set",
+      "what_missing": "confirmed sole-source supplier / substitutability for Type 305B (HT-233) fire-control set"
+    },
+    {
+      "id": "gap:chokepoint:ent:component:Type 305B / H-200 family",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "ent:component:Type 305B / H-200 family",
+      "what_missing": "confirmed sole-source supplier / substitutability for Type 305B / H-200 family"
+    },
+    {
+      "id": "gap:chokepoint:ent:component:WS-series heavy 8x8 special wheeled chassis",
+      "missing_slots": [
+        "named_supplier",
+        "substitutability"
+      ],
+      "next_coverage_due": null,
+      "observability_ceiling": "probable-max",
+      "related_ref": "ent:component:WS-series heavy 8x8 special wheeled chassis",
+      "what_missing": "confirmed sole-source supplier / substitutability for WS-series heavy 8x8 special wheeled chassis"
     },
     {
       "id": "gap:chokepoint:ent:component:the System",
@@ -9591,81 +9646,37 @@
       "what_missing": "confirmed sole-source supplier / substitutability for transporter-erector-launcher (TEL) platform"
     },
     {
-      "id": "gap:chokepoint:ent:trading_org:SINO-GALAXY IMPEX CO, LTD",
+      "id": "gap:chokepoint:ent:manufacturer:CPMIEC",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "ent:trading_org:SINO-GALAXY IMPEX CO, LTD",
-      "what_missing": "confirmed sole-source supplier / substitutability for SINO-GALAXY IMPEX CO, LTD"
+      "related_ref": "ent:manufacturer:CPMIEC",
+      "what_missing": "confirmed sole-source supplier / substitutability for CPMIEC"
     },
     {
-      "id": "gap:chokepoint:ent:variant:Air Defence squadrons",
+      "id": "gap:chokepoint:ent:manufacturer:China",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "ent:variant:Air Defence squadrons",
-      "what_missing": "confirmed sole-source supplier / substitutability for Air Defence squadrons"
+      "related_ref": "ent:manufacturer:China",
+      "what_missing": "confirmed sole-source supplier / substitutability for China"
     },
     {
-      "id": "gap:chokepoint:ent:variant:HQ-9",
+      "id": "gap:chokepoint:mfr_taian",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "ent:variant:HQ-9",
-      "what_missing": "confirmed sole-source supplier / substitutability for HQ-9"
-    },
-    {
-      "id": "gap:chokepoint:ent:variant:LY-80",
-      "missing_slots": [
-        "named_supplier",
-        "substitutability"
-      ],
-      "next_coverage_due": null,
-      "observability_ceiling": "probable-max",
-      "related_ref": "ent:variant:LY-80",
-      "what_missing": "confirmed sole-source supplier / substitutability for LY-80"
-    },
-    {
-      "id": "gap:chokepoint:ent:variant:S-400 Triumf",
-      "missing_slots": [
-        "named_supplier",
-        "substitutability"
-      ],
-      "next_coverage_due": null,
-      "observability_ceiling": "probable-max",
-      "related_ref": "ent:variant:S-400 Triumf",
-      "what_missing": "confirmed sole-source supplier / substitutability for S-400 Triumf"
-    },
-    {
-      "id": "gap:chokepoint:var_hq9be",
-      "missing_slots": [
-        "named_supplier",
-        "substitutability"
-      ],
-      "next_coverage_due": null,
-      "observability_ceiling": "probable-max",
-      "related_ref": "var_hq9be",
-      "what_missing": "confirmed sole-source supplier / substitutability for HQ-9BE"
-    },
-    {
-      "id": "gap:chokepoint:var_hq9p",
-      "missing_slots": [
-        "named_supplier",
-        "substitutability"
-      ],
-      "next_coverage_due": null,
-      "observability_ceiling": "probable-max",
-      "related_ref": "var_hq9p",
-      "what_missing": "confirmed sole-source supplier / substitutability for HQ-9P"
+      "related_ref": "mfr_taian",
+      "what_missing": "confirmed sole-source supplier / substitutability for Taian (Wanshan) special-vehicle works"
     },
     {
       "id": "gap:e:China HQ-9 battery:based-at:ent:basing_site:garrison in China's western military district",
@@ -9765,7 +9776,7 @@
     "config_version": 1,
     "edge_count": 57,
     "event_count": 79,
-    "known_gap_count": 22,
+    "known_gap_count": 23,
     "node_count": 162
   },
   "nodes": [
@@ -9806,11 +9817,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d14-stale-holding-l7-11",
-          "e:ent:component:Type 305B (HT-233) fire-control set:component-of:China HQ-9 battery"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": null,
@@ -9879,11 +9887,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d23-cpmiec-false-attribution-l10-3",
-          "e:ent:manufacturer:CPMIEC:manufactures:HT-233 radar"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": null,
@@ -10274,8 +10279,16 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d19-rahwali-confirm-l11-6",
+          "d21-techdata-authority-l8",
+          "d22-deep-tier-supplier-l10",
+          "d25-hq9-site-fingerprint-l12-2",
+          "e:comp_ht233:component-of:ent:variant:HQ-9",
+          "e:comp_ht233:equips:var_hq9be",
+          "e:comp_ht233:equips:var_hq9p"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HT-233",
@@ -10597,8 +10610,8 @@
         "chokepoint_count": 0,
         "chokepoint_status": "candidate",
         "contributing_refs": [
-          "d24-tel-chassis-attribution-l13-2",
-          "e:mfr_taian:supplies-component:comp_tel_chassis"
+          "d24-tel-chassis-attribution-l1-5",
+          "e:comp_tel_chassis:component-of:ent:component:transporter-erector-launcher (TEL) platform"
         ],
         "substitutability_state": "UNKNOWN"
       },
@@ -13578,8 +13591,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d04-armyrec-ranges-l15",
+          "e:ent:component:India:equips:ent:variant:S-400 Triumf"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "India",
@@ -13714,8 +13730,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d02-ispr-induction-l11-5",
+          "e:ent:component:Pakistan Army Air Defence (PAAD) unit:equips:var_hq9p"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Pakistan Army Air Defence (PAAD) unit",
@@ -14020,8 +14039,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d01-sipri-transfer-l16",
+          "e:ent:component:Type 305B:equips:var_hq9p"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Type 305B",
@@ -14090,8 +14112,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d14-stale-holding-l7-11",
+          "e:ent:component:Type 305B (HT-233) fire-control set:component-of:China HQ-9 battery"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Type 305B (HT-233) fire-control set",
@@ -14157,8 +14182,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d06-spares-tender-l46",
+          "e:ent:component:Type 305B / H-200 family:component-of:ent:component:the System"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Type 305B / H-200 family",
@@ -14227,8 +14255,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d25-hq9-site-fingerprint-l1-4",
+          "e:ent:component:WS-series heavy 8x8 special wheeled chassis:equips:ent:variant:HQ-9"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "WS-series heavy 8x8 special wheeled chassis",
@@ -15156,8 +15187,8 @@
         "chokepoint_count": 0,
         "chokepoint_status": "candidate",
         "contributing_refs": [
-          "d06-spares-tender-l46",
-          "e:ent:component:Type 305B / H-200 family:component-of:ent:component:the System"
+          "d06-spares-tender-l15-8",
+          "e:ent:component:the System:equips:ent:variant:Air Defence squadrons"
         ],
         "substitutability_state": "UNKNOWN"
       },
@@ -15298,8 +15329,8 @@
         "chokepoint_count": 0,
         "chokepoint_status": "candidate",
         "contributing_refs": [
-          "d24-tel-chassis-attribution-l1-5",
-          "e:comp_tel_chassis:component-of:ent:component:transporter-erector-launcher (TEL) platform"
+          "d24-tel-chassis-attribution-l11-2",
+          "e:ent:component:transporter-erector-launcher (TEL) platform:equips:ent:variant:HQ-9"
         ],
         "substitutability_state": "UNKNOWN"
       },
@@ -16231,8 +16262,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d23-cpmiec-false-attribution-l10-3",
+          "e:ent:manufacturer:CPMIEC:manufactures:HT-233 radar"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "CPMIEC",
@@ -16346,8 +16380,13 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d01-sipri-transfer-l8-3",
+          "d03-quwa-analysis-l8",
+          "e:ent:contract_import_event:FD-2000/HQ-9 family:exported-by:ent:manufacturer:China",
+          "e:var_hq9p:exported-by:ent:manufacturer:China"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "China",
@@ -20646,11 +20685,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d05-customs-manifest-row68-4",
-          "e:ent:contract_import_event:KPQA-HC-2020-119011:exported-by:ent:trading_org:SINO-GALAXY IMPEX CO, LTD"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "SINO-GALAXY IMPEX CO, LTD",
@@ -21079,11 +21115,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d06-spares-tender-l15-8",
-          "e:ent:component:the System:equips:ent:variant:Air Defence squadrons"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Air Defence squadrons",
@@ -21373,13 +21406,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d15-globaltimes-aligned-l15-2",
-          "d22-deep-tier-supplier-l10",
-          "e:comp_ht233:component-of:ent:variant:HQ-9",
-          "e:mfr_casic:design-authority-for:ent:variant:HQ-9"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HQ-9",
@@ -21689,11 +21717,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d03-quwa-analysis-l14",
-          "e:unit_paad:equips:ent:variant:LY-80"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "LY-80",
@@ -21921,11 +21946,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d04-armyrec-ranges-l15",
-          "e:ent:component:India:equips:ent:variant:S-400 Triumf"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "S-400 Triumf",
@@ -22632,8 +22654,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d24-tel-chassis-attribution-l13-2",
+          "e:mfr_taian:supplies-component:comp_tel_chassis"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Taian (Wanshan) special-vehicle works",
@@ -22674,11 +22699,11 @@
               "source": "coord-parse"
             }
           ],
-          "precision_class": "city",
+          "precision_class": "pad",
           "proposed_alias": null,
           "raw": "24.9012 N, 67.2034 E",
           "resolved_place_ref": null,
-          "surface_format": "DMS",
+          "surface_format": "DD",
           "wgs84_lat": 24.9012,
           "wgs84_lon": 67.2034
         },
@@ -22744,11 +22769,11 @@
             "source": "coord-parse"
           }
         ],
-        "precision_class": "city",
+        "precision_class": "pad",
         "proposed_alias": null,
         "raw": "24.9012 N, 67.2034 E",
         "resolved_place_ref": "pl_karachi_ad",
-        "surface_format": "DMS",
+        "surface_format": "DD",
         "wgs84_lat": 24.9012,
         "wgs84_lon": 67.2034
       },
@@ -22935,17 +22960,26 @@
     {
       "attrs": {
         "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
+          "geocode_candidates": [
+            {
+              "confidence": 1.0,
+              "label": null,
+              "lat": 33.61638816251397,
+              "lon": 73.09971192513768,
+              "source": "coord-parse"
+            }
+          ],
+          "precision_class": "pad",
+          "proposed_alias": null,
           "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
           "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
+          "surface_format": "MGRS",
+          "wgs84_lat": 33.61638816251397,
+          "wgs84_lon": 73.09971192513768
         },
         "occupancy_state": "active or near-active",
         "place_match_band": "auto",
+        "place_match_distance_m": 0.7765524825918252,
         "place_match_via": "toponym",
         "resolved_from": [
           {
@@ -23020,14 +23054,22 @@
       },
       "id": "site_rawalpindi",
       "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
+        "geocode_candidates": [
+          {
+            "confidence": 1.0,
+            "label": null,
+            "lat": 33.61638816251397,
+            "lon": 73.09971192513768,
+            "source": "coord-parse"
+          }
+        ],
+        "precision_class": "pad",
+        "proposed_alias": null,
         "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
         "resolved_place_ref": "pl_nurkhan",
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "surface_format": "MGRS",
+        "wgs84_lat": 33.61638816251397,
+        "wgs84_lon": 73.09971192513768
       },
       "materiality": {
         "chokepoint_count": 0,
@@ -23683,12 +23725,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d19-rahwali-confirm-l11-6",
-          "d25-hq9-site-fingerprint-l12-2",
-          "e:comp_ht233:equips:var_hq9be"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HQ-9BE",
@@ -24157,11 +24195,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d23-cpmiec-false-attribution-l10-4",
-          "e:HT-233 radar:component-of:var_hq9p"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HQ-9P",

@@ -22,6 +22,12 @@
 # Structural / symmetric edges (same-as, corroborates, supersedes, …) set `symmetric: true` — they have
 # no natural direction and are never reoriented (extra="allow", so these are plain YAML fields, no F0
 # schema change).
+#
+# Chokepoint direction (EVAL RCA D-P4.7): each sustainment edge declares `supplier_end: from|to` — which
+# endpoint holds the *supplier* (the node that fails the sustainment if it disappears). For most edges the
+# supplier is the `from` end, but `exported-by` (Contract->Manufacturer) puts it on the `to` end. Read by
+# `chanakya.ontology.EdgeLaneIndex.supplier_end` so materiality tests sole-source in-degree on the
+# *dependent* end yet attaches the chokepoint finding to the *supplier* end (one direction of truth).
 
 node_types:
   - name: manufacturer
@@ -81,12 +87,12 @@ edge_types:
   - {name: based-at,             from: unit,                  to: basing_site,             extractor: true, freshness_class: perishable}    # Unit->Site (field 30d / garrison 18mo)
   - {name: inducted-into,        from: variant,               to: unit,                    extractor: true, freshness_class: semi-durable}  # Variant->Unit
   - {name: imported-by,          from: contract_import_event, to: unit,                    extractor: true, freshness_class: durable}       # Contract->Unit
-  - {name: exported-by,          from: contract_import_event, to: manufacturer,            extractor: true, freshness_class: durable}       # Contract->Manufacturer/export-agent
-  - {name: equips,               from: component,             to: variant,                 extractor: true, freshness_class: durable}       # Component->Variant (hero)
-  - {name: supplies-component,   from: manufacturer,          to: component,               extractor: true, freshness_class: durable}       # Manufacturer->Component (sole Mfr->Component edge)
-  - {name: manufactures,         from: manufacturer,          to: variant,                 extractor: true, freshness_class: durable}       # Manufacturer->Variant (TIGHTENED; Mfr->Component re-lanes to supplies-component)
-  - {name: design-authority-for, from: techdata_authority,    to: variant,                 extractor: true, freshness_class: durable}       # techdata_authority->Variant
-  - {name: component-of,         from: component,             to: component,               extractor: true, freshness_class: durable}       # deep-tier BOM (Component->Component; same-type: edge_direction leaves as written)
+  - {name: exported-by,          from: contract_import_event, to: manufacturer,            extractor: true, freshness_class: durable, supplier_end: to}    # Contract->Manufacturer/export-agent (supplier = the exporter/OEM at the `to` end)
+  - {name: equips,               from: component,             to: variant,                 extractor: true, freshness_class: durable, supplier_end: from}  # Component->Variant (hero); the component is the supplier
+  - {name: supplies-component,   from: manufacturer,          to: component,               extractor: true, freshness_class: durable, supplier_end: from}  # Manufacturer->Component (sole Mfr->Component edge); the maker is the supplier
+  - {name: manufactures,         from: manufacturer,          to: variant,                 extractor: true, freshness_class: durable, supplier_end: from}  # Manufacturer->Variant (TIGHTENED; Mfr->Component re-lanes to supplies-component)
+  - {name: design-authority-for, from: techdata_authority,    to: variant,                 extractor: true, freshness_class: durable, supplier_end: from}  # techdata_authority->Variant; the authority is the supplier
+  - {name: component-of,         from: component,             to: component,               extractor: true, freshness_class: durable, supplier_end: from}  # deep-tier BOM (Component->Component; sub-component is the supplier of the parent)
   - {name: replenishes,          from: contract_import_event, to: interceptor_stockpile,   extractor: true, freshness_class: perishable}    # Contract->stockpile (follow-on resupply; observable)
   # derived / rollup — NOT extractor-emitted (synthesized by SCORE/MONITOR/RESOLVE)
   - {name: sustained-by,         from: unit,                  freshness_class: n/a}                          # object polymorphic: interceptor_stockpile | techdata_authority — rollup only (edge_direction: from-only)
@@ -111,3 +117,10 @@ event_types:
   - {name: InductionEvent, freshness_class: durable}
   - {name: SightingEvent, freshness_class: durable}
   - {name: ExerciseEvent, freshness_class: durable}
+
+# Materiality knobs (SCORE precompute; C/01). `function_attr` is the node attr that partitions a
+# dependent's sole-source count by *function*: a variant equipped by one acquisition radar + one
+# engagement radar + one launcher has three sole-source functions (each a SPOF), not in-degree 3 on a
+# single `equips` lane. Absent on a supplier node → that edge falls back to per-edge-type counting.
+materiality:
+  function_attr: functional_role

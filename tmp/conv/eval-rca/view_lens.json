@@ -3748,66 +3748,66 @@
   ],
   "known_gaps": [
     {
-      "id": "gap:chokepoint:HT-233 radar",
+      "id": "gap:chokepoint:comp_ht233",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "HT-233 radar",
-      "what_missing": "confirmed sole-source supplier / substitutability for HT-233 radar"
+      "related_ref": "comp_ht233",
+      "what_missing": "confirmed sole-source supplier / substitutability for HT-233"
     },
     {
-      "id": "gap:chokepoint:ent:variant:HQ-9",
+      "id": "gap:chokepoint:ent:component:Pakistan Army Air Defence (PAAD) unit",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "ent:variant:HQ-9",
-      "what_missing": "confirmed sole-source supplier / substitutability for HQ-9"
+      "related_ref": "ent:component:Pakistan Army Air Defence (PAAD) unit",
+      "what_missing": "confirmed sole-source supplier / substitutability for Pakistan Army Air Defence (PAAD) unit"
     },
     {
-      "id": "gap:chokepoint:ent:variant:LY-80",
+      "id": "gap:chokepoint:ent:component:Type 305B",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "ent:variant:LY-80",
-      "what_missing": "confirmed sole-source supplier / substitutability for LY-80"
+      "related_ref": "ent:component:Type 305B",
+      "what_missing": "confirmed sole-source supplier / substitutability for Type 305B"
     },
     {
-      "id": "gap:chokepoint:var_hq9be",
+      "id": "gap:chokepoint:ent:manufacturer:CPMIEC",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "var_hq9be",
-      "what_missing": "confirmed sole-source supplier / substitutability for HQ-9BE"
+      "related_ref": "ent:manufacturer:CPMIEC",
+      "what_missing": "confirmed sole-source supplier / substitutability for CPMIEC"
     },
     {
-      "id": "gap:chokepoint:var_hq9p",
+      "id": "gap:chokepoint:ent:manufacturer:China",
       "missing_slots": [
         "named_supplier",
         "substitutability"
       ],
       "next_coverage_due": null,
       "observability_ceiling": "probable-max",
-      "related_ref": "var_hq9p",
-      "what_missing": "confirmed sole-source supplier / substitutability for HQ-9P"
+      "related_ref": "ent:manufacturer:China",
+      "what_missing": "confirmed sole-source supplier / substitutability for China"
     }
   ],
   "meta": {
     "config_version": 1,
     "edge_count": 57,
     "event_count": 79,
-    "known_gap_count": 22,
+    "known_gap_count": 23,
     "node_count": 162,
     "scoped_from_nodes": 162,
     "subject": "lens-hq9p-pk"
@@ -3850,11 +3850,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d23-cpmiec-false-attribution-l10-3",
-          "e:ent:manufacturer:CPMIEC:manufactures:HT-233 radar"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": null,
@@ -4178,8 +4175,16 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d19-rahwali-confirm-l11-6",
+          "d21-techdata-authority-l8",
+          "d22-deep-tier-supplier-l10",
+          "d25-hq9-site-fingerprint-l12-2",
+          "e:comp_ht233:component-of:ent:variant:HQ-9",
+          "e:comp_ht233:equips:var_hq9be",
+          "e:comp_ht233:equips:var_hq9p"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HT-233",
@@ -4511,8 +4516,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d02-ispr-induction-l11-5",
+          "e:ent:component:Pakistan Army Air Defence (PAAD) unit:equips:var_hq9p"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Pakistan Army Air Defence (PAAD) unit",
@@ -4581,8 +4589,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d01-sipri-transfer-l16",
+          "e:ent:component:Type 305B:equips:var_hq9p"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "Type 305B",
@@ -4787,8 +4798,11 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d23-cpmiec-false-attribution-l10-3",
+          "e:ent:manufacturer:CPMIEC:manufactures:HT-233 radar"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "CPMIEC",
@@ -4902,8 +4916,13 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "none",
-        "contributing_refs": [],
+        "chokepoint_status": "candidate",
+        "contributing_refs": [
+          "d01-sipri-transfer-l8-3",
+          "d03-quwa-analysis-l8",
+          "e:ent:contract_import_event:FD-2000/HQ-9 family:exported-by:ent:manufacturer:China",
+          "e:var_hq9p:exported-by:ent:manufacturer:China"
+        ],
         "substitutability_state": "UNKNOWN"
       },
       "name": "China",
@@ -5410,13 +5429,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d15-globaltimes-aligned-l15-2",
-          "d22-deep-tier-supplier-l10",
-          "e:comp_ht233:component-of:ent:variant:HQ-9",
-          "e:mfr_casic:design-authority-for:ent:variant:HQ-9"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HQ-9",
@@ -5576,11 +5590,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d03-quwa-analysis-l14",
-          "e:unit_paad:equips:ent:variant:LY-80"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "LY-80",
@@ -6033,11 +6044,11 @@
               "source": "coord-parse"
             }
           ],
-          "precision_class": "city",
+          "precision_class": "pad",
           "proposed_alias": null,
           "raw": "24.9012 N, 67.2034 E",
           "resolved_place_ref": null,
-          "surface_format": "DMS",
+          "surface_format": "DD",
           "wgs84_lat": 24.9012,
           "wgs84_lon": 67.2034
         },
@@ -6103,11 +6114,11 @@
             "source": "coord-parse"
           }
         ],
-        "precision_class": "city",
+        "precision_class": "pad",
         "proposed_alias": null,
         "raw": "24.9012 N, 67.2034 E",
         "resolved_place_ref": "pl_karachi_ad",
-        "surface_format": "DMS",
+        "surface_format": "DD",
         "wgs84_lat": 24.9012,
         "wgs84_lon": 67.2034
       },
@@ -6753,12 +6764,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d19-rahwali-confirm-l11-6",
-          "d25-hq9-site-fingerprint-l12-2",
-          "e:comp_ht233:equips:var_hq9be"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HQ-9BE",
@@ -7227,11 +7234,8 @@
       "location": null,
       "materiality": {
         "chokepoint_count": 0,
-        "chokepoint_status": "candidate",
-        "contributing_refs": [
-          "d23-cpmiec-false-attribution-l10-4",
-          "e:HT-233 radar:component-of:var_hq9p"
-        ],
+        "chokepoint_status": "none",
+        "contributing_refs": [],
         "substitutability_state": "UNKNOWN"
       },
       "name": "HQ-9P",

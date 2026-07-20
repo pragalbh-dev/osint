@@ -56,10 +56,16 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
   wrong-shaped edges, no relocation pair**; chokepoint still nominates variants/units; `var_hq9p` is named
   `HQ-9P` with no aliases stamped → `find_entity("HQ-9/P")` still misses; **0 stale** nodes.
   **Demo-impact ranking + build order (ratified with orchestrator, branch `fix/phase4-derived-and-surfaces`):**
-  1. ⏳ **ASK worked-query bundle** (AS-1/2/3/4/5/6) — the demo centrepiece; currently crashes → fabricates a
-     refusal about a non-existent node (disqualifying). Independent, fixable now. **IN PROGRESS.**
-  2. **SC-1 chokepoint direction** — visibly wrong output; cheap; independent.
-  3. **SC-2 basing-stale wiring** — freshness invisible; cheap; also relocation-beat prereq.
+  1. ✅ **ASK worked-query bundle** (AS-1…AS-6) — **DONE, commit `21e80e1`.** Hero path returns an honest
+     refusal (no crash, no leaked `comp_ht233`/`mfr_casic`), names the real Karachi→Taian disconnect; refusal
+     templates now fire; `find_entity("HQ-9/P")`→`var_hq9p`. Suite 665✓.
+  2. ✅ **SC-1 chokepoint direction** — **DONE, commit pending this checkpoint.** `supplier_end` declared per
+     sustainment edge (D-P4.7) + per-`functional_role` partition + read-time endpoint-type guard. Gaps moved
+     from 12-on-variants/units → **13, all component(10)/manufacturer(3), zero on variant/unit**; real supply
+     tier (HT-233, TEL chassis, Taian) nominated. Suite 670✓. Residual noise (`India`, `the System`, Type-305B
+     dups) is upstream mis-typing + RESOLVE under-merge — separate data item, not a direction bug.
+  3. **SC-2 basing-stale wiring** — freshness invisible; cheap; also relocation-beat prereq. **NEXT** (land the
+     mechanism now, verify visible effect during the beat — its stale nodes need dated basing edges = Tier 4).
   4. **Relocation beat** (all-or-nothing chain: edge_instance key + INGEST occupancy lane/dated derivation +
      SCORE supersede-floor/stale + MONITOR grouping/de-pin + staged-ingest harness + frontend live feed).
   5. Hardening/honesty polish (AR-2 defensive, AR-3, AS-3/4, MON-4).
