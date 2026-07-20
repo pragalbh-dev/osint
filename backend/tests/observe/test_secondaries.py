@@ -46,7 +46,7 @@ def test_followon_interceptor_order_arms_via_backscan() -> None:
         "severity": "notify",
     })
     current = view(edges=[{"id": "r1", "type": "replenishes", "source": "contract_x",
-                           "target": "stock_y", "edge_instance": "replenishes:contract_x"}])
+                           "target": "stock_y", "edge_instance": "edge:contract_x:replenishes:stock_y"}])
     armed = arm(obs, current, config_with(obs))
     assert len(armed) == 1
     assert armed[0].observable_id == "obs-followon-interceptor-order"

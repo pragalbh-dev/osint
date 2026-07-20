@@ -3,23 +3,29 @@
 # ObservablesConfig{observables: list[ObservableDef{observable_id, subject?, trigger, severity, disposition}]}.
 # Lifecycle: define -> arm (evaluate on save) -> fire on next rebuild() -> disposition feeds tuning.
 observables:
-  # SEEDED PRIMARY — the flagship relocation tripwire (Rawalpindi 2021 -> Rahwali 2025).
+  # SEEDED PRIMARY — the flagship relocation tripwire. It declares only WHO is watched and WHAT CLASS OF
+  # CHANGE counts; it does NOT name the origin site, the destination site, or the year. A tripwire that
+  # names its own destination is confirming a relocation, not detecting one — and it would fire exactly
+  # once, on the one move we already knew about. The sites appear in the FIRED ALERT, never here.
+  # (EVAL RCA D-P4.10; the earlier version pinned unit/from_site/to_site/window off answer_key.json.)
   - observable_id: obs-basing-relocation
     subject: lens-hq9p-pk
+    watch_instances: [unit_hq9b]   # the watched resolved instance — the ONE scope channel (spine/08 §3.8)
     trigger:
       "on": occupancy_state_change
       edge_type: based-at
-      match_on: [resolved_unit, site_instance]   # resolved identity, NOT designator strings (spine/08 §3.8)
-      anchors_within_hops: 2
-      unit: unit_hq9b                             # scoping instance (answer_key.json)
-      from_site: site_rawalpindi
-      to_site: site_rahwali
-      window: "2025"
+      match_on: [resolved_unit, site_instance]   # one wire per resolved unit; the SITE is the tracked state
+      anchors_within_hops: 0   # the watched instances + the lens anchors THEMSELVES — do not spread the
+                               # wire across the lens neighbourhood (that is how a manufacturer's address
+                               # change used to trip a unit-relocation tripwire). Raise it to widen recall.
     severity: notify
     disposition: [real, noise, needs-more]
 
   # CONFIG-ONLY SECONDARIES — armed but NOT wired into the narrative (proves observables are declarative,
-  # not hardcoded). No UI/demo-script hooks.
+  # not hardcoded). No UI/demo-script hooks. NOTE: these still carry forward-looking keys (`from_type`,
+  # `to_type`, `event_subtype`, `source_class`, `implies_edge`, `target_status_ceiling`) that the current
+  # engine does not read. That is no longer silent — `explain()` lists them under `unconsumed_keys` and
+  # the analyst's confirm screen says so, so a key can never quietly mean nothing.
   - observable_id: obs-followon-interceptor-order
     subject: lens-hq9p-pk
     trigger:
