@@ -115,7 +115,7 @@ const clearIngestTimers = () => {
 }
 
 export const useWorkbench = create<WorkbenchState>((set, get) => ({
-  mode: 'demo',
+  mode: 'live',
   stage: 'map',
   panelView: 'zero',
   activeCard: null,
