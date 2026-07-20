@@ -235,11 +235,32 @@ mismatch; full id unification (eval still matches by name+type). None block the 
 block anyone trusting the fragmentation/MISSING counts — which per the standing caveat come from a
 probe that ignores edge endpoints and **should not be quoted as a score**.
 
-## 13. 🟢 In-document coreference is built but gated off
+## 13. 🟢 In-document coreference is built but gated off — ✅ MEASURED & DECIDED (2026-07-20): KEEP GATED
 
 Both halves shipped (`ingest/coref.py` + the RESOLVE honor policy); `config/resolution.yaml`
-`coref_authoritative_evidence: []` keeps it inert by choice. Phase 3 shrank its value
-(`unknown` 109→3). Turning it on needs an EVAL re-record.
+`coref_authoritative_evidence: []` keeps it inert by choice.
+
+**Now measured rather than assumed** (branch `qa/t1-coref-gate`, full analysis in
+`tmp/conv/T1-coref-gate-evaluation.md`). Three findings, each sufficient on its own:
+
+1. **Flipping the consumer flag is a provable no-op, not a null result** — the 29 frozen bundles contain
+   **zero** `coref-same-as` claims, so the consumer's loop body never executes.
+2. **Turning the producer on breaks the build today** — it needs a *second* extraction call per document;
+   every recorded fixture holds one response, so the scripted client exhausts and **31 tests fail**. That
+   is the concrete shape of "needs a re-record": 29 bundles + ~31 fixtures + a keyed re-run.
+3. **Even after a perfect re-record the trade is bad** — only **11 of 40** duplicate candidates are
+   in-document, and **9 of those 11 are pairs a human would call clearly different** (`Punjab ↔ Sindh`;
+   the three *distinct* KPQA bills of lading; HT-233 array ↔ support vehicles), with **none of the four
+   demotion rails firing on any of them**. Payoff: ~**one** reliable merge (`LY-80 ↔ HQ-16`).
+
+**Not deleted, deliberately.** The code is sound, fully inert, and is a good answer to a real design
+question — defensible on the call *as a gated capability*: "we built the in-document discourse channel,
+measured its reach at 11 of 40 with 9 of those unguarded, and left it raise-only until veto coverage
+earns it."
+
+**Its own pre-conditions for revisiting are now all met** (T3b landed the identical-string resolve fix,
+the `basing_site`-absorbing-areas retyping, and the `contract_import_event` identifier rail), so a future
+re-record would be measured against a much cleaner baseline than the one that produced this verdict.
 
 ## 14. ✅ RESOLVED (2026-07-20) — the `deep_tier_confirmed` flex no longer claims corroboration it lacks
 
@@ -251,6 +272,78 @@ the overclaim. The `confirmed` status is unchanged (it was always the evidence-g
 argument survives). Prose only: no ground-truth node, edge or status moved. One stale echo of the old
 wording remains in the historical audit note `tmp/conv/eval-rca/ANSWER-KEY-GROUNDING-AUDIT.md` — left as
 written because it is a dated record of an audit, not a live artifact.
+
+## 15. 🔴 No node ever becomes a CONFIRMED chokepoint — `substitutable-by` is never populated
+
+**The assignment asks for supply-chain chokepoint identification. Today the system produces 10
+`candidate` chokepoints and *zero* confirmed ones, and it is structurally incapable of producing one.**
+
+Measured on the integrated graph (`qa/live-fixes`, 166 nodes):
+
+* `chokepoint_status`: **156 `none`, 10 `candidate`, 0 confirmed/sole-source**
+* `substitutability_state`: **`UNKNOWN` on all 166 nodes** — without exception
+* `chokepoint_count`: **0** on every candidate
+* **`substitutable-by` edges in the graph: 0.** `supplies-component` edges: 2.
+
+**The mechanism.** `materiality/precompute.py::_substitutability` derives its three-state value purely
+from a node's `substitutable-by` edges. With none in the graph every node is `UNKNOWN`, and the
+classifier then applies its own (correct, conservative) rule — *"UNKNOWN substitutability / inferred →
+candidate, never sole-source"*. So the promotion path is closed by construction, not by evidence.
+
+**This was scoped, not overlooked.** `config/ontology.yaml:169` declares the predicate and its own comment
+says *"three-state on the edge; only UNKNOWN seeded (roadmap)"*. The materiality layer, the three-state
+model, the candidate classification, the `contributing_refs` and the Known-Gap template (`missing
+named_supplier, substitutability`) are all built and working — the **evidence layer underneath them is
+empty**.
+
+**The corpus is NOT silent on this, which is what makes it worth fixing rather than merely disclosing.**
+`d16_adversary_denial` is *entirely* an argument about sole-sourcing — a claim that the HT-233 is "a fully
+indigenised product… no dependency on Chinese technical data packages", pushed back on in the same
+document, against earlier reporting that tied HT-233 sustainment to "CASIC-supplied documentation and
+periodic Chinese technician visits". That is substitutability evidence, *and* it is contested
+substitutability evidence — precisely the adversary-denial case the credibility layer exists to weigh.
+`d21` (technical-data authority / configuration control) and `d24` (Taian/Wanshan chassis) bear on it too.
+Related: **#4** (`techdata_authority` never extracted — same root, a schema slot the extractor had nowhere
+to record).
+
+**Impact.** The graded ask is "an auditable order-of-battle **+ supply-chain map**". We can nominate what
+*might* be a chokepoint and state exactly what is missing — which is the non-negotiable behaving correctly
+— but we cannot currently answer "name the chokepoint" with anything better than *candidate, UNKNOWN*. The
+worked query's close reads *"Chokepoint: HT-233 — candidate, substitutability UNKNOWN. Insufficient
+evidence to assess…"*. Defensible, and honest, but thin against the brief.
+
+**Do not fix silently.** The fix needs an extraction slot for substitutability plus a keyed re-record, and
+it changes what the flagship answer says — so it is a scoped piece of work with a user decision attached,
+not a patch. Options, cheapest first:
+1. **Disclose only** — state on the call that substitutability is modelled end-to-end but unpopulated, and
+   that every chokepoint is therefore a candidate. Zero risk, zero build.
+2. **Seed `substitutable-by` from `config/` for the two or three components the corpus actually argues
+   about**, provenance-tagged as analyst-curated, so at least one node completes the ladder and the demo
+   can show a *confirmed* chokepoint with its contested evidence.
+3. **Extract it properly** — add the schema slot, re-record d16/d21/d24, and let the credibility layer
+   adjudicate the denial. Best story (an adversary-denial claim *lowering* confidence in a sole-source
+   read is exactly the graded axis), highest cost and highest risk this close to the deadline.
+
+## 16. 🟡 `rebuild()` emits some edge ids on several rows, and only one row is ever scored
+
+Found by T9 while wiring the new hero query (`tmp/conv/T9-to-DATA-graph-gaps.md`); **filed, not fixed —
+it changes graph shape everywhere.**
+
+The same edge id can appear on **multiple rows**, each holding a *different slice* of that edge's claims,
+and only one of those rows is assessed. `e:var_hq9p:inducted-into:unit_paad` appears **four times**: the
+ISPR official induction announcement is stranded on an unassessed row, while the row that *is* scored
+carries only imagery plus the planted `d23` false attribution — hence its "missing official_announcement".
+**7 ids duplicated, 9 surplus rows.**
+
+**Why it matters more than it looks.** This is very likely the reason **nothing on the corpus reaches
+`confirmed`** and why every induction edge reads `insufficient`: corroboration is being split across rows
+so no single row ever accumulates enough independent looks. It is also why the new hero query runs its
+ORBAT hop on `equips` rather than the better-sourced `inducted-into`. Suspect a shared root with the
+`edge_instance` keying issue noted in the Phase-4 audit.
+
+No edge in the current worked-query chain is affected, so the demo is not at risk — but any claim we make
+about corroboration counts or status distribution is suspect until this is understood. Fix it *before*
+re-running any evaluation numbers.
 
 ---
 
@@ -264,6 +357,20 @@ this, but nobody has watched a cold reviewer use it. Two verified options, both 
 (a) keep it withheld and make the SPA prompt the ingest more loudly; (b) ship full-corpus by setting
 `CHANAKYA_SEED_WITHHOLD=` in compose, and treat the beat as a separate deliberate action.
 **Needs a call before the demo.**
+
+*Re-confirmed 2026-07-20 (T9):* the replacement hero query — *"Trace the long-range SAM battery now based
+at Rahwali back to the organisation that builds its missile system, and name the fire-control
+chokepoint"* — **also refuses on a cold boot**, for the same structural reason: its anchor is Rahwali,
+which does not exist until the two withheld 2025 passes are ingested. Changing the query did not and could
+not dissolve this decision. T9 also notes the refusal wording is **engineer-shaped rather than
+analyst-shaped**, which makes the cold-boot first impression worse than it needs to be under either
+option — worth fixing regardless of which is chosen.
+
+**D6. 🔴 How do we answer "name the chokepoint" on the call?** New, 2026-07-20 — see **#15**. Every
+chokepoint in the graph is a `candidate` with `UNKNOWN` substitutability, because no `substitutable-by`
+edge is ever produced. Three options (disclose only / seed a curated few / extract properly) are in #15,
+cheapest first. This is a **graded ask of the brief**, so it needs a deliberate answer even if the answer
+is "we disclose the limitation".
 
 **D2. Not exercised in SHIP** (stated, not hidden): the GHCR **push** (no credentials assumed — the
 pull path was proven by running the tag from outside the repo, i.e. everything but the network hop);
