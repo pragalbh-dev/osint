@@ -62,7 +62,7 @@ collection, and watches the tripwire fire and the answer become traceable.
 
 ```bash
 # 1 — ask before the evidence exists: a first-class refusal, not a guess
-make ask Q="Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint."
+make ask Q="Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its missile system, and name the fire-control chokepoint."
 
 # 2 — the new collection arrives (keyless: a frozen claim bundle, byte-for-byte
 #     what live extraction over that document produces)
@@ -71,7 +71,7 @@ for d in d18_rahwali_pass1 d18_rahwali_pass1__basing d19_rahwali_confirm d19_rah
 done            # → "ALERTS FIRED: 1 → obs-basing-relocation"
 
 # 3 — ask again: the 3-hop chain, every hop cited
-make ask Q="Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint."
+make ask Q="Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its missile system, and name the fire-control chokepoint."
 ```
 
 `make ask` / `make ingest` talk to the **running app** over HTTP and need only

@@ -7,7 +7,22 @@ subjects:
     anchors:
       - unit_paad        # Pakistan Army Air Defence — HQ-9/P regiment (well-sourced flagship entry point)
       - site_rahwali     # Rahwali (Gujranwala) — the CURRENT basing site of the watched battery
-    max_hops: 3          # site_rahwali -> unit_hq9b -> var_hq9p -> component = 3 edges (full chokepoint chain)
+    max_hops: 3          # site_rahwali -> unit_hq9b -> var_hq9p -> origin maker = 3 edges (full ORBAT->origin chain)
+    # The lens's TRAVERSAL PATTERN (master §1 invariant #6: a subject is anchors + a traversal/scoring
+    # pattern, not its own database). These are the ORBAT -> dependency lanes an origin trace may walk;
+    # ASK hands them to find_paths as its edge_whitelist. Without it the shortest walk from a site to a
+    # maker hops the SIGHTING lane (`observed-at` — "equipment was seen here") straight to the variant,
+    # which skips the formation entirely and so cannot answer "which unit operates it". A shorter path,
+    # but not an order-of-battle one. Omit the key and the trace falls back to the ontology's full
+    # traversable set (chanakya.ontology.EdgeLaneIndex.traversable_edges).
+    trace_lanes:
+      - based-at             # site  <- unit             (where the formation sits)
+      - inducted-into        # unit  <- variant          (what it took on strength)
+      - equips               # variant <- component, or unit -> variant (what is fitted / what is fielded)
+      - manufactures         # variant <- manufacturer   (who builds the system)
+      - supplies-component   # component <- manufacturer (who supplies the part)
+      - component-of         # deep-tier bill of materials
+      - design-authority-for # the invisible dependency (software / calibration authority)
     materiality_filter:
       # keep the assessed view to the C/01 demo-scope node set; drop chaff / off-subject claims so
       # distractors don't leak into the lens (hq9p_chaff scenario: mode=chaff / off_subject=true).
@@ -30,7 +45,14 @@ subjects:
         - substitutability_state
         - status
       never_drop_indeterminate: true   # query_graph must return an "indeterminate" partition, never drop UNKNOWN
+    # target_queries[0] IS the flagship worked query: ASK matches it exactly to take the deterministic
+    # fixed hero path, and the SPA's first affordance POSTs this byte-for-byte
+    # (frontend/src/demo/scenario.ts → TARGET_QUERIES.hero). Change one, change the other.
     target_queries:               # C/00-overview.md shape, anchored on the site the graph actually holds
+      - "Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its missile system, and name the fire-control chokepoint."
+      # Retained (T9): the previous flagship wording. Kept as a target query so the older phrasing still
+      # routes to the same deterministic path and answers — it asks for the chokepoint COMPONENT rather
+      # than the origin, and both are in the one answer.
       - "Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint."
       - "is this holding confirmed or probable, and on what evidence?"
       - "what do we NOT know here?"

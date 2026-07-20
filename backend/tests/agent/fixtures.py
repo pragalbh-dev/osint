@@ -411,6 +411,10 @@ def hero_config() -> ConfigBundle:
     credibility = CredibilityConfig(
         thresholds={"confirmed": 0.80, "probable": 0.50},
         half_lives_days={"based-at": 365.0, "inducted-into": 1825.0, "supplies-component": 3650.0},
+        # The band an answer may rest a link on (mirrors config/credibility.yaml). Declared here because
+        # the band FAILS CLOSED when absent: an undeclared band means nothing is assertable, which is the
+        # safe default but would make this fixture's supplier hop untraceable for the wrong reason.
+        assertable_status=["confirmed", "probable"],
     )
     subjects = SubjectsConfig(
         subjects=[
