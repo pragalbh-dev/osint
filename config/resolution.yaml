@@ -145,6 +145,32 @@ place_proximity_radius_m:        # from config/places.yaml (md/13) — same-plac
   city: 15000
 place_proximity_hitl_multiplier: 3   # 1x-3x radius -> HITL; beyond -> new place (places.yaml)
 
+# ── geographic compatibility veto on ENTITY same-as (T2) ────────────────────────────────────────
+# The gates below guard the PLACE path (which gazetteer node a mention snaps to). Nothing guarded the
+# ENTITY path: merge_score compares names, attributes and neighbourhoods, and none of those knows that
+# Karachi and Sargodha are ~1,100 km apart. So an "Army Air Defence Centre, Karachi" could be scored
+# into the merge queue against a "central Punjab air defence sector" purely on shared wording plus a
+# shared neighbour — and if such a pair ever merges, the surviving node keeps whichever coordinate its
+# FIRST claim carried (view/pipeline._assemble), i.e. one of the two sites is silently redrawn ~1,000 km
+# away on the map. A map that lies about where something is is worse than one that omits it.
+#
+# So: a thing is in ONE place. When BOTH sides carry their own frozen WGS84 coordinate and the geodesic
+# separation exceeds the tolerance for their type, the pair is vetoed — not bootstrapped, not
+# auto-merged, and not even queued for the analyst (a geographic impossibility is not a question).
+# Deliberately narrow, because a wrong veto costs recall:
+#   * a side with NO coordinate is UNKNOWN, never "somewhere else" — absence is not disagreement, the
+#     same rule the attribute hard-conflict rail follows. This gate never fires on a toponym-only
+#     mention, so it does not pre-empt (or depend on) the toponym-geocoding work;
+#   * no gazetteer lookup and no geocoding happen here — identity of PLACES stays in resolve/places.py;
+#   * per entity type, with an optional `default` row; a type with neither ⇒ the gate is simply off.
+# Values: 25 km for a basing site is far beyond any plausible disagreement between two reports of the
+# same site (the gazetteer's coarsest snap radius is 15 km, for a whole city) and far below the scale at
+# which two DIFFERENT sites get confused. 100 km elsewhere: an organisation may be stated at two
+# addresses in one metro area; it is not stated in two provinces.
+entity_geo_conflict_max_km:
+  default: 100
+  basing_site: 25
+
 # ── place-matching gates (P3.5 / RES-5) ─────────────────────────────────────────────────────────
 # The radii above are JITTER absorption: a coord a few hundred metres off is the same pad. With no
 # compatibility gate around them, jitter absorption becomes GARBAGE absorption — an "Army Air Defence

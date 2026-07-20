@@ -49,9 +49,11 @@ def mk_config(
     acronym_min_len: int | None = None,
     source_grades: dict[str, str] | None = None,
     coref_authoritative_evidence: list[str] | None = None,
+    entity_geo_conflict_max_km: dict[str, float] | None = None,
 ) -> ConfigBundle:
     resolution = ResolutionConfig(
         coref_authoritative_evidence=coref_authoritative_evidence or [],
+        entity_geo_conflict_max_km=entity_geo_conflict_max_km or {},
         merge_weights=dict(WEIGHTS),
         bands=dict(BANDS),
         blocking_keys=blocking_keys or ["type", "country_or_domain_namespace", "name_token"],
