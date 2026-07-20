@@ -1,9 +1,38 @@
 # QA diagnosis — post-ingest hero answer withheld (not_entailed ×4)
 
-**From:** live-QA remnant sweep (frontend session, 2026-07-20) · **For:** ASK owner + user decision
-**Status:** root-caused with a live reproduction; fix needs a design call — NOT patched here.
+**From:** live-QA remnant sweep (frontend session, 2026-07-20) · **For:** ASK owner
+**Status:** ✅ FIXED (2026-07-20, Option C) — the flagship answer now renders 5/5, verified with a live
+keyed re-run. Root cause + the fix below.
 **Repro:** boot withheld → ingest all pending bundles → keyed `POST /ask` (hero question), judge
 instrumented. Script: session scratchpad `repro_withheld.py`.
+
+## Fix shipped (Option C, user-approved)
+
+Both halves, in `backend/chanakya/agent/{validate,assemble}.py`:
+
+1. **Identity bridge for hop sentences.** The judge is now handed the resolver's OWN recorded
+   equivalence: the cited claim's raw surface terms (`"Pakistan Air Force"`, `"LR-SAM system"`) and
+   the resolved entities the graph merged them into (`the PAF HQ-9B fire unit`, `HQ-9/P`), with the
+   instruction to treat a raw name and its resolved entity as the same and judge only whether the
+   RELATION holds. This is auditable graph state, not an invented hint — so the check still catches a
+   sentence whose *relation* is unfaithful; it no longer fails a faithful sentence on an alias mismatch.
+2. **Sentence-class scoping.** Two sentence classes never reach the NLI judge (they keep deterministic
+   validation — cited, citation exists, counts real): `DERIVED_METRIC_PREFIX` (`Chokepoint: …`, a
+   rebuild-computed value no claim can entail) and `WEIGHED_NOT_CARRIED_PREFIX` (a link reported as
+   *rejected* — a claim can't entail its own dismissal). Prefixes are owned by `assemble.py` (where the
+   sentences are built) and imported by the validator.
+
+Live re-run after the fix: refusal `None`; hops 1–3 entailed; chokepoint + weighed sentences exempt;
+the honest `HT-233 candidate / UNKNOWN` gap and the refuted CPMIEC attribution both preserved.
+
+Tests: `tests/agent/test_validate.py` gains `test_derived_and_weighed_sentences_are_not_sent_to_the_nli_judge`
+and `test_identity_line_carries_the_resolved_endpoints_to_the_judge`; the adversarial
+`test_rejects_cited_but_not_entailed_sentence` still holds (identity bridges only identity, never the
+assertion). 134 backend agent+api tests green, ruff + mypy clean.
+
+---
+
+## Original diagnosis (retained)
 
 ## What happens
 

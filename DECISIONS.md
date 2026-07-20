@@ -1317,12 +1317,18 @@ only safe way to edit a whole-section write) and `plan/sessions/API.md` scope 7 
   armed-but-quiet observables from the same `GET /config/observables` read the rail counts from, and
   the catalogue-unreadable case says so instead of rendering a confident nothing. (Closes the
   previous session's "left open" item.)
-- **Withheld hero answer root-caused, deliberately NOT patched.** *Principle: borderline-harmful →
-  ask first with options.* The entailment judge rejects 4/5 assembled sentences because it is shown
-  raw surface-form claim text while the answer speaks at the resolved layer (FD-2000 ≡ HQ-9/P,
-  LR-SAM ≡ HQ-9/P are the corpus's own alias traps), plus two sentence classes (derived metrics,
-  weighed-and-rejected) that are structurally not NLI-checkable. Options A–D in
-  `tmp/conv/QA-ask-withheld-entailment.md`; changing it changes flagship demo behaviour → user's call.
+- **Withheld hero answer root-caused and fixed (Option C, user-approved).** *Principle: every claim
+  one-click traceable to its exact source — and the honesty machinery must not withhold a faithful
+  answer.* The entailment judge rejected 4/5 assembled sentences because it saw raw surface-form claim
+  text while the answer speaks at the resolved layer (FD-2000 ≡ HQ-9/P, LR-SAM ≡ HQ-9/P are the
+  corpus's own alias traps), plus two sentence classes (rebuild-derived metrics, weighed-and-rejected
+  links) that are structurally not NLI-checkable. Fix: (1) hand the judge the resolver's OWN recorded
+  raw→resolved equivalence as an IDENTITY line so it judges the RELATION not the identity; (2) exempt
+  the two sentence classes from NLI (they keep deterministic citation validation). Rejected: skipping
+  the judge entirely (weakens the graded entailment-validator story to a disclosure) and alias-context
+  only (leaves the two structural sentences failing). The adversarial check survives — identity is
+  bridged, the assertion is not. Flagship answer now renders 5/5; live-verified.
+  `tmp/conv/QA-ask-withheld-entailment.md`.
 - **d18 imagery provenance is faithful, filed for DATA-C.** The frozen bundle extracted the imagery
   ANALYSIS SUMMARY text; the `.png` is a specimen, never machine-read (bbox/frame slots null). Claim
   cards could surface source class (imagery · B) without any re-record —
