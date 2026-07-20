@@ -5,8 +5,10 @@ here. The LLM *proposed* upstream (its output is frozen in the logs); determinis
 inside this function. Given the same logs + config, the emitted view is byte-identical (gate G2).
 
 Stage call-order is fixed (master §4.3):
-``resolve → score_claims → (group by independence) → assign_status → check → precompute``.
-Around those five stages, F0 owns four *real* pieces: retraction handling, supersede/contradict
+``resolve → score_claims → (group by independence) → assign_status → check → precompute``, with the
+supersession floor (``credibility.supersession``) slotted between ``assign_status`` and ``precompute``
+— it is the one gate that needs a *scored* view to decide, so it cannot run with ``supersede.py``.
+Around those stages, F0 owns four *real* pieces: retraction handling, supersede/contradict ordering
 (``supersede.py``), rendering the resolver's decisions as edges (candidate ``same-as`` + ``distinct-from``,
 G4-exempt / never scored), and HITL decision-effect application (gate G12). All numeric scoring lives
 in the stages (which read config), never here.
@@ -24,6 +26,7 @@ from chanakya.credibility import (
     assertion_freshness,
     assign_status,
     group_by_independence,
+    promote_supersessions,
     score_claims,
 )
 from chanakya.edge_direction import canonicalize_claims
@@ -545,6 +548,22 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                     missing_slots=list(suff.missing_slots),
                 )
             )
+
+    # 6b. supersession floor (D-P4.4 iv) — runs HERE, after the status machine and before materiality,
+    #     because the gate is a question about the *newer* assertion's confidence + deception flags,
+    #     which do not exist until step 5. `view/supersede.py` (step 2) could only order the pair.
+    #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
+    #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
+    #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
+    supersede_outcome = promote_supersessions(edges, config)
+    edges.extend(supersede_outcome.drawn_edges)
+    # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it
+    # raised while it was still being assessed as a live fact. The gap would tell an analyst to go
+    # collect on a position the graph has just established the subject has LEFT — the opposite of the
+    # honest-refusal contract, which is about what we cannot assess, not about what has been overtaken.
+    retired = set(supersede_outcome.retired_element_ids)
+    if retired:
+        known_gaps = [g for g in known_gaps if g.related_ref not in retired]
 
     view = GraphView(
         nodes=list(nodes.values()),

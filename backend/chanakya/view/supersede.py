@@ -3,17 +3,29 @@
 When several relationship claims resolve to the **same edge instance** (RESOLVE's ``resolved_ref.
 edge_instance`` — *never* a designator string) but assert different targets, ``rebuild()`` must decide:
 
-* **differ in ``event_time`` (one strictly later)** → the newer **supersedes** the older; the older
-  edge is marked ``superseded_by`` (SCORE later reads that → *stale*). A unit relocated.
+* **differ in ``event_time`` (one strictly later)** → an **ordered candidate pair**: the newer edge is
+  *nominated* to retire the older one. It is **not** retired here — see below.
 * **same ``event_time``** → a genuine **contradiction** → both edges flagged + cross-linked in
   ``opposing_claims`` and ``attrs["contradiction"]``, routed to HITL.
 * **instance identity uncertain** (an event_time missing, so ordering is impossible) →
   **candidate-supersede** (``attrs["candidate_supersede"]``) — so "vacant@A" can't silently erase
   "occupied@B" for a unit that may simply have moved.
 
-This sets **structure only** (``superseded_by`` / ``supersedes`` / ``opposing_claims`` / flags); it
-never writes ``status`` — the status machine (SCORE) owns that (gate G5). Same edge instance + same
-target = plain corroboration (one edge, many claims), handled by the caller.
+**Why ordering alone is not enough (D-P4.4 condition iv).** A supersession retires a fact an analyst may
+already have acted on, so "newer" is a necessary but not sufficient condition: the *newer* claim must also
+independently reach ≥ probable on ≥1 independent look with a clean deception gate. Otherwise a single
+grade-E adversary post ("the battery has left") silently retires a confirmed position — which is exactly
+what ``d20_supersede_spoof`` was planted in the corpus to attempt. That floor **cannot be evaluated here**:
+this module runs at ``pipeline.rebuild()`` step 2, *before* ``score_claims`` / ``assign_status``, so no
+confidence exists yet. So this module emits only the **ordered pair** (:data:`PENDING_NEWER` /
+:data:`PENDING_OLDER`) plus ``candidate_supersede`` — i.e. **HITL is the default outcome** — and
+``credibility.supersession.promote_supersessions`` (post-status) promotes the pair to a real
+``superseded_by``/``supersedes`` link + a *stale* older edge only once the newer edge clears the
+configured floor. A pair that never clears it stays a candidate for the analyst.
+
+This sets **structure only** (candidate links / ``opposing_claims`` / flags); it never writes ``status`` —
+the status machine (SCORE) owns that (gate G5). Same edge instance + same target = plain corroboration
+(one edge, many claims), handled by the caller.
 """
 
 from __future__ import annotations
@@ -21,6 +33,13 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import cast
 
+from chanakya.credibility.supersession import (
+    CANDIDATE,
+    GATE,
+    GATE_PENDING,
+    PENDING_NEWER,
+    PENDING_OLDER,
+)
 from chanakya.schemas import ClaimRecord, EdgeView, Triple, canonical_iso_bounds
 
 
@@ -63,7 +82,7 @@ def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[
     timed = [(e, _latest_iso(by_target[(e.source, e.type, e.target)])) for e in edges]
     if any(iso is None for _, iso in timed):
         for e, _ in timed:
-            e.attrs["candidate_supersede"] = True  # can't order → don't overwrite; HITL adjudicates
+            e.attrs[CANDIDATE] = True  # can't order → don't overwrite; HITL adjudicates
         return edges
 
     timed.sort(key=lambda pair: pair[1] or "")  # oldest → newest
@@ -76,6 +95,14 @@ def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[
             older_edge.opposing_claims = sorted(set(older_edge.opposing_claims) | set(newest_edge.claim_ids))
             newest_edge.opposing_claims = sorted(set(newest_edge.opposing_claims) | set(older_edge.claim_ids))
         else:
-            older_edge.superseded_by = newest_edge.id  # newer state retires the older (→ stale, SCORE)
-            newest_edge.supersedes = older_edge.id
+            # Ordered, but NOT yet retired: nominate the pair and leave it in the HITL queue. The
+            # confidence + deception floor (D-P4.4 iv) is unevaluable at this point in rebuild(), so the
+            # post-status pass owns the promotion to superseded_by/supersedes/stale.
+            older_edge.attrs[CANDIDATE] = True
+            older_edge.attrs[PENDING_NEWER] = newest_edge.id
+            older_edge.attrs[GATE] = GATE_PENDING
+            newest_edge.attrs[CANDIDATE] = True
+            pending = list(newest_edge.attrs.get(PENDING_OLDER, []))
+            newest_edge.attrs[PENDING_OLDER] = sorted({*pending, older_edge.id})
+            newest_edge.attrs[GATE] = GATE_PENDING
     return edges

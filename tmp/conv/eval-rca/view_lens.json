@@ -1889,7 +1889,37 @@
       "type": "manufactures"
     },
     {
-      "attrs": {},
+      "attrs": {
+        "derived_via": "supersede",
+        "newer_edge": "e:unit_hq9b:based-at:site_rahwali",
+        "older_edge": "e:unit_hq9b:based-at:site_rawalpindi",
+        "source_edge_instance": "edge:unit_hq9b:based-at",
+        "subject": "unit_hq9b"
+      },
+      "claim_ids": [
+        "d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing",
+        "d18-rahwali-pass1-unit-hq9b-site-rahwali-basing",
+        "d19-rahwali-confirm-unit-hq9b-site-rahwali-basing"
+      ],
+      "confidence": null,
+      "edge_instance": null,
+      "freshness": null,
+      "id": "e:site_rahwali:supersedes:site_rawalpindi",
+      "merge_confidence": null,
+      "opposing_claims": [],
+      "source": "site_rahwali",
+      "status": null,
+      "sufficiency": null,
+      "superseded_by": null,
+      "supersedes": null,
+      "supporting_claims": [],
+      "target": "site_rawalpindi",
+      "type": "supersedes"
+    },
+    {
+      "attrs": {
+        "supersede_gate": "promoted"
+      },
       "claim_ids": [
         "d18-rahwali-pass1-unit-hq9b-site-rahwali-basing",
         "d19-rahwali-confirm-unit-hq9b-site-rahwali-basing"
@@ -1982,7 +2012,9 @@
       "type": "based-at"
     },
     {
-      "attrs": {},
+      "attrs": {
+        "supersede_gate": "promoted"
+      },
       "claim_ids": [
         "d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing"
       ],
@@ -2005,8 +2037,9 @@
         ],
         "integrity_flags": [
           "aging",
+          "freshness-variant-assumed:perishable",
           "stale",
-          "freshness-variant-assumed:perishable"
+          "superseded"
         ],
         "per_claim_credibility": {
           "d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing": 0.09168178449985147
@@ -2023,7 +2056,7 @@
       "merge_confidence": null,
       "opposing_claims": [],
       "source": "unit_hq9b",
-      "status": "insufficient",
+      "status": "stale",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [
@@ -6182,9 +6215,9 @@
       "unit_paad": "unit_paad"
     },
     "config_version": 1,
-    "edge_count": 113,
+    "edge_count": 114,
     "event_count": 71,
-    "known_gap_count": 23,
+    "known_gap_count": 22,
     "node_count": 180,
     "scoped_from_nodes": 180,
     "subject": "lens-hq9p-pk",

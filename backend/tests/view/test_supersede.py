@@ -20,20 +20,39 @@ from chanakya.schemas import (
     ExactDate,
     OntologyConfig,
     ResolvedRef,
+    SourcesConfig,
     Triple,
     TypeDef,
 )
 from chanakya.store import EvidenceLog
 from chanakya.view import rebuild
+from tests.credibility.builders import cred_config, source
+
+FLOOR = {
+    "min_band": "probable",
+    "min_independent_looks": 1,
+    "newer_status_allow": ["probable", "confirmed"],
+    "blocking_gate_flags": ["adversary-denial", "decoy-risk", "contradiction"],
+}
 
 
-def _cfg(*, functional: bool) -> ConfigBundle:
+def _cfg(*, functional: bool, floor: bool = True) -> ConfigBundle:
     """A minimal ontology declaring only ``based-at``; ``functional`` toggles the subject-only instance key
-    so the same fixtures show both the revived beat and the defect it cures."""
+    so the same fixtures show both the revived beat and the defect it cures.
+
+    ``floor`` toggles the *second* half of the rule (D-P4.4 iv): ordering only nominates a pair, and the
+    post-status floor decides whether it is actually retired. Two source classes are registered — a
+    ``strong`` one (``s``) that clears the floor and a ``weak`` one (``adv``) that cannot.
+    """
     based_at: dict[str, object] = {"name": "based-at", "from": "unit", "to": "basing_site", "extractor": True}
     if functional:
         based_at["instance_key"] = ["from"]
-    return ConfigBundle(ontology=OntologyConfig(edge_types=[TypeDef.model_validate(based_at)]))
+    cred = cred_config(half_lives_days={"based-at": 365}, **({"supersede_floor": FLOOR} if floor else {}))
+    return ConfigBundle(
+        ontology=OntologyConfig(edge_types=[TypeDef.model_validate(based_at)]),
+        credibility=cred,
+        sources=SourcesConfig(sources=[source("s", "strong"), source("adv", "weak")]),
+    )
 
 
 def _entity(eid: str, etype: str) -> ClaimRecord:
@@ -48,34 +67,100 @@ def _entity(eid: str, etype: str) -> ClaimRecord:
     )
 
 
-def _based_at(cid: str, target: str, iso: str | None) -> ClaimRecord:
+def _based_at(
+    cid: str, target: str, iso: str | None, *, sid: str = "s", attributes: dict | None = None
+) -> ClaimRecord:
     # resolved_ref is deliberately None → the PRODUCTION key builder (resolve.entities.base_ref) mints the
     # edge_instance, so this test fails if the object ever creeps back into a functional edge's key.
     return ClaimRecord(
-        claim_id=cid, source_id="s", doc_ref=DocRef(file=cid),
+        claim_id=cid, source_id=sid, doc_ref=DocRef(file=cid),
         kind="observation", asserts="relationship",
         payload=Triple(subject="unit_x", predicate="based-at", object=target),
         event_time=ExactDate(iso_date=iso) if iso else None,
+        attributes=attributes,
     )
 
 
-def _edges(cfg: ConfigBundle, *claims: ClaimRecord) -> dict[str, object]:
+def _view(cfg: ConfigBundle, *claims: ClaimRecord):
     log = EvidenceLog()
     targets = sorted({str(c.payload.object) for c in claims if c.payload.form == "triple"})
     log.append_many([_entity("unit_x", "unit"), *(_entity(t, "basing_site") for t in targets), *claims])
-    view = rebuild(log, [], cfg)
-    return {e.id: e for e in view.edges}
+    return rebuild(log, [], cfg)
+
+
+def _edges(cfg: ConfigBundle, *claims: ClaimRecord) -> dict[str, object]:
+    return {e.id: e for e in _view(cfg, *claims).edges}
 
 
 def test_newer_supersedes_older_via_production_key() -> None:
-    edges = _edges(_cfg(functional=True), _based_at("c21", "site_a", "2021-01-01"),
-                   _based_at("c25", "site_b", "2025-01-01"))
+    view = _view(_cfg(functional=True), _based_at("c21", "site_a", "2021-01-01"),
+                 _based_at("c25", "site_b", "2025-01-01"))
+    edges = {e.id: e for e in view.edges}
     old, new = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
     # Both targets share ONE instance because the functional key excludes the object — the whole fix.
     assert old.edge_instance == new.edge_instance == "edge:unit_x:based-at"
     assert old.superseded_by == new.id
     assert new.supersedes == old.id
     assert not old.attrs.get("contradiction")
+    # The floor cleared, so the pair is adjudicated by the machine — no longer a question for HITL.
+    assert not old.attrs.get("candidate_supersede") and not new.attrs.get("candidate_supersede")
+    assert old.attrs["supersede_gate"] == new.attrs["supersede_gate"] == "promoted"
+    # ...and the consequence: the retired position reads STALE (history), never `insufficient`.
+    assert old.status == "stale"
+    assert "superseded" in (old.confidence.integrity_flags if old.confidence else [])
+
+
+def test_promotion_draws_the_site_to_site_supersedes_edge() -> None:
+    """D-P4.11 — the relocation is also a node→node edge an analyst can see and click.
+
+    The internal ``superseded_by``/``supersedes`` fields link *edges*; the oracle (and the way a relocation
+    is actually narrated) models it as one fact about two sites. The drawn edge carries the UNION of both
+    basing edges' claims, so it is one-click traceable to the documents on either side of the move (G4).
+    """
+    view = _view(_cfg(functional=True), _based_at("c21", "site_a", "2021-01-01"),
+                 _based_at("c25", "site_b", "2025-01-01"))
+    drawn = [e for e in view.edges if e.type == "supersedes"]
+    assert len(drawn) == 1
+    edge = drawn[0]
+    assert (edge.source, edge.target) == ("site_b", "site_a")  # newer site supersedes the older one
+    assert set(edge.claim_ids) == {"c21", "c25"}
+    assert edge.attrs["derived_via"] == "supersede"
+    assert edge.status is None  # a rendering of a version link, never a second truth score (G5)
+
+
+def test_low_grade_decoy_newer_claim_cannot_retire_a_well_evidenced_position() -> None:
+    """The floor (D-P4.4 iv) — the planted-spoof defence, as a *gate* rather than as luck.
+
+    ``d20_supersede_spoof`` (grade E, ``bias_vector: adversary``, ``decoy_risk_flag``) exists in the corpus
+    to retire the confirmed Rahwali position off one low-grade look. Here the same attack: the OLDER
+    position is well-evidenced by two independent looks; the NEWER one is a single decoy-flagged look from
+    a weak source. It is newer — and it still must not retire anything.
+    """
+    cfg = _cfg(functional=True)
+    view = _view(
+        cfg,
+        _based_at("c21a", "site_a", "2021-01-01"),
+        _based_at("c21b", "site_a", "2021-02-01"),
+        _based_at("spoof", "site_b", "2025-01-01", sid="adv", attributes={"decoy_risk_flag": True}),
+    )
+    edges = {e.id: e for e in view.edges}
+    old, new = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
+    assert old.superseded_by is None and new.supersedes is None   # nothing retired
+    assert old.status != "stale"                                   # the older position stands
+    assert old.attrs["candidate_supersede"] and new.attrs["candidate_supersede"]  # → HITL, the default
+    assert old.attrs["supersede_gate"] == "held"
+    reasons = old.attrs["supersede_hold_reason"]
+    assert "newer-deception-gate:decoy-risk" in reasons and any(r.startswith("newer-below-") for r in reasons)
+    assert not [e for e in view.edges if e.type == "supersedes"]   # and nothing is drawn
+
+
+def test_no_floor_configured_retires_nothing() -> None:
+    """A missing safety gate must read as CLOSED, never as open (config/credibility.yaml `supersede_floor`)."""
+    edges = _edges(_cfg(functional=True, floor=False), _based_at("c21", "site_a", "2021-01-01"),
+                   _based_at("c25", "site_b", "2025-01-01"))
+    old, new = edges["e:unit_x:based-at:site_a"], edges["e:unit_x:based-at:site_b"]
+    assert old.superseded_by is None and new.supersedes is None
+    assert old.attrs["supersede_hold_reason"] == ["supersede-floor-not-configured"]
 
 
 def test_same_time_different_target_is_a_contradiction() -> None:

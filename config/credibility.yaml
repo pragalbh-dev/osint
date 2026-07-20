@@ -57,6 +57,22 @@ thresholds:
   probable: 0.50
   # "possible" has no separate cutoff: assessable AND assertion_confidence < 0.50.
 
+# ── the supersession floor (EVAL RCA D-P4.4 condition iv; D8 / md/11:22 / SCORE.md:94-97) ────────
+# Read by `chanakya.credibility.supersession.promote_supersessions`, POST-status (the gate asks about the
+# newer assertion's confidence + deception flags, which do not exist when view/supersede.py runs).
+# Retiring a fact an analyst may already have acted on is a privileged operation, so being NEWER is
+# necessary but not sufficient: the newer assertion must also stand on its own. Below this bar nothing is
+# retired — the pair keeps `candidate_supersede` and routes to HITL, which D-P4.4 makes the DEFAULT
+# outcome, not the exception. The corpus carries `d20_supersede_spoof` (grade E, bias_vector: adversary,
+# decoy_risk_flag: true), planted to retire the well-evidenced Rahwali position off one low-grade look;
+# this block is what refuses it — not the accident that it currently emits no relationship claim.
+# NOTE: deleting this block does not disable the gate, it fails CLOSED (nothing is ever auto-retired).
+supersede_floor:
+  min_band: probable            # names a key in `thresholds` above — never a second copy of the number
+  min_independent_looks: 1      # >=1 independent look (weighted, same measure as min_independent_groups)
+  newer_status_allow: [probable, confirmed]   # the newer assertion's own label must be a live assessment
+  blocking_gate_flags: [adversary-denial, decoy-risk, contradiction]  # "clean deception gate" (spine/04 §3.4)
+
 # ── SCORE resolver knobs (introduced by SCORE; DATA-C owns/tunes the values) ──────────────────────
 # Every numeric knob the Confidence Resolver reads lives here, never in code (gate G6).
 decay_base: 2                 # freshness = decay_base^(-age/half_life) → exactly halves at one half-life

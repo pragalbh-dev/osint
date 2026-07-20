@@ -13,13 +13,20 @@ group's independence weight (1.0 cross-discipline, 0.5 same-class):
 Status — gates are applied here, **never** folded into the arithmetic (spine/04 §3.4; DECISIONS
 "adversary_denial is a gate, not a multiplier"):
 
+* **stale (superseded)** — a *newer* assertion on the same resolved edge instance has retired this one and
+  that newer assertion cleared the supersession floor (``credibility.supersession``). Checked **first**,
+  ahead of ``insufficient``: a retired position is *history*, not an evidence gap (product/02 §7 — "the
+  newer fact is right; the old one isn't wrong, it's history"; spine/04). Labelling it *insufficient*
+  would claim we cannot assess it, when in fact we have good evidence that the world moved on — the
+  opposite of what the evidence says, and the more misleading of the two errors.
 * **insufficient** — a required evidence *kind* is missing (``sufficiency.satisfied`` is False). Off the
-  confidence scale; dominates, because if we structurally can't assess we say so (the non-negotiable).
+  confidence scale; dominates everything below it, because if we structurally can't assess we say so
+  (the non-negotiable).
 * **contradicted** — a credible opposing group on the same resolved instance → routed to HITL.
 * **confirmed** — ALL of: ``assertion_confidence ≥ confirmed`` · ``≥ min_independent_groups`` effective
   independent looks · sufficiency satisfied · every look fresh (age ≤ 1 half-life) · clean integrity &
   clean decoy & no adversary-denial · gated attrs (foreign_control/readiness) not UNKNOWN.
-* **stale** — would confirm on magnitude/groups/gates but its *freshest* look has aged past one
+* **stale (aged)** — would confirm on magnitude/groups/gates but its *freshest* look has aged past one
   half-life (a demoted-from-confirmed label — a node never silently stays confirmed as it ages).
 * **probable** — ``probable ≤ conf < confirmed``, OR a single independent look, OR any cap gate
   (adversary-denial / single-pass decoy / aging) fires on an otherwise-strong assertion.
@@ -42,6 +49,12 @@ _AGING = "aging"  # at least one supporting look older than 1 half-life → bloc
 _STALE = "stale"  # the freshest supporting look older than 1 half-life → demote confirmed→stale
 _GATED_UNKNOWN = "gated-attr-unknown"  # a gated attr (foreign_control/readiness) is UNKNOWN
 _CAP_FLAGS = frozenset({_ADVERSARY_DENIAL, _DECOY_RISK})
+
+#: Gate flag set by :mod:`chanakya.credibility.supersession` once a *newer* assertion on the same edge
+#: instance has cleared the supersession floor. Public because the post-status pass stamps it and then
+#: re-runs this machine over the retired assertion — the label stays owned here (gate G5), and the
+#: "superseded → stale" consequence is a real read of the flag rather than a second status writer.
+SUPERSEDED = "superseded"
 
 _CONFIRMED = "confirmed"
 _PROBABLE = "probable"
@@ -107,7 +120,13 @@ def assign_status(
             and not gated_unknown
         )
 
-        if insufficient:
+        if SUPERSEDED in flags:
+            # History, not a gap: a floor-clearing newer fact retired this one. Wins over `insufficient`
+            # (and over the magnitude ladder) because its confidence has legitimately decayed away — an
+            # `insufficient` label here would report missing coverage we are not in fact missing.
+            status = _STALE
+            gate_vector.append("superseded")
+        elif insufficient:
             status = _INSUFFICIENT
             gate_vector.append("insufficient-evidence")
         elif contradicted:

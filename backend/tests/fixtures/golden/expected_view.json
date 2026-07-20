@@ -67,7 +67,36 @@
       "type": "supplies-component"
     },
     {
-      "attrs": {},
+      "attrs": {
+        "derived_via": "supersede",
+        "newer_edge": "e:unit_acme:based-at:site_south",
+        "older_edge": "e:unit_acme:based-at:site_north",
+        "source_edge_instance": "edge:unit_acme:based-at",
+        "subject": "unit_acme"
+      },
+      "claim_ids": [
+        "d17-l1",
+        "d19-l1"
+      ],
+      "confidence": null,
+      "edge_instance": null,
+      "freshness": null,
+      "id": "e:site_south:supersedes:site_north",
+      "merge_confidence": null,
+      "opposing_claims": [],
+      "source": "site_south",
+      "status": null,
+      "sufficiency": null,
+      "superseded_by": null,
+      "supersedes": null,
+      "supporting_claims": [],
+      "target": "site_north",
+      "type": "supersedes"
+    },
+    {
+      "attrs": {
+        "supersede_gate": "promoted"
+      },
       "claim_ids": [
         "d17-l1"
       ],
@@ -88,7 +117,9 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "superseded"
+        ],
         "per_claim_credibility": {
           "d17-l1": 0.84
         }
@@ -104,7 +135,7 @@
       "merge_confidence": null,
       "opposing_claims": [],
       "source": "unit_acme",
-      "status": "probable",
+      "status": "stale",
       "sufficiency": {
         "ceiling": null,
         "missing_slots": [],
@@ -132,7 +163,9 @@
       "type": "based-at"
     },
     {
-      "attrs": {},
+      "attrs": {
+        "supersede_gate": "promoted"
+      },
       "claim_ids": [
         "d19-l1"
       ],
@@ -349,7 +382,7 @@
   ],
   "meta": {
     "config_version": 1,
-    "edge_count": 4,
+    "edge_count": 5,
     "event_count": 1,
     "known_gap_count": 1,
     "node_count": 5

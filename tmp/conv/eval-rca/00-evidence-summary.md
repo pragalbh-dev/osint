@@ -2,8 +2,8 @@
 
 - repo root: `/home/synaptic/data-science/research/rough/osint/wt-EVAL`
 - claims seeded: **499**
-- full view: **180 nodes / 113 edges / 71 events / 23 known_gaps**
-- lens view (`lens-hq9p-pk`): **35 nodes / 89 edges**
+- full view: **180 nodes / 114 edges / 71 events / 22 known_gaps**
+- lens view (`lens-hq9p-pk`): **35 nodes / 90 edges**
 - oracle: 20 nodes / 21 edges / 7 places
 
 ## view node-type histogram
@@ -30,6 +30,7 @@
 - manufactures: 4
 - supplies-component: 2
 - component-of: 1
+- supersedes: 1
 
 ## known_gap nodes (proliferation check)
 - `comp_tel_chassis`  status=confirmed
@@ -135,7 +136,7 @@ For each oracle node: view nodes of same type whose name/alias overlaps. >1 hit 
 - **unit_paad -based-at-> site_karachi** (want confirmed): 4 view edges of type 'based-at'
 - **unit_hq9b -based-at-> site_rawalpindi** (want stale): 4 view edges of type 'based-at'
 - **unit_hq9b -based-at-> site_rahwali** (want confirmed): 4 view edges of type 'based-at'
-- **site_rahwali -supersedes-> site_rawalpindi** (want confirmed): 0 view edges of type 'supersedes'
+- **site_rahwali -supersedes-> site_rawalpindi** (want confirmed): 1 view edges of type 'supersedes'
 - **unit_paad -sustained-by-> sustain_spares** (want probable): 0 view edges of type 'sustained-by'
 
 ## RESOLVE decisions that FIRED (same-as / distinct-from)
@@ -199,7 +200,7 @@ For each oracle node: view nodes of same type whose name/alias overlaps. >1 hit 
 ## RELOCATION OBSERVABLE
 - alerts fired: 0
 - based-at edges @2021 rewind: []
-- based-at edges @now: [('ent:unit:PAF/Army Air Defence Command HQ-9BE battery', 'site_rahwali', 'insufficient'), ('mfr_23rd_ri', 'ent:basing_site:Yongding Road', 'insufficient'), ('unit_hq9b', 'site_rahwali', 'probable'), ('unit_hq9b', 'site_rawalpindi', 'insufficient')]
+- based-at edges @now: [('ent:unit:PAF/Army Air Defence Command HQ-9BE battery', 'site_rahwali', 'insufficient'), ('mfr_23rd_ri', 'ent:basing_site:Yongding Road', 'insufficient'), ('unit_hq9b', 'site_rahwali', 'probable'), ('unit_hq9b', 'site_rawalpindi', 'stale')]
 
 ## PLACES (resolved_place_ref present on any view node?)
 - resolved_place_refs seen in view: {'pl_karachi_ad': 1, 'pl_rahwali': 1, 'pl_nurkhan': 1}
