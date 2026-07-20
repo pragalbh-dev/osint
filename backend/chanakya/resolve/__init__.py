@@ -28,13 +28,14 @@ from chanakya.schemas import (
     GraphView,
     Partition,
     PlaceRef,
+    pair_key,
 )
 
-from . import aliases, entities, places
+from . import aliases, entities, places, scoring
 from .aliases import AliasIndex
 from .anchor import AnchorResolution, resolve_anchors
 from .cluster import Pair, ResolveResult, finalise, resolve_entities
-from .entities import Entity, EntityGraph, base_ref, namespace_compatible, unordered_pairs
+from .entities import Entity, EntityGraph, as_pair, base_ref, namespace_compatible, unordered_pairs
 from .normalize import normalize
 from .places import location_attr
 from .propose import propose_candidates
@@ -132,7 +133,7 @@ def resolve(
     places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
 
-    return _to_partition(claims, result, mention, minted, place_of, lane)
+    return _to_partition(claims, result, mention, minted, place_of, lane, graph)
 
 
 # ── the entity registry as a resolution prior (P3.0) ───────────────────────────────────────────
@@ -602,6 +603,7 @@ def _to_partition(
     minted: dict[str, str] | None = None,
     place_of: dict[str, places.PlaceMatch] | None = None,
     lane: EdgeLaneIndex | None = None,
+    graph: EntityGraph | None = None,
 ) -> Partition:
     """Per-claim identity resolved_ref (matches the stub) + the merge overlay from the resolver.
 
@@ -642,6 +644,17 @@ def _to_partition(
         if current is None or _ref_rank(ref) < _ref_rank(current):
             place_refs[target] = ref
 
+    # Who *said* two records are one. The score already rides the pair (``merge_breakdown``); this is the
+    # sentence underneath it, so an analyst adjudicating the pair can read the source rather than trust a
+    # number. Only for pairs an analyst will actually see (candidates + accepted merges), and only for the
+    # pairs a source really spoke about — a pair with no identity claim gets no key, not an empty promise.
+    identity_claims: dict[str, list[str]] = {}
+    if graph is not None:
+        for a, b in sorted({as_pair(p) for p in [*result.candidates, *result.same_as]}):
+            cids = scoring.identity_claim_ids(graph, a, b)
+            if cids:
+                identity_claims[pair_key(a, b)] = cids
+
     return Partition(
         resolved_ref=resolved_ref,
         same_as=result.same_as,
@@ -649,6 +662,7 @@ def _to_partition(
         distinct_from=result.distinct_from,
         merge_confidence=result.merge_confidence,
         merge_breakdown=result.merge_breakdown,
+        identity_claims=identity_claims,
         entity_canonical=entity_canonical,
         endpoint_node_types=endpoint_node_types,
         place_refs=place_refs,

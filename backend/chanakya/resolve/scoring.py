@@ -246,6 +246,28 @@ def source_asserted_score(
     return best
 
 
+def identity_claim_ids(graph: EntityGraph, a: str, b: str) -> list[str]:
+    """The claims in which a **source** asserts a≡b — the evidence *behind* ``source_asserted_score``.
+
+    Same pair/predicate test as the score itself, so the list and the number can never disagree: if the
+    signal is above zero these claims are why, and if it is zero this is empty. Returned in replay order
+    (deterministic, gate G2) and de-duplicated. Identity assertions are consumed rather than drawn
+    (``view/pipeline._assemble``), so this is the ONLY route from a candidate ``same-as`` edge back to the
+    sentence a source actually wrote — the one-click-to-source non-negotiable, on the one screen where an
+    analyst is asked to make an identity call.
+
+    Coreference (``COREF_PREDICATE``) is deliberately excluded: it is a different lane that does not feed
+    ``source_asserted``, so including it here would make the citation over-claim what the signal counted.
+    """
+    out: list[str] = []
+    for e in graph.edges:
+        if e.predicate not in IDENTITY_PREDICATES or e.claim_id is None:
+            continue
+        if {e.subject, e.object} == {a, b} and e.claim_id not in out:
+            out.append(e.claim_id)
+    return out
+
+
 def _relational_counts(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """May the shared-neighbourhood term contribute for this pair? (Both types must allow it.)"""
     ntx = cfg.node_types

@@ -6,9 +6,9 @@
 // is styled identically, no default, no highlight. Renders only in LIVE mode.
 
 import { useWorkbench } from '@/store/workbench'
-import type { LiveReviewItem } from '@/api/adapters'
+import type { LiveReviewItem, LiveReviewSide } from '@/api/adapters'
 import { AlertEvidence } from './AlertEvidence'
-import { MergeCardView, type MergeCardData } from './MergeCard'
+import { MergeCardView, type MergeCardData, type MergeCardDiff } from './MergeCard'
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -26,21 +26,40 @@ function BackButton({ onClick }: { onClick: () => void }) {
  *  Every field is derived in `viewToReviewQueue` off the two records and the resolver's own
  *  per-signal breakdown; nothing here authors a number. When a value is genuinely unavailable
  *  the card is given the absence to print (`unknowns`), never a stand-in. */
+/** T10 — the record panel, as the card wants it. The rail row's `sub` packs type · status · claim count
+ *  into one string; on the card the claim count is promoted to the evidence handle, so it is taken out
+ *  of the subtitle rather than printed twice. Falls back to the packed string when the side is thin. */
+function cardSide(
+  side: LiveReviewSide | undefined,
+  fallback: { id: string; label: string } | undefined,
+): MergeCardData['left'] {
+  if (!side) return { name: fallback?.label ?? '—', sub: fallback?.id ?? '' }
+  return {
+    name: side.label,
+    sub: side.sub.split(' · ').slice(0, 2).join(' · '),
+    evidenceId: side.evidenceId,
+    claimCount: side.evidenceId ? side.claimCount : undefined,
+  }
+}
+
 export function mergeCardDataFromItem(item: LiveReviewItem): MergeCardData {
   const m = item.context.merge
-  const left = m?.left
-  const right = m?.right
   // A proposal that is one of a connected run is not independent evidence — that belongs with
-  // the case AGAINST, where the analyst is actually deciding.
-  const differsOn = [
-    ...(m?.differsOn ?? []),
+  // the case AGAINST, where the analyst is actually deciding. It is the client's own count over the
+  // queue, so it declares itself computed rather than borrowing the authority of a cited line.
+  const differsOn: MergeCardDiff[] = [
+    ...(m?.differs ?? (m?.differsOn ?? []).map((text) => ({ text, sides: [] as ('left' | 'right')[] }))),
     ...(item.cluster
       ? [
-          `One of ${item.cluster.size} proposals across ${item.cluster.records} records — ${
-            item.cluster.complete
-              ? 'every possible pair among them is proposed, so this one is not independent evidence'
-              : 'the proposals overlap, so this one is not independent evidence'
-          }.`,
+          {
+            text: `One of ${item.cluster.size} proposals across ${item.cluster.records} records — ${
+              item.cluster.complete
+                ? 'every possible pair among them is proposed, so this one is not independent evidence'
+                : 'the proposals overlap, so this one is not independent evidence'
+            }.`,
+            sides: [] as ('left' | 'right')[],
+            computed: 'counted over the review queue — not a quoted claim',
+          },
         ]
       : []),
   ]
@@ -48,9 +67,18 @@ export function mergeCardDataFromItem(item: LiveReviewItem): MergeCardData {
     badges: item.badges,
     subject: item.question,
     subtitle: item.title,
-    left: { name: left?.label ?? item.context.left?.label ?? '—', sub: left?.sub ?? item.context.left?.id ?? '' },
-    right: { name: right?.label ?? item.context.right?.label ?? '—', sub: right?.sub ?? item.context.right?.id ?? '' },
-    matchedOn: (m?.matchedOn ?? []).map((row) => ({ label: row.label, dots: row.dots, score: row.score })),
+    left: cardSide(m?.left, item.context.left),
+    right: cardSide(m?.right, item.context.right),
+    matchedOn: (m?.matchedOn ?? []).map((row) => ({
+      label: row.label,
+      dots: row.dots,
+      score: row.score,
+      evidenceId: row.evidenceId,
+      evidenceCount: row.evidenceCount,
+    })),
+    matchedNote: (m?.matchedOn ?? []).some((row) => row.evidenceId)
+      ? 'Only the cited row is a source’s assertion — the rest the resolver computed from the two records.'
+      : 'Every row here the resolver computed from the two records; no source asserts the identity.',
     differsOn,
     ifYou: m?.consequence ?? [],
     unknowns: m?.unknowns ?? [],
@@ -132,17 +160,21 @@ export function LiveCard() {
   const item = useWorkbench((s) => s.activeLiveItem)
   const backToZero = useWorkbench((s) => s.backToZero)
   const decideLive = useWorkbench((s) => s.decideLive)
+  const openProvenance = useWorkbench((s) => s.openProvenance)
 
   if (!item) return null
 
   // A merge is the ★ marquee control point and has its own authored layout (matched-on quiet,
   // differs-on loud). LIVE feeds that same component with the clicked proposal's real evidence.
+  // T10: …and with a door into it. The drawer opens BESIDE the panel (LiveDrawer offsets itself while
+  // a review card is up), so checking the evidence never takes the decision off the screen.
   if (item.reviewType === 'merge') {
     return (
       <MergeCardView
         data={mergeCardDataFromItem(item)}
         onBack={backToZero}
         onDecide={(key) => void decideLive(item, key)}
+        onOpenEvidence={(id) => openProvenance(id)}
       />
     )
   }

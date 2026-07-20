@@ -40,6 +40,9 @@ const STATUS_GLOSS: Record<Status, string> = {
   insufficient: 'Not enough evidence on file to assess this.',
 }
 
+/** Status-less edges that are an IDENTITY question rather than a version link (see the verdict block). */
+const IDENTITY_LINK_TYPES = new Set(['same-as', 'distinct-from'])
+
 function chipStatusFor(status: Status): ChipStatus {
   if (status === 'confirmed') return 'confirmed'
   if (status === 'contradicted' || status === 'insufficient') return 'gap'
@@ -236,11 +239,15 @@ function ClusterSection({
   index,
   looks,
   status,
+  identityLink,
 }: {
   cluster: LiveDrawerCluster
   index: number
   looks: number
   status: Status
+  /** T10 — the subject is a `same-as`/`distinct-from`. Its claims are not "also cited" alongside an
+   *  assessment; they ARE the assertion, and independent looks are not counted for it at all. */
+  identityLink?: boolean
 }) {
   const expanded = useWorkbench((s) => s.expanded)
   const toggleChip = useWorkbench((s) => s.toggleChip)
@@ -250,7 +257,9 @@ function ClusterSection({
     <Section>
       <Kicker>
         {cluster.ungrouped
-          ? 'Also cited · not counted as an independent look'
+          ? identityLink
+            ? 'Who asserts it'
+            : 'Also cited · not counted as an independent look'
           : `Independent look ${index + 1} of ${looks}${axisBits.length ? ` · ${axisBits.join(' / ')}` : ''}`}
       </Kicker>
       {cluster.sources.map((source) => (
@@ -293,9 +302,22 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
           // A `supersedes` / `same-as` / `distinct-from` link carries no status BY DESIGN — it is a
           // version or identity link between two already-scored assertions. Rendering its null
           // status as "insufficient evidence" invented an evidence gap that does not exist.
+          // T10 — but the two kinds are not the same statement, so they do not get the same sentence:
+          // an identity link is an OPEN QUESTION about who two records are (and the claims below are a
+          // source's answer to it), where a version link records a change that already happened.
           <div style={{ font: '13px/1.55 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
-            This link carries no status of its own — it records a change of state, not a fact about
-            the world. The two assertions it connects are each scored separately.
+            {IDENTITY_LINK_TYPES.has(model.subject?.edgeType ?? '') ? (
+              <>
+                This link carries no status of its own — it is a question about identity, not a fact
+                about the world. The two records it connects are each scored separately; anything below
+                is a source asserting they are one thing, and it is for you to weigh.
+              </>
+            ) : (
+              <>
+                This link carries no status of its own — it records a change of state, not a fact about
+                the world. The two assertions it connects are each scored separately.
+              </>
+            )}
           </div>
         ) : (
           <>
@@ -380,7 +402,14 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
 
       {/* the independent looks + their claims */}
       {model.clusters.map((cluster, i) => (
-        <ClusterSection key={cluster.groupId} cluster={cluster} index={i} looks={looks} status={model.status} />
+        <ClusterSection
+          key={cluster.groupId}
+          cluster={cluster}
+          index={i}
+          looks={looks}
+          status={model.status}
+          identityLink={IDENTITY_LINK_TYPES.has(model.subject?.edgeType ?? '')}
+        />
       ))}
 
       {/* integrity + opposing evidence */}
@@ -407,11 +436,19 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
   )
 }
 
+/** Panel width (App.tsx: Rail 240 | Stage flex | Panel 400 | Drawer 560 overlay). */
+const PANEL_W = 400
+
 export function LiveDrawer() {
   const drawerOpen = useWorkbench((s) => s.drawerOpen)
   const selected = useWorkbench((s) => s.selected)
   const closeDrawer = useWorkbench((s) => s.closeDrawer)
   const liveView = useWorkbench((s) => s.liveView)
+  // T10 — while an adjudication is open in the panel, the drawer slides in BESIDE it instead of on top
+  // of it. Checking the evidence must not take the decision off the screen: the three options and the
+  // record pair stay visible the whole time the analyst is reading the claims. It still overlays (the
+  // stage), never pushes, and everywhere else the drawer is exactly where it has always been.
+  const besideCard = useWorkbench((s) => s.panelView === 'card' && s.activeLiveItem !== null)
   const { data, isLoading, isError } = useEvidence(selected, drawerOpen)
   const model = data ? evidenceToDrawerModel(data, liveView) : null
   // `site_rahwali` is a database key, not a claim. The analyst-facing headline is the PROPOSITION
@@ -426,14 +463,17 @@ export function LiveDrawer() {
       style={{
         position: 'fixed',
         top: 0,
-        right: 0,
+        right: besideCard ? PANEL_W : 0,
         height: '100vh',
         width: 560,
-        maxWidth: '92vw',
+        // Beside the card it must never eat the panel it is meant to sit next to; the floor keeps it
+        // legible if someone runs this far below the 1440×900 the workbench is tuned for.
+        maxWidth: besideCard ? `max(320px, calc(100vw - ${PANEL_W + 24}px))` : '92vw',
         background: 'var(--surface)',
         borderLeft: '1px solid var(--hairline-strong)',
+        borderRight: besideCard ? '1px solid var(--hairline-strong)' : undefined,
         boxShadow: '-8px 0 24px rgba(0,0,0,0.35)',
-        transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)',
+        transform: drawerOpen ? 'translateX(0)' : `translateX(calc(100% + ${besideCard ? PANEL_W : 0}px))`,
         // doc 12's drawer budget — 160ms ease-out. It overlays, it never pushes.
         transition: 'transform 160ms ease-out',
         zIndex: 50,

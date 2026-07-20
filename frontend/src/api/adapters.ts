@@ -504,6 +504,10 @@ export interface LiveDrawerSubject {
    *  Rendering their null status as "insufficient evidence" claimed an evidence gap that does not
    *  exist — the link is simply not the kind of thing that gets scored. */
   statusless: boolean
+  /** T10 — the raw ontology edge type, when this subject is an edge. The status-less family is not one
+   *  thing: a `supersedes` records a change of state, a `same-as` is an unsettled identity question,
+   *  and the drawer has to say which — one sentence cannot be true of both. */
+  edgeType?: string
 }
 
 /** A relocation, told the way an analyst narrates it: what moved, from where, to where, and which
@@ -721,9 +725,10 @@ export function drawerSubject(view: GraphView | null | undefined, ref: string): 
           : `The recorded basing moved from ${dst} to ${src} — the earlier one is now history`,
         typeLabel: 'replaced by',
         statusless,
+        edgeType: edge.type,
       }
     }
-    return { ref, kind: 'edge', headline: `${src} — ${typeLabel} → ${dst}`, typeLabel, statusless }
+    return { ref, kind: 'edge', headline: `${src} — ${typeLabel} → ${dst}`, typeLabel, statusless, edgeType: edge.type }
   }
   return { ref, kind: 'unknown', headline: ref, typeLabel: '', statusless: false }
 }
@@ -1128,6 +1133,26 @@ export interface MergeSignalRow {
   label: string
   score: number
   dots: number
+  /** T10 — the element whose provenance drawer IS this signal's evidence. Set only for
+   *  `source_asserted`, and only when the candidate `same-as` edge actually cites claims: three of the
+   *  four signals are the resolver's own computation over the two records and have no source to open.
+   *  Absent ⇒ the card renders the row as plain text (never a dead link). */
+  evidenceId?: string
+  /** how many claims that drawer will hold — the count is the handle, so the chip says what it opens */
+  evidenceCount?: number
+}
+
+/** T10 — one line of the case AGAINST, with where it came from.
+ *
+ *  The card states differences an analyst is about to act on, so each line has to declare its own
+ *  standing. `sides` names the record(s) whose *stated* values the line reads (each opens that record's
+ *  evidence); `computed` is set instead when the line is the machine's own arithmetic or the resolver's
+ *  own signal, and carries the sentence that says so. Never both — a computation dressed as a citation
+ *  is the failure mode this whole card exists to avoid. */
+export interface MergeDiffRow {
+  text: string
+  sides: ('left' | 'right')[]
+  computed?: string
 }
 
 /** The identity case, split the way the merge card argues it: `matchedOn` is the long quiet
@@ -1139,6 +1164,9 @@ export interface LiveMergeEvidence {
   confidence: number | null
   matchedOn: MergeSignalRow[]
   differsOn: string[]
+  /** T10 — the same lines as `differsOn`, each carrying its provenance (see MergeDiffRow).
+   *  `differsOn` is kept as the plain-text projection so every existing reader is untouched. */
+  differs: MergeDiffRow[]
   /** what the merge demonstrably DOES — counted off the graph, never estimated */
   consequence: string[]
   /** what this card cannot tell the analyst. Printed instead of a plausible number (CLAUDE.md:
@@ -1158,6 +1186,9 @@ export interface LiveReviewSide {
   status: Status | null
   claimCount: number
   chokepoint: boolean
+  /** T10 — the id `GET /evidence/{id}` resolves for this record. Set only when the record is really a
+   *  node in the view we are reading; absent ⇒ the card shows the panel as text, never as a dead link. */
+  evidenceId?: string
 }
 
 export interface LiveReviewContext {
@@ -1226,6 +1257,10 @@ const ALERT_OPTIONS: LiveReviewOption[] = [
 // (resolve/rconfig SIGNALS). Reading it is what turns "Close call" into an argument the analyst
 // can check. Nothing here re-scores or re-weights — it renders what the resolver recorded.
 
+/** The one merge signal that is a SOURCE's assertion rather than the resolver's own computation over
+ *  the two records — and therefore the only one with evidence to open (resolve/rconfig SOURCE_ASSERTED). */
+const MERGE_SIGNAL_SOURCE_ASSERTED = 'source_asserted'
+
 /** The four merge signals, in analyst language (keys = resolve/rconfig SIGNALS). */
 const MERGE_SIGNAL_LABEL: Record<string, string> = {
   attribute: 'Name & attributes',
@@ -1281,6 +1316,7 @@ function reviewSide(id: string, node: NodeView | undefined): LiveReviewSide {
     status,
     claimCount,
     chokepoint: isChokepoint(node),
+    evidenceId: node ? id : undefined,
     sub: [humanizeToken(type), status ?? 'unassessed', `${claimCount} claim${claimCount === 1 ? '' : 's'}`].join(' · '),
   }
 }
@@ -1306,27 +1342,38 @@ function scalarAttr(v: unknown): string | null {
 /** Attribute keys that are plumbing, not description — never rendered as a difference. */
 const ATTR_NOT_A_DIFFERENCE = new Set(['coordinates', 'resolved_from', 'merge_band', 'breakdown'])
 
+/** T10 — how a computed line explains itself. The two records' *stated* values are attributable (to the
+ *  record, which is as far as the view can honestly go: node attrs are merged from a node's claims and
+ *  the view does not record which claim supplied which key). Everything else says out loud that it is
+ *  arithmetic or a resolver signal, so no line on this card can be mistaken for a quotation. */
+const DIFF_COMPUTED_DISTANCE = 'computed from both records’ stated coordinates — not a quoted claim'
+const DIFF_COMPUTED_SIGNAL = 'the resolver’s own signal, scored at zero — an absence, not a quoted claim'
+
 /** The case AGAINST, computed: what the two records actually disagree about, plus every
  *  merge signal the resolver scored at exactly zero. Returns [] when nothing separates them —
- *  the card then says so rather than manufacturing a doubt. */
-export function mergeDiffersOn(
+ *  the card then says so rather than manufacturing a doubt.
+ *
+ *  T10: each line now also carries **where it came from** — which record(s) state it, or the sentence
+ *  admitting it was computed. `mergeDiffersOn` is the unchanged plain-text projection of this. */
+export function mergeDifferences(
   left: NodeView | undefined,
   right: NodeView | undefined,
   breakdown: Record<string, number>,
-): string[] {
-  const out: string[] = []
+): MergeDiffRow[] {
+  const out: MergeDiffRow[] = []
+  const both: ('left' | 'right')[] = ['left', 'right']
   if (left && right && left.type !== right.type) {
-    out.push(`Type — ${humanizeToken(left.type)} vs ${humanizeToken(right.type)}.`)
+    out.push({ text: `Type — ${humanizeToken(left.type)} vs ${humanizeToken(right.type)}.`, sides: both })
   }
 
   const lRaw = locationRawText(left?.location?.raw)
   const rRaw = locationRawText(right?.location?.raw)
   if (lRaw && rRaw && lRaw.trim().toLowerCase() !== rRaw.trim().toLowerCase()) {
-    out.push(`Stated location — “${lRaw}” vs “${rRaw}”.`)
+    out.push({ text: `Stated location — “${lRaw}” vs “${rRaw}”.`, sides: both })
   } else if (lRaw && !rRaw) {
-    out.push(`Stated location — “${lRaw}” on one side, none recorded on the other.`)
+    out.push({ text: `Stated location — “${lRaw}” on one side, none recorded on the other.`, sides: ['left'] })
   } else if (rRaw && !lRaw) {
-    out.push(`Stated location — “${rRaw}” on one side, none recorded on the other.`)
+    out.push({ text: `Stated location — “${rRaw}” on one side, none recorded on the other.`, sides: ['right'] })
   }
 
   const lLat = left?.location?.wgs84_lat
@@ -1338,7 +1385,13 @@ export function mergeDiffersOn(
     typeof rLat === 'number' && typeof rLon === 'number'
   ) {
     const km = haversineKm(lLat, lLon, rLat, rLon)
-    if (km >= 1) out.push(`Coordinates — ${Math.round(km).toLocaleString()} km apart.`)
+    if (km >= 1) {
+      out.push({
+        text: `Coordinates — ${Math.round(km).toLocaleString()} km apart.`,
+        sides: both,
+        computed: DIFF_COMPUTED_DISTANCE,
+      })
+    }
   }
 
   const lAttrs = left?.attrs ?? {}
@@ -1347,14 +1400,27 @@ export function mergeDiffersOn(
     if (ATTR_NOT_A_DIFFERENCE.has(key) || !(key in rAttrs)) continue
     const a = scalarAttr(lAttrs[key])
     const b = scalarAttr(rAttrs[key])
-    if (a != null && b != null && a !== b) out.push(`${humanizeToken(key)} — ${a} vs ${b}.`)
+    if (a != null && b != null && a !== b) out.push({ text: `${humanizeToken(key)} — ${a} vs ${b}.`, sides: both })
   }
 
   for (const [key, score] of Object.entries(breakdown)) {
     if (score !== 0) continue
-    out.push(MERGE_SIGNAL_ABSENT[key] ?? `No ${humanizeToken(key)} signal.`)
+    out.push({
+      text: MERGE_SIGNAL_ABSENT[key] ?? `No ${humanizeToken(key)} signal.`,
+      sides: [],
+      computed: DIFF_COMPUTED_SIGNAL,
+    })
   }
   return out
+}
+
+/** Plain-text projection of {@link mergeDifferences} — the shape every pre-T10 reader expects. */
+export function mergeDiffersOn(
+  left: NodeView | undefined,
+  right: NodeView | undefined,
+  breakdown: Record<string, number>,
+): string[] {
+  return mergeDifferences(left, right, breakdown).map((row) => row.text)
 }
 
 export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
@@ -1384,6 +1450,12 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
     const dots = edge.merge_confidence != null ? credibilityToDots(edge.merge_confidence) : undefined
     const band = dots != null ? (MERGE_BAND[dots] ?? 'Close call') : 'Confidence not recorded'
 
+    // T10 — the ONE signal on this card that is somebody's assertion rather than the resolver's own
+    // arithmetic is `source_asserted`, and the candidate edge now cites the claims that make it
+    // (view/pipeline._resolution_edges). So that row, and only that row, gets an evidence handle: the
+    // edge's own id, which `GET /evidence/{id}` already serves. No handle when no source spoke — the
+    // absence is then the case AGAINST, printed by mergeDifferences, not a link that opens nothing.
+    const identityClaims = edge.claim_ids ?? []
     const matchedOn: MergeSignalRow[] = Object.entries(breakdown)
       .filter(([, score]) => score > 0)
       .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
@@ -1392,8 +1464,12 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
         label: MERGE_SIGNAL_LABEL[key] ?? humanizeToken(key),
         score,
         dots: credibilityToDots(score),
+        ...(key === MERGE_SIGNAL_SOURCE_ASSERTED && identityClaims.length > 0
+          ? { evidenceId: edge.id, evidenceCount: identityClaims.length }
+          : {}),
       }))
-    const differsOn = mergeDiffersOn(leftNode, rightNode, breakdown)
+    const differs = mergeDifferences(leftNode, rightNode, breakdown)
+    const differsOn = differs.map((row) => row.text)
 
     const joinedClaims = new Set([...(leftNode?.claim_ids ?? []), ...(rightNode?.claim_ids ?? [])]).size
     const reconnects = (degree.get(edge.source) ?? 0) + (degree.get(edge.target) ?? 0)
@@ -1433,7 +1509,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
         left: { id: edge.source, label: left.label },
         right: { id: edge.target, label: right.label },
         dots,
-        merge: { confidence: edge.merge_confidence ?? null, matchedOn, differsOn, consequence, unknowns, left, right },
+        merge: { confidence: edge.merge_confidence ?? null, matchedOn, differsOn, differs, consequence, unknowns, left, right },
       },
     })
   }

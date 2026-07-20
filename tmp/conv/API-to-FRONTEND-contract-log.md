@@ -161,3 +161,47 @@ Additive, node `attrs` only (same pattern as `place_match_*`), emitted by `view/
 
 TS mirror fix, no backend change: `Location.raw` is `str | list[str]` in `values.py` and was typed
 `string | null` in `frontend/src/api/types.ts`; widened to `string | string[] | null`.
+
+
+## 2026-07-20 — T10 (merge-card traceability): candidate `same-as` edges now cite their identity claims
+
+**Change:** `EdgeView.claim_ids` is now **populated on candidate `same-as` edges** with the claim ids in
+which a source asserts the identity — i.e. the evidence *behind* the `source_asserted` term of the
+`attrs.breakdown` already on that edge. Previously always `[]`.
+
+* Populated only where a source really spoke: a pair scored on name + neighbourhood alone still carries
+  `claim_ids: []`. The two are kept in lockstep by construction (`resolve.scoring.identity_claim_ids`
+  uses the same pair/predicate test as `source_asserted_score`), and pinned by an acceptance test in
+  both directions.
+* Only the `same-as`/`aka`/`marketed-as`/… lane. In-document coreference (`coref-same-as`) is a separate
+  raise-only lane that does **not** feed `source_asserted`, so it is deliberately excluded — including it
+  would make the citation over-claim what the score counted.
+* **No new route.** `GET /evidence/{element_id}` already resolves an edge id, so it now serves those
+  claims (with `quotes` + `sources`) for `same-as:<a>|<b>` with no API surface change.
+
+**Why:** an identity assertion is *consumed* as a merge signal rather than drawn as an edge (D-2.5), so
+before this the only trace of who said two records are one was a number on the review card. The merge
+card asked an analyst to weigh "a source calls them the same · 0.70" with no way to see which source,
+saying what, or how credible. That is the one-click-to-source non-negotiable, on the ★ marquee control
+point.
+
+**Impact on frontend:** **non-breaking, additive.** `EdgeView.claim_ids` was already optional in
+`src/api/types.ts` and nothing read it for `same-as`. `viewToReviewQueue` now reads it to hang an
+evidence handle on the `source_asserted` signal row only.
+
+**Also additive (frontend-internal, no API):** `LiveReviewSide.evidenceId`, `MergeSignalRow.evidenceId`
+/`.evidenceCount`, `LiveMergeEvidence.differs` (`MergeDiffRow[]`, the attributed form of the existing
+`differsOn: string[]`, which is kept as its plain-text projection), and `LiveDrawerSubject.edgeType`.
+
+**Decision (principle → choice → alternative rejected):** *every claim is one-click traceable to its
+exact source* → **thread the asserting claim ids onto the edge that proposes the merge, and reuse the
+existing evidence route**. Rejected: (a) a new `GET /identity-evidence/{pair}` route — a second
+provenance surface for the same object, outside the frozen route list; (b) drawing the identity claims
+as graph edges so they'd be reachable — that is exactly the twin-node/self-loop picture D-2.5 removed;
+(c) leaving the score uncitable and telling the analyst to go find the document — the failure being fixed.
+
+**Refs:** `backend/chanakya/resolve/{entities,scoring,__init__}.py`;
+`backend/chanakya/schemas/stage_io.py` (`Partition.identity_claims`);
+`backend/chanakya/view/pipeline.py` (`_resolution_edges`);
+`backend/tests/view/test_resolution_edges.py`, `backend/tests/resolve/test_entity_resolution.py`,
+`backend/tests/acceptance/test_merge_candidate_provenance.py`. Branch `qa/t10-merge-card-evidence`.
