@@ -59,6 +59,13 @@ export interface GraphNodeDef {
   x: number
   y: number
   kind: GraphKind
+  /** ONTOLOGY type ('basing_site', 'component', 'source', …) — distinct from `kind`, which is
+   *  the STATUS treatment. The graph stage needs the ontology type to separate the knowledge
+   *  layer from the evidence layer and to lay nodes out by supply-chain role. Optional so the
+   *  frozen demo fixtures (which carry no live ontology types) stay assignable. */
+  type?: string
+  /** the entity's own name, without the type suffix `label` bakes in. */
+  name?: string
 }
 
 // Positions + labels frozen (deterministic preset — layout never moves).
@@ -102,6 +109,11 @@ export interface GraphEdgeDef {
   source: string
   target: string
   kind: EdgeKind
+  /** ONTOLOGY type ('equips', 'same-as', 'observed-at', …) — distinct from `kind`, which is
+   *  the STATUS treatment. The graph stage needs it to tell a DOMAIN relationship from
+   *  resolution BOOKKEEPING (`same-as` / `distinct-from`), which is the difference between
+   *  the knowledge layer and the identity overlay. Optional: the demo fixtures omit it. */
+  type?: string
 }
 
 export const GRAPH_EDGES: GraphEdgeDef[] = [
