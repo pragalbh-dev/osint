@@ -61,12 +61,57 @@ node_types:
   - name: contract_import_event
     freshness_class: durable
     attrs: [event_subtype, quantity, count_state, variant_delivered, linked_unit, evidence_date]
+    # HARD-ATTRIBUTE RAIL (T3b-C). A bill-of-lading / contract reference IS the event's identity: the
+    # d05 customs manifest carries three DISTINCT bills (KPQA-HC-2020-118834 / -118835 / -119011) that
+    # the scorer was proposing as mutual merge candidates on shared-neighbourhood alone. Merging any two
+    # would collapse two separate import events and silently corrupt the supply-chain count — the
+    # textbook "over-merge is the expensive, adversarially-exploited error" case. So: two events that
+    # BOTH state a reference and state DIFFERENT ones are a hard veto, decided deterministically before
+    # any band. A name that is prose ("HQ-9(P) SAM system") states no reference and is unaffected —
+    # absence is not disagreement.
+    identity:
+      identifier_patterns: ['[A-Za-z0-9\[\]]+(?:[-/][A-Za-z0-9\[\]]+){2,}']
   - name: unit
     freshness_class: durable
     attrs: [echelon, designator, service_branch, parent_unit, equipment_fingerprint, count_state, home_garrison]
   - name: basing_site
     freshness_class: durable       # the site is durable; occupancy perishability lives on the based-at edge
     attrs: [coordinates, site_type, site_signature_geometry, occupancy_state, occupancy_observed_date, decoy_risk_flag]
+  # AREA OF OPERATIONS (T3b-A) — a REFINEMENT of basing_site, not a rival of it.
+  #
+  # `based-at` / `observed-at` range over `basing_site`, so the extractor and RESOLVE's endpoint typing
+  # mint one for every place a source names — which swept in `Sindh`, `Punjab`, `Karachi air defence
+  # sector`, `Karachi coastal air defence belt` and `central Punjab air defence sector`. Those are areas
+  # of RESPONSIBILITY, not places a unit sits: md/13 §1 sets basing precision at site/pad level ("you
+  # can't fire a relocation tripwire on 'somewhere in Punjab'"), and ingest/basing.py::_is_locatable_site
+  # already says so in prose while working around it downstream. Naming it in the ontology makes it
+  # structural, and that is what fixes the user-visible complaint: the Karachi AD Centre, the Karachi
+  # sector and the Karachi coastal belt were being offered to the analyst as candidate DUPLICATES of one
+  # another when they are three different KINDS of thing. They were never fragments of one node.
+  #
+  # `refines: basing_site` deliberately leaves the edge domain/range alone — widening `to:` to a list
+  # would make the range polymorphic and un-type every genuine site endpoint. The base type still does
+  # the laning; the refinement is stamped from the instance's NAME, by one shared rule
+  # (chanakya.ontology.NodeTypeIndex.refine) that RESOLVE and the view both call, so they cannot drift.
+  #
+  # Recognition is head-anchored: the name's LAST token must be an area word. "Karachi air defence
+  # sector" is a sector; "Probable Long-Range SAM Emplacement, Malir District, ..., Sindh Province,
+  # Pakistan" is an emplacement that merely mentions a province, and stays a site. `named_instances`
+  # carries the bare admin polities that carry no marker at all. Extending either list is a config edit.
+  - name: area_of_operations
+    freshness_class: durable
+    refines: basing_site
+    attrs: [area_kind, admin_level, coordinates, occupancy_state]
+    identity:
+      name_head_markers: [sector, belt, zone, corridor, province, region, theatre, theater]
+      named_instances: ["Punjab", "Sindh", "Balochistan", "Khyber Pakhtunkhwa", "Gilgit-Baltistan",
+                        "Azad Jammu and Kashmir", "Islamabad Capital Territory"]
+      # An area's identity is its NAME and its geography — never its neighbourhood. Two sectors that both
+      # contain sightings of the same equipment share a neighbourhood BY CONSTRUCTION; counting that as
+      # identity evidence is what put `Punjab <-> Sindh` in the analyst's merge queue at exactly hitl_low.
+      # Areas can still merge/queue on name + alias evidence, which is the only honest signal for them.
+      relational: false
+
   - name: interceptor_stockpile    # SPLIT from sustainment — perishable (depth/consumption move fast)
     freshness_class: perishable
     attrs: [stocked_round, magazine_depth, consumption_rate, days_of_supply, resupply_lead_time, production_sole_source_flag, foreign_control]

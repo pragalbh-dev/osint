@@ -302,6 +302,14 @@ def resolve_entities(
     for a, b in pairs:
         if uf.find(a) == uf.find(b) or vetoed(a, b):
             continue
+        # T3b-A: two entities of DIFFERENT ontology types are not the same entity, and asking an analyst
+        # whether an air-defence *sector* is the same thing as an air-defence *centre* is not triage, it
+        # is noise. The same type gate `_identity_pairs`, `_name_containment` and `_coref_pairs` already
+        # apply, finally applied to the scored queue as well. The escape hatch is deliberate: if a source
+        # or the offline proposer explicitly asserts the identity, the pair is in `raise_only` and still
+        # reaches the analyst — a cross-type assertion is exactly the kind of thing a human should see.
+        if graph.entities[a].etype != graph.entities[b].etype and frozenset((a, b)) not in raise_only:
+            continue
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
         if _band(bd, cfg, has_raise=frozenset((a, b)) in raise_only) == "hitl":
             res.candidates.append((a, b))

@@ -12,7 +12,14 @@ from __future__ import annotations
 from typing import Any
 
 from chanakya.credibility.scoring import reliability
-from chanakya.schemas import ConfigBundle, EntitiesConfig, PlacesConfig, ResolutionConfig
+from chanakya.ontology import NodeTypeIndex
+from chanakya.schemas import (
+    ConfigBundle,
+    EntitiesConfig,
+    OntologyConfig,
+    PlacesConfig,
+    ResolutionConfig,
+)
 
 # merge_score signal names (also the merge_weights keys + merge_breakdown keys).
 ATTRIBUTE = "attribute"
@@ -40,6 +47,7 @@ class ResolveConfig:
         # reads it rather than re-deriving a second, divergent notion of "how good is this source".
         self._bundle = bundle
         self._source_index: dict[str, Any] | None = None
+        self._node_types: NodeTypeIndex | None = None
 
     @classmethod
     def from_bundle(cls, config: ConfigBundle) -> ResolveConfig:
@@ -52,11 +60,37 @@ class ResolveConfig:
     def _place_extra(self, name: str, default: Any) -> Any:
         return getattr(self._p, name, default)
 
+    # ── node-type identity rules (config/ontology.yaml — T3b) ─────────────────────────────────
+    @property
+    def node_types(self) -> NodeTypeIndex:
+        """The ontology's *node*-type identity rules — refinement, relational-identity, identifiers.
+
+        Read through the same config-only path every other knob uses. A ``ResolveConfig`` built without
+        a bundle (the unit fixtures) gets an empty index, so every query returns its neutral default and
+        behaviour is byte-unchanged (gate G2).
+        """
+        if self._node_types is None:
+            ontology = self._bundle.ontology if self._bundle is not None else OntologyConfig()
+            self._node_types = NodeTypeIndex(ontology)
+        return self._node_types
+
     # ── merge scoring ─────────────────────────────────────────────────────────────────────────
     def weight(self, signal: str) -> float:
         """Weight for a merge_score signal; absent ⇒ 0.0 (that signal simply doesn't contribute)."""
         w = self._r.merge_weights.get(signal)
         return float(w) if w is not None else 0.0
+
+    @property
+    def relational_support_k(self) -> int | None:
+        """Distinct shared neighbours at which the relational term reaches full strength (T3b-F).
+
+        A Jaccard overlap is scale-free: two entities whose *only* neighbour is the same one score a
+        perfect 1.0, which is how a single shared hub link came to be the dominant merge signal in this
+        graph. This knob makes the term proportional to the evidence under it up to ``k``. Absent ⇒ the
+        raw Jaccard, i.e. the pre-fix behaviour with no code literal (gates G2/G6).
+        """
+        v = self._extra("relational_support_k", None)
+        return int(v) if v is not None else None
 
     @property
     def scorable(self) -> bool:

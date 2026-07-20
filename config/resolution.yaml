@@ -26,6 +26,21 @@ bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge)
   auto_merge: 0.85
   hitl_low: 0.45
 
+# T3b-F — the relational term's missing denominator. A Jaccard overlap is scale-free, so two entities
+# whose ONLY neighbour is the same one score a perfect 1.0: eighteen basing_site pairs, each with a
+# single `based-at` edge from the same unit, were reading as "identical neighbourhood" and landing at
+# exactly hitl_low (0.40*1 + 0.05 = 0.45) with nothing else about them in agreement. That one artefact
+# generated the bulk of the analyst's merge queue.
+#
+# This is the number of DISTINCT shared neighbours at which the relational signal counts in full; below
+# it the overlap is scaled by shared/k. It states the invariant in the same form as the ones above:
+#   ONE shared neighbour   0.40*(1.0*1/2) + 0.05 = 0.25 -> keep separate (two things on the same hub)
+#   TWO shared neighbours  0.40*(1.0*2/2) + 0.05 = 0.45 == hitl_low -> reaches the analyst, as before
+# i.e. "a perfect shared neighbourhood must rest on at least two shared neighbours to reach the analyst
+# on its own". It only ever LOWERS a score, so it can never create an auto-merge; and it does not touch
+# the raise-only channels — a source-asserted or LLM-proposed pair still reaches the queue on one link.
+relational_support_k: 2
+
 blocking_keys:            # candidate generation scope (demo scale: all-pairs-within-block is fine)
   - type
   - country_or_domain_namespace
@@ -158,6 +173,18 @@ place_proximity_hitl_multiplier: 3   # 1x-3x radius -> HITL; beyond -> new place
 place_allowed_precision_classes:
   basing_site: [pad, site]     # a battery/base snaps to a pad or a site — never a port terminal, and
                                # never a district/city (those are AREAS; snapping to one is a fiction).
+  # T3b-A: the mirror image. An `area_of_operations` (a sector, a coastal belt, a province) is an area of
+  # responsibility, so the fiction runs the other way: it must NEVER be snapped onto a pad or a site, and
+  # the coarse rungs are exactly the right home for it. Rendering follows from the class the anchor
+  # carries — an area lands on a district/city/province anchor, which the map draws as an uncertainty
+  # envelope rather than a point. (`province` is T5's new rung; harmless before that lands.)
+  area_of_operations: [district, city, province]
+
+# Which entity types take part in place resolution at all. Previously unset, so it defaulted to the one
+# location-primary type in C (`basing_site`) — which meant the moment T3b-A retyped sectors/belts/
+# provinces off that type they would have fallen off the map entirely. Stated explicitly so the two
+# place-bearing types are visible in one line and adding a third is a config edit (T5 handoff).
+place_entity_types: [basing_site, area_of_operations]
 
 # A vague geocode must not be snapped into a precise pad: "central Punjab" geocodes to a fuzzy regional
 # point, and INGEST records how much it trusts each candidate. Below this floor the mention keeps its own

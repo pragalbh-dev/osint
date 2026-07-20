@@ -939,3 +939,122 @@ the documented home for direct identity statements.
 "it finds merges" — Phase 3's deterministic rules absorbed most of that — but "it reaches the *non-lexical*
 pairs nothing else can, and it hands the analyst a citation for the rest." A deterministic rule beats an
 LLM pass wherever it reaches the answer; the LLM's value is the slice where no string comparison exists.
+
+---
+
+## QA T3b — fragmentation & merge-noise (2026-07-20, `qa/t3b-fragmentation`)
+
+Six defects behind one complaint ("multiple Karachi nodes stay fragmented"). Full root-cause /
+measurement write-up in `tmp/conv/T3b-fragmentation.md`; data observations in
+`tmp/conv/T3b-to-DATA-typing-observations.md`. Measured: merge queue **40 → 8** candidates cold
+(41 → 8 full), nodes 171 → 166, nameless nodes 11 → 0, substantive edges unchanged at 56,
+`make test` 788 → 808 pass.
+
+- **D-T3b.1 — The Karachi cluster is answered by a TYPE distinction, not a merge.** An Army Air Defence
+  *Centre*, an air-defence *sector* and a coastal *belt* are three different kinds of thing; the defect
+  was offering them to the analyst as candidate duplicates, and merging them would have been the real
+  error. *Principle: model the ontology to what the queries need + false-merge discipline (over-merge is
+  the expensive error).* **Alternative rejected:** treating it as a recall problem and reaching for the
+  coreference gate — T1 had already measured that as unable to touch a cross-document cluster.
+
+- **D-T3b.2 — `area_of_operations` is a `refines:` refinement of `basing_site`, not a rival type, and
+  the edges' `to:` is left alone.** Widening `based-at`/`observed-at` to a polymorphic range would make
+  `endpoint_types` ambiguous and un-type every genuine site endpoint. The base type keeps doing the
+  laning; the refinement is stamped from the instance's name by one shared pure function both RESOLVE and
+  the view call. *Principle: config-driven & extensible, not hardcoded; one source of truth (the
+  `edge_instance_key` precedent).* **Alternative rejected:** a second polymorphic range; also rejected a
+  code-side type list.
+
+- **D-T3b.3 — Area recognition is head-anchored (last token), plus a curated `named_instances` list.**
+  A substring rule would have retyped the corpus's one pad-precise site ("Probable Long-Range SAM
+  Emplacement, Malir District, Karachi, **Sindh Province**, Pakistan") into an area — the exact inverse of
+  `md/13`'s precision spec. *Principle: precision-first; a rule that is wrong on the load-bearing case is
+  not a rule.* **Alternative rejected:** substring matching on area words.
+
+- **D-T3b.4 — A shared neighbourhood is not identity evidence for an area type
+  (`identity.relational: false`).** Two areas that both contain sightings of the same equipment share a
+  neighbourhood *by construction* — that is a fact about the equipment's dispersal. This is what removes
+  `Punjab ↔ Sindh`. *Principle: the merge decision is precision-first; recall is candidate-gen's job.*
+  **Alternative rejected:** a blanket "different names ⇒ never merge" rail for areas, which would have
+  blocked genuine variants such as "Karachi AD sector" ≡ "Karachi air defence sector".
+
+- **D-T3b.5 — Cross-type pairs leave the analyst queue, with a `raise_only` escape hatch.** The type gate
+  `_identity_pairs` / `_name_containment` / `_coref_pairs` already apply was missing from the scored
+  candidate loop. A pair a *source* or the offline proposer explicitly asserts still reaches the analyst,
+  because a cross-type identity assertion is exactly what a human should see. *Principle: HITL is
+  attention-triage — a queue full of type errors is not triage; escalate ambiguity, not noise.*
+  **Alternative rejected:** a hard veto with no escape, which would have made the resolver unable to
+  surface a genuine extraction mis-typing.
+
+- **D-T3b.6 — Contradictory endpoint typing is settled by the ontology's domain/range, never by a guess,
+  and the tie-break is attach-only.** Where the declared domain/range narrows the contradiction to exactly
+  one admissible type, the designed schema decides; where it admits both or neither, the refusal stands.
+  Attach-only because the first version *minted* a new short designator, which the containment bootstrap
+  then over-extended and fused a TEL canister into a TEL chassis. *Principle: when unsure, escalate —
+  don't guess; over-merge is the expensive, adversarially-exploited error.* **Alternative rejected:**
+  picking the most-claimed type (a popularity guess); also rejected minting under the surviving type.
+
+- **D-T3b.7 — A different bill-of-lading number is a hard veto, not a low score, and it stays DRAWN.**
+  Three distinct bills in one customs manifest were mutual merge candidates with no deterministic guard;
+  a wrong merge collapses two import events and silently corrupts the supply-chain count. Absence of an
+  identifier is not disagreement (the `has_hard_conflict` doctrine). *Principle: deterministic rules
+  dispose; an invisible veto is indistinguishable from a missing edge.* **Alternative rejected:** a
+  scoring penalty — probabilistic where the evidence is categorical.
+
+- **D-T3b.8 — The relational term is discounted by the evidence under it (`relational_support_k`).**
+  A Jaccard overlap is scale-free, so a one-element neighbourhood scored a perfect 1.0 and a single shared
+  hub edge was landing pairs at exactly `hitl_low`. The knob states the invariant in the same form
+  `resolution.yaml` states its others: *a perfect shared neighbourhood must rest on at least two shared
+  neighbours to reach the analyst on its own.* It only ever lowers a score, so it can never create an
+  auto-merge. *Principle: no magic numbers in code — thresholds are config; precision-first merging.*
+  **Alternative rejected:** raising `hitl_low`, which would have punished every signal to fix one; also
+  rejected an inverse-degree hub discount as more machinery than the measured defect needed.
+
+- **D-T3b.9 — A node's display name comes from the analyst's curated registry entry, not from whichever
+  claim replayed first.** `unit_hq9b` rendered as "Pakistan Air Force" — its *operator* — so the demo's
+  climactic beat read "Pakistan Air Force moved from Nur Khan to Rahwali". `entities.yaml` already carried
+  `display_name: "the PAF HQ-9B fire unit"` and ASK already honoured it; only the view did not, so the
+  graph and the answers disagreed about what one node is called. *Principle: never invent a designator
+  the corpus does not support — surface the one an analyst already justified in config.* **Alternative
+  rejected:** leaving the node unnamed (T6's fallback — right instinct, unnecessary once the registry was
+  found to hold the answer); also rejected using `canonical_name`, which is an identity string carrying
+  parenthetical notes, not prose.
+
+- **D-T3b.10 — An untyped endpoint renders under the designator the document used.** Its id *is* the
+  surface form, so the information was on the node all along. A name is a display concern and does not
+  make the node resolvable — that was fixed at the typing layer, not here. *Principle: every claim is
+  one-click traceable; a raw id in the UI is a traceability failure.*
+
+- **D-T3b.11 — Retyping landed WITH the map config, not before it.** `place_entity_types` was unset and
+  defaulted to `{basing_site}`, so retyping alone would have silently deleted T5's new map coverage. It is
+  now stated explicitly, `place_allowed_precision_classes` gains the mirror row
+  (`area_of_operations: [district, city, province]` — an area must never snap to a pad), and
+  `_refine_node_types` runs *before* place matching so the two types can carry different precision gates.
+  Verified before/after: identical locations, identical (absent) place refs. *Principle: don't silently
+  clip scope; a fix that breaks another agent's landed work is not a fix.*
+
+- **D-T3b.12 — The flagship worked query changed shape; the assertion was relaxed to a floor and the
+  change surfaced, not silently re-pinned.** Fixing the fragmentation moved the chokepoint nomination from
+  a *fragment* (`Type 305B`, which carries no supplier edge) to the resolved `comp_ht233`, which does — so
+  the trace now reaches CPMIEC in 2 hops instead of stopping at a component in 3. That maker edge is the
+  corpus's planted false attribution (d23, refuted by d22); the system labels it `insufficient` and closes
+  on "insufficient evidence to assess", so the thread now *exercises* the misinformation trap rather than
+  stepping around it. The cost is two ORBAT hops of narrative. *Principle: borderline-harmful → surface it
+  with options, don't decide it unilaterally; a test that pins a shape turns a data improvement red.*
+  **Escalated** with three options in `tmp/conv/T3b-fragmentation.md` §5.
+
+**Design-doc tails to enrich:**
+- `artifacts/spine/03-resolution.md` — the merge score now has a **support** notion: the relational term is
+  proportional to the number of shared neighbours up to `k`, so "shared neighbourhood" means shared
+  *neighbourhoods*, not a shared link. Also record that identity signals are now **type-aware**: a node
+  type may declare that neighbourhood is not identity evidence for it.
+- `artifacts/spine/01-graph-and-ontology.md` — node types can declare **refinements** (`refines:`), a
+  narrower reading of a base type recognised from an instance's name, which is how the designed schema
+  expresses a distinction an edge's declared range cannot.
+- `artifacts/md/13-location-normalization.md` — the per-node-type precision table now has a structural
+  counterpart: `area_of_operations` is the type for the "somewhere in Punjab" rung, with its own
+  `place_allowed_precision_classes` row, and it renders as an envelope rather than a pin.
+- `artifacts/md/16-design-note-disclosures.md` — worth a line: the graph was passing the d22-vs-d23
+  false-attribution trap *by accident* (the false edge was parked on an orphan fragment). Fixing
+  fragmentation exposed it, and the credibility layer then handled it correctly. That is a better story
+  than the trap never being reached.

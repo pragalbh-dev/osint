@@ -75,6 +75,14 @@ def resolve(
     # claim resolves onto it (traceability non-negotiable / gate G4).
     _seed_registry(graph, cfg)
 
+    # T3b-A — stamp the ontology's node-type REFINEMENTS (``refines:`` in config/ontology.yaml) before
+    # anything reads a type. An area of operations is not a basing site (md/13 §1), and the place layer
+    # is the first consumer that has to know: ``place_allowed_precision_classes`` pins a basing_site to a
+    # pad or a site, which is right for a battery and wrong for a province — an area belongs on a
+    # district/city/province anchor, rendered as an uncertainty envelope rather than a sharp pin. Running
+    # before ``place_matches`` is what lets the two types carry different precision gates.
+    _refine_node_types(graph, {}, cfg)
+
     # P3.4 — the ONE place-resolution pass. Every consumer (the distinct-from veto, the place-merge
     # augment, and the ``place_refs`` write-back) reads this same map, so they agree by construction.
     # Computed here because only claim-backed entities carry a frozen location: registry seeds hold no
@@ -98,9 +106,14 @@ def resolve(
     # ids when ``merge_score`` runs; that is what revives the relational + source-asserted terms.
     mention, minted, ambiguous = _link_endpoints(graph, cfg, alias_idx, lane, veto)
 
+    # …and again for the endpoints minted a line above, which did not exist for the first pass.
+    _refine_node_types(graph, minted, cfg)
+
     # Re-read the claim-asserted distinct-froms now that endpoints carry entity ids: a document may state a
     # do-not-merge about a mention that only *became* an entity in the line above. Idempotent (a set union).
-    veto |= _claim_distinct_pairs(graph, cfg, alias_idx)
+    # T3b-C — and add the hard-identifier rail: two entities whose names state DIFFERENT bill-of-lading /
+    # contract references are a veto, not a low score (config/ontology.yaml ``identifier_patterns``).
+    veto |= _claim_distinct_pairs(graph, cfg, alias_idx) | _identifier_veto(graph, cfg)
 
     # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
@@ -208,6 +221,60 @@ def _edge_implied_types(graph: EntityGraph, lane: EdgeLaneIndex) -> dict[str, se
     return out
 
 
+def _edge_allowed_types(graph: EntityGraph, lane: EdgeLaneIndex) -> dict[str, set[str]]:
+    """``endpoint surface form → {node types the ontology allows it to be}`` (T3b-B).
+
+    The sibling of :func:`_edge_implied_types`, and deliberately weaker: that one only speaks when a
+    single edge end names exactly one type (it has to, because it *invents* a type for an endpoint
+    nothing else describes). This one collects the **full declared constraint** — including a
+    polymorphic end such as ``observed-at``'s ``from: [variant, component]`` — and INTERSECTS it across
+    every edge the form appears on. It never invents a type; it only says which types are admissible.
+
+    That is exactly what is needed to adjudicate *contradictory* entity claims about one surface form.
+    ``HT-233`` is declared a ``component`` by one document and a ``variant`` by another; the resolver
+    rightly refuses to guess a winner, and the string was left an untyped mention — so an endpoint whose
+    surface form is IDENTICAL to a registry component ended up as a nameless ``unknown`` node that could
+    never resolve. The predicate settles it without a guess: the form is the subject of ``equips``,
+    whose domain is ``component``, so ``variant`` is not admissible here. Where the ontology admits both
+    (or neither), the refusal stands.
+    """
+    out: dict[str, set[str]] = {}
+    for e in graph.edges:
+        from_types, to_types = lane.endpoint_types(e.predicate)
+        for form, declared in ((e.subject, from_types), (e.object, to_types)):
+            if not declared:
+                continue  # a symmetric/undeclared end constrains nothing
+            current = out.get(form)
+            out[form] = set(declared) if current is None else current & set(declared)
+    return out
+
+
+def _settle_contradiction(
+    form: str, matches: list[str], node_type: str, graph: EntityGraph
+) -> str | None:
+    """Where a contradictorily-typed form resolves once the ontology has ruled out a type (T3b-B).
+
+    Deliberately **attach-only, never mint**. The ordinary path mints ``ent:<type>:<form>`` for an
+    endpoint nothing describes, which is the honest answer there — but here something *does* describe
+    it (that is why the types contradicted), so minting a second node under the surviving type adds a
+    new short designator to the graph's vocabulary that no document used. That is not cost-free: a fresh
+    short name is exactly the kind of hook the containment bootstrap over-extends (minting
+    ``ent:component:HQ-9/P TEL`` made "HQ-9/P TEL canister" read as the same part described more fully,
+    and silently fused a canister into a chassis).
+
+    So it attaches to something that already exists, preferring the analyst-curated registry entry —
+    which is what the registry is *for*: the extractor emits a surface form, the registry says which
+    stable id owns it. Failing that, the entity a claim already declared under the surviving type. If
+    neither is unambiguous the original refusal stands and the mention stays an untyped tier-3 mention.
+    """
+    of_type = [m for m in matches if graph.entities[m].etype == node_type]
+    registry = [m for m in of_type if graph.entities[m].registry]
+    if len(registry) == 1:
+        return registry[0]
+    declared = f"ent:{node_type}:{form}"
+    return declared if declared in graph.entities else None
+
+
 def _spans_veto(matches: list[str], veto: set[Pair]) -> bool:
     """True if two of an endpoint's candidate matches are explicitly do-not-merge (a trap straddle)."""
     return any(frozenset((a, b)) in veto for a, b in unordered_pairs(sorted(set(matches))))
@@ -246,6 +313,7 @@ def _link_endpoints(
     ontology declares no domain/range and endpoints are already ids, which is exactly the golden fixture.
     """
     edge_types = _edge_implied_types(graph, lane)
+    allowed_types = _edge_allowed_types(graph, lane)
     surface_forms = sorted({e.subject for e in graph.edges} | {e.object for e in graph.edges})
 
     mention: dict[str, str] = {}   # surface form → entity id it resolves to
@@ -267,7 +335,19 @@ def _link_endpoints(
 
         types = {graph.entities[m].etype for m in matches}
         if len(types) > 1:
-            continue  # matches disagree on what this form IS → ambiguous, do not invent a winner
+            # The matches disagree on what this form IS. Do not invent a winner — but the ONTOLOGY may
+            # already have ruled one out: a triple's subject is an instance of its edge's domain, so a
+            # type the predicate does not admit is not a candidate reading of this endpoint (T3b-B).
+            # If that narrows the disagreement to exactly one admissible type, the ambiguity is settled
+            # by the designed schema rather than by a guess; otherwise the refusal stands.
+            narrowed = types & allowed_types.get(form, set())
+            if len(narrowed) != 1:
+                continue
+            settled = _settle_contradiction(form, matches, next(iter(narrowed)), graph)
+            if settled is None:
+                continue
+            mention[form] = settled
+            continue
         if not types:
             types = edge_types.get(form, set())  # nothing knows this form — fall back to the edge's own range
         if len(types) != 1:
@@ -285,6 +365,70 @@ def _link_endpoints(
         e.object = mention.get(e.object, e.object)
 
     return mention, minted, ambiguous
+
+
+# ── T3b-A: node-type refinement (areas of operation are not basing sites) ──────────────────────
+
+def _refine_node_types(
+    graph: EntityGraph, minted: dict[str, str], cfg: ResolveConfig
+) -> dict[str, str]:
+    """Stamp each entity's ontology **refinement** type in place; returns ``{eid: refined type}``.
+
+    A refinement (``refines:`` in ``config/ontology.yaml``) is a narrower reading of a base type that an
+    edge's declared range cannot express: ``based-at``/``observed-at`` range over ``basing_site``, so a
+    province and an air-defence sector are minted as basing sites alongside a real pad. Re-typing them
+    here is what stops the resolver offering an AD Centre, a sector and a coastal belt to the analyst as
+    candidate duplicates of one another — they are three different kinds of thing, and no amount of
+    scoring should have been asked to notice that.
+
+    The entity **id** is deliberately left alone. Ids are opaque handles minted from the base type at
+    claim time; rewriting them would orphan every claim's ``resolved_ref`` and every frozen bundle. What
+    changes is the *type* the resolver blocks, scores and bands on — and ``minted`` is updated in step so
+    the view materialises a refined endpoint under its refined type too.
+
+    Pure and deterministic (sorted iteration, no clock/RNG/LLM — gates G1/G2). With no refinement
+    declared in the ontology this is a no-op and the partition is byte-identical.
+    """
+    ntx = cfg.node_types
+    refined: dict[str, str] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        new_type = ntx.refine(ent.etype, ent.name)
+        if new_type and new_type != ent.etype:
+            ent.etype = new_type
+            refined[eid] = new_type
+            if eid in minted:
+                minted[eid] = new_type
+    return refined
+
+
+# ── T3b-C: the hard-identifier rail (a bill of lading is an identity, not a name) ───────────────
+
+def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
+    """Two same-type entities stating **different** hard identifiers → a hard veto, drawn like any other.
+
+    ``config/ontology.yaml`` declares, per node type, the patterns that make a name a hard identifier
+    (a bill-of-lading or contract reference). Where both sides state one and the two differ, the pair is
+    not a low-scoring candidate — it is a *stated contradiction*, and it is vetoed before any band is
+    computed, exactly as a configured ``distinct-from`` is. This closes the case T1 measured as the
+    sharpest unguarded pair in the corpus: three distinct bills in one customs manifest, proposed as
+    mutual merges with no deterministic guard, where a wrong merge collapses three import events into
+    one and silently corrupts the supply-chain count.
+
+    Absence is not disagreement (the ``has_hard_conflict`` doctrine): a prose-named contract event
+    states no reference and is never vetoed by this rail. A type declaring no patterns is unaffected.
+    """
+    ntx = cfg.node_types
+    by_type: dict[str, list[tuple[str, str]]] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        ident = ntx.identifier(ent.etype, ent.name)
+        if ident is not None:
+            by_type.setdefault(ent.etype, []).append((eid, ident))
+    out: set[Pair] = set()
+    for members in by_type.values():
+        for (a, ident_a), (b, ident_b) in unordered_pairs(members):
+            if ident_a != ident_b:
+                out.add(frozenset((a, b)))
+    return out
 
 
 # ── RES-4: identity read from the claim stream, source-weighted (P3.2, D-2.5 / D-P3.4) ─────────
