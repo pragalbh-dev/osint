@@ -278,6 +278,22 @@ class ResolveConfig:
         return bool(self._extra("place_bind_on_curated_toponym", False))
 
     @property
+    def place_identity_precision_classes(self) -> set[str] | None:
+        """Anchor precision classes fine enough that "same anchor" may become "**same place**".
+
+        Resolving a mention to an anchor and declaring two mentions the same place are different acts,
+        and the second only follows from the first when the anchor is a *thing* rather than an *area*.
+        "Rahwali, from the DMS fix" and "Rahwali, from the relative form" are one airfield; "a fenced
+        compound in central Punjab" and "an air-defence node in Punjab Province" are two different
+        unknowns that happen to share a province. Without this gate, opening the gazetteer to area
+        anchors (T5) would buy map coverage at the price of a silently fused ORBAT.
+
+        ``None`` (absent/empty) ⇒ no constraint ⇒ pre-T5 behaviour, byte-identical (gate G2).
+        """
+        configured = self._extra("place_identity_precision_classes", None)
+        return set(configured) if configured else None
+
+    @property
     def toponym_descriptive_markers(self) -> list[str]:
         """Substrings that mark a display string as a *description of where*, not a place **name**.
 

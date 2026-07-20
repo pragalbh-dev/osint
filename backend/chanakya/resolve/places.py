@@ -210,15 +210,57 @@ def _reads_as_a_name(text: str, cfg: ResolveConfig) -> bool:
     return not any(marker.lower() in lowered for marker in markers)
 
 
-def _toponym_of(ent: Entity, cfg: ResolveConfig) -> str:
-    """The entity's **toponym slot**: an explicit frozen toponym, else a name-shaped display string,
-    else INGEST's frozen ``proposed_alias``. Empty ⇒ this mention resolves on coordinates/hard-ID only.
+def _toponym_candidates(ent: Entity, cfg: ResolveConfig) -> list[str]:
+    """Every string this entity offers as a statement of *where it is*, best-first.
 
-    The order matters. ``attrs.toponym`` is the analyst/extractor stating the place name outright and
-    always wins. The display name comes next because it is what the document called the thing — but only
-    when it reads as a name. The proposed alias is last: it is a *proposal* INGEST made (LLM/Nominatim),
-    useful when the display string is descriptive, but not something to prefer over a real name.
+    ``attrs.toponym`` is the analyst/extractor naming the place outright. The display name comes next
+    because it is what the document called the thing. Then the two forms INGEST froze onto the
+    ``Location`` itself: its ``proposed_alias`` (the anchor it pulled out of the phrase) and its
+    verbatim ``raw``. Order is preference, not filtering — the filtering is the caller's.
     """
+    out: list[str] = []
+    explicit = ent.attrs.get("toponym")
+    if explicit:
+        out.append(str(explicit))
+    if ent.name:
+        out.append(ent.name)
+    value = location_attr(ent.attrs)
+    if isinstance(value, Mapping):
+        for key in ("proposed_alias", "raw"):
+            stated = value.get(key)
+            if isinstance(stated, str) and stated.strip():
+                out.append(stated.strip())
+    return out
+
+
+def _toponym_of(ent: Entity, cfg: ResolveConfig) -> str:
+    """The entity's **toponym slot**, chosen from :func:`_toponym_candidates`. Empty ⇒ coords/hard-ID only.
+
+    Two passes, in this order:
+
+    1. **Any candidate that exactly names a curated anchor wins outright** (only when
+       ``place_bind_on_curated_toponym`` is on). This is what lets a *stated location* be read at all.
+       The descriptive-marker filter below exists to stop a display string like "Air Defence Depot,
+       ~12 km NNW of Kala Chitta / Attock Cantt area" being matched fuzzily against aliases — but a
+       ``Location.raw``/``proposed_alias`` is, by construction, a location statement, and an EXACT
+       normalised equality with a name an analyst curated by hand is not an inference from anything.
+       Blocking those was why ten located entities in the corpus held no coordinate and the map drew
+       three pins: "Punjab Province, Pakistan" and "Kala Chitta / Attock Cantt area" were thrown away
+       for containing a comma and a slash.
+    2. Otherwise the legacy preference order, with the descriptive filter applied as before — so an
+       uncurated string still cannot reach the matcher through this door.
+
+    Both passes only ever consult **seeded** forms, so the withheld earned-merge traps ("Chaklala";
+    Rahwali's relative-bearing form) stay unreachable by string lookup and must still be earned.
+    """
+    candidates = _toponym_candidates(ent, cfg)
+    if cfg.place_bind_on_curated_toponym:
+        for candidate in candidates:
+            if _names_a_curated_anchor(candidate, cfg):
+                return candidate
+    # Legacy path, unchanged: an explicit frozen toponym wins outright, then the display name, then
+    # INGEST's proposed alias — each of the latter two only when it reads as a name. ``Location.raw``
+    # is deliberately NOT consulted here: it earns a hearing only by exactly naming a curated anchor.
     explicit = ent.attrs.get("toponym")
     if explicit:
         return str(explicit)
@@ -334,6 +376,21 @@ def augment(
     if place_of is None:
         place_of = place_matches(graph, cfg)
     trans = cfg.transliteration
+    by_id = cfg.places.as_map()
+    identity_classes = cfg.place_identity_precision_classes
+
+    def constitutes_identity(place_id: str | None) -> bool:
+        """May "both resolved to this anchor" be read as "both ARE this place"? (T5.)
+
+        Only for anchors that denote a *thing*. An area anchor — a city, a district, a province —
+        answers "roughly where", and two batteries that share a province are not one battery. Coarse
+        anchors still resolve and still place their node; they just never fuse anything. No policy
+        configured ⇒ unconstrained (gate G2).
+        """
+        if identity_classes is None:
+            return True
+        entry = by_id.get(place_id or "")
+        return entry is not None and (entry.precision_class or "") in identity_classes
 
     def barred(a: str, b: str) -> bool:
         return frozenset((a, b)) in veto or alias_idx.barred(
@@ -345,6 +402,8 @@ def augment(
         key = pair_key(a, b)
         if ma.place_id != mb.place_id or graph.entities[a].etype != graph.entities[b].etype or barred(a, b):
             continue  # different places / different types / vetoed apart → not a place merge
+        if not constitutes_identity(ma.place_id):
+            continue  # a shared AREA is co-location, not identity (T5) — resolve it, never fuse on it
         if ma.band == "auto" and mb.band == "auto":
             result.same_as.append((a, b))  # two mentions of one place (Rahwali DMS ≡ relative form)
             result.merge_confidence[key] = 1.0
