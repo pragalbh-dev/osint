@@ -333,13 +333,22 @@ def _assemble(
             subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
             if (subj, obj) != (payload.subject, payload.object):
                 c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
-            # Fallback for a claim whose producer left no edge_instance: build it through the SAME
-            # config-driven key builder RESOLVE uses (`base_ref`), so a functional edge (`based-at`) keys
-            # on the subject alone on both paths — the two can never disagree (EVAL RCA §2.1 / D-P4.4).
-            if rr and rr.edge_instance:
-                ei = rr.edge_instance
-            elif lane is not None:
+            # Group corroborating claims by the edge's RESOLVED identity — recomputed here from the
+            # *canonical* endpoints, NOT read from `rr.edge_instance`. That stored ref was minted by
+            # `base_ref` from the claim's PRE-resolution surface strings, so the moment resolution merges an
+            # endpoint the ref still names the old designator while the EdgeView `id` (built by
+            # `build_instance_edges` from `subj`/`obj`) names the canonical one. The two then disagree, one
+            # logical edge fragments across several ei-buckets carrying the same `id`, and the later re-key
+            # on `el.id` overwrites all but the last bucket — silently stranding the corroborating claims on
+            # unscored rows (residual #16). Rebuilding the key through the SAME `lane` builder RESOLVE uses
+            # reproduces `rr.edge_instance` byte-for-byte whenever nothing merged (canonical ≡ raw), so
+            # unmerged graphs are unchanged (gate G2); merged endpoints now pool onto one edge. A functional
+            # edge (`based-at`) still keys on the subject alone on both paths (EVAL RCA §2.1 / D-P4.4).
+            # Absent a lane (a caller with no ontology in hand) fall back to the stored ref, then the default.
+            if lane is not None:
                 ei = lane.edge_instance_key(subj, payload.predicate, obj)
+            elif rr and rr.edge_instance:
+                ei = rr.edge_instance
             else:
                 ei = f"edge:{subj}:{payload.predicate}:{obj}"
             edge_groups[ei].append(c)

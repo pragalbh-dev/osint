@@ -37,9 +37,10 @@ import { useWorkbench } from './store/workbench'
   if (p.get('merge')) patch.decided = { ...s.decided, merge: 'Kept separate' }
   const exp = p.get('expanded')
   if (exp) patch.expanded = exp
-  // ?mode=live boots straight into LIVE mode (reviewers + headless QA). Default stays
-  // 'demo' — the graded call is never affected unless the param is explicitly present.
-  if (p.get('mode') === 'live') patch.mode = 'live'
+  // Default boot mode is LIVE (store initial state). ?mode=demo opts back into the frozen
+  // demo walk; ?mode=live is now redundant but kept working (it's in notes/muscle memory).
+  if (p.get('mode') === 'demo') patch.mode = 'demo'
+  else if (p.get('mode') === 'live') patch.mode = 'live'
   if (Object.keys(patch).length) useWorkbench.setState(patch)
 })()
 
