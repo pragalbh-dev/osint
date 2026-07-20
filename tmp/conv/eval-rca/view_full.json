@@ -26252,18 +26252,27 @@
     {
       "attrs": {
         "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District, Punjab, Pakistan",
+          "geocode_candidates": [
+            {
+              "confidence": 1.0,
+              "label": null,
+              "lat": 33.61638816251397,
+              "lon": 73.09971192513768,
+              "source": "coord-parse"
+            }
+          ],
+          "precision_class": "pad",
+          "proposed_alias": null,
           "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84), ~1.5 km NE of the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District, Punjab, Pakistan",
           "resolved_place_ref": null,
-          "surface_format": "relative",
-          "wgs84_lat": null,
-          "wgs84_lon": null
+          "surface_format": "MGRS",
+          "wgs84_lat": 33.61638816251397,
+          "wgs84_lon": 73.09971192513768
         },
         "occupancy_observed_date": "2025-06-11",
         "occupancy_state": "active or near-active fire-unit site",
         "place_match_band": "auto",
+        "place_match_distance_m": 0.7765524825918252,
         "place_match_via": "toponym",
         "resolved_from": [
           {
@@ -26345,14 +26354,22 @@
       },
       "id": "site_rawalpindi",
       "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District, Punjab, Pakistan",
+        "geocode_candidates": [
+          {
+            "confidence": 1.0,
+            "label": null,
+            "lat": 33.61638816251397,
+            "lon": 73.09971192513768,
+            "source": "coord-parse"
+          }
+        ],
+        "precision_class": "pad",
+        "proposed_alias": null,
         "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84), ~1.5 km NE of the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District, Punjab, Pakistan",
         "resolved_place_ref": "pl_nurkhan",
-        "surface_format": "relative",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "surface_format": "MGRS",
+        "wgs84_lat": 33.61638816251397,
+        "wgs84_lon": 73.09971192513768
       },
       "materiality": {
         "chokepoint_count": 0,

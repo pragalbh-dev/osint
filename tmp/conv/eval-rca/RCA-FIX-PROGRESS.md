@@ -1,5 +1,30 @@
 # RCA-fix — progress hub (the whole eval-RCA fixing effort)
 
+## ⚠️ REMAINING TO SUBMISSION (2026-07-20) — read this first
+
+Phase 4 is essentially done (11 commits, suite 762✓, the relocation beat verified end-to-end).
+What is left is **packaging and paperwork**, not pipeline work:
+
+| # | Item | Why it matters | Blocked on |
+|---|---|---|---|
+| 1 | **SHIP — production packaging** | Already specified in `artifacts/plan/00-master-plan.md:173` (multi-stage image baking config+corpus+seed-logs+SPA, real `make` targets, GHCR+EC2, rollback). | frontend final + QA (image bakes the SPA build) |
+| 2 | **README (does NOT exist)** | **Submission-blocking.** No README.md at repo root — reviewers have zero run instructions, and the deliverable is a runnable app they run **both** ways (prebuilt GHCR image **and** `git clone && make run`). **Write after SHIP, then VERIFY by running both paths cold** — never document intended commands. | SHIP |
+| 3 | **Design note** (graded deliverable) | Two versions to reconcile: the user's own, and `artifacts/design-note.md` (agent-written, ~1,960 words, **untracked/uncommitted** — backed up in scratchpad). Fact-check every claim against the current system. | user comparison |
+| 4 | **Reviewer live-demo ingest** | The ingest API's **keyless bundle path** (`api/routes/ingest.py:5-6`, "the reviewer / public-demo default") lets a reviewer fire the relocation alert from the UI with no key, no LLM, no network. Hold the two 2025 Rahwali docs out of the seed, ship their bundles, document the click. Strongest demo moment *and* the safest. | README |
+| 5 | **QA (2 passes)** | `tmp/qa/QA-PLAN-frontend.md` (corrected 2026-07-20 — its old premise "no backend routes exist / live mode is dead code" was false and would have skipped the whole integration). Pass A demo, Pass B live. Sanity-gate on `GET /view` first. | design-coherence fixes |
+| 6 | **Ledger reconciliation** | **D-P4.1…D-P4.14 are in NO ledger** (`grep -c D-P4` = 0 in both `RCA-FIX-DECISIONS.md` and `DECISIONS.md`); `artifacts/plan/PROGRESS.md` shows 6 merged sessions as `in-review` and EVAL as `not-started`; Phase-4 disclosures not folded into `artifacts/md/16-design-note-disclosures.md`; supersede/stale contract not in `API-to-FRONTEND-contract-log.md`. | — |
+
+**Open defects under investigation (2026-07-20):** MGRS surface-format precedence — `site_rawalpindi`
+has **no coordinates** (grid reference at the front of the string loses to the trailing "~1.5 km NE of…"
+prose → classified `relative`), so **the relocation's ORIGIN cannot be plotted** while Rahwali plots fine.
+PR #36 claimed this fix and did not deliver it. · Sustainment nodes (`interceptor_stockpile`,
+`techdata_authority`) — ratified D-2.7, claimed code-complete, **zero produced across 499 claims**;
+decision pending: fix vs drop-and-disclose.
+
+**Standing lesson:** every time we trusted a board or a commit title instead of probing the running
+system, it was wrong (the supersede tests, the frontend "armed" badge, the MGRS fix). Verify, then report.
+
+
 Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.md`. Decisions:
 `RCA-FIX-DECISIONS.md`. Master board points here (`artifacts/plan/PROGRESS.md`).
 
