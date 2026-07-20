@@ -1,18 +1,19 @@
-# Chanakya OSINT — instructor's guide
+# Chanakya OSINT
 
-Chanakya is a working demo of an AI-assisted open-source-intelligence (OSINT) analysis
-and monitoring system, built for the Sarvam AI · Chanakya (defence / strategic-sector)
-take-home. It maps one adversary air-defence capability (Pakistan's HQ-9/P, sourced
-entirely from open documents) into an auditable graph — who operates what, who supplies
-it, and how confident we are in each fact — and lets an analyst ask cited, multi-hop
-questions of it.
+An AI-assisted open-source-intelligence (OSINT) analysis and monitoring system. It maps
+one adversary air-defence capability (Pakistan's HQ-9/P, sourced entirely from open
+documents) into an auditable graph — who operates what, who supplies it, and how
+confident we are in each fact — and lets an analyst ask cited, multi-hop questions of it.
 
-This document is everything you need to **run it and evaluate it**. It does not explain
-the design (see `artifacts/design-note.md` for that); it explains what to click.
+Its governing rule: **where the evidence is absent, ambiguous, or contradictory, the
+system says so and names what is missing, rather than filling the gap with a guess.**
 
-**Live demo (no setup):** [compliantly-coky-candace.ngrok-free.dev/?mode=live](https://compliantly-coky-candace.ngrok-free.dev/?mode=live)
-— a running instance, reset to the same clean starting state described below. Everything
-in §1–§3 is for running your own copy; skip straight to §4 if you're just using this one.
+This README covers running the app and finding your way around it. For *why* it's built
+this way, see `artifacts/design-note.md`.
+
+**Live demo:** [compliantly-coky-candace.ngrok-free.dev/?mode=live](https://compliantly-coky-candace.ngrok-free.dev/?mode=live)
+— a hosted instance, in the same clean starting state described below. Sections 1–3 are
+about running your own copy; skip to §4 if you're using the hosted one.
 
 ---
 
@@ -29,7 +30,7 @@ doesn't, once it's up.)
 ```bash
 git clone https://github.com/pragalbh-dev/osint && cd osint
 make run                      # builds the image, starts it, waits until it's ready
-# → open http://127.0.0.1:8000
+# → open http://127.0.0.1:8000/?mode=live      (the ?mode=live matters — see §2)
 ```
 
 **Path B — skip the build, just pull the published image:**
@@ -64,8 +65,7 @@ The app has two modes. Without the `?mode=live` part in the address bar, it open
 useful for a presenter's rehearsed demo, but every button in it does the same
 pre-scripted thing regardless of what you click, which is confusing if you didn't expect
 it. **Live mode is the real, running system** — every panel reflects what's actually in
-the graph right now, responds to what you do, and is what should be evaluated. Bookmark
-or share the `?mode=live` link.
+the graph right now and responds to what you do. Bookmark or share the `?mode=live` link.
 
 ---
 
@@ -74,7 +74,7 @@ or share the `?mode=live` link.
 **Keyless (the default, nothing to configure) already runs the full worked demo** —
 graph, map, citations, and one scripted multi-hop question all work with no API key,
 because that question's answer was pre-computed once and is replayed deterministically.
-This is intentional: the graded demo must run the same way every time.
+This is intentional: the demo must run the same way every time.
 
 **Keyed** additionally unlocks:
 - **Free-form questions** — anything typed into the ask bar beyond the one pre-computed
@@ -82,21 +82,17 @@ This is intentional: the graded demo must run the same way every time.
   "I need a key for that" message).
 - **Extracting a brand-new document live** — pasting in a document's text and having the
   system read it and add it to the graph in real time, instead of only ingesting the
-  pre-packaged documents described in §4.
+  pre-packaged documents described in §5.
 
-To enable it, put one line in a `.env` file at the repo root before `make run` (or pass
-`--env-file .env` to `docker run` for Path B):
+To enable them, supply an Anthropic API key: put one line in a `.env` file at the repo
+root before `make run` (or pass `--env-file .env` to `docker run` for Path B):
 
 ```
-ANTHROPIC_API_KEY=<the key>
+ANTHROPIC_API_KEY=<key>
 ```
 
-**Give instructors only `ANTHROPIC_API_KEY` — do not also hand out a Gemini key.** A
-second, optional key (`GEMINI_API_KEY`) exists in the codebase for the *maintainer's*
-offline re-extraction workflow only; it has no purpose in the reviewer path, and setting
-it currently makes the live-document-extraction feature above fail (a real packaging gap,
-filed for a fix, not something to work around by hand). Anthropic-only is the tested,
-working configuration — verified by running the keyed path twice end-to-end.
+That is the only key the app needs — nothing else goes in that file. It is read at
+startup only, never written to the image or logged.
 
 Without any key, nothing breaks — free-form questions get an honest refusal explaining
 that a key is needed, never a guess.
@@ -123,7 +119,9 @@ Four regions, all visible at once (no tabs, no modals except one detail overlay)
 **On first open**, the right panel suggests three starting points — click any of them:
 - *"Trace the long-range SAM battery now based at Rahwali back to the organisation that
   builds its missile system, and name the fire-control chokepoint."* — the flagship
-  question. Works immediately, no key needed.
+  question. **On a fresh start this deliberately refuses**, because the evidence it needs
+  hasn't been added yet — that refusal is the point, and §5 walks you through making it
+  answerable. No key needed either way.
 - *"Is this node confirmed or probable — and on what evidence?"* — click any pin on the
   map to see this answered for that specific fact.
 - *"What do we not know here?"* — the system naming its own gaps, rather than guessing
@@ -170,14 +168,16 @@ decision on. Clicking one opens it in the right panel as one of three question t
 - **"A tripwire fired — is it real?"** — you triage a fired alert (like the relocation in
   §5): accept it, dismiss it as noise, or hold it for a second look.
 
-**In live mode, this is real** — a decision is sent to the server, recorded, and the
-graph is rebuilt around it before the panel updates; it isn't a UI toggle that forgets
-itself. **One exception, worth knowing before a reviewer relies on it:** deciding
-*"Same system, or two?"* does not currently persist — the two records are not actually
-linked, and the same pair can resurface as a question later in the session. The other two
-decision types work as expected. Like everything else that isn't part of the frozen
-starting corpus, review decisions live only in the running container and reset on
-restart — there is no database to inspect afterward.
+**In live mode these are real decisions** — each one is sent to the server, recorded, and
+the graph rebuilt around it before the panel updates; it isn't a UI toggle that forgets
+itself.
+
+**One known limitation:** *"Same system, or two?"* does not currently stick. The decision
+is recorded, but the two records aren't actually linked, so the same pair can resurface
+later in the session. The other two decision types behave as described.
+
+Review decisions live only in the running container and reset on restart, like everything
+else you add during a session.
 
 ---
 
@@ -190,8 +190,8 @@ restart — there is no database to inspect afterward.
   `ANTHROPIC_API_KEY` set; the one flagship question above always works regardless.
 - **A restart resets everything** — by design. Nothing you do in the app (ingesting a
   document, making a review decision) is written outside the container, so
-  `docker restart chanakya` is always a guaranteed clean reset back to the graded
-  starting state.
+  `docker restart chanakya` is always a guaranteed clean reset back to the starting
+  state.
 - **The app looks like a fixed slideshow that ignores my clicks** — you're missing
   `?mode=live` in the URL; see §2.
 
