@@ -214,6 +214,12 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
                     source=a,
                     target=b,
                     merge_confidence=partition.merge_confidence.get(key),
+                    # The claims in which a source asserts the identity — the evidence *behind* the
+                    # ``source_asserted`` term of the breakdown beside it. G4 still exempts this edge
+                    # (it may legitimately have none: most candidates are scored on name + neighbourhood
+                    # alone), but where a source did speak, the analyst must be able to read it — and
+                    # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
+                    claim_ids=list(partition.identity_claims.get(key, [])),
                     attrs={"merge_band": "candidate", "breakdown": partition.merge_breakdown.get(key, {})},
                 )
             )

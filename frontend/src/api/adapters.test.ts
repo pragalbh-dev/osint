@@ -16,6 +16,7 @@ import {
   hopLine,
   isAreaPin,
   mergeDiffersOn,
+  mergeDifferences,
   orderReviewQueue,
   humanizeEdge,
   humanizeObservableId,
@@ -1418,6 +1419,101 @@ describe('mergeDiffersOn', () => {
   it('returns nothing when the two records genuinely do not conflict', () => {
     const same = { id: 'a', type: 'variant', attrs: { family: 'HQ-16' } }
     expect(mergeDiffersOn(same, { ...same, id: 'b' }, { attribute: 0.9, relational: 0.5 })).toEqual([])
+  })
+})
+
+describe('T10 — the merge card is traceable to its sources', () => {
+  // Same shape as the review-queue view above, but the radar pair now has a source-asserted identity
+  // (with the claims that assert it on the candidate edge, as view/pipeline._resolution_edges writes
+  // them) and the basing pair has none. The contrast IS the test.
+  const TVIEW: GraphView = {
+    nodes: [
+      { id: 'ht233', type: 'component', name: 'HT-233', status: 'confirmed', claim_ids: ['c3', 'c4'], attrs: { role: 'engagement radar' } },
+      { id: 'type120', type: 'component', name: 'Type 120 / YLC series', status: 'probable', claim_ids: ['c5', 'c6'], attrs: { role: 'acquisition radar' } },
+      { id: 'karachi_adc', type: 'basing_site', name: 'Army Air Defence Centre, Karachi', status: 'probable', claim_ids: ['c1'] },
+      { id: 'sargodha', type: 'basing_site', name: 'Sargodha', status: 'probable', claim_ids: ['c2'] },
+    ],
+    edges: [
+      {
+        id: 'same-as:ht233|type120',
+        type: 'same-as',
+        source: 'ht233',
+        target: 'type120',
+        merge_confidence: 0.37,
+        claim_ids: ['d15-globaltimes-aligned-l17-5'],
+        attrs: { breakdown: { attribute: 0.47, relational: 0.07, temporal_consistency: 1, source_asserted: 0.7 } },
+      },
+      {
+        id: 'same-as:karachi|sargodha',
+        type: 'same-as',
+        source: 'karachi_adc',
+        target: 'sargodha',
+        merge_confidence: 0.52,
+        attrs: { breakdown: { attribute: 0.67, relational: 0.5, temporal_consistency: 1, source_asserted: 0 } },
+      },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+  const queue = viewToReviewQueue(TVIEW)
+  const cited = queue.find((i) => i.subject === 'same-as:ht233|type120')!
+  const uncited = queue.find((i) => i.subject === 'same-as:karachi|sargodha')!
+
+  it('gives the source-asserted signal — and ONLY it — an evidence handle', () => {
+    const rows = cited.context.merge!.matchedOn
+    const asserted = rows.find((r) => r.key === 'source_asserted')!
+    // the candidate edge id is the handle: GET /evidence/{id} serves exactly its identity claims
+    expect(asserted.evidenceId).toBe('same-as:ht233|type120')
+    expect(asserted.evidenceCount).toBe(1)
+    // every other signal is the resolver's own arithmetic over the two records — nothing to open
+    expect(rows.filter((r) => r.key !== 'source_asserted').every((r) => r.evidenceId === undefined)).toBe(true)
+  })
+
+  it('offers NO handle when no source asserted the identity — never a link into an empty drawer', () => {
+    expect(uncited.context.merge!.matchedOn.every((r) => r.evidenceId === undefined)).toBe(true)
+    // and the absence is stated as the case AGAINST instead
+    expect(uncited.context.merge!.differsOn).toContain('No source states they are the same.')
+  })
+
+  it('makes each record openable, with its claim count as the handle', () => {
+    const m = cited.context.merge!
+    expect(m.left.evidenceId).toBe('ht233')
+    expect(m.left.claimCount).toBe(2)
+    expect(m.right.evidenceId).toBe('type120')
+  })
+
+  it('attributes a differs-on line read off the records to those records', () => {
+    const role = cited.context.merge!.differs.find((d) => d.text.includes('engagement radar'))!
+    expect(role.text).toContain('engagement radar')
+    expect(role.sides).toEqual(['left', 'right'])
+    expect(role.computed).toBeUndefined() // a stated value is not a computation
+  })
+
+  it('marks a computed line as computed rather than dressing it as a citation', () => {
+    const absent = uncited.context.merge!.differs.find((d) => d.text === 'No source states they are the same.')!
+    expect(absent.sides).toEqual([])
+    expect(absent.computed).toContain('resolver')
+  })
+
+  it('keeps differsOn as the plain-text projection of differs', () => {
+    expect(cited.context.merge!.differsOn).toEqual(cited.context.merge!.differs.map((d) => d.text))
+  })
+})
+
+describe('mergeDifferences — provenance per line', () => {
+  it('says a coordinate distance is arithmetic over the two records, not a quote', () => {
+    const left = { id: 'a', type: 'basing_site', location: { wgs84_lat: 24.86, wgs84_lon: 67.01 } }
+    const right = { id: 'b', type: 'basing_site', location: { wgs84_lat: 32.05, wgs84_lon: 72.67 } }
+    const km = mergeDifferences(left, right, {}).find((d) => d.text.startsWith('Coordinates'))!
+    expect(km.computed).toContain('computed')
+  })
+
+  it('attributes a one-sided stated location to the side that states it', () => {
+    const left = { id: 'a', type: 'basing_site', location: { raw: 'Karachi' } }
+    const right = { id: 'b', type: 'basing_site' }
+    const loc = mergeDifferences(left, right, {}).find((d) => d.text.startsWith('Stated location'))!
+    expect(loc.sides).toEqual(['left'])
   })
 })
 
