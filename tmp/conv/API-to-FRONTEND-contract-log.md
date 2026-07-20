@@ -14,6 +14,23 @@ Newest entries on top.
 
 ---
 
+## 2026-07-20 · `GET /node/{id}` + `GET /evidence/{id}` now match ids containing `/` (fix, non-breaking)
+
+**What.** Both id params became `:path` converters (`backend/chanakya/api/routes/node.py`). Extraction
+mints descriptive ids that can contain a slash (`ent:basing_site:Air Defence Depot, ~12 km NNW of Kala
+Chitta / Attock Cantt area`); the frontend correctly sends `%2F`, but ASGI decodes the path before
+routing, so a single-segment param 404'd at the router and the live drawer rendered the
+insufficient-evidence error copy for a node that HAS provenance. No shape change; the OpenAPI paths are
+unchanged (`{id:path}` renders as `{id}` in the spec — `test_openapi_spec_exposes_the_frozen_contract`
+still pins the frozen path list).
+
+**Impact on frontend:** none required. `encodeURIComponent` in `api/client.ts` was already correct;
+the drawer now resolves for slash-bearing ids.
+
+**Refs:** `backend/chanakya/api/routes/node.py`;
+`backend/tests/api/test_node_evidence.py::test_routes_match_ids_containing_slashes`. Branch
+`feat/frontend-live` (live-QA remnant sweep).
+
 ## 2026-07-20 · new `GET /config/{section}` + optional `ConfigWrite.if_version` (additive, non-breaking)
 
 **Endpoints:** `GET /config/{section}` (new, read-only). `POST /config/{section}` unchanged except for

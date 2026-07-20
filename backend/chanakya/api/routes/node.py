@@ -22,7 +22,10 @@ from chanakya.schemas import NodeView, ProvenanceDrawer
 router = APIRouter()
 
 
-@router.get("/node/{node_id}", response_model=NodeView)
+# Both id params use the ``:path`` converter: extraction mints descriptive ids that can contain
+# ``/`` ("…Kala Chitta / Attock Cantt area"), and ASGI decodes %2F before routing — a plain
+# single-segment param would 404 at the router before the handler ever sees the id.
+@router.get("/node/{node_id:path}", response_model=NodeView)
 def get_node(node_id: str, state: AppState = Depends(get_state)) -> NodeView:
     for node in state.view().nodes:
         if node.id == node_id:
@@ -37,7 +40,7 @@ def get_node(node_id: str, state: AppState = Depends(get_state)) -> NodeView:
     )
 
 
-@router.get("/evidence/{element_id}", response_model=ProvenanceDrawer)
+@router.get("/evidence/{element_id:path}", response_model=ProvenanceDrawer)
 def get_evidence(element_id: str, state: AppState = Depends(get_state)) -> ProvenanceDrawer:
     element = find_assessed(state.view(), element_id)
     if element is None:

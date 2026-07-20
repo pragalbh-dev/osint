@@ -44,6 +44,20 @@ def test_evidence_drawer_independence_clusters_and_claim_to_docref(hero_client) 
         assert atom.kind in {"observation", "inference", "retraction"}
 
 
+def test_routes_match_ids_containing_slashes(hero_client) -> None:
+    # Extraction mints descriptive ids that can contain "/" ("…Kala Chitta / Attock Cantt area").
+    # %2F is decoded before routing, so a single-segment path param would 404 at the ROUTER —
+    # the contract is that the handler sees the full id and answers, here with its structured 404.
+    slash_id = "ent:basing_site:somewhere / nowhere area"
+    r = hero_client.get(f"/evidence/{slash_id}")
+    assert r.status_code == 404
+    assert r.json()["detail"]["id"] == slash_id
+
+    r = hero_client.get(f"/node/{slash_id}")
+    assert r.status_code == 404
+    assert r.json()["detail"]["id"] == slash_id
+
+
 def test_evidence_works_for_edges_too(hero_client) -> None:
     # Edges are assessed elements as well — the drawer resolves them by id.
     edge_id = "e:comp_ht233:equips:var_hq9p"
