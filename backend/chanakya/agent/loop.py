@@ -145,9 +145,9 @@ def run_react_loop(
 
 HERO_SUB_QUESTIONS = [
     "Which deployed HQ-9/P battery are we tracing, and where is it based?",
-    "Which unit operates it, and which variant was inducted into that unit?",
-    "Which component is the fire-control chokepoint on that variant, and who manufactures it?",
-    "Is that supplier a confirmed sole-source, or an unresolved Known Gap?",
+    "Which unit operates it, and which variant does that unit field?",
+    "Who builds that system — and which component is the fire-control chokepoint on it?",
+    "Is the chokepoint's own supplier a confirmed sole-source, or an unresolved Known Gap?",
 ]
 
 
@@ -228,6 +228,78 @@ def _chokepoint_rank(ctx: ToolContext, match: dict[str, Any]) -> tuple[float, in
     return (-(conf or 0.0), -span_len, node_id)
 
 
+def assertable_statuses(ctx: ToolContext) -> tuple[str, ...]:
+    """The assessed statuses an answer may **rest a link on**, strongest first — from config, never a literal.
+
+    ``credibility.assertable_status`` (see ``config/credibility.yaml``). Empty/absent ⇒ an empty tuple,
+    which fails **closed**: nothing is assertable on status grounds, so the trace degrades to the honest
+    scoped refusal rather than silently reverting to "walk whatever is there".
+    """
+    declared = getattr(ctx.config.credibility, "assertable_status", None) or []
+    return tuple(str(s) for s in declared)
+
+
+@dataclass(frozen=True)
+class SupplierLink:
+    """One candidate "X is made/supplied by Y" link, **carrying the status of the edge that claims it**.
+
+    The whole point of the type: the old path took the first neighbour of the right *node* type and threw
+    the *edge* away, so a link the system itself had already rated ``insufficient`` was walked as though it
+    were a finding (T3b §5). Status travels with the candidate from here on.
+    """
+
+    node_id: str
+    edge_id: str
+    edge_type: str
+    status: str | None
+    confidence: float | None
+    claim_ids: tuple[str, ...]
+
+    def rank(self, band: tuple[str, ...]) -> tuple[int, float, str]:
+        """Sort key, best first: position in the configured band → higher confidence → id (byte-stable)."""
+        try:
+            tier = band.index(self.status) if self.status is not None else len(band)
+        except ValueError:
+            tier = len(band)
+        return (tier, -(self.confidence or 0.0), self.node_id)
+
+
+def _supplier_links(
+    ctx: ToolContext, trace: AgentTrace, node_id: str, lane: str | None, want_type: str
+) -> list[SupplierLink]:
+    """Every ``want_type`` neighbour of ``node_id`` on ``lane`` — **with** the claiming edge's status.
+
+    Deliberately unfiltered. Filtering here would be the wrong fix for the defect it repairs: a supplier
+    attribution that is dropped at the gather step is indistinguishable, in the answer, from one that was
+    never published — which is precisely how a planted false attribution wins. The corpus's
+    ``d23_cpmiec_false_attribution`` must be *seen, rated and named*, not quietly skipped. The partition
+    into carried vs weighed-and-not-carried happens downstream, on the record, and both halves are printed.
+    """
+    params: dict[str, Any] = {"node_id": node_id}
+    if lane:
+        params["edge_types"] = [lane]
+    result = _call(ctx, trace, "graph_neighbors", params)
+    links: list[SupplierLink] = []
+    for nb in result.get("neighbours", []):
+        neighbour = ctx.nodes_by_id.get(nb.get("neighbour_id", ""))
+        if neighbour is None or neighbour.type != want_type:
+            continue
+        edge = ctx.edges_by_id.get(nb.get("edge_id", ""))
+        conf = edge.confidence.assertion_confidence if (edge is not None and edge.confidence) else None
+        links.append(
+            SupplierLink(
+                node_id=str(nb["neighbour_id"]),
+                edge_id=str(nb.get("edge_id", "")),
+                edge_type=str(nb.get("edge_type", lane or "")),
+                status=nb.get("status"),
+                confidence=conf,
+                claim_ids=tuple(nb.get("claim_ids", []) or []),
+            )
+        )
+    band = assertable_statuses(ctx)
+    return sorted(links, key=lambda link: link.rank(band))
+
+
 def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens-hq9p-pk") -> AgentTrace:
     """The scripted ``link → gather → query_graph → cite`` plan for the flagship trace — no LLM.
 
@@ -283,26 +355,42 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
         )
     comp_id = min(pool, key=lambda m: _chokepoint_rank(ctx, m))["node_id"]
 
-    # who makes it → the canonical Manufacturer→Component edge (supplies-component), derived from the
-    # ontology, NOT the literal 'manufactures' (Phase-1 tightened that to Manufacturer→Variant).
-    maker_edge = ctx.lane.canonical_edge("manufacturer", "component") if ctx.lane else None
-    makers = _call(
-        ctx, trace, "graph_neighbors",
-        {"node_id": comp_id, **({"edge_types": [maker_edge]} if maker_edge else {})},
-    )
-    mfr_id: str | None = None
-    for nb in makers.get("neighbours", []):
-        m = ctx.nodes_by_id.get(nb.get("neighbour_id", ""))
-        if m is not None and m.type == "manufacturer":
-            mfr_id = nb["neighbour_id"]
-            break
+    # Who makes it. Two lanes, both derived from the ontology, never a literal:
+    #   1. the chokepoint COMPONENT's own maker — the canonical Manufacturer→Component edge
+    #      (supplies-component; Phase-1 tightened 'manufactures' to Manufacturer→Variant);
+    #   2. failing that, the SYSTEM's origin maker — Manufacturer→Variant on the resolved variant.
+    #
+    # A candidate is carried only if the edge that claims it is inside the configured assertable band
+    # (credibility.assertable_status). This is the T3b §5 defect: the old code took the first
+    # manufacturer-typed neighbour with no regard for edge status, and so walked the corpus's planted
+    # `insufficient` CPMIEC attribution as if it were the answer. Everything gathered is kept on the trace
+    # either way — the rejected candidates are printed as "weighed and not carried", with their status and
+    # citation, so the trap is surfaced rather than hidden (see `_supplier_links`).
+    band = assertable_statuses(ctx)
+    comp_maker_edge = ctx.lane.canonical_edge("manufacturer", "component") if ctx.lane else None
+    component_links = _supplier_links(ctx, trace, comp_id, comp_maker_edge, "manufacturer")
+    carried = [link for link in component_links if link.status in band]
 
-    # find_paths: the flagship basing → origin chain. Trace to the origin MAKER when one resolved; when the
-    # maker is itself a Known Gap (no supplies-component edge in the view), still trace basing → the
-    # chokepoint COMPONENT — the chain the evidence does support — and report the missing supplier as the
-    # gap. Refusing outright would throw away a fully-sourced multi-hop answer to punish a known unknown.
+    origin_links: list[SupplierLink] = []
+    if not carried:
+        # Climb from the part to the system: "who supplies this radar" has no assertable answer, but
+        # "who builds the system it sits in" is a different — and here far better evidenced — assertion.
+        # This is not a substitute answer for the first question: the component-level supplier stays an
+        # open Known Gap and is reported as one. It is the next honest link in the same dependency chain.
+        origin_edge = ctx.lane.canonical_edge("manufacturer", "variant") if ctx.lane else None
+        origin_links = _supplier_links(ctx, trace, variant_id, origin_edge, "manufacturer")
+        carried = [link for link in origin_links if link.status in band]
+    mfr_id = carried[0].node_id if carried else None
+
+    # find_paths: the flagship basing → origin chain, walked on the lens's declared traversal lanes (a
+    # subject is anchors + a traversal pattern). When no maker link clears the band, still trace basing →
+    # the chokepoint COMPONENT — the chain the evidence does support — and report the missing supplier as
+    # the gap. Refusing outright would throw away a fully-sourced multi-hop answer to punish a known unknown.
     dst = mfr_id if mfr_id is not None else comp_id
-    _call(ctx, trace, "graph_find_paths", {"src": site, "dst": dst})
+    path_params: dict[str, Any] = {"src": site, "dst": dst}
+    if lens is not None and lens.trace_lanes:
+        path_params["edge_whitelist"] = list(lens.trace_lanes)
+    _call(ctx, trace, "graph_find_paths", path_params)
     path = trace.last("find_paths")
     if path is not None and path.result.get("hops"):
         for hop in path.result["hops"]:
@@ -328,14 +416,27 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
             )
             missing = missing or [f"path:{site}->{mfr_id}"]
         else:
-            # No maker edge AND no basing→component path either — name both, not just the maker gap.
-            edge_name = maker_edge or "manufacturer→component"
+            # No assertable maker link AND no basing→component path either — name both, not just the
+            # maker gap. When maker links WERE found but all fell below the assertable band, say so in
+            # those words: "none was found" and "one was found and is too weak to carry" are different
+            # intelligence, and collapsing them would hide the very attribution the analyst must see.
+            edge_name = comp_maker_edge or "manufacturer→component"
             fp = trace.last("find_paths", ok_only=False)
             detail = (fp.result.get("error") if fp is not None else None) or "no path found"
+            weighed = [link for link in (*component_links, *origin_links) if link.status not in band]
+            if weighed:
+                rejected = ", ".join(
+                    f"{_name(ctx, link.node_id)} ({link.status})" for link in weighed
+                )
+                maker_clause = (
+                    f"every maker link on {cname} falls below the assertable band "
+                    f"({', '.join(band) or 'none declared'}): {rejected}"
+                )
+            else:
+                maker_clause = f"the rebuilt view has no {edge_name} edge to a manufacturer"
             reason = suff.get("reason") or (
-                f"Traced the fire-control chokepoint to {cname}, but the rebuilt view has no {edge_name} "
-                f"edge to a manufacturer, and no path connects the basing site {_name(ctx, site)} to "
-                f"{cname} either: {detail}."
+                f"Traced the fire-control chokepoint to {cname}, but {maker_clause}, and no path connects "
+                f"the basing site {_name(ctx, site)} to {cname} either: {detail}."
             )
             missing = missing or [f"{edge_name}:{comp_id}", f"path:{site}->{comp_id}"]
         return _refuse(trace, missing, reason, next_due=suff.get("next_coverage_due"), known_gap=suff.get("known_gap"))

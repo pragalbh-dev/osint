@@ -81,6 +81,50 @@ def _hop_clause(ctx: ToolContext, hop: dict) -> str:
 
 # ── per-shape builders (return None when the shape isn't present / is empty) ────────────────────
 
+def _weighed_not_carried(trace: AgentTrace, ctx: ToolContext, walked: set[str]) -> list[tuple[str, list[str]]]:
+    """Links the trace gathered, rated **below the assertable band**, and did not rest the answer on.
+
+    These are printed, never dropped. A supplier attribution that is silently filtered out is
+    indistinguishable — to the analyst reading the answer — from one that was never published, which is
+    exactly how a planted false attribution wins (the corpus's ``d23`` CPMIEC conflation, refuted by
+    ``d22``). So the honest handling is: traverse it, rate it, name it, cite it, and say it is not carried.
+
+    Reads the *recorded* ``neighbors`` results, so it is generic over any trace that expanded a
+    neighbourhood — nothing here knows about a particular node, edge or document. The band comes from
+    ``credibility.assertable_status``; with no band declared nothing is reported as rejected (there is no
+    bar to have failed). Edges already walked as hops are skipped: a hop states its own status inline.
+    """
+    band = set(getattr(ctx.config.credibility, "assertable_status", None) or [])
+    if not band:
+        return []
+    out: list[tuple[str, list[str]]] = []
+    seen: set[str] = set()
+    for call in trace.all_of("neighbors"):
+        pivot = str(call.input.get("node_id") or call.result.get("node_id") or "")
+        for nb in call.result.get("neighbours", []):
+            edge_id = str(nb.get("edge_id", ""))
+            if not edge_id or edge_id in walked or edge_id in seen or nb.get("status") in band:
+                continue
+            cites = [c for c in nb.get("claim_ids", []) if c in ctx.claims]
+            if not cites:  # G4: a sentence without a resolvable claim behind it is never emitted
+                continue
+            seen.add(edge_id)
+            hop = {
+                "src": pivot,
+                "dst": nb["neighbour_id"],
+                "edge": nb["edge_type"],
+                "edge_id": edge_id,
+            }
+            out.append(
+                (
+                    f"Weighed and not carried: {_hop_clause(ctx, hop)} — {nb.get('status')}; below the "
+                    f"assertable band, so the assessment above does not rest on it",
+                    cites,
+                )
+            )
+    return out
+
+
 def _from_paths(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
     call = trace.last("find_paths")
     if call is None or not call.result.get("hops"):
@@ -119,6 +163,13 @@ def _from_paths(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
             )
         )
         built.citations.extend(c for c in refs if c not in built.citations)
+
+    # The rejected half of the same evidence. Appended AFTER the hops (and after the chokepoint line) so
+    # sentence index still aligns with hop index for the citation validator's per-hop support check.
+    walked = {str(h.get("edge_id", "")) for h in call.result["hops"]}
+    for sentence, cites in _weighed_not_carried(trace, ctx, walked):
+        built.sentences.append(_sentence(sentence, cites))
+        built.citations.extend(c for c in cites if c not in built.citations)
     return built
 
 

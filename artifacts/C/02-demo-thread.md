@@ -15,6 +15,27 @@ Hops: `based-at` (site, confirmed by imagery) → `inducted-into` (unit) → `im
 → `supplies-component` / `manufactures` (radar/missile supplier) → chokepoint (structural dependency).
 Every hop cited to its exact source; observed activity separated from inferred.
 
+> **Amended 2026-07-20 (QA T9) — what the built graph actually walks.** The shape above is the design
+> intent; this is the thread as it runs on the frozen corpus, and it is what the demo shows. The exact
+> wording lives in `config/subjects.yaml → lens-hq9p-pk → target_queries[0]` (the SPA POSTs it verbatim):
+>
+> **"Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its
+> missile system, and name the fire-control chokepoint."**
+>
+> `Rahwali airfield —based-at→ the PAF HQ-9B fire unit —equips→ HQ-9/P —manufactures→ CASIC` — three
+> hops, each `probable`, each cited; then the chokepoint (**HT-233**, `candidate`) named with its own
+> supplier still an open Known Gap, and the corpus's planted CPMIEC attribution printed as **weighed and
+> not carried**. Two departures from the intent: the ORBAT hop runs on `equips` rather than
+> `inducted-into` (every `inducted-into` edge scores `insufficient` — the induction template's
+> `official_announcement` slot does not close), and the terminus is the **origin maker of the system**
+> rather than the maker of the chokepoint part, because no component-level supplier link on this corpus
+> clears the assertable band. Rationale, rejected alternatives and the verbatim answer:
+> `tmp/conv/T9-hero-query.md`; ledger entry in `DECISIONS.md → QA T9`.
+>
+> The thread is **staged**: the two 2025 Rahwali passes are withheld from the boot seed, so the same
+> question returns an honest refusal before they are ingested and the full cited chain after — ask →
+> refuse → ingest → alert → ask again (`deploy/README.md`).
+
 ### The demo flexes (each maps to a graded quality and a planted scenario)
 Scenario numbers refer to `../md/05-data-scoping-C.md` §5.
 

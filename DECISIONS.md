@@ -1172,3 +1172,72 @@ not just the two endpoints).
 the now-correct copy reads "Pakistan Air Force moved from PAF Base Nur Khan to Rahwali airfield" —
 faithful to the graph, wrong about the world. Filed for DATA/RESOLVE in
 `tmp/conv/T6-to-DATA-unit-hq9b-named-pakistan-air-force.md`.
+
+---
+
+## QA T9 — the flagship worked query (branch `qa/t9-hero-query`, 2026-07-20)
+
+Triggered by T3b §5: fixing graph fragmentation re-shaped the flagship chain (3 hops → 2) and left it
+terminating on the corpus's planted misinformation (`d23`, "CPMIEC manufactures the HT-233"). The system
+rated that edge `insufficient` and closed on a refusal — correct behaviour, but it meant *the one worked
+query no longer answered the question it poses*. Full enumeration of the alternatives, the chosen thread
+and the verbatim answer in `tmp/conv/T9-hero-query.md`.
+
+- **The flagship terminates on the ORIGIN maker, not on the chokepoint's own supplier.** *Principle:
+  where evidence is absent or contradictory the system says so — and it must still deliver the
+  best-evidenced answer it does hold, rather than punishing a known unknown by refusing outright.* The
+  chain is now `Rahwali airfield → the PAF HQ-9B fire unit → HQ-9/P → CASIC`, three hops, every one of
+  them `probable` and cited. HT-233's *own* component-level supplier stays an open Known Gap and is
+  stated as one in the same answer. Rejected: (i) keeping the CPMIEC terminus (a flagship that ends on
+  misinformation and a refusal); (ii) the 2-hop `observed-at` shortcut to CASIC (shorter, and it skips
+  the formation entirely, so it cannot answer "which unit operates it"); (iii) the TEL-chassis → Taian
+  chain (4 hops but the same failure mode — a terminal `insufficient` supplier link).
+
+- **A supplier link is carried only if the edge that claims it clears a configured band — and every
+  rejected link is PRINTED.** *Principle: nothing is asserted without provenance, and absence of
+  evidence is never evidence of absence.* The real defect under T3b's finding was that
+  `run_fixed_hero_path` took the first manufacturer-typed *neighbour* and discarded the *edge*, so a
+  link the pipeline had already scored `insufficient` was walked as if it were a finding. Fixed by
+  keeping the status with the candidate (`SupplierLink`) and gating on
+  `credibility.assertable_status` — a status list, same shape and doctrine as the existing
+  `supersede_floor.newer_status_allow`, and it **fails closed** when undeclared. Rejected: filtering
+  weak links out at the gather step — that would make a planted false attribution indistinguishable, in
+  the answer, from one that was never published, which is the opposite of the non-negotiable. The
+  CPMIEC link is still gathered, still rated, and now renders as an explicit *"Weighed and not
+  carried"* line with its own citation. The trap moved off the terminal position; it did not leave.
+
+- **A subject lens declares its traversal lanes, not just its anchors.** *Principle: config-driven, not
+  hardcoded; a subject is a query-time lens = anchor entities + a traversal/scoring pattern.* The
+  ORBAT→origin lane set is now `subjects.yaml → trace_lanes`, handed to `find_paths` as its
+  `edge_whitelist`; omitted, it falls back to the ontology's full traversable set. This is what keeps
+  the trace on basing/induction/supply lanes instead of hopping the *sighting* lane (`observed-at`)
+  straight past the unit. Rejected: an edge list literal in `agent/loop.py`.
+
+- **The hop assertion stays a FLOOR (`MIN_HOPS`), now 3, with the full before/after in the test file.**
+  *Principle: pinning an exact shape turns a data improvement into a red test.* T3b relaxed it from a
+  hard 3 to a floor of 2 rather than silently re-pinning; T9 raises the floor and records the third
+  entry in the same history block. Two new acceptance tests replace the old terminus assertion: the
+  chain must end on a link inside the configured assertable band (status read from the view, band from
+  config — no node or document named), and the below-band link must still appear, rated and cited.
+
+**Left open, deliberately (not silently):**
+- **The flagship refuses on a cold boot** — `site_rahwali` only exists once the two withheld 2025
+  Rahwali passes are ingested. This is the designed choreography (`deploy/README.md` §"the beat":
+  ask → refuse → ingest → alert → ask again) and it is a genuine adaptation demo, but it does mean the
+  SPA's first affordance returns a refusal until the beat is run.
+- **The old query wording is retained as `target_queries[1]`** so the previous phrasing still routes to
+  the same deterministic path. Its old *value* — ending on a well-reasoned refusal — is not lost: it is
+  now inside the flagship answer as the "weighed and not carried" line plus the HT-233 insufficiency
+  close, which is strictly more informative than a dead end.
+- **`rebuild()` emits the same edge id on several rows, each holding a different slice of the claims,
+  and only one row is ever scored.** Found while asking why every `inducted-into` edge is `insufficient`:
+  `e:var_hq9p:inducted-into:unit_paad` exists **four times**, with the ISPR official announcement stranded
+  on an unassessed row while the row that *is* assessed carries only imagery and the planted d23 — hence
+  `missing: official_announcement`. 7 ids duplicated, 9 surplus rows, 0 duplicate node ids. Very likely
+  also why nothing on the corpus reaches `confirmed`, and it is why the ORBAT hop here runs on `equips`
+  rather than `inducted-into`. **Not self-fixed** — SCORE/RESOLVE's, and repairing it changes the graph
+  shape everywhere. Filed in `tmp/conv/T9-to-DATA-graph-gaps.md`; no edge in the chosen chain is affected.
+
+**Design-doc tails to enrich:** `C/02-demo-thread.md` (the worked thread — updated in this branch) and
+`spine/09-retrieval-and-tools.md` (the tool surface should state that a trace's terminus is
+status-gated, and that rejected candidates are reported rather than filtered).

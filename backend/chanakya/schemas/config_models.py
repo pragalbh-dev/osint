@@ -102,6 +102,14 @@ class CredibilityConfig(ConfigModel):
     # left null — the newest available claim date is the fallback (see ``chanakya.timeref``). A *past*
     # ``as_of`` also rewinds the graph: rebuild hides claims not yet available then (point-in-time view).
     as_of: str | None = None
+    # Which assessed statuses an ANSWER may rest a link on — walk as the spine of a trace and name its
+    # far end as a finding (ASK; spine/09). Strongest first; ties break in this order. Same shape and
+    # doctrine as ``supersede_floor.newer_status_allow``: a list of status names the machine emits, never
+    # a second copy of a threshold. **Not a filter** — a link outside the band is still traversed and is
+    # reported as *weighed and not carried*, with its status and its citation, because a suppressed
+    # low-credibility attribution is indistinguishable from one that was never seen. Empty ⇒ no band is
+    # declared, so ASK asserts nothing on status grounds (fails closed).
+    assertable_status: list[str] = []
 
 
 # ── resolution.yaml ────────────────────────────────────────────────────────────────────────────
@@ -275,6 +283,12 @@ class SubjectLens(ConfigModel):
     max_hops: int = 3
     materiality_filter: dict[str, Any] = {}  # e.g. {"min_chokepoint_count":1} or {} for no filter
     target_queries: list[str] = []
+    # The lens's TRAVERSAL PATTERN: the ordered lanes a subject trace may walk, handed to ``find_paths``
+    # as its ``edge_whitelist``. This is the other half of "a subject is a query-time lens" — anchors say
+    # where a trace starts, these say what counts as a step in it (e.g. an ORBAT→origin chain walks
+    # basing/induction/supply lanes, not the sighting lane). Empty ⇒ fall back to the ontology's full
+    # traversable set, so a lens that declares none still traces.
+    trace_lanes: list[str] = []
 
 
 class SubjectsConfig(ConfigModel):

@@ -138,7 +138,7 @@ export const GRAPH_EDGES: GraphEdgeDef[] = [
 // primary hero matcher is an exact match on that string; the "trace…chokepoint" keyword rule is only the
 // safety net. Change one, change the other.
 export const TARGET_QUERIES = {
-  hero: 'Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint.',
+  hero: 'Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its missile system, and name the fire-control chokepoint.',
   provenance: 'Is this node confirmed or probable — and on what evidence?',
   gaps: 'What do we not know here?',
 } as const
