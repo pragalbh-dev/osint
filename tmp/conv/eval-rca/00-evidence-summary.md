@@ -198,9 +198,13 @@ For each oracle node: view nodes of same type whose name/alias overlaps. >1 hit 
 - refusal: missing=['site_karachi'] next_coverage_due=None known_gap=None reason="The subject lens 'lens-hq9p-pk' has no basing_site anchor present in the rebuilt view (anchors ['unit_paad', 'site_karachi'] → unresolved ['site_karachi']); cannot anchor the basing→origin trace."
 
 ## RELOCATION OBSERVABLE
-- alerts fired: 0
-- based-at edges @2021 rewind: []
-- based-at edges @now: [('ent:unit:PAF/Army Air Defence Command HQ-9BE battery', 'site_rahwali', 'insufficient'), ('mfr_23rd_ri', 'ent:basing_site:Yongding Road', 'insufficient'), ('unit_hq9b', 'site_rahwali', 'probable'), ('unit_hq9b', 'site_rawalpindi', 'stale')]
+- staged ingest: ['d18_rahwali_pass1', 'd19_rahwali_confirm']
+- alerts fired: 1
+    - obs-basing-relocation subj=unit_hq9b before={'based-at': 'site_rawalpindi'} after={'based-at': 'site_rahwali'}
+      provenance before=['d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing'] after=['d18-rahwali-pass1-unit-hq9b-site-rahwali-basing', 'd19-rahwali-confirm-unit-hq9b-site-rahwali-basing']
+- alerts when the d20 spoof is the staged arrival instead: 0
+- based-at edges BEFORE the staged ingest: [('mfr_23rd_ri', 'ent:basing_site:Yongding Road', 'insufficient'), ('unit_hq9b', 'site_rawalpindi', 'insufficient')]
+- based-at edges AFTER: [('ent:unit:PAF/Army Air Defence Command HQ-9BE battery', 'site_rahwali', 'insufficient'), ('mfr_23rd_ri', 'ent:basing_site:Yongding Road', 'insufficient'), ('unit_hq9b', 'site_rahwali', 'probable'), ('unit_hq9b', 'site_rawalpindi', 'stale')]
 
 ## PLACES (resolved_place_ref present on any view node?)
 - resolved_place_refs seen in view: {'pl_karachi_ad': 1, 'pl_rahwali': 1, 'pl_nurkhan': 1}

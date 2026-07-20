@@ -10,7 +10,7 @@ VENV := $(BACKEND)/.venv
 VPY := $(VENV)/bin/python
 
 .DEFAULT_GOAL := help
-.PHONY: help install lint typecheck test check extract build ingest ask run
+.PHONY: help install lint typecheck test check extract build ingest ask run beat
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -42,6 +42,13 @@ build:  ## [SHIP] Rebuild the knowledge view from the logs + config
 
 ingest:  ## [SHIP] Ingest a document: make ingest DOC=path/to/doc
 	@echo "TODO (SHIP): make ingest DOC=$(DOC) — append → rebuild → observable-eval"
+
+# The relocation tripwire, driven the way the design always specified: by an ingest, not a scripted
+# reveal. Holds the 2025 Rahwali overhead passes out of the evidence log, rebuilds, ingests them,
+# rebuilds again, and evaluates the armed observables over that before/after pair. Keyless + offline;
+# STAGE overrides which documents arrive (e.g. `make beat STAGE="--stage d19_rahwali_confirm"`).
+beat:  ## Run the relocation tripwire off a staged live ingest (before → ingest → after → alert)
+	cd $(BACKEND) && CHANAKYA_ROOT=$(CURDIR) .venv/bin/python -m eval beat $(STAGE)
 
 ask:  ## [SHIP] Ask a cited multi-hop question: make ask Q="..."
 	@echo "TODO (SHIP): make ask Q=\"$(Q)\" — bounded ReAct agent"

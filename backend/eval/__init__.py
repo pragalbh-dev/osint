@@ -14,6 +14,7 @@ docs / pre-extracted claim bundles + ``config/*.yaml``.
 from __future__ import annotations
 
 from eval.harness import (
+    STAGED_RELOCATION_DOCS,
     ScenarioInputs,
     build_view,
     fire_relocation_observable,
@@ -21,9 +22,11 @@ from eval.harness import (
     load_scenario,
     rebuild_with_decisions,
     run_hero_query,
+    staged_ingest_views,
 )
 
 __all__ = [
+    "STAGED_RELOCATION_DOCS",
     "ScenarioInputs",
     "build_view",
     "fire_relocation_observable",
@@ -31,4 +34,5 @@ __all__ = [
     "load_scenario",
     "rebuild_with_decisions",
     "run_hero_query",
+    "staged_ingest_views",
 ]
