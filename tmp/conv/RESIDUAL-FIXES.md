@@ -9,7 +9,41 @@ it precisely rather than discover it live.
 
 ---
 
-## 1. 🟡 Mis-laned `equips` edge on hop 2 of the worked query
+## 1. 🟡 Mis-laned `equips` edge on hop 2 of the worked query — ✅ STAGE 1 DONE (diagnosed, not fixed)
+
+**Diagnosis (2026-07-20, QA-T7). `relane()` is not broken — it never saw a `unit → variant` fact.**
+The offending claim is `d06-spares-tender-l15-5`, and its own provenance says what happened:
+`_relane_reason: "'equips' reoriented (variant->?)"`. That reason string is emitted by the
+**partial-typing** branch of `_Emitter.relation()`, not by `relane()`. The model asserted
+*"LR-SAM system —equips→ Pakistan Air Force"*; at write time `_entity_types` (the types **this
+document** declared) knew `Long Range Surface-to-Air Missile (LR-SAM) system` = `variant`, but had
+nothing for the string `Pakistan Air Force`. With one endpoint untyped, the both-typed branch — the
+only one that may change the *label* — is skipped by design, and the partial branch fixes
+**orientation only**, keeping the as-stated predicate. `edge_direction` correctly flipped it so the
+variant sat in the `to` slot, which is how a `unit → variant` fact ended up wearing the `equips` label.
+
+`relane("equips", "unit", "variant")` returns `inducted-into` reversed, correctly, today. The gap is in
+the *producer's inputs*, not its logic: **the endpoint that makes this fact fully typed is only typed
+downstream, by RESOLVE at rebuild.** Note the near-miss — d06 *does* declare a `unit` entity, but for
+the string *"AIR HEADQUARTERS PROCUREMENT DIRECTORATE"*; the model reached for *"Pakistan Air Force"* in
+the triple. Had the two strings matched, the re-lane would have fired. So the fix is not "fix relane" but
+one of: (a) type relationship endpoints against the **entity registry + alias table** as well as the
+current document's own entities, or (b) re-lane **after** resolution, where both endpoint types exist.
+
+**Invariant test: none exists.** There is no re-lane analogue of
+`test_shipped_corpus_is_already_fully_normalized` — every re-lane test
+(`backend/tests/ingest/test_phase2_relane.py`, `test_edge_direction.py`) runs on synthetic input, and
+`ingest/renormalize.py` is scoped to five *location* fields and may not touch a predicate. So a
+logic-only fix would **not** turn a test red — but equally, nothing guards the frozen bundles against
+drifting from the current lane logic. That cuts both ways and is worth stating on the call.
+
+**Safe stage 2, if we ever want it:** `renormalize.py` is the precedent for editing frozen bundles
+**deterministically and offline** — no LLM, no network, additive only, dry-run by default. A re-lane pass
+in that mould would fix the label without a keyed re-record, i.e. **without putting the LR-SAM alias
+binding at risk at all.** It would have to reproduce the endpoint typing RESOLVE does, which is exactly
+the work the write-time path could not do. Still not worth doing before the deadline.
+
+### Original entry, for the record
 
 **What.** `e:unit_hq9b:equips:var_hq9p` — a `unit → variant` edge on the `equips` lane, but
 `config/ontology.yaml:106` declares `equips` as `component → variant`. The correct lane for a
@@ -103,7 +137,21 @@ nowhere to record it. Three-step fix + a scoped re-record documented in
 Note the source scopes control to the *radar*, while our edge is typed authority→system — recording
 it faithfully needs a component-scoped lane.
 
-## 5. 🟡 Supersede date ordering compares upper bounds as strings
+## 5. ✅ RESOLVED (2026-07-20) — Supersede ordering now compares intervals, not upper-bound strings
+
+`_latest_iso` is replaced by `_interval` + `_relation` (`backend/chanakya/view/supersede.py`). A target's
+time is now the **union interval** across its claims, and two targets are compared as intervals:
+disjoint-and-strictly-earlier → ordered pair; identical exact instants → contradiction; identical *vague*
+intervals → unorderable → `candidate_supersede` (the branch the string compare could never reach); any
+other overlap → contradiction. A missing *either* bound stays unorderable rather than guessed. Both named
+defects are now covered by tests that fail on the pre-fix module: a vague `"2025"` can no longer outrank a
+precise `2025-03-27`, and a late restatement of an old fact can no longer reverse the arrow (it widens the
+old fact into overlap → HITL). **The Rahwali beat is unchanged** — Rawalpindi (2021-10-09) and Rahwali
+(2025-01-01 … 2025-12-31) are disjoint, `site_rahwali supersedes site_rawalpindi` still promotes, the
+retired edge still reads *stale*, and `make beat` still fires with 3 claim ids. The garrison/field xfail
+(#6) is unaffected and stays xfailed.
+
+### Original entry, for the record
 
 `view/supersede.py` `_latest_iso` takes only the upper bound of a date interval and compares with
 string equality, and takes `max` over a target's claims. Two consequences: a vague `"2025"` can
@@ -125,30 +173,48 @@ described; it XPASSes when the derivation stamps `site_type`. Does not occur in 
 `freshness_class` is consumed for **edges only**. `interceptor_stockpile` and `techdata_authority`
 declare one as node types and would not decay. Moot while both are unpopulated.
 
-## 8. 🟡 The answer-key generator still contains the dropped sustainment items
+## 8. ✅ PARTLY RESOLVED (2026-07-20) — sustainment items removed from the spec; the key was NOT regenerated
 
-`tools/generate/scenarios/hq9p_primary.yaml` (lines ~57/59/80/99/456) still declares
-`sustain_spares` / `sustain_techdata` and the old flex. **Regenerating the answer key would
-reintroduce all four removed items.** Trap, not a live defect. Also stale: `artifacts/plan/sessions/EVAL.md:61`, `config/entities.yaml:49`.
+The two nodes, the two edges and the stale `single_source` flex are gone from
+`tools/generate/scenarios/hq9p_primary.yaml` (the flex is re-pointed onto d17, matching the key
+verbatim), and the stale prose in `artifacts/plan/sessions/EVAL.md` and `config/entities.yaml` is fixed.
+**The answer key was deliberately left alone**, because regenerating it is far more dangerous than the
+four items suggested: `generate.py` writes the key as a straight copy of the spec, and the spec has
+drifted from the hand-curated key in six further ways — the Phase-1 lane renames revert, `mfr_taian` /
+`comp_tel_chassis` and their edges vanish, the `deep_tier_confirmed` flex vanishes, d24/d25 vanish from
+the document registry, the whole `attribution_inference` block vanishes (`answer_key()` cannot emit it at
+all), and `adversary_denial_bypass` reverts. Full diff + the two ways out are in
+`tmp/conv/QA-T7-answer-key-generator-drift.md`, and a warning block now sits above `ground_truth:` in the
+spec. **Until DATA-C reconciles them: regenerate documents only and restore the key from git.**
 
-## 9. 🟡 Refusal body can print a Python list repr and a raw lens id
+## 9. ✅ RESOLVED (2026-07-20) — the refusal body now names entities, not Python objects
 
-`backend/chanakya/agent/loop.py:183` builds a string that can render `['unit_paad','site_karachi']`
-and `lens-hq9p-pk` into analyst-facing text. **Not currently reachable** — the new worked query
-resolves — but it resurfaces on any lens with a missing anchor. Fix: render unresolved anchors as
-node names, comma-joined; drop or humanise the lens id.
+The "lens has no basing site" refusal in `agent/loop.py` renders unresolved anchors through a new
+`_names()` helper (node names, comma-joined; an id with no node falls back to itself rather than being
+dressed up as a name), and the internal lens id is gone from the prose. The two failure shapes now read
+differently and honestly — *anchors absent from the rebuilt view* vs *anchors that resolve but none is a
+basing site*. Machine-readable ids still travel in `missing`, which the SPA already resolves to display
+names of its own accord. Two tests exercise both branches and assert no `[` / `'` / lens id appears.
 
-## 10. 🟢 `test_spa.py::test_placeholder_when_no_spa_build` fails locally
+## 10. ✅ RESOLVED — already hermetic on `main`; verified both ways (2026-07-20)
 
-Asserts the placeholder appears when no SPA build exists; a stale `frontend/dist` (built by agents)
-makes that case unreachable. **The only failing test.** SHIP must confirm the test's intent still
-holds once the image bakes the build in — do not silently accept it red.
+Fixed upstream by SHIP (commit `6e6d8a3`) before this register was written: the test monkeypatches the
+SPA seam at a non-existent dist directory instead of reading the real `frontend/dist`. **Verified
+deliberately**, since the failure is environment-dependent in both directions: the suite is green with no
+`frontend/dist` at all *and* with a stub `frontend/dist/index.html` present. No change needed. The
+register entry was stale.
 
-## 11. 🟢 D-P4.14 — the independence weight is applied twice
+## 11. 🟢 D-P4.14 — the independence weight is applied twice — ⚠️ CONFIRMED, STILL NOT RATIFIED
 
-Once in `group_confidence` (magnitude) and again in `_effective_looks` (count) — stricter than
-`spine/04:167-171` describes. **RAISED, NOT RATIFIED.** It is a credibility retune, so it needs an
-explicit decision and must not be folded into another change.
+Diagnosis verified: `group_confidence()` multiplies the strongest claim credibility by `group.weight`
+(magnitude) and `_effective_looks()` sums the same weights against `min_independent_groups` = 2 (count),
+while `spine/04` defines `c_g` as the max credibility with no weight factor and the gate as *≥2 groups*.
+The implementation is therefore **stricter** than the ratified design — it under-claims, never
+over-claims, which is why leaving it is safe. Now quantified: 86 of 334 groups weigh 0.5; **26 of 294
+assessed elements** would move confidence if corrected, and some sit near the 0.80 cut, so statuses could
+flip. **The flagship path is untouched either way** — both Rahwali groups weigh 1.0. Four options with a
+recommendation are in `tmp/conv/QA-T7-independence-weight-decision.md`. **Still needs the user's explicit
+call, as its own change.**
 
 ## 12. 🟢 DATA-C / answer-key items
 
@@ -164,10 +230,16 @@ Both halves shipped (`ingest/coref.py` + the RESOLVE honor policy); `config/reso
 `coref_authoritative_evidence: []` keeps it inert by choice. Phase 3 shrank its value
 (`unknown` 109→3). Turning it on needs an EVAL re-record.
 
-## 14. 🟢 `deep_tier_confirmed` flex says "multiply attested" but it is single-bundle
+## 14. ✅ RESOLVED (2026-07-20) — the `deep_tier_confirmed` flex no longer claims corroboration it lacks
 
-The Taian/Wanshan chassis link appears in exactly one bundle (d24). The `confirmed` status is
-defensible on the evidence-gate argument; the *wording* is not supported by the claim data.
+The `expect` text in `answer_key.json` said the Taian/Wanshan chassis link was "multiply attested"; it
+appears in exactly one bundle (d24). Reworded to say what is actually true — the grade rests on the
+**directness** of a single source that names supplier + component + relationship explicitly, *not* on
+corroboration count — and the single-bundle fact is now stated in the flex itself so nobody re-derives
+the overclaim. The `confirmed` status is unchanged (it was always the evidence-gate argument, and that
+argument survives). Prose only: no ground-truth node, edge or status moved. One stale echo of the old
+wording remains in the historical audit note `tmp/conv/eval-rca/ANSWER-KEY-GROUNDING-AUDIT.md` — left as
+written because it is a dated record of an audit, not a live artifact.
 
 ---
 

@@ -939,3 +939,60 @@ the documented home for direct identity statements.
 "it finds merges" — Phase 3's deterministic rules absorbed most of that — but "it reaches the *non-lexical*
 pairs nothing else can, and it hands the analyst a citation for the rest." A deterministic rule beats an
 LLM pass wherever it reaches the answer; the LLM's value is the slice where no string comparison exists.
+
+### QA-T7 — Phase-4 residual sweep (choice · principle invoked · alternative rejected, 2026-07-20)
+
+Worked the deferred-defect register (`tmp/conv/RESIDUAL-FIXES.md`) one item at a time. Five items closed,
+two deliberately left open with a written diagnosis. Every call below leaned on a stated principle.
+
+- **Refusal prose names entities, never objects (R-9).** The "this lens has no basing site" refusal could
+  render a Python list repr and the internal lens id into text an analyst reads. Now it renders node
+  names, comma-joined, and drops the lens id; the machine-readable ids stay in the `missing` field the UI
+  already resolves. *Principle: escalate to the analyst — which only works if what reaches the analyst is
+  legible.* *Rejected:* adding a `label` field to the subject-lens config to humanise the id — a config
+  schema change to another module's surface for one sentence of prose, when dropping the id reads better.
+
+- **Supersede ordering compares intervals, not upper-bound strings (R-5, D-P4.4 iii).** A target's time is
+  the **union** of its claims' intervals; disjoint-and-earlier orders, identical exact instants
+  contradict, identical vague intervals are unorderable → `candidate_supersede`, any other overlap
+  contradicts, and a missing bound is never guessed. *Principle: the fabrication non-negotiable +
+  recall-biased triage — a vague date must not be allowed to win an ordering it cannot support, and the
+  honest outcome of an ambiguous overlap is the HITL queue, not an arrow.* *Rejected:* keeping `max` over
+  a target's claims with a precision tiebreak — it leaves the late-restatement reversal intact, which is
+  the more dangerous of the two defects because it silently un-retires a fact an analyst already acted on.
+  Verified the flagship Rahwali beat is byte-for-byte unchanged before accepting the change.
+
+- **The answer key was NOT regenerated to fix the generator (R-8).** Removed the four dropped sustainment
+  items and the stale flex from the scenario spec, then **stopped**: measuring the spec against the frozen
+  key showed six further divergences a regeneration would destroy, including a block the generator cannot
+  emit at all. *Principle: data issues go to `tmp/conv/` for the data agent, and keep the demo
+  deterministic — an oracle rewrite three days out is exactly the class of change that breaks a frozen
+  demo.* *Rejected:* regenerating and diffing "just to see" — the generator overwrites the key wholesale
+  even for a single-document run. Handoff: `tmp/conv/QA-T7-answer-key-generator-drift.md`.
+
+- **A flex that claimed corroboration it does not have was reworded (R-14).** The `deep_tier_confirmed`
+  expectation described a single-bundle fact as "multiply attested". *Principle: the non-negotiable —
+  never overclaim; "confirmed" is structurally separated from "probable" and must rest on a stated
+  reason.* The `confirmed` grade stands on the evidence-gate argument (one source naming supplier +
+  component + relationship directly), which is now what the text says. *Rejected:* downgrading the grade
+  to match the wording — that would have punished a genuinely direct source for our own bad sentence.
+
+- **The independence weight double-application was NOT fixed (R-11 / D-P4.14).** Diagnosis confirmed: the
+  weight is applied to both the magnitude and the look-count, making the code stricter than `spine/04`.
+  Left untouched and written up as four options with a measured blast radius (26 of 294 elements move;
+  the flagship path does not). *Principle: borderline-harmful → ask first, with options; and a credibility
+  retune must not ride along inside an unrelated change.* Decision note:
+  `tmp/conv/QA-T7-independence-weight-decision.md`.
+
+- **The mis-laned `equips` edge was diagnosed, not fixed (R-1).** Root cause: `relane()` is correct;
+  it never saw a `unit → variant` fact, because at write time only the *variant* end was typed — the other
+  endpoint string is typed downstream by RESOLVE. Confirmed no "frozen bundles agree with current lane
+  logic" invariant test exists (the location renormaliser is the only such guard, and it may not touch a
+  predicate). *Principle: keep the demo deterministic and reproducible — the fix needs a keyed re-record
+  that could break the alias binding hop 2 depends on, so the diagnosis is worth more than the fix.*
+
+**Design-doc tails to enrich:** `spine/04` — record that the independence weight is deliberately applied
+twice today (stricter than the text) until D-P4.14 is decided. `spine/08`/`spine/01` — the write-time
+re-lane can only use types the *current document* declared, so lane correctness for cross-document
+mentions is bounded by extraction-time typing; the durable fix is either registry-backed endpoint typing
+or a post-resolution re-lane pass.
