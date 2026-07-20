@@ -61,25 +61,51 @@ def test_no_node_is_drawn_away_from_its_own_evidence(scenario: Any, view: Any) -
     )
 
 
-def test_every_plotted_node_sits_on_a_coordinate_one_of_its_claims_states(
-    scenario: Any, view: Any
-) -> None:
-    """The pin is not merely *plausible* — it is a point this node's own evidence actually asserts."""
+def test_every_plotted_node_sits_on_a_coordinate_it_can_account_for(scenario: Any, view: Any) -> None:
+    """The pin is not merely *plausible* — the node can name where the point came from.
+
+    AMENDED at integration (orchestrator adjudication, 2026-07-20). The original form required the drawn
+    point to equal a coordinate one of the node's OWN claims states. That was too strong: it forbids
+    *any* gazetteer derivation however well cited, which outlaws the location-normalisation design in
+    ``artifacts/md/13`` — where a stated toponym ("Sindh province") is resolved against an
+    analyst-curated anchor precisely because no claim carries a coordinate. T5's toponym geocoding made
+    that fire on the real corpus, so the invariant — not the code — was the thing that was wrong.
+
+    A plotted coordinate must therefore be either
+      (a) a point one of the node's own claims states, **or**
+      (b) exactly the ``canonical_dd`` of the curated anchor named in ``location.resolved_place_ref``,
+          and only when the node stamps ``location_source == 'gazetteer-anchor'``.
+
+    This still closes the teleport this file exists to catch — *another entity's* coordinate is neither
+    (a) nor (b). ``test_plotted_point_provenance.py`` asks the complementary question ("where did the
+    drawn point come from at all?"); both files are kept deliberately.
+    """
     claims = scenario.claims
+    anchors = {
+        p.place_id: (round(p.canonical_dd[0], 5), round(p.canonical_dd[1], 5))
+        for p in scenario.config_store.snapshot().places.places
+        if p.canonical_dd is not None
+    }
     for node in view.nodes:
         loc = node.location
         if loc is None or loc.wgs84_lat is None or loc.wgs84_lon is None:
             continue
+        drawn = (round(loc.wgs84_lat, 5), round(loc.wgs84_lon, 5))
         stated = {
             (round(lat, 5), round(lon, 5))
             for cid in node.claim_ids
             if claims.get(cid)
             for lat, lon in _claim_points(claims[cid])
         }
-        assert stated, f"{node.id} is plotted at {loc.wgs84_lat},{loc.wgs84_lon} but no claim of its own states a coordinate"
-        assert (round(loc.wgs84_lat, 5), round(loc.wgs84_lon, 5)) in stated, (
-            f"{node.id} is plotted at a coordinate none of its claims assert "
-            f"({loc.wgs84_lat},{loc.wgs84_lon} not in {sorted(stated)})"
+        if drawn in stated:
+            continue
+        # (b) — a cited derivation from a curated anchor the node itself names.
+        source = (getattr(node, "attrs", None) or {}).get("location_source")
+        anchor = anchors.get(loc.resolved_place_ref or "")
+        assert source == "gazetteer-anchor" and anchor == drawn, (
+            f"{node.id} is plotted at {drawn}, which neither its own claims assert "
+            f"({sorted(stated) or 'none'}) nor matches the curated anchor it names "
+            f"(resolved_place_ref={loc.resolved_place_ref!r}={anchor}, location_source={source!r})"
         )
 
 
