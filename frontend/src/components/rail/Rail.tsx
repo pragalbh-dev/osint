@@ -6,8 +6,9 @@
 import { useMemo, useRef } from 'react'
 import clsx from 'clsx'
 import { useWorkbench, type DocId } from '@/store/workbench'
-import { INGEST_DOCS, QUEUE_ITEMS } from '@/demo/scenario'
+import { INGEST_DOCS, QUEUE_ITEMS, TRIPWIRES } from '@/demo/scenario'
 import { viewToReviewQueue } from '@/api/adapters'
+import { useTripwires } from '@/api/viewmodel'
 import { LiveIngest } from './LiveIngest'
 
 export function Rail() {
@@ -46,6 +47,18 @@ export function Rail() {
     }))
   }, [mode, liveView, liveDecided, decided, openCard, openLiveCard])
   const reviewCount = rows.length
+
+  // Watching — count + caption are DERIVED, never a hardcoded "3 · armed". Demo reports its
+  // frozen tripwire set (unchanged output); live reports what the alert feed actually says,
+  // and says "none fired" rather than claiming an armed catalogue it cannot read.
+  const tripwires = useTripwires()
+  const watch = useMemo(() => {
+    if (!tripwires) return { count: TRIPWIRES.length, note: 'armed' }
+    const open = tripwires.filter((t) => t.state === 'fired').length
+    if (open > 0) return { count: tripwires.length, note: `${open} fired` }
+    if (tripwires.length > 0) return { count: tripwires.length, note: 'fired · all decided' }
+    return { count: 0, note: 'none fired' }
+  }, [tripwires])
 
   // Drag payload backup — some browsers restrict dataTransfer.getData on dragover,
   // and this mirrors the mockup's own fallback (this._dragDoc) for the drop handler.
@@ -102,15 +115,15 @@ export function Rail() {
         )}
       </div>
 
-      {/* Watching — armed tripwires; a count without a config screen. */}
+      {/* Watching — a count without a config screen; both halves are data (see `watch`). */}
       <div onClick={openWatch} className="cursor-pointer border-b border-hairline px-[18px] py-4 hover:bg-surface-raised">
         <div className="flex items-center justify-between">
           <span className="text-[13px] text-text">Watching</span>
           <span className="inline-flex h-5 min-w-[22px] items-center justify-center rounded-[3px] border border-hairline-strong px-[7px] text-[12px] tabular-nums text-text-dim">
-            3
+            {watch.count}
           </span>
         </div>
-        <div className="mt-[6px] text-[11.5px] text-text-faint">indicators &amp; warning — armed</div>
+        <div className="mt-[6px] text-[11.5px] text-text-faint">indicators &amp; warning — {watch.note}</div>
       </div>
 
       {/* Ingest — LIVE posts a keyless claim bundle to /ingest; DEMO runs the scripted

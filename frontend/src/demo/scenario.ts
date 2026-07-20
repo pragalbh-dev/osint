@@ -71,7 +71,23 @@ export const GRAPH_NODES: GraphNodeDef[] = [
   { id: 'tel', label: 'TEL count\nnever disclosed', x: 330, y: 470, kind: 'gap' },
 ]
 
-export type EdgeKind = 'e-confirmed' | 'e-probable' | 'e-history'
+/** Edge visual kinds — the shared vocabulary for BOTH the frozen demo fixtures and the
+ *  live adapter (src/api/adapters.ts). The demo only ever uses the first three.
+ *
+ *  The trust distinction that matters: `e-stale` is HISTORY (solid grey — we know the
+ *  assertion was overtaken) while `e-gap` is an EVIDENCE GAP (dashed grey — we do not
+ *  know). Conflating them is a correctness bug in the visual language, not a style nit.
+ *  `e-supersede` is the status-LESS "replaced by →" version link (never an alarm), and
+ *  `e-link` the other status-less identity edges (same-as / distinct-from). */
+export type EdgeKind =
+  | 'e-confirmed'
+  | 'e-probable'
+  | 'e-history'
+  | 'e-stale'
+  | 'e-gap'
+  | 'e-contradicted'
+  | 'e-supersede'
+  | 'e-link'
 
 export interface GraphEdgeDef {
   id: string
@@ -312,10 +328,13 @@ export const CRED_INTRO =
 
 // ─────────────────────────── tripwires (indicators & warning) ───────────────────────────
 
+// `state` is data, not a hardcoded badge in the view: the demo asserts these three are
+// armed and none has fired, and WatchView renders whatever state it is handed (the LIVE
+// path derives real state from the alert feed on GET /view instead).
 export const TRIPWIRES = [
-  { name: 'Relocation', desc: 'A unit relocating within 2 hops of this subject.', indicator: 'movement in EO/SAR imagery' },
-  { name: 'New supplier link', desc: 'A new entity entering the supply path behind this system.', indicator: 'procurement / customs records' },
-  { name: 'Contradiction', desc: 'Two credible sources disagreeing on the same event.', indicator: 'source conflict on one claim' },
+  { name: 'Relocation', desc: 'A unit relocating within 2 hops of this subject.', indicator: 'movement in EO/SAR imagery', state: 'armed' },
+  { name: 'New supplier link', desc: 'A new entity entering the supply path behind this system.', indicator: 'procurement / customs records', state: 'armed' },
+  { name: 'Contradiction', desc: 'Two credible sources disagreeing on the same event.', indicator: 'source conflict on one claim', state: 'armed' },
 ]
 
 export const WATCH_INTRO =

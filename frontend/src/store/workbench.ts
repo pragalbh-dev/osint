@@ -85,6 +85,7 @@ interface WorkbenchState {
   openDrawer: () => void
   closeDrawer: () => void
   toggleChip: (id: string) => void
+  openProvenance: (elementId: string, claimId?: string | null) => void
 
   // ingest (scripted trace)
   startIngest: (doc: DocId) => void
@@ -229,6 +230,15 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   openDrawer: () => set({ drawerOpen: true }),
   closeDrawer: () => set({ drawerOpen: false }),
   toggleChip: (id) => set((s) => ({ expanded: s.expanded === id ? null : id })),
+
+  // One-click traceability from anywhere that cites evidence (today: the alert feed, which
+  // was the last derived artifact with nothing to click). It drives the SAME provenance
+  // drawer selection/evidence uses — no second drill-down path — and optionally pre-expands
+  // one claim row so the click lands on that claim's exact source locator, not just the
+  // element. Element ids only: GET /evidence/{id} resolves nodes/edges/events, and a claim
+  // id would 404 into an "insufficient evidence" panel that isn't true.
+  openProvenance: (elementId, claimId) =>
+    set({ selected: elementId, drawerOpen: true, expanded: claimId ?? null }),
 
   startIngest: (doc) => {
     const s = get()

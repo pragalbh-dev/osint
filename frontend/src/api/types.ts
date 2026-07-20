@@ -127,6 +127,13 @@ export interface NodeView extends Assessed {
   materiality?: MaterialityAttrs | null
 }
 
+/** NOTE — some edge types are status-LESS by design: `supersedes` (a version link between
+ *  two already-scored edges — scoring it again would score one fact twice), `same-as` and
+ *  `distinct-from` (identity, never truth). Their `status`/`confidence` are null; nothing
+ *  may assume every edge carries a status badge. `attrs` on a `based-at` edge that is half
+ *  of a supersession additionally carries `candidate_supersede`, `supersede_gate`
+ *  ('pending' | 'promoted' | 'held'), `supersede_pending_newer` / `supersede_pending_older`
+ *  and `supersede_hold_reason` (string list — why it was NOT auto-retired). */
 export interface EdgeView extends Assessed {
   id: string
   type: string // supplies-component, based-at, same-as, supersedes, ...
@@ -157,6 +164,25 @@ export interface KnownGap {
   missing_slots?: string[]
 }
 
+/** The evidence behind a fired Alert (schemas/view.py AlertProvenance; added 2026-07-20).
+ *  An alert asserts something about the world, so it names the claims it rests on: the
+ *  `before_*` claims asserted the prior state, the `after_*` claims assert the new one —
+ *  the split is the point, because "what changed" is only auditable if both sides are
+ *  separately traceable. `before_ref`/`after_ref` are the view element ids (edge/node)
+ *  that carried each state, so they resolve straight into GET /evidence/{id}. `status` /
+ *  `assertion_confidence` are COPIED off the after-element (MONITOR never scores). Every
+ *  field is optional: an alert whose element carried no claims says so by being empty,
+ *  never by inventing a citation. */
+export interface AlertProvenance {
+  before_ref?: string | null
+  after_ref?: string | null
+  before_claim_ids?: string[]
+  after_claim_ids?: string[]
+  claim_ids?: string[] // union (before-first, de-duplicated)
+  status?: Status | null
+  assertion_confidence?: number | null // truth confidence, never identity
+}
+
 export interface Alert {
   observable_id: string
   subject?: string | null
@@ -165,6 +191,7 @@ export interface Alert {
   severity?: string
   fired_ts?: string | null
   disposition?: AlertDisposition | null
+  provenance?: AlertProvenance | null // null/absent = a pre-MON-4 alert with no recorded evidence
 }
 
 export interface GraphView {

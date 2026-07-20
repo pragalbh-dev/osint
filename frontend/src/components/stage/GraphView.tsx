@@ -76,7 +76,30 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
     { selector: 'edge', style: { width: 1, 'curve-style': 'straight', 'line-color': COLORS.live, opacity: 0.7, 'target-arrow-shape': 'none' } },
     { selector: '.e-confirmed', style: { 'line-style': 'solid', 'line-color': COLORS.live } },
     { selector: '.e-probable', style: { 'line-style': 'dashed', 'line-color': COLORS.live } },
+    // demo-only legacy kind (the frozen fixtures' history edges) — live never emits it
     { selector: '.e-history', style: { 'line-style': 'dashed', 'line-color': COLORS.history, opacity: 0.55 } },
+    // STALE vs GAP are different facts and must not look alike: stale is SOLID grey
+    // (settled history — the assertion was overtaken, matching --border-stale on nodes);
+    // a gap is DASHED grey (provisional/absent — we do not know), matching the Known-Gap
+    // border. THE ONE RULE holds: dashed = provisional, solid = settled.
+    { selector: '.e-stale', style: { 'line-style': 'solid', 'line-color': COLORS.history, opacity: 0.6 } },
+    { selector: '.e-gap', style: { 'line-style': 'dashed', 'line-color': COLORS.history, opacity: 0.42 } },
+    { selector: '.e-contradicted', style: { 'line-style': 'solid', 'line-color': COLORS.problem, opacity: 0.9 } },
+    // `supersedes` — a status-LESS version link ("replaced by →"), given the arrow rather
+    // than the contradiction treatment: it is a timeline relationship, not an alarm.
+    {
+      selector: '.e-supersede',
+      style: {
+        'line-style': 'solid',
+        'line-color': COLORS.history,
+        opacity: 0.75,
+        'target-arrow-shape': 'triangle',
+        'target-arrow-color': COLORS.history,
+        'arrow-scale': 0.7,
+      },
+    },
+    // other status-less edges (same-as / distinct-from) — identity, never truth
+    { selector: '.e-link', style: { 'line-style': 'dotted', 'line-color': COLORS.history, opacity: 0.6 } },
     { selector: '.sel', style: { 'overlay-color': COLORS.accent, 'overlay-opacity': 0.16, 'overlay-padding': 7 } },
     { selector: '.faded', style: { opacity: 0.16 } },
     { selector: '.hidden', style: { display: 'none' } },
@@ -230,6 +253,7 @@ export function GraphView() {
         }}
       >
         border = status · fill = freshness · dashed ring = candidate chokepoint
+        {mode === 'live' && <> · grey arrow = replaced by</>}
       </div>
     </div>
   )
