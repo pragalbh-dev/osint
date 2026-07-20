@@ -64,8 +64,22 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
      from 12-on-variants/units → **13, all component(10)/manufacturer(3), zero on variant/unit**; real supply
      tier (HT-233, TEL chassis, Taian) nominated. Suite 670✓. Residual noise (`India`, `the System`, Type-305B
      dups) is upstream mis-typing + RESOLVE under-merge — separate data item, not a direction bug.
-  3. **SC-2 basing-stale wiring** — freshness invisible; cheap; also relocation-beat prereq. **NEXT** (land the
-     mechanism now, verify visible effect during the beat — its stale nodes need dated basing edges = Tier 4).
+  3. ✅ **SC-2 basing-stale wiring** — **DONE, commit `f9dc04b`.** `half_life_defaults` keyed by freshness_class
+     (spine/04 numbers) + `EdgeLaneIndex.freshness_class()` + `unreachable_half_lives()` lint + honesty flag
+     `freshness-variant-assumed:<class>`. Proven in isolation (2021 basing → stale; manufactures eternal; lint
+     clean). Visible stale nodes gated on dated basing edges (beat). **Follow-up (parked):** node-level
+     perishability (`interceptor_stockpile`/`techdata_authority` entity types) isn't read — edges only.
+  - ✅ **ARCH lens resolver + chaff filter (AR-2/AR-3)** — **DONE (built concurrently with #3), commit pending
+     this checkpoint.** Shared `resolve/anchor.py` (literal→registry-alias→alias-class ladder, reused by lens
+     AND observable — kills the 3rd literal-anchor copy); lens meta now carries
+     `anchors_requested/resolved/missing/anchor_resolution` (honest-empty instead of silent); `_passes_materiality`
+     implements `node_types_allow` + explicit `never_drop_indeterminate` (shields type-`unknown` HT-233 radar so
+     the chokepoint stays in the demo); `exclude_off_subject`/`materiality_attrs` left unimplemented (D-P4.9 —
+     oracle-only/descriptive) + surfaced as `unrecognised_filter_keys` + a non-raising drift gate test. subjects.yaml
+     deletion routed to DATA-C (`tmp/conv/ARCH-to-DATAC-subjects-materiality-filter.md`). Suite 689✓.
+  - **NEXT — the relocation beat (Tier 3/4):** serial foundation = edge_instance key; then fan out
+     INGEST(occupancy lane + dates + derivation proposer) ∥ SCORE(interval supersede + floor + stale-wire) ∥
+     MONITOR(match_on grouping + trigger validation + de-pin); then staged-ingest harness integration + frontend.
   4. **Relocation beat** (all-or-nothing chain: edge_instance key + INGEST occupancy lane/dated derivation +
      SCORE supersede-floor/stale + MONITOR grouping/de-pin + staged-ingest harness + frontend live feed).
   5. Hardening/honesty polish (AR-2 defensive, AR-3, AS-3/4, MON-4).

@@ -83,7 +83,9 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "freshness-variant-assumed:perishable"
+        ],
         "per_claim_credibility": {
           "d14-stale-holding-l7-9": 0.635
         }
@@ -1742,8 +1744,8 @@
         "d14-stale-holding-l9-2"
       ],
       "confidence": {
-        "assertion_confidence": 0.8959187500000001,
-        "freshness_factor": 1.0,
+        "assertion_confidence": 0.37932183548634346,
+        "freshness_factor": 0.10688075980653014,
         "independence_groups": [
           {
             "axis_key": {
@@ -1770,18 +1772,22 @@
             "weight": 0.5
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "aging",
+          "stale",
+          "freshness-variant-assumed:semi-durable"
+        ],
         "per_claim_credibility": {
-          "d01-sipri-transfer-l8-8": 0.8475000000000001,
+          "d01-sipri-transfer-l8-8": 0.0905814439360343,
           "d14-stale-holding-l9-2": 0.635
         }
       },
       "edge_instance": "edge:LY-80:inducted-into:Pakistan Air Force",
       "freshness": {
-        "decay_factor": 1.0,
+        "decay_factor": 0.10688075980653014,
         "half_life": null,
-        "half_life_days": null,
-        "last_support_time": null
+        "half_life_days": 540.0,
+        "last_support_time": "2021-10-11"
       },
       "id": "e:ent:variant:LY-80:inducted-into:unit_hq9b",
       "merge_confidence": null,
@@ -2283,7 +2289,9 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "freshness-variant-assumed:semi-durable"
+        ],
         "per_claim_credibility": {
           "d04-armyrec-ranges-l9": 0.635
         }
@@ -2334,8 +2342,8 @@
         "d19-rahwali-confirm-l15-2"
       ],
       "confidence": {
-        "assertion_confidence": 0.6900000000000002,
-        "freshness_factor": 1.0,
+        "assertion_confidence": 0.3769502528500521,
+        "freshness_factor": 0.5463047142754377,
         "independence_groups": [
           {
             "axis_key": {
@@ -2350,17 +2358,19 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "freshness-variant-assumed:semi-durable"
+        ],
         "per_claim_credibility": {
-          "d19-rahwali-confirm-l15-2": 0.6900000000000002
+          "d19-rahwali-confirm-l15-2": 0.3769502528500521
         }
       },
       "edge_instance": "edge:HQ-9BE:inducted-into:Army Air Defence Command",
       "freshness": {
-        "decay_factor": 1.0,
+        "decay_factor": 0.5463047142754377,
         "half_life": null,
-        "half_life_days": null,
-        "last_support_time": null
+        "half_life_days": 540.0,
+        "last_support_time": "2025-04-04"
       },
       "id": "e:var_hq9be:inducted-into:unit_paad",
       "merge_confidence": null,
@@ -2401,8 +2411,8 @@
         "d02-ispr-induction-l11-3"
       ],
       "confidence": {
-        "assertion_confidence": 0.7550000000000001,
-        "freshness_factor": 1.0,
+        "assertion_confidence": 0.08100631435774697,
+        "freshness_factor": 0.1072931315996648,
         "independence_groups": [
           {
             "axis_key": {
@@ -2417,17 +2427,21 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "aging",
+          "stale",
+          "freshness-variant-assumed:perishable"
+        ],
         "per_claim_credibility": {
-          "d02-ispr-induction-l11-3": 0.7550000000000001
+          "d02-ispr-induction-l11-3": 0.08100631435774694
         }
       },
       "edge_instance": "edge:HQ-9/P:based-at:Army Air Defence Centre, Karachi",
       "freshness": {
-        "decay_factor": 1.0,
+        "decay_factor": 0.1072931315996648,
         "half_life": null,
-        "half_life_days": null,
-        "last_support_time": null
+        "half_life_days": 540.0,
+        "last_support_time": "2021-10-14"
       },
       "id": "e:var_hq9p:based-at:ent:basing_site:Army Air Defence Centre, Karachi",
       "merge_confidence": null,
@@ -2771,7 +2785,9 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "freshness-variant-assumed:semi-durable"
+        ],
         "per_claim_credibility": {
           "d03-quwa-analysis-l6-2": 0.635
         }
@@ -2824,8 +2840,8 @@
         "d21-techdata-authority-l6-2"
       ],
       "confidence": {
-        "assertion_confidence": 0.9323471875000001,
-        "freshness_factor": 1.0,
+        "assertion_confidence": 0.5965591930661233,
+        "freshness_factor": 0.10688075980653014,
         "independence_groups": [
           {
             "axis_key": {
@@ -2864,19 +2880,23 @@
             "weight": 0.5
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "aging",
+          "stale",
+          "freshness-variant-assumed:semi-durable"
+        ],
         "per_claim_credibility": {
-          "d01-sipri-transfer-l8": 0.8475000000000001,
+          "d01-sipri-transfer-l8": 0.0905814439360343,
           "d15-globaltimes-aligned-l7-3": 0.7000000000000001,
           "d21-techdata-authority-l6-2": 0.635
         }
       },
       "edge_instance": "edge:HQ-9/P:inducted-into:Pakistan Air Force",
       "freshness": {
-        "decay_factor": 1.0,
+        "decay_factor": 0.10688075980653014,
         "half_life": null,
-        "half_life_days": null,
-        "last_support_time": null
+        "half_life_days": 540.0,
+        "last_support_time": "2021-10-11"
       },
       "id": "e:var_hq9p:inducted-into:unit_hq9b",
       "merge_confidence": null,
@@ -2957,7 +2977,9 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "freshness-variant-assumed:semi-durable"
+        ],
         "per_claim_credibility": {
           "d04-armyrec-ranges-l7-2": 0.635
         }
@@ -9802,7 +9824,9 @@
             "weight": 1.0
           }
         ],
-        "integrity_flags": [],
+        "integrity_flags": [
+          "freshness-variant-assumed:perishable"
+        ],
         "per_claim_credibility": {
           "d14-stale-holding-l7-9": 0.635
         }

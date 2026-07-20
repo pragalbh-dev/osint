@@ -36,6 +36,6 @@ def post_ask(req: AskRequest, state: AppState = Depends(get_state)) -> AskAnswer
                     "available_subjects": sorted(config.subjects.as_map()),
                 },
             )
-        view = apply_lens(view, lens)
+        view = apply_lens(view, lens, config=config)  # config enables registry/alias anchor tiers (AR-2)
     # claims map: the view cites claims by id; ASK needs the bodies for source/date/span + observed-vs-inferred.
     return ask(req.question, view, config, claims=state.claims_map())

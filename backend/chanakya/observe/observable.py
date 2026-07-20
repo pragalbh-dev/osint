@@ -23,6 +23,7 @@ from typing import Any
 
 import networkx as nx
 
+from chanakya.resolve import resolve_anchors
 from chanakya.schemas import ConfigBundle, GraphView, ObservableDef
 
 from .dsl import OPERATORS
@@ -105,7 +106,9 @@ def resolve_scope(obs: ObservableDef, view: GraphView, config: ConfigBundle) -> 
     for e in view.edges:
         und.add_edge(e.source, e.target)
 
-    present = [a for a in anchors if a in und]
+    # Same shared resolver the lens uses (literal → registry alias → alias class), so a watch-scope and a
+    # lens can't diverge on which anchors "count as present" (AR-2). Recall-biased: unresolved → dropped.
+    present = [r.node_id for r in resolve_anchors(anchors, view, config) if r.node_id is not None]
     if not present:
         # anchors declared but none present in this view — keep only the explicit instances, else
         # fall back to unscoped rather than disarm (recall-biased; conflict resolved in MONITOR).

@@ -32,6 +32,7 @@ from chanakya.schemas import (
 
 from . import aliases, entities, places
 from .aliases import AliasIndex
+from .anchor import AnchorResolution, resolve_anchors
 from .cluster import Pair, ResolveResult, finalise, resolve_entities
 from .entities import Entity, EntityGraph, base_ref, namespace_compatible, unordered_pairs
 from .normalize import normalize
@@ -48,6 +49,8 @@ from .scoring import (
 
 __all__ = [
     "resolve",
+    "resolve_anchors",
+    "AnchorResolution",
     "propose_candidates",
     "location_attr",
     "IDENTITY_PREDICATES",
