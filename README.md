@@ -19,11 +19,14 @@ about running your own copy; skip to §4 if you're using the hosted one.
 
 ## 1. Run it — two identical paths, no setup required
 
-The whole app (backend + the web UI) ships as **one Docker image**. Once running, it needs
-no API key and makes no outbound calls — everything it needs (the document corpus, the
-pre-analysed evidence, the map tiles) is baked into the image. (Building the image, Path A
-below, does need network access to `git clone` and download dependencies — the app itself
-doesn't, once it's up.)
+The whole app (backend + the web UI) ships as **one Docker image**. It boots and runs the
+entire worked demo — graph, map, ingest, alerts, review, and the flagship question —
+**with no API key and no outbound calls**: the corpus, the pre-analysed evidence and the
+map tiles are all baked in. A key is needed only to ask **free-form questions of your
+own**, which is what §3 covers.
+
+(Building the image, Path A below, does need network access to clone the repo and fetch
+dependencies. The running app doesn't.)
 
 **Path A — clone and build it yourself:**
 
@@ -72,14 +75,19 @@ the graph right now and responds to what you do. Bookmark or share the `?mode=li
 ## 3. Running it keyed vs. keyless
 
 **Keyless (the default, nothing to configure) already runs the full worked demo** —
-graph, map, citations, and one scripted multi-hop question all work with no API key,
-because that question's answer was pre-computed once and is replayed deterministically.
-This is intentional: the demo must run the same way every time.
+graph, map, citations, ingest, alerts, review, and the flagship multi-hop question.
+
+That question works without a key because the *reasoning steps* for it are replayed from
+a recording, so the demo runs the same way every time. **The answer itself is not canned**
+— those steps run live against the graph as it stands, which is why the same question
+honestly refuses before you ingest the withheld evidence (§5) and traces a full cited
+chain afterwards.
 
 **Keyed** additionally unlocks:
-- **Free-form questions** — anything typed into the ask bar beyond the one pre-computed
-  question is answered live by a model reasoning over the graph (rather than an honest
-  "I need a key for that" message).
+- **Free-form questions** — anything you type into the ask bar beyond the flagship
+  question, planned and answered live by a model reasoning over the graph. Without a key
+  these return an honest "no model key configured" refusal, naming what's missing rather
+  than guessing.
 - **Extracting a brand-new document live** — pasting in a document's text and having the
   system read it and add it to the graph in real time, instead of only ingesting the
   pre-packaged documents described in §5.
