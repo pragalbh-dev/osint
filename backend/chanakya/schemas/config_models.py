@@ -68,6 +68,15 @@ class SourcesConfig(ConfigModel):
     """The source registry (independence + resolver inputs)."""
 
     sources: list[SourceRegistryEntry] = []
+    #: Source documents deliberately **held out of the boot seed** — the reviewer's live-ingest set.
+    #: Their frozen claim bundles stay on disk and stay ingestable through the keyless ``POST /ingest``
+    #: lane; this list only decides what is *already there* when the app boots, never what exists. It is
+    #: declared here (not buried in code or an env var) so the withholding is auditable: a reviewer can
+    #: read exactly which documents the "before" graph is missing. Holding a document back automatically
+    #: holds back everything derived from it (``<doc>__basing.json`` / ``<doc>__attr.json``) — otherwise
+    #: the before-graph would assert an inference whose premises had not arrived
+    #: (``ingest.seed.bundle_belongs_to_doc``). ``CHANAKYA_SEED_WITHHOLD`` overrides at deploy time.
+    withheld_from_seed: list[str] = []
 
     def as_map(self) -> dict[str, SourceRegistryEntry]:
         return {s.source_id: s for s in self.sources}

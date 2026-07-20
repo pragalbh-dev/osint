@@ -30,7 +30,7 @@ from pathlib import Path
 from chanakya import settings
 from chanakya.agent import ask
 from chanakya.config import ConfigStore
-from chanakya.ingest.seed import ingest_bundle, seed_store_from_bundles
+from chanakya.ingest.seed import seed_store_from_bundles
 from chanakya.observe import evaluate
 from chanakya.schemas import (
     Alert,
@@ -100,37 +100,19 @@ class ScenarioInputs:
     claim_count: int
 
 
-def _bundle_belongs_to(bundle_name: str, doc_id: str) -> bool:
-    """Does ``bundle_name`` carry ``doc_id``'s claims — its own bundle or an enrichment riding on it?
-
-    The recorder writes ``<doc_id>.json``; the offline enrichment passes write ``<doc_id>__basing.json`` /
-    ``<doc_id>__attr.json`` (``ingest.seed._DERIVED_BUNDLE_SUFFIXES``). Both are "what we learned from that
-    document", so a staged ingest must hold back or release them together — otherwise the "before" view
-    would still contain a derived fact whose premises had not arrived.
-    """
-    return bundle_name == f"{doc_id}.json" or bundle_name.startswith(f"{doc_id}__")
-
-
 def _seed_evidence(bdir: Path, exclude_docs: Sequence[str] = ()) -> tuple[EvidenceLog, int]:
     """Append the frozen bundles under ``bdir`` into a fresh log, optionally holding some documents back.
 
-    With no exclusions this is exactly ``seed_store_from_bundles`` (the production keyless boot path). With
-    exclusions it is the *same* append in the *same* filename-sorted order, minus the held-back documents —
-    i.e. the log as it stood before those documents were ingested. Pure and deterministic: no clock, no
-    model, no network; the same argument always yields the same log.
+    This is *literally* the production keyless boot path — ``seed_store_from_bundles``, the same call
+    ``chanakya.api.state.seed_evidence_keyless`` makes, including its ``exclude_docs`` hold-back (which
+    rides the shared ``ingest.seed.bundle_belongs_to_doc`` grouping, so a held-back document takes its
+    derived enrichment bundles with it rather than leaving an inference whose premises never arrived).
+    EVAL deliberately keeps no second copy of that logic: the staged "before" the beat diffs against has
+    to be the same graph the app really boots with when the same documents are withheld. Pure and
+    deterministic — no clock, no model, no network.
     """
     evidence = EvidenceLog()
-    if not exclude_docs:
-        return evidence, seed_store_from_bundles(evidence, bdir)
-    count = 0
-    for path in sorted(bdir.glob("*.json")):
-        if any(_bundle_belongs_to(path.name, doc) for doc in exclude_docs):
-            continue
-        claims = ingest_bundle(path)
-        if claims:
-            evidence.append_many(claims)
-        count += len(claims)
-    return evidence, count
+    return evidence, seed_store_from_bundles(evidence, bdir, exclude_docs=exclude_docs)
 
 
 def load_scenario(

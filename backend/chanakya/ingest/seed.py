@@ -68,6 +68,20 @@ def _is_derived_bundle(name: str) -> bool:
     return name.endswith(_DERIVED_BUNDLE_SUFFIXES)
 
 
+def bundle_belongs_to_doc(bundle_name: str, doc_id: str) -> bool:
+    """Does ``bundle_name`` carry ``doc_id``'s claims — its own bundle or an enrichment riding on it?
+
+    The recorder writes ``<doc_id>.json``; the offline enrichment passes write ``<doc_id>__basing.json`` /
+    ``<doc_id>__attr.json`` (:data:`_DERIVED_BUNDLE_SUFFIXES`). Both are "what we learned from that
+    document", so any staged/held-back seed must hold them back or release them **together** — otherwise
+    the held-back "before" graph would still carry a derived fact whose premises had not arrived, which
+    is incoherent. This is the one definition of that grouping; the boot seed
+    (:func:`seed_store_from_bundles`) and the EVAL staged-ingest harness both call it rather than each
+    re-deriving the convention.
+    """
+    return bundle_name == f"{doc_id}.json" or bundle_name.startswith(f"{doc_id}__")
+
+
 class SupportsAppendMany(Protocol):
     """The minimal append-only-store surface :func:`seed_store_from_bundles` needs (an ``EvidenceLog``)."""
 
@@ -93,20 +107,41 @@ def ingest_bundle(path: str | Path) -> list[ClaimRecord]:
     return [ClaimRecord.model_validate(row) for row in rows]
 
 
-def seed_store_from_bundles(store: SupportsAppendMany, bundles_dir: str | Path) -> int:
+def seed_store_from_bundles(
+    store: SupportsAppendMany, bundles_dir: str | Path, *, exclude_docs: Sequence[str] = ()
+) -> int:
     """Append every ``<source_id>.json`` bundle under ``bundles_dir`` into ``store``; return the count.
 
     Bundles are appended in filename-sorted order so the store's insertion order — and therefore every
     downstream ``replay()`` / ``rebuild()`` — is deterministic (gate G2). The append is a plain
     :meth:`append_many`; no extraction runs, so this is the keyless boot path in full.
+
+    ``exclude_docs`` names source documents to **hold back** from the seed — the same append, in the same
+    sorted order, minus those documents *and everything derived from them*
+    (:func:`bundle_belongs_to_doc`). The held-back bundles stay on disk, so the withheld document can be
+    ingested later through the live keyless ``POST /ingest`` lane; the resulting graph is the same one a
+    full seed would have produced (the append is order-independent at the reduction, and the arrival is
+    what an alert is *about*). A held-back document is a demo/staging choice, never a data edit: no bundle
+    contents change, only which of them are present at boot.
     """
     total = 0
     for path in sorted(Path(bundles_dir).glob("*.json")):
+        if any(bundle_belongs_to_doc(path.name, doc) for doc in exclude_docs):
+            continue
         claims = ingest_bundle(path)
         if claims:
             store.append_many(claims)
         total += len(claims)
     return total
+
+
+def bundles_for_doc(bundles_dir: str | Path, doc_id: str) -> list[Path]:
+    """Every frozen bundle carrying ``doc_id``'s claims — its own plus its enrichments — sorted.
+
+    The inverse of the hold-back filter: what a reviewer must ingest to *release* a withheld document.
+    Sorted so the release order equals the order a full boot seed would have appended them in (G2).
+    """
+    return sorted(p for p in Path(bundles_dir).glob("*.json") if bundle_belongs_to_doc(p.name, doc_id))
 
 
 # ── the keyed recorder (runs the live pipeline, freezes byte-stable bundles) ───────────────────────

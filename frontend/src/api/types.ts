@@ -330,6 +330,33 @@ export interface IngestResult {
   alerts_fired?: string[]
 }
 
+// ───────────────────────── pending (withheld) documents ─────────────────────────
+// Documents deliberately held OUT of the boot seed (config/sources.yaml → withheld_from_seed),
+// so the graph stands up in the state that PRECEDES their arrival. Their frozen claim bundles
+// ship with the app and are served here, so a reviewer can ingest one through the keyless lane
+// and watch the tripwire fire — no repo checkout, no key, no network. Added 2026-07-20.
+
+export interface PendingDocument {
+  doc_id: string
+  source_type?: string | null
+  citation_url?: string | null
+  bundles?: string[] // its own bundle + any derived enrichment bundles — released together
+  claim_count?: number
+  available?: boolean // false = declared withheld but no bundle on disk (say so, never pretend)
+  ingested?: boolean // true once its claims are in the evidence log — server state, not a local guess
+}
+
+export interface PendingResponse {
+  scenario?: string | null
+  documents?: PendingDocument[]
+}
+
+export interface PendingBundle {
+  doc_id: string
+  bundles?: string[]
+  bundle?: Array<Record<string, unknown>> // ready to POST /ingest as { bundle }
+}
+
 // ───────────────────────── config / observables ─────────────────────────
 
 export interface ObservableDef {

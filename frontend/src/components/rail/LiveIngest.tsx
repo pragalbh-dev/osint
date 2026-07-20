@@ -1,4 +1,9 @@
-// LIVE ingest surface — two honest paths into the graph:
+// LIVE ingest surface — three honest paths into the graph:
+//   • AWAITING INGEST: documents the boot seed deliberately withheld (config/sources.yaml →
+//     withheld_from_seed, served by GET /pending). One click fetches that document's shipped
+//     claim bundle and POSTs it — the reviewer's own hands on the keyless lane, with no repo
+//     checkout, no key and no network. This is what makes the tripwire a tripwire: the graph
+//     boots in the state BEFORE the evidence arrived, and the reviewer makes it arrive.
 //   • KEYLESS bundle: drop a .json array of pre-extracted claims → POST /ingest {bundle}.
 //   • KEYED document: paste/drop document text, name the source + pick its type → POST
 //     /ingest {raw_text, source_id, source_type}; the server runs extraction and appends.
@@ -8,8 +13,10 @@
 // tripwire land, and fired tripwires show up in the review queue. Demo keeps its scripted
 // drag-to-ingest trace; this mounts only in LIVE mode.
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useWorkbench } from '@/store/workbench'
+import { api } from '@/api/client'
+import type { PendingDocument } from '@/api/types'
 
 // source_type vocabulary (== config/sources.yaml source_type == credibility source classes).
 const SOURCE_TYPES = [
@@ -33,6 +40,23 @@ function bundleFromText(text: string): Array<Record<string, unknown>> {
   return []
 }
 
+// The documents the boot seed withheld. Re-read after every ingest so a released document
+// leaves the list — the list is server state, never a local guess about what landed.
+function usePendingDocs(refreshKey: unknown): PendingDocument[] | null {
+  const [docs, setDocs] = useState<PendingDocument[] | null>(null)
+  useEffect(() => {
+    let live = true
+    api
+      .pending()
+      .then((r) => live && setDocs(r.documents ?? []))
+      .catch(() => live && setDocs(null)) // no endpoint / no withheld set → render nothing
+    return () => {
+      live = false
+    }
+  }, [refreshKey])
+  return docs
+}
+
 export function LiveIngest() {
   const ingestLive = useWorkbench((s) => s.ingestLive)
   const ingestDocLive = useWorkbench((s) => s.ingestDocLive)
@@ -43,6 +67,19 @@ export function LiveIngest() {
   const [sourceId, setSourceId] = useState('')
   const [sourceType, setSourceType] = useState<string>('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const pending = usePendingDocs(note)
+
+  // Fetch the shipped bundle for a withheld document and push it through the same keyless
+  // POST /ingest the drop zone uses — one lane, not a demo shortcut beside it.
+  const ingestPending = async (doc: PendingDocument) => {
+    if (busy) return
+    try {
+      const body = await api.pendingBundle(doc.doc_id)
+      await ingestLive(body.bundle ?? [])
+    } catch {
+      await ingestLive([]) // surfaces the honest "nothing was appended" note
+    }
+  }
 
   // A dropped/picked .json is a claim bundle (posted immediately); any other file is a raw
   // document — load its text into the form for the analyst to label and extract.
@@ -64,6 +101,37 @@ export function LiveIngest() {
   return (
     <div className="border-b border-hairline px-[18px] py-[14px]">
       <div className="mb-[9px] text-[10.5px] tracking-[0.06em] text-text-faint">Documents</div>
+
+      {/* AWAITING INGEST — the documents the boot seed withheld. The graph you are looking at
+          is the state before they arrived; clicking one makes it arrive. */}
+      {pending && pending.length > 0 && (
+        <div className="mb-[12px] rounded border border-hairline px-[11px] py-[10px]">
+          <div className="mb-[3px] text-[10.5px] tracking-[0.06em] text-text-faint">Awaiting ingest</div>
+          <div className="mb-[9px] text-[10.5px] leading-[1.5] text-text-faint">
+            Collected but not yet in the graph. Ingest one to see what changes.
+          </div>
+          {pending.map((doc) => (
+            <div key={doc.doc_id} className="mt-[7px] flex items-center gap-[8px] first:mt-0">
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-mono text-[10.5px] text-text-dim">{doc.doc_id}</div>
+                <div className="truncate text-[10px] text-text-faint">
+                  {[doc.source_type, doc.claim_count ? `${doc.claim_count} claims` : null]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={busy || doc.available === false || doc.ingested === true}
+                onClick={() => void ingestPending(doc)}
+                className="h-[26px] flex-none cursor-pointer rounded border border-accent bg-transparent px-[10px] text-[11px] text-accent hover:bg-[rgba(74,158,255,0.10)] disabled:cursor-default disabled:opacity-45"
+              >
+                {doc.available === false ? 'missing' : doc.ingested ? 'ingested' : 'Ingest'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* drop / pick — .json bundle posts straight away; a text doc loads into the form below */}
       <div

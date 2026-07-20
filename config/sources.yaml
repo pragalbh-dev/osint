@@ -78,3 +78,21 @@ sources:
   - {source_id: cd18_forwarder_collision, source_type: customs-tender, reliability_grade: C, bias_vector: commercial, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd18_forwarder_collision.txt", report_date: "2021-04-04"}
   - {source_id: cd19_rumor_missile, source_type: anon-social, reliability_grade: E, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd19_rumor_missile.txt"}
   - {source_id: cd20_defense_budget, source_type: trade-media, reliability_grade: C, bias_vector: operator-state, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd20_defense_budget.txt"}
+
+# ── withheld from the boot seed (the reviewer's live-ingest set) ────────────────────────────────────
+# These documents EXIST and their frozen claim bundles are shipped — they are simply not appended at
+# boot, so the app stands up in the state that PRECEDES their arrival. A reviewer then ingests them
+# through the keyless POST /ingest lane (no key, no network) and watches the graph move: the unit's
+# basing flips site, the old assertion is superseded and goes stale, and the relocation tripwire fires.
+# That is the honest shape of a monitoring alert — the analyst is warned when new evidence ARRIVES —
+# and it cannot be demonstrated if the evidence is already in the graph at boot.
+#
+# Holding a document back automatically holds back everything DERIVED from it (its `__basing.json` /
+# `__attr.json` enrichment bundles); a before-graph carrying an inference whose premises had not
+# arrived would be incoherent.
+#
+# Set to [] (or override with CHANAKYA_SEED_WITHHOLD, comma-separated; empty string = withhold nothing)
+# to boot the complete corpus instead — e.g. for a static graph review with no live ingest step.
+withheld_from_seed:
+  - d18_rahwali_pass1    # 2025 overhead pass — first Rahwali occupancy indicator (single-pass -> probable)
+  - d19_rahwali_confirm  # 2025 discipline-independent confirmation -> confirmed + supersedes Rawalpindi
