@@ -24,8 +24,23 @@ from __future__ import annotations
 from chanakya.schemas import AskAnswer, GraphView
 from eval import harness
 
-#: The chain the worked query has to walk (basing → operator → variant → chokepoint component).
-EXPECTED_HOPS = 3
+#: The floor on the chain the worked query walks — it must be a genuine multi-hop TRACE, not a lookup.
+#:
+#: This was a hard pin at 3 (basing → operator → variant → chokepoint component). T3b relaxed it to a
+#: floor, for the reason this file's own docstring gives about node ids: pinning the exact shape turns a
+#: data improvement into a red test. What changed and why, so a future reader can judge it:
+#:
+#:   before  site_rahwali -based-at→ unit_hq9b -equips→ var_hq9p -equips→ ent:component:Type 305B
+#:   after   site_rahwali -observed-at→ comp_ht233 -supplies-component→ ent:manufacturer:CPMIEC
+#:
+#: The old chain terminated on ``Type 305B`` — one of ten FRAGMENTS of the HT-233 radar — and never
+#: reached a supplier at all. Once the fragments resolve onto ``comp_ht233``, the nominated chokepoint is
+#: the real radar, it carries a maker edge, and the trace reaches it. That edge is the corpus's planted
+#: CPMIEC false attribution (d23, refuted by d22), and the answer labels it ``insufficient`` and closes
+#: on "Insufficient evidence to assess HT-233: missing named_supplier" — so the thread now *exercises*
+#: the misinformation trap instead of stepping around it. The trade is two fewer ORBAT hops
+#: (operator → variant) in the narrative. Worth a deliberate look before the demo.
+MIN_HOPS = 2
 
 
 def test_worked_query_answers_instead_of_refusing(hero_answer: AskAnswer) -> None:
@@ -37,8 +52,8 @@ def test_worked_query_answers_instead_of_refusing(hero_answer: AskAnswer) -> Non
 
 
 def test_worked_query_walks_the_full_cited_chain(hero_answer: AskAnswer) -> None:
-    """A multi-hop trace: the declared number of hops, every one of them sourced."""
-    assert len(hero_answer.hops) == EXPECTED_HOPS, [
+    """A multi-hop trace: a real walk of at least ``MIN_HOPS``, every one of them sourced."""
+    assert len(hero_answer.hops) >= MIN_HOPS, [
         (h.step, h.edge, h.src, h.dst) for h in hero_answer.hops
     ]
     for hop in hero_answer.hops:

@@ -11,6 +11,7 @@ from chanakya.schemas import (
     DocRef,
     EntityDescriptor,
     ExactDate,
+    OntologyConfig,
     PlaceEntry,
     PlacesConfig,
     ResolutionConfig,
@@ -50,10 +51,13 @@ def mk_config(
     source_grades: dict[str, str] | None = None,
     coref_authoritative_evidence: list[str] | None = None,
     entity_geo_conflict_max_km: dict[str, float] | None = None,
+    relational_support_k: int | None = None,
+    ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
     resolution = ResolutionConfig(
         coref_authoritative_evidence=coref_authoritative_evidence or [],
         entity_geo_conflict_max_km=entity_geo_conflict_max_km or {},
+        relational_support_k=relational_support_k,
         merge_weights=dict(WEIGHTS),
         bands=dict(BANDS),
         blocking_keys=blocking_keys or ["type", "country_or_domain_namespace", "name_token"],
@@ -86,7 +90,12 @@ def mk_config(
         source_class_factors=CLASS_AUTHORITY if source_grades else {},
     )
     return ConfigBundle(
-        version=1, resolution=resolution, places=places_cfg, sources=sources_cfg, credibility=credibility
+        version=1,
+        resolution=resolution,
+        places=places_cfg,
+        sources=sources_cfg,
+        credibility=credibility,
+        ontology=ontology or OntologyConfig(),
     )
 
 

@@ -15,6 +15,7 @@ other stage that needs the canonical edge for an endpoint-typed pair can reuse i
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from chanakya.schemas import CredibilityConfig, OntologyConfig
@@ -270,3 +271,130 @@ class EdgeLaneIndex:
             return RelaneResult(canon_rev, "relaned", reversed=True,
                                 reason=f"{predicate!r}@({subject_type}->{object_type}) reversed -> {canon_rev}")
         return RelaneResult(None, "rejected", reason=f"no edge for ({subject_type}->{object_type})")
+
+
+# ── node-type identity rules (T3b) ───────────────────────────────────────────────────────────────
+#
+# The edge index above says what an endpoint *may connect to*. This index says what an endpoint **is**
+# and how its identity works — the other half of the same designed schema, and the half the resolver
+# needed. Both are read from ``config/ontology.yaml`` and neither hardcodes a type name (gate G6).
+
+_IDENTITY = "identity"          # the per-node-type block these rules live in
+_REFINES = "refines"            # this type is a narrower reading of another type's endpoint role
+_HEAD_MARKERS = "name_head_markers"
+_NAMED_INSTANCES = "named_instances"
+_RELATIONAL = "relational"
+_IDENTIFIER_PATTERNS = "identifier_patterns"
+
+_NON_ALNUM = re.compile(r"[^0-9a-z]+")
+
+
+def _fold(text: str) -> str:
+    """Casefold + collapse punctuation to single spaces (the comparison form for the rules below)."""
+    return _NON_ALNUM.sub(" ", text.casefold()).strip()
+
+
+@dataclass(frozen=True)
+class _Refinement:
+    """A node type declared as a narrower reading of ``base``, recognised from an instance's NAME."""
+
+    name: str
+    base: str
+    head_markers: tuple[str, ...]
+    named_instances: tuple[str, ...]
+
+    def matches(self, name: str) -> bool:
+        folded = _fold(name)
+        if not folded:
+            return False
+        if folded in self.named_instances:
+            return True
+        head = folded.rsplit(" ", 1)[-1]
+        return head in self.head_markers
+
+
+class NodeTypeIndex:
+    """``config/ontology.yaml``'s node-type identity rules, compiled to three deterministic queries.
+
+    Three separate facts about a node type, all authored in config because all three are statements
+    about the **world**, not about the code (gate G6 / CLAUDE.md "config-driven, not hardcoded"):
+
+    * :meth:`refine` — a *refinement* type (``refines: <base>``) is a narrower reading of a base type
+      that an edge's declared range cannot express. ``based-at``/``observed-at`` range over
+      ``basing_site``, so every place a source names is minted as one — including provinces, "air
+      defence sectors" and "coastal belts", which are **areas of responsibility, not places a unit
+      sits** (``md/13`` §1; ``ingest/basing.py::_is_locatable_site`` already says so in prose). Naming
+      the distinction in the ontology makes it structural: an area and a site can no longer be proposed
+      as duplicates of one another.
+    * :meth:`relational_identity` — may a *shared neighbourhood* count as identity evidence for this
+      type? For most types yes (that is the collective-ER signal). For an AREA it is actively
+      misleading: two sectors that both contain sightings of the same equipment share a neighbourhood
+      **by construction** — that is a fact about the equipment's dispersal, not about the areas being
+      one area.
+    * :meth:`identifier` — does this type's NAME carry a hard identifier (a bill-of-lading / contract
+      reference)? Two entities that each state one and state *different* ones can never be the same
+      thing, which is a deterministic rail rather than a score penalty.
+
+    A type that declares no ``identity`` block behaves exactly as before (gate G2).
+    """
+
+    def __init__(self, ontology: OntologyConfig) -> None:
+        self._refinements: list[_Refinement] = []
+        self._relational: dict[str, bool] = {}
+        self._identifiers: dict[str, list[re.Pattern[str]]] = {}
+        for t in ontology.node_types:
+            block = getattr(t, _IDENTITY, None)
+            if not isinstance(block, dict):
+                block = {}
+            base = getattr(t, _REFINES, None)
+            if isinstance(base, str) and base:
+                self._refinements.append(
+                    _Refinement(
+                        name=t.name,
+                        base=base,
+                        head_markers=tuple(_fold(str(m)) for m in block.get(_HEAD_MARKERS, [])),
+                        named_instances=tuple(_fold(str(m)) for m in block.get(_NAMED_INSTANCES, [])),
+                    )
+                )
+            if _RELATIONAL in block:
+                self._relational[t.name] = bool(block[_RELATIONAL])
+            patterns = []
+            for raw in block.get(_IDENTIFIER_PATTERNS, []):
+                try:
+                    patterns.append(re.compile(str(raw)))
+                except re.error:
+                    continue  # a malformed operator regex disables that rule; it never crashes rebuild()
+            if patterns:
+                self._identifiers[t.name] = patterns
+
+    def refine(self, node_type: str | None, name: str | None) -> str | None:
+        """The narrower node type this instance's NAME earns, or ``node_type`` unchanged.
+
+        Declaration order decides when several refinements share a base, so the answer is deterministic
+        and reviewable in the YAML itself. No refinement declared for ``node_type`` ⇒ identity (gate G2).
+        """
+        if not node_type or not name:
+            return node_type
+        for r in self._refinements:
+            if r.base == node_type and r.matches(name):
+                return r.name
+        return node_type
+
+    def relational_identity(self, node_type: str | None) -> bool:
+        """May a shared neighbourhood contribute to ``merge_score`` for this type? Default **yes**."""
+        if node_type is None:
+            return True
+        return self._relational.get(node_type, True)
+
+    def identifier(self, node_type: str | None, name: str | None) -> str | None:
+        """The hard identifier carried by this instance's name, or ``None`` if it carries none.
+
+        ``None`` on either side is **not** a conflict — absence is not disagreement, the same doctrine
+        ``resolve.scoring.has_hard_conflict`` already applies to attributes.
+        """
+        if not node_type or not name:
+            return None
+        for pattern in self._identifiers.get(node_type, []):
+            if pattern.fullmatch(name.strip()):
+                return name.strip()
+        return None

@@ -185,14 +185,41 @@ def _numeric_conflict(va: object, vb: object, rel_tol: object) -> bool:
     return abs(fa - fb) / scale > tol
 
 
-def relational_score(graph: EntityGraph, a: str, b: str, canonical: Canonical, exclude: set[str]) -> float:
-    """Jaccard overlap of the two resolved neighbourhoods (excluding relocation instances)."""
+def relational_score(
+    graph: EntityGraph,
+    a: str,
+    b: str,
+    canonical: Canonical,
+    exclude: set[str],
+    support_k: int | None = None,
+) -> float:
+    """Jaccard overlap of the two resolved neighbourhoods, discounted by how much it rests on (T3b-F).
+
+    A raw Jaccard **saturates at a perfect 1.0 on a one-element neighbourhood**: two basing sites whose
+    only edge is a ``based-at`` from the same unit overlap totally, so the collective-ER signal — the
+    strongest term in ``merge_score`` — reads "identical neighbourhood" from a single shared link. On
+    this corpus that artefact alone was what lifted eighteen cross-country site pairs to exactly
+    ``hitl_low`` and filled most of the analyst's merge queue; nothing else about those pairs agreed.
+
+    ``support_k`` is the number of *distinct shared neighbours* at which the signal reaches full
+    strength; below it the overlap is scaled by ``shared / support_k``. The invariant it buys, in the
+    same form ``resolution.yaml`` already states its others: **a perfect shared neighbourhood must rest
+    on at least ``support_k`` shared neighbours to reach the analyst on its own.** Two entities that
+    both connect to one hub are not thereby the same entity — the hub is the evidence that they are two
+    things attached to the same third thing.
+
+    Unset (or ``<= 1``) ⇒ the raw Jaccard, byte-identical to the pre-fix behaviour (gates G2/G6).
+    """
     na = _neighbours(graph, a, canonical, exclude)
     nb = _neighbours(graph, b, canonical, exclude)
     union = na | nb
     if not union:
         return 0.0
-    return len(na & nb) / len(union)
+    shared = na & nb
+    overlap = len(shared) / len(union)
+    if support_k is None or support_k <= 1:
+        return overlap
+    return overlap * min(1.0, len(shared) / support_k)
 
 
 def temporal_score(reloc: bool) -> float:
@@ -219,6 +246,12 @@ def source_asserted_score(
     return best
 
 
+def _relational_counts(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """May the shared-neighbourhood term contribute for this pair? (Both types must allow it.)"""
+    ntx = cfg.node_types
+    return ntx.relational_identity(a.etype) and ntx.relational_identity(b.etype)
+
+
 def merge_score(
     a: Entity,
     b: Entity,
@@ -230,9 +263,20 @@ def merge_score(
     """Full weighted merge_score + the stored per-signal breakdown (explainability)."""
     exclude = co_instances(graph, a.eid, b.eid)
     reloc = bool(exclude)
+    # T3b-A: for some node types a shared neighbourhood is not identity evidence at all. Two AREAS of
+    # responsibility that both contain sightings of the same equipment share a neighbourhood **by
+    # construction** — that is a fact about where the equipment is dispersed, not a reason to think the
+    # two areas are one area. The ontology declares which types those are (`identity.relational: false`);
+    # every other type keeps the collective-ER signal untouched, and an area can still merge or queue on
+    # name/alias evidence, which is the only honest identity signal it has.
+    relational = (
+        relational_score(graph, a.eid, b.eid, canonical, exclude, cfg.relational_support_k)
+        if _relational_counts(a, b, cfg)
+        else 0.0
+    )
     parts = {
         ATTRIBUTE: attribute_score(a, b, cfg, alias_idx),
-        RELATIONAL: relational_score(graph, a.eid, b.eid, canonical, exclude),
+        RELATIONAL: relational,
         TEMPORAL: temporal_score(reloc),
         SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid, cfg.identity_source_weight),
     }

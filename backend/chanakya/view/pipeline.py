@@ -31,7 +31,7 @@ from chanakya.credibility import (
 )
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
-from chanakya.ontology import EdgeLaneIndex
+from chanakya.ontology import EdgeLaneIndex, NodeTypeIndex
 from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
 from chanakya.schemas import (
     AssertionInput,
@@ -237,6 +237,8 @@ def _assemble(
     entity_canonical: dict[str, str] | None = None,
     endpoint_node_types: dict[str, str] | None = None,
     lane: EdgeLaneIndex | None = None,
+    node_types: NodeTypeIndex | None = None,
+    display_names: dict[str, str] | None = None,
 ) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
@@ -248,6 +250,29 @@ def _assemble(
     def to_canonical(ref: str) -> str:
         return canon.get(ref, ref)
 
+    def display(node_id: str, name: str | None) -> str | None:
+        """The analyst-curated prose name for a node, if the entity registry declares one (T3b-E).
+
+        ``config/entities.yaml``'s ``display_name`` already exists for exactly this case and the ASK
+        agent already honours it (``agent/context.py``) — the *view* simply never did, so the graph and
+        the answers disagreed about what one node is called. The sharp instance: ``unit_hq9b``'s only
+        corpus-attested surface forms are its OPERATOR ("PAF", "Pakistan Air Force"), which the registry
+        deliberately seeds as aliases; whichever claim replayed first then named the node, and the
+        relocation beat rendered as "Pakistan Air Force moved from Nur Khan to Rahwali". An air force did
+        not relocate; one fire unit did. This invents nothing — it surfaces the name an analyst already
+        wrote down, with its rationale, in config. No ``display_name`` ⇒ the claim's own name (gate G2).
+        """
+        return (display_names or {}).get(node_id) or name
+
+    def refined(node_type: str, name: str | None) -> str:
+        """The ontology's node-type refinement for a claim-declared type (T3b-A).
+
+        The SAME ``NodeTypeIndex.refine`` RESOLVE calls, so the type the resolver blocked and scored on
+        and the type the view renders can never disagree — the ``edge_instance_key`` precedent. Absent
+        index ⇒ the declared type, unchanged (gate G2).
+        """
+        return node_types.refine(node_type, name) or node_type if node_types else node_type
+
     for c in resolved:
         rr = c.resolved_ref
         payload = c.payload
@@ -257,7 +282,11 @@ def _assemble(
             nid = to_canonical(raw)
             node = nodes.get(nid)
             if node is None:
-                node = NodeView(id=nid, type=payload.entity_type, name=payload.name)
+                node = NodeView(
+                    id=nid,
+                    type=refined(payload.entity_type, payload.name),
+                    name=display(nid, payload.name),
+                )
                 nodes[nid] = node
             if c.claim_id not in node.claim_ids:
                 node.claim_ids.append(c.claim_id)
@@ -325,7 +354,7 @@ def _assemble(
                 nodes[endpoint] = NodeView(
                     id=endpoint,
                     type=node_type,
-                    name=_minted_name(endpoint) if node_type != "unknown" else None,
+                    name=display(endpoint, _endpoint_display_name(endpoint)),
                     claim_ids=list(e.claim_ids),
                 )
 
@@ -388,6 +417,22 @@ def _minted_name(node_id: str) -> str | None:
     """
     parts = node_id.split(":", 2)
     return parts[2] if len(parts) == 3 and parts[0] == "ent" and parts[2] else None
+
+
+def _endpoint_display_name(node_id: str) -> str | None:
+    """The designator to SHOW for a materialised endpoint — typed or ``unknown`` (T3b-D).
+
+    A typed endpoint is minted as ``ent:<type>:<surface form>`` and unwraps via :func:`_minted_name`. An
+    endpoint the ontology could not type is never minted at all: it stays the raw surface form, so **the
+    id IS the designator**. Rendering it nameless was the reason the graph showed a bare
+    ``HQ-9/P TEL`` id with type ``unknown`` — the one piece of information the analyst needed (what the
+    document actually called it) was on the node the whole time and simply not surfaced.
+
+    A name is a display concern, not an identity one: it does not make the node resolvable. These nodes
+    fail to resolve because RESOLVE left them as untyped mentions rather than entities, which is fixed
+    at the typing layer (``resolve._edge_allowed_types``), not here.
+    """
+    return _minted_name(node_id) or node_id or None
 
 
 # ── HITL decision effects (real F0, gate G12) ─────────────────────────────────────────────────
@@ -456,7 +501,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
     #    merged-away entity's edges to its canonical node (no-op when nothing merged).
     nodes, edges, events = _assemble(
-        resolved, partition.entity_canonical, partition.endpoint_node_types, EdgeLaneIndex(config.ontology)
+        resolved,
+        partition.entity_canonical,
+        partition.endpoint_node_types,
+        EdgeLaneIndex(config.ontology),
+        NodeTypeIndex(config.ontology),
+        {e.entity_id: e.display_name for e in config.entities.entities if e.display_name},
     )
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     _stamp_place_refs(nodes, partition)  # RES-3: the curated-anchor binding + the evidence for it
