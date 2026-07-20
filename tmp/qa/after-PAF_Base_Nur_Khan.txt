@@ -1,0 +1,42 @@
+hit=true
+
+Proving
+“PAF Base Nur Khan” exists, as a basing site
+basing site · site_rawalpindi
+✕
+Provenance
+Probable
+Supported, but thinner than confirmed — lean on it, do not bet on it.
+2 sources · 2 independent looks · 4 claims on file
+Independent look 1 of 2 · IMINT / third-party
+Commercial satellite imagery
+d17_rawalpindi_2021 · reliability B · third party interest · dated 2021-10-14
+1 claim from this look
+Observed · L4
+▸
+“PAF Base Nur Khan” is a basing site
+occupancy state — active or near-active fire-unit site
+site signature geometry — Grid: 43S CT 23715 21242 (MGRS, WGS84)
+site type — prepared revetment complex / airfield site
+Observed · about a thing · L4
+Independent look 2 of 2 · IMINT / third-party
+Commercial satellite imagery
+d17b_withheld_gap · reliability B · third party interest · dated 2025-06-11
+3 claims from this look
+Observed · L22 · 1359–1486
+▸
+“the old Rawalpindi-area site” is a basing site
+occupancy observed date — 2025-06-11
+occupancy state — negative TEL presence
+Observed · about a thing · L22 · 1359–1486
+Observed · L22 · 1487–1630
+▸
+“the old Rawalpindi-area site” is a basing site
+occupancy observed date — 2024-11
+occupancy state — showed what was assessed as a possible radar trailer footprint
+Observed · about a thing · L22 · 1487–1630
+Observed · L9
+▸
+“the old Rawalpindi-area site” is a basing site
+site type — forward SAM deployment area
+Observed · about a thing · L9

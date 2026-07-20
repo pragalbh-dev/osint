@@ -191,6 +191,28 @@ def test_identity_assertion_reaches_the_analyst_but_never_auto_merges() -> None:
     assert frozenset({"var_a", "var_b"}) in {frozenset(p) for p in part.candidates}
 
 
+def test_identity_assertion_names_the_claim_it_came_from() -> None:
+    """T10 — the score alone is not enough: an analyst adjudicating the pair has to read the source.
+
+    ``source_asserted`` is the one merge signal that is somebody's *assertion* rather than the resolver's
+    own arithmetic, and the assertion is consumed rather than drawn — so unless the pair carries the claim
+    id, the sentence behind the number is unreachable from the review queue.
+    """
+    _, part = _identity_pair("src-register", {"src-register": "curated-register"})
+    key = pair_key("var_a", "var_b")
+    assert part.merge_breakdown[key]["source_asserted"] > 0
+    assert len(part.identity_claims[key]) == 1
+
+
+def test_a_pair_no_source_spoke_about_carries_no_identity_citation() -> None:
+    """The absence is load-bearing: no key at all, so nothing downstream can offer an empty link."""
+    cfg = mk_config()
+    part = resolve(
+        [entity("var_a", "variant", "Alpha SAM"), entity("var_b", "variant", "Alpha SAM Mk2")], cfg
+    )
+    assert part.identity_claims == {}
+
+
 def test_identity_assertion_cannot_cross_the_auto_line_at_any_weight() -> None:
     # Property: crank the identity weight past the auto band; the pair must STILL only reach HITL.
     cfg = mk_config()

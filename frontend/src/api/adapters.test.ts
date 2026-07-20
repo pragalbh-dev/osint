@@ -3,6 +3,7 @@ import type { AskAnswer, GraphView, ProvenanceDrawer } from './types'
 import {
   alertToFiring,
   askToAnswerModel,
+  clusterAreaPins,
   credibilityToDots,
   dateValueToString,
   displayNameOf,
@@ -10,7 +11,13 @@ import {
   edgeToKind,
   evidenceToDrawerModel,
   formatCoord,
+  formatRadius,
+  groupReviewQueue,
   hopLine,
+  isAreaPin,
+  mergeDiffersOn,
+  mergeDifferences,
+  orderReviewQueue,
   humanizeEdge,
   humanizeObservableId,
   isKnownElementId,
@@ -22,6 +29,7 @@ import {
   viewToGraphEdges,
   viewToGraphNodes,
   viewToPins,
+  unplacedLocations,
   viewToReviewQueue,
   viewToTripwires,
 } from './adapters'
@@ -84,7 +92,22 @@ const VIEW: GraphView = {
     { id: 'e6', type: 'based-at', source: 'gap_node', target: 'ht233', status: 'contradicted' },
     // status-LESS by design — nothing may assume every edge carries a status
     { id: 'sa1', type: 'same-as', source: 'karachi', target: 'paad', status: null },
-    { id: 'sup1', type: 'supersedes', source: 'rahwali_stale', target: 'karachi', status: null, confidence: null },
+    // The backend draws supersession site→site but the fact lives on the `based-at` edge, so the
+    // drawn edge carries `attrs.subject` — WHO moved. Consumers must use it or they assert that
+    // one site replaced another.
+    {
+      id: 'sup1',
+      type: 'supersedes',
+      source: 'rahwali_stale',
+      target: 'karachi',
+      status: null,
+      confidence: null,
+      attrs: {
+        subject: 'paad',
+        older_edge: 'e:paad:based-at:karachi',
+        newer_edge: 'e:paad:based-at:rahwali_stale',
+      },
+    },
   ],
   events: [],
   known_gaps: [],
@@ -225,7 +248,24 @@ describe('viewToPins', () => {
   // story the Graph stage tells. VIEW's `sup1` is `rahwali_stale supersedes karachi`.
   it('marks the TARGET of a settled supersedes edge as history, naming its successor', () => {
     expect(pins[0]).toMatchObject({ id: 'karachi', superseded: true, supersededBy: 'rahwali_stale' })
-    expect(pins[0].caption).toBe('superseded · 2022')
+  })
+
+  // A bare "superseded" caption on a SITE reads as "this place was replaced", which is false —
+  // the place is still there, its occupant left. The caption must be about the occupancy and it
+  // must name the occupant, which the drawn edge carries in `attrs.subject`.
+  it('captions a left-behind site by its former OCCUPANCY, naming the occupant', () => {
+    expect(pins[0].caption).toBe('former PA Air Defence basing · 2022')
+    expect(pins[0].supersedeSubject).toBe('PA Air Defence')
+    expect(pins[0].supersedeEdgeId).toBe('sup1')
+  })
+
+  it('falls back to a subject-free caption rather than naming the site as replaced', () => {
+    const anon = viewToPins({
+      ...VIEW,
+      edges: [{ id: 'sup1', type: 'supersedes', source: 'rahwali_stale', target: 'karachi' }],
+    })
+    expect(anon[0].caption).toBe('former basing on record · 2022')
+    expect(anon[0].supersedeSubject).toBeNull()
   })
 
   it('does NOT mark a pin superseded on an unadjudicated (candidate/held) supersession', () => {
@@ -308,17 +348,25 @@ describe('viewToGraphNodes', () => {
 })
 
 describe('viewToGraphEdges', () => {
-  it('maps id/source/target/kind for every edge', () => {
+  it('maps id/source/target/kind/type for every edge', () => {
     expect(viewToGraphEdges(VIEW)).toEqual([
-      { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed' },
-      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale' },
-      { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable' },
-      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale' },
-      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap' },
-      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted' },
-      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-link' },
-      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede' },
+      { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed', type: 'based-at' },
+      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale', type: 'supplies-component' },
+      { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable', type: 'based-at' },
+      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale', type: 'based-at' },
+      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap', type: 'based-at' },
+      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted', type: 'based-at' },
+      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-link', type: 'same-as' },
+      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede', type: 'supersedes' },
     ])
+  })
+
+  // The graph stage separates DOMAIN relationships from resolution BOOKKEEPING, which is
+  // only possible if the ontology type survives the collapse into a visual `kind`
+  // (`e-link` is both `same-as` and `distinct-from`).
+  it('keeps the ontology type alongside the collapsed visual kind', () => {
+    const sameAs = viewToGraphEdges(VIEW).find((e) => e.id === 'sa1')
+    expect(sameAs).toMatchObject({ kind: 'e-link', type: 'same-as' })
   })
 })
 
@@ -488,9 +536,13 @@ describe('evidenceToDrawerModel', () => {
     expect(model.clusters[0].rows[1].docRefs).toEqual([{ file: 'b.pdf' }, { file: 'c.pdf' }])
   })
 
-  it('builds row detail from kind + asserts', () => {
-    expect(model.clusters[0].rows[0].detail).toBe('observation · relationship')
-    expect(model.clusters[0].rows[1].detail).toBe('inference · entity')
+  // "observation · entity" names the claim's FILING CATEGORY, not its content — an analyst reads
+  // it and still cannot tell what is being asserted. The detail line is the internal enum pair
+  // translated; the CONTENT lives in `proposition` (below).
+  it('translates kind + asserts into analyst English', () => {
+    expect(model.clusters[0].rows[0].detail).toBe('Observed · about a connection')
+    expect(model.clusters[0].rows[1].detail).toBe('Inferred · about a thing')
+    expect(model.clusters[0].rows[0].kindLabel).toBe('Observed')
   })
 
   it('formats each date form through dateValueToString', () => {
@@ -549,6 +601,189 @@ describe('evidenceToDrawerModel', () => {
     expect(bare.opposingCount).toBe(0)
     expect(bare.integrityFlags).toEqual([])
     expect(bare.clusters).toEqual([])
+  })
+
+  // ── what the drawer is a verdict ABOUT ───────────────────────────────────────────────────
+  // A status hung over a bare node name grades no proposition. The headline states the assertion
+  // under assessment, built from the graph's own name + type — never invented.
+
+  it('heads a node with the proposition that node exists, as its own type', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'karachi' }, VIEW)
+    expect(m.subject).toMatchObject({ kind: 'node', typeLabel: 'basing site', statusless: false })
+    expect(m.subject?.headline).toBe('“Karachi” exists, as a basing site')
+  })
+
+  it('heads an edge with the relationship it asserts, both ends named', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'e1' }, VIEW)
+    expect(m.subject?.headline).toBe('Karachi — based at → PA Air Defence')
+  })
+
+  it('falls back to the bare ref when the view does not know the id — never a description', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'nope' }, VIEW)
+    expect(m.subject).toMatchObject({ kind: 'unknown', headline: 'nope' })
+  })
+
+  // The drawn `supersedes` edge runs site→site, but what was overtaken is the OCCUPANCY. Copy
+  // that stops at "Karachi replaced by Rahwali (old)" asserts the site was replaced — false.
+  it('narrates a supersedes edge as a relocation of its subject, not of the sites', () => {
+    const m = evidenceToDrawerModel({ subject_ref: 'sup1' }, VIEW)
+    expect(m.subject?.statusless).toBe(true)
+    expect(m.subject?.headline).toContain('PA Air Defence moved from Karachi to Rahwali (old)')
+    expect(m.supersession).toEqual({
+      role: 'link',
+      subjectName: 'PA Air Defence',
+      fromName: 'Karachi',
+      toName: 'Rahwali (old)',
+      olderEdgeId: 'e:paad:based-at:karachi',
+      newerEdgeId: 'e:paad:based-at:rahwali_stale',
+    })
+  })
+
+  // "Stale" on the retired basing assertion, with no successor named, is the same failure as
+  // "replaced by" with no subject named — so the relocation is reachable from either side of it.
+  it('explains the relocation from the retired assertion as well as from the link', () => {
+    const older = evidenceToDrawerModel({ subject_ref: 'e:paad:based-at:karachi' }, VIEW)
+    expect(older.supersession).toMatchObject({ role: 'older', fromName: 'Karachi', toName: 'Rahwali (old)' })
+    const newer = evidenceToDrawerModel({ subject_ref: 'e:paad:based-at:rahwali_stale' }, VIEW)
+    expect(newer.supersession?.role).toBe('newer')
+    expect(evidenceToDrawerModel({ subject_ref: 'e1' }, VIEW).supersession).toBeUndefined()
+  })
+
+  it('marks identity links status-less too, so a null status is never drawn as a gap', () => {
+    expect(evidenceToDrawerModel({ subject_ref: 'sa1' }, VIEW).subject?.statusless).toBe(true)
+    expect(evidenceToDrawerModel({ subject_ref: 'e1' }, VIEW).subject?.statusless).toBe(false)
+  })
+
+  // ── claim content ────────────────────────────────────────────────────────────────────────
+
+  it('reads each claim proposition off its own payload, resolving ids to names', () => {
+    const withPayloads = evidenceToDrawerModel(
+      {
+        subject_ref: 'karachi',
+        claims: [
+          {
+            claim_id: 't1',
+            source_id: 's1',
+            doc_ref: { file: 'a.txt', line: 4 },
+            kind: 'observation',
+            asserts: 'relationship',
+            payload: { form: 'triple', subject: 'paad', predicate: 'based-at', object: 'karachi' },
+          },
+          {
+            claim_id: 't2',
+            source_id: 's1',
+            doc_ref: { file: 'a.txt', line: 22 },
+            kind: 'observation',
+            asserts: 'entity',
+            payload: {
+              form: 'entity',
+              entity_type: 'basing_site',
+              name: 'the old Rawalpindi-area site',
+              attrs: { occupancy_state: 'negative TEL presence', coordinates: { wgs84_lat: 1 } },
+            },
+          },
+        ],
+      },
+      VIEW,
+    )
+    const [t1, t2] = withPayloads.clusters[0].rows
+    expect(t1.proposition).toBe('PA Air Defence is based at Karachi')
+    expect(t2.proposition).toBe('“the old Rawalpindi-area site” is a basing site')
+    // scalars only — a nested coordinate block is structure, not a line of prose
+    expect(t2.attrLines).toEqual(['occupancy state — negative TEL presence'])
+    // two claims from ONE document must be tellable apart on the chip itself
+    expect([t1.locatorShort, t2.locatorShort]).toEqual(['L4', 'L22'])
+  })
+
+  // Two claims lifted from the SAME line of one document collide on "L22" — the defect being
+  // fixed was three chips that read identically over three different claims.
+  it('falls through to the character span when two claims share a line', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [
+        { claim_id: 'a', source_id: 's', doc_ref: { file: 'd.txt', line: 22, span: [1359, 1486] }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'b', source_id: 's', doc_ref: { file: 'd.txt', line: 22, span: [1487, 1630] }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'c', source_id: 's', doc_ref: { file: 'd.txt', line: 9 }, kind: 'observation', asserts: 'entity' },
+      ],
+    })
+    const labels = m.clusters[0].rows.map((r) => r.locatorShort)
+    expect(labels).toEqual(['L22 · 1359–1486', 'L22 · 1487–1630', 'L9'])
+    expect(new Set(labels).size).toBe(labels.length)
+  })
+
+  it('emits no proposition (rather than a guess) for a payload shape it cannot phrase', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [{ claim_id: 'c', source_id: 's', doc_ref: { file: 'a' }, kind: 'observation', asserts: 'entity' }],
+    })
+    expect(m.clusters[0].rows[0].proposition).toBe('')
+  })
+
+  // Claims outside every independence group used to be DROPPED — a status-less edge carries all
+  // of its citations that way, so the drawer showed an element with three sources as having none.
+  it('keeps cited claims that no cluster contains, in an explicitly-ungrouped bucket', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'sup1',
+      claims: [
+        { claim_id: 'a', source_id: 's1', doc_ref: { file: 'x' }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'b', source_id: 's2', doc_ref: { file: 'y' }, kind: 'observation', asserts: 'entity' },
+      ],
+      clusters: [],
+    })
+    expect(m.looks).toBe(0) // an ungrouped bucket is NOT an independent look
+    expect(m.clusters).toHaveLength(1)
+    expect(m.clusters[0]).toMatchObject({ groupId: 'ungrouped', ungrouped: true })
+    expect(m.claimCount).toBe(2)
+  })
+
+  // The header arithmetic has to survive comparison with the body: "2 sources" over four chips
+  // was the bug. claimCount counts the rows actually rendered.
+  it('counts claims as the rows actually rendered, so the header cannot contradict the body', () => {
+    expect(model.claimCount).toBe(3) // c1, c2, c3 — c_missing has no record and is not rendered
+    expect(model.sources).toBe(2)
+    expect(model.looks).toBe(2)
+  })
+
+  // A source id is an internal key; "who says so?" needs the class + grade from the registry.
+  it('describes each cluster source by CLASS and grade, never by an invented name', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [
+        { claim_id: 'a', source_id: 'd17b', doc_ref: { file: 'x' }, kind: 'observation', asserts: 'entity' },
+        { claim_id: 'b', source_id: 'mystery', doc_ref: { file: 'y' }, kind: 'observation', asserts: 'entity' },
+      ],
+      sources: {
+        d17b: {
+          source_id: 'd17b',
+          source_type: 'satellite',
+          reliability_grade: 'B',
+          bias_vector: 'third-party',
+          report_date: '2025-06-11',
+          coordinated_inauthenticity_flag: false,
+        },
+      },
+    })
+    const [known, unknown] = m.clusters[0].sources
+    expect(known).toMatchObject({
+      label: 'Commercial satellite imagery',
+      grade: 'B',
+      bias: 'third party',
+      reportDate: '2025-06-11',
+      known: true,
+    })
+    // an id the registry does not carry is shown as the id, described as nothing
+    expect(unknown).toEqual({ sourceId: 'mystery', label: 'mystery', flags: [], known: false })
+  })
+
+  it('surfaces registry gate flags on the source that carries them', () => {
+    const m = evidenceToDrawerModel({
+      subject_ref: 'x',
+      claims: [{ claim_id: 'a', source_id: 'r', doc_ref: { file: 'x' }, kind: 'observation', asserts: 'entity' }],
+      sources: {
+        r: { source_id: 'r', source_type: 'named-social', coordinated_inauthenticity_flag: true },
+      },
+    })
+    expect(m.clusters[0].sources[0].flags).toEqual(['coordinated inauthenticity'])
   })
 })
 
@@ -918,5 +1153,441 @@ describe('viewToTripwires / alertToFiring', () => {
       'newer-below-probable',
       'newer-deception-gate:decoy-risk',
     ])
+  })
+})
+
+// ─────────────────────── location precision, honestly rendered (T5) ───────────────────────
+// The map used to draw three pins because the backend resolved almost nothing to a
+// coordinate. Now that it does, the risk flips: everything gets drawn, and a province
+// centroid starts to look like a fix. These tests pin the distinction the map exists to
+// make — a point you could put a reticle on vs. an area a source vaguely gestured at.
+
+const PRECISION_VIEW: GraphView = {
+  nodes: [
+    {
+      id: 'pad_site',
+      type: 'basing_site',
+      name: 'Malir emplacement',
+      status: 'confirmed',
+      location: { wgs84_lat: 24.9012, wgs84_lon: 67.2034, precision_class: 'pad', surface_format: 'DMS' },
+      attrs: { location_uncertainty_radius_m: 500, location_source: 'stated-coordinate' },
+    },
+    {
+      id: 'punjab_a',
+      type: 'basing_site',
+      name: 'air defence node',
+      status: 'possible',
+      location: { wgs84_lat: 31.1471, wgs84_lon: 72.7097, precision_class: 'province', raw: 'Punjab Province, Pakistan' },
+      attrs: { location_uncertainty_radius_m: 150000, location_source: 'gazetteer-anchor' },
+    },
+    {
+      id: 'punjab_b',
+      type: 'basing_site',
+      name: 'fenced compound',
+      status: 'possible',
+      location: { wgs84_lat: 31.1471, wgs84_lon: 72.7097, precision_class: 'province', raw: 'central Punjab' },
+      attrs: { location_uncertainty_radius_m: 150000, location_source: 'gazetteer-anchor' },
+    },
+    {
+      id: 'unplaced',
+      type: 'basing_site',
+      name: 'garrison in a western military district',
+      status: 'insufficient',
+      location: { raw: "China's western military district", surface_format: 'toponym' },
+    },
+  ],
+  edges: [],
+  events: [],
+  known_gaps: [],
+  alerts: [],
+}
+
+describe('location precision', () => {
+  const pins = viewToPins(PRECISION_VIEW)
+
+  it('carries precision, uncertainty radius and coordinate provenance onto every pin', () => {
+    expect(pins).toHaveLength(3) // the unplaced node is not a pin
+    expect(pins.find((p) => p.id === 'pad_site')).toMatchObject({
+      precision: 'pad',
+      uncertaintyRadiusM: 500,
+      locationSource: 'stated-coordinate',
+    })
+  })
+
+  it('states BOTH the point and how well it is known in the coord readout', () => {
+    // showing the coordinate alone hides a 150 km envelope; showing the format alone hides the point
+    expect(pins.find((p) => p.id === 'pad_site')!.coord).toBe('24.90°N  67.20°E  DMS  ±500 m')
+    expect(pins.find((p) => p.id === 'punjab_a')!.coord).toContain('±150 km')
+  })
+
+  it('separates points from areas — a province is never a point', () => {
+    expect(isAreaPin(pins.find((p) => p.id === 'pad_site')!)).toBe(false)
+    expect(isAreaPin(pins.find((p) => p.id === 'punjab_a')!)).toBe(true)
+  })
+
+  it('treats an anchor-derived point of unknown precision as an area, not a point', () => {
+    expect(isAreaPin({ ...pins[0], precision: null, locationSource: 'gazetteer-anchor' })).toBe(true)
+    expect(isAreaPin({ ...pins[0], precision: null, locationSource: 'stated-coordinate' })).toBe(false)
+  })
+
+  it('formats a radius in the unit a reader thinks in', () => {
+    expect(formatRadius(500)).toBe('500 m')
+    expect(formatRadius(15000)).toBe('15 km')
+  })
+})
+
+describe('clusterAreaPins', () => {
+  const clustered = clusterAreaPins(viewToPins(PRECISION_VIEW))
+
+  it('folds two entities that share one area anchor into a single counted marker', () => {
+    expect(clustered).toHaveLength(2)
+    const area = clustered.find((p) => p.id !== 'pad_site')!
+    expect(area.label).toBe('2 entities')
+    expect(area.caption).toBe('located to this area only')
+    expect(area.members).toEqual(['punjab_a', 'punjab_b'])
+  })
+
+  it('never clusters point pins — those ARE distinguishable positions', () => {
+    const point = clustered.find((p) => p.id === 'pad_site')!
+    expect(point.label).toBe('Malir emplacement')
+    expect(point.members).toBeUndefined()
+  })
+
+  it('is deterministic — members sort by id and the first is the survivor', () => {
+    const reversed = clusterAreaPins([...viewToPins(PRECISION_VIEW)].reverse())
+    const area = reversed.find((p) => p.members && p.members.length > 1)!
+    expect(area.id).toBe('punjab_a')
+    expect(area.members).toEqual(['punjab_a', 'punjab_b'])
+  })
+
+  it('leaves a lone area pin naming itself', () => {
+    const single = clusterAreaPins(
+      viewToPins({ ...PRECISION_VIEW, nodes: PRECISION_VIEW.nodes.filter((n) => n.id !== 'punjab_b') }),
+    )
+    expect(single.find((p) => p.id === 'punjab_a')!.label).toBe('air defence node')
+  })
+})
+
+describe('unplacedLocations', () => {
+  it('surfaces a node the graph knows is somewhere and the map will not draw', () => {
+    expect(unplacedLocations(PRECISION_VIEW)).toEqual([
+      {
+        id: 'unplaced',
+        label: 'garrison in a western military district',
+        stated: "China's western military district",
+        type: 'basing_site',
+      },
+    ])
+  })
+
+  it('ignores nodes with no location at all — those are not a placement failure', () => {
+    expect(unplacedLocations(VIEW).map((u) => u.id)).not.toContain('paad')
+  })
+})
+
+// ─────────────── review-queue legibility: row identity, evidence, triage ───────────────
+// The failure this covers: 40+ rows all reading "Merge · Close call · Same system, or two?".
+// A row must name its own subject, the card must be built from the clicked item, and a run of
+// connected proposals must read as one cluster — WITHOUT anything being dropped or auto-decided.
+
+describe('review queue — rows identify themselves', () => {
+  const RVIEW: GraphView = {
+    nodes: [
+      {
+        id: 'karachi_adc',
+        type: 'basing_site',
+        name: 'Army Air Defence Centre, Karachi',
+        status: 'probable',
+        claim_ids: ['c1'],
+        location: { raw: 'Karachi' },
+        attrs: { site_type: 'air defence centre' },
+      },
+      {
+        id: 'sargodha',
+        type: 'basing_site',
+        name: 'Sargodha',
+        status: 'probable',
+        claim_ids: ['c2'],
+        attrs: { site_type: 'deployment site' },
+      },
+      {
+        id: 'ht233',
+        type: 'component',
+        name: 'HT-233',
+        status: 'confirmed',
+        claim_ids: ['c3', 'c4'],
+        materiality: { chokepoint_status: 'candidate' },
+      },
+      { id: 'type305b', type: 'component', name: 'Type 305B', status: 'probable', claim_ids: ['c5'] },
+    ],
+    edges: [
+      {
+        id: 'sa:karachi',
+        type: 'same-as',
+        source: 'karachi_adc',
+        target: 'sargodha',
+        merge_confidence: 0.63,
+        attrs: {
+          merge_band: 'candidate',
+          breakdown: { attribute: 0.46, relational: 1, temporal_consistency: 1, source_asserted: 0, total: 0.63 },
+        },
+      },
+      {
+        id: 'sa:radar',
+        type: 'same-as',
+        source: 'ht233',
+        target: 'type305b',
+        merge_confidence: 0.82,
+        attrs: { breakdown: { attribute: 0.9, relational: 0, temporal_consistency: 1, source_asserted: 0, total: 0.82 } },
+      },
+      { id: 'e1', type: 'supplies-component', source: 'ht233', target: 'type305b', status: 'confirmed' },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  const queue = viewToReviewQueue(RVIEW)
+  const karachi = queue.find((i) => i.subject === 'sa:karachi')!
+  const radar = queue.find((i) => i.subject === 'sa:radar')!
+
+  it('titles a merge row with BOTH candidate records, not a generic question', () => {
+    expect(karachi.title).toBe('Army Air Defence Centre, Karachi ↔ Sargodha')
+    expect(radar.title).toBe('HT-233 ↔ Type 305B')
+    // the question moves to the card headline; it is no longer what distinguishes a row
+    expect(karachi.question).toBe('Same system, or two?')
+    expect(karachi.title).not.toBe(radar.title)
+  })
+
+  it('bands the badge off the recorded identity confidence instead of a fixed "Close call"', () => {
+    expect(karachi.badge).toBe('Close call') // credibilityToDots(0.63) === 3
+    expect(radar.badge).toBe('Strong match') // credibilityToDots(0.82) === 4
+    expect(karachi.note).toContain('0.63')
+  })
+
+  it('flags materiality so triage can lead with it', () => {
+    expect(radar.material).toBe(true)
+    expect(radar.badges).toContain('Touches a chokepoint')
+    expect(karachi.material).toBe(false)
+  })
+
+  it('renders the resolver’s own per-signal breakdown as the case FOR', () => {
+    const labels = karachi.context.merge!.matchedOn.map((r) => r.label)
+    // zero-scored signals are NOT in matched-on — they are the case against
+    expect(labels).not.toContain('A source calls them the same')
+    expect(labels).toContain('Shared neighbours in the graph')
+    expect(karachi.context.merge!.matchedOn[0].score).toBe(1)
+  })
+
+  it('derives the case AGAINST from the records themselves + the zero-scored signals', () => {
+    const differs = karachi.context.merge!.differsOn
+    expect(differs.some((d) => d.includes('Stated location'))).toBe(true)
+    expect(differs.some((d) => d.includes('air defence centre') && d.includes('deployment site'))).toBe(true)
+    expect(differs).toContain('No source states they are the same.')
+  })
+
+  it('counts the consequence off the graph and admits what it cannot predict', () => {
+    const m = karachi.context.merge!
+    expect(m.consequence[0]).toContain('Joins 2 sourced claims')
+    expect(m.consequence[1]).toContain('0 graph edges') // neither basing site has an assertional edge
+    // the radar pair DOES have one real edge on each endpoint
+    expect(radar.context.merge!.consequence[1]).toContain('2 graph edges re-point')
+    // never a predicted status — the one number this card must not invent
+    expect(m.unknowns.join(' ')).toContain('recomputed at rebuild')
+    expect(JSON.stringify(m.consequence)).not.toContain('node statuses')
+  })
+
+  it('names the chokepoint consequence when a candidate chokepoint is involved', () => {
+    expect(radar.context.merge!.consequence.join(' ')).toContain('candidate chokepoint')
+  })
+})
+
+describe('mergeDiffersOn', () => {
+  it('states a coordinate distance when both sides are located', () => {
+    const left = { id: 'a', type: 'basing_site', location: { wgs84_lat: 24.86, wgs84_lon: 67.01 } }
+    const right = { id: 'b', type: 'basing_site', location: { wgs84_lat: 32.05, wgs84_lon: 72.67 } }
+    const out = mergeDiffersOn(left, right, {})
+    expect(out.some((d) => /Coordinates — [\d,]+ km apart\./.test(d))).toBe(true)
+  })
+
+  it('says a type mismatch out loud', () => {
+    expect(mergeDiffersOn({ id: 'a', type: 'unit' }, { id: 'b', type: 'basing_site' }, {})).toContain(
+      'Type — unit vs basing site.',
+    )
+  })
+
+  it('returns nothing when the two records genuinely do not conflict', () => {
+    const same = { id: 'a', type: 'variant', attrs: { family: 'HQ-16' } }
+    expect(mergeDiffersOn(same, { ...same, id: 'b' }, { attribute: 0.9, relational: 0.5 })).toEqual([])
+  })
+})
+
+describe('T10 — the merge card is traceable to its sources', () => {
+  // Same shape as the review-queue view above, but the radar pair now has a source-asserted identity
+  // (with the claims that assert it on the candidate edge, as view/pipeline._resolution_edges writes
+  // them) and the basing pair has none. The contrast IS the test.
+  const TVIEW: GraphView = {
+    nodes: [
+      { id: 'ht233', type: 'component', name: 'HT-233', status: 'confirmed', claim_ids: ['c3', 'c4'], attrs: { role: 'engagement radar' } },
+      { id: 'type120', type: 'component', name: 'Type 120 / YLC series', status: 'probable', claim_ids: ['c5', 'c6'], attrs: { role: 'acquisition radar' } },
+      { id: 'karachi_adc', type: 'basing_site', name: 'Army Air Defence Centre, Karachi', status: 'probable', claim_ids: ['c1'] },
+      { id: 'sargodha', type: 'basing_site', name: 'Sargodha', status: 'probable', claim_ids: ['c2'] },
+    ],
+    edges: [
+      {
+        id: 'same-as:ht233|type120',
+        type: 'same-as',
+        source: 'ht233',
+        target: 'type120',
+        merge_confidence: 0.37,
+        claim_ids: ['d15-globaltimes-aligned-l17-5'],
+        attrs: { breakdown: { attribute: 0.47, relational: 0.07, temporal_consistency: 1, source_asserted: 0.7 } },
+      },
+      {
+        id: 'same-as:karachi|sargodha',
+        type: 'same-as',
+        source: 'karachi_adc',
+        target: 'sargodha',
+        merge_confidence: 0.52,
+        attrs: { breakdown: { attribute: 0.67, relational: 0.5, temporal_consistency: 1, source_asserted: 0 } },
+      },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+  const queue = viewToReviewQueue(TVIEW)
+  const cited = queue.find((i) => i.subject === 'same-as:ht233|type120')!
+  const uncited = queue.find((i) => i.subject === 'same-as:karachi|sargodha')!
+
+  it('gives the source-asserted signal — and ONLY it — an evidence handle', () => {
+    const rows = cited.context.merge!.matchedOn
+    const asserted = rows.find((r) => r.key === 'source_asserted')!
+    // the candidate edge id is the handle: GET /evidence/{id} serves exactly its identity claims
+    expect(asserted.evidenceId).toBe('same-as:ht233|type120')
+    expect(asserted.evidenceCount).toBe(1)
+    // every other signal is the resolver's own arithmetic over the two records — nothing to open
+    expect(rows.filter((r) => r.key !== 'source_asserted').every((r) => r.evidenceId === undefined)).toBe(true)
+  })
+
+  it('offers NO handle when no source asserted the identity — never a link into an empty drawer', () => {
+    expect(uncited.context.merge!.matchedOn.every((r) => r.evidenceId === undefined)).toBe(true)
+    // and the absence is stated as the case AGAINST instead
+    expect(uncited.context.merge!.differsOn).toContain('No source states they are the same.')
+  })
+
+  it('makes each record openable, with its claim count as the handle', () => {
+    const m = cited.context.merge!
+    expect(m.left.evidenceId).toBe('ht233')
+    expect(m.left.claimCount).toBe(2)
+    expect(m.right.evidenceId).toBe('type120')
+  })
+
+  it('attributes a differs-on line read off the records to those records', () => {
+    const role = cited.context.merge!.differs.find((d) => d.text.includes('engagement radar'))!
+    expect(role.text).toContain('engagement radar')
+    expect(role.sides).toEqual(['left', 'right'])
+    expect(role.computed).toBeUndefined() // a stated value is not a computation
+  })
+
+  it('marks a computed line as computed rather than dressing it as a citation', () => {
+    const absent = uncited.context.merge!.differs.find((d) => d.text === 'No source states they are the same.')!
+    expect(absent.sides).toEqual([])
+    expect(absent.computed).toContain('resolver')
+  })
+
+  it('keeps differsOn as the plain-text projection of differs', () => {
+    expect(cited.context.merge!.differsOn).toEqual(cited.context.merge!.differs.map((d) => d.text))
+  })
+})
+
+describe('mergeDifferences — provenance per line', () => {
+  it('says a coordinate distance is arithmetic over the two records, not a quote', () => {
+    const left = { id: 'a', type: 'basing_site', location: { wgs84_lat: 24.86, wgs84_lon: 67.01 } }
+    const right = { id: 'b', type: 'basing_site', location: { wgs84_lat: 32.05, wgs84_lon: 72.67 } }
+    const km = mergeDifferences(left, right, {}).find((d) => d.text.startsWith('Coordinates'))!
+    expect(km.computed).toContain('computed')
+  })
+
+  it('attributes a one-sided stated location to the side that states it', () => {
+    const left = { id: 'a', type: 'basing_site', location: { raw: 'Karachi' } }
+    const right = { id: 'b', type: 'basing_site' }
+    const loc = mergeDifferences(left, right, {}).find((d) => d.text.startsWith('Stated location'))!
+    expect(loc.sides).toEqual(['left'])
+  })
+})
+
+describe('orderReviewQueue / groupReviewQueue', () => {
+  // one 4-record blob (all 6 pairs proposed) + two unrelated pairs + one override
+  const names = ['Punjab', 'Sindh', 'Sargodha', 'Karachi']
+  const blobNodes = names.map((n, i) => ({ id: `b${i}`, type: 'basing_site', name: n, claim_ids: [`c${i}`] }))
+  const blobEdges = []
+  for (let i = 0; i < 4; i++) {
+    for (let j = i + 1; j < 4; j++) {
+      blobEdges.push({
+        id: `sa:b${i}|b${j}`,
+        type: 'same-as',
+        source: `b${i}`,
+        target: `b${j}`,
+        merge_confidence: 0.6,
+        attrs: { breakdown: { attribute: 0.5, relational: 1, temporal_consistency: 1, source_asserted: 0 } },
+      })
+    }
+  }
+  const GVIEW: GraphView = {
+    nodes: [
+      ...blobNodes,
+      { id: 'cpmiec', type: 'manufacturer', name: 'CPMIEC', claim_ids: ['x1'] },
+      { id: 'cnpmiec', type: 'manufacturer', name: 'China National Precision Machinery', claim_ids: ['x2'] },
+      { id: 'ly80', type: 'variant', name: 'LY-80', claim_ids: ['y1'] },
+      { id: 'hq16', type: 'variant', name: 'HQ-16', claim_ids: ['y2'] },
+      { id: 'contra', type: 'unit', name: 'HQ-9B fire unit', status: 'contradicted' },
+    ],
+    edges: [
+      ...blobEdges,
+      { id: 'sa:org', type: 'same-as', source: 'cpmiec', target: 'cnpmiec', merge_confidence: 0.9 },
+      { id: 'sa:var', type: 'same-as', source: 'ly80', target: 'hq16', merge_confidence: 0.7 },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  const queue = viewToReviewQueue(GVIEW)
+  const groups = groupReviewQueue(queue)
+
+  it('never loses an item — the groups are a permutation of the queue', () => {
+    const flat = groups.flatMap((g) => g.items.map((i) => i.itemId)).sort()
+    expect(flat).toEqual(queue.map((i) => i.itemId).sort())
+    expect(groups.flatMap((g) => g.items)).toHaveLength(9) // 8 merges + 1 override
+  })
+
+  it('collapses the connected run into ONE cluster and leaves the isolated pairs alone', () => {
+    const clusters = groups.filter((g) => g.kind === 'cluster')
+    expect(clusters).toHaveLength(1)
+    expect(clusters[0].items).toHaveLength(6)
+    expect(clusters[0].title).toBe('4 records, 6 merge proposals')
+    // the density IS the finding: every possible pair proposed ⇒ not independent evidence
+    expect(clusters[0].note).toContain('every one of the 6 possible pairs is proposed')
+    expect(groups.filter((g) => g.kind === 'single')).toHaveLength(3) // 2 pairs + the override
+  })
+
+  it('carries the cluster onto each member so the card says what the header said', () => {
+    const member = groups.find((g) => g.kind === 'cluster')!.items[0]
+    expect(member.cluster).toMatchObject({ size: 6, records: 4, complete: true })
+  })
+
+  it('leads with the ★ pinned order (status-override, merge, alert), then materiality', () => {
+    expect(groups[0].items[0].reviewType).toBe('status-override')
+    const ordered = orderReviewQueue(queue)
+    expect(ordered[0].reviewType).toBe('status-override')
+    // among merges, the most confident identity claim comes first
+    const merges = ordered.filter((i) => i.reviewType === 'merge')
+    expect(merges[0].subject).toBe('sa:org')
+  })
+
+  it('puts a crisp two-record decision ahead of the systemic cluster', () => {
+    const kinds = groups.map((g) => g.kind)
+    expect(kinds.lastIndexOf('cluster')).toBe(kinds.length - 1)
   })
 })

@@ -73,6 +73,20 @@ supersede_floor:
   newer_status_allow: [probable, confirmed]   # the newer assertion's own label must be a live assessment
   blocking_gate_flags: [adversary-denial, decoy-risk, contradiction]  # "clean deception gate" (spine/04 §3.4)
 
+# ── the assertable band (ASK; spine/09) ──────────────────────────────────────────────────────────
+# Which assessed statuses are strong enough for an ANSWER to *rest on* a link — i.e. to walk it as the
+# spine of a trace and name its far end as a finding. Same shape and same doctrine as
+# `supersede_floor.newer_status_allow` above: a status list naming keys the status machine emits, never a
+# second copy of a threshold number. Strongest first — ASK breaks ties in this order.
+#
+# What this is NOT: a filter. A link outside this band is still traversed, still returned by the tools,
+# and is printed in the answer as *weighed and not carried*, with its status and its citation. Silently
+# suppressing a low-credibility attribution would make a planted false one indistinguishable from one
+# that was never seen — the opposite of the non-negotiable. The corpus's `d23_cpmiec_false_attribution`
+# ("CPMIEC manufactures the HT-233", refuted by d22) is exactly the link this band keeps *off* the
+# assessment while keeping it *on* the page.
+assertable_status: [confirmed, probable]
+
 # ── SCORE resolver knobs (introduced by SCORE; DATA-C owns/tunes the values) ──────────────────────
 # Every numeric knob the Confidence Resolver reads lives here, never in code (gate G6).
 decay_base: 2                 # freshness = decay_base^(-age/half_life) → exactly halves at one half-life

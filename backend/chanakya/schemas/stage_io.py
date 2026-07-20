@@ -60,6 +60,12 @@ class Partition(Record):
     distinct_from: list[tuple[str, str]] = []  # explicit do-not-merge (FD-2000 ≠ FT-2000) — hard veto before banding
     merge_confidence: dict[str, float] = {}  # pair_key(a, b) → identity confidence (same_as + candidates)
     merge_breakdown: dict[str, dict[str, float]] = {}  # pair_key(a, b) → {attribute, relational, temporal_consistency, source_asserted, total}
+    # The claims *behind* the ``source_asserted`` term — who actually wrote "these two are the same".
+    # An identity assertion is consumed as a merge signal rather than drawn as an edge (D-2.5), so this
+    # is the only route from an adjudication back to the sentence. Rendered onto the candidate same-as
+    # edge's ``claim_ids``, so ``GET /evidence/{edge_id}`` serves it through the existing route (the
+    # one-click-to-source non-negotiable). Absent for every pair no source spoke about — never a stand-in.
+    identity_claims: dict[str, list[str]] = {}  # pair_key(a, b) → asserting claim ids (replay order)
     # Edges attach to nodes by the RAW triple subject/object string (supersede.py), not by resolved_ref —
     # so a raw endpoint mention would dangle. This maps every resolvable entity ref → its canonical id,
     # for BOTH a merged cluster member (``ent:type:name`` ref) AND a raw triple-endpoint mention (the LLM

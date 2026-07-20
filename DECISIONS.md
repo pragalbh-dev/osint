@@ -939,3 +939,357 @@ the documented home for direct identity statements.
 "it finds merges" — Phase 3's deterministic rules absorbed most of that — but "it reaches the *non-lexical*
 pairs nothing else can, and it hands the analyst a citation for the rest." A deterministic rule beats an
 LLM pass wherever it reaches the answer; the LLM's value is the slice where no string comparison exists.
+
+### QA-T7 — Phase-4 residual sweep (choice · principle invoked · alternative rejected, 2026-07-20)
+
+Worked the deferred-defect register (`tmp/conv/RESIDUAL-FIXES.md`) one item at a time. Five items closed,
+two deliberately left open with a written diagnosis. Every call below leaned on a stated principle.
+
+- **Refusal prose names entities, never objects (R-9).** The "this lens has no basing site" refusal could
+  render a Python list repr and the internal lens id into text an analyst reads. Now it renders node
+  names, comma-joined, and drops the lens id; the machine-readable ids stay in the `missing` field the UI
+  already resolves. *Principle: escalate to the analyst — which only works if what reaches the analyst is
+  legible.* *Rejected:* adding a `label` field to the subject-lens config to humanise the id — a config
+  schema change to another module's surface for one sentence of prose, when dropping the id reads better.
+
+- **Supersede ordering compares intervals, not upper-bound strings (R-5, D-P4.4 iii).** A target's time is
+  the **union** of its claims' intervals; disjoint-and-earlier orders, identical exact instants
+  contradict, identical vague intervals are unorderable → `candidate_supersede`, any other overlap
+  contradicts, and a missing bound is never guessed. *Principle: the fabrication non-negotiable +
+  recall-biased triage — a vague date must not be allowed to win an ordering it cannot support, and the
+  honest outcome of an ambiguous overlap is the HITL queue, not an arrow.* *Rejected:* keeping `max` over
+  a target's claims with a precision tiebreak — it leaves the late-restatement reversal intact, which is
+  the more dangerous of the two defects because it silently un-retires a fact an analyst already acted on.
+  Verified the flagship Rahwali beat is byte-for-byte unchanged before accepting the change.
+
+- **The answer key was NOT regenerated to fix the generator (R-8).** Removed the four dropped sustainment
+  items and the stale flex from the scenario spec, then **stopped**: measuring the spec against the frozen
+  key showed six further divergences a regeneration would destroy, including a block the generator cannot
+  emit at all. *Principle: data issues go to `tmp/conv/` for the data agent, and keep the demo
+  deterministic — an oracle rewrite three days out is exactly the class of change that breaks a frozen
+  demo.* *Rejected:* regenerating and diffing "just to see" — the generator overwrites the key wholesale
+  even for a single-document run. Handoff: `tmp/conv/QA-T7-answer-key-generator-drift.md`.
+
+- **A flex that claimed corroboration it does not have was reworded (R-14).** The `deep_tier_confirmed`
+  expectation described a single-bundle fact as "multiply attested". *Principle: the non-negotiable —
+  never overclaim; "confirmed" is structurally separated from "probable" and must rest on a stated
+  reason.* The `confirmed` grade stands on the evidence-gate argument (one source naming supplier +
+  component + relationship directly), which is now what the text says. *Rejected:* downgrading the grade
+  to match the wording — that would have punished a genuinely direct source for our own bad sentence.
+
+- **The independence weight double-application was NOT fixed (R-11 / D-P4.14).** Diagnosis confirmed: the
+  weight is applied to both the magnitude and the look-count, making the code stricter than `spine/04`.
+  Left untouched and written up as four options with a measured blast radius (26 of 294 elements move;
+  the flagship path does not). *Principle: borderline-harmful → ask first, with options; and a credibility
+  retune must not ride along inside an unrelated change.* Decision note:
+  `tmp/conv/QA-T7-independence-weight-decision.md`.
+
+- **The mis-laned `equips` edge was diagnosed, not fixed (R-1).** Root cause: `relane()` is correct;
+  it never saw a `unit → variant` fact, because at write time only the *variant* end was typed — the other
+  endpoint string is typed downstream by RESOLVE. Confirmed no "frozen bundles agree with current lane
+  logic" invariant test exists (the location renormaliser is the only such guard, and it may not touch a
+  predicate). *Principle: keep the demo deterministic and reproducible — the fix needs a keyed re-record
+  that could break the alias binding hop 2 depends on, so the diagnosis is worth more than the fix.*
+
+**Design-doc tails to enrich:** `spine/04` — record that the independence weight is deliberately applied
+twice today (stricter than the text) until D-P4.14 is decided. `spine/08`/`spine/01` — the write-time
+re-lane can only use types the *current document* declared, so lane correctness for cross-document
+mentions is bounded by extraction-time typing; the durable fix is either registry-backed endpoint typing
+or a post-resolution re-lane pass.
+---
+
+## QA T3b — fragmentation & merge-noise (2026-07-20, `qa/t3b-fragmentation`)
+
+Six defects behind one complaint ("multiple Karachi nodes stay fragmented"). Full root-cause /
+measurement write-up in `tmp/conv/T3b-fragmentation.md`; data observations in
+`tmp/conv/T3b-to-DATA-typing-observations.md`. Measured: merge queue **40 → 8** candidates cold
+(41 → 8 full), nodes 171 → 166, nameless nodes 11 → 0, substantive edges unchanged at 56,
+`make test` 788 → 808 pass.
+
+- **D-T3b.1 — The Karachi cluster is answered by a TYPE distinction, not a merge.** An Army Air Defence
+  *Centre*, an air-defence *sector* and a coastal *belt* are three different kinds of thing; the defect
+  was offering them to the analyst as candidate duplicates, and merging them would have been the real
+  error. *Principle: model the ontology to what the queries need + false-merge discipline (over-merge is
+  the expensive error).* **Alternative rejected:** treating it as a recall problem and reaching for the
+  coreference gate — T1 had already measured that as unable to touch a cross-document cluster.
+
+- **D-T3b.2 — `area_of_operations` is a `refines:` refinement of `basing_site`, not a rival type, and
+  the edges' `to:` is left alone.** Widening `based-at`/`observed-at` to a polymorphic range would make
+  `endpoint_types` ambiguous and un-type every genuine site endpoint. The base type keeps doing the
+  laning; the refinement is stamped from the instance's name by one shared pure function both RESOLVE and
+  the view call. *Principle: config-driven & extensible, not hardcoded; one source of truth (the
+  `edge_instance_key` precedent).* **Alternative rejected:** a second polymorphic range; also rejected a
+  code-side type list.
+
+- **D-T3b.3 — Area recognition is head-anchored (last token), plus a curated `named_instances` list.**
+  A substring rule would have retyped the corpus's one pad-precise site ("Probable Long-Range SAM
+  Emplacement, Malir District, Karachi, **Sindh Province**, Pakistan") into an area — the exact inverse of
+  `md/13`'s precision spec. *Principle: precision-first; a rule that is wrong on the load-bearing case is
+  not a rule.* **Alternative rejected:** substring matching on area words.
+
+- **D-T3b.4 — A shared neighbourhood is not identity evidence for an area type
+  (`identity.relational: false`).** Two areas that both contain sightings of the same equipment share a
+  neighbourhood *by construction* — that is a fact about the equipment's dispersal. This is what removes
+  `Punjab ↔ Sindh`. *Principle: the merge decision is precision-first; recall is candidate-gen's job.*
+  **Alternative rejected:** a blanket "different names ⇒ never merge" rail for areas, which would have
+  blocked genuine variants such as "Karachi AD sector" ≡ "Karachi air defence sector".
+
+- **D-T3b.5 — Cross-type pairs leave the analyst queue, with a `raise_only` escape hatch.** The type gate
+  `_identity_pairs` / `_name_containment` / `_coref_pairs` already apply was missing from the scored
+  candidate loop. A pair a *source* or the offline proposer explicitly asserts still reaches the analyst,
+  because a cross-type identity assertion is exactly what a human should see. *Principle: HITL is
+  attention-triage — a queue full of type errors is not triage; escalate ambiguity, not noise.*
+  **Alternative rejected:** a hard veto with no escape, which would have made the resolver unable to
+  surface a genuine extraction mis-typing.
+
+- **D-T3b.6 — Contradictory endpoint typing is settled by the ontology's domain/range, never by a guess,
+  and the tie-break is attach-only.** Where the declared domain/range narrows the contradiction to exactly
+  one admissible type, the designed schema decides; where it admits both or neither, the refusal stands.
+  Attach-only because the first version *minted* a new short designator, which the containment bootstrap
+  then over-extended and fused a TEL canister into a TEL chassis. *Principle: when unsure, escalate —
+  don't guess; over-merge is the expensive, adversarially-exploited error.* **Alternative rejected:**
+  picking the most-claimed type (a popularity guess); also rejected minting under the surviving type.
+
+- **D-T3b.7 — A different bill-of-lading number is a hard veto, not a low score, and it stays DRAWN.**
+  Three distinct bills in one customs manifest were mutual merge candidates with no deterministic guard;
+  a wrong merge collapses two import events and silently corrupts the supply-chain count. Absence of an
+  identifier is not disagreement (the `has_hard_conflict` doctrine). *Principle: deterministic rules
+  dispose; an invisible veto is indistinguishable from a missing edge.* **Alternative rejected:** a
+  scoring penalty — probabilistic where the evidence is categorical.
+
+- **D-T3b.8 — The relational term is discounted by the evidence under it (`relational_support_k`).**
+  A Jaccard overlap is scale-free, so a one-element neighbourhood scored a perfect 1.0 and a single shared
+  hub edge was landing pairs at exactly `hitl_low`. The knob states the invariant in the same form
+  `resolution.yaml` states its others: *a perfect shared neighbourhood must rest on at least two shared
+  neighbours to reach the analyst on its own.* It only ever lowers a score, so it can never create an
+  auto-merge. *Principle: no magic numbers in code — thresholds are config; precision-first merging.*
+  **Alternative rejected:** raising `hitl_low`, which would have punished every signal to fix one; also
+  rejected an inverse-degree hub discount as more machinery than the measured defect needed.
+
+- **D-T3b.9 — A node's display name comes from the analyst's curated registry entry, not from whichever
+  claim replayed first.** `unit_hq9b` rendered as "Pakistan Air Force" — its *operator* — so the demo's
+  climactic beat read "Pakistan Air Force moved from Nur Khan to Rahwali". `entities.yaml` already carried
+  `display_name: "the PAF HQ-9B fire unit"` and ASK already honoured it; only the view did not, so the
+  graph and the answers disagreed about what one node is called. *Principle: never invent a designator
+  the corpus does not support — surface the one an analyst already justified in config.* **Alternative
+  rejected:** leaving the node unnamed (T6's fallback — right instinct, unnecessary once the registry was
+  found to hold the answer); also rejected using `canonical_name`, which is an identity string carrying
+  parenthetical notes, not prose.
+
+- **D-T3b.10 — An untyped endpoint renders under the designator the document used.** Its id *is* the
+  surface form, so the information was on the node all along. A name is a display concern and does not
+  make the node resolvable — that was fixed at the typing layer, not here. *Principle: every claim is
+  one-click traceable; a raw id in the UI is a traceability failure.*
+
+- **D-T3b.11 — Retyping landed WITH the map config, not before it.** `place_entity_types` was unset and
+  defaulted to `{basing_site}`, so retyping alone would have silently deleted T5's new map coverage. It is
+  now stated explicitly, `place_allowed_precision_classes` gains the mirror row
+  (`area_of_operations: [district, city, province]` — an area must never snap to a pad), and
+  `_refine_node_types` runs *before* place matching so the two types can carry different precision gates.
+  Verified before/after: identical locations, identical (absent) place refs. *Principle: don't silently
+  clip scope; a fix that breaks another agent's landed work is not a fix.*
+
+- **D-T3b.12 — The flagship worked query changed shape; the assertion was relaxed to a floor and the
+  change surfaced, not silently re-pinned.** Fixing the fragmentation moved the chokepoint nomination from
+  a *fragment* (`Type 305B`, which carries no supplier edge) to the resolved `comp_ht233`, which does — so
+  the trace now reaches CPMIEC in 2 hops instead of stopping at a component in 3. That maker edge is the
+  corpus's planted false attribution (d23, refuted by d22); the system labels it `insufficient` and closes
+  on "insufficient evidence to assess", so the thread now *exercises* the misinformation trap rather than
+  stepping around it. The cost is two ORBAT hops of narrative. *Principle: borderline-harmful → surface it
+  with options, don't decide it unilaterally; a test that pins a shape turns a data improvement red.*
+  **Escalated** with three options in `tmp/conv/T3b-fragmentation.md` §5.
+
+**Design-doc tails to enrich:**
+- `artifacts/spine/03-resolution.md` — the merge score now has a **support** notion: the relational term is
+  proportional to the number of shared neighbours up to `k`, so "shared neighbourhood" means shared
+  *neighbourhoods*, not a shared link. Also record that identity signals are now **type-aware**: a node
+  type may declare that neighbourhood is not identity evidence for it.
+- `artifacts/spine/01-graph-and-ontology.md` — node types can declare **refinements** (`refines:`), a
+  narrower reading of a base type recognised from an instance's name, which is how the designed schema
+  expresses a distinction an edge's declared range cannot.
+- `artifacts/md/13-location-normalization.md` — the per-node-type precision table now has a structural
+  counterpart: `area_of_operations` is the type for the "somewhere in Punjab" rung, with its own
+  `place_allowed_precision_classes` row, and it renders as an envelope rather than a pin.
+- `artifacts/md/16-design-note-disclosures.md` — worth a line: the graph was passing the d22-vs-d23
+  false-attribution trap *by accident* (the false edge was parked on an orphan fragment). Fixing
+  fragmentation exposed it, and the credibility layer then handled it correctly. That is a better story
+  than the trap never being reached.
+---
+
+## QA T6 — the provenance drawer's semantics (branch `qa/t6-drawer-semantics`, 2026-07-20)
+
+Triggered by the orchestrator reading the live drawer and asking two things it could not answer:
+*"what exactly is confirmed?"* and *"the replaced-by edge is between 2 bases — what is replaced?"*.
+Full defect-by-defect account in `tmp/conv/T6-drawer-semantics.md`.
+
+- **The drawer states the PROPOSITION, not the element name.** *Principle: every claim is one-click
+  traceable, and nothing is asserted without provenance — a status hung over a bare node name grades
+  nothing an analyst can judge.* Choice: derive the assertion under assessment (and each claim's own
+  assertion) from the graph's own names/types and the claim payloads, strictly derivationally — a
+  payload shape we cannot phrase renders nothing and lets the verbatim quote speak. Rejected: an LLM
+  or template-generated summary of the claim (a paraphrase between the analyst and the evidence, and
+  a fabrication surface in exactly the place the system exists to be trustworthy).
+
+- **A status-less edge is not an evidence gap.** *Principle: "confirmed" is structurally separated
+  from "probable", and an absence of evidence must never be drawn as knowledge — or vice versa.*
+  `supersedes` / `same-as` / `distinct-from` carry no status **by design**; the UI was defaulting
+  `null → insufficient` and so claimed a gap that does not exist. Now stated in words, with the
+  independent-looks term dropped rather than printed as `0`.
+
+- **The relocation names its subject everywhere it is drawn.** *Principle: never overclaim.* The
+  backend's site→site `supersedes` edge is a deliberate projection of a supersession that lives on the
+  `based-at` edge, and it already carries `attrs.subject`. Every consumer was discarding it, so the
+  map read "base A was replaced by base B" — false. Fixed in the presentation layer (label, caption,
+  drawer copy, and a click-through into the version link); the backend supersede logic is untouched.
+  Rejected: removing the drawn edge (it is oracle-backed and it is the thing an analyst clicks).
+
+- **Cited-but-unclustered claims are shown, labelled honestly.** *Principle: nothing the system rests
+  on may be invisible.* The drawer model only walked independence clusters, so a status-less element's
+  citations were silently dropped. They now render in an explicit *"Also cited · not counted as an
+  independent look"* bucket — visible, and not miscounted as corroboration.
+
+- **`GET /evidence/{id}` returns the source registry entry, and no invented name.** *Principle: the
+  analyst must be able to weigh a source, and the system never invents what it does not hold.* A raw
+  `source_id` was being shown as an attribution (`d17b_withheld_gap` — a filename). The registry has
+  class + reliability grade but **no publisher name**, so the API returns the entry verbatim and the UI
+  renders the class; an unregistered id shows as the bare id, marked unregistered. Rejected: a
+  `GET /config/sources` route (outside the frozen endpoint list, ships 51 entries to render two chips),
+  a server-side display string (puts English in the contract), and bundling `sources.yaml` into the SPA
+  (drifts from the live hot-config store). Logged in `tmp/conv/API-to-FRONTEND-contract-log.md`.
+
+**Left open, deliberately (not silently):** the retired `based-at` assertion still shows its
+"To raise this / next coverage due" block, because that is the backend's computed `sufficiency` and
+hiding a computed field in the UI is worse than showing an odd one — whether sufficiency should behave
+differently for a superseded assertion is SCORE's call. And `stale` reads "aged past its shelf life"
+even when the cause was supersession; distinguishing them needs a backend signal for *why*.
+
+**Design-doc tails to enrich:** `product/00 §5.6` (the drawer's information hierarchy — the answer to
+its OPEN question is *proposition first, then verdict, then the looks, then the claims*) and
+`product/00 §3` (the supersede-vs-contradict visual language must carry the **subject** of the move,
+not just the two endpoints).
+
+**Data issue raised, not self-fixed:** `unit_hq9b` is named "Pakistan Air Force" in the live graph, so
+the now-correct copy reads "Pakistan Air Force moved from PAF Base Nur Khan to Rahwali airfield" —
+faithful to the graph, wrong about the world. Filed for DATA/RESOLVE in
+`tmp/conv/T6-to-DATA-unit-hq9b-named-pakistan-air-force.md`.
+
+---
+
+## QA T9 — the flagship worked query (branch `qa/t9-hero-query`, 2026-07-20)
+
+Triggered by T3b §5: fixing graph fragmentation re-shaped the flagship chain (3 hops → 2) and left it
+terminating on the corpus's planted misinformation (`d23`, "CPMIEC manufactures the HT-233"). The system
+rated that edge `insufficient` and closed on a refusal — correct behaviour, but it meant *the one worked
+query no longer answered the question it poses*. Full enumeration of the alternatives, the chosen thread
+and the verbatim answer in `tmp/conv/T9-hero-query.md`.
+
+- **The flagship terminates on the ORIGIN maker, not on the chokepoint's own supplier.** *Principle:
+  where evidence is absent or contradictory the system says so — and it must still deliver the
+  best-evidenced answer it does hold, rather than punishing a known unknown by refusing outright.* The
+  chain is now `Rahwali airfield → the PAF HQ-9B fire unit → HQ-9/P → CASIC`, three hops, every one of
+  them `probable` and cited. HT-233's *own* component-level supplier stays an open Known Gap and is
+  stated as one in the same answer. Rejected: (i) keeping the CPMIEC terminus (a flagship that ends on
+  misinformation and a refusal); (ii) the 2-hop `observed-at` shortcut to CASIC (shorter, and it skips
+  the formation entirely, so it cannot answer "which unit operates it"); (iii) the TEL-chassis → Taian
+  chain (4 hops but the same failure mode — a terminal `insufficient` supplier link).
+
+- **A supplier link is carried only if the edge that claims it clears a configured band — and every
+  rejected link is PRINTED.** *Principle: nothing is asserted without provenance, and absence of
+  evidence is never evidence of absence.* The real defect under T3b's finding was that
+  `run_fixed_hero_path` took the first manufacturer-typed *neighbour* and discarded the *edge*, so a
+  link the pipeline had already scored `insufficient` was walked as if it were a finding. Fixed by
+  keeping the status with the candidate (`SupplierLink`) and gating on
+  `credibility.assertable_status` — a status list, same shape and doctrine as the existing
+  `supersede_floor.newer_status_allow`, and it **fails closed** when undeclared. Rejected: filtering
+  weak links out at the gather step — that would make a planted false attribution indistinguishable, in
+  the answer, from one that was never published, which is the opposite of the non-negotiable. The
+  CPMIEC link is still gathered, still rated, and now renders as an explicit *"Weighed and not
+  carried"* line with its own citation. The trap moved off the terminal position; it did not leave.
+
+- **A subject lens declares its traversal lanes, not just its anchors.** *Principle: config-driven, not
+  hardcoded; a subject is a query-time lens = anchor entities + a traversal/scoring pattern.* The
+  ORBAT→origin lane set is now `subjects.yaml → trace_lanes`, handed to `find_paths` as its
+  `edge_whitelist`; omitted, it falls back to the ontology's full traversable set. This is what keeps
+  the trace on basing/induction/supply lanes instead of hopping the *sighting* lane (`observed-at`)
+  straight past the unit. Rejected: an edge list literal in `agent/loop.py`.
+
+- **The hop assertion stays a FLOOR (`MIN_HOPS`), now 3, with the full before/after in the test file.**
+  *Principle: pinning an exact shape turns a data improvement into a red test.* T3b relaxed it from a
+  hard 3 to a floor of 2 rather than silently re-pinning; T9 raises the floor and records the third
+  entry in the same history block. Two new acceptance tests replace the old terminus assertion: the
+  chain must end on a link inside the configured assertable band (status read from the view, band from
+  config — no node or document named), and the below-band link must still appear, rated and cited.
+
+**Left open, deliberately (not silently):**
+- **The flagship refuses on a cold boot** — `site_rahwali` only exists once the two withheld 2025
+  Rahwali passes are ingested. This is the designed choreography (`deploy/README.md` §"the beat":
+  ask → refuse → ingest → alert → ask again) and it is a genuine adaptation demo, but it does mean the
+  SPA's first affordance returns a refusal until the beat is run.
+- **The old query wording is retained as `target_queries[1]`** so the previous phrasing still routes to
+  the same deterministic path. Its old *value* — ending on a well-reasoned refusal — is not lost: it is
+  now inside the flagship answer as the "weighed and not carried" line plus the HT-233 insufficiency
+  close, which is strictly more informative than a dead end.
+- **`rebuild()` emits the same edge id on several rows, each holding a different slice of the claims,
+  and only one row is ever scored.** Found while asking why every `inducted-into` edge is `insufficient`:
+  `e:var_hq9p:inducted-into:unit_paad` exists **four times**, with the ISPR official announcement stranded
+  on an unassessed row while the row that *is* assessed carries only imagery and the planted d23 — hence
+  `missing: official_announcement`. 7 ids duplicated, 9 surplus rows, 0 duplicate node ids. Very likely
+  also why nothing on the corpus reaches `confirmed`, and it is why the ORBAT hop here runs on `equips`
+  rather than `inducted-into`. **Not self-fixed** — SCORE/RESOLVE's, and repairing it changes the graph
+  shape everywhere. Filed in `tmp/conv/T9-to-DATA-graph-gaps.md`; no edge in the chosen chain is affected.
+
+**Design-doc tails to enrich:** `C/02-demo-thread.md` (the worked thread — updated in this branch) and
+`spine/09-retrieval-and-tools.md` (the tool surface should state that a trace's terminus is
+status-gated, and that rejected candidates are reported rather than filtered).
+## QA T11 — a read side for the config layer (branch `qa/t11-config-read`, 2026-07-20)
+
+- **A generic `GET /config/{section}`, not a `GET /observables`.** *Principle: config-driven &
+  extensible — "architecture explicitly includes a configuration / framework layer for decision-making
+  and HITL at any spine layer that needs it".* The presenting symptom was one rail label, but the
+  cause was that the whole config layer was write-only. One generic read closes three logged gaps at
+  once: the watching-catalogue bug, the frontend's read-modify-write blocker
+  (`tmp/conv/FRONTEND-to-API-config-readmodifywrite.md`), and the T6-shaped "the SPA can't read
+  section X" hole. Rejected: a narrow observables route (fixes the label, leaves the config editor
+  blocked), per-section read DTOs (drift from the write shape on the first new field), and making the
+  POST shallow-merge instead (credibility-only, and makes deleting a key impossible).
+
+- **The read serves the live store, never `config/*.yaml`.** *Principle: the hot-config rule — nothing
+  a user does in-app requires a restart.* A read off disk would be a different value from the one the
+  next `rebuild()` uses the moment anyone edits config in-app. The test that proves the seam is
+  `test_config_get_reflects_a_post_with_no_restart`; the product-level proof is a 4th observable armed
+  over HTTP showing up in the rail after the refetch, with no restart and no page reload.
+
+- **Optimistic concurrency is opt-in, not mandated.** *Principle: don't break a frozen contract for a
+  hazard the demo doesn't have.* The POST expected no version handle, so `if_version` is optional:
+  present ⇒ a stale write 409s instead of clobbering; absent ⇒ exactly the previous last-writer-wins
+  behaviour. Rejected: a required `If-Match` (breaks every existing caller for a single-analyst app).
+
+- **Every config section is readable — verified, not assumed.** *Principle: secrets live in `.env`,
+  never in code, logs or config.* `config/*.yaml` greps clean of credential-shaped keys and
+  `ConfigBundle` has no env-sourced field, so there is nothing to withhold — and a section that cannot
+  be read cannot be edited, since editing is read-modify-write. The invariant to preserve going forward
+  is "config carries no secrets", not "this endpoint happens to be safe".
+
+- **Two true numbers beat one ambiguous one.** *Principle: never overclaim — and an underclaim is the
+  same failure, quieter.* The rail derived "Watching" from the alert feed, so a system with three armed
+  tripwires and nothing yet fired rendered `0 — none fired`, which a reviewer reads as "nothing is being
+  monitored". It now states **armed** (from the catalogue) and **fired** (from the feed) separately:
+  `3 armed · none fired` → `3 armed · 1 fired`. Rejected: showing the armed count alone (loses the
+  fired distinction the review queue depends on) and inferring armed from the seeded demo constant
+  (hardcoding config into the client).
+
+- **Unknown is rendered as unknown, not as zero.** *Principle: where evidence is absent, say what is
+  missing.* If the catalogue read fails the row degrades to an em-dash plus "armed count unavailable" —
+  never a confident `0`. An empty catalogue that *was* read is a genuine `0 armed` and looks different.
+  The derivation lives in a pure `watchSummary()` precisely so these rules are unit-tested rather than
+  trapped in a component.
+
+**Left open, deliberately:** `WatchView` still lists only tripwires that have *fired* and still carries
+a now-stale "the armed catalogue has no read endpoint" note; it can enumerate armed-but-quiet observables
+against the new route. Not done here on file-ownership grounds (another agent was live in that
+directory). Likewise the two config-editing surfaces (credibility rubric, define-a-tripwire) are now
+unblocked but remain unwired — handed to FRONTEND in `tmp/conv/T11-config-read.md`.
+
+**Design-doc tails to enrich:** `spine/09 §"Hot-config & live-rebuild"` (the table lists what a user
+*does*; it should also say that the configuration layer is **readable**, because read-modify-write is the
+only safe way to edit a whole-section write) and `plan/sessions/API.md` scope 7 (now `GET|POST`).

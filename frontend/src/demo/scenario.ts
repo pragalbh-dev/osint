@@ -59,6 +59,13 @@ export interface GraphNodeDef {
   x: number
   y: number
   kind: GraphKind
+  /** ONTOLOGY type ('basing_site', 'component', 'source', …) — distinct from `kind`, which is
+   *  the STATUS treatment. The graph stage needs the ontology type to separate the knowledge
+   *  layer from the evidence layer and to lay nodes out by supply-chain role. Optional so the
+   *  frozen demo fixtures (which carry no live ontology types) stay assignable. */
+  type?: string
+  /** the entity's own name, without the type suffix `label` bakes in. */
+  name?: string
 }
 
 // Positions + labels frozen (deterministic preset — layout never moves).
@@ -102,6 +109,11 @@ export interface GraphEdgeDef {
   source: string
   target: string
   kind: EdgeKind
+  /** ONTOLOGY type ('equips', 'same-as', 'observed-at', …) — distinct from `kind`, which is
+   *  the STATUS treatment. The graph stage needs it to tell a DOMAIN relationship from
+   *  resolution BOOKKEEPING (`same-as` / `distinct-from`), which is the difference between
+   *  the knowledge layer and the identity overlay. Optional: the demo fixtures omit it. */
+  type?: string
 }
 
 export const GRAPH_EDGES: GraphEdgeDef[] = [
@@ -126,7 +138,7 @@ export const GRAPH_EDGES: GraphEdgeDef[] = [
 // primary hero matcher is an exact match on that string; the "trace…chokepoint" keyword rule is only the
 // safety net. Change one, change the other.
 export const TARGET_QUERIES = {
-  hero: 'Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint.',
+  hero: 'Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its missile system, and name the fire-control chokepoint.',
   provenance: 'Is this node confirmed or probable — and on what evidence?',
   gaps: 'What do we not know here?',
 } as const
@@ -236,12 +248,27 @@ export interface QueueItem {
   type: string // shown as the small kicker
   subject: string
   badge: string // priority badge
+  /** WHICH records this row is about — a queue row must be readable without opening it.
+   *  Taken from the card each row opens, so the rail and the card cannot disagree. */
+  detail: string
 }
 
 export const QUEUE_ITEMS: QueueItem[] = [
-  { id: 'merge', type: 'Merge', subject: 'Same system, or two?', badge: 'Close call' },
-  { id: 'override', type: 'Status override', subject: 'Is this really confirmed?', badge: 'Close call' },
-  { id: 'alert', type: 'Alert', subject: 'A tripwire fired. Is it real?', badge: 'First seen' },
+  { id: 'merge', type: 'Merge · variant', subject: 'Same system, or two?', badge: 'Close call', detail: 'HQ-9/P ↔ HQ-9BE' },
+  {
+    id: 'override',
+    type: 'Status override · basing site',
+    subject: 'Is this really confirmed?',
+    badge: 'Close call',
+    detail: 'Karachi-East · 09 May 2025',
+  },
+  {
+    id: 'alert',
+    type: 'Alert · basing relocation',
+    subject: 'A tripwire fired. Is it real?',
+    badge: 'First seen',
+    detail: 'occupied @ Rawalpindi → occupied @ Rahwali',
+  },
 ]
 
 // Merge card — HQ-9/P vs HQ-9BE. Matched-on is long & quiet; differs-on short & loud.

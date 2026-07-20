@@ -659,7 +659,7 @@
       "docs": [
         "d24_tel_chassis_attribution"
       ],
-      "expect": "F5 contrast: ONE deep-tier supplier is CONFIRMED (Taian/Wanshan -> HQ-9/P TEL 8x8 chassis — a source directly names supplier+component+relationship, multiply attested) while the HT-233 radar maker stays a Known Gap and 23rd RI / 4th Academy stay POSSIBLE. Confirms only on a direct supply link; a sanctions/entity-listing alone is NOT sufficient."
+      "expect": "F5 contrast: ONE deep-tier supplier is CONFIRMED (Taian/Wanshan -> HQ-9/P TEL 8x8 chassis) while the HT-233 radar maker stays a Known Gap and 23rd RI / 4th Academy stay POSSIBLE. The grade rests on the DIRECTNESS of a single source — d24 names supplier + component + relationship explicitly — NOT on corroboration count: the link appears in exactly one bundle (d24), so it must not be described as multiply attested. Confirms only on a direct supply link; a sanctions/entity-listing alone is NOT sufficient."
     },
     "observable_relocation": {
       "docs": [

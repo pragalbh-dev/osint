@@ -102,6 +102,12 @@ class Edge:
     # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
     # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
     source_id: str | None = None
+    # The claim this triple came from. An identity assertion ("A same-as B") is CONSUMED as a merge
+    # signal rather than drawn as an edge (D-2.5), so without this the only trace of *who said* two
+    # records are one was a number in ``merge_breakdown``: an analyst adjudicating the pair could read
+    # the score but never the sentence. Carried here so the candidate ``same-as`` edge can cite its own
+    # evidence (``resolve.identity_claim_ids`` → ``view/pipeline._resolution_edges`` → ``GET /evidence``).
+    claim_id: str | None = None
     # The claim's tier-3 bag, carried through so a triple that says something *about how it was derived*
     # can be read here. Currently that is in-document coreference: its evidence category decides whether
     # the pair may bootstrap or only raise, and its licensing quote is the analyst's rationale. Carried
@@ -151,6 +157,7 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                     edge_instance=rr.edge_instance,
                     latest_iso=canonical_iso_bounds(c.event_time)[1],
                     source_id=c.source_id,
+                    claim_id=c.claim_id,
                     attributes=c.attributes,
                 )
             )

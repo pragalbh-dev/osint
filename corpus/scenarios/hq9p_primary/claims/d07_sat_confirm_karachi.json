@@ -41,7 +41,7 @@
               "source": "coord-parse"
             }
           ],
-          "precision_class": "city",
+          "precision_class": "pad",
           "proposed_alias": null,
           "raw": "Malir District, Karachi, Sindh Province, Pakistan (24.9012 N, 67.2034 E)",
           "resolved_place_ref": null,

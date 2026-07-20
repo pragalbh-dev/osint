@@ -5,13 +5,17 @@
 // when evidence is insufficient (the insufficient-evidence non-negotiable). NOT AI — this is
 // deterministic formatting of the structured response. Demo keeps its own frozen Drawer.tsx;
 // this mounts only in LIVE mode (see DrawerHost).
+//
+// The drawer answers "how do you know that?" — so it must first answer "know WHAT?". A status
+// hung over a bare node name ("PAF Base Nur Khan is Probable") grades no proposition an analyst
+// can judge. So the header states the assertion under assessment, and every claim row states the
+// proposition that claim makes, read straight off its payload (never paraphrased, never generated).
 
 import type { ReactNode } from 'react'
 import { useWorkbench } from '@/store/workbench'
 import { useEvidence } from '@/api/hooks'
-import { useDisplayName } from '@/api/viewmodel'
 import { evidenceToDrawerModel } from '@/api/adapters'
-import type { LiveDrawerModel, LiveClaimRow } from '@/api/adapters'
+import type { LiveDrawerModel, LiveClaimRow, LiveDrawerCluster, LiveDrawerSource } from '@/api/adapters'
 import type { DocRef, Status } from '@/api/types'
 import { CitationChip, type ChipStatus } from '@/components/status/CitationChip'
 import { StatusSwatch } from '@/components/status/StatusSwatch'
@@ -24,6 +28,20 @@ const STATUS_WORD: Record<Status, string> = {
   stale: 'Stale',
   insufficient: 'Insufficient evidence',
 }
+
+// What each verdict MEANS for the proposition in the header — the analyst reads a status word and
+// a claim, and should not have to remember the rubric to join them. Sentence-cased, no arithmetic.
+const STATUS_GLOSS: Record<Status, string> = {
+  confirmed: 'Independent, credible sources agree — briefable.',
+  probable: 'Supported, but thinner than confirmed — lean on it, do not bet on it.',
+  possible: 'A weak lead. One low-credibility look.',
+  contradicted: 'Credible sources disagree about the same moment — a human call.',
+  stale: 'Was supported, but has aged past its shelf life with no fresh confirmation.',
+  insufficient: 'Not enough evidence on file to assess this.',
+}
+
+/** Status-less edges that are an IDENTITY question rather than a version link (see the verdict block). */
+const IDENTITY_LINK_TYPES = new Set(['same-as', 'distinct-from'])
 
 function chipStatusFor(status: Status): ChipStatus {
   if (status === 'confirmed') return 'confirmed'
@@ -62,6 +80,10 @@ function whySentence(m: LiveDrawerModel): string {
 // SENTENCE CASE. The copy deck is explicit: "Sentence case. Always. No ALL CAPS."
 // A mono/uppercase variant here was a second visual language for the same object.
 const KICKER = { fontSize: 10.5, color: 'var(--text-faint)', letterSpacing: '0.06em' } as const
+const MONO_FAINT = {
+  font: '10.5px/1.5 ui-monospace,Menlo,monospace',
+  color: 'var(--text-faint)',
+} as const
 
 function Kicker({ children }: { children: ReactNode }) {
   return <div style={{ ...KICKER, marginBottom: 8 }}>{children}</div>
@@ -71,19 +93,92 @@ function Section({ children }: { children: ReactNode }) {
   return <div style={{ padding: '18px 22px', borderTop: '1px solid var(--hairline)' }}>{children}</div>
 }
 
+/** The cluster's attribution: WHO said it, by class and reliability grade. A raw `d17b_withheld_gap`
+ *  is an internal filename, not a source an analyst can weigh — so the class leads and the id drops
+ *  to the technical line beneath it. An id the registry does not know shows as the id alone. */
+function SourceLine({ source }: { source: LiveDrawerSource }) {
+  const meta = [
+    source.grade ? `reliability ${source.grade}` : null,
+    source.bias ? `${source.bias} interest` : null,
+    source.reportDate ? `dated ${source.reportDate}` : null,
+  ].filter(Boolean)
+  return (
+    <div style={{ marginBottom: 10 }}>
+      <div style={{ font: '12.5px/1.4 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
+        {source.known ? source.label : source.sourceId}
+        {!source.known && (
+          <span style={{ color: 'var(--text-faint)', fontSize: 11 }}> · not in the source registry</span>
+        )}
+      </div>
+      {source.known && (
+        <div style={{ ...MONO_FAINT, marginTop: 3 }}>
+          {[source.sourceId, ...meta].join(' · ')}
+        </div>
+      )}
+      {source.flags.map((flag) => (
+        <div
+          key={flag}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            marginTop: 4,
+            font: '11px/1.4 ui-sans-serif,system-ui,sans-serif',
+            color: 'var(--text-dim)',
+          }}
+        >
+          <span style={{ width: 7, height: 7, borderRadius: 2, background: 'var(--problem)' }} />
+          {flag}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ClaimRow({ row, expanded, onToggle, status }: { row: LiveClaimRow; expanded: boolean; onToggle: () => void; status: Status }) {
   return (
-    <div style={{ marginBottom: 12 }}>
+    <div style={{ marginBottom: 14 }}>
+      {/* the chip carries the kind + the claim's OWN locator, so two claims lifted from one
+          document are distinguishable at a glance instead of rendering as the same string */}
       <CitationChip
-        label={row.sourceId}
+        label={[row.kindLabel, row.locatorShort].filter(Boolean).join(' · ')}
         status={chipStatusFor(status)}
         dots={row.dots}
         expandable
         expanded={expanded}
         onClick={onToggle}
       />
-      <div style={{ font: '11px/1.5 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', margin: '6px 0 0 2px' }}>
-        {row.detail}
+      {/* WHAT the claim says. Read off its payload — never a paraphrase. When the payload shape is
+          one this build cannot phrase, we say nothing here and let the verbatim quote speak. */}
+      {row.proposition && (
+        <div
+          style={{
+            font: '13px/1.5 ui-sans-serif,system-ui,sans-serif',
+            color: 'var(--text)',
+            margin: '8px 0 0 2px',
+            textWrap: 'pretty',
+          }}
+        >
+          {row.proposition}
+        </div>
+      )}
+      {row.attrLines.length > 0 && (
+        <div
+          style={{
+            font: '11.5px/1.6 ui-sans-serif,system-ui,sans-serif',
+            color: 'var(--text-dim)',
+            margin: '5px 0 0 2px',
+          }}
+        >
+          {row.attrLines.map((line) => (
+            <div key={line}>{line}</div>
+          ))}
+        </div>
+      )}
+      <div style={{ ...MONO_FAINT, margin: '6px 0 0 2px' }}>
+        {[row.detail, row.dates.reported ? `reported ${row.dates.reported}` : null, row.locatorShort]
+          .filter(Boolean)
+          .join(' · ')}
       </div>
       {expanded && (
         <div
@@ -139,28 +234,157 @@ function ClaimRow({ row, expanded, onToggle, status }: { row: LiveClaimRow; expa
   )
 }
 
-function DrawerBody({ model }: { model: LiveDrawerModel }) {
+function ClusterSection({
+  cluster,
+  index,
+  looks,
+  status,
+  identityLink,
+}: {
+  cluster: LiveDrawerCluster
+  index: number
+  looks: number
+  status: Status
+  /** T10 — the subject is a `same-as`/`distinct-from`. Its claims are not "also cited" alongside an
+   *  assessment; they ARE the assertion, and independent looks are not counted for it at all. */
+  identityLink?: boolean
+}) {
   const expanded = useWorkbench((s) => s.expanded)
   const toggleChip = useWorkbench((s) => s.toggleChip)
+  const axis = cluster.axis
+  const axisBits = axis ? [axis.discipline, axis.interest].filter(Boolean) : []
+  return (
+    <Section>
+      <Kicker>
+        {cluster.ungrouped
+          ? identityLink
+            ? 'Who asserts it'
+            : 'Also cited · not counted as an independent look'
+          : `Independent look ${index + 1} of ${looks}${axisBits.length ? ` · ${axisBits.join(' / ')}` : ''}`}
+      </Kicker>
+      {cluster.sources.map((source) => (
+        <SourceLine key={source.sourceId} source={source} />
+      ))}
+      <div style={{ ...MONO_FAINT, marginBottom: 12 }}>
+        {cluster.rows.length} claim{cluster.rows.length === 1 ? '' : 's'}
+        {cluster.ungrouped ? '' : ' from this look'}
+      </div>
+      {cluster.rows.length === 0 && (
+        <div style={{ font: '11px/1.5 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-faint)' }}>
+          (no resolvable backing claims)
+        </div>
+      )}
+      {cluster.rows.map((row) => (
+        <ClaimRow
+          key={row.claimId}
+          row={row}
+          status={status}
+          expanded={expanded === row.claimId}
+          onToggle={() => toggleChip(row.claimId)}
+        />
+      ))}
+    </Section>
+  )
+}
+
+function DrawerBody({ model }: { model: LiveDrawerModel }) {
+  const select = useWorkbench((s) => s.select)
   const why = whySentence(model)
+  const statusless = model.subject?.statusless === true
+  const looks = model.clusters.filter((c) => !c.ungrouped).length
 
   return (
     <div>
       {/* verdict */}
       <Section>
         <Kicker>Provenance</Kicker>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <StatusSwatch status={model.status} size={16} />
-          <span style={{ font: '15px/1.2 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
-            {STATUS_WORD[model.status]}
-          </span>
-        </div>
-        {/* the ref itself now leads the header block above — not repeated here */}
+        {statusless ? (
+          // A `supersedes` / `same-as` / `distinct-from` link carries no status BY DESIGN — it is a
+          // version or identity link between two already-scored assertions. Rendering its null
+          // status as "insufficient evidence" invented an evidence gap that does not exist.
+          // T10 — but the two kinds are not the same statement, so they do not get the same sentence:
+          // an identity link is an OPEN QUESTION about who two records are (and the claims below are a
+          // source's answer to it), where a version link records a change that already happened.
+          <div style={{ font: '13px/1.55 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
+            {IDENTITY_LINK_TYPES.has(model.subject?.edgeType ?? '') ? (
+              <>
+                This link carries no status of its own — it is a question about identity, not a fact
+                about the world. The two records it connects are each scored separately; anything below
+                is a source asserting they are one thing, and it is for you to weigh.
+              </>
+            ) : (
+              <>
+                This link carries no status of its own — it records a change of state, not a fact about
+                the world. The two assertions it connects are each scored separately.
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <StatusSwatch status={model.status} size={16} />
+              <span style={{ font: '15px/1.2 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
+                {STATUS_WORD[model.status]}
+              </span>
+            </div>
+            <div style={{ font: '12.5px/1.5 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)' }}>
+              {STATUS_GLOSS[model.status]}
+            </div>
+          </>
+        )}
+        {/* the arithmetic, stated so the header can never disagree with the body below it: the
+            claim count is the number of rows actually rendered. A status-less link is not scored,
+            so it has no independent looks — printing "0 independent looks" would read as a
+            shortfall rather than as "this is not the kind of thing looks are counted for". */}
         <div style={{ font: '12px/1.4 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginTop: 10 }}>
-          {model.sources} source{model.sources === 1 ? '' : 's'} · {model.looks} independent look
-          {model.looks === 1 ? '' : 's'}
+          {[
+            `${model.sources} source${model.sources === 1 ? '' : 's'}`,
+            statusless ? null : `${looks} independent look${looks === 1 ? '' : 's'}`,
+            `${model.claimCount} claim${model.claimCount === 1 ? '' : 's'} on file`,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
         </div>
       </Section>
+
+      {/* a relocation, told as a relocation: what moved, from where, to where, and the two
+          assertions it is made of — each one click away in its own drawer. */}
+      {model.supersession && (() => {
+        const s = model.supersession
+        const who = s.subjectName ?? 'The recorded occupant'
+        const here =
+          s.role === 'older'
+            ? ' This drawer is the assertion that was overtaken — it is history, not a mistake.'
+            : s.role === 'newer'
+              ? ' This drawer is the assertion that replaced it.'
+              : ''
+        return (
+          <Section>
+            <Kicker>What changed</Kicker>
+            <div style={{ font: '13px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)', textWrap: 'pretty' }}>
+              {who} was based at <strong style={{ fontWeight: 500 }}>{s.fromName}</strong> and is now
+              based at <strong style={{ fontWeight: 500 }}>{s.toName}</strong>. {s.fromName} itself is
+              unchanged — it was not replaced; the basing there was.{here}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+              {s.olderEdgeId && s.role !== 'older' && (
+                <CitationChip
+                  label="the earlier basing (now history)"
+                  status="gap"
+                  onClick={() => select(s.olderEdgeId!)}
+                />
+              )}
+              {s.newerEdgeId && s.role !== 'newer' && (
+                <CitationChip
+                  label="the basing that replaced it"
+                  status="probable"
+                  onClick={() => select(s.newerEdgeId!)}
+                />
+              )}
+            </div>
+          </Section>
+        )
+      })()}
 
       {/* the sufficiency check — the pack's own copy ("To raise this", doc 09 §hierarchy
           item 7). It names the next action and its date rather than the shortfall. */}
@@ -177,29 +401,15 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
       )}
 
       {/* the independent looks + their claims */}
-      {model.clusters.map((cluster) => (
-        <Section key={cluster.groupId}>
-          <Kicker>
-            Independent look
-            {cluster.axis &&
-              (cluster.axis.discipline || cluster.axis.origin) &&
-              ` · ${[cluster.axis.discipline, cluster.axis.origin].filter(Boolean).join(' / ')}`}
-          </Kicker>
-          {cluster.rows.length === 0 && (
-            <div style={{ font: '11px/1.5 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-faint)' }}>
-              (no resolvable backing claims)
-            </div>
-          )}
-          {cluster.rows.map((row) => (
-            <ClaimRow
-              key={row.claimId}
-              row={row}
-              status={model.status}
-              expanded={expanded === row.claimId}
-              onToggle={() => toggleChip(row.claimId)}
-            />
-          ))}
-        </Section>
+      {model.clusters.map((cluster, i) => (
+        <ClusterSection
+          key={cluster.groupId}
+          cluster={cluster}
+          index={i}
+          looks={looks}
+          status={model.status}
+          identityLink={IDENTITY_LINK_TYPES.has(model.subject?.edgeType ?? '')}
+        />
       ))}
 
       {/* integrity + opposing evidence */}
@@ -226,16 +436,26 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
   )
 }
 
+/** Panel width (App.tsx: Rail 240 | Stage flex | Panel 400 | Drawer 560 overlay). */
+const PANEL_W = 400
+
 export function LiveDrawer() {
   const drawerOpen = useWorkbench((s) => s.drawerOpen)
   const selected = useWorkbench((s) => s.selected)
   const closeDrawer = useWorkbench((s) => s.closeDrawer)
-  const displayName = useDisplayName()
+  const liveView = useWorkbench((s) => s.liveView)
+  // T10 — while an adjudication is open in the panel, the drawer slides in BESIDE it instead of on top
+  // of it. Checking the evidence must not take the decision off the screen: the three options and the
+  // record pair stay visible the whole time the analyst is reading the claims. It still overlays (the
+  // stage), never pushes, and everywhere else the drawer is exactly where it has always been.
+  const besideCard = useWorkbench((s) => s.panelView === 'card' && s.activeLiveItem !== null)
   const { data, isLoading, isError } = useEvidence(selected, drawerOpen)
-  // `site_rahwali` is a database key, not a name. The analyst-facing headline is the node's OWN
-  // name (never a paraphrase, never invented — an unnamed node falls back to its id), with the id
-  // kept underneath as the technical handle for anyone reading a log or a citation.
-  const heading = selected ? displayName(selected) : '—'
+  const model = data ? evidenceToDrawerModel(data, liveView) : null
+  // `site_rahwali` is a database key, not a claim. The analyst-facing headline is the PROPOSITION
+  // under assessment ("«Rahwali airfield» exists, as a basing site"), built from the graph's own
+  // names and types — never invented — with the id kept underneath as the technical handle for
+  // anyone reading a log or a citation.
+  const heading = model?.subject?.headline ?? selected ?? '—'
   const showId = selected != null && heading !== selected
 
   return (
@@ -243,14 +463,17 @@ export function LiveDrawer() {
       style={{
         position: 'fixed',
         top: 0,
-        right: 0,
+        right: besideCard ? PANEL_W : 0,
         height: '100vh',
         width: 560,
-        maxWidth: '92vw',
+        // Beside the card it must never eat the panel it is meant to sit next to; the floor keeps it
+        // legible if someone runs this far below the 1440×900 the workbench is tuned for.
+        maxWidth: besideCard ? `max(320px, calc(100vw - ${PANEL_W + 24}px))` : '92vw',
         background: 'var(--surface)',
         borderLeft: '1px solid var(--hairline-strong)',
+        borderRight: besideCard ? '1px solid var(--hairline-strong)' : undefined,
         boxShadow: '-8px 0 24px rgba(0,0,0,0.35)',
-        transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)',
+        transform: drawerOpen ? 'translateX(0)' : `translateX(calc(100% + ${besideCard ? PANEL_W : 0}px))`,
         // doc 12's drawer budget — 160ms ease-out. It overlays, it never pushes.
         transition: 'transform 160ms ease-out',
         zIndex: 50,
@@ -259,14 +482,16 @@ export function LiveDrawer() {
     >
       {/* header — restates what is being proved, so covering the answer is safe (doc 08).
           Ported from the demo drawer: "Proving" kicker + the claim line + a bordered
-          30x30 close control. Live has no prose claim, so the element ref IS the claim. */}
+          30x30 close control. */}
       {/* no borderBottom here: the first <Section> below already draws that one hairline,
           and two adjacent 1px rules read as a 2px rule that means nothing. */}
       <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
           <div>
             <div style={{ ...KICKER, marginBottom: 7 }}>Proving</div>
-            <div style={{ fontSize: 16, lineHeight: 1.35, color: 'var(--text)' }}>{heading}</div>
+            <div style={{ fontSize: 16, lineHeight: 1.35, color: 'var(--text)', textWrap: 'pretty' }}>
+              {heading}
+            </div>
             {showId && (
               <div
                 style={{
@@ -277,6 +502,7 @@ export function LiveDrawer() {
                   marginTop: 5,
                 }}
               >
+                {model?.subject?.typeLabel ? `${model.subject.typeLabel} · ` : ''}
                 {selected}
               </div>
             )}
@@ -307,7 +533,7 @@ export function LiveDrawer() {
         <Section>
           <div style={{ font: '12px/1.5 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-faint)' }}>Loading provenance…</div>
         </Section>
-      ) : isError || !data ? (
+      ) : isError || !model ? (
         <Section>
           <Kicker>Provenance</Kicker>
           <div style={{ font: '12.5px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)' }}>
@@ -315,7 +541,7 @@ export function LiveDrawer() {
           </div>
         </Section>
       ) : (
-        <DrawerBody model={evidenceToDrawerModel(data)} />
+        <DrawerBody model={model} />
       )}
     </aside>
   )

@@ -58,7 +58,9 @@ Known-Gap-off-scale) so status assertions match the machine, not prose.
    `credibility.yaml` threshold) and re-runs, asserting the view/answer changes with **no** code edit.
 5. **The 6 demo flexes** (`C/02`; anchors in `answer_key.flexes`) — one assertion each:
    1. **Confirmed vs probable** — `import_2021` reaches **confirmed** only with a genuinely cross-interest
-      source (`corroborated`), while `sustain_spares` stays **probable** on a single source (`single_source`).
+      source (`corroborated`), while the 2021 Nur Khan basing attribution stays **probable** on its single
+      source d17 (`single_source`). *(Re-pointed in Phase 4: the flex used to name `sustain_spares`, an
+      oracle node that was removed because the corpus yields no interceptor_stockpile instance.)*
    2. **Insufficient-evidence on the cloud-gap** — `gap_insufficient_evidence` (d10 + d17b negative
       observation) → Known Gap with named missing slot + next coverage due.
    3. **M4 override** — `planted_tooclean` (d11 recycled parade image, first_seen 2019, + d12/d13 two

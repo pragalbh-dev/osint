@@ -11,7 +11,7 @@ set -euo pipefail
 
 BASE="${1:-http://127.0.0.1:8000}"
 BASE="${BASE%/}"
-HERO="Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint."
+HERO="Trace the long-range SAM battery now based at Rahwali back to the organisation that builds its missile system, and name the fire-control chokepoint."
 fail=0
 
 pass() { echo "[verify] PASS  $*"; }

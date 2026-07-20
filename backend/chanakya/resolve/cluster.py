@@ -21,7 +21,7 @@ from .aliases import AliasIndex
 from .entities import Entity, EntityGraph, as_pair, namespace_compatible, unordered_pairs
 from .normalize import normalize, tokens
 from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
-from .scoring import merge_score
+from .scoring import geo_conflict_km, merge_score
 
 Pair = frozenset[str]
 
@@ -247,8 +247,16 @@ def resolve_entities(
     )
 
     def vetoed(a: str, b: str) -> bool:
-        return frozenset((a, b)) in veto or alias_idx.barred(
-            normalize(graph.entities[a].name, trans), normalize(graph.entities[b].name, trans)
+        ea, eb = graph.entities[a], graph.entities[b]
+        # A geographic impossibility is a veto on the same footing as a curated ``distinct_from``: it
+        # blocks the bootstrap, the auto-merge fixpoint AND the candidate queue below, because a pair
+        # that cannot be one entity is not a question worth an analyst's attention either. Unlike a
+        # curated distinct-from it is NOT drawn as an edge — a geodesic separation is arithmetic, not a
+        # finding, and the graph already carries both places on their own coordinates.
+        return (
+            frozenset((a, b)) in veto
+            or alias_idx.barred(normalize(ea.name, trans), normalize(eb.name, trans))
+            or geo_conflict_km(ea, eb, cfg) is not None
         )
 
     def violates_veto_transitively(a: str, b: str) -> bool:
@@ -301,6 +309,14 @@ def resolve_entities(
     # ── collect HITL candidates from the stable partition ─────────────────────────────────────
     for a, b in pairs:
         if uf.find(a) == uf.find(b) or vetoed(a, b):
+            continue
+        # T3b-A: two entities of DIFFERENT ontology types are not the same entity, and asking an analyst
+        # whether an air-defence *sector* is the same thing as an air-defence *centre* is not triage, it
+        # is noise. The same type gate `_identity_pairs`, `_name_containment` and `_coref_pairs` already
+        # apply, finally applied to the scored queue as well. The escape hatch is deliberate: if a source
+        # or the offline proposer explicitly asserts the identity, the pair is in `raise_only` and still
+        # reaches the analyst — a cross-type assertion is exactly the kind of thing a human should see.
+        if graph.entities[a].etype != graph.entities[b].etype and frozenset((a, b)) not in raise_only:
             continue
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
         if _band(bd, cfg, has_raise=frozenset((a, b)) in raise_only) == "hitl":

@@ -763,13 +763,30 @@ def _dms_to_decimal(token: str, hemi: str) -> float | None:
     return -val if hemi.upper() in "SW" else val
 
 
-def _dms_precision(s: str) -> PrecisionClass:
-    """DMS resolution → precision: seconds present → pad; minute-only → site; degree-only → city."""
+def _dms_precision(s: str, lat_body: str = "", lon_body: str = "") -> PrecisionClass:
+    """DMS resolution → precision: seconds present → pad; minute-only → site; degree-only → city.
+
+    The degree-only rung has one exception that matters, and it was silently costing the demo its most
+    precisely-stated site. A hemisphere-suffixed pair embedded in prose — ``"Malir District, Karachi,
+    Sindh Province, Pakistan (24.9012 N, 67.2034 E)"`` — carries no sexagesimal glyph anywhere, so the
+    anchored decimal-degree pattern cannot see it and it arrives here as "degree-only DMS". Read
+    literally that is a whole-degree fix and the answer is ``city``; read honestly the source stated
+    four decimal places, i.e. ~10 m, and calling that a city-scale location understates our own
+    knowledge by three orders of magnitude. When both components are plain decimal degrees (a single
+    number with a fraction, no minutes or seconds), the stated decimal places decide — the same rule
+    :func:`_precision_from_dd` applies to a bare DD pair, because that is exactly what this is.
+    """
+    if _DECIMAL_COMPONENT_RE.fullmatch(lat_body.strip()) and _DECIMAL_COMPONENT_RE.fullmatch(lon_body.strip()):
+        return _precision_from_dd(lat_body.strip(), lon_body.strip())
     if re.search(r"\d{6,7}[NnSsEeWw]", s) or re.search(r"[′'.:\- ]\s*\d+\s*[″\"]", s):
         return "pad"
     if re.search(r"\d[°:\- ]\s*\d", s):
         return "site"
     return "city"
+
+
+# One decimal number and nothing else — the shape that means "this DMS component is really a DD".
+_DECIMAL_COMPONENT_RE = re.compile(r"\d+\.\d+")
 
 
 def _parse_dd(s: str) -> tuple[float, float, PrecisionClass] | None:
@@ -794,7 +811,7 @@ def _parse_dms(s: str) -> tuple[float, float, PrecisionClass] | None:
     lon = _dms_to_decimal(lon_m.group(1), lon_m.group(2))
     if lat is None or lon is None or not (-90 <= lat <= 90 and -180 <= lon <= 180):
         return None
-    return lat, lon, _dms_precision(s)
+    return lat, lon, _dms_precision(s, lat_m.group(1), lon_m.group(1))
 
 
 def _parse_mgrs(s: str) -> tuple[float, float, PrecisionClass] | None:

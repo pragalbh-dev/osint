@@ -9,11 +9,12 @@
 // created once and mutated in place so the relocation choreography can transition
 // smoothly (~400ms) rather than pop.
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
 import { AOI } from '@/demo/scenario'
 import type { StagePin } from '@/api/adapters'
-import { useStagePins } from '@/api/viewmodel'
+import { formatRadius, isAreaPin } from '@/api/adapters'
+import { useStagePins, useUnplacedLocations } from '@/api/viewmodel'
 import { useWorkbench, selMoved, selRahwaliConfirmed } from '@/store/workbench'
 import { COLORS } from '@/design/tokens'
 import { statusBorder } from '@/components/status/util'
@@ -49,6 +50,16 @@ const CORNERS = `
   <span style="position:absolute;left:-3px;bottom:-3px;width:6px;height:6px;border-left:1px solid var(--text-dim);border-bottom:1px solid var(--text-dim);"></span>
   <span style="position:absolute;right:-3px;bottom:-3px;width:6px;height:6px;border-right:1px solid var(--text-dim);border-bottom:1px solid var(--text-dim);"></span>`
 
+// A live node's display name is whatever the document called it, and some of those are whole
+// sentences ("Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area"). Rendered in
+// full they scrawl a third of the way across the AOI and bury the map they annotate. The pin
+// label is an index, not the record — the full string is one click away in the drawer.
+const LABEL_MAX = 26
+
+function clampLabel(text: string): string {
+  return text.length > LABEL_MAX ? `${text.slice(0, LABEL_MAX - 1).trimEnd()}…` : text
+}
+
 function labelHtml(pos: 'below' | 'right' | 'left', title: string, caption: string, dimTitle?: boolean, below = 38) {
   const wrap =
     pos === 'right'
@@ -57,8 +68,8 @@ function labelHtml(pos: 'below' | 'right' | 'left', title: string, caption: stri
         ? 'position:absolute;right:40px;top:3px;text-align:right;white-space:nowrap;'
         : `position:absolute;left:50%;top:${below}px;transform:translateX(-50%);text-align:center;white-space:nowrap;`
   const titleColor = dimTitle ? 'var(--text-dim)' : 'var(--text)'
-  return `<div style="${wrap}">
-    <div style="font-size:11px;color:${titleColor};">${title}</div>
+  return `<div style="${wrap}" title="${title.replace(/"/g, '&quot;')}">
+    <div style="font-size:11px;color:${titleColor};">${clampLabel(title)}</div>
     <div data-caption style="font-size:9.5px;color:var(--text-faint);font-family:ui-monospace,Menlo,monospace;">${caption}</div>
   </div>`
 }
@@ -91,6 +102,36 @@ function pinCore(pin: StagePin, ui: { dot: 'live' | 'history' }): {
     dot: ui.dot === 'history' ? 'var(--history)' : 'var(--live)',
     opacity: 'var(--opacity-fresh)',
   }
+}
+
+// ─────────────────────────── how well located, at a glance ───────────────────────────
+// The map's second job, after "what is where", is "how well do we actually know that".
+// A pad-level fix read off a grid reference and a province looked up in a gazetteer are
+// not the same knowledge, and a map that draws both as one dot has quietly fabricated
+// ~150 km of precision. So the two are drawn as different KINDS of thing:
+//
+//   point (pad/site/terminal) → the instrument pin, corner ticks, solid core. A place.
+//   area  (district/city/province, or an anchor with no stated class) → NO pin. A dashed
+//          hollow ring marker at the centroid, plus a dashed envelope circle on the map
+//          at the real radius. Nothing about it invites a reticle.
+//
+// The envelope is drawn for point pins too (a pad is ±500 m, and saying so is free), just
+// faint enough that it never competes with the pin at demo zooms.
+
+/** The centroid marker for an AREA pin: hollow, dashed, no corner ticks, no filled core. */
+function areaHtml(pin: StagePin): string {
+  const ui = PIN_UI[pin.id] ?? DEFAULT_PIN_UI
+  const caption = pin.uncertaintyRadiusM
+    ? pin.caption
+      ? `${pin.caption} · ±${formatRadius(pin.uncertaintyRadiusM)}`
+      : `±${formatRadius(pin.uncertaintyRadiusM)}`
+    : pin.caption
+  return `
+    <div style="position:relative;width:26px;height:26px;display:flex;align-items:center;justify-content:center;">
+      <span data-ring style="position:absolute;inset:2px;border-radius:50%;border:1px dashed rgba(138,148,156,0.55);box-shadow:none;transition:box-shadow 200ms ease;"></span>
+      <span data-core style="width:3px;height:3px;border-radius:50%;background:var(--text-dim);"></span>
+    </div>
+    ${labelHtml(ui.labelPos, pin.label, caption, true, 30)}`
 }
 
 function pinHtml(pin: StagePin): string {
@@ -134,6 +175,8 @@ export function MapView() {
   const reticleRef = useRef<L.Marker | null>(null)
   const movedLineRef = useRef<L.Polyline | null>(null)
   const movedLabelRef = useRef<L.Marker | null>(null)
+  // one uncertainty envelope per located pin, keyed by pin id (created with the markers)
+  const envelopesRef = useRef<Record<string, L.Circle>>({})
   // LIVE supersession connectors, keyed "<superseded>→<successor>" so they survive re-renders.
   const supersedeLayersRef = useRef<Record<string, L.LayerGroup>>({})
 
@@ -167,11 +210,28 @@ export function MapView() {
     pins.forEach((pin) => {
       const ui = PIN_UI[pin.id] ?? DEFAULT_PIN_UI
       const rect = !!ui.rect
+      const area = !rect && isAreaPin(pin)
+
+      // The uncertainty envelope, at the radius the backend derived from the gazetteer's
+      // precision class. Non-interactive and behind the markers: it is context, not a target.
+      if (pin.uncertaintyRadiusM && pin.uncertaintyRadiusM > 0) {
+        envelopesRef.current[pin.id] = L.circle([pin.lat, pin.lon], {
+          radius: pin.uncertaintyRadiusM,
+          color: COLORS.history,
+          weight: 1,
+          dashArray: '3 4',
+          opacity: area ? 0.5 : 0.22,
+          fillColor: COLORS.history,
+          fillOpacity: area ? 0.06 : 0,
+          interactive: false,
+        }).addTo(map)
+      }
+
       const icon = L.divIcon({
-        html: pinHtml(pin),
+        html: area ? areaHtml(pin) : pinHtml(pin),
         className: '', // '' → drop the default .leaflet-div-icon white box
-        iconSize: rect ? [34, 26] : [34, 34],
-        iconAnchor: rect ? [17, 13] : [17, 17],
+        iconSize: rect ? [34, 26] : area ? [26, 26] : [34, 34],
+        iconAnchor: rect ? [17, 13] : area ? [13, 13] : [17, 17],
       })
       const marker = L.marker([pin.lat, pin.lon], { icon, riseOnHover: true }).addTo(map)
       marker.on('click', () => select(pin.id))
@@ -191,6 +251,7 @@ export function MapView() {
       map.remove()
       mapRef.current = null
       markersRef.current = {}
+      envelopesRef.current = {}
       reticleRef.current = null
       movedLineRef.current = null
       movedLabelRef.current = null
@@ -275,12 +336,18 @@ export function MapView() {
       }
     }
 
-    // LIVE supersession — a solid grey "replaced by →" connector from the superseded site to
-    // the one that replaced it. Same treatment the Graph stage gives a settled `supersedes`
-    // edge (solid, --history, arrow, ~0.75) so one story reads the same on both stages. It is
-    // deliberately quiet: the line IS the whole treatment — no flash, no pulse, no animation.
-    // Solid (not the demo's dashed "moved →") because a settled supersession is history we
-    // KNOW, and dashed grey is reserved for an evidence gap.
+    // LIVE supersession — a solid grey connector from the site that was left behind to the one
+    // the occupant moved to. Same treatment the Graph stage gives a settled `supersedes` edge
+    // (solid, --history, ~0.75) so one story reads the same on both stages. Deliberately quiet:
+    // the line IS the whole treatment — no flash, no pulse, no animation. Solid (not the demo's
+    // dashed "moved →") because a settled supersession is history we KNOW, and dashed grey is
+    // reserved for an evidence gap.
+    //
+    // The LABEL names what moved. The backend draws this link site→site (a projection of a
+    // supersession that actually lives on the `based-at` edge), so an unqualified "replaced by →"
+    // between two bases asserts that one BASE replaced the other — which is false: Nur Khan did
+    // not stop existing, the battery left it. The connector is also clickable, straight into the
+    // version link's own provenance drawer, so "what exactly moved?" is one click, not a guess.
     {
       const byId = new Map(pins.map((p) => [p.id, p]))
       const wanted = new Map<string, [StagePin, StagePin]>()
@@ -296,25 +363,33 @@ export function MapView() {
       }
       for (const [key, [from, to]] of wanted) {
         if (supersedeLayersRef.current[key]) continue
-        const group = L.layerGroup([
-          L.polyline(
-            [
-              [from.lat, from.lon],
-              [to.lat, to.lon],
-            ],
-            { color: COLORS.history, weight: 1, interactive: false, opacity: 0.75 },
-          ),
-          L.marker([(from.lat + to.lat) / 2, (from.lon + to.lon) / 2], {
-            interactive: false,
-            icon: L.divIcon({
-              html: `<span style="font:10px/1 ui-monospace,Menlo,monospace;color:var(--text-dim);white-space:nowrap;">replaced by →</span>`,
-              className: '',
-              iconSize: [0, 0],
-              iconAnchor: [-6, 12],
-            }),
+        const edgeId = from.supersedeEdgeId ?? null
+        // Never "replaced by": say what moved. With no named subject on the edge we still refuse
+        // to name the site as the thing replaced — "basing moved" is the weakest true statement.
+        const moved = from.supersedeSubject ? `${from.supersedeSubject} moved →` : 'basing moved →'
+        const line = L.polyline(
+          [
+            [from.lat, from.lon],
+            [to.lat, to.lon],
+          ],
+          { color: COLORS.history, weight: 1, interactive: !!edgeId, opacity: 0.75 },
+        )
+        const label = L.marker([(from.lat + to.lat) / 2, (from.lon + to.lon) / 2], {
+          interactive: !!edgeId,
+          icon: L.divIcon({
+            html: `<span style="font:10px/1 ui-monospace,Menlo,monospace;color:var(--text-dim);white-space:nowrap;${
+              edgeId ? 'cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--hairline-strong);' : ''
+            }">${moved}</span>`,
+            className: '',
+            iconSize: [0, 0],
+            iconAnchor: [-6, 12],
           }),
-        ]).addTo(map)
-        supersedeLayersRef.current[key] = group
+        })
+        if (edgeId) {
+          line.on('click', () => select(edgeId))
+          label.on('click', () => select(edgeId))
+        }
+        supersedeLayersRef.current[key] = L.layerGroup([line, label]).addTo(map)
       }
     }
 
@@ -339,7 +414,7 @@ export function MapView() {
       map.removeLayer(reticleRef.current)
       reticleRef.current = null
     }
-  }, [pins, selected, moved, confirmed, mode])
+  }, [pins, selected, moved, confirmed, mode, select])
 
   return (
     <div className="absolute inset-0">
@@ -355,7 +430,7 @@ export function MapView() {
         WGS-84 · Mercator
       </div>
 
-      {/* legend — mockup 218 */}
+      {/* legend — mockup 218, plus the precision line the envelopes need explaining */}
       <div
         style={{
           position: 'absolute',
@@ -369,7 +444,70 @@ export function MapView() {
         }}
       >
         solid = settled · dashed = provisional
+        <br />
+        pin = point fix · ring = located to an area only
       </div>
+
+      <UnplacedPanel />
+    </div>
+  )
+}
+
+/** "Insufficient evidence to place", made visible. Entities the graph holds a stated
+ *  location for that resolve to no coordinate we are willing to draw. They are NOT
+ *  dropped: an analyst reading a map has to be able to see what the map is not showing
+ *  them, or the absence reads as "there is nothing there". Collapsed to a count by
+ *  default so it never competes with the map; the list names each one and quotes what
+ *  the source actually said, which is the reason it cannot be placed. */
+function UnplacedPanel() {
+  const unplaced = useUnplacedLocations()
+  const [open, setOpen] = useState(false)
+  if (unplaced.length === 0) return null
+
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        bottom: 26,
+        left: 24,
+        zIndex: 5,
+        maxWidth: 320,
+        background: 'var(--surface)',
+        border: '1px solid var(--hairline-strong)',
+        borderRadius: 4,
+        padding: '8px 11px 9px',
+        font: '10.5px/1.45 ui-monospace,Menlo,monospace',
+        color: 'var(--text-faint)',
+      }}
+    >
+      <div
+        onClick={() => setOpen((v) => !v)}
+        style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-dim)' }}
+      >
+        <span
+          style={{
+            width: 9,
+            height: 9,
+            borderRadius: '50%',
+            border: '1px dashed var(--text-faint)',
+            display: 'inline-block',
+          }}
+        />
+        <span>
+          {unplaced.length} located, not plottable
+        </span>
+        <span style={{ marginLeft: 'auto', color: 'var(--text-faint)' }}>{open ? '−' : '+'}</span>
+      </div>
+      {open && (
+        <div style={{ marginTop: 8, paddingTop: 7, borderTop: '1px solid var(--hairline)', maxHeight: 190, overflowY: 'auto' }}>
+          {unplaced.map((u) => (
+            <div key={u.id} style={{ marginBottom: 7 }}>
+              <div style={{ color: 'var(--text-dim)' }}>{u.label}</div>
+              <div style={{ color: 'var(--text-faint)' }}>stated as “{u.stated}” — insufficient evidence to place</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

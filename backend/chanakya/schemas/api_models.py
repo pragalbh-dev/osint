@@ -3,7 +3,7 @@
 F0 freezes these so the SPA (out of scope here) and the API session bind to a stable contract. Field
 *names* may still move — this is the shape-of-record. Endpoints these serve (final names fixed here):
 ``GET /view`` · ``GET /node/{id}`` · ``GET /evidence/{id}`` · ``POST /ask`` · ``POST /ingest`` ·
-``POST /hitl/{merge|status|alert}`` · ``POST /config/{section}`` · ``GET /health``.
+``POST /hitl/{merge|status|alert}`` · ``GET|POST /config/{section}`` · ``GET /health``.
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from .base import Record
-from .claim import ClaimRecord
+from .claim import ClaimRecord, SourceRegistryEntry
 from .view import (
     ConfidenceBreakdown,
     Freshness,
@@ -92,6 +92,14 @@ class ProvenanceDrawer(Record):
     # the append-only log; an unreadable/absent span yields ``""`` (never a paraphrase, never a
     # reconstruction). Additive/optional.
     quotes: dict[str, list[str]] = {}
+    # F0-amend (API, 2026-07-20, T6): ``source_id -> SourceRegistryEntry`` for every source cited by
+    # ``claims``. A raw source id (``d17b_withheld_gap``) is an internal key, not an attribution — an
+    # analyst asked "who says so?" needs the source's CLASS and reliability grade, and those live only
+    # in ``config/sources.yaml``, unreachable from any GET route until now. Returned VERBATIM from the
+    # registry: no display string is synthesised server-side and no publisher NAME is invented, because
+    # the registry does not carry one. Additive/optional — a source missing from the registry is simply
+    # absent here and the UI falls back to the bare id rather than to a guess.
+    sources: dict[str, SourceRegistryEntry] = {}
 
 
 # ── POST /hitl/* (product/03 D) ────────────────────────────────────────────────────────────────
@@ -156,18 +164,40 @@ class IngestResult(Record):
     alerts_fired: list[str] = []
 
 
-# ── POST /config/{section} ─────────────────────────────────────────────────────────────────────
+# ── GET/POST /config/{section} ─────────────────────────────────────────────────────────────────
 
 class ConfigWrite(Record):
-    """A hot-config write — no restart; triggers a live rebuild (spine/09)."""
+    """A hot-config write — no restart; triggers a live rebuild (spine/09).
+
+    ``if_version`` is the optional optimistic-concurrency guard for read-modify-write: pass back the
+    ``version`` the ``GET`` returned and the write is rejected (409) if the store moved underneath you.
+    Omitted = last-writer-wins, which is the pre-existing contract — so this stays backward compatible.
+    """
 
     section: str  # one of CONFIG_SECTIONS
     value: dict[str, Any]
+    if_version: int | None = None
 
 
 class ConfigWriteResult(Record):
     section: str
     version: int  # the config store's new version after the write
+
+
+class ConfigRead(Record):
+    """The current value of one config section, read from the **live** store (never from disk).
+
+    This is the read half of the hot-config seam: the SPA cannot safely edit a section it cannot read,
+    because ``POST /config/{section}`` replaces the *whole* section. GET → edit one field → POST back,
+    carrying ``version`` as ``if_version`` if you want the write guarded.
+
+    ``value`` is the stored pydantic model dumped as-is — no bespoke per-section DTO, so read and write
+    speak exactly the same vocabulary by construction.
+    """
+
+    section: str  # the resolved (plural) section name, e.g. "observables"
+    version: int  # the config store's version at read time — the read-modify-write handle
+    value: dict[str, Any]
 
 
 # ── GET /health ────────────────────────────────────────────────────────────────────────────────

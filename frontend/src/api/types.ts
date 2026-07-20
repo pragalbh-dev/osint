@@ -38,7 +38,8 @@ export type DateValue =
 // ───────────────────────── value objects ─────────────────────────
 
 export interface Location {
-  raw?: string | null
+  // values.py: `raw: str | list[str]` — a source may state one place several ways in one claim.
+  raw?: string | string[] | null
   surface_format?: string | null
   wgs84_lat?: number | null
   wgs84_lon?: number | null
@@ -267,6 +268,24 @@ export interface AskAnswer {
 
 // ───────────────────────── provenance drawer ─────────────────────────
 
+/** A cited source's registry entry (config/sources.yaml → SourceRegistryEntry). Deliberately has NO
+ *  publisher/display name: the registry does not carry one, so the UI describes a source by its CLASS
+ *  and reliability grade and never invents a masthead. Added 2026-07-20 (T6). */
+export interface SourceCard {
+  source_id: string
+  source_type: string
+  reliability_grade?: string | null // STANAG A–F
+  primary_origin_id?: string | null // circular-reporting detection
+  aggregator_of?: string[]
+  bias_vector?: string | null
+  coordinated_inauthenticity_flag?: boolean
+  adversary_denial_flag?: boolean
+  cadence?: string | null
+  citation_url?: string | null
+  images?: string[]
+  report_date?: string | null
+}
+
 export interface ProvenanceDrawer {
   subject_ref: string
   status?: Status | null
@@ -280,6 +299,10 @@ export interface ProvenanceDrawer {
   // order. A file+offset is a pointer, not a source; this is what the analyst actually audits.
   // Absent claim / empty string = the span could not be read; render the locator alone, never a guess.
   quotes?: Record<string, string[]>
+  // added 2026-07-20 (T6) — source_id -> its registry entry, for every source cited by `claims`.
+  // A source id is an internal key; "who says so?" needs the class + grade behind it. Absent id =
+  // not in the registry; show the bare id rather than a description we cannot support.
+  sources?: Record<string, SourceCard>
 }
 
 // ───────────────────────── review queue / HITL ─────────────────────────
@@ -371,11 +394,28 @@ export interface ObservableDef {
 export interface ConfigWrite {
   section: string // ontology | sources | credibility | resolution | templates | subjects | observables | places
   value: Record<string, unknown>
+  /** Optimistic-concurrency guard for read-modify-write: echo the `version` GET /config/{section}
+   *  returned and the write 409s if the store moved. Omitted = last-writer-wins (unchanged contract). */
+  if_version?: number
 }
 
 export interface ConfigWriteResult {
   section: string
   version: number
+}
+
+/** GET /config/{section} — the read half of the hot-config seam. `value` is the stored section
+ *  verbatim, so it round-trips straight back into a ConfigWrite. Serving the ARMED observable
+ *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed. */
+export interface ConfigRead {
+  section: string
+  version: number
+  value: Record<string, unknown>
+}
+
+/** The `observables` section, as GET /config/observables returns it. */
+export interface ObservablesConfig {
+  observables?: ObservableDef[]
 }
 
 // ───────────────────────── health ─────────────────────────

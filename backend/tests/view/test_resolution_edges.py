@@ -48,6 +48,37 @@ def test_resolution_edges_emitted_for_candidates_and_distinct() -> None:
     assert sa.confidence is None  # no assertion_confidence on a resolution edge (G5)
 
 
+def test_candidate_same_as_cites_the_claims_that_assert_the_identity() -> None:
+    """T10 — the ``source_asserted`` score has a sentence behind it, and the edge must carry it.
+
+    An identity assertion is consumed rather than drawn, so before this the only trace of *who said*
+    two records are one was a number. Now the candidate edge cites the claims, which is what makes
+    ``GET /evidence/{edge_id}`` answer "which source, saying what, when" on the adjudication screen.
+    """
+    ids = {"ent:variant:hq16", "ent:variant:ly80"}
+    key = pair_key("ent:variant:hq16", "ent:variant:ly80")
+    part = Partition(
+        candidates=[("ent:variant:hq16", "ent:variant:ly80")],
+        merge_confidence={key: 0.40},
+        merge_breakdown={key: {"attribute": 0.47, "source_asserted": 0.85, "total": 0.40}},
+        identity_claims={key: ["d01-sipri-transfer-l8-13", "d14-stale-holding-l9-4"]},
+    )
+    (edge,) = _resolution_edges(ids, part)
+    assert edge.claim_ids == ["d01-sipri-transfer-l8-13", "d14-stale-holding-l9-4"]
+    assert edge.status is None  # still never scored — citing evidence is not being assessed (G5)
+
+
+def test_candidate_same_as_cites_nothing_when_no_source_asserted_the_identity() -> None:
+    """The absence is the point: a pair scored on name + neighbourhood alone must offer no link."""
+    key = pair_key("a", "b")
+    part = Partition(
+        candidates=[("a", "b")],
+        merge_breakdown={key: {"attribute": 0.5, "source_asserted": 0.0, "total": 0.3}},
+    )
+    (edge,) = _resolution_edges({"a", "b"}, part)
+    assert edge.claim_ids == []
+
+
 def test_resolution_edge_skipped_when_endpoint_missing() -> None:
     part = Partition(candidates=[("a", "ghost")])
     assert _resolution_edges({"a"}, part) == []

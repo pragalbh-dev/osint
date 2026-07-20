@@ -17,6 +17,7 @@ from collections.abc import Callable
 
 from .aliases import AliasIndex
 from .entities import Entity, EntityGraph
+from .geo import separation_km
 from .normalize import name_similarity, normalize
 from .rconfig import ATTRIBUTE, RELATIONAL, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
 
@@ -43,6 +44,38 @@ COREF_EVIDENCE_ATTR = "_coref_evidence"
 COREF_QUOTE_ATTR = "source_quote"
 
 
+def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
+    """How far apart two entities state they are, **when that is too far to be one entity** — else ``None``.
+
+    The missing rail behind the "Karachi drawn in Gujranwala" class of bug. Every other guard in this
+    module compares *names, attributes and neighbourhoods*; none of them knows that Karachi and Sargodha
+    are 1,100 km apart. So a pair could be scored into the merge queue (or, at a high enough score,
+    merged outright) on name/neighbourhood alone, and the surviving node then keeps whichever of the two
+    coordinates its first claim happened to carry — i.e. one of the two places is silently redrawn at the
+    other. A map that lies about *where* something is is worse than a map that omits it.
+
+    So: an entity is in ONE place. If both sides carry their own frozen WGS84 coordinate and the geodesic
+    separation exceeds the configured per-type tolerance, they are not the same entity — no matter what
+    the score says. Deliberately narrow, because a wrong veto costs recall:
+
+    * only **stated** coordinates count. A side with no coordinate is *unknown*, never "somewhere else"
+      — absence is not disagreement, the same rule :func:`has_hard_conflict` follows;
+    * no gazetteer lookup, no geocoding, no inference from a toponym — that is the place layer's job
+      (``resolve.places``) and its own gates;
+    * the tolerance is config (``entity_geo_conflict_max_km``), per type, and **unset ⇒ off**.
+
+    Returns the separation in km when it is a conflict (so the caller can log/explain it), else ``None``.
+    """
+    tolerances = [cfg.geo_conflict_max_km(a.etype), cfg.geo_conflict_max_km(b.etype)]
+    stated = [t for t in tolerances if t is not None]
+    if not stated:
+        return None  # gate not configured for either type ⇒ off
+    km = separation_km(a, b)
+    if km is None:
+        return None  # at least one side states no coordinate ⇒ unknown, not incompatible
+    return km if km > min(stated) else None  # the stricter of the two types governs
+
+
 def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """True if a configured hard-conflict attribute is **stated on both sides and different**.
 
@@ -53,6 +86,11 @@ def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     definition. An attribute stated on only one side is **not** a conflict — absence is not disagreement.
     """
     if a.etype != b.etype:
+        return True
+    # Two stated positions too far apart to be one thing is a contradiction of exactly this kind, and
+    # the rail has to read it too — otherwise an authoritative coreference could bootstrap the very
+    # merge the cluster-level veto exists to refuse.
+    if geo_conflict_km(a, b, cfg) is not None:
         return True
     rules = cfg.attribute_rules(a.etype)
     for k in rules.get("conflict", []):
@@ -147,14 +185,41 @@ def _numeric_conflict(va: object, vb: object, rel_tol: object) -> bool:
     return abs(fa - fb) / scale > tol
 
 
-def relational_score(graph: EntityGraph, a: str, b: str, canonical: Canonical, exclude: set[str]) -> float:
-    """Jaccard overlap of the two resolved neighbourhoods (excluding relocation instances)."""
+def relational_score(
+    graph: EntityGraph,
+    a: str,
+    b: str,
+    canonical: Canonical,
+    exclude: set[str],
+    support_k: int | None = None,
+) -> float:
+    """Jaccard overlap of the two resolved neighbourhoods, discounted by how much it rests on (T3b-F).
+
+    A raw Jaccard **saturates at a perfect 1.0 on a one-element neighbourhood**: two basing sites whose
+    only edge is a ``based-at`` from the same unit overlap totally, so the collective-ER signal — the
+    strongest term in ``merge_score`` — reads "identical neighbourhood" from a single shared link. On
+    this corpus that artefact alone was what lifted eighteen cross-country site pairs to exactly
+    ``hitl_low`` and filled most of the analyst's merge queue; nothing else about those pairs agreed.
+
+    ``support_k`` is the number of *distinct shared neighbours* at which the signal reaches full
+    strength; below it the overlap is scaled by ``shared / support_k``. The invariant it buys, in the
+    same form ``resolution.yaml`` already states its others: **a perfect shared neighbourhood must rest
+    on at least ``support_k`` shared neighbours to reach the analyst on its own.** Two entities that
+    both connect to one hub are not thereby the same entity — the hub is the evidence that they are two
+    things attached to the same third thing.
+
+    Unset (or ``<= 1``) ⇒ the raw Jaccard, byte-identical to the pre-fix behaviour (gates G2/G6).
+    """
     na = _neighbours(graph, a, canonical, exclude)
     nb = _neighbours(graph, b, canonical, exclude)
     union = na | nb
     if not union:
         return 0.0
-    return len(na & nb) / len(union)
+    shared = na & nb
+    overlap = len(shared) / len(union)
+    if support_k is None or support_k <= 1:
+        return overlap
+    return overlap * min(1.0, len(shared) / support_k)
 
 
 def temporal_score(reloc: bool) -> float:
@@ -181,6 +246,34 @@ def source_asserted_score(
     return best
 
 
+def identity_claim_ids(graph: EntityGraph, a: str, b: str) -> list[str]:
+    """The claims in which a **source** asserts a≡b — the evidence *behind* ``source_asserted_score``.
+
+    Same pair/predicate test as the score itself, so the list and the number can never disagree: if the
+    signal is above zero these claims are why, and if it is zero this is empty. Returned in replay order
+    (deterministic, gate G2) and de-duplicated. Identity assertions are consumed rather than drawn
+    (``view/pipeline._assemble``), so this is the ONLY route from a candidate ``same-as`` edge back to the
+    sentence a source actually wrote — the one-click-to-source non-negotiable, on the one screen where an
+    analyst is asked to make an identity call.
+
+    Coreference (``COREF_PREDICATE``) is deliberately excluded: it is a different lane that does not feed
+    ``source_asserted``, so including it here would make the citation over-claim what the signal counted.
+    """
+    out: list[str] = []
+    for e in graph.edges:
+        if e.predicate not in IDENTITY_PREDICATES or e.claim_id is None:
+            continue
+        if {e.subject, e.object} == {a, b} and e.claim_id not in out:
+            out.append(e.claim_id)
+    return out
+
+
+def _relational_counts(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """May the shared-neighbourhood term contribute for this pair? (Both types must allow it.)"""
+    ntx = cfg.node_types
+    return ntx.relational_identity(a.etype) and ntx.relational_identity(b.etype)
+
+
 def merge_score(
     a: Entity,
     b: Entity,
@@ -192,9 +285,20 @@ def merge_score(
     """Full weighted merge_score + the stored per-signal breakdown (explainability)."""
     exclude = co_instances(graph, a.eid, b.eid)
     reloc = bool(exclude)
+    # T3b-A: for some node types a shared neighbourhood is not identity evidence at all. Two AREAS of
+    # responsibility that both contain sightings of the same equipment share a neighbourhood **by
+    # construction** — that is a fact about where the equipment is dispersed, not a reason to think the
+    # two areas are one area. The ontology declares which types those are (`identity.relational: false`);
+    # every other type keeps the collective-ER signal untouched, and an area can still merge or queue on
+    # name/alias evidence, which is the only honest identity signal it has.
+    relational = (
+        relational_score(graph, a.eid, b.eid, canonical, exclude, cfg.relational_support_k)
+        if _relational_counts(a, b, cfg)
+        else 0.0
+    )
     parts = {
         ATTRIBUTE: attribute_score(a, b, cfg, alias_idx),
-        RELATIONAL: relational_score(graph, a.eid, b.eid, canonical, exclude),
+        RELATIONAL: relational,
         TEMPORAL: temporal_score(reloc),
         SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid, cfg.identity_source_weight),
     }

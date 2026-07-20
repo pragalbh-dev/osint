@@ -104,6 +104,9 @@ interface WorkbenchState {
   setLiveView: (v: GraphView | null) => void
 }
 
+/** T10 — dismiss the provenance drawer and its selection together (used when a decision lands). */
+const CLOSE_EVIDENCE = { drawerOpen: false, selected: null, expanded: null } as const
+
 // Trace timers live in module scope (non-serializable, outside store state).
 let ingestTimers: ReturnType<typeof setTimeout>[] = []
 const clearIngestTimers = () => {
@@ -211,9 +214,12 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
         panelView: 'zero',
         lastResolved: label,
         activeLiveItem: null,
+        // T10 — the evidence drawer opened FOR this decision (beside the card) goes with it. Leaving it
+        // up would strand provenance for a pair that no longer exists, half over a panel that has moved on.
+        ...CLOSE_EVIDENCE,
       }))
     } catch {
-      set({ activeLiveItem: null, panelView: 'zero' })
+      set({ activeLiveItem: null, panelView: 'zero', ...CLOSE_EVIDENCE })
     }
   },
 

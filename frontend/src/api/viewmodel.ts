@@ -16,15 +16,38 @@ import { useMemo } from 'react'
 import { useWorkbench } from '@/store/workbench'
 import { PINS, GRAPH_NODES, GRAPH_EDGES } from '@/demo/scenario'
 import type { GraphNodeDef, GraphEdgeDef } from '@/demo/scenario'
-import { viewToPins, viewToGraph, viewToTripwires, nameResolver } from './adapters'
-import type { LiveTripwire, StagePin } from './adapters'
+import {
+  viewToPins,
+  viewToGraph,
+  viewToTripwires,
+  nameResolver,
+  unplacedLocations,
+  clusterAreaPins,
+} from './adapters'
+import type { LiveTripwire, StagePin, UnplacedLocation } from './adapters'
 
 export function useStagePins(): StagePin[] {
   const mode = useWorkbench((s) => s.mode)
   const liveView = useWorkbench((s) => s.liveView)
   return useMemo(() => {
     if (mode !== 'live') return PINS
-    return liveView ? viewToPins(liveView) : PINS
+    // area pins that share one anchor are folded into a single counted marker (adapters)
+    return liveView ? clusterAreaPins(viewToPins(liveView)) : PINS
+  }, [mode, liveView])
+}
+
+/** Entities the graph knows are somewhere, and that we refuse to draw at a point.
+ *  DEMO has none: its fixture pins are all hand-placed. LIVE reads them off /view, so
+ *  "insufficient evidence to place" is on screen next to the map instead of being an
+ *  absence the analyst has to notice for themselves. */
+const NO_UNPLACED: UnplacedLocation[] = []
+
+export function useUnplacedLocations(): UnplacedLocation[] {
+  const mode = useWorkbench((s) => s.mode)
+  const liveView = useWorkbench((s) => s.liveView)
+  return useMemo(() => {
+    if (mode !== 'live' || !liveView) return NO_UNPLACED
+    return unplacedLocations(liveView)
   }, [mode, liveView])
 }
 
