@@ -253,11 +253,18 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
     # the basing site is a lens anchor typed basing_site — resolved from the graph, never an id prefix.
     site = _typed_anchor(ctx, anchors, "basing_site")
     if site is None:
-        unresolved = [a for a in anchors if a not in ctx.nodes_by_id] or anchors or ["<no lens anchors>"]
+        unresolved = [a for a in anchors if a not in ctx.nodes_by_id]
+        # Analyst-facing prose names *entities*, never a Python list repr or an internal lens id
+        # (R-9). The machine-readable ids still travel in `missing`, which the UI resolves itself.
+        if unresolved:
+            detail = f"these anchors are not present in the rebuilt view: {_names(ctx, unresolved)}"
+        elif anchors:
+            detail = f"its anchors resolve, but none of them is a basing site: {_names(ctx, anchors)}"
+        else:
+            detail = "the lens declares no anchors at all"
         return _refuse(
-            trace, unresolved,
-            f"The subject lens '{subject_id}' has no basing_site anchor present in the rebuilt view "
-            f"(anchors {anchors or 'none'} → unresolved {unresolved}); cannot anchor the basing→origin trace.",
+            trace, unresolved or anchors or ["basing_site_anchor"],
+            f"The current subject lens has no basing site to anchor the basing→origin trace — {detail}.",
         )
 
     # gather + query_graph: the (candidate-or-confirmed) chokepoint component near the resolved variant.
@@ -338,3 +345,9 @@ def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens
 def _name(ctx: ToolContext, node_id: str) -> str:
     n = ctx.nodes_by_id.get(node_id)
     return n.name if (n is not None and n.name) else node_id
+
+
+def _names(ctx: ToolContext, node_ids: list[str]) -> str:
+    """Comma-joined human names for analyst-facing prose — an id that resolves reads as its name, one
+    that does not falls back to the id itself. Never a Python container repr (R-9)."""
+    return ", ".join(_name(ctx, i) for i in node_ids)
