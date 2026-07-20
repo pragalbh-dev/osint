@@ -21,6 +21,7 @@ export function ZeroView() {
   const askGaps = useWorkbench((s) => s.askGaps)
   const select = useWorkbench((s) => s.select)
   const lastResolved = useWorkbench((s) => s.lastResolved)
+  const live = useWorkbench((s) => s.mode) === 'live'
 
   return (
     <div>
@@ -37,12 +38,16 @@ export function ZeroView() {
 
       <div className="flex flex-col gap-[10px]">
         <Affordance text={TARGET_QUERIES.hero} onClick={askHero} />
-        <Affordance text={TARGET_QUERIES.provenance} onClick={() => select('rahwali')} />
-        <Affordance text={TARGET_QUERIES.gaps} onClick={askGaps} />
+        {/* The two lower affordances are demo-script bindings: one opens the scripted Rahwali
+            drawer by its demo-only id, the other poses a question with no subject to point at.
+            In live mode both misfire (a 404 drawer / a context-free refusal), so live shows
+            only the hero query — the one that routes through the real agent. */}
+        {!live && <Affordance text={TARGET_QUERIES.provenance} onClick={() => select('rahwali')} />}
+        {!live && <Affordance text={TARGET_QUERIES.gaps} onClick={askGaps} />}
       </div>
 
       <div className="mt-[26px] text-[11.5px] leading-[1.5] text-text-faint">
-        Or select any pin to see how it&apos;s known. Rahwali is open for provenance.
+        Or select any pin to see how it&apos;s known.{!live && ' Rahwali is open for provenance.'}
       </div>
     </div>
   )

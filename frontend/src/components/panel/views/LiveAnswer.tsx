@@ -52,8 +52,15 @@ function Refusal({ model }: { model: LiveAnswerModel }) {
   const r = model.refusal
   const displayName = useDisplayName()
   const copy = REFUSAL_COPY[r?.kind ?? 'evidence']
-  // a missing slot that IS a graph element reads as its name; free text passes through untouched
-  const missing = (r?.missing ?? []).map((slot) => displayName(slot))
+  // a missing slot that IS a graph element reads as its name; free text passes through untouched.
+  // The withheld kind repeats one problem slug per rejected sentence ("not_entailed" ×4) — aggregate
+  // duplicates into a count so the list reads as a tally, not a stutter.
+  const counts = new Map<string, number>()
+  for (const slot of r?.missing ?? []) {
+    const name = displayName(slot)
+    counts.set(name, (counts.get(name) ?? 0) + 1)
+  }
+  const missing = [...counts.entries()].map(([name, n]) => (n > 1 ? `${name} ×${n}` : name))
   return (
     <div>
       <div className="mb-[10px] text-[10.5px] tracking-[0.06em] text-text-faint">{copy.kicker}</div>
