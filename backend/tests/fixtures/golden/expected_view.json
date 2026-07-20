@@ -93,7 +93,7 @@
           "d17-l1": 0.84
         }
       },
-      "edge_instance": "based-at:unit_acme",
+      "edge_instance": "edge:unit_acme:based-at",
       "freshness": {
         "decay_factor": 1.0,
         "half_life": null,
@@ -158,7 +158,7 @@
           "d19-l1": 0.84
         }
       },
-      "edge_instance": "based-at:unit_acme",
+      "edge_instance": "edge:unit_acme:based-at",
       "freshness": {
         "decay_factor": 1.0,
         "half_life": null,

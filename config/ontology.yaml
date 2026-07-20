@@ -28,6 +28,20 @@
 # supplier is the `from` end, but `exported-by` (Contract->Manufacturer) puts it on the `to` end. Read by
 # `chanakya.ontology.EdgeLaneIndex.supplier_end` so materiality tests sole-source in-degree on the
 # *dependent* end yet attaches the chokepoint finding to the *supplier* end (one direction of truth).
+#
+# Edge-instance identity (EVAL RCA D-P4.4 / §2.1; preflight-audit :245-256): each edge declares which of
+# its endpoints form the SUPERSEDE/relocation *instance key* via `instance_key: [from]` / `[from, to]`.
+# The default (omitted) is `[from, to]` — a MULTI-VALUED edge (a variant has many components) keys on
+# subject+object, so each object is its own instance. A FUNCTIONAL / single-valued-over-time edge (a unit
+# is based at one site at a time) keys on the SUBJECT only, so a relocation's before-edge and after-edge
+# share one instance and `view.supersede` can see both targets. Only `based-at` is functional today; when
+# a state edge is unsure, leave the default. Read by `EdgeLaneIndex.instance_key` and built into the key
+# by `EdgeLaneIndex.edge_instance_key`, used by BOTH producers (resolve.entities.base_ref and the
+# view.pipeline fallback) so they can never disagree. SUB-SCOPE LIMITATION: `based-at` is truly single-
+# valued per (unit, site_TYPE) — a unit at a garrison AND a forward field site at once is two valid
+# instances, not a supersede. Subject-only keying is correct while the corpus has no such simultaneous
+# pair (the relocation beat is one unit, one site_type: Rawalpindi->Rahwali); tagging the key by site_type
+# is a Tier-4 refinement to land when the derivation stamps site_type (see the xfail in test_supersede).
 
 node_types:
   - name: manufacturer
@@ -84,7 +98,7 @@ edge_types:
   # edge_direction.py also reads these from/to for write-time direction canonicalization (both mechanisms,
   # one source of truth). manufactures is TIGHTENED to Mfr->Variant (D-A) so Mfr->Component is unambiguously
   # supplies-component; the oracle's two manufactures->component edges reconcile separately (answer_key task).
-  - {name: based-at,             from: unit,                  to: basing_site,             extractor: true, freshness_class: perishable}    # Unit->Site (field 30d / garrison 18mo)
+  - {name: based-at,             from: unit,                  to: basing_site,             extractor: true, freshness_class: perishable, instance_key: [from]}    # Unit->Site (field 30d / garrison 18mo); FUNCTIONAL — key the supersede instance on the unit alone so a relocation's before/after co-locate (D-P4.4)
   - {name: inducted-into,        from: variant,               to: unit,                    extractor: true, freshness_class: semi-durable}  # Variant->Unit
   - {name: imported-by,          from: contract_import_event, to: unit,                    extractor: true, freshness_class: durable}       # Contract->Unit
   - {name: exported-by,          from: contract_import_event, to: manufacturer,            extractor: true, freshness_class: durable, supplier_end: to}    # Contract->Manufacturer/export-agent (supplier = the exporter/OEM at the `to` end)

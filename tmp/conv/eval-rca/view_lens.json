@@ -1323,7 +1323,7 @@
           "d02-ispr-induction-l11-3": 0.08100631435774694
         }
       },
-      "edge_instance": "edge:HQ-9/P:based-at:Army Air Defence Centre, Karachi",
+      "edge_instance": "edge:HQ-9/P:based-at",
       "freshness": {
         "decay_factor": 0.1072931315996648,
         "half_life": null,

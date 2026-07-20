@@ -2,8 +2,11 @@
 2026-07-19; ``tmp/conv/INGEST-canonical-edge-direction-at-write.md``).
 
 **The silent failure this fixes.** Two claims corroborate only when they land on the **same graph edge**,
-and an edge is keyed by its resolved ``(subject, predicate, object)`` triple (``resolve``'s ``edge_instance``
-and ``view.supersede.build_instance_edges``). So two claims of *one fact* written with subject and object
+and an edge is keyed by a resolved ``edge_instance`` built from the endpoints the ontology declares
+identifying (``EdgeLaneIndex.instance_key``: subject+object for a multi-valued edge, subject-only for a
+functional one such as ``based-at``) — the shared ``EdgeLaneIndex.edge_instance_key`` used by both
+``resolve.entities.base_ref`` and the ``view.pipeline`` assembly, and consumed by
+``view.supersede.build_instance_edges``. So two claims of *one fact* written with subject and object
 **flipped** — "HQ-9 at Rahwali" vs. "Rahwali hosts HQ-9" — become two different edges and never corroborate,
 silently, with both claims looking fine on their own. The text lane, the imagery inference, and even two
 independent LLM extractions of one sentence can each orient an edge differently.

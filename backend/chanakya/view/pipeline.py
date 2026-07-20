@@ -28,6 +28,7 @@ from chanakya.credibility import (
 )
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
+from chanakya.ontology import EdgeLaneIndex
 from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
 from chanakya.schemas import (
     AssertionInput,
@@ -232,6 +233,7 @@ def _assemble(
     resolved: list[ClaimRecord],
     entity_canonical: dict[str, str] | None = None,
     endpoint_node_types: dict[str, str] | None = None,
+    lane: EdgeLaneIndex | None = None,
 ) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
@@ -292,7 +294,15 @@ def _assemble(
             subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
             if (subj, obj) != (payload.subject, payload.object):
                 c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
-            ei = rr.edge_instance if rr and rr.edge_instance else f"edge:{subj}:{payload.predicate}:{obj}"
+            # Fallback for a claim whose producer left no edge_instance: build it through the SAME
+            # config-driven key builder RESOLVE uses (`base_ref`), so a functional edge (`based-at`) keys
+            # on the subject alone on both paths — the two can never disagree (EVAL RCA §2.1 / D-P4.4).
+            if rr and rr.edge_instance:
+                ei = rr.edge_instance
+            elif lane is not None:
+                ei = lane.edge_instance_key(subj, payload.predicate, obj)
+            else:
+                ei = f"edge:{subj}:{payload.predicate}:{obj}"
             edge_groups[ei].append(c)
 
     edges: list[EdgeView] = []
@@ -442,7 +452,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
     #    merged-away entity's edges to its canonical node (no-op when nothing merged).
-    nodes, edges, events = _assemble(resolved, partition.entity_canonical, partition.endpoint_node_types)
+    nodes, edges, events = _assemble(
+        resolved, partition.entity_canonical, partition.endpoint_node_types, EdgeLaneIndex(config.ontology)
+    )
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     _stamp_place_refs(nodes, partition)  # RES-3: the curated-anchor binding + the evidence for it
     claims_by_id = {c.claim_id: c for c in resolved}

@@ -67,7 +67,8 @@ def resolve(
 ) -> Partition:
     """Resolve claims into entities/edges: candidate-gen → bootstrap → relational fixpoint → places."""
     cfg = ResolveConfig.from_bundle(config)
-    graph = entities.build(claims)
+    lane = EdgeLaneIndex(config.ontology)  # the edge index: endpoint typing + the functional instance key
+    graph = entities.build(claims, lane)
 
     # P3.0 — the entity registry is a *prior*, seeded as candidate entities carrying stable ids. It adds
     # merge TARGETS, never nodes: a seeded entry holds no claims, so it only reaches the view when a real
@@ -95,7 +96,7 @@ def resolve(
 
     # P3.1 (RES-1) — endpoint-as-mention. Runs BEFORE the fixpoint so ``graph.edges`` already carry entity
     # ids when ``merge_score`` runs; that is what revives the relational + source-asserted terms.
-    mention, minted, ambiguous = _link_endpoints(graph, cfg, alias_idx, EdgeLaneIndex(config.ontology), veto)
+    mention, minted, ambiguous = _link_endpoints(graph, cfg, alias_idx, lane, veto)
 
     # Re-read the claim-asserted distinct-froms now that endpoints carry entity ids: a document may state a
     # do-not-merge about a mention that only *became* an entity in the line above. Idempotent (a set union).
@@ -118,7 +119,7 @@ def resolve(
     places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
 
-    return _to_partition(claims, result, mention, minted, place_of)
+    return _to_partition(claims, result, mention, minted, place_of, lane)
 
 
 # ── the entity registry as a resolution prior (P3.0) ───────────────────────────────────────────
@@ -456,6 +457,7 @@ def _to_partition(
     mention: dict[str, str] | None = None,
     minted: dict[str, str] | None = None,
     place_of: dict[str, places.PlaceMatch] | None = None,
+    lane: EdgeLaneIndex | None = None,
 ) -> Partition:
     """Per-claim identity resolved_ref (matches the stub) + the merge overlay from the resolver.
 
@@ -467,7 +469,7 @@ def _to_partition(
     anchor *with the distance and band that earned it*. All three collapse to the plain merge map when
     nothing was linked, minted, or matched.
     """
-    resolved_ref = {c.claim_id: base_ref(c) for c in claims}
+    resolved_ref = {c.claim_id: base_ref(c, lane) for c in claims}
 
     def canonical_of(eid: str) -> str:
         return result.canonical.get(eid, eid)

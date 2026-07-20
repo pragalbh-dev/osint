@@ -27,6 +27,33 @@ _TO_END = "to"
 # decay, so they are exempt from the reachability lint. Strings, not scoring numbers (gate G6).
 _DECAYING_CLASSES = frozenset({"perishable", "semi-durable", "force-revalidated"})
 
+# The default supersede/relocation instance key: both endpoints (a multi-valued edge — a variant has many
+# components, so each object is its own instance). A FUNCTIONAL edge overrides this to `("from",)`.
+_DEFAULT_INSTANCE_KEY: tuple[str, ...] = (_FROM_END, _TO_END)
+
+
+def build_edge_instance_key(
+    subject: str, predicate: str, obj: str, ends: tuple[str, ...] = _DEFAULT_INSTANCE_KEY
+) -> str:
+    """The single definition of the ``edge_instance`` grouping-key string (EVAL RCA §2.1 / D-P4.4).
+
+    ``ends`` names the endpoints that identify the instance: ``("from", "to")`` (default) embeds the object
+    so each ``(subject, predicate, object)`` is its own instance — the pre-fix behaviour, byte-identical
+    for every non-functional edge. ``("from",)`` drops the object, so a **functional** edge's two targets
+    for one subject (a unit's before/after basing site) share one instance and ``view.supersede`` /
+    ``observe`` / the co-instance relocation exclusion can all see both — the three mechanisms §2.1 found
+    dead. Order is fixed ``edge:<subject>:<predicate>:<object>`` so the default is unchanged on the wire.
+    Used by BOTH producers (``resolve.entities.base_ref`` and the ``view.pipeline`` fallback) via
+    :meth:`EdgeLaneIndex.edge_instance_key`, so the two can never drift apart again.
+    """
+    parts = ["edge"]
+    if _FROM_END in ends:
+        parts.append(subject)
+    parts.append(predicate)
+    if _TO_END in ends:
+        parts.append(obj)
+    return ":".join(parts)
+
 
 @dataclass(frozen=True)
 class RelaneResult:
@@ -65,6 +92,7 @@ class EdgeLaneIndex:
         self._endpoints: dict[str, tuple[list[str], list[str]]] = {}
         self._supplier_end: dict[str, str] = {}  # sustainment edge → which endpoint holds the supplier
         self._freshness_class: dict[str, str] = {}  # edge → its declared ontology freshness class
+        self._instance_key: dict[str, tuple[str, ...]] = {}  # edge → endpoints that form its instance key
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
             if e.name not in self._names:
@@ -82,6 +110,14 @@ class EdgeLaneIndex:
             end = getattr(e, "supplier_end", None)
             if isinstance(end, str) and end in (_FROM_END, _TO_END):
                 self._supplier_end[e.name] = end
+            # instance_key is a plain YAML list (ConfigModel extra="allow"): which endpoints form the
+            # supersede/relocation instance key (D-P4.4). Keep only from/to entries, in canonical order;
+            # anything else (or empty) falls back to the default at read time.
+            ik = getattr(e, "instance_key", None)
+            if isinstance(ik, (list, tuple)):
+                ends = tuple(k for k in (_FROM_END, _TO_END) if k in ik)
+                if ends:
+                    self._instance_key[e.name] = ends
             # domain/range is declared on every directional edge, extractor or not — RESOLVE types a
             # triple ENDPOINT from it (RES-1), which is a separate concern from the extraction enum.
             self._endpoints[e.name] = (e.from_types(), e.to_types())
@@ -156,6 +192,26 @@ class EdgeLaneIndex:
         the SC-2 defect. Config-driven: the class names live in ``config/ontology.yaml`` (gate G6).
         """
         return self._freshness_class.get(edge_type)
+
+    def instance_key(self, edge_type: str) -> tuple[str, ...]:
+        """Which endpoints form an edge's supersede/relocation **instance key** — ``("from",)`` for a
+        FUNCTIONAL / single-valued-over-time edge (``based-at``: a unit is at one site at a time) or
+        ``("from", "to")`` (the default) for a multi-valued edge (a variant has many components).
+
+        Declared per-edge in ``config/ontology.yaml`` (``instance_key: [from]`` / ``[from, to]``). The
+        object is IN the default key, so each ``(subject, predicate, object)`` is its own instance; a
+        functional edge drops the object so a subject's two targets collapse to one instance and
+        ``view.supersede`` can compare them (EVAL RCA §2.1 — the fix that revives supersede / the
+        occupancy-crossing detector / the co-instance relocation exclusion at once).
+        """
+        return self._instance_key.get(edge_type, _DEFAULT_INSTANCE_KEY)
+
+    def edge_instance_key(self, subject: str, predicate: str, obj: str) -> str:
+        """Build the ``edge_instance`` grouping key for a triple, honouring the edge's declared
+        :meth:`instance_key`. The ONE key-builder both producers call
+        (``resolve.entities.base_ref`` and the ``view.pipeline`` assembly fallback), so a functional edge's
+        object is excluded identically on both paths and they can never diverge again (D-P4.4)."""
+        return build_edge_instance_key(subject, predicate, obj, self.instance_key(predicate))
 
     def unreachable_half_lives(self, credibility: CredibilityConfig) -> dict[str, str]:
         """Decaying edges with **no reachable half-life** → ``{edge: freshness_class}`` (a config error).
