@@ -1,18 +1,19 @@
-# Chanakya OSINT — instructor's guide
+# Chanakya OSINT
 
-Chanakya is a working demo of an AI-assisted open-source-intelligence (OSINT) analysis
-and monitoring system, built for the Sarvam AI · Chanakya (defence / strategic-sector)
-take-home. It maps one adversary air-defence capability (Pakistan's HQ-9/P, sourced
-entirely from open documents) into an auditable graph — who operates what, who supplies
-it, and how confident we are in each fact — and lets an analyst ask cited, multi-hop
-questions of it.
+An AI-assisted open-source-intelligence (OSINT) analysis and monitoring system. It maps
+one adversary air-defence capability (Pakistan's HQ-9/P, sourced entirely from open
+documents) into an auditable graph — who operates what, who supplies it, and how
+confident we are in each fact — and lets an analyst ask cited, multi-hop questions of it.
 
-This document is everything you need to **run it and evaluate it**. It does not explain
-the design (see `artifacts/design-note.md` for that); it explains what to click.
+Its governing rule: **where the evidence is absent, ambiguous, or contradictory, the
+system says so and names what is missing, rather than filling the gap with a guess.**
 
-**Live demo (no setup):** [compliantly-coky-candace.ngrok-free.dev/?mode=live](https://compliantly-coky-candace.ngrok-free.dev/?mode=live)
-— a running instance, reset to the same clean starting state described below. Everything
-in §1–§3 is for running your own copy; skip straight to §4 if you're just using this one.
+This README covers running the app and finding your way around it. For *why* it's built
+this way, see `artifacts/design-note.md`.
+
+**Live demo:** [compliantly-coky-candace.ngrok-free.dev/?mode=live](https://compliantly-coky-candace.ngrok-free.dev/?mode=live)
+— a hosted instance, in the same clean starting state described below. Sections 1–3 are
+about running your own copy; skip to §4 if you're using the hosted one.
 
 ---
 
@@ -29,7 +30,7 @@ doesn't, once it's up.)
 ```bash
 git clone https://github.com/pragalbh-dev/osint && cd osint
 make run                      # builds the image, starts it, waits until it's ready
-# → open http://127.0.0.1:8000
+# → open http://127.0.0.1:8000/?mode=live      (the ?mode=live matters — see §2)
 ```
 
 **Path B — skip the build, just pull the published image:**
@@ -64,8 +65,7 @@ The app has two modes. Without the `?mode=live` part in the address bar, it open
 useful for a presenter's rehearsed demo, but every button in it does the same
 pre-scripted thing regardless of what you click, which is confusing if you didn't expect
 it. **Live mode is the real, running system** — every panel reflects what's actually in
-the graph right now, responds to what you do, and is what should be evaluated. Bookmark
-or share the `?mode=live` link.
+the graph right now and responds to what you do. Bookmark or share the `?mode=live` link.
 
 ---
 
@@ -84,14 +84,15 @@ This is intentional: the demo must run the same way every time.
   system read it and add it to the graph in real time, instead of only ingesting the
   pre-packaged documents described in §5.
 
-A key is shared with you separately. To use it, put one line in a `.env` file at the repo
+To enable them, supply an Anthropic API key: put one line in a `.env` file at the repo
 root before `make run` (or pass `--env-file .env` to `docker run` for Path B):
 
 ```
-ANTHROPIC_API_KEY=<the key you were sent>
+ANTHROPIC_API_KEY=<key>
 ```
 
-That is the only key this app needs — nothing else goes in that file.
+That is the only key the app needs — nothing else goes in that file. It is read at
+startup only, never written to the image or logged.
 
 Without any key, nothing breaks — free-form questions get an honest refusal explaining
 that a key is needed, never a guess.
