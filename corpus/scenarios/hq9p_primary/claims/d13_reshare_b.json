@@ -5,18 +5,18 @@
       "posted_at": "2025-05-11 (~14:22 PKT)",
       "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
     },
-    "claim_id": "d13-reshare-b-l5",
+    "claim_id": "d13-reshare-b-l2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 5,
+      "line": 2,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        127,
-        294
+        7,
+        349
       ]
     },
     "event_time": {
@@ -74,7 +74,7 @@
     "attributes": {
       "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
     },
-    "claim_id": "d13-reshare-b-l5-2",
+    "claim_id": "d13-reshare-b-l5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -85,105 +85,6 @@
       "row": null,
       "span": [
         139,
-        202
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "reportedly engaged"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "near Lahore HQ-9/P HIMADS battery",
-        "raw": "near Lahore HQ-9/P HIMADS battery",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "Indian jet"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": null,
-        "kind": "period",
-        "period_type": "range",
-        "start": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2025",
-          "year": 2025
-        }
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-11",
-      "kind": "exact",
-      "raw": "2025-05-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
-    },
-    "claim_id": "d13-reshare-b-l5-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 5,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        181,
         243
       ]
     },
@@ -219,22 +120,23 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "site allegedly hit"
+        "activity": "reportedly engaged, site allegedly hit"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
         "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "Lahore",
-        "raw": "Lahore",
+        "proposed_alias": "near Lahore",
+        "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
         "wgs84_lat": null,
         "wgs84_lon": null
       },
       "participants": [
-        "HQ-9/P HIMADS battery"
+        "HQ-9/P HIMADS battery",
+        "Indian jet"
       ],
       "time_interval": {
         "approximate": false,
@@ -273,18 +175,18 @@
       "posted_at": "2025-05-11 (~14:24 PKT)",
       "status_url": "https://x.com/Sherdil_Watch/status/1921490511028912128"
     },
-    "claim_id": "d13-reshare-b-l12",
+    "claim_id": "d13-reshare-b-l9",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 12,
+      "line": 9,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        478,
-        624
+        358,
+        679
       ]
     },
     "event_time": {
@@ -342,7 +244,7 @@
     "attributes": {
       "status_url": "https://x.com/Sherdil_Watch/status/1921490511028912128"
     },
-    "claim_id": "d13-reshare-b-l12-2",
+    "claim_id": "d13-reshare-b-l12",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -388,7 +290,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly struck overnight by IAF jet"
+        "activity": "reportedly struck"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -403,7 +305,8 @@
         "wgs84_lon": null
       },
       "participants": [
-        "HQ-9/P HIMADS site"
+        "HQ-9/P HIMADS site",
+        "IAF jet"
       ],
       "time_interval": {
         "approximate": false,
@@ -442,18 +345,18 @@
       "posted_at": "2025-05-11 (~14:26 PKT)",
       "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
     },
-    "claim_id": "d13-reshare-b-l19",
+    "claim_id": "d13-reshare-b-l16",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 19,
+      "line": 16,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        812,
-        924
+        688,
+        1030
       ]
     },
     "event_time": {
@@ -511,7 +414,7 @@
     "attributes": {
       "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
     },
-    "claim_id": "d13-reshare-b-l19-2",
+    "claim_id": "d13-reshare-b-l19",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -522,105 +425,6 @@
       "row": null,
       "span": [
         842,
-        904
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "engaged HIMADS (HQ-9P) battery"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Lahore sector",
-        "raw": "Lahore sector",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "IAF jet"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": null,
-        "kind": "period",
-        "period_type": "range",
-        "start": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2025",
-          "year": 2025
-        }
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-11",
-      "kind": "exact",
-      "raw": "2025-05-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
-    },
-    "claim_id": "d13-reshare-b-l19-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 19,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        858,
         924
       ]
     },
@@ -656,7 +460,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "site allegedly hit"
+        "activity": "engaged, site allegedly hit"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -671,7 +475,8 @@
         "wgs84_lon": null
       },
       "participants": [
-        "HIMADS (HQ-9P) battery"
+        "HIMADS (HQ-9P) battery",
+        "IAF jet"
       ],
       "time_interval": {
         "approximate": false,
@@ -710,18 +515,18 @@
       "posted_at": "2025-05-11 (~14:29 PKT)",
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l26",
+    "claim_id": "d13-reshare-b-l23",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 26,
+      "line": 23,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1175,
-        1282
+        1039,
+        1322
       ]
     },
     "event_time": {
@@ -779,7 +584,7 @@
     "attributes": {
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l26-2",
+    "claim_id": "d13-reshare-b-l26",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -790,7 +595,7 @@
       "row": null,
       "span": [
         1207,
-        1240
+        1282
       ]
     },
     "event_time": {
@@ -825,7 +630,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly hit"
+        "activity": "reportedly hit, allegedly engaged"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -840,96 +645,7 @@
         "wgs84_lon": null
       },
       "participants": [
-        "Lahore HQ-9/P site"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": null,
-        "kind": "period",
-        "period_type": "range",
-        "start": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2025",
-          "year": 2025
-        }
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-11",
-      "kind": "exact",
-      "raw": "2025-05-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
-    },
-    "claim_id": "d13-reshare-b-l26-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 26,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1242,
-        1281
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "allegedly engaged battery"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
+        "HQ-9/P site",
         "jet"
       ],
       "time_interval": {
@@ -969,18 +685,18 @@
       "posted_at": "2025-05-11 (~14:31 PKT)",
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l32",
+    "claim_id": "d13-reshare-b-l29",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 32,
+      "line": 29,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1455,
-        1558
+        1331,
+        1601
       ]
     },
     "event_time": {
@@ -1038,7 +754,7 @@
     "attributes": {
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l32-2",
+    "claim_id": "d13-reshare-b-l32",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1049,105 +765,6 @@
       "row": null,
       "span": [
         1487,
-        1535
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "allegedly struck"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "near Lahore",
-        "raw": "near Lahore",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "HIMADS/HQ9P battery"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": null,
-        "kind": "period",
-        "period_type": "range",
-        "start": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2025",
-          "year": 2025
-        }
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-11",
-      "kind": "exact",
-      "raw": "2025-05-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
-    },
-    "claim_id": "d13-reshare-b-l32-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 32,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1537,
         1558
       ]
     },
@@ -1183,12 +800,22 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "engaged"
+        "activity": "allegedly struck, engaged"
       },
       "event_type": "SightingEvent",
       "form": "event",
-      "location": null,
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "near Lahore",
+        "raw": "near Lahore",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
       "participants": [
+        "HIMADS/HQ9P battery",
         "jet"
       ],
       "time_interval": {
@@ -1228,18 +855,18 @@
       "posted_at": "2025-05-11 (~14:33 PKT)",
       "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
     },
-    "claim_id": "d13-reshare-b-l38",
+    "claim_id": "d13-reshare-b-l35",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 38,
+      "line": 35,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1752,
-        1816
+        1610,
+        1933
       ]
     },
     "event_time": {
@@ -1297,7 +924,7 @@
     "attributes": {
       "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
     },
-    "claim_id": "d13-reshare-b-l38-2",
+    "claim_id": "d13-reshare-b-l38",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1343,7 +970,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly engaged/hit overnight by IAF jet"
+        "activity": "reportedly engaged/hit"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -1358,7 +985,8 @@
         "wgs84_lon": null
       },
       "participants": [
-        "Lahore HQ-9/P HIMADS"
+        "HQ-9/P HIMADS",
+        "IAF jet"
       ],
       "time_interval": {
         "approximate": false,
@@ -1397,18 +1025,18 @@
       "posted_at": "2025-05-08 (~05:15 IST)",
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46",
+    "claim_id": "d13-reshare-b-l43",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 46,
+      "line": 43,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2075,
-        2262
+        1947,
+        2263
       ]
     },
     "event_time": {
@@ -1466,7 +1094,7 @@
     "attributes": {
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46-2",
+    "claim_id": "d13-reshare-b-l46",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1512,7 +1140,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "shooting down Pak drone & missile attacks on military targets"
+        "activity": "shooting down"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -1527,7 +1155,7 @@
         "wgs84_lon": null
       },
       "participants": [
-        "Pak drone & missile"
+        "Pak drone & missile attacks"
       ],
       "time_interval": {
         "approximate": false,
@@ -1565,7 +1193,7 @@
     "attributes": {
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46-3",
+    "claim_id": "d13-reshare-b-l46-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1575,7 +1203,7 @@
       "region": null,
       "row": null,
       "span": [
-        2200,
+        2209,
         2261
       ]
     },
@@ -1611,22 +1239,22 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "drone strikes on Pak's air defence"
+        "activity": "drone strikes"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
         "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "Pak's air defence, including Lahore",
-        "raw": "Pak's air defence, including Lahore",
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
         "wgs84_lat": null,
         "wgs84_lon": null
       },
       "participants": [
-        "drone"
+        "Pak's air defence"
       ],
       "time_interval": {
         "approximate": false,
@@ -1662,20 +1290,20 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "2025-05-08 (~05:20 IST, exact timestamp via search only)"
+      "posted_at": "2025-05-08 (~05:20 IST)"
     },
-    "claim_id": "d13-reshare-b-l52",
+    "claim_id": "d13-reshare-b-l49",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 52,
+      "line": 49,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2474,
-        2569
+        2272,
+        2631
       ]
     },
     "event_time": {
@@ -1731,7 +1359,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d13-reshare-b-l52-2",
+    "claim_id": "d13-reshare-b-l52",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1826,98 +1454,23 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
-    },
-    "claim_id": "d13-reshare-b-l58",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 58,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2764,
-        2826
-      ]
-    },
-    "event_time": {
-      "boundary_source": "relative",
-      "iso_date": "2025-05-10",
-      "kind": "exact",
-      "raw": "yesterday"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "footage from yesterday resurfacing again today"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Lahore",
-        "raw": "Lahore",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "HQ9 site"
-      ],
-      "time_interval": {
-        "boundary_source": "relative",
-        "iso_date": "2025-05-10",
-        "kind": "exact",
-        "raw": "yesterday"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-11",
-      "kind": "exact",
-      "raw": "2025-05-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
     "asserts": "entity",
     "attributes": {
       "posted_at": "2025-05-11 (~19:40 IST)",
       "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
     },
-    "claim_id": "d13-reshare-b-l58-2",
+    "claim_id": "d13-reshare-b-l55",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 58,
+      "line": 55,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2764,
-        2908
+        2640,
+        2951
       ]
     },
     "event_time": {
@@ -1971,23 +1524,98 @@
     "targets": null
   },
   {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
+    },
+    "claim_id": "d13-reshare-b-l58",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
+      "frame": null,
+      "line": 58,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2764,
+        2908
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "strike"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ9 site"
+      ],
+      "time_interval": {
+        "boundary_source": "relative",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d13_reshare_b",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": {
       "posted_at": "2025-05-11 (~19:52 IST)",
       "status_url": "https://x.com/OSINT_Desi/status/1921570091234567890"
     },
-    "claim_id": "d13-reshare-b-l64",
+    "claim_id": "d13-reshare-b-l61",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 64,
+      "line": 61,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        3075,
-        3207
+        2961,
+        3246
       ]
     },
     "event_time": {
@@ -2045,7 +1673,7 @@
     "attributes": {
       "status_url": "https://x.com/OSINT_Desi/status/1921570091234567890"
     },
-    "claim_id": "d13-reshare-b-l64-2",
+    "claim_id": "d13-reshare-b-l64",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -2090,9 +1718,7 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "activity": "video again captioned as \"breaking\""
-      },
+      "attrs": {},
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
@@ -2142,7 +1768,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "Ground-level photograph of a public military parade featuring large wheeled transport vehicles carrying large cylindrical canisters.",
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "Ground-level view of heavy military transport vehicles in a parade on a city street.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
@@ -2163,7 +1790,12 @@
       "row": null,
       "span": null
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8"
+    },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
@@ -2184,35 +1816,39 @@
           "count_state": "fielded",
           "max": 4.0,
           "min": 3.0,
-          "unit": "large wheeled military transport vehicles with cylindrical canisters",
+          "unit": "large multi-axle military vehicles",
           "value": null
         },
-        "description": "A ground-level perspective of a public military parade on a multi-lane paved city street. Multiple large, dark-green wheeled vehicles (multi-axle) are driving in a column, each carrying a cluster of four large cylindrical canisters on its bed. Spectators are crowded along the side of the road in the foreground, many holding up mobile phones and small national and regional flags. Uniformed personnel are marching on foot alongside the vehicles. Numerous flags and lampposts line the route in the background under an overcast sky.",
+        "description": "A ground-level photograph capturing a military parade along a wide, paved city street. Multiple green, multi-axle heavy transport trucks are driving in a column, with each vehicle carrying four large cylindrical canisters arranged horizontally in two tiers. In the foreground, a dense crowd of onlookers is shown from behind, many holding up smartphones to capture photos and videos of the event. Several soldiers in ceremonial uniforms are marching alongside or near the vehicles. The street is decorated with various flags on lamp posts and poles, and additional spectators are seated in stands in the background.",
         "frame_kind": "ground-level",
+        "geometry_tokens": [
+          "street",
+          "road",
+          "urban"
+        ],
         "gsd_note": "N/A (ground-level photograph)",
         "observed_features": [
           {
-            "arrangement": "aligned in a column on the street",
-            "feature": "multi-axle military vehicles",
-            "note": "large dark-green wheeled transport vehicles",
-            "shape": "oblong/rectangular chassis with multiple large tires"
+            "arrangement": "column",
+            "feature": "multi-axle military vehicle",
+            "note": "Heavy trucks carrying large horizontal cylindrical canisters on their rear beds",
+            "shape": "rectangular chassis with multiple large wheels"
           },
           {
-            "arrangement": "grouped in clusters of four per vehicle",
-            "feature": "cylindrical canisters",
-            "note": "mounted on the rear bed of the transport vehicles",
-            "shape": "cylindrical"
+            "arrangement": "linear",
+            "feature": "paved road",
+            "note": "City street serving as a parade route",
+            "shape": "linear"
           },
           {
-            "arrangement": "lining the sides of the street",
-            "feature": "spectators",
-            "note": "crowd holding up mobile phones and flags",
-            "shape": "irregular cluster"
+            "arrangement": "grouped",
+            "feature": "crowd",
+            "note": "Spectators lining the street and sitting in stands in the background"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level perspective of a public military parade on a multi-lane paved city street. Multiple large, dark-green wheeled vehicles (multi-axle) are driving in a column, each carrying a cluster of four large cylindrical canisters on its bed. Spectators are crowded along the side of the road in the foreground, many holding up mobile phones and small national and regional flags. Uniformed personnel are marching on foot alongside the vehicles. Numerous flags and lampposts line the route in the background under an overcast sky.",
+        "site_signature_geometry": "A ground-level photograph capturing a military parade along a wide, paved city street. Multiple green, multi-axle heavy transport trucks are driving in a column, with each vehicle carrying four large cylindrical canisters arranged horizontally in two tiers. In the foreground, a dense crowd of onlookers is shown from behind, many holding up smartphones to capture photos and videos of the event. Several soldiers in ceremonial uniforms are marching alongside or near the vehicles. The street is decorated with various flags on lamp posts and poles, and additional spectators are seated in stands in the background.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",

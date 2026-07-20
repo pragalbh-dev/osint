@@ -5,8 +5,10 @@ here. The LLM *proposed* upstream (its output is frozen in the logs); determinis
 inside this function. Given the same logs + config, the emitted view is byte-identical (gate G2).
 
 Stage call-order is fixed (master §4.3):
-``resolve → score_claims → (group by independence) → assign_status → check → precompute``.
-Around those five stages, F0 owns four *real* pieces: retraction handling, supersede/contradict
+``resolve → score_claims → (group by independence) → assign_status → check → precompute``, with the
+supersession floor (``credibility.supersession``) slotted between ``assign_status`` and ``precompute``
+— it is the one gate that needs a *scored* view to decide, so it cannot run with ``supersede.py``.
+Around those stages, F0 owns four *real* pieces: retraction handling, supersede/contradict ordering
 (``supersede.py``), rendering the resolver's decisions as edges (candidate ``same-as`` + ``distinct-from``,
 G4-exempt / never scored), and HITL decision-effect application (gate G12). All numeric scoring lives
 in the stages (which read config), never here.
@@ -24,10 +26,12 @@ from chanakya.credibility import (
     assertion_freshness,
     assign_status,
     group_by_independence,
+    promote_supersessions,
     score_claims,
 )
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
+from chanakya.ontology import EdgeLaneIndex
 from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
 from chanakya.schemas import (
     AssertionInput,
@@ -232,6 +236,7 @@ def _assemble(
     resolved: list[ClaimRecord],
     entity_canonical: dict[str, str] | None = None,
     endpoint_node_types: dict[str, str] | None = None,
+    lane: EdgeLaneIndex | None = None,
 ) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
@@ -292,7 +297,15 @@ def _assemble(
             subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
             if (subj, obj) != (payload.subject, payload.object):
                 c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
-            ei = rr.edge_instance if rr and rr.edge_instance else f"edge:{subj}:{payload.predicate}:{obj}"
+            # Fallback for a claim whose producer left no edge_instance: build it through the SAME
+            # config-driven key builder RESOLVE uses (`base_ref`), so a functional edge (`based-at`) keys
+            # on the subject alone on both paths — the two can never disagree (EVAL RCA §2.1 / D-P4.4).
+            if rr and rr.edge_instance:
+                ei = rr.edge_instance
+            elif lane is not None:
+                ei = lane.edge_instance_key(subj, payload.predicate, obj)
+            else:
+                ei = f"edge:{subj}:{payload.predicate}:{obj}"
             edge_groups[ei].append(c)
 
     edges: list[EdgeView] = []
@@ -442,7 +455,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
     #    merged-away entity's edges to its canonical node (no-op when nothing merged).
-    nodes, edges, events = _assemble(resolved, partition.entity_canonical, partition.endpoint_node_types)
+    nodes, edges, events = _assemble(
+        resolved, partition.entity_canonical, partition.endpoint_node_types, EdgeLaneIndex(config.ontology)
+    )
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     _stamp_place_refs(nodes, partition)  # RES-3: the curated-anchor binding + the evidence for it
     claims_by_id = {c.claim_id: c for c in resolved}
@@ -533,6 +548,22 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                     missing_slots=list(suff.missing_slots),
                 )
             )
+
+    # 6b. supersession floor (D-P4.4 iv) — runs HERE, after the status machine and before materiality,
+    #     because the gate is a question about the *newer* assertion's confidence + deception flags,
+    #     which do not exist until step 5. `view/supersede.py` (step 2) could only order the pair.
+    #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
+    #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
+    #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
+    supersede_outcome = promote_supersessions(edges, config)
+    edges.extend(supersede_outcome.drawn_edges)
+    # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it
+    # raised while it was still being assessed as a live fact. The gap would tell an analyst to go
+    # collect on a position the graph has just established the subject has LEFT — the opposite of the
+    # honest-refusal contract, which is about what we cannot assess, not about what has been overtaken.
+    retired = set(supersede_outcome.retired_element_ids)
+    if retired:
+        known_gaps = [g for g in known_gaps if g.related_ref not in retired]
 
     view = GraphView(
         nodes=list(nodes.values()),

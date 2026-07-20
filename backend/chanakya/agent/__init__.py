@@ -74,14 +74,20 @@ def ask(
         trace = run_react_loop(ctx, question, resolved_llm)
     else:
         # Keyless, non-flagship, no recorded trace: refuse honestly — never fabricate an answer.
+        # This is a CAPABILITY outage, not an evidence gap: nothing was consulted, so we must not
+        # report a shortfall in the world's evidence. `missing` names the capability in the words an
+        # analyst can act on, not an internal token.
         return AskAnswer(
             question=question,
             answer=None,
             refusal=RefusalPayload(
-                missing=["live_llm_or_recorded_trace"],
+                kind="capability",
+                missing=["a model key (ANTHROPIC_API_KEY)", "or a recorded trace for this question"],
                 reason=(
-                    "Insufficient capability to plan this query offline: no LLM key and no recorded "
-                    "trace. Set ANTHROPIC_API_KEY for a live answer, or use the reproducible hero query."
+                    "The system could not run this query: the reasoning agent needs a model key and "
+                    "none is configured, and there is no recorded trace to replay. No evidence was "
+                    "consulted, so nothing is being asserted about the graph. Set ANTHROPIC_API_KEY "
+                    "and ask again, or use the reproducible worked query, which runs without a key."
                 ),
             ),
         )
@@ -99,6 +105,7 @@ def ask(
             sub_questions=answer.sub_questions,
             answer=None,
             refusal=RefusalPayload(
+                kind="withheld",
                 missing=[f"{f.problem}" for f in verdict.findings][:5],
                 reason="Answer withheld: one or more sentences were uncited, unsupported, or not entailed by their evidence.",
             ),

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from chanakya.api.routes import ask, config, health, hitl, ingest, node, view
+from chanakya.api.routes import ask, config, health, hitl, ingest, node, pending, view
 
 
 def register_routes(app: FastAPI) -> None:
@@ -18,5 +18,6 @@ def register_routes(app: FastAPI) -> None:
     app.include_router(node.router)
     app.include_router(ask.router)
     app.include_router(ingest.router)
+    app.include_router(pending.router)
     app.include_router(hitl.router)
     app.include_router(config.router)

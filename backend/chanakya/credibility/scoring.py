@@ -22,6 +22,7 @@ lives here** (gate G6): every weight, penalty, threshold, half-life, and the dec
 from __future__ import annotations
 
 from chanakya.ingest.hashing import pdq_hamming
+from chanakya.ontology import EdgeLaneIndex
 from chanakya.schemas import (
     ClaimRecord,
     ConfigBundle,
@@ -35,6 +36,10 @@ from chanakya.timeref import effective_as_of
 # Freshness gate-flag vocabulary (must match status.py) — strings, not scoring numbers (G6).
 _AGING = "aging"  # ≥1 supporting look older than 1 half-life → blocks confirmed
 _STALE = "stale"  # the freshest supporting look older than 1 half-life → demote confirmed→stale
+# Honesty marker: the half-life came from the freshness-CLASS default (no per-edge/variant key matched),
+# so the variant was NOT tagged and we decayed at the class rate. Stamped "<marker>:<class>" onto the
+# gate/breakdown vector so provenance never silently pretends we knew the variant (RCA SC-2, D-P4.13).
+_VARIANT_ASSUMED = "freshness-variant-assumed"
 
 # Integrity table names + flag vocabulary (must match config.credibility.integrity_penalties keys,
 # "<table>.<flag>"). Strings, not scoring numbers — the *values* live in config (gate G6).
@@ -150,18 +155,39 @@ def _days_between(start_iso: str, end_iso: str) -> float:
     return float((date.fromisoformat(end_iso) - date.fromisoformat(start_iso)).days)
 
 
-def _half_life_days(claim: ClaimRecord, config: ConfigBundle) -> float | None:
-    """This claim's half-life (variant-qualified → bare edge → durable/None)."""
+def _half_life_days(
+    claim: ClaimRecord, config: ConfigBundle, edge_index: EdgeLaneIndex
+) -> tuple[float | None, str | None]:
+    """This claim's half-life + the freshness class *iff* it came from the class-level default.
+
+    Fallback chain (spine/04): ``<edge>.<variant>`` → bare ``<edge>`` →
+    ``half_life_defaults[ontology.freshness_class(edge)]`` → ``None`` (durable / no reachable half-life).
+    The second element is the ``freshness_class`` name **only** when the class-default rung fired — no
+    per-edge or per-variant key existed, so the variant was not tagged and we decayed at the class rate;
+    the caller stamps ``freshness-variant-assumed:<class>`` for honest provenance. It is ``None`` on every
+    other rung (an exact edge/variant key, or durable). Config-driven; no half-life literal here (G6).
+    """
     half_lives = config.credibility.half_lives_days
     key = _edge_key(claim)
     if key is None:
-        return None
+        return None, None
     variant = _attrs(claim).get(_ATTR_FRESH_VARIANT)
     if variant is not None:
         specific = half_lives.get(f"{key}.{variant}")
         if specific is not None:
-            return specific
-    return half_lives.get(key)
+            return specific, None
+    bare = half_lives.get(key)
+    if bare is not None:
+        return bare, None
+    # No exact key — fall back to the edge's freshness-CLASS default so a perishable edge that carries
+    # only variant sub-keys (based-at, replenishes, inducted-into) still decays instead of scoring eternal.
+    defaults = getattr(config.credibility, "half_life_defaults", None) or {}
+    fclass = edge_index.freshness_class(key)
+    if fclass is not None:
+        class_default = defaults.get(fclass)
+        if class_default is not None:
+            return class_default, fclass
+    return None, None
 
 
 def _event_iso(claim: ClaimRecord) -> tuple[str | None, bool]:
@@ -173,13 +199,15 @@ def _event_iso(claim: ClaimRecord) -> tuple[str | None, bool]:
     return report_hi, report_hi is not None
 
 
-def freshness(claim: ClaimRecord, as_of: str | None, config: ConfigBundle) -> tuple[float, bool]:
+def freshness(
+    claim: ClaimRecord, as_of: str | None, config: ConfigBundle, edge_index: EdgeLaneIndex
+) -> tuple[float, bool]:
     """``base^(−age/half_life)`` on event_time (fallback report_time, flagged). Returns (factor, fell_back).
 
-    Durable edge types (no half-life configured) skip decay → ``1.0``. A future-dated claim
+    Durable edge types (no reachable half-life) skip decay → ``1.0``. A future-dated claim
     (event after as_of) clamps to fresh (``1.0``) — nothing is fresher than the evaluation date.
     """
-    half_life = _half_life_days(claim, config)
+    half_life, _ = _half_life_days(claim, config, edge_index)
     base = getattr(config.credibility, "decay_base", None)
     if half_life is None or base is None or as_of is None:
         return 1.0, False  # durable / unconfigured / no reference → no decay
@@ -205,18 +233,22 @@ def assertion_freshness(
     Durable looks never age. Pure/clock-free (G1).
     """
     base = getattr(config.credibility, "decay_base", None)
+    edge_index = EdgeLaneIndex(config.ontology)
     freshest_iso: str | None = None
     freshest_decay = 1.0
     freshest_hl: float | None = None
     any_aged = False
     freshest_aged = False
+    assumed_classes: set[str] = set()  # supporting looks whose half-life came from the class default
     for cid in claim_ids:
         claim = claims_by_id.get(cid)
         if claim is None:
             continue
-        half_life = _half_life_days(claim, config)
+        half_life, assumed_class = _half_life_days(claim, config, edge_index)
         if half_life is None or base is None or as_of is None:
             continue  # durable / no reference → always fresh; contributes no aging
+        if assumed_class is not None:
+            assumed_classes.add(assumed_class)
         event_hi, _ = _event_iso(claim)
         if event_hi is None:
             continue
@@ -231,6 +263,9 @@ def assertion_freshness(
         flags.append(_AGING)
     if freshest_aged:
         flags.append(_STALE)
+    # Honest provenance: a look decayed at the class default (variant untagged) — never silent (SC-2).
+    for fclass in sorted(assumed_classes):
+        flags.append(f"{_VARIANT_ASSUMED}:{fclass}")
     summary = Freshness(
         last_support_time=freshest_iso, half_life_days=freshest_hl, decay_factor=freshest_decay
     )
@@ -295,6 +330,7 @@ def score_claims(
 ) -> dict[str, float]:
     """Per-claim ``claim_credibility = R(source) × Π(integrity) × freshness`` for every resolved claim."""
     as_of = effective_as_of(config, resolved_claims)
+    edge_index = EdgeLaneIndex(config.ontology)
     recycled_ids = _recycled_claim_ids(resolved_claims, config)
     flagged_origins = _flagged_origins(decisions)
     out: dict[str, float] = {}
@@ -302,6 +338,6 @@ def score_claims(
         source = sources.get(claim.source_id)
         r = reliability(source, config)
         integrity = integrity_product(claim, source, config, recycled_ids, flagged_origins)
-        fresh, _ = freshness(claim, as_of, config)
+        fresh, _ = freshness(claim, as_of, config, edge_index)
         out[claim.claim_id] = r * integrity * fresh
     return out

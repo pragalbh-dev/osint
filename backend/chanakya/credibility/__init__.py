@@ -7,6 +7,9 @@ here so the pipeline's frozen ``from chanakya.credibility import …`` keeps wor
 * ``independence.group_by_independence`` — three-axis (origin/discipline/interest) clustering (§3.5).
 * ``status.assign_status`` — noisy-OR pooling + the confirmed/probable/possible/insufficient/
   contradicted/stale gate machine (§3.4).
+* ``supersession.promote_supersessions`` — the post-status half of the supersede rule (D-P4.4 iv): the
+  quality floor a *newer* assertion must clear before it may retire an older one, plus the
+  ``superseded → stale`` consequence and the drawn ``supersedes`` edge (D-P4.11).
 
 **No scoring literal lives in this package (gate G6):** every weight, penalty, threshold, half-life,
 decay base, and look-count comes from ``config.credibility`` through F0's live store. **No LLM / network /
@@ -19,5 +22,13 @@ from __future__ import annotations
 from .independence import group_by_independence
 from .scoring import assertion_freshness, score_claims
 from .status import assign_status
+from .supersession import SupersedeOutcome, promote_supersessions
 
-__all__ = ["assertion_freshness", "assign_status", "group_by_independence", "score_claims"]
+__all__ = [
+    "SupersedeOutcome",
+    "assertion_freshness",
+    "assign_status",
+    "group_by_independence",
+    "promote_supersessions",
+    "score_claims",
+]

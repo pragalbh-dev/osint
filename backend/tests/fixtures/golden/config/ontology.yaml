@@ -8,6 +8,6 @@ node_types:
 edge_types:
   - {name: fields, freshness_class: perishable}
   - {name: supplies-component, freshness_class: semi-durable}
-  - {name: based-at, freshness_class: perishable}
+  - {name: based-at, freshness_class: perishable, instance_key: [from]}   # FUNCTIONAL: subject-only instance key (a unit is at one site at a time) so a relocation supersedes (EVAL RCA §2.1)
 event_types:
   - {name: TransferEvent, freshness_class: durable}

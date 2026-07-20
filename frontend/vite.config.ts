@@ -7,7 +7,7 @@ import path from 'node:path'
 // Prefixes with a trailing slash for path-param routes so '/node/…' doesn't swallow
 // Vite's own '/node_modules'.
 const API_TARGET = process.env.VITE_API_TARGET || 'http://localhost:8000'
-const proxied = ['/health', '/view', '/ask', '/ingest', '/openapi.json', '/docs', '/node/', '/evidence/', '/hitl/', '/config/']
+const proxied = ['/health', '/view', '/ask', '/ingest', '/pending', '/openapi.json', '/docs', '/node/', '/evidence/', '/hitl/', '/config/']
 const proxy = Object.fromEntries(
   proxied.map((p) => [p, { target: API_TARGET, changeOrigin: true }]),
 )

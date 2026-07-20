@@ -48,7 +48,10 @@ export const AOI = {
 
 // ─────────────────────────── graph (Cytoscape preset) ───────────────────────────
 
-export type GraphKind = 'confirmed' | 'probable' | 'chokepoint' | 'stale' | 'gap'
+// `contradicted` is its OWN kind, never folded into `gap`: "credible sources disagree"
+// (loud — solid coral) and "we do not know" (quiet — dashed grey, no fill) are opposite
+// facts, and drawing one as the other is a lie about the evidence.
+export type GraphKind = 'confirmed' | 'probable' | 'chokepoint' | 'stale' | 'gap' | 'contradicted'
 
 export interface GraphNodeDef {
   id: string
@@ -71,7 +74,28 @@ export const GRAPH_NODES: GraphNodeDef[] = [
   { id: 'tel', label: 'TEL count\nnever disclosed', x: 330, y: 470, kind: 'gap' },
 ]
 
-export type EdgeKind = 'e-confirmed' | 'e-probable' | 'e-history'
+/** Edge visual kinds — the shared vocabulary for BOTH the frozen demo fixtures and the
+ *  live adapter (src/api/adapters.ts). The demo only ever uses the first three.
+ *
+ *  The trust distinction that matters: `e-stale` is HISTORY (solid grey — we know the
+ *  assertion was overtaken) while `e-gap` is an EVIDENCE GAP (dashed grey — we do not
+ *  know). Conflating them is a correctness bug in the visual language, not a style nit.
+ *  `e-supersede` is the status-LESS "replaced by →" version link (never an alarm), and
+ *  `e-link` the other status-less identity edges (same-as / distinct-from).
+ *
+ *  `e-supersede-candidate` is the same arrow, DASHED: an un-adjudicated supersession —
+ *  "something moved, and we are not yet sure it is the same thing". THE ONE RULE decides
+ *  it: promoted = settled = solid; pending/held = provisional = dashed. Like the dashed
+ *  chokepoint halo, this makes "we're not sure" undrawable as certain. */
+export type EdgeKind =
+  | 'e-confirmed'
+  | 'e-probable'
+  | 'e-stale'
+  | 'e-gap'
+  | 'e-contradicted'
+  | 'e-supersede'
+  | 'e-supersede-candidate'
+  | 'e-link'
 
 export interface GraphEdgeDef {
   id: string
@@ -87,14 +111,22 @@ export const GRAPH_EDGES: GraphEdgeDef[] = [
   { id: 'e4', source: 'casic', target: 'ht233', kind: 'e-confirmed' },
   { id: 'e5', source: 'ht233', target: 'paad', kind: 'e-probable' },
   { id: 'e6', source: 'techdata', target: 'ht233', kind: 'e-probable' },
-  { id: 'e7', source: 'paad', target: 'tel', kind: 'e-history' },
-  { id: 'e_moved', source: 'rawalpindi', target: 'rahwali', kind: 'e-history' }, // hidden until relocation
+  // the regiment's TEL count is a Known Gap — the edge into it is an evidence GAP (dashed
+  // grey, "we do not know"), not history.
+  { id: 'e7', source: 'paad', target: 'tel', kind: 'e-gap' },
+  // the relocation is an adjudicated supersession — "replaced by →": solid grey + arrow.
+  { id: 'e_moved', source: 'rawalpindi', target: 'rahwali', kind: 'e-supersede' }, // hidden until relocation
 ]
 
 // ─────────────────────────── target queries (screen zero) ───────────────────────────
 
+// `hero` is BOTH the label the Ask affordance shows and the exact payload it POSTs to /ask (one string,
+// one source — a label/payload divergence is how the button silently fell off the hero path before).
+// It must stay byte-identical to `config/subjects.yaml` → lens-hq9p-pk → target_queries[0]: the backend's
+// primary hero matcher is an exact match on that string; the "trace…chokepoint" keyword rule is only the
+// safety net. Change one, change the other.
 export const TARGET_QUERIES = {
-  hero: 'Trace this battery back to its component supplier',
+  hero: 'Trace the long-range SAM battery now based at Rahwali back to its fire-control component and name the chokepoint.',
   provenance: 'Is this node confirmed or probable — and on what evidence?',
   gaps: 'What do we not know here?',
 } as const
@@ -312,10 +344,13 @@ export const CRED_INTRO =
 
 // ─────────────────────────── tripwires (indicators & warning) ───────────────────────────
 
+// `state` is data, not a hardcoded badge in the view: the demo asserts these three are
+// armed and none has fired, and WatchView renders whatever state it is handed (the LIVE
+// path derives real state from the alert feed on GET /view instead).
 export const TRIPWIRES = [
-  { name: 'Relocation', desc: 'A unit relocating within 2 hops of this subject.', indicator: 'movement in EO/SAR imagery' },
-  { name: 'New supplier link', desc: 'A new entity entering the supply path behind this system.', indicator: 'procurement / customs records' },
-  { name: 'Contradiction', desc: 'Two credible sources disagreeing on the same event.', indicator: 'source conflict on one claim' },
+  { name: 'Relocation', desc: 'A unit relocating within 2 hops of this subject.', indicator: 'movement in EO/SAR imagery', state: 'armed' },
+  { name: 'New supplier link', desc: 'A new entity entering the supply path behind this system.', indicator: 'procurement / customs records', state: 'armed' },
+  { name: 'Contradiction', desc: 'Two credible sources disagreeing on the same event.', indicator: 'source conflict on one claim', state: 'armed' },
 ]
 
 export const WATCH_INTRO =

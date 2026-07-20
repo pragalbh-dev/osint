@@ -7,8 +7,33 @@
 // (panelView === 'answer'); the demo keeps its authored HeroAnswer / GapsView.
 
 import { useWorkbench } from '@/store/workbench'
-import { askToAnswerModel, type LiveAnswerModel } from '@/api/adapters'
+import { askToAnswerModel, humanizeEdge, type LiveAnswerModel } from '@/api/adapters'
+import { useDisplayName } from '@/api/viewmodel'
+import type { RefusalKind } from '@/api/types'
 import { CitationChip } from '@/components/status/CitationChip'
+
+// THREE refusals, three different claims about the world — and an analyst must never see them
+// conflated. "Insufficient evidence to assess" says WE LOOKED AND THE WORLD IS THIN; printing it
+// over a capability outage says the evidence is thin when in fact nothing was ever consulted,
+// which overstates a gap that may not exist. Same mislabelling family as stale-vs-insufficient:
+// a correctness bug, not copy. The backend tags the kind (RefusalPayload.kind); this only renders it.
+const REFUSAL_COPY: Record<RefusalKind, { kicker: string; headline: string; missingLabel: string }> = {
+  evidence: {
+    kicker: 'Insufficient evidence',
+    headline: 'Insufficient evidence to assess.',
+    missingLabel: 'Missing',
+  },
+  capability: {
+    kicker: 'Could not run',
+    headline: 'The system could not run this query. No evidence was assessed.',
+    missingLabel: 'Needs',
+  },
+  withheld: {
+    kicker: 'Answer withheld',
+    headline: 'An answer was found but withheld — it could not be fully cited.',
+    missingLabel: 'Failed on',
+  },
+}
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -25,22 +50,24 @@ function BackButton({ onClick }: { onClick: () => void }) {
 
 function Refusal({ model }: { model: LiveAnswerModel }) {
   const r = model.refusal
+  const displayName = useDisplayName()
+  const copy = REFUSAL_COPY[r?.kind ?? 'evidence']
+  // a missing slot that IS a graph element reads as its name; free text passes through untouched
+  const missing = (r?.missing ?? []).map((slot) => displayName(slot))
   return (
     <div>
-      <div className="mb-[10px] text-[10.5px] tracking-[0.06em] text-text-faint">
-        Insufficient evidence
-      </div>
-      <div className="text-[16px] leading-[1.35] text-text">Insufficient evidence to assess.</div>
+      <div className="mb-[10px] text-[10.5px] tracking-[0.06em] text-text-faint">{copy.kicker}</div>
+      <div className="text-[16px] leading-[1.35] text-text">{copy.headline}</div>
       {r?.reason && (
         <div className="mt-2 text-[14px] leading-[1.5] text-text" style={{ textWrap: 'pretty' }}>
           {r.reason}
         </div>
       )}
-      {r && r.missing.length > 0 && (
+      {missing.length > 0 && (
         <div className="mt-[15px] text-[13px] leading-[1.5] text-text">
-          <span className="text-text-dim">Missing</span>
+          <span className="text-text-dim">{copy.missingLabel}</span>
           &nbsp;—&nbsp;
-          {r.missing.join('; ')}.
+          {missing.join('; ')}.
         </div>
       )}
       {r?.knownGap && (
@@ -63,6 +90,8 @@ function Refusal({ model }: { model: LiveAnswerModel }) {
 }
 
 function Answer({ model }: { model: LiveAnswerModel }) {
+  // the walk names its endpoints; an id the graph does not know passes through unchanged
+  const displayName = useDisplayName()
   return (
     <div>
       {/* the agent's answer, as-is */}
@@ -91,7 +120,7 @@ function Answer({ model }: { model: LiveAnswerModel }) {
                 </div>
                 <div style={{ paddingBottom: isLast ? 4 : 18 }}>
                   <div className={`text-[13.5px] leading-[1.45] ${hop.observed ? 'text-text' : 'text-text-dim'}`}>
-                    {hop.line}
+                    {`${displayName(hop.src)} — ${humanizeEdge(hop.edge)} → ${displayName(hop.dst)}`}
                   </div>
                   <div className="mt-[3px] text-[11px] text-text-faint">
                     {hop.observed ? 'observed' : 'inferred'}

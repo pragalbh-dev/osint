@@ -127,6 +127,13 @@ export interface NodeView extends Assessed {
   materiality?: MaterialityAttrs | null
 }
 
+/** NOTE — some edge types are status-LESS by design: `supersedes` (a version link between
+ *  two already-scored edges — scoring it again would score one fact twice), `same-as` and
+ *  `distinct-from` (identity, never truth). Their `status`/`confidence` are null; nothing
+ *  may assume every edge carries a status badge. `attrs` on a `based-at` edge that is half
+ *  of a supersession additionally carries `candidate_supersede`, `supersede_gate`
+ *  ('pending' | 'promoted' | 'held'), `supersede_pending_newer` / `supersede_pending_older`
+ *  and `supersede_hold_reason` (string list — why it was NOT auto-retired). */
 export interface EdgeView extends Assessed {
   id: string
   type: string // supplies-component, based-at, same-as, supersedes, ...
@@ -157,6 +164,25 @@ export interface KnownGap {
   missing_slots?: string[]
 }
 
+/** The evidence behind a fired Alert (schemas/view.py AlertProvenance; added 2026-07-20).
+ *  An alert asserts something about the world, so it names the claims it rests on: the
+ *  `before_*` claims asserted the prior state, the `after_*` claims assert the new one —
+ *  the split is the point, because "what changed" is only auditable if both sides are
+ *  separately traceable. `before_ref`/`after_ref` are the view element ids (edge/node)
+ *  that carried each state, so they resolve straight into GET /evidence/{id}. `status` /
+ *  `assertion_confidence` are COPIED off the after-element (MONITOR never scores). Every
+ *  field is optional: an alert whose element carried no claims says so by being empty,
+ *  never by inventing a citation. */
+export interface AlertProvenance {
+  before_ref?: string | null
+  after_ref?: string | null
+  before_claim_ids?: string[]
+  after_claim_ids?: string[]
+  claim_ids?: string[] // union (before-first, de-duplicated)
+  status?: Status | null
+  assertion_confidence?: number | null // truth confidence, never identity
+}
+
 export interface Alert {
   observable_id: string
   subject?: string | null
@@ -165,6 +191,7 @@ export interface Alert {
   severity?: string
   fired_ts?: string | null
   disposition?: AlertDisposition | null
+  provenance?: AlertProvenance | null // null/absent = a pre-MON-4 alert with no recorded evidence
 }
 
 export interface GraphView {
@@ -207,7 +234,15 @@ export interface AnswerHop {
   observed_or_inferred?: 'observed' | 'inferred'
 }
 
+/** Which of the three refusals this is. `evidence` = we looked and the world is thin.
+ *  `capability` = we could not look at all (no model key, no recorded trace, a dead tool).
+ *  `withheld` = we looked and would not stand behind the wording (failed citation/entailment).
+ *  Conflating them overstates a gap in the world that may not exist — see the backend's
+ *  RefusalPayload docstring. Absent → 'evidence' (the pre-`kind` contract). */
+export type RefusalKind = 'evidence' | 'capability' | 'withheld'
+
 export interface RefusalPayload {
+  kind?: RefusalKind
   missing?: string[]
   next_coverage_due?: string | null
   known_gap?: KnownGap | null
@@ -241,6 +276,10 @@ export interface ProvenanceDrawer {
   opposing_claims?: string[]
   sufficiency?: SufficiencyEval | null
   claims?: ClaimRecord[] // added 2026-07-19 — resolved evidence atoms, index by claim_id for doc_ref deep-links
+  // added 2026-07-20 — claim_id -> the VERBATIM text at each of that claim's doc_refs, in doc_ref
+  // order. A file+offset is a pointer, not a source; this is what the analyst actually audits.
+  // Absent claim / empty string = the span could not be read; render the locator alone, never a guess.
+  quotes?: Record<string, string[]>
 }
 
 // ───────────────────────── review queue / HITL ─────────────────────────
@@ -289,6 +328,33 @@ export interface IngestResult {
   appended_claim_ids?: string[]
   rebuilt?: boolean
   alerts_fired?: string[]
+}
+
+// ───────────────────────── pending (withheld) documents ─────────────────────────
+// Documents deliberately held OUT of the boot seed (config/sources.yaml → withheld_from_seed),
+// so the graph stands up in the state that PRECEDES their arrival. Their frozen claim bundles
+// ship with the app and are served here, so a reviewer can ingest one through the keyless lane
+// and watch the tripwire fire — no repo checkout, no key, no network. Added 2026-07-20.
+
+export interface PendingDocument {
+  doc_id: string
+  source_type?: string | null
+  citation_url?: string | null
+  bundles?: string[] // its own bundle + any derived enrichment bundles — released together
+  claim_count?: number
+  available?: boolean // false = declared withheld but no bundle on disk (say so, never pretend)
+  ingested?: boolean // true once its claims are in the evidence log — server state, not a local guess
+}
+
+export interface PendingResponse {
+  scenario?: string | null
+  documents?: PendingDocument[]
+}
+
+export interface PendingBundle {
+  doc_id: string
+  bundles?: string[]
+  bundle?: Array<Record<string, unknown>> // ready to POST /ingest as { bundle }
 }
 
 // ───────────────────────── config / observables ─────────────────────────

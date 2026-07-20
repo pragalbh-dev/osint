@@ -6,8 +6,11 @@ of scope for ASK, so this module fakes those as **already-computed test input** 
 
 * **the hero subgraph** (C/02 / DATA-C answer_key names) — 5 nodes, 4 edges, traced from the deployed
   Karachi battery back to the component maker:
-  ``site_karachi ←based-at– unit_paad ←inducted-into– var_hq9p ←equips– comp_ht233 ←manufactures– mfr_casic``
-  (edges stored **origin-ward**: ``unit_paad —based-at→ site_karachi`` etc.; the agent traverses either way);
+  ``site_karachi ←based-at– unit_paad ←inducted-into– var_hq9p ←equips– comp_ht233 ←supplies-component– mfr_casic``
+  (edges stored **origin-ward**: ``unit_paad —based-at→ site_karachi`` etc.; the agent traverses either way).
+  The Mfr→Component hero edge is ``supplies-component`` (Phase-1 tightened ``manufactures`` to
+  Mfr→Variant); ``var_hq9p`` is deliberately **named ``HQ-9P``** while the query anchor is ``HQ-9/P`` so
+  the punctuation-squashed near-miss resolution has a real regression to bite on (spine/09 AS-6);
 * **HT-233 as a CANDIDATE chokepoint** — ``substitutability_state = UNKNOWN`` → it must land in
   ``query_graph``'s ``indeterminate`` partition, **never** a confirmed sole-source (the disqualifying line);
 * **a planted gap** — the sole-source question for HT-233 is unmet → a ``KnownGap`` with ``missing_slots`` +
@@ -37,6 +40,7 @@ from chanakya.schemas import (
     Location,
     MaterialityAttrs,
     NodeView,
+    OntologyConfig,
     ResolutionConfig,
     SourceRegistryEntry,
     SourcesConfig,
@@ -44,6 +48,7 @@ from chanakya.schemas import (
     SubjectsConfig,
     TemplatesConfig,
     Triple,
+    TypeDef,
 )
 
 # ── claims (evidence log bodies) ──────────────────────────────────────────────────────────────
@@ -129,14 +134,16 @@ def hero_claims() -> dict[str, ClaimRecord]:
             ),
             report_time=ExactDate(iso_date="2022-11-20"),
         ),
-        # manufactures (inference — probable; the sole-source question stays UNKNOWN → the planted gap)
+        # supplies-component (inference — probable; the sole-source question stays UNKNOWN → the planted
+        # gap). Mfr→Component is `supplies-component`, NOT `manufactures` (Phase-1 D-A.1 tightened the
+        # latter to Mfr→Variant) — the fixture mirrors the shipped ontology's re-laned reality.
         ClaimRecord(
             claim_id="d21-l2",
             source_id="src-sipri-2022",
             doc_ref=DocRef(file="d21_sipri_trades_2022.txt", row=45),
             kind="inference",
             asserts="relationship",
-            payload=_triple("mfr_casic", "manufactures", "comp_ht233"),
+            payload=_triple("mfr_casic", "supplies-component", "comp_ht233"),
             premises=["d21-l1", "d09-l5"],
             report_time=ExactDate(iso_date="2022-11-20"),
         ),
@@ -204,8 +211,10 @@ def hero_view() -> GraphView:
         ),
         NodeView(
             id="var_hq9p",
+            # NB: named "HQ-9P" (as an extractor would mint it), NOT "HQ-9/P" — so the query "HQ-9/P"
+            # exercises the punctuation-squashed near-miss path, not a trivial exact-name hit (AS-6).
             type="variant",
-            name="HQ-9/P",
+            name="HQ-9P",
             attrs={"family": "HQ-9", "export_designator": "HQ-9/P", "aliases": ["HQ-9P"], "range_class": "long"},
             claim_ids=["d02-l3", "d09-l5"],
             status="confirmed",
@@ -282,7 +291,7 @@ def hero_view() -> GraphView:
               fresh=_fresh("2024-03-12", 365.0, 0.96)),
         _edge("var_hq9p", "inducted-into", "unit_paad", ["d02-l3"], "probable", 0.64),
         _edge("comp_ht233", "equips", "var_hq9p", ["d09-l7"], "probable", 0.66),
-        _edge("mfr_casic", "manufactures", "comp_ht233", ["d21-l2"], "probable", 0.58),
+        _edge("mfr_casic", "supplies-component", "comp_ht233", ["d21-l2"], "probable", 0.58),
         _edge("var_hq9p", "distinct-from", "var_hq9be", ["d09-l9"], "confirmed", 0.9),
         _edge("unit_hq9b", "based-at", "site_rahwali", ["d33-img2"], "stale", 0.72,
               fresh=_fresh("2019-05-01", 365.0, 0.19)),
@@ -346,7 +355,21 @@ def _edge(
 
 def hero_config() -> ConfigBundle:
     """A minimal ConfigBundle: sources registry (for get_evidence), alias table (find_entity),
-    the hero subject lens, and a sufficiency template (check_sufficiency refusal rendering)."""
+    the hero subject lens, a sufficiency template (check_sufficiency refusal rendering), and the edge
+    ontology the tools read (canonical Mfr→Component lane + the traversable-lane whitelist)."""
+    # Edge ontology mirror (subset): directional relations + the symmetric distinct-from resolution lane,
+    # so EdgeLaneIndex.canonical_edge('manufacturer','component')='supplies-component' and
+    # traversable_edges() excludes distinct-from (AS-2 / AS-4).
+    ontology = OntologyConfig(
+        edge_types=[
+            TypeDef(name="based-at", from_type="unit", to_type="basing_site", extractor=True, freshness_class="perishable"),
+            TypeDef(name="inducted-into", from_type="variant", to_type="unit", extractor=True, freshness_class="semi-durable"),
+            TypeDef(name="equips", from_type="component", to_type="variant", extractor=True, freshness_class="durable"),
+            TypeDef(name="supplies-component", from_type="manufacturer", to_type="component", extractor=True, freshness_class="durable"),
+            TypeDef(name="manufactures", from_type="manufacturer", to_type="variant", extractor=True, freshness_class="durable"),
+            TypeDef(name="distinct-from", symmetric=True, freshness_class="n/a"),
+        ]
+    )
     sources = SourcesConfig(
         sources=[
             SourceRegistryEntry(
@@ -387,7 +410,7 @@ def hero_config() -> ConfigBundle:
     )
     credibility = CredibilityConfig(
         thresholds={"confirmed": 0.80, "probable": 0.50},
-        half_lives_days={"based-at": 365.0, "inducted-into": 1825.0, "manufactures": 3650.0},
+        half_lives_days={"based-at": 365.0, "inducted-into": 1825.0, "supplies-component": 3650.0},
     )
     subjects = SubjectsConfig(
         subjects=[
@@ -408,6 +431,19 @@ def hero_config() -> ConfigBundle:
         ]
     )
     templates = TemplatesConfig(
+        # mirrors config/templates.yaml's edge_phrasing so the fixture hero renders through the SAME
+        # answer-prose path as the shipped one (a hop reads as a clause, not as its edge identifier);
+        # an edge with no entry falls back to the bare edge name.
+        edge_phrasing={
+            "based-at": {"forward": "is based at", "inverse": "is the basing site of"},
+            "inducted-into": {"forward": "is in service with", "inverse": "operates"},
+            "equips": {
+                "forward": "is fitted to", "inverse": "is equipped with",
+                "by_from_type": {"unit": {"forward": "fields", "inverse": "is fielded by"}},
+            },
+            "supplies-component": {"forward": "supplies", "inverse": "is supplied by"},
+            "manufactures": {"forward": "manufactures", "inverse": "is manufactured by"},
+        },
         templates=[
             EvidenceTemplate(
                 assertion_type="sole-source",
@@ -431,6 +467,7 @@ def hero_config() -> ConfigBundle:
     )
     return ConfigBundle(
         version=1,
+        ontology=ontology,
         sources=sources,
         resolution=resolution,
         credibility=credibility,

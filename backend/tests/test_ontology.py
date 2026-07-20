@@ -12,7 +12,10 @@ from chanakya.ontology import EdgeLaneIndex
 from chanakya.settings import config_dir
 
 EXTRACTOR_ENUM = {
-    "based-at", "inducted-into", "imported-by", "exported-by", "equips",
+    # `observed-at` is the OBSERVED-occupancy lane (equipment -> site) added by EVAL RCA D-P4.2, kept
+    # distinct from `based-at` (formation -> site) so what a frame can honestly state and what must be
+    # derived from it stay separate claims at separate confidences.
+    "based-at", "observed-at", "inducted-into", "imported-by", "exported-by", "equips",
     "supplies-component", "manufactures", "design-authority-for", "component-of", "replenishes",
 }
 NON_EXTRACTOR = {
@@ -73,3 +76,32 @@ def test_relane_handles_backwards_written_fact() -> None:
 def test_relane_rejects_offontology_endpoints() -> None:
     r = _index().relane("equips", "source", "known_gap")
     assert r.edge is None and r.action == "rejected" and not r.ok
+
+
+def test_supplier_end_direction_is_declared_per_edge() -> None:
+    # D-P4.7: the supplier is the `from` end for most sustainment edges, the `to` end for exported-by.
+    idx = _index()
+    for etype in ("equips", "supplies-component", "manufactures", "component-of", "design-authority-for"):
+        assert idx.supplier_end(etype) == "from", etype
+    assert idx.supplier_end("exported-by") == "to"
+    # an edge that declares nothing defaults to "from" (supplier == source, the dominant convention).
+    assert idx.supplier_end("based-at") == "from"
+
+
+def test_freshness_class_accessor_reads_the_ontology() -> None:
+    # SC-2: the declared `freshness_class` was dead metadata; this accessor is what SCORE now reads.
+    idx = _index()
+    assert idx.freshness_class("based-at") == "perishable"
+    assert idx.freshness_class("inducted-into") == "semi-durable"
+    assert idx.freshness_class("manufactures") == "durable"
+    assert idx.freshness_class("supersedes") == "n/a"       # structural edge, declared n/a
+    assert idx.freshness_class("does-not-exist") is None    # unknown edge → None
+
+
+def test_every_decaying_edge_has_a_reachable_half_life() -> None:
+    # SC-2 gate (mirrors test_no_endpoint_collisions): a perishable/semi-durable/force-revalidated edge
+    # with NO bare half-life AND no half_life_defaults entry for its class would score as ETERNAL — a
+    # tripwire that can never go stale. The shipped config must leave none unreachable.
+    bundle = ConfigStore.seed_from(config_dir()).snapshot()
+    idx = EdgeLaneIndex(bundle.ontology)
+    assert idx.unreachable_half_lives(bundle.credibility) == {}

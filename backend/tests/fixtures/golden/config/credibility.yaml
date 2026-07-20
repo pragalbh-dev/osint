@@ -17,6 +17,13 @@ integrity_penalties:
 thresholds:
   confirmed: 0.80
   probable: 0.50
+# The supersession floor (D-P4.4 iv): what a NEWER assertion must clear before it may retire an older
+# one. Below the bar the pair stays `candidate_supersede` → HITL. Absent block ⇒ fails closed.
+supersede_floor:
+  min_band: probable
+  min_independent_looks: 1
+  newer_status_allow: [probable, confirmed]
+  blocking_gate_flags: [adversary-denial, decoy-risk, contradiction]
 # SCORE resolver knobs (values in config, never code — gate G6).
 decay_base: 2
 min_independent_groups: 2

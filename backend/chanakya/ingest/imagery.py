@@ -48,7 +48,7 @@ from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.hashing import image_fingerprint
 from chanakya.schemas import ConfigBundle, make_claim_id
 from chanakya.schemas.claim import ClaimRecord, DocRef, EntityDescriptor, Extraction, Triple
-from chanakya.schemas.values import DateValue, Location, Quantity
+from chanakya.schemas.values import DateValue, Location, Quantity, canonical_iso_bounds
 
 # ── the literature reference the corroboration is judged against ──────────────────────────────────
 
@@ -63,10 +63,15 @@ class LiteratureRef:
     """
 
     claim_id: str  # the ingested literature-fingerprint claim → the inference's second premise
-    variant: str  # the variant the literature names → the object of the bridge triple
+    variant: str  # the variant the literature names → the SUBJECT of the bridge triple (the equipment)
     signature_geometry: str | None = None  # the reference site-geometry the corroboration compares to
     source_id: str | None = None  # the literature's source (context only, frozen on the inference)
-    predicate: str = "based-at"  # the corroboration edge type (md/15 §2.4: <site, based-at, variant>)
+    # The corroboration edge: the OBSERVED-occupancy lane, ``<variant, observed-at, site>``. It was
+    # ``<site, based-at, variant>`` — off-lane in BOTH type and direction against the ontology
+    # (``based-at`` is unit → basing_site), so every claim it minted was a third malformed shape the
+    # read-side canonicaliser could not repair, and it asserted a *formation basing* fact off a pixel
+    # read that can only support an *equipment sighting* (EVAL RCA §2.3 / D-P4.2).
+    predicate: str = "observed-at"
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -305,6 +310,7 @@ def _corroboration_prompt(*, geometry_tokens: list[str], features: list[dict[str
 def read_image_document(image: bytes, *, file: str, source_id: str, config: ConfigBundle,
                         client: ExtractionClient, report_time: DateValue | None = None,
                         ingest_time: DateValue | None = None, geo: Location | None = None,
+                        event_time: DateValue | None = None,
                         literature_ref: LiteratureRef | None = None) -> list[ClaimRecord]:
     """Read one image into a subject-blind observation (+ an optional corroboration inference).
 
@@ -370,7 +376,7 @@ def read_image_document(image: bytes, *, file: str, source_id: str, config: Conf
         claim_id=obs_id, source_id=source_id, doc_ref=img_ref,
         kind="observation", polarity="positive", asserts="entity",
         payload=EntityDescriptor(entity_type="basing_site", name=site_anchor, attrs=attrs),
-        report_time=report_time, ingest_time=ingest_time,
+        report_time=report_time, ingest_time=ingest_time, event_time=event_time,
         extraction=Extraction(method="vlm", version=client.model_id, model_conf=1.0),
         attributes=attributes or None,
     )
@@ -399,12 +405,63 @@ def read_image_document(image: bytes, *, file: str, source_id: str, config: Conf
             inf_attributes = _flag_offontology(edge_vocab, literature_ref.predicate, inf_attributes)
             claims.append(ClaimRecord(
                 claim_id=make_claim_id(token, locator, index=2), source_id=source_id, doc_ref=img_ref,
-                kind="inference", polarity="positive", asserts="relationship",
-                payload=Triple(subject=site_anchor, predicate=literature_ref.predicate,
-                               object=literature_ref.variant),
+                kind="inference", polarity="positive", asserts="relationship", event_time=event_time,
+                payload=Triple(subject=literature_ref.variant, predicate=literature_ref.predicate,
+                               object=site_anchor),
                 report_time=report_time, ingest_time=ingest_time,
                 premises=[obs_id, literature_ref.claim_id],
                 extraction=Extraction(method="llm", version=client.model_id, model_conf=1.0),
                 attributes=inf_attributes or None,
             ))
     return claims
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+# Dating the frame from its sibling text — the pass date lives in the write-up, never in the pixels.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+#: Tier-3 marker: this VLM claim's ``event_time`` was inherited from the sibling text document's stated
+#: observation date, not read off the image. The VLM cannot date a frame any more than it can geolocate
+#: one, so the honest record is "borrowed, from there" — never a silent stamp.
+_INHERITED_TIME_ATTR = "_event_time_rung"
+_INHERITED_TIME_VALUE = "sibling-document-observation"
+
+
+def inherit_observation_time(claims: list[ClaimRecord]) -> list[ClaimRecord]:
+    """Date a document's undated **VLM** claims from its own text lane's latest observed date.
+
+    A GEOINT source is one document with two modalities: a ``.txt`` write-up that states *when* the pass
+    was flown, and the ``.png`` frame itself. The frame carries no date — ``read_image_document`` stamps
+    only ``report_time``/``ingest_time`` — so the imagery observation, the very claim a derived basing
+    fact inherits its valid time from, was **undated**, and everything downstream that orders or ages
+    basing (supersede, freshness, the relocation beat) had nothing to order *by*.
+
+    This pass runs after all of one document's extraction calls have returned and before dedup/id
+    assignment, on **both** the live lane and the frozen recorder (KEYLESS ≡ LIVE), and only ever fills a
+    hole: a VLM claim that already carries an ``event_time`` is untouched, and a document whose text
+    states no date leaves its frames undated rather than borrowing the publication date. Pure and
+    deterministic — the chosen date is the latest upper bound among the text lane's own dated claims,
+    tie-broken by claim id.
+    """
+    best: DateValue | None = None
+    best_key: tuple[str, str] | None = None
+    for c in claims:
+        if c.extraction.method == "vlm" or c.event_time is None:
+            continue
+        hi = canonical_iso_bounds(c.event_time)[1]
+        if hi is None:
+            continue
+        key = (hi, c.claim_id)
+        if best_key is None or key > best_key:
+            best, best_key = c.event_time, key
+    if best is None:
+        return claims
+    out: list[ClaimRecord] = []
+    for c in claims:
+        if c.extraction.method == "vlm" and c.event_time is None:
+            attrs = dict(c.attributes or {})
+            attrs[_INHERITED_TIME_ATTR] = _INHERITED_TIME_VALUE
+            out.append(c.model_copy(update={"event_time": best, "attributes": attrs}))
+        else:
+            out.append(c)
+    return out

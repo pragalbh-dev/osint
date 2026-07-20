@@ -31,3 +31,12 @@ tracker/todo
 
 .env
 *.pem
+
+# QA / tooling output — screenshots, reports, harness scratch.
+# Scoped BY LOCATION, deliberately NOT by extension: 251 images in this repo are real
+# data (the imagery documents the pipeline extracts from under corpus/, and the vendored
+# offline map tiles under frontend/public/tiles/). A blanket *.png would break both.
+.gstack/
+tmp/qa/fixshots/
+tmp/qa/**/*.png
+**/screenshots/

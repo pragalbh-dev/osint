@@ -38,7 +38,7 @@ def battery_cases() -> list[Case]:
                      tool_turn("graph_get_node", {"node_id": "comp_ht233"}, "b"), final()), "answered"),
         Case("one-hop", "2 one-hop neighbourhood", "Who manufactures HT-233?",
              planner(tool_turn("graph_find_entity", {"text": "HT-233"}, "a"),
-                     tool_turn("graph_neighbors", {"node_id": "comp_ht233", "edge_types": ["manufactures"]}, "b"),
+                     tool_turn("graph_neighbors", {"node_id": "comp_ht233", "edge_types": ["supplies-component"]}, "b"),
                      final()), "answered"),
         Case("multi-hop", "3 multi-hop path (flagship)", HERO_Q, None, "answered", contains="chokepoint_status=candidate"),
         Case("filtered", "4 filtered / spatial", "Which components equip HQ-9/P?",

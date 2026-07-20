@@ -21,6 +21,8 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from chanakya.schemas import KnownGap, RefusalPayload
+
 from .client import LLMClient
 from .context import ToolContext
 from .tool_specs import tool_specs
@@ -52,6 +54,16 @@ class RecordedCall:
     input: dict[str, Any]
     result: dict[str, Any]
 
+    @property
+    def ok(self) -> bool:
+        """True unless the tool returned an error dict — the ONE discriminant at the type-erased boundary.
+
+        ``run_tool`` returns a union (success payload | ``{error, suggestion}``) and nothing else carries
+        the tag, so every downstream reader must go through this (spine/09 AS-1). An error-shaped result
+        must fall through to the honest-refusal path, never be read as a success payload.
+        """
+        return "error" not in self.result
+
 
 @dataclass
 class AgentTrace:
@@ -62,15 +74,24 @@ class AgentTrace:
     calls: list[RecordedCall] = field(default_factory=list)
     final_text: str = ""
     terminated: str = "unknown"  # "end_turn" | "max_iters" | "fixed" | "error"
+    # An explicit, first-class honest refusal set by a scripted path when the chain cannot be built —
+    # assembled verbatim (naming the actual unresolved input), never inferred from a positive builder.
+    refusal: RefusalPayload | None = None
 
-    def last(self, tool: str) -> RecordedCall | None:
+    def last(self, tool: str, ok_only: bool = True) -> RecordedCall | None:
+        """The most recent call to ``tool`` — SUCCESSFUL ones only by default (AS-1). A failed call is
+        never handed to a builder that reads success fields; pass ``ok_only=False`` to see failures."""
         for c in reversed(self.calls):
-            if c.name == tool:
+            if c.name == tool and (c.ok or not ok_only):
                 return c
         return None
 
-    def all_of(self, tool: str) -> list[RecordedCall]:
-        return [c for c in self.calls if c.name == tool]
+    def all_of(self, tool: str, ok_only: bool = True) -> list[RecordedCall]:
+        return [c for c in self.calls if c.name == tool and (c.ok or not ok_only)]
+
+    def failures(self) -> list[RecordedCall]:
+        """Every tool call that returned an error dict (for honest-refusal construction / diagnostics)."""
+        return [c for c in self.calls if not c.ok]
 
 
 # ── free ReAct loop ─────────────────────────────────────────────────────────────────────────
@@ -136,50 +157,184 @@ def _call(ctx: ToolContext, trace: AgentTrace, tool: str, params: dict[str, Any]
     return result
 
 
+def _refuse(
+    trace: AgentTrace,
+    missing: list[str],
+    reason: str,
+    *,
+    next_due: str | None = None,
+    known_gap: dict[str, Any] | None = None,
+) -> AgentTrace:
+    """Stamp a first-class honest refusal on the trace and return it (the scripted short-circuit).
+
+    The reason names the *actual* unresolved input; ``missing`` is populated. No hardcoded/phantom id is
+    ever substituted — a step that did not resolve becomes a named gap, never a guessed answer (AS-2).
+    """
+    kg = None
+    if isinstance(known_gap, dict) and known_gap.get("id"):
+        kg = KnownGap(
+            id=known_gap["id"],
+            what_missing=known_gap.get("what_missing", ""),
+            observability_ceiling=known_gap.get("observability_ceiling", "confirmable"),
+            next_coverage_due=known_gap.get("next_coverage_due"),
+            related_ref=known_gap.get("related_ref"),
+            missing_slots=list(known_gap.get("missing_slots", [])),
+        )
+    trace.refusal = RefusalPayload(
+        missing=list(missing), next_coverage_due=next_due, known_gap=kg, reason=reason
+    )
+    trace.terminated = "fixed"
+    return trace
+
+
+def _top_candidate(fe_result: dict[str, Any]) -> str | None:
+    """The bindable node id from a find_entity result — top candidate iff exact/near_miss (never fuzzy/
+    ambiguous/none). Consumes the result the old path discarded (AS-2)."""
+    if fe_result.get("error") or fe_result.get("resolution") not in ("exact", "near_miss"):
+        return None
+    cands = fe_result.get("candidates") or []
+    return cands[0]["node_id"] if cands else None
+
+
+def _typed_anchor(ctx: ToolContext, anchors: list[str], node_type: str) -> str | None:
+    """The first lens anchor whose RESOLVED node type matches — typed from the graph, not a string prefix."""
+    for a in anchors:
+        n = ctx.nodes_by_id.get(a)
+        if n is not None and n.type == node_type:
+            return a
+    return None
+
+
+def _chokepoint_rank(ctx: ToolContext, match: dict[str, Any]) -> tuple[float, int, str]:
+    """Sort key for the nominated chokepoint components — best first under ``min()``.
+
+    Ordering, in priority: (1) highest **assessed node confidence** — an id sort would hand the flagship
+    trace whichever node happened to sort first, which on the real graph is a weaker, single-source
+    component; (2) among equally-confident candidates, the one whose supporting evidence is the most
+    *explanatory* (longest cited document span — a full sourced sentence beats a bare name-drop, so the
+    analyst clicking the citation lands on prose that justifies the pick); (3) node id, so the choice is
+    byte-stable across runs. Nothing here is graph-specific — no node is named.
+    """
+    node_id = str(match.get("node_id", ""))
+    node = ctx.nodes_by_id.get(node_id)
+    conf = node.confidence.assertion_confidence if (node is not None and node.confidence) else None
+    claim_ids = list(match.get("claim_ids") or (node.claim_ids if node is not None else []))
+    span_len = 0
+    for cid in claim_ids:
+        claim = ctx.claims.get(cid)
+        span = getattr(getattr(claim, "doc_ref", None), "span", None)
+        if span and len(span) == 2:
+            span_len += max(0, int(span[1]) - int(span[0]))
+    return (-(conf or 0.0), -span_len, node_id)
+
+
 def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens-hq9p-pk") -> AgentTrace:
     """The scripted ``link → gather → query_graph → cite`` plan for the flagship trace — no LLM.
 
-    Discovers the chokepoint component and its maker analytically (via the tools), builds the full
-    basing→origin path, cites each hop, and checks sufficiency on the component so HT-233 lands as a
-    CANDIDATE with its Known Gap — never a confirmed sole-source.
+    A scripted *plan* computes over the live graph; it does **not** substitute the expected answer. Every
+    id is resolved from the rebuilt view (anchors via find_entity, types via the node, the maker edge via
+    the ontology's canonical Manufacturer→Component lane) — and any step that fails to resolve
+    short-circuits to an HONEST refusal that names the actual unresolved input, never a hardcoded literal
+    (spine/09 AS-2). The end-state on a graph where the chain cannot reach the origin maker is a *scoped*
+    refusal on the chokepoint component (its supplier is a Known Gap), never a fabricated assessment.
     """
     trace = AgentTrace(question=question, sub_questions=list(HERO_SUB_QUESTIONS), terminated="fixed")
     lens = ctx.config.subjects.as_map().get(subject_id)
-    anchors = list(lens.anchors) if lens else ["unit_paad", "site_karachi"]
-    site = next((a for a in anchors if a.startswith("site")), anchors[-1])
-    variant_anchor = next((a for a in anchors if a.startswith("unit") or a.startswith("var")), anchors[0])
+    anchors = list(lens.anchors) if lens else []
 
-    # link: resolve the variant the question names.
-    _call(ctx, trace, "graph_find_entity", {"text": "HQ-9/P", "type_hint": "variant"})
+    # link: resolve the variant the question names — and CONSUME the result (the old path discarded it).
+    fe = _call(ctx, trace, "graph_find_entity", {"text": "HQ-9/P", "type_hint": "variant"})
+    variant_id = _top_candidate(fe)
+    if variant_id is None:
+        detail = fe.get("error") or f"resolution={fe.get('resolution')!r} (no bindable candidate)"
+        hint = f" {fe.get('suggestion')}" if fe.get("suggestion") else ""
+        return _refuse(trace, ["HQ-9/P"], f"Could not resolve the subject variant 'HQ-9/P' in the rebuilt view: {detail}.{hint}")
 
-    # gather + query_graph: find the (candidate-or-confirmed) chokepoint component near the subject.
+    # the basing site is a lens anchor typed basing_site — resolved from the graph, never an id prefix.
+    site = _typed_anchor(ctx, anchors, "basing_site")
+    if site is None:
+        unresolved = [a for a in anchors if a not in ctx.nodes_by_id] or anchors or ["<no lens anchors>"]
+        return _refuse(
+            trace, unresolved,
+            f"The subject lens '{subject_id}' has no basing_site anchor present in the rebuilt view "
+            f"(anchors {anchors or 'none'} → unresolved {unresolved}); cannot anchor the basing→origin trace.",
+        )
+
+    # gather + query_graph: the (candidate-or-confirmed) chokepoint component near the resolved variant.
     chokepoints = _call(
-        ctx,
-        trace,
-        "graph_query_graph",
-        {
-            "pattern": "component",
-            "anchor": variant_anchor,
-            "constraints": [{"attr": "chokepoint_status", "op": "!=", "value": "none"}],
-        },
+        ctx, trace, "graph_query_graph",
+        {"pattern": "component", "anchor": variant_id,
+         "constraints": [{"attr": "chokepoint_status", "op": "!=", "value": "none"}]},
     )
     pool = chokepoints.get("matches", []) + chokepoints.get("indeterminate", [])
-    comp_id = pool[0]["node_id"] if pool else "comp_ht233"
+    if not pool:
+        vname = _name(ctx, variant_id)
+        return _refuse(
+            trace, ["chokepoint_component"],
+            f"No chokepoint component is currently identified near {vname} in the rebuilt view "
+            f"(materiality has nominated none): insufficient evidence to name the fire-control chokepoint.",
+        )
+    comp_id = min(pool, key=lambda m: _chokepoint_rank(ctx, m))["node_id"]
 
-    # who makes it → the origin/destination anchor for the trace.
-    makers = _call(ctx, trace, "graph_neighbors", {"node_id": comp_id, "edge_types": ["manufactures"]})
-    mfr_id = next((n["neighbour_id"] for n in makers.get("neighbours", [])), "mfr_casic")
+    # who makes it → the canonical Manufacturer→Component edge (supplies-component), derived from the
+    # ontology, NOT the literal 'manufactures' (Phase-1 tightened that to Manufacturer→Variant).
+    maker_edge = ctx.lane.canonical_edge("manufacturer", "component") if ctx.lane else None
+    makers = _call(
+        ctx, trace, "graph_neighbors",
+        {"node_id": comp_id, **({"edge_types": [maker_edge]} if maker_edge else {})},
+    )
+    mfr_id: str | None = None
+    for nb in makers.get("neighbours", []):
+        m = ctx.nodes_by_id.get(nb.get("neighbour_id", ""))
+        if m is not None and m.type == "manufacturer":
+            mfr_id = nb["neighbour_id"]
+            break
 
-    # find_paths: the flagship basing → origin chain.
-    _call(ctx, trace, "graph_find_paths", {"src": site, "dst": mfr_id})
-
-    # cite: pull evidence for each hop edge.
+    # find_paths: the flagship basing → origin chain. Trace to the origin MAKER when one resolved; when the
+    # maker is itself a Known Gap (no supplies-component edge in the view), still trace basing → the
+    # chokepoint COMPONENT — the chain the evidence does support — and report the missing supplier as the
+    # gap. Refusing outright would throw away a fully-sourced multi-hop answer to punish a known unknown.
+    dst = mfr_id if mfr_id is not None else comp_id
+    _call(ctx, trace, "graph_find_paths", {"src": site, "dst": dst})
     path = trace.last("find_paths")
-    if path and "hops" in path.result:
+    if path is not None and path.result.get("hops"):
         for hop in path.result["hops"]:
             _call(ctx, trace, "graph_get_evidence", {"ref_id": hop["edge_id"]})
 
-    # non-negotiable: is the chokepoint a confirmed sole-source, or a Known Gap?
+    # cite the chokepoint + the non-negotiable: confirmed sole-source, or a Known Gap? (comp_id exists.)
     _call(ctx, trace, "graph_get_node", {"node_id": comp_id})
-    _call(ctx, trace, "graph_check_sufficiency", {"scope": comp_id})
+    suff = _call(ctx, trace, "graph_check_sufficiency", {"scope": comp_id})
+
+    # If the chain never reached the origin maker, degrade to an HONEST scoped refusal on the chokepoint —
+    # naming the ACTUAL failure (the tool's own error), never a positive answer that hides the gap.
+    path = trace.last("find_paths")
+    if not (path is not None and path.result.get("hops")):
+        cname = _name(ctx, comp_id)
+        missing = list(suff.get("missing_slots") or [])
+        if mfr_id is not None:
+            # supplier resolved, but the basing→origin chain could not be traced — name the path failure.
+            fp = trace.last("find_paths", ok_only=False)
+            detail = fp.result.get("error") if fp is not None else "no path found"
+            reason = (
+                f"Traced the fire-control chokepoint to {cname} and its supplier {_name(ctx, mfr_id)}, but "
+                f"could not connect the basing site {_name(ctx, site)} to that supplier in the rebuilt view: {detail}."
+            )
+            missing = missing or [f"path:{site}->{mfr_id}"]
+        else:
+            # No maker edge AND no basing→component path either — name both, not just the maker gap.
+            edge_name = maker_edge or "manufacturer→component"
+            fp = trace.last("find_paths", ok_only=False)
+            detail = (fp.result.get("error") if fp is not None else None) or "no path found"
+            reason = suff.get("reason") or (
+                f"Traced the fire-control chokepoint to {cname}, but the rebuilt view has no {edge_name} "
+                f"edge to a manufacturer, and no path connects the basing site {_name(ctx, site)} to "
+                f"{cname} either: {detail}."
+            )
+            missing = missing or [f"{edge_name}:{comp_id}", f"path:{site}->{comp_id}"]
+        return _refuse(trace, missing, reason, next_due=suff.get("next_coverage_due"), known_gap=suff.get("known_gap"))
     return trace
+
+
+def _name(ctx: ToolContext, node_id: str) -> str:
+    n = ctx.nodes_by_id.get(node_id)
+    return n.name if (n is not None and n.name) else node_id

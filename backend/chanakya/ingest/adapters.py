@@ -34,7 +34,7 @@ from __future__ import annotations
 import calendar
 import datetime as dt
 import re
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from typing import Protocol, runtime_checkable
 
@@ -663,30 +663,64 @@ def detect_surface_format(raw: str, declared: str | None = None) -> SurfaceForma
     return fmt
 
 
+def _absolute_shapes(
+    s: str,
+) -> Iterator[tuple[SurfaceFormat, tuple[float, float, PrecisionClass] | None]]:
+    """Every **absolute** coordinate shape ``s`` exhibits, most-specific first, each with its parse.
+
+    Most-specific first is what keeps the loose shapes honest: a packed NOTAM ``495355N`` also matches
+    the decimal-degree pattern, so DMS is offered before DD; a grid reference outranks both. Yielding
+    (rather than returning) lets the caller skip a shape that *looked* like a coordinate but did not
+    parse, when a better-supported reading of the same string exists.
+    """
+    if _mgrs_token(s) is not None:
+        yield "MGRS", _parse_mgrs(s)
+    if _UTM_RE.match(s):
+        yield "UTM", _parse_utm(s)
+    if _DMS_MARKER_RE.search(s):
+        yield "DMS", _parse_dms(s)
+    elif _DMS_LAT_RE.search(s) and _DMS_LON_RE.search(s):
+        dd = _parse_dd(s)  # no sexagesimal marker anywhere → a hemisphere-suffixed DD pair
+        yield ("DD", dd) if dd is not None else ("DMS", _parse_dms(s))
+    else:
+        dd = _parse_dd(s)
+        if dd is not None or _DD_RE.match(s):
+            yield "DD", dd
+
+
 def _shape_of(s: str) -> tuple[SurfaceFormat, tuple[float, float, PrecisionClass] | None]:
     """Classify ``s`` by shape and, where the shape is a coordinate, parse it in the same pass.
 
     Returning the parse alongside the label is what makes the classification *verified*: a format is
     only claimed when either its parser succeeded or the shape is unmistakable-but-unparseable (a
     well-formed grid the ``mgrs`` lib rejects), never on a guess.
+
+    **Precedence is explicit and ordered — an absolute fix outranks a relative one.** Sources state a
+    position the way a human writes it: the exact reference *and* a landmark gloss, in one breath
+    ("Grid: 43S CT 23715 21242 (MGRS, WGS84), ~1.5 km NE of the main Nur Khan runway threshold"). That
+    string is an absolute fix with a descriptive tail, not a relative fix; reading the tail as the
+    format throws away the only exact coordinate in the sentence and leaves the site unplottable. So:
+
+    1. a map **URL** (the whole string is a link, nothing else can be true of it);
+    2. a parseable **absolute coordinate** anywhere in the string — grid, UTM, DMS, decimal degrees;
+    3. **relative-position language** (``<dist> <bearing> of <anchor>``) — the fallback, and the only
+       reading left when no coordinate is actually recoverable;
+    4. otherwise a **toponym**.
+
+    The one concession at (2): a shape that *looks* like a coordinate but does not parse loses to a
+    relative phrase that does. Relative prose carries bare numbers ("12-15 km NE of Sargodha" trips
+    the sexagesimal-separator pattern), and an unparseable label would strand the string with no
+    coordinate at all — where the relative branch can still geocode the anchor and offset it.
     """
     low = s.strip().lower()
     if low.startswith(("http://", "https://", "geo:")) or "maps." in low or "/@" in s:
         return "url", _parse_url(s)
-    if _REL_LOC_RE.search(s):
+    relative = _REL_LOC_RE.search(s) is not None
+    for fmt, parsed in _absolute_shapes(s):
+        if parsed is not None or not relative:
+            return fmt, parsed
+    if relative:
         return "relative", None
-    if _mgrs_token(s) is not None:
-        return "MGRS", _parse_mgrs(s)
-    if _UTM_RE.match(s):
-        return "UTM", _parse_utm(s)
-    if _DMS_MARKER_RE.search(s):
-        return "DMS", _parse_dms(s)
-    if _DMS_LAT_RE.search(s) and _DMS_LON_RE.search(s):
-        dd = _parse_dd(s)  # no sexagesimal marker anywhere → a hemisphere-suffixed DD pair
-        return ("DD", dd) if dd is not None else ("DMS", _parse_dms(s))
-    dd = _parse_dd(s)
-    if dd is not None or _DD_RE.match(s):
-        return "DD", dd
     return "toponym", None
 
 

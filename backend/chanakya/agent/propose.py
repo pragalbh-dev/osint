@@ -151,13 +151,26 @@ def propose_observable_from_text(
     watch: list[str] = []
     for mention in mentions:
         r = run_tool(ctx, "graph_find_entity", {"text": mention})
-        if r.get("resolved") and r.get("candidates"):
-            top = r["candidates"][0]
+        cands = r.get("candidates") or []
+        # Arming a tripwire is safety-critical, so bind ONLY an EXACT resolution. A near-miss (the
+        # punctuation-squashed or fuzzy tier), ambiguous, or none result is SURFACED for the analyst to
+        # confirm — never silently armed on a look-alike (spine/08 §3.8; the HITL gate). The hero *query*
+        # path binds a near-miss because a cited read is reversible; arming a watch is not.
+        if r.get("resolution") == "exact" and cands:
+            top = cands[0]
             if top["node_id"] not in watch:
                 watch.append(top["node_id"])
             resolved.append(ResolvedMention(mention=mention, node_id=top["node_id"], name=top.get("name")))
+        elif cands:
+            top = cands[0]
+            names = ", ".join((c.get("name") or c["node_id"]) for c in cands[:3])
+            unresolved.append(UnresolvedMention(
+                mention=mention,
+                error=f"no exact match for '{mention}' — did you mean '{top.get('name') or top['node_id']}'?",
+                suggestion=f"confirm one of: {names}",
+            ))
         else:
-            # never silently bind — surface the miss + the alias-table "did you mean" for the analyst.
+            # nothing above threshold — surface the tool's own miss for the analyst.
             unresolved.append(UnresolvedMention(mention=mention, error=r.get("error", "no match"), suggestion=r.get("suggestion", "")))
 
     trigger: dict[str, Any] = {"on": trigger_on, "match_on": _MATCH_ON.get(trigger_on, ["resolved_instance"])}

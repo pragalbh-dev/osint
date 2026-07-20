@@ -169,6 +169,12 @@ entities:
   - entity_id: unit_hq9b
     type: unit
     canonical_name: "PAF HQ-9B fire-unit (relocation subject)"
+    # What an ANSWER calls this unit. The corpus only ever names it by service ("PAF", "Pakistan Air
+    # Force") — no source designates the formation — so the prose must be more specific than the surface
+    # form WITHOUT inventing a designator: "the PAF HQ-9B fire unit", never "the 1st Battalion", and never
+    # the system itself ("HQ-9/P"), which would conflate the unit with the equipment it fields. The
+    # canonical_name above stays the identity string (its "(relocation subject)" note is not prose).
+    display_name: "the PAF HQ-9B fire unit"
     aliases:
       - "PAF"
       - "Pakistan Air Force"

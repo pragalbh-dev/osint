@@ -144,6 +144,27 @@ class KnownGap(Record):
     missing_slots: list[str] = []
 
 
+class AlertProvenance(Record):
+    """The evidence behind a fired Alert (G4) — what the analyst clicks through to.
+
+    An alert asserts something about the world ("this unit moved"), so it obeys the same rule as every
+    other derived element: it names the claims it rests on. ``before_*`` are the claims that asserted
+    the prior state, ``after_*`` the claims that assert the new one — the split is the point, because
+    "what changed" is only auditable if both sides are separately traceable. ``status`` /
+    ``assertion_confidence`` are **copied** off the after-element (SCORE computed them; MONITOR never
+    derives a score — G5). All fields optional: an alert whose element carried no claims says so by
+    being empty rather than by inventing a citation.
+    """
+
+    before_ref: str | None = None  # view element (edge/node id) that carried the prior state
+    after_ref: str | None = None  # view element that carries the new state
+    before_claim_ids: list[str] = []
+    after_claim_ids: list[str] = []
+    claim_ids: list[str] = []  # union (before-first, de-duplicated) — the provenance-drawer target
+    status: Status | None = None  # the after-element's status, as SCORE set it
+    assertion_confidence: float | None = None  # truth confidence, never identity (G5)
+
+
 class Alert(Record):
     """A fired observable/tripwire (MONITOR; product/03 F)."""
 
@@ -154,6 +175,7 @@ class Alert(Record):
     severity: str = "notify"
     fired_ts: str | None = None
     disposition: Literal["real", "noise", "needs-more"] | None = None
+    provenance: AlertProvenance | None = None  # G4: the claims behind before→after (None = pre-MON-4 alert)
 
 
 class GraphView(Record):

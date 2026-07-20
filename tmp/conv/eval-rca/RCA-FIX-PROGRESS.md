@@ -1,5 +1,30 @@
 # RCA-fix — progress hub (the whole eval-RCA fixing effort)
 
+## ⚠️ REMAINING TO SUBMISSION (2026-07-20) — read this first
+
+Phase 4 is essentially done (11 commits, suite 762✓, the relocation beat verified end-to-end).
+What is left is **packaging and paperwork**, not pipeline work:
+
+| # | Item | Why it matters | Blocked on |
+|---|---|---|---|
+| 1 | **SHIP — production packaging** | Already specified in `artifacts/plan/00-master-plan.md:173` (multi-stage image baking config+corpus+seed-logs+SPA, real `make` targets, GHCR+EC2, rollback). | frontend final + QA (image bakes the SPA build) |
+| 2 | **README (does NOT exist)** | **Submission-blocking.** No README.md at repo root — reviewers have zero run instructions, and the deliverable is a runnable app they run **both** ways (prebuilt GHCR image **and** `git clone && make run`). **Write after SHIP, then VERIFY by running both paths cold** — never document intended commands. | SHIP |
+| 3 | **Design note** (graded deliverable) | Two versions to reconcile: the user's own, and `artifacts/design-note.md` (agent-written, ~1,960 words, **untracked/uncommitted** — backed up in scratchpad). Fact-check every claim against the current system. | user comparison |
+| 4 | **Reviewer live-demo ingest** | The ingest API's **keyless bundle path** (`api/routes/ingest.py:5-6`, "the reviewer / public-demo default") lets a reviewer fire the relocation alert from the UI with no key, no LLM, no network. Hold the two 2025 Rahwali docs out of the seed, ship their bundles, document the click. Strongest demo moment *and* the safest. | README |
+| 5 | **QA (2 passes)** | `tmp/qa/QA-PLAN-frontend.md` (corrected 2026-07-20 — its old premise "no backend routes exist / live mode is dead code" was false and would have skipped the whole integration). Pass A demo, Pass B live. Sanity-gate on `GET /view` first. | design-coherence fixes |
+| 6 | **Ledger reconciliation** | **D-P4.1…D-P4.14 are in NO ledger** (`grep -c D-P4` = 0 in both `RCA-FIX-DECISIONS.md` and `DECISIONS.md`); `artifacts/plan/PROGRESS.md` shows 6 merged sessions as `in-review` and EVAL as `not-started`; Phase-4 disclosures not folded into `artifacts/md/16-design-note-disclosures.md`; supersede/stale contract not in `API-to-FRONTEND-contract-log.md`. | — |
+
+**Open defects under investigation (2026-07-20):** MGRS surface-format precedence — `site_rawalpindi`
+has **no coordinates** (grid reference at the front of the string loses to the trailing "~1.5 km NE of…"
+prose → classified `relative`), so **the relocation's ORIGIN cannot be plotted** while Rahwali plots fine.
+PR #36 claimed this fix and did not deliver it. · Sustainment nodes (`interceptor_stockpile`,
+`techdata_authority`) — ratified D-2.7, claimed code-complete, **zero produced across 499 claims**;
+decision pending: fix vs drop-and-disclose.
+
+**Standing lesson:** every time we trusted a board or a commit title instead of probing the running
+system, it was wrong (the supersede tests, the frontend "armed" badge, the MGRS fix). Verify, then report.
+
+
 Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.md`. Decisions:
 `RCA-FIX-DECISIONS.md`. Master board points here (`artifacts/plan/PROGRESS.md`).
 
@@ -45,8 +70,45 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
   `same-as` edge assertion). **Open for INGEST:** `../RESOLVE-to-INGEST-mislaned-edge-endpoints.md` ·
   `../RESOLVE-to-INGEST-frozen-location-gaps.md` (MGRS frozen as toponym — fix in flight on
   `fix/ingest-mgrs-surface-format`).
-- **Phase 4 — derived + surfaces: PENDING.** `handoff-score.md` · `handoff-arch.md` (lens anchors via
-  registry; materiality-filter schema) · `handoff-monitor.md` · `handoff-ask.md` (crash-guard + honest refusal).
+- **Phase 4 — derived + surfaces: AUDITED + REPLANNED + IN PROGRESS. Build from `PHASE4-CORRECTED-PLAN.md`,
+  NOT the four handoffs** (4 of their recommended fixes are hacks; 3 findings mis-attributed; 3 structural
+  holes nobody scoped are the real blockers — see the plan, decisions D-P4.1…D-P4.14).
+  **Re-verified against the live post-Phase-3 view (2026-07-19):** all Phase-4 *code* findings stand
+  (Phase 3 touched none of agent/observe/materiality/supersede/lens/credibility — `git diff d96f077..HEAD`
+  empty for those). Phase 3 only improved the *inputs*: nodes 258→**162**, unknown 86→**3**, lens
+  0/0→**23n/34e** (so AR-2's blocking symptom is FIXED → demoted to defensive). Still broken as verified live:
+  `edge_instance` still embeds the object → **supersede/contradiction still 0**; based-at still **2
+  wrong-shaped edges, no relocation pair**; chokepoint still nominates variants/units; `var_hq9p` is named
+  `HQ-9P` with no aliases stamped → `find_entity("HQ-9/P")` still misses; **0 stale** nodes.
+  **Demo-impact ranking + build order (ratified with orchestrator, branch `fix/phase4-derived-and-surfaces`):**
+  1. ✅ **ASK worked-query bundle** (AS-1…AS-6) — **DONE, commit `21e80e1`.** Hero path returns an honest
+     refusal (no crash, no leaked `comp_ht233`/`mfr_casic`), names the real Karachi→Taian disconnect; refusal
+     templates now fire; `find_entity("HQ-9/P")`→`var_hq9p`. Suite 665✓.
+  2. ✅ **SC-1 chokepoint direction** — **DONE, commit pending this checkpoint.** `supplier_end` declared per
+     sustainment edge (D-P4.7) + per-`functional_role` partition + read-time endpoint-type guard. Gaps moved
+     from 12-on-variants/units → **13, all component(10)/manufacturer(3), zero on variant/unit**; real supply
+     tier (HT-233, TEL chassis, Taian) nominated. Suite 670✓. Residual noise (`India`, `the System`, Type-305B
+     dups) is upstream mis-typing + RESOLVE under-merge — separate data item, not a direction bug.
+  3. ✅ **SC-2 basing-stale wiring** — **DONE, commit `f9dc04b`.** `half_life_defaults` keyed by freshness_class
+     (spine/04 numbers) + `EdgeLaneIndex.freshness_class()` + `unreachable_half_lives()` lint + honesty flag
+     `freshness-variant-assumed:<class>`. Proven in isolation (2021 basing → stale; manufactures eternal; lint
+     clean). Visible stale nodes gated on dated basing edges (beat). **Follow-up (parked):** node-level
+     perishability (`interceptor_stockpile`/`techdata_authority` entity types) isn't read — edges only.
+  - ✅ **ARCH lens resolver + chaff filter (AR-2/AR-3)** — **DONE (built concurrently with #3), commit pending
+     this checkpoint.** Shared `resolve/anchor.py` (literal→registry-alias→alias-class ladder, reused by lens
+     AND observable — kills the 3rd literal-anchor copy); lens meta now carries
+     `anchors_requested/resolved/missing/anchor_resolution` (honest-empty instead of silent); `_passes_materiality`
+     implements `node_types_allow` + explicit `never_drop_indeterminate` (shields type-`unknown` HT-233 radar so
+     the chokepoint stays in the demo); `exclude_off_subject`/`materiality_attrs` left unimplemented (D-P4.9 —
+     oracle-only/descriptive) + surfaced as `unrecognised_filter_keys` + a non-raising drift gate test. subjects.yaml
+     deletion routed to DATA-C (`tmp/conv/ARCH-to-DATAC-subjects-materiality-filter.md`). Suite 689✓.
+  - **NEXT — the relocation beat (Tier 3/4):** serial foundation = edge_instance key; then fan out
+     INGEST(occupancy lane + dates + derivation proposer) ∥ SCORE(interval supersede + floor + stale-wire) ∥
+     MONITOR(match_on grouping + trigger validation + de-pin); then staged-ingest harness integration + frontend.
+  4. **Relocation beat** (all-or-nothing chain: edge_instance key + INGEST occupancy lane/dated derivation +
+     SCORE supersede-floor/stale + MONITOR grouping/de-pin + staged-ingest harness + frontend live feed).
+  5. Hardening/honesty polish (AR-2 defensive, AR-3, AS-3/4, MON-4).
+  6. → DATA-C: `mfr_taian`→probable (SC-3), supersedes node-edge shape reconciliation.
 - **Cross-cutting (DATA + EVAL): answer_key edits ✅ APPLIED; downstream (RESOLVE/SCORE/ASK) PENDING.**
   - **Audit + handoff DONE (PR #30, merged).** Full node/edge sweep: `ANSWER-KEY-GROUNDING-AUDIT.md`;
     analyst handoff + edit spec: `handoff-answer-key-grounding.md`. Verdict: ~85% cleanly sourced.
@@ -77,10 +139,11 @@ Single place to track the four-phase RCA fix. Root cause + plan: `00-RCA-index.m
 | `handoff-ingest.md` | INGEST | 2 | ✅ DONE (80a8702 + 02ad5aa + e597891 + re-record) |
 | `PHASE2-VERIFY-DELTA-AND-HANDOFF.md` | INGEST→P3/P4 | 2 | ✅ delta verified; downstream inheritance + repro gotcha |
 | `handoff-data-c.md` | DATA-C | 1/2 | Phase-1 parts DONE |
-| `handoff-score.md` | SCORE | 4 | pending |
-| `handoff-arch.md` | ARCH | 1/4 | contract DONE; lens code pending |
-| `handoff-ask.md` | ASK | 4 | pending |
-| `handoff-monitor.md` | MONITOR | 4 | pending |
+| `PHASE4-CORRECTED-PLAN.md` | ALL P4 | 4 | 📋 **BUILD FROM THIS** (D-P4.1…D-P4.14; supersedes the 4 handoffs below) |
+| `handoff-score.md` | SCORE | 4 | ⚠️ superseded — SC-1/2 fixes are hacks as written; SC-3 = answer-key defect; SC-4a mis-attributed |
+| `handoff-arch.md` | ARCH | 1/4 | ⚠️ superseded — AR-1 done (P3 consumes); AR-2 symptom fixed by P3; AR-3 `exclude_off_subject` is oracle-only |
+| `handoff-ask.md` | ASK | 4 | ⏳ IN PROGRESS on `fix/phase4-derived-and-surfaces` — corrected plan + AS-5/AS-6 (new) |
+| `handoff-monitor.md` | MONITOR | 4 | ⚠️ superseded — MON-3 fix aimed at wrong layer; + MON-4/5 (no alert provenance; dead feed) |
 | `../PHASE2-INGEST-edge-relane-enum-provenance.md` | INGEST | 2 | ✅ done (80a8702) |
 | `../PHASE2-INGEST-DATAC-extraction-typing-and-coverage-gaps.md` | INGEST/DATA-C | 2 | pending |
 | `../PHASE3-RESOLVE-alias-candidates-and-ambiguities.md` | RESOLVE | 3 | pending |

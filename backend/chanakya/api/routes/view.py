@@ -24,7 +24,8 @@ def get_view(subject: str | None = None, state: AppState = Depends(get_state)) -
     view = state.view()
     if subject is None:
         return view
-    lenses = state.config.snapshot().subjects.as_map()
+    config = state.config.snapshot()
+    lenses = config.subjects.as_map()
     lens = lenses.get(subject)
     if lens is None:
         raise HTTPException(
@@ -35,4 +36,5 @@ def get_view(subject: str | None = None, state: AppState = Depends(get_state)) -
                 "available_subjects": sorted(lenses),
             },
         )
-    return apply_lens(view, lens)
+    # Pass the config so anchor resolution can use the registry/alias tiers, not just literal ids (AR-2).
+    return apply_lens(view, lens, config=config)

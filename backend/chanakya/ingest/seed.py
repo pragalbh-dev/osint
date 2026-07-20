@@ -33,6 +33,7 @@ regardless of the use case that later reads them.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -53,6 +54,32 @@ FROZEN_INGEST_TIME: ExactDate = ExactDate(
 _IMAGE_EXTS: frozenset[str] = frozenset(
     {".png", ".jpg", ".jpeg", ".webp", ".tif", ".tiff", ".bmp", ".gif"}
 )
+
+
+#: Bundle-name suffixes written by the OFFLINE ENRICHMENT passes rather than by the per-source recorder
+#: (the attribution proposer and the basing proposer). They carry derived ``inference`` claims whose
+#: provenance spans two source documents, so they belong to no single ``<source_id>.json`` and must
+#: survive a re-record — the one convention both the recorder's prune step and the loader agree on.
+_DERIVED_BUNDLE_SUFFIXES: tuple[str, ...] = ("__attr.json", "__basing.json")
+
+
+def _is_derived_bundle(name: str) -> bool:
+    """Is this bundle the output of an offline enrichment pass (never of :func:`extract_corpus`)?"""
+    return name.endswith(_DERIVED_BUNDLE_SUFFIXES)
+
+
+def bundle_belongs_to_doc(bundle_name: str, doc_id: str) -> bool:
+    """Does ``bundle_name`` carry ``doc_id``'s claims — its own bundle or an enrichment riding on it?
+
+    The recorder writes ``<doc_id>.json``; the offline enrichment passes write ``<doc_id>__basing.json`` /
+    ``<doc_id>__attr.json`` (:data:`_DERIVED_BUNDLE_SUFFIXES`). Both are "what we learned from that
+    document", so any staged/held-back seed must hold them back or release them **together** — otherwise
+    the held-back "before" graph would still carry a derived fact whose premises had not arrived, which
+    is incoherent. This is the one definition of that grouping; the boot seed
+    (:func:`seed_store_from_bundles`) and the EVAL staged-ingest harness both call it rather than each
+    re-deriving the convention.
+    """
+    return bundle_name == f"{doc_id}.json" or bundle_name.startswith(f"{doc_id}__")
 
 
 class SupportsAppendMany(Protocol):
@@ -80,20 +107,41 @@ def ingest_bundle(path: str | Path) -> list[ClaimRecord]:
     return [ClaimRecord.model_validate(row) for row in rows]
 
 
-def seed_store_from_bundles(store: SupportsAppendMany, bundles_dir: str | Path) -> int:
+def seed_store_from_bundles(
+    store: SupportsAppendMany, bundles_dir: str | Path, *, exclude_docs: Sequence[str] = ()
+) -> int:
     """Append every ``<source_id>.json`` bundle under ``bundles_dir`` into ``store``; return the count.
 
     Bundles are appended in filename-sorted order so the store's insertion order — and therefore every
     downstream ``replay()`` / ``rebuild()`` — is deterministic (gate G2). The append is a plain
     :meth:`append_many`; no extraction runs, so this is the keyless boot path in full.
+
+    ``exclude_docs`` names source documents to **hold back** from the seed — the same append, in the same
+    sorted order, minus those documents *and everything derived from them*
+    (:func:`bundle_belongs_to_doc`). The held-back bundles stay on disk, so the withheld document can be
+    ingested later through the live keyless ``POST /ingest`` lane; the resulting graph is the same one a
+    full seed would have produced (the append is order-independent at the reduction, and the arrival is
+    what an alert is *about*). A held-back document is a demo/staging choice, never a data edit: no bundle
+    contents change, only which of them are present at boot.
     """
     total = 0
     for path in sorted(Path(bundles_dir).glob("*.json")):
+        if any(bundle_belongs_to_doc(path.name, doc) for doc in exclude_docs):
+            continue
         claims = ingest_bundle(path)
         if claims:
             store.append_many(claims)
         total += len(claims)
     return total
+
+
+def bundles_for_doc(bundles_dir: str | Path, doc_id: str) -> list[Path]:
+    """Every frozen bundle carrying ``doc_id``'s claims — its own plus its enrichments — sorted.
+
+    The inverse of the hold-back filter: what a reviewer must ingest to *release* a withheld document.
+    Sorted so the release order equals the order a full boot seed would have appended them in (G2).
+    """
+    return sorted(p for p in Path(bundles_dir).glob("*.json") if bundle_belongs_to_doc(p.name, doc_id))
 
 
 # ── the keyed recorder (runs the live pipeline, freezes byte-stable bundles) ───────────────────────
@@ -191,6 +239,9 @@ def _extract_source(
             ))
 
     claims = _merge_chunks(chunks)
+    # The frame carries no date of its own; the sibling write-up states the pass date. Inherit it before
+    # dedup/id-assignment — exactly where ``lane._finalize`` does, so the recording equals the live run.
+    claims = imagery.inherit_observation_time(claims)
     claims = dedup.dedup_within_doc(claims)
     return dedup.assign_claim_ids(claims, doc_id=entry.source_id)
 
@@ -210,7 +261,7 @@ def _write_bundle(path: Path, claims: list[ClaimRecord]) -> None:
 def extract_corpus(
     scenario: str, *, client: ExtractionClient, config: ConfigBundle,
     ingest_time: DateValue | None = None, out_dir: str | Path | None = None,
-    geocoder: adapters.Geocoder | None = None,
+    geocoder: adapters.Geocoder | None = None, only: Sequence[str] | None = None,
 ) -> list[Path]:
     """Record the frozen bundles for one scenario — the keyed path that produces the keyless baseline.
 
@@ -222,10 +273,17 @@ def extract_corpus(
     network at record time, fully deterministic); the CLI passes a live gazetteer→Nominatim chain so a
     keyed ``make extract`` freezes anchor coordinates. Returns the written bundle paths (source order).
 
+    ``only`` restricts the run to the named ``source_id``\\ s — a **scoped re-record** for when one lane of
+    the extractor changed and re-running the whole corpus would burn budget and churn bundles that cannot
+    have changed. The stale-bundle prune is skipped in that mode (the un-recorded sources are still
+    current, not orphans), so a scoped run is purely additive; a full run remains the way to reconcile
+    the baseline with the config.
+
     Deterministic given the client's output **and** an offline (or gazetteer-only) geocoder: two runs
     write byte-identical files. Runs entirely upstream of ``store.append`` (G1).
     """
     ingest_time = ingest_time or FROZEN_INGEST_TIME
+    wanted = set(only) if only else None
     target = (
         Path(out_dir) if out_dir is not None
         else settings.corpus_dir() / "scenarios" / scenario / "claims"
@@ -237,20 +295,24 @@ def extract_corpus(
     for entry in config.sources.sources:
         if not entry.citation_url or not _under_scenario(entry.citation_url, scenario):
             continue
+        if wanted is not None and entry.source_id not in wanted:
+            continue
         claims = _extract_source(entry, client=client, config=config, ingest_time=ingest_time,
                                  geocoder=geocoder)
         out_path = target / f"{entry.source_id}.json"
         _write_bundle(out_path, claims)
         written.append(out_path)
         kept.add(out_path.name)
+    if wanted is not None:
+        return written  # scoped re-record: the un-recorded bundles are current, not orphans
     # Prune stale bundles: a source removed from config (or re-scoped to another scenario) must not leave
     # an orphan ``<source_id>.json`` that :func:`seed_store_from_bundles` still globs + appends — that
     # would drift the keyless baseline away from the current config (keyless ≢ live).
     for stale in target.glob("*.json"):
-        # Preserve attribution-inference bundles (``*__attr.json``): they are produced by the separate
-        # offline enrichment pass (``python -m chanakya.ingest attribute --record``), not this per-source
-        # recorder, so they are never in ``kept`` — but they belong to the frozen baseline and must survive
-        # a re-record of the source documents.
-        if stale.name not in kept and not stale.name.endswith("__attr.json"):
+        # Preserve DERIVED-inference bundles (``<source>__attr.json`` / ``<source>__basing.json``): they
+        # are produced by the separate offline enrichment passes (``python -m chanakya.ingest attribute
+        # --record`` / ``basing --record``), not this per-source recorder, so they are never in ``kept`` —
+        # but they belong to the frozen baseline and must survive a re-record of the source documents.
+        if stale.name not in kept and not _is_derived_bundle(stale.name):
             stale.unlink()
     return written

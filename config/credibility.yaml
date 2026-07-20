@@ -57,6 +57,22 @@ thresholds:
   probable: 0.50
   # "possible" has no separate cutoff: assessable AND assertion_confidence < 0.50.
 
+# ── the supersession floor (EVAL RCA D-P4.4 condition iv; D8 / md/11:22 / SCORE.md:94-97) ────────
+# Read by `chanakya.credibility.supersession.promote_supersessions`, POST-status (the gate asks about the
+# newer assertion's confidence + deception flags, which do not exist when view/supersede.py runs).
+# Retiring a fact an analyst may already have acted on is a privileged operation, so being NEWER is
+# necessary but not sufficient: the newer assertion must also stand on its own. Below this bar nothing is
+# retired — the pair keeps `candidate_supersede` and routes to HITL, which D-P4.4 makes the DEFAULT
+# outcome, not the exception. The corpus carries `d20_supersede_spoof` (grade E, bias_vector: adversary,
+# decoy_risk_flag: true), planted to retire the well-evidenced Rahwali position off one low-grade look;
+# this block is what refuses it — not the accident that it currently emits no relationship claim.
+# NOTE: deleting this block does not disable the gate, it fails CLOSED (nothing is ever auto-retired).
+supersede_floor:
+  min_band: probable            # names a key in `thresholds` above — never a second copy of the number
+  min_independent_looks: 1      # >=1 independent look (weighted, same measure as min_independent_groups)
+  newer_status_allow: [probable, confirmed]   # the newer assertion's own label must be a live assessment
+  blocking_gate_flags: [adversary-denial, decoy-risk, contradiction]  # "clean deception gate" (spine/04 §3.4)
+
 # ── SCORE resolver knobs (introduced by SCORE; DATA-C owns/tunes the values) ──────────────────────
 # Every numeric knob the Confidence Resolver reads lives here, never in code (gate G6).
 decay_base: 2                 # freshness = decay_base^(-age/half_life) → exactly halves at one half-life
@@ -83,6 +99,22 @@ half_lives_days:
   # sustained-by -> OMITTED (coarse rollup, not independently scored)
   # same-as, distinct-from, evidenced-by, corroborates, contradicts, supersedes, derived-from -> OMITTED (structural)
 
+half_life_defaults:
+  # Class-level fallback keyed by config/ontology.yaml `freshness_class` (spine/04:184-197). SCORE's
+  # freshness lookup tries "<edge>.<variant>" -> bare "<edge>" -> THIS class default -> no-decay. It is
+  # the fix for the dead `freshness_class` metadata (RCA SC-2): every edge declares a class, but half_lives_days
+  # only carries VARIANT sub-keys for based-at/inducted-into/replenishes and nothing tags `freshness_variant`
+  # on a claim, so those perishable/semi-durable edges fell through to no-decay and scored as ETERNAL. The
+  # class default gives every claim on a decaying edge a reachable half-life; when it fires (no per-edge/variant
+  # key matched) the claim is stamped `freshness-variant-assumed:<class>` in the provenance vector (we decayed
+  # at the class rate, the variant was NOT tagged — honest, not silent). Keys MUST match the freshness_class
+  # spellings in config/ontology.yaml (hyphenated: semi-durable, force-revalidated; n/a with a slash).
+  perishable: 540           # D-P4.13: garrison rate (spine/04 based-at garrison = 18mo = 540d); the only value that keeps Rawalpindi stale AND Rahwali fresh on the corpus's real dates
+  semi-durable: 540         # 18mo (spine/04 inducted-into named-unit = 18mo = 540d; matches the existing inducted-into.named-unit key)
+  force-revalidated: 1825   # 5y clock (spine/04: overhauled-at / trained-by / software-controlled-by = 5y = 1825d)
+  durable: null             # no decay (spine/04 durable class)
+  n/a: null                 # structural edges — no decay
+
 # INGEST attribution proposer (ingest/attribute.py) — offline, connection-triggered enrichment that turns an
 # unattributed subject-blind VLM shape into a cited variant-identity `inference` claim D. Namespaced knobs on
 # this surface (extra="allow", no F0-amendment; mirrors resolution.yaml's llm_candidate_gen). Model id is NOT
@@ -92,10 +124,28 @@ attribution_proposer:
   max_calls_per_rebuild: 8        # budget cap per enrichment pass; every non-firing candidate is logged
   log_skips: true
   candidate:
-    presence_edge_types: [based-at]                                    # deployment edges the co-location hangs on
+    presence_edge_types: [based-at, observed-at]                       # deployment + observed-occupancy edges the co-location hangs on
     reference_source_classes: [curated-register, think-tank, trade-media]  # what counts as fingerprint literature
     fingerprint_attrs: [site_signature_geometry, observable_fingerprint, equipment_fingerprint]  # geometry-bearing attrs
     variant_hop_edges: [inducted-into, equips]                         # 1-hop from the variant to reach unit/component fingerprints
+
+# INGEST basing proposer (ingest/basing.py) — the ATTRIBUTION layer of the two-layer basing model
+# (EVAL RCA D-P4.1/2/3). No source states "formation X is based at site Y"; sources state that equipment was
+# OBSERVED AT a site (`observed-at`, the observed layer) and that equipment serves with a formation
+# (`inducted-into`). This pass derives the missing `<unit, based-at, site>` edge from that pair as a cited
+# `inference` claim carrying BOTH premises and the observation's valid time — offline, upstream of the append,
+# never inside rebuild() (gate G1). Raise-only: it sets no status and no confidence, SCORE prices it, and an
+# inference shares an independence group with its premises so it can never self-corroborate to confirmed.
+# Unlike attribution_proposer this is a pure graph derivation — no model call, so it runs KEYLESS.
+# Absent block => dormant (no code-literal defaults).
+basing_proposer:
+  occupancy_edge_types: [observed-at]     # the OBSERVED layer this reads (equipment seen at a site)
+  formation_edge_types: [inducted-into]   # what associates that equipment with a named formation
+  equipment_hop_edges: [equips]           # 1 hop from an observed COMPONENT to the variant that carries the association
+  derived_edge: based-at                  # the lane the derived attribution is written on (must be declared in ontology.yaml)
+  require_located_site: true              # only a site you can point to (coordinate or gazetteer match) can be a BASE — a province or an "air defence sector" is an area of operation, not a basing site (md/13 precision spec)
+  max_units_per_site: 1                   # cap the attribution fan-out: the best-evidenced formation only, not every candidate
+  max_claims_per_pass: 20                 # budget cap; every non-firing occupancy edge is logged with its reason
 
 # INGEST in-document coreference (ingest/coref.py) — extraction pass 2. A second, scoped forced-tool call per
 # document that groups mentions the document itself treats as one entity ("CPMIEC" / "the export agency"), each

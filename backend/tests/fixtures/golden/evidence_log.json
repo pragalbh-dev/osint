@@ -73,8 +73,7 @@
     "kind": "observation",
     "asserts": "relationship",
     "payload": {"form": "triple", "subject": "unit_acme", "predicate": "based-at", "object": "site_north"},
-    "event_time": {"kind": "exact", "iso_date": "2021-06-01", "raw": "Jun 2021"},
-    "resolved_ref": {"entity_id": "unit_acme", "edge_instance": "based-at:unit_acme"}
+    "event_time": {"kind": "exact", "iso_date": "2021-06-01", "raw": "Jun 2021"}
   },
   {
     "claim_id": "d19-l1",
@@ -83,8 +82,7 @@
     "kind": "observation",
     "asserts": "relationship",
     "payload": {"form": "triple", "subject": "unit_acme", "predicate": "based-at", "object": "site_south"},
-    "event_time": {"kind": "exact", "iso_date": "2025-05-01", "raw": "May 2025"},
-    "resolved_ref": {"entity_id": "unit_acme", "edge_instance": "based-at:unit_acme"}
+    "event_time": {"kind": "exact", "iso_date": "2025-05-01", "raw": "May 2025"}
   },
   {
     "claim_id": "d04-ev1",

@@ -16,7 +16,7 @@
         "row": null,
         "span": [
           105,
-          789
+          659
         ]
       },
       {
@@ -147,7 +147,64 @@
         "wgs84_lon": null
       },
       "participants": [
-        "HQ-9P",
+        "HQ-9P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l4-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        574,
+        613
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "surging northern sector coverage"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "northern sector",
+        "raw": "northern sector",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
         "PAF"
       ],
       "time_interval": null
@@ -273,7 +330,7 @@
       "location": {
         "geocode_candidates": [
           {
-            "confidence": null,
+            "confidence": 0.9,
             "label": "Rahwali Airfield / Cantonment, Gujranwala",
             "lat": 32.239,
             "lon": 74.131,
@@ -376,77 +433,11 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d11-recycled-image-l24",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
-      "frame": null,
-      "line": 24,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2012,
-        2135
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "hosted"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [
-          {
-            "confidence": null,
-            "label": "Rahwali Airfield / Cantonment, Gujranwala",
-            "lat": 32.239,
-            "lon": 74.131,
-            "source": "gazetteer"
-          }
-        ],
-        "precision_class": null,
-        "proposed_alias": "Rahwali",
-        "raw": "Rahwali",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": 32.239,
-        "wgs84_lon": 74.131
-      },
-      "participants": [
-        "HQ-9/P"
-      ],
-      "time_interval": null
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d11_recycled_image",
-    "targets": null
-  },
-  {
     "asserts": "entity",
     "attributes": {
       "posted_at": "10h"
     },
-    "claim_id": "d11-recycled-image-l24-2",
+    "claim_id": "d11-recycled-image-l24",
     "doc_ref": [
       {
         "bbox": null,
@@ -495,6 +486,130 @@
       "entity_type": "source",
       "form": "entity",
       "name": "u/ac_militarywatch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l24-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2030,
+        2135
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "hosted"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Rahwali Airfield / Cantonment, Gujranwala",
+            "lat": 32.239,
+            "lon": 74.131,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Rahwali",
+        "raw": "Rahwali",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 32.239,
+        "wgs84_lon": 74.131
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d11_recycled_image",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d11-recycled-image-l30",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
+      "frame": null,
+      "line": 30,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2608,
+        2760
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "getting attention"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Pakistan's northern",
+        "raw": "Pakistan's northern",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "SAM belt"
+      ],
+      "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
@@ -553,7 +668,7 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "Ground-level view of a parade showing heavy wheeled military vehicles carrying large canisters.",
+      "caption_text": "Ground-level photograph of multi-wheeled military transporter vehicles carrying large cylindrical canisters during a public parade.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
@@ -593,37 +708,37 @@
         "count": {
           "approx": true,
           "count_state": "fielded",
-          "max": 3.0,
+          "max": 4.0,
           "min": 3.0,
-          "unit": "heavy multi-axle vehicles with cylindrical canisters",
+          "unit": "heavy multi-wheeled military vehicles with cylindrical canisters",
           "value": null
         },
-        "description": "A ground-level photograph showing a public parade on a paved urban street. At least three large, multi-axle wheeled vehicles painted in green camouflage are visible, each carrying a cluster of four large cylindrical canisters on its rear bed. Uniformed personnel in dress uniforms are marching alongside the vehicles. On the left and in the background, a dense crowd of spectators is watching, with many individuals holding up mobile phones to capture images and waving small flags. The background features buildings and various flags mounted on lampposts.",
-        "frame_kind": "ground-level photograph",
-        "gsd_note": "Not applicable (ground-level imagery)",
+        "description": "The image shows a ground-level view of a parade on a city street. Three large, multi-wheeled green military transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on their rear beds. The vehicle in the center is fully visible, showing a multi-axle chassis and a front driver's cab. In the background, a large crowd of spectators is gathered behind barriers, holding small flags. Several people in the foreground are holding up smartphones to capture photos or videos. Marching personnel in uniform are walking alongside the vehicles. Flags and lampposts line the street in the background under an overcast sky.",
+        "frame_kind": "ground photograph",
+        "gsd_note": "N/A - Ground-level photography",
         "observed_features": [
           {
-            "arrangement": "Column/parade formation",
-            "feature": "heavy multi-axle wheeled vehicles",
-            "note": "Large dark-green camouflaged vehicles with prominent cabs and cylindrical cargo canisters.",
-            "shape": "Rectangular chassis with cylindrical rear canisters"
+            "arrangement": "column/line",
+            "feature": "multi-wheeled heavy vehicle",
+            "note": "Large transport vehicles with multiple axles and green camouflage paint.",
+            "shape": "rectangular chassis with driver cab"
           },
           {
-            "arrangement": "Linear lining along the street",
-            "feature": "crowd of spectators",
-            "note": "Spectators holding up phones and flags to view the parade.",
-            "shape": "Amorphous cluster"
+            "arrangement": "parallel group of four",
+            "feature": "cylindrical canisters",
+            "note": "Large tubes mounted horizontally/semi-obliquely on the rear of the vehicles.",
+            "shape": "cylinder"
           },
           {
-            "arrangement": "Marching in formation",
-            "feature": "uniformed personnel",
-            "note": "Personnel marching alongside the heavy vehicles.",
-            "shape": "Linear"
+            "arrangement": "dense gathering",
+            "feature": "spectators and crowd",
+            "note": "People lining the parade route, some holding up smartphones.",
+            "shape": "irregular"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level photograph showing a public parade on a paved urban street. At least three large, multi-axle wheeled vehicles painted in green camouflage are visible, each carrying a cluster of four large cylindrical canisters on its rear bed. Uniformed personnel in dress uniforms are marching alongside the vehicles. On the left and in the background, a dense crowd of spectators is watching, with many individuals holding up mobile phones to capture images and waving small flags. The background features buildings and various flags mounted on lampposts.",
+        "site_signature_geometry": "The image shows a ground-level view of a parade on a city street. Three large, multi-wheeled green military transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on their rear beds. The vehicle in the center is fully visible, showing a multi-axle chassis and a front driver's cab. In the background, a large crowd of spectators is gathered behind barriers, holding small flags. Several people in the foreground are holding up smartphones to capture photos or videos. Marching personnel in uniform are walking alongside the vehicles. Flags and lampposts line the street in the background under an overcast sky.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",

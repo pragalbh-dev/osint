@@ -10,6 +10,7 @@ discipline; a genuinely empty / unmet result routes to a first-class refusal —
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from chanakya.schemas import AnswerHop, AskAnswer, KnownGap, RefusalPayload
@@ -28,8 +29,10 @@ class _Built:
 
 
 def _name(ctx: ToolContext, node_id: str) -> str:
-    n = ctx.nodes_by_id.get(node_id)
-    return n.name if n and n.name else node_id
+    """The analyst-facing name of a node (registry display name → resolved name → id). Never the raw id
+    when anything better exists: an internal id in a sentence is a graph dump, not an answer. The id stays
+    on the structured payload (``AnswerHop.src``/``dst``) for the UI and the citation layer."""
+    return ctx.display_name(node_id)
 
 
 def _kind_of(ctx: ToolContext, claim_ids: list[str]) -> str:
@@ -41,8 +44,39 @@ def _kind_of(ctx: ToolContext, claim_ids: list[str]) -> str:
     return "observed"
 
 
+# Sentence-case the leading token only when it is an all-lowercase word — i.e. a display name that
+# declares a leading article ("the PAF HQ-9B fire unit"). Designators are left alone: "HQ-9/P" and
+# "iDEX" do not match (the run must be lowercase up to a word boundary), so no name is ever corrupted.
+_LEADING_WORD = re.compile(r"^[a-z]+\b")
+
+
 def _sentence(text: str, cites: list[str]) -> str:
+    if _LEADING_WORD.match(text):
+        text = text[0].upper() + text[1:]
     return f"{text} [{', '.join(cites)}]" if cites else text
+
+
+def _hop_clause(ctx: ToolContext, hop: dict) -> str:
+    """One hop as a natural clause driven by the relation's MEANING, not its identifier.
+
+    The wording is analyst-authored config — ``edge_phrasing`` in ``config/templates.yaml``, alongside the
+    refusal copy, because it is PRESENTATION (the ontology stays the semantic contract, and no phrase
+    literal belongs in this module). It is read in the direction the trace actually walked: a path is
+    traversed bidirectionally, so a hop is often entered at the object end and must read ``inverse``
+    ("Rahwali airfield **is the basing site of** the unit"), not forward. An edge with no declared phrasing
+    degrades to the bare edge name — an analyst-added edge still renders. Rendering only: the edge,
+    endpoints, status and citations are untouched.
+    """
+    src, dst, edge_type = hop["src"], hop["dst"], hop["edge"]
+    edge = ctx.edges_by_id.get(hop.get("edge_id", ""))
+    forward = edge is None or edge.source == src  # did the walk follow the edge's stored direction?
+    subject_node = ctx.nodes_by_id.get(edge.source if edge is not None else src)
+    phrase = ctx.config.templates.edge_clause(
+        edge_type, forward=forward, from_type=subject_node.type if subject_node else None
+    )
+    if phrase is None:
+        return f"{_name(ctx, src)} — {edge_type} → {_name(ctx, dst)}"
+    return f"{_name(ctx, src)} {phrase} {_name(ctx, dst)}"
 
 
 # ── per-shape builders (return None when the shape isn't present / is empty) ────────────────────
@@ -58,26 +92,29 @@ def _from_paths(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
         built.hops.append(
             AnswerHop(step=i, edge=hop["edge"], src=hop["src"], dst=hop["dst"], claim_ids=cids, observed_or_inferred=oi)
         )
-        built.sentences.append(
-            _sentence(
-                f"{_name(ctx, hop['src'])} is linked to {_name(ctx, hop['dst'])} via '{hop['edge']}' "
-                f"(status: {hop.get('status')}, {oi})",
-                cids,
-            )
-        )
+        # status + observed/inferred stay on every hop: confirmed-vs-probable and observed-vs-inferred are
+        # structural (spine/01, /04), so they survive the prose pass — terser, never dropped.
+        built.sentences.append(_sentence(f"{_hop_clause(ctx, hop)} — {hop.get('status')}, {oi}", cids))
     built.citations = list(dict.fromkeys(cid for h in built.hops for cid in h.claim_ids))
 
     node_call = trace.last("get_node")
     if node_call is not None and node_call.result.get("materiality"):
         mat = node_call.result["materiality"]
         comp_id = node_call.result["node_id"]
-        refs = list(mat.get("contributing_refs") or node_call.result.get("claim_ids", []))
+        # ``contributing_refs`` carries claim ids AND edge ids by design (schemas/view.py MaterialityAttrs),
+        # but a citation must resolve to a real CLAIM or ``validate_answer`` flags citation_missing and the
+        # whole positive answer is withheld as a refusal. Keep only the refs that are claims; fall back to
+        # the node's own claim ids when materiality contributed none.
+        raw_refs = list(mat.get("contributing_refs") or []) or list(node_call.result.get("claim_ids", []))
+        refs = [r for r in raw_refs if r in ctx.claims]
+        if not refs:
+            refs = [c for c in node_call.result.get("claim_ids", []) if c in ctx.claims]
         suff = next((c for c in trace.all_of("check_sufficiency") if c.result.get("sufficient") is False), None)
-        gap = f" — {suff.result.get('reason', '')}" if suff else ""
+        gap = f" {suff.result.get('reason', '')}".rstrip() if suff else ""
         built.sentences.append(
             _sentence(
-                f"The chokepoint is {_name(ctx, comp_id)} ({comp_id}): chokepoint_status="
-                f"{mat.get('chokepoint_status')}, substitutability={mat.get('substitutability_state')}{gap}",
+                f"Chokepoint: {_name(ctx, comp_id)} — chokepoint_status={mat.get('chokepoint_status')}, "
+                f"substitutability={mat.get('substitutability_state')}.{gap}",
                 refs,
             )
         )
@@ -96,15 +133,14 @@ def _from_query_graph(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
     built = _Built()
     for m in matches:
         cids = list(m.get("claim_ids", []))
-        built.sentences.append(_sentence(f"{_name(ctx, m['node_id'])} ({m['node_id']}) matches the criteria", cids))
+        built.sentences.append(_sentence(f"{_name(ctx, m['node_id'])} matches the criteria", cids))
         built.citations.extend(c for c in cids if c not in built.citations)
     for m in indet:
         cids = list(m.get("claim_ids", []))
         attrs = ", ".join(str(x.get("attr")) for x in m.get("indeterminate_on", []))
         built.sentences.append(
             _sentence(
-                f"{_name(ctx, m['node_id'])} ({m['node_id']}) is INDETERMINATE on {attrs} — a Known Gap, "
-                f"not a negative",
+                f"{_name(ctx, m['node_id'])} is INDETERMINATE on {attrs} — a Known Gap, not a negative",
                 cids,
             )
         )
@@ -120,13 +156,9 @@ def _from_neighbors(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
     built = _Built()
     for nb in call.result["neighbours"]:
         cids = list(nb.get("claim_ids", []))
-        built.sentences.append(
-            _sentence(
-                f"{_name(ctx, pivot)} — {nb['edge_type']} — {nb.get('neighbour_name') or nb['neighbour_id']} "
-                f"(status: {nb.get('status')})",
-                cids,
-            )
-        )
+        # a neighbour IS a one-hop trace — render it with the same relation phrasing as a path hop.
+        hop = {"src": pivot, "dst": nb["neighbour_id"], "edge": nb["edge_type"], "edge_id": nb.get("edge_id", "")}
+        built.sentences.append(_sentence(f"{_hop_clause(ctx, hop)} — {nb.get('status')}", cids))
         built.citations.extend(c for c in cids if c not in built.citations)
     return built
 
@@ -146,7 +178,7 @@ def _from_get_node(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
         )
     built = _Built()
     built.sentences.append(
-        _sentence(f"{_name(ctx, r['node_id'])} ({r['node_id']}) is a {r.get('type')} (status: {r.get('status')}){extra}", cids)
+        _sentence(f"{_name(ctx, r['node_id'])} is a {r.get('type')} — {r.get('status')}{extra}", cids)
     )
     built.citations = list(dict.fromkeys(cids))
     return built
@@ -208,6 +240,15 @@ def _refusal(trace: AgentTrace) -> RefusalPayload:
 
 def assemble_answer(trace: AgentTrace, ctx: ToolContext) -> AskAnswer:
     """Build the cited answer for whatever shape the trace covers, or a first-class refusal."""
+    # An explicit scripted refusal (the hero path could not build the chain) wins over the builders — it
+    # names the actual unresolved input, so we never let a positive builder paper over a broken chain (AS-2).
+    if trace.refusal is not None:
+        return AskAnswer(
+            question=trace.question,
+            sub_questions=list(trace.sub_questions),
+            answer=None,
+            refusal=trace.refusal,
+        )
     for builder in _BUILDERS:
         built = builder(trace, ctx)
         if built is not None and built.sentences:

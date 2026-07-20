@@ -9,7 +9,10 @@ def _edge_status(client) -> dict[str, str]:
 
 def test_hitl_status_demote_propagates_with_no_restart(golden_client) -> None:
     target = "e:unit_acme:based-at:site_north"
-    assert _edge_status(golden_client)[target] == "probable"
+    # `site_north` is the golden fixture's *retired* basing position: the machine now reads it `stale`
+    # because a floor-clearing newer assertion (`site_south`) superseded it (D-P4.4 / D-P4.11). An
+    # off-axis status still offers the analyst a one-step demote (`_DEMOTE` default in routes/hitl).
+    assert _edge_status(golden_client)[target] == "stale"
 
     r = golden_client.post(
         "/hitl/status",

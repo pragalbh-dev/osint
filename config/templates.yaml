@@ -5,6 +5,49 @@
 # on_fail stays "insufficient_evidence" (typed). The Known-Gap payload (missing_slots, next_coverage_due)
 # is computed by check() at eval time from these templates + the source registry's `cadence` — never
 # authored here. refusal_template is a deterministic fill-in-the-blank string, never regenerated prose.
+#
+# unscheduled_coverage_phrase fills `{next_coverage_due}` when NO revisit date is derivable — nothing with
+# a numeric cadence can close the slot, or the gap came from a stage that schedules no collection (e.g. a
+# candidate-chokepoint gap raised by materiality). A bare "unscheduled" reads as a shrug and half-undercuts
+# the promise to name *when next coverage is due*; the honest reading is that nothing is tasked against the
+# gap — itself a finding an analyst can action. Still never an invented date: a date only ever comes from a
+# source's cadence.
+unscheduled_coverage_phrase: "unscheduled — no collection is tasked against this gap; it stands as an open collection requirement"
+
+# ── edge_phrasing — how an ANSWER reads a relation out loud (ASK/assemble.py) ────────────────────
+# Answer prose is generated server-side (it is cited and entailment-validated there), so the wording has
+# to resolve backend-side — but it is PRESENTATION, not semantics, and so it lives here with the other
+# analyst-authored answer copy and NOT in config/ontology.yaml. The ontology is the semantic contract
+# (types, domain/range, freshness_class, instance_key, supplier_end) that extraction, resolution, the view
+# rebuild, scoring and materiality all reason over; copy churn does not belong in a file half the pipeline
+# depends on. Changing a phrase here changes only how a sentence reads — never which fact is asserted, its
+# status, or its citations.
+#
+# Keyed by edge type:
+#   forward      — read in the edge's declared from->to direction ("<component> is fitted to <variant>")
+#   inverse      — read the other way. Required because a multi-hop TRACE walks the graph bidirectionally
+#                  and often enters a hop at the object end (a basing->origin chain enters `based-at` at
+#                  the site: "Rahwali airfield IS THE BASING SITE OF the unit").
+#   by_from_type — optional {<subject node type>: {forward, inverse}} override, applied when the edge's
+#                  actual subject node is of that type. One lane can legitimately be entered by different
+#                  kinds of subject: a `component` "is fitted to" a variant, but a `unit` on that same
+#                  `equips` lane "fields" it.
+# An edge with no entry here falls back to its bare edge name, so an analyst-added edge still renders.
+edge_phrasing:
+  based-at:             {forward: "is based at",                inverse: "is the basing site of"}
+  observed-at:          {forward: "has been observed at",       inverse: "is the observed location of"}
+  inducted-into:        {forward: "is in service with",         inverse: "operates"}
+  imported-by:          {forward: "was imported by",            inverse: "imported"}
+  exported-by:          {forward: "was exported by",            inverse: "exported"}
+  equips:               {forward: "is fitted to",               inverse: "is equipped with",
+                         by_from_type: {unit: {forward: "fields", inverse: "is fielded by"}}}
+  supplies-component:   {forward: "supplies",                   inverse: "is supplied by"}
+  manufactures:         {forward: "manufactures",               inverse: "is manufactured by"}
+  design-authority-for: {forward: "holds design authority for", inverse: "is under the design authority of"}
+  component-of:         {forward: "is a sub-component of",      inverse: "contains"}
+  replenishes:          {forward: "replenishes",                inverse: "is replenished by"}
+  sustained-by:         {forward: "is sustained by",            inverse: "sustains"}
+
 templates:
   - assertion_type: based-at
     require:

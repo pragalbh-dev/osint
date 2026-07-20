@@ -13,6 +13,8 @@ import type {
   HitlDecision,
   IngestRequest,
   IngestResult,
+  PendingBundle,
+  PendingResponse,
   ProvenanceDrawer,
 } from './types'
 
@@ -54,6 +56,10 @@ export const api = {
   node: (id: string) => req<unknown>(`/node/${encodeURIComponent(id)}`),
   ask: (body: AskRequest) => post<AskAnswer>('/ask', body),
   ingest: (body: IngestRequest) => post<IngestResult>('/ingest', body),
+  // Documents held out of the boot seed + the claim bundles that release them — the
+  // reviewer's live-ingest set. Read-only, keyless, offline (a read of a shipped file).
+  pending: () => req<PendingResponse>('/pending'),
+  pendingBundle: (docId: string) => req<PendingBundle>(`/pending/${encodeURIComponent(docId)}`),
   // Each /hitl/* verb applies the decision and returns the FULL rebuilt graph, so the
   // caller can mirror it straight into the store (badge drop + "new answer" fall out).
   hitl: (verb: 'merge' | 'status' | 'alert', body: HitlDecision) =>

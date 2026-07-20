@@ -12,6 +12,8 @@
 // Cytoscape layout run) rather than reading x/y off the fixture.
 
 import type {
+  Alert,
+  AlertDisposition,
   AnswerHop,
   AskAnswer,
   ClaimKind,
@@ -24,6 +26,7 @@ import type {
   NodeView,
   ObservabilityCeiling,
   ProvenanceDrawer,
+  RefusalKind,
   Status,
 } from './types'
 import type { EdgeKind, GraphEdgeDef, GraphKind, GraphNodeDef, PinDef } from '@/demo/scenario'
@@ -47,18 +50,78 @@ export function statusToGraphKind(node: NodeView): GraphKind {
     case 'stale':
       return 'stale'
     case 'insufficient':
-    case 'contradicted':
       return 'gap'
+    // "credible sources disagree" is not "we don't know" — a contradiction is loud
+    // (solid coral, filled), a Known Gap is quiet (dashed grey, no fill). Folding one
+    // into the other drew a problem as an absence.
+    case 'contradicted':
+      return 'contradicted'
     default:
       return 'probable'
   }
 }
 
-/** Superseded / stale edges render as history; else confirmed vs. probable. */
+/** Edge types that carry NO status by design — identity (`same-as` / `distinct-from`) and
+ *  the `supersedes` version link. Anything switching on edge status must handle these
+ *  first, or a status-less edge falls through a default and reads as a truth claim. */
+export const STATUSLESS_EDGE_TYPES = new Set(['same-as', 'distinct-from', 'supersedes'])
+
+export function isStatuslessEdge(edge: EdgeView): boolean {
+  return STATUSLESS_EDGE_TYPES.has(edge.type)
+}
+
+/** Edge → visual kind. Order matters:
+ *  1. `supersedes` is a status-LESS timeline link — "replaced by →", never an alarm and
+ *     never a contradiction (it is the version link between two already-scored edges).
+ *  2. other status-less types (identity) get the neutral link treatment.
+ *  3. `stale` / `superseded_by` = HISTORY: we know this assertion was overtaken.
+ *  4. `insufficient` = an EVIDENCE GAP: we do NOT know. It must NOT look like `stale`
+ *     (history) and must not fall through to `probable` (a live teal assertion).
+ *  5. `contradicted` is its own thing — sources disagree, which is a problem, not a gap.
+ *
+ *  A `supersedes` edge splits on adjudication: PROMOTED is settled ("this replaced that")
+ *  and draws solid; a CANDIDATE — flagged `candidate_supersede`, or still sitting behind a
+ *  pending/held gate — is provisional ("something moved, but we are not sure it is the same
+ *  unit") and draws DASHED. Same arrowhead, so it still reads as a version link and never
+ *  as an alarm; THE ONE RULE carries the uncertainty. */
+const UNSETTLED_SUPERSEDE_GATES = new Set(['pending', 'held'])
+
 export function edgeToKind(edge: EdgeView): EdgeKind {
-  if (edge.superseded_by || edge.status === 'stale') return 'e-history'
+  if (edge.type === 'supersedes') {
+    const gate = supersedeGate(edge)
+    if (isCandidateSupersede(edge) || (gate != null && UNSETTLED_SUPERSEDE_GATES.has(gate)))
+      return 'e-supersede-candidate'
+    return 'e-supersede'
+  }
+  if (isStatuslessEdge(edge)) return 'e-link'
+  if (edge.superseded_by || edge.status === 'stale') return 'e-stale'
+  if (edge.status === 'insufficient') return 'e-gap'
+  if (edge.status === 'contradicted') return 'e-contradicted'
   if (edge.status === 'confirmed') return 'e-confirmed'
   return 'e-probable'
+}
+
+/** `attrs.supersede_hold_reason` — why an overtaken assertion was NOT auto-retired
+ *  (e.g. "newer-below-probable", "newer-deception-gate:decoy-risk"). Returned VERBATIM:
+ *  these strings are the backend's own words and rewriting them would put the UI's
+ *  paraphrase between the analyst and the gate that actually fired. Tolerates a bare
+ *  string as well as the documented list, and returns [] for anything else. */
+export function supersedeHoldReasons(edge: EdgeView | null | undefined): string[] {
+  const raw = edge?.attrs?.supersede_hold_reason
+  if (typeof raw === 'string') return raw ? [raw] : []
+  if (Array.isArray(raw)) return raw.filter((r): r is string => typeof r === 'string' && r.length > 0)
+  return []
+}
+
+/** 'pending' | 'promoted' | 'held' | null — the supersession gate an edge sits behind. */
+export function supersedeGate(edge: EdgeView | null | undefined): string | null {
+  const gate = edge?.attrs?.supersede_gate
+  return typeof gate === 'string' ? gate : null
+}
+
+/** true when this edge is half of an un-adjudicated supersession (the analyst decides). */
+export function isCandidateSupersede(edge: EdgeView | null | undefined): boolean {
+  return edge?.attrs?.candidate_supersede === true
 }
 
 function yearOf(value?: string | null): number | null {
@@ -68,9 +131,74 @@ function yearOf(value?: string | null): number | null {
   return parsed.getFullYear()
 }
 
+// ───────────────────── analyst-facing naming (no raw ids in copy) ─────────────────────
+// `site_rahwali` is a key, not a name. Analyst-facing copy renders the node's OWN `name`
+// and keeps the id as secondary/technical detail; nothing here paraphrases or invents a
+// label — a node with no `name` falls back to its id rather than to a guess.
+
+/** id → node.name, or the id itself when the graph has no name for it. Never invents one. */
+export function displayNameOf(view: GraphView | null | undefined, id: string): string {
+  if (!view) return id
+  const node = view.nodes.find((n) => n.id === id)
+  if (node?.name) return node.name
+  const edge = view.edges.find((e) => e.id === id)
+  if (edge) {
+    // an edge has no name of its own — read it as "source — type → target", each side named.
+    return `${displayNameOf(view, edge.source)} — ${humanizeEdge(edge.type)} → ${displayNameOf(view, edge.target)}`
+  }
+  return id
+}
+
+/** Build a reusable resolver over one view (avoids re-scanning per lookup). */
+export function nameResolver(view: GraphView | null | undefined): (id: string) => string {
+  if (!view) return (id) => id
+  const names = new Map(view.nodes.map((n) => [n.id, n.name ?? n.id]))
+  return (id) => names.get(id) ?? displayNameOf(view, id)
+}
+
+/** True when `s` is an element id the live view knows — i.e. safe to swap for a name.
+ *  Free-text slots ("an unobscured pass") must pass through untouched. */
+export function isKnownElementId(view: GraphView | null | undefined, s: string): boolean {
+  if (!view) return false
+  return view.nodes.some((n) => n.id === s) || view.edges.some((e) => e.id === s)
+}
+
+// ───────────────────────────── map pins + supersession ─────────────────────────────
+// Supersession lives on the EDGE, not the node — a site that a unit left is still a real
+// site, it is the *occupancy* that was overtaken. So the map has to derive "this location
+// is history now" from the graph rather than read it off a node status, or the relocation
+// story that the Graph stage tells correctly is silently lost on the default stage.
+//
+// Only a SETTLED supersession greys a pin. A candidate/pending/held one means "something
+// moved, but we are not sure it is the same unit" — drawing that as settled history would
+// assert an adjudication the analyst has not made.
+
+/** LIVE-only pin extras the frozen demo fixture does not carry. Optional, so `PinDef[]`
+ *  (the demo's own pins) is assignable wherever a `StagePin[]` is expected. */
+export interface StagePinExtras {
+  /** this location was overtaken by another — settled history, not an evidence gap */
+  superseded?: boolean
+  /** the node id that replaced it (the connector's other end), when known */
+  supersededBy?: string | null
+}
+
+export type StagePin = PinDef & StagePinExtras
+
+/** target-of-a-settled-`supersedes`-edge → the successor's node id. */
+export function supersededSites(view: GraphView): Map<string, string> {
+  const out = new Map<string, string>()
+  for (const edge of view.edges) {
+    if (edge.type !== 'supersedes') continue
+    if (edgeToKind(edge) !== 'e-supersede') continue // candidate/pending/held → not settled
+    out.set(edge.target, edge.source)
+  }
+  return out
+}
+
 /** Nodes without a resolved location live only in the graph, not on the map. */
-export function viewToPins(view: GraphView): PinDef[] {
-  const pins: PinDef[] = []
+export function viewToPins(view: GraphView): StagePin[] {
+  const pins: StagePin[] = []
+  const superseded = supersededSites(view)
   for (const node of view.nodes) {
     const lat = node.location?.wgs84_lat
     const lon = node.location?.wgs84_lon
@@ -80,6 +208,7 @@ export function viewToPins(view: GraphView): PinDef[] {
     const surface = node.location?.surface_format
     const coord = typeof surface === 'string' && surface.length > 0 ? surface : formatCoord(lat, lon)
     const year = yearOf(node.freshness?.last_support_time)
+    const successor = superseded.get(node.id)
 
     pins.push({
       id: node.id,
@@ -88,7 +217,16 @@ export function viewToPins(view: GraphView): PinDef[] {
       lon,
       coord,
       status: node.status ?? 'insufficient',
-      caption: year !== null ? `as of ${year}` : '',
+      // "superseded" states the subtraction; it never claims the site ceased to exist.
+      caption: successor
+        ? year !== null
+          ? `superseded · ${year}`
+          : 'superseded'
+        : year !== null
+          ? `as of ${year}`
+          : '',
+      superseded: successor != null,
+      supersededBy: successor ?? null,
     })
   }
   return pins
@@ -134,6 +272,9 @@ export interface LiveClaimRow {
   detail: string // short human line from kind + asserts (e.g. "observation · relationship")
   dates: { event?: string; reported?: string; ingested?: string }
   docRefs: DocRef[] // ALWAYS an array (normalize DocRef | DocRef[] → DocRef[]); the jump-to-source targets
+  /** the VERBATIM text at each docRef, same order/length as `docRefs`. '' = unreadable span —
+   *  the row then shows the locator alone. Never a paraphrase: this is the evidence itself. */
+  quotes: string[]
   dots: number // 1..4 credibility tier
 }
 
@@ -205,6 +346,8 @@ export function evidenceToDrawerModel(data: ProvenanceDrawer): LiveDrawerModel {
     rows: group.claim_ids.reduce<LiveClaimRow[]>((rows, claimId) => {
       const claim = claimsById.get(claimId)
       if (!claim) return rows
+      const refs = docRefsOf(claim.doc_ref)
+      const quotes = data.quotes?.[claimId] ?? []
       rows.push({
         claimId: claim.claim_id,
         sourceId: claim.source_id,
@@ -215,7 +358,9 @@ export function evidenceToDrawerModel(data: ProvenanceDrawer): LiveDrawerModel {
           reported: dateValueToString(claim.report_time),
           ingested: dateValueToString(claim.ingest_time),
         },
-        docRefs: docRefsOf(claim.doc_ref),
+        docRefs: refs,
+        // pad/trim to docRefs length so index i always answers "what does ref i say?"
+        quotes: refs.map((_, i) => quotes[i] ?? ''),
         dots: credibilityToDots(data.confidence?.per_claim_credibility?.[claimId]),
       })
       return rows
@@ -262,6 +407,7 @@ export interface LiveAnswerHop {
 }
 
 export interface LiveAnswerRefusal {
+  kind: RefusalKind
   reason?: string
   missing: string[]
   nextCoverageDue?: string | null
@@ -310,6 +456,9 @@ export function askToAnswerModel(data: AskAnswer): LiveAnswerModel {
     citations: data.citations ?? [],
     refusal: isRefusal
       ? {
+          // Absent `kind` → 'evidence', the pre-`kind` contract. A capability outage that arrives
+          // untagged still reads as an evidence gap, so the tag is set at the producer, not guessed here.
+          kind: data.refusal?.kind ?? 'evidence',
           reason: data.refusal?.reason,
           missing: data.refusal?.missing ?? [],
           nextCoverageDue: data.refusal?.next_coverage_due ?? null,
@@ -317,6 +466,157 @@ export function askToAnswerModel(data: AskAnswer): LiveAnswerModel {
         }
       : undefined,
   }
+}
+
+// ─────────────────── live tripwires / alert feed (derived from /view) ───────────────────
+// The alert feed rides in on GET /view — it is REAL fired state, not a picture of a
+// tripwire. Two shapes come out of it: a per-firing model (what changed, its evidence,
+// whether a supersession was held) and a per-observable grouping for the Watch panel.
+//
+// An alert is the one derived artifact that used to have no provenance. It now names the
+// claims behind BOTH sides of the change, and `before_ref` / `after_ref` are real view
+// element ids — so each side is one click from the same GET /evidence/{id} drawer every
+// other element uses. Nothing here invents a citation: an alert with no provenance block
+// renders as "no evidence recorded", never as a plausible-looking one.
+//
+// Pure functions only — no React, no Zustand, no fetch.
+
+/** One side (before / after) of a change, with the element that carried it and its claims. */
+export interface LiveAlertSide {
+  side: 'before' | 'after'
+  elementRef: string | null // → GET /evidence/{id}; null when the backend recorded none
+  claimIds: string[]
+}
+
+export interface LiveAlertProvenanceModel {
+  sides: LiveAlertSide[] // [before, after] — only the sides that carry anything
+  claimIds: string[] // union, before-first
+  status: Status | null // copied off the after-element (MONITOR never scores)
+  assertionConfidence: number | null
+}
+
+export interface LiveFiring {
+  key: string // stable per-firing key (matches the review-queue itemId suffix)
+  observableId: string
+  subject: string | null
+  firedTs: string | null
+  severity: string | null
+  changed: { from: string; to: string } | null
+  disposition: AlertDisposition | null
+  dispositionLabel: string | null // past-tense analyst outcome, null while un-adjudicated
+  provenance: LiveAlertProvenanceModel | null
+  holdReasons: string[] // verbatim supersede_hold_reason strings off the referenced edges
+  gate: string | null // 'pending' | 'promoted' | 'held'
+}
+
+export interface LiveTripwire {
+  observableId: string
+  name: string // humanised observable id — the only label the feed gives us
+  state: 'fired' | AlertDisposition
+  stateLabel: string // what the badge says — DERIVED, never a hardcoded "armed"
+  firings: LiveFiring[]
+}
+
+const DISPOSITION_LABEL: Record<AlertDisposition, string> = {
+  real: 'accepted as real',
+  noise: 'dismissed as noise',
+  'needs-more': 'held for a second look',
+}
+
+/** Compact "k: v, k: v" summary of an alert before/after snapshot. */
+function summarizeSnapshot(snap: Record<string, unknown> | undefined): string {
+  if (!snap) return ''
+  return Object.entries(snap)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(', ')
+}
+
+/** 'obs-basing-relocation' → 'Basing relocation'. The observable catalogue is not exposed
+ *  by any GET route, so the id is the only name we have — humanise it, don't invent one. */
+export function humanizeObservableId(id: string): string {
+  const words = id.replace(/^obs[-_]/, '').replace(/[-_]/g, ' ').trim()
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : id
+}
+
+/** Stable key for one firing — observable + subject + fired timestamp. */
+export function firingKey(alert: Alert): string {
+  return `${alert.observable_id}:${alert.subject ?? ''}:${alert.fired_ts ?? ''}`
+}
+
+function alertProvenanceModel(alert: Alert): LiveAlertProvenanceModel | null {
+  const p = alert.provenance
+  if (!p) return null
+  const before = p.before_claim_ids ?? []
+  const after = p.after_claim_ids ?? []
+  const sides: LiveAlertSide[] = []
+  if (p.before_ref || before.length) sides.push({ side: 'before', elementRef: p.before_ref ?? null, claimIds: before })
+  if (p.after_ref || after.length) sides.push({ side: 'after', elementRef: p.after_ref ?? null, claimIds: after })
+  const union = p.claim_ids?.length ? p.claim_ids : [...before, ...after]
+  if (!sides.length && !union.length && p.status == null && p.assertion_confidence == null) return null
+  return {
+    sides,
+    claimIds: [...new Set(union)],
+    status: p.status ?? null,
+    assertionConfidence: p.assertion_confidence ?? null,
+  }
+}
+
+/** One alert → the display model, resolving its before/after element refs against the view's
+ *  edges so a held supersession explains itself in the analyst's own words. */
+export function alertToFiring(alert: Alert, edges?: Map<string, EdgeView>): LiveFiring {
+  const provenance = alertProvenanceModel(alert)
+  const refs = [alert.provenance?.before_ref, alert.provenance?.after_ref].filter(
+    (r): r is string => typeof r === 'string' && r.length > 0,
+  )
+  const referenced = refs.map((r) => edges?.get(r)).filter((e): e is EdgeView => e != null)
+  const holdReasons = [...new Set(referenced.flatMap(supersedeHoldReasons))]
+  const gate = referenced.map(supersedeGate).find((g) => g != null) ?? null
+  const changed =
+    alert.before || alert.after
+      ? { from: summarizeSnapshot(alert.before), to: summarizeSnapshot(alert.after) }
+      : null
+  return {
+    key: firingKey(alert),
+    observableId: alert.observable_id,
+    subject: alert.subject ?? null,
+    firedTs: alert.fired_ts ?? null,
+    severity: alert.severity ?? null,
+    changed,
+    disposition: alert.disposition ?? null,
+    dispositionLabel: alert.disposition ? DISPOSITION_LABEL[alert.disposition] : null,
+    provenance,
+    holdReasons,
+    gate,
+  }
+}
+
+/** The live Watch panel's rows: one per observable that has actually fired, newest state
+ *  first within each. State is DERIVED — 'fired' while any firing is un-adjudicated, else
+ *  the analyst's own disposition. There is deliberately no "armed" here: the observable
+ *  catalogue has no GET route, so a tripwire that has never fired is not knowable from
+ *  /view, and claiming it is armed would be exactly the kind of fabrication this system
+ *  refuses elsewhere. The panel says so instead. */
+export function viewToTripwires(view: GraphView): LiveTripwire[] {
+  const edges = new Map(view.edges.map((e) => [e.id, e]))
+  const byObservable = new Map<string, LiveFiring[]>()
+  for (const alert of view.alerts ?? []) {
+    const firing = alertToFiring(alert, edges)
+    const bucket = byObservable.get(firing.observableId)
+    if (bucket) bucket.push(firing)
+    else byObservable.set(firing.observableId, [firing])
+  }
+  return [...byObservable.entries()].map(([observableId, firings]) => {
+    const open = firings.find((f) => f.disposition == null)
+    const latest = firings[firings.length - 1]
+    const state: 'fired' | AlertDisposition = open ? 'fired' : (latest.disposition as AlertDisposition)
+    return {
+      observableId,
+      name: humanizeObservableId(observableId),
+      firings,
+      state,
+      stateLabel: open ? 'fired' : (latest.dispositionLabel ?? 'fired'),
+    }
+  })
 }
 
 // ───────────────────── live review queue (derived from /view) ─────────────────────
@@ -346,6 +646,10 @@ export interface LiveReviewContext {
   dots?: number
   detail?: string[] // opposing claim ids / extra lines
   severity?: string
+  // alert-disposition only — the evidence behind the change (one click per side into the
+  // provenance drawer) and, when a supersession was held back, the gate's own words.
+  provenance?: LiveAlertProvenanceModel | null
+  holdReasons?: string[]
 }
 
 export interface LiveReviewItem {
@@ -376,17 +680,10 @@ const ALERT_OPTIONS: LiveReviewOption[] = [
   { key: 'needs-more', label: 'Hold for a second look', done: 'Held' },
 ]
 
-/** Compact "k: v, k: v" summary of an alert before/after snapshot. */
-function summarizeSnapshot(snap: Record<string, unknown> | undefined): string {
-  if (!snap) return ''
-  return Object.entries(snap)
-    .map(([k, v]) => `${k}: ${v}`)
-    .join(', ')
-}
-
 export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   const items: LiveReviewItem[] = []
   const nodeLabel = (id: string): string => view.nodes.find((n) => n.id === id)?.name ?? id
+  const edgeIndex = new Map(view.edges.map((e) => [e.id, e]))
 
   // 1. Identity merges — a same-as edge is a live "are these one record or two?".
   for (const edge of view.edges) {
@@ -434,12 +731,15 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
     })
   }
 
-  // 3. Alert dispositions — a tripwire fired and hasn't been adjudicated yet.
+  // 3. Alert dispositions — a tripwire fired and hasn't been adjudicated yet. The card
+  //    carries the firing's own provenance so "is it real?" is answerable from evidence
+  //    rather than from the assertion that something changed.
   for (const alert of view.alerts) {
     if (alert.disposition != null) continue
     const subject = alert.subject ?? alert.observable_id
+    const firing = alertToFiring(alert, edgeIndex)
     items.push({
-      itemId: `alrt:${alert.observable_id}:${subject}:${alert.fired_ts ?? ''}`,
+      itemId: `alrt:${firing.key}`,
       reviewType: 'alert-disposition',
       hitlVerb: 'alert',
       subject,
@@ -448,12 +748,15 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
       badge: 'First seen',
       options: ALERT_OPTIONS,
       context: {
-        summary: `Tripwire ${alert.observable_id} fired${alert.subject ? ` on ${alert.subject}` : ''}.`,
-        changed:
-          alert.before || alert.after
-            ? { from: summarizeSnapshot(alert.before), to: summarizeSnapshot(alert.after) }
-            : undefined,
+        // named, not keyed: "Basing relocation fired on HQ-9B battery", not "obs-basing-relocation
+        // fired on unit_hq9b". nodeLabel falls back to the id when the graph has no name for it.
+        summary: `Tripwire ${humanizeObservableId(alert.observable_id)} fired${
+          alert.subject ? ` on ${nodeLabel(alert.subject)}` : ''
+        }.`,
+        changed: firing.changed ?? undefined,
         severity: alert.severity,
+        provenance: firing.provenance,
+        holdReasons: firing.holdReasons,
       },
     })
   }

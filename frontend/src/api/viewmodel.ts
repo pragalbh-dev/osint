@@ -15,10 +15,11 @@
 import { useMemo } from 'react'
 import { useWorkbench } from '@/store/workbench'
 import { PINS, GRAPH_NODES, GRAPH_EDGES } from '@/demo/scenario'
-import type { PinDef, GraphNodeDef, GraphEdgeDef } from '@/demo/scenario'
-import { viewToPins, viewToGraph } from './adapters'
+import type { GraphNodeDef, GraphEdgeDef } from '@/demo/scenario'
+import { viewToPins, viewToGraph, viewToTripwires, nameResolver } from './adapters'
+import type { LiveTripwire, StagePin } from './adapters'
 
-export function useStagePins(): PinDef[] {
+export function useStagePins(): StagePin[] {
   const mode = useWorkbench((s) => s.mode)
   const liveView = useWorkbench((s) => s.liveView)
   return useMemo(() => {
@@ -27,11 +28,33 @@ export function useStagePins(): PinDef[] {
   }, [mode, liveView])
 }
 
+/** `(id) => human name` over the live graph. In DEMO (or before the first /view lands) it is
+ *  the identity function: the demo's own copy is hand-authored and carries no raw ids. Never
+ *  invents a name — an id the graph does not know comes back unchanged. */
+export function useDisplayName(): (id: string) => string {
+  const mode = useWorkbench((s) => s.mode)
+  const liveView = useWorkbench((s) => s.liveView)
+  return useMemo(() => (mode === 'live' ? nameResolver(liveView) : (id: string) => id), [mode, liveView])
+}
+
 export function useStageGraph(): { nodes: GraphNodeDef[]; edges: GraphEdgeDef[] } {
   const mode = useWorkbench((s) => s.mode)
   const liveView = useWorkbench((s) => s.liveView)
   return useMemo(() => {
     if (mode !== 'live') return { nodes: GRAPH_NODES, edges: GRAPH_EDGES }
     return liveView ? viewToGraph(liveView) : { nodes: GRAPH_NODES, edges: GRAPH_EDGES }
+  }, [mode, liveView])
+}
+
+/** The Watch panel's tripwire rows. `null` means "no live feed to read" — the caller
+ *  falls back to the frozen demo tripwires. A live view that HAS been fetched and simply
+ *  carries no alerts returns `[]`, which is the honest live state (nothing has fired) and
+ *  must NOT be papered over with demo content — same golden rule as the stage surfaces. */
+export function useTripwires(): LiveTripwire[] | null {
+  const mode = useWorkbench((s) => s.mode)
+  const liveView = useWorkbench((s) => s.liveView)
+  return useMemo(() => {
+    if (mode !== 'live' || !liveView) return null
+    return viewToTripwires(liveView)
   }, [mode, liveView])
 }

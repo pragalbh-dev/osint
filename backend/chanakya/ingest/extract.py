@@ -47,10 +47,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from chanakya import edge_direction
 from chanakya.ingest import adapters
+from chanakya.ingest import imagery as imagery_gate
 from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.loaders import LoadedDoc
 from chanakya.ontology import EdgeLaneIndex
@@ -64,7 +65,14 @@ from chanakya.schemas.claim import (
     Extraction,
     Triple,
 )
-from chanakya.schemas.values import DateValue, Location, Quantity
+from chanakya.schemas.values import (
+    DateValue,
+    ExactDate,
+    LabelDate,
+    Location,
+    Quantity,
+    canonical_iso_bounds,
+)
 
 # ── the generic ontology TYPE vocabulary (mirrors config/ontology.yaml; NOT instance content) ─────
 
@@ -193,11 +201,29 @@ class RelationMention(BaseModel):
     ``relation`` is typed ``str`` here; the *allowed values* are narrowed to the extractor-edge enum in
     the tool schema at build time (:func:`_constrain_relation_enum`). The model's verb is only a hint —
     the transform re-lanes the fact onto the edge its endpoint types imply (:meth:`_Emitter.relation`).
+
+    ``date_text`` is the **valid-time** slot (EVAL RCA D-P4.6): *when the source says the relationship
+    was true*, not when the document was published. Every other mention type already has one
+    (``EventMention.date_text`` / ``SightingMention.time_text`` / ``PassMention.pass_date``); without it
+    a *perishable* relationship — where a unit is based, what a magazine currently holds — could never
+    age, be ordered against a later statement of the same fact, or be superseded. It stays **optional**:
+    an identity or durable relationship legitimately carries no date, and forcing one would only invite
+    a fabricated date on the ~78 identity claims that have none (D-P4.6 rejects "every relation gets a
+    date"). :meth:`_Emitter.relation` resolves the fallback ladder and records which rung fired.
     """
 
     relation: str | None = None
     subject: str | None = None
     object: str | None = None
+    date_text: str | None = Field(
+        default=None,
+        description=(
+            "When the source says this relationship was TRUE (not the publication date) — e.g. the "
+            "imagery pass date for an equipment-at-site observation, the induction date, the contract "
+            "date. Copy the source's own wording. Leave empty when the source states no such date; "
+            "never guess one."
+        ),
+    )
     source_quote: str | None = None
 
 
@@ -370,13 +396,41 @@ class GapMention(BaseModel):
     source_quote: str | None = None
 
 
+class OccupancyMention(BaseModel):
+    """Equipment **observed at a site** on a date — the honestly-observable occupancy layer (D-P4.2).
+
+    A satellite write-up can state that a launcher cluster / radar / system type was *seen at* a named
+    place on a named pass; it almost never states that a *designated formation* is based there. So this
+    is deliberately equipment→site (``observed-at``), a lane of its own — the derived unit-attribution
+    (``based-at``) is minted separately, from this plus a formation reference, at its own lower
+    confidence (:mod:`chanakya.ingest.basing`). Fusing the two into one confident basing assertion is
+    exactly what the corpus's recycled-image and relocation-spoof traps are built to punish.
+    """
+
+    observed: str | None = None       # what was seen, as the source names it (a system type, a radar, a TEL)
+    site: str | None = None           # the site/place it was seen at, as the source names it
+    observed_date: str | None = None  # the pass/observation date the source gives for THIS sighting
+    occupancy_state: str | None = None  # the source's own word: "occupied" | "empty" | "active" | …
+    source_quote: str | None = None
+
+
 class ImageryGeoint(BaseModel):
-    """Satellite GEOINT analyst *prose* (the co-located .png runs the VLM path in imagery.py)."""
+    """Satellite GEOINT analyst *prose* (the co-located .png runs the VLM path in imagery.py).
+
+    ``occupancy`` / ``units`` / ``relations`` close EVAL RCA §2.3: this schema had **no relationship
+    slot at all**, so the relocation documents (d17/d18) were *structurally* incapable of stating that
+    anything was anywhere — 21 claims between them, zero relationships. Occupancy is the lane the
+    imagery genuinely supports; ``relations`` additionally lets a write-up that plainly names a
+    formation at a site say so directly (D-P4.1 overturns the old blanket no-extract rule for basing).
+    """
 
     site: SiteMention | None = None
     observations: list[PassMention] = []
+    occupancy: list[OccupancyMention] = []
     assessed_types: list[VariantMention] = []
     components: list[ComponentMention] = []
+    units: list[UnitMention] = []
+    relations: list[RelationMention] = []
     collection_gaps: list[GapMention] = []
     source_quote: str | None = None
 
@@ -401,7 +455,9 @@ _SYSTEM_BASE = (
     "the source gives them: a stated alias, 'formerly', 'see also', spelling variant, or 'also known as' "
     "is an alias pair — NEVER merge two differently-named things into one, and never resolve a hidden or "
     "unstated identity. Use the generic type slots provided; put whatever names/designations the source "
-    "uses as values."
+    "uses as values. When you record a relationship the source dates — where something is based or was "
+    "seen, when a system entered service, when a shipment moved — copy the source's own date wording "
+    "into that relation's `date_text`; leave it empty when the source gives no such date."
 )
 _SYSTEM_PROMPTS: dict[str, str] = {
     "prose_claim": _SYSTEM_BASE + " This is analytic or official prose.",
@@ -423,7 +479,10 @@ _SYSTEM_PROMPTS: dict[str, str] = {
     "imagery_geoint": _SYSTEM_BASE
     + " This is a satellite imagery analyst report: capture the site and its coordinates, each dated "
     "pass with object type/count, the assessed system type (with the analyst's own confidence wording), "
-    "components, and every stated collection gap.",
+    "components, any military formation/unit the report names, and every stated collection gap. When "
+    "the report states that equipment (a system type, launchers, a radar) was OBSERVED AT a named site, "
+    "record it in `occupancy` with the site and the date of the pass it was seen on — this is what the "
+    "imagery observes. Only put a relationship in `relations` when the report states it outright.",
 }
 
 
@@ -613,6 +672,55 @@ def _sanitize_doc_token(source_id: str) -> str:
     return token or "doc"
 
 
+# ── relation valid-time: the fallback ladder + its honesty channel (D-P4.6) ────────────────────────
+
+#: Ontology ``freshness_class`` values on which a relationship's date is **load-bearing** — the edge
+#: decays, so an undated claim on it can never age, order or supersede. A relation re-laned onto one of
+#: these and left undated is flagged (:data:`_UNDATED_ATTR`), never dropped and never given a made-up
+#: date. Durable / identity / structural edges are exempt by design (D-P4.6 rejected "every relation
+#: gets a date": 78 of 126 relationship claims are identity, where a date is meaningless and demanding
+#: one only invites fabrication).
+_DATED_CLASSES: frozenset[str] = frozenset({"perishable", "semi-durable"})
+
+#: Tier-3 keys recording *which rung of the ladder* produced a relation's ``event_time`` — the same
+#: honesty discipline as ``values.BoundarySource``, one level up: the boundary source says how a date
+#: string became ISO bounds, this says where the date came from at all.
+_RUNG_ATTR = "_event_time_rung"
+_UNDATED_ATTR = "_undated_perishable"
+
+#: The ladder, in order. ``stated`` — the source dated the relationship itself. ``observation`` — the
+#: enclosing observation/sentence (an imagery pass date, a post timestamp) supplied it. ``report_time``
+#: — nothing dated the fact, so the document's own report date bounds it (an upper bound on when the
+#: fact was true, re-stamped ``relative`` because it was resolved *against* the report, not stated).
+_RUNG_STATED = "stated"
+_RUNG_OBSERVATION = "observation"
+_RUNG_REPORT = "report_time"
+
+#: The affirmative-occupancy vocabulary, shared with the imagery lane's corroboration gate so "an empty
+#: site is not a deployment" means the same thing on the text and pixel paths.
+_OCCUPIED_TOKENS = imagery_gate._OCCUPIED_TOKENS
+
+
+def states_vacancy(occupancy_state: str | None) -> bool:
+    """Does a stated occupancy word say the site is **not** occupied? (Unstated ⇒ no claim either way.)"""
+    if not occupancy_state or not occupancy_state.strip():
+        return False
+    return not any(tok in occupancy_state.lower() for tok in _OCCUPIED_TOKENS)
+
+
+def _restamp_relative(value: DateValue) -> DateValue:
+    """Re-stamp a date borrowed from the document's ``report_time`` as ``boundary_source="relative"``.
+
+    The report date is a real, explicit date *of the document* — but as the *relationship's* valid time
+    it was resolved by inference against the report, which is precisely what the ``relative`` boundary
+    source means (``schemas/values.py``). Copying it across without re-stamping would launder a derived
+    bound into an explicit one; SCORE and the analyst both read that field.
+    """
+    if isinstance(value, (ExactDate, LabelDate)):
+        return value.model_copy(update={"boundary_source": "relative"})
+    return value
+
+
 def _locator(ref: DocRef) -> str:
     """A short readable locator for a claim id, derived from the ref's tightest positional axis."""
     if ref.row is not None:
@@ -755,10 +863,50 @@ class _Emitter:
             return attributes
         return {**(attributes or {}), **refs}
 
+    def relation_time(self, edge: str | None, date_text: str | None,
+                      context_time: DateValue | None,
+                      attributes: dict[str, Any] | None) -> tuple[DateValue | None, dict[str, Any] | None]:
+        """Resolve a relationship's **valid time** down the ladder, recording which rung fired (D-P4.6).
+
+        ``stated relation date → the enclosing observation's date → the document's report_time → none``.
+        The rung is stamped in tier-3 (:data:`_RUNG_ATTR`) alongside the resolved value's own
+        ``boundary_source``, so an analyst can always see whether the date was read off the sentence,
+        borrowed from the pass it sits in, or merely bounded by the publication date — three very
+        different strengths of evidence that a bare ISO string would flatten into one.
+
+        The ladder is walked for **every** relation, but only a relation whose edge decays
+        (:data:`_DATED_CLASSES`) is *required* to land on a rung: reaching the bottom there is a real
+        coverage gap and is flagged :data:`_UNDATED_ATTR` — surfaced, never patched with a guess. On a
+        durable/identity edge an absent date is simply correct.
+        """
+        fclass = self.lane.freshness_class(edge) if edge else None
+        decaying = fclass in _DATED_CLASSES
+        stated = adapters.normalize_date(date_text, report_time=self.report_time)
+        value, rung = None, None
+        if stated is not None:
+            value, rung = stated, _RUNG_STATED  # the source dated the fact — always taken
+        elif not decaying:
+            # A durable/identity relation is NOT walked down the fallback rungs: stamping every such
+            # claim with the publication date would manufacture a valid time nobody asserted, on the
+            # 115-of-126 claims where it is inert anyway (D-P4.6).
+            return None, attributes
+        elif context_time is not None:
+            value, rung = context_time, _RUNG_OBSERVATION
+        elif self.report_time is not None:
+            value, rung = _restamp_relative(self.report_time), _RUNG_REPORT
+
+        out = dict(attributes or {})
+        if rung is not None:
+            out[_RUNG_ATTR] = rung
+        else:
+            out[_UNDATED_ATTR] = True  # a decaying edge with no date at any rung — a coverage gap, stated
+        return value, out
+
     def relation(self, subject: str, predicate: str, obj: str, ref: DocRef, *,
                  subj_type: str | None = None, obj_type: str | None = None,
                  object_value: Quantity | Location | DateValue | None = None,
-                 event_time: DateValue | None = None, source_quote: str | None = None,
+                 event_time: DateValue | None = None, date_text: str | None = None,
+                 context_time: DateValue | None = None, source_quote: str | None = None,
                  attributes: dict[str, Any] | None = None) -> None:
         """Emit an **LLM-asserted** relationship, re-laned onto the edge its endpoint types imply (D-A).
 
@@ -776,9 +924,19 @@ class _Emitter:
         THE PROVENANCE RULE: whenever the label or orientation is changed, the emitted claim carries the
         as-stated predicate, the verbatim ``source_quote`` and the re-lane reason — normalising the *label*
         so two sources of one fact corroborate on one edge, never overwriting what the source said.
+
+        VALID TIME: the date ladder (:meth:`relation_time`) is resolved **after** the re-lane, against the
+        *final* edge — because whether a date is load-bearing is a property of the edge the fact lands on,
+        not of the verb the model reached for. ``event_time`` passed explicitly by a structural caller
+        wins outright (it is already the resolved fact-time).
         """
         st = subj_type or self._entity_types.get(subject)
         ot = obj_type or self._entity_types.get(obj)
+
+        def dated(edge: str | None, attrs: dict[str, Any] | None) -> tuple[DateValue | None, dict[str, Any] | None]:
+            if event_time is not None:
+                return event_time, attrs
+            return self.relation_time(edge, date_text, context_time, attrs)
 
         if st is not None and ot is not None:
             result = self.lane.relane(predicate, st, ot)
@@ -789,19 +947,22 @@ class _Emitter:
             attrs = attributes
             if result.action == "relaned":  # label and/or orientation changed → preserve provenance
                 attrs = self._relane_provenance(attributes, predicate, result.reason, source_quote)
+            when, attrs = dated(result.edge or predicate, attrs)
             self.triple(subj_out, result.edge or predicate, obj_out, ref, object_value=object_value,
-                        event_time=event_time, attributes=attrs)
+                        event_time=when, attributes=attrs)
             return
 
         if st is not None or ot is not None:  # partial typing → orientation only, predicate kept as stated
             if edge_direction.reversed_for_types(predicate, st, ot, self.dir_rules):
                 reason = f"{predicate!r} reoriented ({st or '?'}->{ot or '?'})"
                 attrs = self._relane_provenance(attributes, predicate, reason, source_quote)
+                when, attrs = dated(predicate, attrs)
                 self.triple(obj, predicate, subject, ref, object_value=object_value,
-                            event_time=event_time, attributes=attrs)
+                            event_time=when, attributes=attrs)
             else:
+                when, attrs = dated(predicate, attributes)
                 self.triple(subject, predicate, obj, ref, object_value=object_value,
-                            event_time=event_time, attributes=attributes)
+                            event_time=when, attributes=attrs)
             return
 
         # Neither endpoint typable: keep the as-stated predicate, flag tier-3 (never drop the provenance).
@@ -809,8 +970,9 @@ class _Emitter:
         flagged["_endpoint_typing"] = "unresolved"
         if source_quote:
             flagged.setdefault("source_quote", source_quote)
+        when, flagged_out = dated(predicate, flagged)
         self.triple(subject, predicate, obj, ref, object_value=object_value,
-                    event_time=event_time, attributes=flagged)
+                    event_time=when, attributes=flagged_out)
 
     @staticmethod
     def _relane_provenance(attributes: dict[str, Any] | None, as_stated: str, reason: str,
@@ -877,6 +1039,24 @@ def _money_quantity(raw: str | None) -> Quantity | None:
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 # Per-format transforms — field → typed claim, by a fixed table (never inference).
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+def _emit_relations(em: _Emitter, mentions: list[dict[str, Any]], *,
+                    context_time: DateValue | None = None) -> None:
+    """Stated ``relations`` → re-laned relationship claims, each carrying its stated valid time (D-P4.6).
+
+    The one call-site shared by every format with a ``relations`` slot, so the date ladder can never be
+    wired on one transform and forgotten on another (which is how ``event_time`` came to be omitted at
+    both existing call sites while the emitter's plumbing sat complete and unused). ``context_time`` is
+    the enclosing observation's date when the format has one (an imagery pass) — the ladder's second rung.
+    """
+    for m in mentions:
+        rel, subj, obj = _str(m, "relation"), _str(m, "subject"), _str(m, "object")
+        if rel and subj and obj:
+            quote = _str(m, "source_quote")
+            ref = _resolve_doc_ref(em.loaded, quote, fallback=subj)
+            em.relation(subj, rel, obj, ref, source_quote=quote,
+                        date_text=_str(m, "date_text"), context_time=context_time)
+
 
 def _emit_aliases(em: _Emitter, mentions: list[dict[str, Any]], predicate: str, *,
                   cite_row: bool = False) -> None:
@@ -956,12 +1136,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
     for m in _items(filled, "events"):
         _emit_event(em, m)
 
-    for m in _items(filled, "relations"):
-        rel, subj, obj = _str(m, "relation"), _str(m, "subject"), _str(m, "object")
-        if rel and subj and obj:
-            quote = _str(m, "source_quote")
-            ref = _resolve_doc_ref(loaded, quote, fallback=subj)
-            em.relation(subj, rel, obj, ref, source_quote=quote)
+    _emit_relations(em, _items(filled, "relations"))
 
     _emit_aliases(em, _items(filled, "aliases"), "same-as")
     _emit_aliases(em, _items(filled, "distinctions"), "distinct-from")
@@ -1185,12 +1360,7 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
             "holds": _str(td, "holds"), "foreign_control": _str(td, "foreign_control"),
         })
 
-    for m in _items(filled, "relations"):
-        rel, subj, obj = _str(m, "relation"), _str(m, "subject"), _str(m, "object")
-        if rel and subj and obj:
-            quote = _str(m, "source_quote")
-            ref = _resolve_doc_ref(loaded, quote, fallback=subj)
-            em.relation(subj, rel, obj, ref, source_quote=quote)
+    _emit_relations(em, _items(filled, "relations"), context_time=when)
 
     _emit_aliases(em, _items(filled, "aliases"), "same-as")
     _emit_aliases(em, _items(filled, "distinctions"), "distinct-from")
@@ -1241,7 +1411,12 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
     the analyst's own confidence wording, and radar/components. Collection gaps are a sufficiency signal,
     NOT order-of-battle entities: SCORE's sufficiency engine emits the correctly-shaped ``gap:*`` items —
     so a ``known_gap`` node is minted **only** when a normalized ``missing_slot`` is stated, keyed by that
-    slot (never the verbose sentence, which never merges — RCA ING-4). Coords come from the text."""
+    slot (never the verbose sentence, which never merges — RCA ING-4). Coords come from the text.
+
+    Plus the **relationship** half this format was missing entirely (EVAL RCA §2.3): any formation the
+    report names (``units``), the dated observed-occupancy lane (``occupancy`` → ``observed-at``), and any
+    relationship the report states outright (``relations``). Until these existed the relocation documents
+    could emit no edge of any kind, dated or not — the beat's actual blocker."""
     em = _emitter(source_id, loaded, config, model_id, report_time, ingest_time, geocoder)
 
     site = _obj(filled, "site")
@@ -1255,6 +1430,11 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             "occupancy_state": _str(site, "occupancy_state"), "coordinates": _dump(loc),
         })
 
+    # The passes also supply the *context* date for any occupancy statement the report leaves undated —
+    # the ladder's second rung. The LATEST pass is taken: it is the collect the report's own currency
+    # rests on, and it is the bound an analyst would quote for "as of when".
+    latest_pass_time: DateValue | None = None
+    latest_pass_bound: str | None = None
     for m in _items(filled, "observations"):
         obj_type = _str(m, "object_type")
         anchor = obj_type or site_name
@@ -1262,6 +1442,9 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             continue
         ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=obj_type)
         when = adapters.normalize_date(_str(m, "pass_date"), report_time=report_time)
+        bound = canonical_iso_bounds(when)[1]
+        if bound is not None and (latest_pass_bound is None or bound > latest_pass_bound):
+            latest_pass_time, latest_pass_bound = when, bound
         count = adapters.normalize_quantity(_str(m, "object_count_text"),
                                             count_state=_str(m, "count_state") or "fielded")
         em.event("SightingEvent", ref, participants=[anchor], time_interval=when, event_time=when,
@@ -1281,6 +1464,46 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("component", name, ref, attrs={"component_class": _str(m, "component_class"),
                                                      "functional_role": _str(m, "functional_role")})
+
+    for m in _items(filled, "units"):
+        name = _str(m, "name")
+        if name:
+            ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
+            em.entity("unit", name, ref, attrs={
+                "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
+                "home_garrison": _str(m, "home_garrison"),
+            })
+
+    # The OBSERVED-occupancy lane (D-P4.2 / §2.3) — what a frame can honestly state: equipment seen at a
+    # place on a date. Emitted through ``relation`` like any stated fact, so the endpoint types re-lane it
+    # onto ``observed-at`` (or onto ``based-at`` when the source names a *formation* rather than kit) —
+    # the site end is typed here because this slot is site-anchored by construction. The claim is the
+    # OBSERVED layer only; attributing it to a unit is a separate, lower-confidence derived claim
+    # (:mod:`chanakya.ingest.basing`), never fused into this one.
+    for m in _items(filled, "occupancy"):
+        seen, where_name = _str(m, "observed"), _str(m, "site")
+        if not (seen and where_name):
+            continue
+        occupancy = _str(m, "occupancy_state")
+        quote = _str(m, "source_quote")
+        ref = _resolve_doc_ref(loaded, quote, fallback=seen)
+        when = adapters.normalize_date(_str(m, "observed_date"), report_time=report_time)
+        if states_vacancy(occupancy):
+            # A report that the site is EMPTY is an observation of **absence**, and the pipeline draws
+            # every relationship claim — so emitting it on the occupancy lane would assert presence at
+            # the one place the source says the kit has left. Kept as a dated, cited fact on the SITE
+            # (a vacated position is among the most informative things imagery says), never as an edge —
+            # the same rule this module already applies to denials and negations (RCA ING-1).
+            em.entity("basing_site", where_name, ref, event_time=when or latest_pass_time, attrs={
+                "occupancy_state": occupancy, "occupancy_observed_date": _str(m, "observed_date"),
+            }, attributes=_prune({"_observed_absence": {"observed": seen, "source_quote": quote}}))
+            continue
+        em.relation(seen, "observed-at", where_name, ref, obj_type="basing_site",
+                    source_quote=quote, date_text=_str(m, "observed_date"),
+                    context_time=latest_pass_time,
+                    attributes=_prune({"occupancy_state": occupancy}))
+
+    _emit_relations(em, _items(filled, "relations"), context_time=latest_pass_time)
 
     for m in _items(filled, "collection_gaps"):
         # Key by the normalized missing_slot ONLY — never the raw sentence. No slot ⇒ no node (the gap is

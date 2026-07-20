@@ -1,21 +1,29 @@
 import { describe, expect, it } from 'vitest'
 import type { AskAnswer, GraphView, ProvenanceDrawer } from './types'
 import {
+  alertToFiring,
   askToAnswerModel,
   credibilityToDots,
   dateValueToString,
+  displayNameOf,
   docRefsOf,
   edgeToKind,
   evidenceToDrawerModel,
   formatCoord,
   hopLine,
   humanizeEdge,
+  humanizeObservableId,
+  isKnownElementId,
+  nameResolver,
   statusToGraphKind,
+  supersededSites,
+  supersedeHoldReasons,
   viewToGraph,
   viewToGraphEdges,
   viewToGraphNodes,
   viewToPins,
   viewToReviewQueue,
+  viewToTripwires,
 } from './adapters'
 
 // Synthetic /view fixture covering: a located confirmed node (→ pin), an unlocated
@@ -70,6 +78,13 @@ const VIEW: GraphView = {
     },
     { id: 'e3', type: 'based-at', source: 'ht233', target: 'gap_node', status: 'possible' },
     { id: 'e4', type: 'based-at', source: 'rahwali_stale', target: 'gap_node', status: 'stale' },
+    // an evidence GAP — must not render like the stale edge above, and must not fall
+    // through to the probable (live teal) default
+    { id: 'e5', type: 'based-at', source: 'gap_node', target: 'paad', status: 'insufficient' },
+    { id: 'e6', type: 'based-at', source: 'gap_node', target: 'ht233', status: 'contradicted' },
+    // status-LESS by design — nothing may assume every edge carries a status
+    { id: 'sa1', type: 'same-as', source: 'karachi', target: 'paad', status: null },
+    { id: 'sup1', type: 'supersedes', source: 'rahwali_stale', target: 'karachi', status: null, confidence: null },
   ],
   events: [],
   known_gaps: [],
@@ -107,6 +122,12 @@ describe('statusToGraphKind', () => {
     expect(statusToGraphKind(VIEW.nodes[4])).toBe('gap')
   })
 
+  it('maps contradicted → contradicted, NOT gap — disagreement is not absence', () => {
+    const kind = statusToGraphKind({ id: 'x', type: 'unit', status: 'contradicted' })
+    expect(kind).toBe('contradicted')
+    expect(kind).not.toBe('gap')
+  })
+
   it('falls back to probable when status is missing', () => {
     expect(statusToGraphKind({ id: 'x', type: 'unit' })).toBe('probable')
   })
@@ -117,16 +138,59 @@ describe('edgeToKind', () => {
     expect(edgeToKind(VIEW.edges[0])).toBe('e-confirmed')
   })
 
-  it('superseded_by wins over an otherwise-confirmed status → e-history', () => {
-    expect(edgeToKind(VIEW.edges[1])).toBe('e-history')
+  it('superseded_by wins over an otherwise-confirmed status → e-stale', () => {
+    expect(edgeToKind(VIEW.edges[1])).toBe('e-stale')
   })
 
   it('maps a non-confirmed, non-stale status → e-probable', () => {
     expect(edgeToKind(VIEW.edges[2])).toBe('e-probable')
   })
 
-  it('maps a stale status with no superseded_by → e-history', () => {
-    expect(edgeToKind(VIEW.edges[3])).toBe('e-history')
+  it('maps a stale status with no superseded_by → e-stale (history)', () => {
+    expect(edgeToKind(VIEW.edges[3])).toBe('e-stale')
+  })
+
+  it('maps insufficient → e-gap, NOT e-stale — a gap is not history', () => {
+    expect(edgeToKind(VIEW.edges[4])).toBe('e-gap')
+    expect(edgeToKind(VIEW.edges[4])).not.toBe(edgeToKind(VIEW.edges[3]))
+  })
+
+  it('maps contradicted → e-contradicted (sources disagree ≠ evidence missing)', () => {
+    expect(edgeToKind(VIEW.edges[5])).toBe('e-contradicted')
+  })
+
+  it('gives a status-less same-as the neutral link kind, not a truth kind', () => {
+    expect(edgeToKind(VIEW.edges[6])).toBe('e-link')
+  })
+
+  it('gives a status-less supersedes the "replaced by" kind, never a contradiction', () => {
+    expect(edgeToKind(VIEW.edges[7])).toBe('e-supersede')
+    expect(edgeToKind(VIEW.edges[7])).not.toBe('e-contradicted')
+  })
+
+  it('draws an UNADJUDICATED supersession dashed — candidate, not settled', () => {
+    const candidate = {
+      id: 'sup2',
+      type: 'supersedes',
+      source: 'a',
+      target: 'b',
+      status: null,
+      attrs: { candidate_supersede: true },
+    }
+    expect(edgeToKind(candidate)).toBe('e-supersede-candidate')
+    // a pending/held gate is the same fact by another name
+    expect(edgeToKind({ id: 'sup3', type: 'supersedes', source: 'a', target: 'b', attrs: { supersede_gate: 'held' } })).toBe(
+      'e-supersede-candidate',
+    )
+    // …and a promoted one is settled: solid.
+    expect(edgeToKind({ id: 'sup4', type: 'supersedes', source: 'a', target: 'b', attrs: { supersede_gate: 'promoted' } })).toBe(
+      'e-supersede',
+    )
+  })
+
+  it('does not throw on an edge with no status at all', () => {
+    expect(() => edgeToKind({ id: 'x', type: 'supersedes', source: 'a', target: 'b' })).not.toThrow()
+    expect(edgeToKind({ id: 'x', type: 'based-at', source: 'a', target: 'b' })).toBe('e-probable')
   })
 })
 
@@ -149,7 +213,75 @@ describe('viewToPins', () => {
   })
 
   it('derives the caption year from freshness.last_support_time', () => {
-    expect(pins[0].caption).toBe('as of 2022')
+    // VIEW's `sup1` supersedes this node, so read the plain as-of line off a view without it
+    const plain = viewToPins({ ...VIEW, edges: VIEW.edges.filter((e) => e.type !== 'supersedes') })
+    expect(plain[0].caption).toBe('as of 2022')
+    expect(plain[0].superseded).toBe(false)
+    expect(plain[0].supersededBy).toBeNull()
+  })
+
+  // Supersession lives on the EDGE — a node's own status never carries it — so the map has to
+  // derive "this location is history now" from the graph, or it silently loses the relocation
+  // story the Graph stage tells. VIEW's `sup1` is `rahwali_stale supersedes karachi`.
+  it('marks the TARGET of a settled supersedes edge as history, naming its successor', () => {
+    expect(pins[0]).toMatchObject({ id: 'karachi', superseded: true, supersededBy: 'rahwali_stale' })
+    expect(pins[0].caption).toBe('superseded · 2022')
+  })
+
+  it('does NOT mark a pin superseded on an unadjudicated (candidate/held) supersession', () => {
+    const candidate = viewToPins({
+      ...VIEW,
+      edges: [
+        {
+          id: 'sup1',
+          type: 'supersedes',
+          source: 'rahwali_stale',
+          target: 'karachi',
+          status: null,
+          attrs: { candidate_supersede: true },
+        },
+      ],
+    })
+    expect(candidate[0].superseded).toBe(false)
+    expect(candidate[0].caption).toBe('as of 2022')
+  })
+})
+
+describe('supersededSites', () => {
+  it('maps superseded → successor for settled supersessions only', () => {
+    expect([...supersededSites(VIEW).entries()]).toEqual([['karachi', 'rahwali_stale']])
+  })
+
+  it('ignores a held/pending/candidate supersession — that adjudication has not been made', () => {
+    const held: GraphView = {
+      ...VIEW,
+      edges: [{ id: 's', type: 'supersedes', source: 'a', target: 'b', attrs: { supersede_gate: 'held' } }],
+    }
+    expect(supersededSites(held).size).toBe(0)
+  })
+})
+
+// Raw internal ids are keys, not names. Analyst-facing copy renders the node's OWN name,
+// with the id demoted to technical detail — and never invents one.
+describe('displayNameOf / nameResolver', () => {
+  it('renders a node id as its own name — never a paraphrase', () => {
+    expect(displayNameOf(VIEW, 'karachi')).toBe('Karachi')
+    expect(nameResolver(VIEW)('gap_node')).toBe('Unknown reserve unit')
+  })
+
+  it('falls back to the id when the graph has no name for it — shows the key, never a guess', () => {
+    expect(displayNameOf(VIEW, 'site_nowhere')).toBe('site_nowhere')
+    expect(nameResolver(null)('site_nowhere')).toBe('site_nowhere')
+  })
+
+  it('reads an edge id as its named endpoints', () => {
+    expect(displayNameOf(VIEW, 'e1')).toBe('Karachi — based at → PA Air Defence')
+  })
+
+  it('knows which strings are element ids, so free-text slots pass through untouched', () => {
+    expect(isKnownElementId(VIEW, 'karachi')).toBe(true)
+    expect(isKnownElementId(VIEW, 'e1')).toBe(true)
+    expect(isKnownElementId(VIEW, 'an unobscured pass')).toBe(false)
   })
 })
 
@@ -179,9 +311,13 @@ describe('viewToGraphEdges', () => {
   it('maps id/source/target/kind for every edge', () => {
     expect(viewToGraphEdges(VIEW)).toEqual([
       { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed' },
-      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-history' },
+      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale' },
       { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable' },
-      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-history' },
+      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale' },
+      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap' },
+      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted' },
+      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-link' },
+      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede' },
     ])
   })
 })
@@ -311,6 +447,8 @@ describe('evidenceToDrawerModel', () => {
       next_coverage_due: '2026-08-01',
       ceiling: 'probable-max',
     },
+    // the verbatim text at each doc_ref — c2's SECOND ref is unreadable, c3 has none at all
+    quotes: { c1: ['array present at Rahwali'], c2: ['a second look', ''] },
   }
 
   const model = evidenceToDrawerModel(DRAWER)
@@ -367,6 +505,20 @@ describe('evidenceToDrawerModel', () => {
     expect(model.clusters[0].rows[0].dots).toBe(1) // 0.1
     expect(model.clusters[0].rows[1].dots).toBe(2) // 0.4
     expect(model.clusters[1].rows[0].dots).toBe(4) // 0.9
+  })
+
+  // A file path + byte range is a POINTER, not a source — the analyst has to be able to read
+  // the words. The quote array is positionally parallel to docRefs so index i always answers
+  // "what does ref i say?", and an unreadable span is '' (the row shows the locator alone),
+  // never a paraphrase.
+  it('carries the verbatim quote per docRef, parallel to docRefs', () => {
+    expect(model.clusters[0].rows[0].quotes).toEqual(['array present at Rahwali'])
+    expect(model.clusters[0].rows[1].quotes).toEqual(['a second look', ''])
+    expect(model.clusters[0].rows[1].quotes).toHaveLength(model.clusters[0].rows[1].docRefs.length)
+  })
+
+  it('emits an empty quote (never a paraphrase) when the backend returned none', () => {
+    expect(model.clusters[1].rows[0].quotes).toEqual([''])
   })
 
   it('counts opposingCount from opposing_claims', () => {
@@ -458,6 +610,8 @@ describe('askToAnswerModel', () => {
     expect(m.kind).toBe('refusal')
     expect(m.answer).toBe('')
     expect(m.refusal).toEqual({
+      // untagged → 'evidence', the pre-`kind` contract
+      kind: 'evidence',
       reason: 'Needs an unobscured overhead pass.',
       missing: ['unobscured pass', 'SAR correlation'],
       nextCoverageDue: '2026-05-14',
@@ -465,10 +619,28 @@ describe('askToAnswerModel', () => {
     })
   })
 
+  // "we have no evidence" and "we could not look" are different claims to an analyst; the
+  // renderer must be able to tell them apart, so the kind survives the adapter verbatim.
+  it('carries a capability refusal through as capability, not as an evidence gap', () => {
+    const m = askToAnswerModel({
+      question: 'q',
+      answer: null,
+      refusal: { kind: 'capability', missing: ['a model key (ANTHROPIC_API_KEY)'], reason: 'could not run' },
+    })
+    expect(m.refusal!.kind).toBe('capability')
+    expect(m.refusal!.kind).not.toBe('evidence')
+  })
+
+  it('carries a withheld refusal through as withheld', () => {
+    const m = askToAnswerModel({ question: 'q', answer: null, refusal: { kind: 'withheld', missing: ['uncited'] } })
+    expect(m.refusal!.kind).toBe('withheld')
+  })
+
   it('treats a null answer with no refusal payload as a refusal too', () => {
     const m = askToAnswerModel({ question: 'q', answer: null })
     expect(m.kind).toBe('refusal')
-    expect(m.refusal).toEqual({ reason: undefined, missing: [], nextCoverageDue: null, knownGap: null })
+    expect(m.refusal!.kind).toBe('evidence')
+    expect(m.refusal).toEqual({ kind: 'evidence', reason: undefined, missing: [], nextCoverageDue: null, knownGap: null })
   })
 
   it('defaults hops/citations/subQuestions to empty on a bare answer', () => {
@@ -567,5 +739,184 @@ describe('viewToReviewQueue', () => {
 
   it('returns an empty queue for a clean graph', () => {
     expect(viewToReviewQueue({ nodes: [], edges: [], events: [], known_gaps: [], alerts: [] })).toEqual([])
+  })
+})
+
+// ─────────────────── live tripwires / alert provenance (derived) ───────────────────
+// The fixture below is the REAL firing the backend produces on the frozen corpus
+// (obs-basing-relocation on unit_hq9b, Rawalpindi → Rahwali), including the actual
+// claim ids and the status/confidence copied off the after-edge.
+
+describe('viewToTripwires / alertToFiring', () => {
+  const BEFORE_EDGE = 'e:unit_hq9b:based-at:site_rawalpindi'
+  const AFTER_EDGE = 'e:unit_hq9b:based-at:site_rahwali'
+
+  const AVIEW: GraphView = {
+    nodes: [
+      { id: 'unit_hq9b', type: 'unit', name: 'HQ-9B fire unit', status: 'confirmed' },
+      { id: 'site_rawalpindi', type: 'basing_site', name: 'Rawalpindi', status: 'stale' },
+      { id: 'site_rahwali', type: 'basing_site', name: 'Rahwali', status: 'probable' },
+    ],
+    edges: [
+      {
+        id: BEFORE_EDGE,
+        type: 'based-at',
+        source: 'unit_hq9b',
+        target: 'site_rawalpindi',
+        status: 'stale', // history — the unit left, NOT an evidence gap
+        confidence: { integrity_flags: ['superseded'] },
+        attrs: {
+          supersede_gate: 'held',
+          candidate_supersede: true,
+          supersede_hold_reason: ['newer-below-probable', 'newer-deception-gate:decoy-risk'],
+        },
+      },
+      {
+        id: AFTER_EDGE,
+        type: 'based-at',
+        source: 'unit_hq9b',
+        target: 'site_rahwali',
+        status: 'probable',
+      },
+      // the status-less version link the backend draws once a supersession is promoted
+      {
+        id: 'e:site_rahwali:supersedes:site_rawalpindi',
+        type: 'supersedes',
+        source: 'site_rahwali',
+        target: 'site_rawalpindi',
+        status: null,
+        confidence: null,
+        attrs: { derived_via: 'supersede' },
+      },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [
+      {
+        observable_id: 'obs-basing-relocation',
+        subject: 'unit_hq9b',
+        before: { 'based-at': 'site_rawalpindi' },
+        after: { 'based-at': 'site_rahwali' },
+        severity: 'notify',
+        fired_ts: '2026-07-19',
+        disposition: null,
+        provenance: {
+          before_ref: BEFORE_EDGE,
+          after_ref: AFTER_EDGE,
+          before_claim_ids: ['d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing'],
+          after_claim_ids: [
+            'd18-rahwali-pass1-unit-hq9b-site-rahwali-basing',
+            'd19-rahwali-confirm-unit-hq9b-site-rahwali-basing',
+          ],
+          claim_ids: [
+            'd17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing',
+            'd18-rahwali-pass1-unit-hq9b-site-rahwali-basing',
+            'd19-rahwali-confirm-unit-hq9b-site-rahwali-basing',
+          ],
+          status: 'probable',
+          assertion_confidence: 0.79,
+        },
+      },
+    ],
+  }
+
+  const rows = viewToTripwires(AVIEW)
+
+  it('derives one row per observable that actually fired', () => {
+    expect(rows).toHaveLength(1)
+    expect(rows[0].observableId).toBe('obs-basing-relocation')
+    expect(rows[0].firings).toHaveLength(1)
+  })
+
+  it('humanises the observable id into the row name (no catalogue endpoint exists)', () => {
+    expect(rows[0].name).toBe('Basing relocation')
+    expect(humanizeObservableId('obs-followon-interceptor-order')).toBe('Followon interceptor order')
+  })
+
+  it('DERIVES the state badge — un-adjudicated reads "fired", never a hardcoded "armed"', () => {
+    expect(rows[0].state).toBe('fired')
+    expect(rows[0].stateLabel).toBe('fired')
+    expect(rows[0].stateLabel).not.toBe('armed')
+  })
+
+  it('reads the analyst disposition back as the state once one is recorded', () => {
+    const decided = viewToTripwires({
+      ...AVIEW,
+      alerts: [{ ...AVIEW.alerts[0], disposition: 'noise' }],
+    })
+    expect(decided[0].state).toBe('noise')
+    expect(decided[0].stateLabel).toBe('dismissed as noise')
+  })
+
+  it('summarises before → after off the real snapshots', () => {
+    expect(rows[0].firings[0].changed).toEqual({
+      from: 'based-at: site_rawalpindi',
+      to: 'based-at: site_rahwali',
+    })
+  })
+
+  it('splits provenance into before/after sides, each with its element ref + claim ids', () => {
+    const p = rows[0].firings[0].provenance!
+    expect(p.sides).toEqual([
+      {
+        side: 'before',
+        elementRef: BEFORE_EDGE,
+        claimIds: ['d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing'],
+      },
+      {
+        side: 'after',
+        elementRef: AFTER_EDGE,
+        claimIds: [
+          'd18-rahwali-pass1-unit-hq9b-site-rahwali-basing',
+          'd19-rahwali-confirm-unit-hq9b-site-rahwali-basing',
+        ],
+      },
+    ])
+    expect(p.claimIds).toHaveLength(3)
+    expect(p.status).toBe('probable')
+    expect(p.assertionConfidence).toBeCloseTo(0.79)
+  })
+
+  it('falls back to the before+after union when claim_ids is absent', () => {
+    const f = alertToFiring({
+      observable_id: 'o',
+      provenance: { before_claim_ids: ['c1'], after_claim_ids: ['c2', 'c1'] },
+    })
+    expect(f.provenance!.claimIds).toEqual(['c1', 'c2'])
+  })
+
+  it('reports a provenance-less alert as null rather than inventing a citation', () => {
+    const f = alertToFiring({ observable_id: 'o', subject: 's' })
+    expect(f.provenance).toBeNull()
+    expect(f.holdReasons).toEqual([])
+  })
+
+  it('surfaces supersede_hold_reason VERBATIM off the referenced edges, de-duplicated', () => {
+    expect(rows[0].firings[0].holdReasons).toEqual([
+      'newer-below-probable',
+      'newer-deception-gate:decoy-risk',
+    ])
+    expect(rows[0].firings[0].gate).toBe('held')
+  })
+
+  it('tolerates a bare-string hold reason and ignores junk', () => {
+    expect(supersedeHoldReasons({ id: 'e', type: 'based-at', source: 'a', target: 'b', attrs: { supersede_hold_reason: 'newer-below-probable' } })).toEqual(['newer-below-probable'])
+    expect(supersedeHoldReasons({ id: 'e', type: 'based-at', source: 'a', target: 'b', attrs: { supersede_hold_reason: 7 } })).toEqual([])
+    expect(supersedeHoldReasons({ id: 'e', type: 'based-at', source: 'a', target: 'b' })).toEqual([])
+    expect(supersedeHoldReasons(undefined)).toEqual([])
+  })
+
+  it('returns an empty feed (not demo content) for a live view with no alerts', () => {
+    expect(viewToTripwires({ nodes: [], edges: [], events: [], known_gaps: [], alerts: [] })).toEqual([])
+  })
+
+  it('carries the same provenance + hold reasons onto the review-queue alert card', () => {
+    const alert = viewToReviewQueue(AVIEW).find((i) => i.reviewType === 'alert-disposition')!
+    expect(alert.subject).toBe('unit_hq9b')
+    expect(alert.context.provenance!.sides).toHaveLength(2)
+    expect(alert.context.holdReasons).toEqual([
+      'newer-below-probable',
+      'newer-deception-gate:decoy-risk',
+    ])
   })
 })

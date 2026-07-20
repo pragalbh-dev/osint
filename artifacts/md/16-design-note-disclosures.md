@@ -20,7 +20,7 @@ deliberate, defensible choices, not apologies.
 - **"Confirm" satellite frames are REAL imagery of genuine SAM sites, RELABELED to the scenario location.**
   d07 (Karachi) ← HQ-9 nr Xi'an; d17 (Rawalpindi) ← PLA garrison nr Nanjing; d18 (Rahwali) ← S-400 nr
   Feodosia; d17b (empty) ← empty HQ-9 petal nr Lanzhou. Each is `integrity: real`, unaltered pixels, with
-  `provenance: relabeled` + `real_source` recorded in the answer key. Rationale: a fabricated "confirming"
+  `provenance: relabeled` + `real_source` recorded in the scenario's provenance metadata. Rationale: a fabricated "confirming"
   image is exactly what the system should *catch*, so the confirm frames use real SAM-site morphology; we do
   **not** publish novel geolocations of live batteries (the specific pad coords in the doc text are
   synthetic). The VLM caption is neutral (describes only pixels), so the petal/launcher shape genuinely being
@@ -47,6 +47,28 @@ deliberate, defensible choices, not apologies.
   (CASIC 23rd RI, inferred) — deliberately NOT a fabricated confirmed edge. This is the non-negotiable in action.
 - **Confirmed vs probable vs insufficient are structurally separated**, and "insufficient evidence to assess"
   is a first-class output (with missing slots + next-coverage-due), not a failure.
+- **Two sustainment node types — an interceptor stockpile and a technical-data authority — are declared in the
+  ontology but carry zero instances in this corpus**, so the `sustained-by` rollup they feed is never
+  synthesized. They are empty for opposite reasons, and both are informative.
+  - **Interceptor stockpile — the sources deny it.** The only candidate document is a spares tender that
+    states its requirement "pertains solely to sustenance/repair-and-overhaul (R&O) support of equipment
+    already fielded and does NOT constitute procurement of a new weapon system, launcher, missile round, or
+    fire-control radar", and separately that "No new launcher units, radar sets, or missile rounds form part
+    of this requirement." The corpus's only other reference lists missile stockpile among force-level
+    specifics that "remain unconfirmed in the open literature and should not be treated as established fact."
+    None of the attributes the type calls for — magazine depth, days of supply, resupply lead time — is
+    stated anywhere. Asserting a stockpile here would mean inferring force posture from a maintenance
+    contract, which is precisely the inference this system is built to refuse. The node stays empty by design.
+  - **Technical-data authority — the source states it and we do not yet capture it.** A trade-media report
+    describes radar mode libraries, waveform parameters and calibration tables as being "routed through a
+    Chinese state technical-data authority, understood to sit within the broader CASIC/CPMIEC export
+    administrative chain, which retains configuration control over the underlying software baseline." Our
+    extraction schema offers a slot for this on the procurement-tender form but not on the analytic-prose
+    form, so the model had nowhere to record it — a known, mundane gap rather than a judgement call. The
+    source also scopes that control to the engagement radar specifically, whereas our dependency edge is
+    typed authority-to-system; recording it faithfully would need a component-scoped relation.
+
+  We would rather ship two honestly empty node types than two invented ones.
 
 ## Scope & calibration
 

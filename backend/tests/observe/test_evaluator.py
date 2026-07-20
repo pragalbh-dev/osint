@@ -40,7 +40,7 @@ def test_first_appearance_is_not_a_crossing(golden_config) -> None:
     after = view(
         nodes=[{"id": "unit_acme", "type": "unit"}, {"id": "site_z", "type": "basing_site"}],
         edges=[{"id": "e1", "type": "based-at", "source": "unit_acme", "target": "site_z",
-                "edge_instance": "based-at:unit_acme"}],
+                "edge_instance": "edge:unit_acme:based-at"}],
     )
     obs = relocation_observable(watch_instances=["unit_acme"])
     assert evaluate(before, after, config_with(obs)) == []
@@ -52,9 +52,9 @@ def test_match_on_resolved_instance_survives_designator_variant() -> None:
     Matching is on ``edge_instance``/``source`` (the resolved identity), never the designator string.
     """
     before = view(edges=[{"id": "e:a", "type": "based-at", "source": "unit_acme", "target": "site_a",
-                          "edge_instance": "based-at:unit_acme", "attrs": {"designator": "HQ-9B"}}])
+                          "edge_instance": "edge:unit_acme:based-at", "attrs": {"designator": "HQ-9B"}}])
     after = view(edges=[{"id": "e:b", "type": "based-at", "source": "unit_acme", "target": "site_b",
-                         "edge_instance": "based-at:unit_acme", "attrs": {"designator": "HQ 9B (variant)"}}])
+                         "edge_instance": "edge:unit_acme:based-at", "attrs": {"designator": "HQ 9B (variant)"}}])
     obs = relocation_observable(watch_instances=["unit_acme"])
 
     alerts = evaluate(before, after, config_with(obs))
@@ -67,13 +67,13 @@ def test_match_on_resolved_instance_survives_designator_variant() -> None:
 def test_different_instance_does_not_trip_the_wire() -> None:
     """#2b — a relocation of a *different* unit does not fire an observable scoped to unit_acme."""
     before = view(edges=[
-        {"id": "a1", "type": "based-at", "source": "unit_acme", "target": "site_a", "edge_instance": "based-at:unit_acme"},
-        {"id": "o1", "type": "based-at", "source": "unit_other", "target": "site_c", "edge_instance": "based-at:unit_other"},
+        {"id": "a1", "type": "based-at", "source": "unit_acme", "target": "site_a", "edge_instance": "edge:unit_acme:based-at"},
+        {"id": "o1", "type": "based-at", "source": "unit_other", "target": "site_c", "edge_instance": "edge:unit_other:based-at"},
     ])
     # only unit_other moves; unit_acme stays put.
     after = view(edges=[
-        {"id": "a1", "type": "based-at", "source": "unit_acme", "target": "site_a", "edge_instance": "based-at:unit_acme"},
-        {"id": "o2", "type": "based-at", "source": "unit_other", "target": "site_d", "edge_instance": "based-at:unit_other"},
+        {"id": "a1", "type": "based-at", "source": "unit_acme", "target": "site_a", "edge_instance": "edge:unit_acme:based-at"},
+        {"id": "o2", "type": "based-at", "source": "unit_other", "target": "site_d", "edge_instance": "edge:unit_other:based-at"},
     ])
     obs = relocation_observable(watch_instances=["unit_acme"])
 
@@ -83,12 +83,12 @@ def test_different_instance_does_not_trip_the_wire() -> None:
 def test_watched_unit_moves_while_other_unit_present() -> None:
     """Only the watched instance's crossing fires, even when other units churn in the same view."""
     before = view(edges=[
-        {"id": "a1", "type": "based-at", "source": "unit_acme", "target": "site_a", "edge_instance": "based-at:unit_acme"},
-        {"id": "o1", "type": "based-at", "source": "unit_other", "target": "site_c", "edge_instance": "based-at:unit_other"},
+        {"id": "a1", "type": "based-at", "source": "unit_acme", "target": "site_a", "edge_instance": "edge:unit_acme:based-at"},
+        {"id": "o1", "type": "based-at", "source": "unit_other", "target": "site_c", "edge_instance": "edge:unit_other:based-at"},
     ])
     after = view(edges=[
-        {"id": "a2", "type": "based-at", "source": "unit_acme", "target": "site_b", "edge_instance": "based-at:unit_acme"},
-        {"id": "o2", "type": "based-at", "source": "unit_other", "target": "site_d", "edge_instance": "based-at:unit_other"},
+        {"id": "a2", "type": "based-at", "source": "unit_acme", "target": "site_b", "edge_instance": "edge:unit_acme:based-at"},
+        {"id": "o2", "type": "based-at", "source": "unit_other", "target": "site_d", "edge_instance": "edge:unit_other:based-at"},
     ])
     obs = relocation_observable(watch_instances=["unit_acme"])
 
@@ -99,12 +99,12 @@ def test_watched_unit_moves_while_other_unit_present() -> None:
 def test_supersede_markers_pick_the_active_edge() -> None:
     """When the after-view holds both the old (superseded) and new based-at edges, fire off the live one."""
     before = view(edges=[{"id": "e:old", "type": "based-at", "source": "unit_acme", "target": "site_a",
-                          "edge_instance": "based-at:unit_acme"}])
+                          "edge_instance": "edge:unit_acme:based-at"}])
     after = view(edges=[
         {"id": "e:old", "type": "based-at", "source": "unit_acme", "target": "site_a",
-         "edge_instance": "based-at:unit_acme", "superseded_by": "e:new"},
+         "edge_instance": "edge:unit_acme:based-at", "superseded_by": "e:new"},
         {"id": "e:new", "type": "based-at", "source": "unit_acme", "target": "site_b",
-         "edge_instance": "based-at:unit_acme", "supersedes": "e:old"},
+         "edge_instance": "edge:unit_acme:based-at", "supersedes": "e:old"},
     ])
     obs = relocation_observable(watch_instances=["unit_acme"])
 

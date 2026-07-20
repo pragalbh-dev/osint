@@ -117,12 +117,17 @@ w()
 w("## RELOCATION OBSERVABLE")
 try:
     alerts = harness.fire_relocation_observable(inp)
+    w(f"- staged ingest: {list(harness.STAGED_RELOCATION_DOCS)}")
     w(f"- alerts fired: {len(alerts)}")
     for a in alerts:
         w(f"    - {a.observable_id} subj={a.subject} before={a.before} after={a.after}")
-    prev = harness.build_view(inp, as_of=harness.PRE_RELOCATION_AS_OF)
-    w(f"- based-at edges @2021 rewind: {[(e.source, e.target, e.status) for e in prev.edges if e.type == 'based-at']}")
-    w(f"- based-at edges @now: {[(e.source, e.target, e.status) for e in view.edges if e.type == 'based-at']}")
+        if a.provenance:
+            w(f"      provenance before={a.provenance.before_claim_ids} after={a.provenance.after_claim_ids}")
+    spoof = harness.fire_relocation_observable(inp, staged_docs=("d20_supersede_spoof",))
+    w(f"- alerts when the d20 spoof is the staged arrival instead: {len(spoof)}")
+    prev, _ = harness.staged_ingest_views(inp)
+    w(f"- based-at edges BEFORE the staged ingest: {[(e.source, e.target, e.status) for e in prev.edges if e.type == 'based-at']}")
+    w(f"- based-at edges AFTER: {[(e.source, e.target, e.status) for e in view.edges if e.type == 'based-at']}")
 except Exception:
     w("```"); w(traceback.format_exc()); w("```")
 w()

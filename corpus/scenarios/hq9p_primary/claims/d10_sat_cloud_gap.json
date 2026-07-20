@@ -2,18 +2,18 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l4",
+    "claim_id": "d10-sat-cloud-gap-l11",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
       "frame": null,
-      "line": 4,
+      "line": 11,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        101,
-        140
+        447,
+        513
       ]
     },
     "event_time": null,
@@ -41,12 +41,11 @@
           "wgs84_lat": null,
           "wgs84_lon": null
         },
-        "occupancy_state": "active",
         "site_type": "air defense node"
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Suspected HQ-9/P Long-Range SAM Battery"
+      "name": "air defense node in vicinity of a known PAF forward operating base"
     },
     "polarity": "positive",
     "premises": [],
@@ -62,122 +61,8 @@
   },
   {
     "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l4-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
-      "frame": null,
-      "line": 4,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        111,
-        117
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "confidence_language": "believed to be"
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-10",
-      "kind": "exact",
-      "raw": "2025-05-10"
-    },
-    "resolved_ref": null,
-    "source_id": "d10_sat_cloud_gap",
-    "targets": null
-  },
-  {
-    "asserts": "event",
     "attributes": null,
     "claim_id": "d10-sat-cloud-gap-l14",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
-      "frame": null,
-      "line": 14,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        942,
-        1050
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-10",
-      "kind": "exact",
-      "raw": "2025-05-10"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "object_type": "transporter-erector-launchers (TELs)"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "transporter-erector-launchers (TELs)"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-05-10",
-        "kind": "exact",
-        "raw": "2025-05-10"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-10",
-      "kind": "exact",
-      "raw": "2025-05-10"
-    },
-    "resolved_ref": null,
-    "source_id": "d10_sat_cloud_gap",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l14-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -205,8 +90,12 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "component",
+      "attrs": {
+        "missing_slots": [
+          "transporter-erector-launchers (TELs)"
+        ]
+      },
+      "entity_type": "known_gap",
       "form": "entity",
       "name": "transporter-erector-launchers (TELs)"
     },
@@ -223,9 +112,60 @@
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d10-sat-cloud-gap-l16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1188,
+        1335
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement radar array"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233 (H-200) engagement radar array"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d10-sat-cloud-gap-l16-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -287,9 +227,13 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l16-2",
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d10-sat-cloud-gap-l11",
+      "_subject_mention": "d10-sat-cloud-gap-l16"
+    },
+    "claim_id": "d10-sat-cloud-gap-l16-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -299,11 +243,16 @@
       "region": null,
       "row": null,
       "span": [
-        1262,
-        1301
+        1188,
+        1335
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -317,13 +266,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "component_class": "engagement radar array",
-        "functional_role": "engagement radar"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "HT-233 (H-200)"
+      "form": "triple",
+      "object": "air defense node in vicinity of a known PAF forward operating base",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HT-233 (H-200) engagement radar array"
     },
     "polarity": "positive",
     "premises": [],
@@ -340,7 +287,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l16-3",
+    "claim_id": "d10-sat-cloud-gap-l16-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -351,7 +298,7 @@
       "row": null,
       "span": [
         1341,
-        1419
+        1420
       ]
     },
     "event_time": null,
@@ -369,6 +316,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "component_class": "vehicle",
         "functional_role": "support"
       },
       "entity_type": "component",
@@ -390,7 +338,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l16-4",
+    "claim_id": "d10-sat-cloud-gap-l16-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -401,7 +349,7 @@
       "row": null,
       "span": [
         1341,
-        1419
+        1420
       ]
     },
     "event_time": {
@@ -460,6 +408,64 @@
     "targets": null
   },
   {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d10-sat-cloud-gap-l11",
+      "_subject_mention": "d10-sat-cloud-gap-l16-4"
+    },
+    "claim_id": "d10-sat-cloud-gap-l16-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1341,
+        1420
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "air defense node in vicinity of a known PAF forward operating base",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "support vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": null,
     "claim_id": "d10-sat-cloud-gap-l19",
@@ -472,8 +478,8 @@
       "region": null,
       "row": null,
       "span": [
-        1962,
-        2017
+        1526,
+        1793
       ]
     },
     "event_time": null,
@@ -491,13 +497,123 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "missing_slots": [
-          "launcher count, reload status, and radar emission state"
-        ]
+        "confidence_language": "believed to be an active HQ-9/P (export variant, reportedly designated FD-2000 in open marketing literature) long-range SAM position",
+        "family": "HQ-9"
       },
-      "entity_type": "known_gap",
+      "entity_type": "variant",
       "form": "entity",
-      "name": "launcher count, reload status, and radar emission state"
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d10-sat-cloud-gap-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2092,
+        2200
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Air Force"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d10-sat-cloud-gap-l21",
+      "_subject_mention": "d10-sat-cloud-gap-l19"
+    },
+    "claim_id": "d10-sat-cloud-gap-l21-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2092,
+        2200
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2021",
+      "year": 2021
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Air Force",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
     "premises": [],
@@ -514,7 +630,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "High-altitude satellite view of a highly dense urban area bordered by an airfield and agricultural fields.",
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "High-altitude satellite view of a highly dense urban area, airfield runway, and agricultural fields.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "25b5126aa28ddcd548561db166736eb8cd586e0b9116bb3f8aa6558c544f9b36",
@@ -535,7 +652,12 @@
       "row": null,
       "span": null
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
@@ -559,44 +681,42 @@
           "unit": null,
           "value": null
         },
-        "description": "The image shows a large, sprawling urban area with extremely high density, low-rise buildings packed closely together. To the western/left edge of the frame, portion of an airfield runway and taxiway system is visible amidst open dirt terrain. To the southeast, there are agricultural fields with varied green and brown rectangular plots. In the northeastern portion, there is a large rectangular grid-patterned area (possibly a structured plantation, orchards, or a planned layout). Several main road arteries cut through the dense urban fabric. Individual vehicles, aircraft, or small tactical objects are not clearly resolvable due to the high-altitude perspective.",
+        "description": "This high-altitude satellite view shows an expansive, highly dense urban area characterized by closely packed grey and light-colored structures with a complex street network. On the mid-left side, a paved runway, taxiway, and airfield infrastructure are clearly visible amidst open dirt ground. To the northeast (top right), there is a large, organized rectangular grid layout consisting of multiple parallel rows of plots or small structures. The southeast (bottom right) portion features green agricultural fields of irregular and rectangular shapes interspersed with smaller settlements. Major roads and possible railway lines segment the urban density.",
         "frame_kind": "satellite",
         "geometry_tokens": [
           "runway",
-          "urban_area",
-          "roads",
-          "agricultural_plots"
+          "urban",
+          "grid",
+          "fields"
         ],
-        "gsd_note": "High-altitude satellite overview; individual tactical objects or vehicles cannot be resolved.",
         "observed_features": [
           {
-            "arrangement": "parallel / intersecting",
-            "feature": "runway / taxiway",
-            "note": "Airfield structure visible on the middle-left edge.",
-            "shape": "linear / rectangular"
+            "arrangement": "isolated",
+            "feature": "runway",
+            "note": "Paved runway and taxiway system visible on the left side of the frame.",
+            "shape": "linear"
           },
           {
-            "arrangement": "high-density network",
-            "feature": "urban fabric",
-            "note": "Tightly packed, low-rise buildings covering most of the central and southwestern areas.",
-            "shape": "irregular / dense"
+            "arrangement": "dense",
+            "feature": "urban area",
+            "note": "Extremely dense, greyish residential/commercial urban matrix.",
+            "shape": "irregular"
           },
           {
-            "arrangement": "grid / rectangular plots",
-            "feature": "agricultural fields",
-            "note": "Cultivated plots in the southeastern corner.",
+            "arrangement": "grid",
+            "feature": "structured plots",
+            "note": "A large organized grid of rows and plots in the upper right quadrant.",
             "shape": "rectangular"
           },
           {
-            "arrangement": "regular grid layout",
-            "feature": "structured area",
-            "note": "A large grid-like pattern in the northeastern corner.",
-            "shape": "grid / rectangular"
+            "arrangement": "clustered",
+            "feature": "agricultural fields",
+            "note": "Green agricultural patches in the lower-right area.",
+            "shape": "rectangular"
           }
         ],
-        "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "The image shows a large, sprawling urban area with extremely high density, low-rise buildings packed closely together. To the western/left edge of the frame, portion of an airfield runway and taxiway system is visible amidst open dirt terrain. To the southeast, there are agricultural fields with varied green and brown rectangular plots. In the northeastern portion, there is a large rectangular grid-patterned area (possibly a structured plantation, orchards, or a planned layout). Several main road arteries cut through the dense urban fabric. Individual vehicles, aircraft, or small tactical objects are not clearly resolvable due to the high-altitude perspective.",
+        "site_signature_geometry": "This high-altitude satellite view shows an expansive, highly dense urban area characterized by closely packed grey and light-colored structures with a complex street network. On the mid-left side, a paved runway, taxiway, and airfield infrastructure are clearly visible amidst open dirt ground. To the northeast (top right), there is a large, organized rectangular grid layout consisting of multiple parallel rows of plots or small structures. The southeast (bottom right) portion features green agricultural fields of irregular and rectangular shapes interspersed with smaller settlements. Major roads and possible railway lines segment the urban density.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",

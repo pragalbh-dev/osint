@@ -194,9 +194,13 @@ def test_corroboration_inference_carries_both_premises() -> None:
     # premises = [the observation just emitted, the ingested literature fingerprint].
     assert inf.premises == [obs.claim_id, "ref01-l1"]
     assert isinstance(inf.payload, Triple)
-    assert inf.payload.predicate == "based-at"
-    assert inf.payload.object == "HQ-9"  # the variant flows from the literature reference, not the VLM
-    assert inf.payload.subject == obs.payload.name  # the same site anchor the observation created
+    # The OBSERVED-occupancy lane, equipment -> site: a pixel read can support "this kit was seen here",
+    # never "this formation is based here" (`based-at`, unit -> basing_site, DERIVED elsewhere at its own
+    # lower confidence). The bridge used to assert <site, based-at, variant> — off-lane in BOTH type and
+    # direction against the ontology (EVAL RCA §2.3 / D-P4.2).
+    assert inf.payload.predicate == "observed-at"
+    assert inf.payload.subject == "HQ-9"  # the variant flows from the literature reference, not the VLM
+    assert inf.payload.object == obs.payload.name  # the same site anchor the observation created
     assert inf.attributes is not None
     assert inf.attributes.get("corroborated_against") == "ref01-l1"
 

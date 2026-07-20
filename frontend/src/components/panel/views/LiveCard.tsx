@@ -8,6 +8,7 @@
 import { useWorkbench } from '@/store/workbench'
 import type { LiveReviewItem } from '@/api/adapters'
 import { TierDots } from '@/components/status/TierDots'
+import { AlertEvidence } from './AlertEvidence'
 
 function BackButton({ onClick }: { onClick: () => void }) {
   return (
@@ -84,6 +85,9 @@ function AlertContext({ item }: { item: LiveReviewItem }) {
       {c.severity && (
         <div className="mt-2 font-mono text-[10.5px] text-text-faint">severity · {c.severity}</div>
       )}
+      {/* "Is it real?" is only answerable from evidence — both sides of the change are one
+          click from their sources, and a held supersession explains itself in its own words. */}
+      <AlertEvidence provenance={c.provenance} holdReasons={c.holdReasons} />
     </div>
   )
 }

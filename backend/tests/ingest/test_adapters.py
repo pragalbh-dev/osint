@@ -288,6 +288,64 @@ def test_grid_stated_in_prose_is_detected_and_decoded_despite_a_toponym_label() 
     assert loc.proposed_alias is None  # a grid is not a place-name proposal for RESOLVE
 
 
+# ── Absolute-beats-relative precedence ─────────────────────────────────────────────────────────
+#
+# Sources state a position the way a human writes it: the exact reference AND a landmark gloss, in
+# one breath. The regression these pin: the trailing "~1.5 km NE of …" prose won the format vote for
+# the *whole* string, so the grid at the front was never parsed and the origin site of the flagship
+# relocation beat carried no coordinates — unplottable on the map.
+
+def test_grid_with_a_relative_descriptive_tail_is_absolute_not_relative() -> None:
+    # The verbatim d17_rawalpindi_2021 string, descriptive tail and all.
+    raw = ("Grid: 43S CT 23715 21242 (MGRS, WGS84), ~1.5 km NE of the main Nur Khan runway "
+           "threshold, within the eastern perimeter security belt of the base, Rawalpindi "
+           "District, Punjab, Pakistan")
+    assert adapters.detect_surface_format(raw, declared="relative") == "MGRS"
+    loc = normalize_location(raw, surface_format="relative", geocoder=None)
+    assert loc is not None
+    assert loc.surface_format == "MGRS"
+    assert loc.wgs84_lat is not None and loc.wgs84_lon is not None
+    # Nur Khan / Chaklala airbase, Rawalpindi — the grid must land on the base its prose names.
+    assert geodesic((33.61639, 73.09972), (loc.wgs84_lat, loc.wgs84_lon)).m < 50
+    assert loc.precision_class == "pad"
+    assert loc.proposed_alias is None  # a grid is not a place-name proposal for RESOLVE
+    # No geocoder was injected: the coordinate can only have come from parsing the string itself.
+    assert [c.source for c in loc.geocode_candidates] == ["coord-parse"]
+
+
+def test_dms_with_a_relative_descriptive_tail_is_absolute_too() -> None:
+    # The precedence is a rule about absolute-vs-relative, not a special case for one grid string.
+    loc = normalize_location("32°14′20″N 074°07′52″E, ~1.5 km NE of the runway", geocoder=None)
+    assert loc is not None and loc.surface_format == "DMS"
+    assert (loc.wgs84_lat, loc.wgs84_lon) == pytest.approx((32.23889, 74.13111), abs=1e-4)
+
+
+@pytest.mark.parametrize("raw", [
+    "about 1.5 km NE of the main Nur Khan runway threshold",
+    "~12 km NNW of Kala Chitta / Attock Cantt area",
+    "12-15 km NE of Sargodha",  # the digit-hyphen-digit run also trips the sexagesimal marker
+    "roughly 3 miles SW of the Port Qasim container terminal",
+])
+def test_a_genuinely_relative_string_stays_relative_and_gets_no_coordinates(raw: str) -> None:
+    # The mirror of the fix: with no absolute coordinate recoverable from the text, nothing may be
+    # invented. Offline (no geocoder) a relative ref must carry no coordinate at all.
+    assert adapters.detect_surface_format(raw) == "relative"
+    loc = normalize_location(raw, geocoder=None)
+    assert loc is not None
+    assert loc.surface_format == "relative"
+    assert loc.wgs84_lat is None and loc.wgs84_lon is None
+    assert loc.geocode_candidates == []
+
+
+def test_relative_geocode_offset_still_works_when_no_grid_is_stated() -> None:
+    # Absolute-first must not disable the Rahwali beat: anchor geocode + great-circle offset.
+    gc = _FakeGeocoder({"Rahwali airfield": (32.239, 74.131, "Rahwali, Punjab, PK")})
+    loc = normalize_location("~10 km NE of Rahwali airfield", geocoder=gc)
+    assert loc is not None and loc.surface_format == "relative"
+    assert loc.wgs84_lat is not None and loc.wgs84_lon is not None
+    assert geodesic((32.239, 74.131), (loc.wgs84_lat, loc.wgs84_lon)).km == pytest.approx(10, abs=0.1)
+
+
 def test_place_name_mislabelled_as_a_grid_still_geocodes() -> None:
     # The mirror bug: a declared coordinate format must not send a name into a parser it can't match.
     gc = _FakeGeocoder({"Rahwali airfield": (32.239, 74.131, "Rahwali, Punjab, PK")})

@@ -12,7 +12,7 @@
 #   Or over SSH:     ssh <box> 'bash -s' < deploy/prove-live.sh
 set -euo pipefail
 
-IMAGE="${IMAGE:-ghcr.io/pragalbh-dev/osint:skeleton}"
+IMAGE="${IMAGE:-ghcr.io/pragalbh-dev/osint:latest}"
 NET="chanakya-x0"; APP="chanakya-x0-app"; TUN="chanakya-x0-tunnel"
 
 # --- resolve how to call docker (direct, or via passwordless sudo) ---
@@ -57,7 +57,7 @@ for _ in $(seq 1 30); do
   [ "$code" = "200" ] && break; sleep 2
 done
 health=$(curl -s --max-time 10 "$URL/health" 2>/dev/null || echo "<pending>")
-spa=$(curl -s --max-time 10 "$URL/" 2>/dev/null | grep -qi '<!doctype html' && echo 'HTML served (it boots)' || echo 'pending')
+spa=$(curl -s --max-time 10 "$URL/" 2>/dev/null | grep -qi '<!doctype html' && echo 'HTML served (the SPA)' || echo 'pending')
 
 echo
 echo "==================== X0 LIVE PROOF ===================="

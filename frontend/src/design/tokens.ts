@@ -43,7 +43,10 @@ export const HALO = { dash: [4, 4], width: 1.5, color: 'rgba(47,184,155,0.55)' }
 export type StatusKey = keyof typeof STATUS
 export type FreshnessKey = keyof typeof FRESHNESS
 
-export function fillFor(freshness: FreshnessKey, family: 'live' | 'history' = 'live'): string {
-  const rgb = family === 'history' ? '107,117,124' : '47,184,155'
-  return `rgba(${rgb},${FRESHNESS[freshness]})`
+// family 'problem' at 'fresh' reproduces --fill-problem (rgba(224,112,74,0.18)) — the
+// contradicted fill. Kept here so canvas consumers never hardcode a hex.
+const FAMILY_RGB = { live: '47,184,155', history: '107,117,124', problem: '224,112,74' } as const
+
+export function fillFor(freshness: FreshnessKey, family: keyof typeof FAMILY_RGB = 'live'): string {
+  return `rgba(${FAMILY_RGB[family]},${FRESHNESS[freshness]})`
 }

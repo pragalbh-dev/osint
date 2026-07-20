@@ -24,18 +24,39 @@ from chanakya.schemas import ClaimRecord, ConfigBundle
 from chanakya.schemas.values import canonical_iso_bounds
 
 
-def claim_available_iso(claim: ClaimRecord) -> str | None:
-    """The ISO date a claim became available to us — ``ingest_time`` if known, else ``report_time``.
-
-    This is the *bitemporal availability* clock (when we received it), distinct from ``event_time`` (when
-    the fact was true in the world). Used for the rewind filter, so "as of a past date" excludes evidence
-    that had not yet arrived. Returns the latest bound of the coarsest available stamp, or ``None``.
-    """
+def _latest_stamp_iso(claim: ClaimRecord) -> str | None:
+    """The latest ISO bound of the coarsest availability stamp a claim carries (``None`` if undated)."""
     for stamp in (claim.ingest_time, claim.report_time):
         _, hi = canonical_iso_bounds(stamp)
         if hi is not None:
             return hi
     return None
+
+
+def claim_available_iso(claim: ClaimRecord) -> str | None:
+    """The ISO date a claim became available to us — the **rewind filter's** clock (transaction time).
+
+    ``ingest_time`` if known, else ``report_time``: when we *received* it, distinct from ``event_time``
+    (when the fact was true in the world). Consumed only by :func:`is_available_by`, so an "as we knew it
+    on <date>" view excludes evidence that had not yet arrived. Returns the latest bound of the coarsest
+    available stamp, or ``None``.
+
+    **Deliberately separate from** :func:`claim_reference_iso` even though both read the same stamps
+    today: this one defines *what the rewind hides*, the other defines *what "now" means for freshness*.
+    Folding them back into one function would make any change to the rewind's definition silently move
+    every half-life in the graph (RCA MON-2 / D-P4.5).
+    """
+    return _latest_stamp_iso(claim)
+
+
+def claim_reference_iso(claim: ClaimRecord) -> str | None:
+    """The ISO date a claim contributes to the **fallback evaluation "now"** (the freshness reference).
+
+    Consumed only by :func:`effective_as_of`, and only when no ``as_of`` is pinned: the newest of these is
+    the latest moment the corpus can honestly claim to speak for, so ages are measured against it instead
+    of a wall clock (G1/G2). See :func:`claim_available_iso` for why the two are not one function.
+    """
+    return _latest_stamp_iso(claim)
 
 
 def effective_as_of(config: ConfigBundle, claims: Iterable[ClaimRecord]) -> str | None:
@@ -47,7 +68,7 @@ def effective_as_of(config: ConfigBundle, claims: Iterable[ClaimRecord]) -> str 
     pinned = config.credibility.as_of
     if pinned:
         return pinned
-    available = [iso for c in claims if (iso := claim_available_iso(c)) is not None]
+    available = [iso for c in claims if (iso := claim_reference_iso(c)) is not None]
     return max(available) if available else None
 
 

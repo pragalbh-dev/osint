@@ -79,6 +79,7 @@ from .values import (
 )
 from .view import (
     Alert,
+    AlertProvenance,
     ConfidenceBreakdown,
     EdgeView,
     EventView,
@@ -110,7 +111,7 @@ __all__ = [
     # stage io
     "Partition", "PlaceRef", "AssertionInput", "AssertionAssessment", "pair_key",
     # view
-    "GraphView", "NodeView", "EdgeView", "EventView", "KnownGap", "Alert",
+    "GraphView", "NodeView", "EdgeView", "EventView", "KnownGap", "Alert", "AlertProvenance",
     "ConfidenceBreakdown", "IndependenceGroup", "Freshness", "SufficiencyEval", "MaterialityAttrs",
     "Status", "ObservabilityCeiling",
     # config

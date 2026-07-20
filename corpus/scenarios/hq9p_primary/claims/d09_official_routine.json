@@ -1,8 +1,69 @@
 [
   {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "stated",
+      "_object_mention": "d09-official-routine-l8-3",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d09-official-routine-l8-4",
+      "source_quote": "As part of Pakistan Army Air Defence Command's periodic training calendar, a scheduled training activity involving long-range air defence assets was conducted today, 09 May 2025"
+    },
+    "claim_id": "d09-official-routine-l8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        114,
+        291
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "09 May 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence Command",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "long-range air defence assets"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
+    "resolved_ref": null,
+    "source_id": "d09_official_routine",
+    "targets": null
+  },
+  {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d09-official-routine-l8",
+    "claim_id": "d09-official-routine-l8-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt",
@@ -74,7 +135,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d09-official-routine-l8-2",
+    "claim_id": "d09-official-routine-l8-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt",
@@ -106,6 +167,54 @@
       "entity_type": "unit",
       "form": "entity",
       "name": "Pakistan Army Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
+    "resolved_ref": null,
+    "source_id": "d09_official_routine",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d09-official-routine-l8-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d09_official_routine.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        191,
+        258
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "long-range air defence assets"
     },
     "polarity": "positive",
     "premises": [],

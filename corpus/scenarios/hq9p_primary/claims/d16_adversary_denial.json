@@ -1,55 +1,10 @@
 [
   {
     "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d16-adversary-denial-l3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
-      "frame": null,
-      "line": 3,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        149,
-        164
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "source_type": "social"
-      },
-      "entity_type": "source",
-      "form": "entity",
-      "name": "SentinelHawk_PK"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d16_adversary_denial",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
     "attributes": {
       "posted_at": "May 2025"
     },
-    "claim_id": "d16-adversary-denial-l3-2",
+    "claim_id": "d16-adversary-denial-l3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
@@ -143,7 +98,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly fielded"
+        "activity": "fielded"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -185,7 +140,7 @@
       "row": null,
       "span": [
         2814,
-        2913
+        2942
       ]
     },
     "event_time": {
@@ -253,8 +208,8 @@
       "region": null,
       "row": null,
       "span": [
-        3808,
-        3824
+        3804,
+        4125
       ]
     },
     "event_time": null,
@@ -298,8 +253,8 @@
       "region": null,
       "row": null,
       "span": [
-        4131,
-        4141
+        4127,
+        4375
       ]
     },
     "event_time": null,
@@ -322,6 +277,51 @@
       "entity_type": "source",
       "form": "entity",
       "name": "Falcon_ISR"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d16_adversary_denial",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d16-adversary-denial-l29",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
+      "frame": null,
+      "line": 29,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4377,
+        4551
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "SentinelHawk_PK"
     },
     "polarity": "positive",
     "premises": [],

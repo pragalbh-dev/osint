@@ -17,7 +17,42 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from chanakya.schemas import OntologyConfig
+from chanakya.schemas import CredibilityConfig, OntologyConfig
+
+_FROM_END = "from"  # default supplier end (supplier == source; the dominant sustainment convention)
+_TO_END = "to"
+
+# Freshness classes (config/ontology.yaml `freshness_class`) that DECAY — an edge on one of these must
+# have a reachable half-life or it silently scores as eternal (the SC-2 defect). `durable` / `n/a` never
+# decay, so they are exempt from the reachability lint. Strings, not scoring numbers (gate G6).
+_DECAYING_CLASSES = frozenset({"perishable", "semi-durable", "force-revalidated"})
+
+# The default supersede/relocation instance key: both endpoints (a multi-valued edge — a variant has many
+# components, so each object is its own instance). A FUNCTIONAL edge overrides this to `("from",)`.
+_DEFAULT_INSTANCE_KEY: tuple[str, ...] = (_FROM_END, _TO_END)
+
+
+def build_edge_instance_key(
+    subject: str, predicate: str, obj: str, ends: tuple[str, ...] = _DEFAULT_INSTANCE_KEY
+) -> str:
+    """The single definition of the ``edge_instance`` grouping-key string (EVAL RCA §2.1 / D-P4.4).
+
+    ``ends`` names the endpoints that identify the instance: ``("from", "to")`` (default) embeds the object
+    so each ``(subject, predicate, object)`` is its own instance — the pre-fix behaviour, byte-identical
+    for every non-functional edge. ``("from",)`` drops the object, so a **functional** edge's two targets
+    for one subject (a unit's before/after basing site) share one instance and ``view.supersede`` /
+    ``observe`` / the co-instance relocation exclusion can all see both — the three mechanisms §2.1 found
+    dead. Order is fixed ``edge:<subject>:<predicate>:<object>`` so the default is unchanged on the wire.
+    Used by BOTH producers (``resolve.entities.base_ref`` and the ``view.pipeline`` fallback) via
+    :meth:`EdgeLaneIndex.edge_instance_key`, so the two can never drift apart again.
+    """
+    parts = ["edge"]
+    if _FROM_END in ends:
+        parts.append(subject)
+    parts.append(predicate)
+    if _TO_END in ends:
+        parts.append(obj)
+    return ":".join(parts)
 
 
 @dataclass(frozen=True)
@@ -52,13 +87,37 @@ class EdgeLaneIndex:
         self._by_endpoints: dict[tuple[str, str], str] = {}
         self._extractor: list[str] = []
         self._names: set[str] = set()
+        self._ordered: list[str] = []  # declaration order (deterministic accessors)
         self._symmetric: set[str] = set()
         self._endpoints: dict[str, tuple[list[str], list[str]]] = {}
+        self._supplier_end: dict[str, str] = {}  # sustainment edge → which endpoint holds the supplier
+        self._freshness_class: dict[str, str] = {}  # edge → its declared ontology freshness class
+        self._instance_key: dict[str, tuple[str, ...]] = {}  # edge → endpoints that form its instance key
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
+            if e.name not in self._names:
+                self._ordered.append(e.name)
             self._names.add(e.name)
             if e.symmetric:
                 self._symmetric.add(e.name)
+            # freshness_class is declared on every edge (config/ontology.yaml) and drives SCORE's
+            # class-level half-life default (D-P4.13/SC-2); read via getattr (ConfigModel extra="allow").
+            fclass = getattr(e, "freshness_class", None)
+            if isinstance(fclass, str):
+                self._freshness_class[e.name] = fclass
+            # supplier_end is a plain YAML field (ConfigModel extra="allow"), read for the chokepoint
+            # direction (D-P4.7); only from/to are meaningful, anything else is ignored.
+            end = getattr(e, "supplier_end", None)
+            if isinstance(end, str) and end in (_FROM_END, _TO_END):
+                self._supplier_end[e.name] = end
+            # instance_key is a plain YAML list (ConfigModel extra="allow"): which endpoints form the
+            # supersede/relocation instance key (D-P4.4). Keep only from/to entries, in canonical order;
+            # anything else (or empty) falls back to the default at read time.
+            ik = getattr(e, "instance_key", None)
+            if isinstance(ik, (list, tuple)):
+                ends = tuple(k for k in (_FROM_END, _TO_END) if k in ik)
+                if ends:
+                    self._instance_key[e.name] = ends
             # domain/range is declared on every directional edge, extractor or not — RESOLVE types a
             # triple ENDPOINT from it (RES-1), which is a separate concern from the extraction enum.
             self._endpoints[e.name] = (e.from_types(), e.to_types())
@@ -95,6 +154,88 @@ class EdgeLaneIndex:
     def extractor_edges(self) -> list[str]:
         """The extraction enum — the relationship edges the LLM is allowed to assert (declaration order)."""
         return list(self._extractor)
+
+    def traversable_edges(self) -> list[str]:
+        """The edges safe to walk as *directed relations* in a multi-hop trace (declaration order).
+
+        Every declared edge **minus the symmetric lanes** — the resolution lane (``same-as`` /
+        ``distinct-from`` / ``coref-same-as`` / ``substitutable-by``) and the evidence/derived lane
+        (``evidenced-by`` / ``corroborates`` / ``contradicts`` / ``derived-from`` / ``supersedes``). A
+        ``distinct-from`` edge asserts **non**-identity and an evidence edge is provenance, so a path
+        through either is a false fact-chain, not a relation (spine/09 AS-4). This is the ontology
+        *declaring* which lanes are relations, read by :func:`chanakya.agent.tools.find_paths` as its
+        default whitelist — never a hardcoded edge list on any one query.
+        """
+        return [name for name in self._ordered if name not in self._symmetric]
+
+    def supplier_end(self, edge_type: str) -> str:
+        """Which endpoint of a sustainment edge holds the **supplier** — ``"from"`` (source) or ``"to"``
+        (target); the *dependent* end is the other one.
+
+        Declared per-edge in ``config/ontology.yaml`` (``supplier_end``); defaults to ``"from"`` (supplier
+        == source, the dominant convention) for any edge that doesn't declare it. Read by
+        :func:`chanakya.materiality.precompute` so the sole-source in-degree TEST runs on the dependent
+        end while the chokepoint FINDING attaches to the supplier end — one direction of truth for both
+        the nomination pass and the dependency-closure pass (``exported-by`` puts the supplier on ``to``).
+        """
+        return self._supplier_end.get(edge_type, _FROM_END)
+
+    def freshness_class(self, edge_type: str) -> str | None:
+        """The ontology ``freshness_class`` declared on an edge — ``perishable`` / ``semi-durable`` /
+        ``force-revalidated`` / ``durable`` / ``n/a`` — or ``None`` for an unknown edge (or one that
+        declares none).
+
+        The bridge SCORE's freshness lookup uses to fall back to a **class-level** half-life
+        (``credibility.half_life_defaults[<class>]``) when no per-edge/variant half-life is configured.
+        Without it the declared ``freshness_class`` is dead metadata and a perishable edge with only
+        variant sub-keys (``based-at.field``/``.garrison``, never a bare ``based-at``) scores as eternal —
+        the SC-2 defect. Config-driven: the class names live in ``config/ontology.yaml`` (gate G6).
+        """
+        return self._freshness_class.get(edge_type)
+
+    def instance_key(self, edge_type: str) -> tuple[str, ...]:
+        """Which endpoints form an edge's supersede/relocation **instance key** — ``("from",)`` for a
+        FUNCTIONAL / single-valued-over-time edge (``based-at``: a unit is at one site at a time) or
+        ``("from", "to")`` (the default) for a multi-valued edge (a variant has many components).
+
+        Declared per-edge in ``config/ontology.yaml`` (``instance_key: [from]`` / ``[from, to]``). The
+        object is IN the default key, so each ``(subject, predicate, object)`` is its own instance; a
+        functional edge drops the object so a subject's two targets collapse to one instance and
+        ``view.supersede`` can compare them (EVAL RCA §2.1 — the fix that revives supersede / the
+        occupancy-crossing detector / the co-instance relocation exclusion at once).
+        """
+        return self._instance_key.get(edge_type, _DEFAULT_INSTANCE_KEY)
+
+    def edge_instance_key(self, subject: str, predicate: str, obj: str) -> str:
+        """Build the ``edge_instance`` grouping key for a triple, honouring the edge's declared
+        :meth:`instance_key`. The ONE key-builder both producers call
+        (``resolve.entities.base_ref`` and the ``view.pipeline`` assembly fallback), so a functional edge's
+        object is excluded identically on both paths and they can never diverge again (D-P4.4)."""
+        return build_edge_instance_key(subject, predicate, obj, self.instance_key(predicate))
+
+    def unreachable_half_lives(self, credibility: CredibilityConfig) -> dict[str, str]:
+        """Decaying edges with **no reachable half-life** → ``{edge: freshness_class}`` (a config error).
+
+        An edge whose ``freshness_class`` decays (perishable / semi-durable / force-revalidated) but has
+        **neither** a bare ``<edge>`` key in ``credibility.half_lives_days`` **nor** a
+        ``half_life_defaults[<class>]`` entry falls through to no-decay and scores as **eternal** — a
+        perishable tripwire that can never go stale (the SC-2 trap). Variant sub-keys (``<edge>.<x>``) do
+        **not** count as reachable: nothing tags ``freshness_variant`` on a claim, so a claim on such an
+        edge would still miss them. Surfaced (like :attr:`collisions`) for the caller to assert-empty as a
+        loud gate; it does not hard-crash — mirroring the collisions precedent.
+        """
+        half_lives = getattr(credibility, "half_lives_days", {}) or {}
+        defaults = getattr(credibility, "half_life_defaults", {}) or {}
+        offenders: dict[str, str] = {}
+        for edge, fclass in self._freshness_class.items():
+            if fclass not in _DECAYING_CLASSES:
+                continue
+            if edge in half_lives:  # a bare per-edge half-life is reachable for any claim on this edge
+                continue
+            if defaults.get(fclass) is not None:  # a class default is reachable
+                continue
+            offenders[edge] = fclass
+        return offenders
 
     def is_known(self, name: str) -> bool:
         """True if ``name`` is any declared edge type (extractor or not)."""

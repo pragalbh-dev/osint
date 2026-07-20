@@ -1,15 +1,22 @@
 """``python -m chanakya.ingest`` — the INGEST command line (SHIP wires ``make extract`` to it).
 
-Two subcommands, one per side of the KEYLESS ≡ LIVE split (see :mod:`chanakya.ingest.seed`):
+The two sides of the KEYLESS ≡ LIVE split (see :mod:`chanakya.ingest.seed`), plus the offline enrichment
+passes that run *between* them:
 
 * ``extract --scenario <name>`` — the **keyed recorder.** Resolve a live extraction client from the
   environment (``GEMINI_API_KEY`` / ``ANTHROPIC_API_KEY``); if none is present, exit non-zero rather than
   fabricate — the frozen bundles can only be *re*-recorded with a real model. Re-freezes every bundle for
   the scenario in place under ``corpus/scenarios/<scenario>/claims`` with the pinned ingest time, so the
-  output is byte-stable and diffable against the checked-in baseline.
+  output is byte-stable and diffable against the checked-in baseline. ``--only <source_id>…`` scopes the
+  run to a few sources when one lane of the extractor changed.
 * ``seed --scenario <name>`` — the **keyless boot check.** Append the scenario's frozen bundles into a
   fresh in-memory evidence log and report the claim count — a fast, side-effect-free validation that the
   keyless path parses and loads (the same path the app boot runs).
+* ``attribute`` / ``basing --scenario <name>`` — the **offline enrichment passes**: the connection-triggered
+  variant-identity proposer (keyed) and the derived unit→site basing proposer (keyless). Both read the
+  frozen resolved view, emit cited ``inference`` claims upstream of the append, and ``--record`` freezes
+  them as ``*__attr.json`` / ``*__basing.json`` bundles that survive a re-record of the source documents.
+* ``renormalize --scenario <name>`` — re-run the deterministic location canonicaliser over the bundles.
 """
 
 from __future__ import annotations
@@ -22,6 +29,7 @@ from chanakya.config.store import ConfigStore
 from chanakya.ingest import adapters, seed
 from chanakya.ingest.client import build_extraction_client
 from chanakya.schemas import ConfigBundle
+from chanakya.schemas.claim import Triple
 from chanakya.store.log import EvidenceLog
 
 
@@ -45,7 +53,7 @@ def _cmd_extract(args: argparse.Namespace) -> int:
     geocoder = adapters.build_geocoder(config, online=not args.offline)
     written = seed.extract_corpus(
         args.scenario, client=client, config=config, ingest_time=seed.FROZEN_INGEST_TIME,
-        geocoder=geocoder,
+        geocoder=geocoder, only=(args.only or None),
     )
     for path in written:
         print(f"wrote {path}")
@@ -105,6 +113,45 @@ def _cmd_attribute(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_basing(args: argparse.Namespace) -> int:
+    """Derive cited ``<unit, based-at, site>`` attributions over the frozen resolved view (offline).
+
+    The attribution layer of the two-layer basing model (D-P4.1/2/3): an observed equipment-at-site
+    occupancy plus a formation reference become one derived, doubly-cited ``inference`` claim carrying the
+    observation's valid time. Unlike ``attribute``, this pass is a pure graph derivation, so it needs **no
+    extraction key** — the demo materialises the attribution layer keyless. ``--record`` freezes the
+    derived claims as ``*__basing.json`` bundles; otherwise they are appended and the view re-rebuilt.
+    """
+    bundles_dir = settings.corpus_dir() / "scenarios" / args.scenario / "claims"
+    if not bundles_dir.is_dir():
+        print(f"no claim bundles at {bundles_dir}", file=sys.stderr)
+        return 2
+    config = _load_config()
+    store = EvidenceLog()
+    seed.seed_store_from_bundles(store, bundles_dir)
+
+    from chanakya.ingest import basing
+    from chanakya.view.pipeline import rebuild
+
+    if args.record:
+        prev = rebuild(store, [], config)
+        run = basing.propose_basing(prev, {c.claim_id: c for c in store.replay()}, config)
+        for path in basing.freeze_bundles(run, bundles_dir):
+            print(f"wrote {path}")
+    else:
+        run = basing.enrich(store, config)
+    for skip in run.skipped:
+        print(f"skip {skip.site_id}: {skip.reason}", file=sys.stderr)
+    for claim in run.claims:
+        triple = claim.payload
+        if isinstance(triple, Triple):
+            print(f"derived {triple.subject} -{triple.predicate}-> {triple.object} "
+                  f"(premises={claim.premises}, event_time={claim.event_time})")
+    print(f"derived {len(run.claims)} basing attribution(s); "
+          f"fired {len(run.fired)}, skipped {len(run.skipped)}")
+    return 0
+
+
 def _cmd_renormalize(args: argparse.Namespace) -> int:
     """Re-run the deterministic location canonicaliser over a scenario's frozen bundles.
 
@@ -139,6 +186,8 @@ def main(argv: list[str] | None = None) -> int:
     p_extract.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
     p_extract.add_argument("--offline", action="store_true",
                            help="geocode from the gazetteer only (no Nominatim) — deterministic re-record")
+    p_extract.add_argument("--only", nargs="*", metavar="SOURCE_ID", default=None,
+                           help="re-record only these source ids (scoped re-record; skips the prune)")
     p_extract.set_defaults(func=_cmd_extract)
 
     p_seed = sub.add_parser("seed", help="load a scenario's frozen bundles into a store (keyless)")
@@ -151,6 +200,14 @@ def main(argv: list[str] | None = None) -> int:
     p_attr.add_argument("--record", action="store_true",
                         help="freeze proposed inferences as *__attr.json bundles; else append + re-rebuild")
     p_attr.set_defaults(func=_cmd_attribute)
+
+    p_basing = sub.add_parser(
+        "basing",
+        help="derive cited unit->site basing attributions over the frozen view (offline, KEYLESS)")
+    p_basing.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
+    p_basing.add_argument("--record", action="store_true",
+                          help="freeze the derived claims as *__basing.json bundles; else append + rebuild")
+    p_basing.set_defaults(func=_cmd_basing)
 
     p_renorm = sub.add_parser(
         "renormalize",

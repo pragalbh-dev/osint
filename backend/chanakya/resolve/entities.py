@@ -16,6 +16,7 @@ from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
+from chanakya.ontology import EdgeLaneIndex, build_edge_instance_key
 from chanakya.schemas import ClaimRecord, ResolvedRef, canonical_iso_bounds
 
 
@@ -32,15 +33,27 @@ def as_pair(x: Iterable[str]) -> tuple[str, str]:
     return (a, b)
 
 
-def base_ref(claim: ClaimRecord) -> ResolvedRef:
-    """The per-claim identity ref (extractor's if set, else synthesised) — matches F0's stub exactly."""
+def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedRef:
+    """The per-claim identity ref (extractor's if set, else synthesised) — matches F0's stub exactly.
+
+    For a relationship claim the ``edge_instance`` is built through ``lane`` so a **functional** edge
+    (``based-at``) keys on the subject alone and a unit's before/after basing sites share one instance
+    (EVAL RCA §2.1). ``lane`` is passed by ``resolve()``; when absent (a caller with no ontology in hand),
+    the default ``(from, to)`` key is used — byte-identical to the pre-fix ``edge:{s}:{p}:{o}`` for every
+    edge, so nothing regresses. Both this and the ``view.pipeline`` fallback route through one builder.
+    """
     if claim.resolved_ref is not None:
         return claim.resolved_ref
     p = claim.payload
     if p.form == "entity":
         return ResolvedRef(entity_id=f"ent:{p.entity_type}:{p.name}")
     if p.form == "triple":
-        return ResolvedRef(entity_id=f"ent:{p.subject}", edge_instance=f"edge:{p.subject}:{p.predicate}:{p.object}")
+        ei = (
+            lane.edge_instance_key(p.subject, p.predicate, p.object)
+            if lane is not None
+            else build_edge_instance_key(p.subject, p.predicate, p.object)
+        )
+        return ResolvedRef(entity_id=f"ent:{p.subject}", edge_instance=ei)
     return ResolvedRef(entity_id=f"event:{p.event_type}:{claim.claim_id}")
 
 
@@ -105,15 +118,20 @@ class EntityGraph:
         return [e for e in self.edges if e.subject == eid or e.object == eid]
 
 
-def build(claims: list[ClaimRecord]) -> EntityGraph:
-    """Group entity claims into profiles + collect relationship edges (post-retraction claims in)."""
+def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> EntityGraph:
+    """Group entity claims into profiles + collect relationship edges (post-retraction claims in).
+
+    ``lane`` (the ontology's edge index) is threaded so each edge's ``edge_instance`` honours the declared
+    functional/multi-valued key — that is what revives the co-instance relocation exclusion in
+    ``resolve.scoring`` (two based-at targets of one unit become co-objects of one instance again).
+    """
     entities: dict[str, Entity] = {}
     edges: list[Edge] = []
 
     for c in claims:
         p = c.payload
         if p.form == "entity":
-            eid = base_ref(c).entity_id or f"ent:{p.entity_type}:{p.name}"
+            eid = base_ref(c, lane).entity_id or f"ent:{p.entity_type}:{p.name}"
             ent = entities.get(eid)
             if ent is None:
                 ent = Entity(eid=eid, etype=p.entity_type, name=p.name)
@@ -124,7 +142,7 @@ def build(claims: list[ClaimRecord]) -> EntityGraph:
             for k, v in p.attrs.items():
                 ent.attrs.setdefault(k, v)  # first claim wins (deterministic in replay order)
         elif p.form == "triple":
-            rr = base_ref(c)
+            rr = base_ref(c, lane)
             edges.append(
                 Edge(
                     subject=p.subject,

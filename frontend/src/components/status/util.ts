@@ -17,8 +17,14 @@ export function statusBorder(status: StatusLike): string {
       return 'var(--border-possible)'
     case 'contradicted':
       return 'var(--border-contradicted)'
+    // stale = HISTORY (solid grey — we know this was overtaken)
     case 'stale':
       return 'var(--border-stale)'
+    // insufficient = an EVIDENCE GAP (dashed grey — we do NOT know). It shares the
+    // Known-Gap border deliberately, and must never fall through to the probable border,
+    // which would draw an absence of evidence as a live teal assertion.
+    case 'insufficient':
+      return 'var(--gap-border-probable-max)'
     case 'known-gap':
       return 'var(--gap-border-probable-max)'
     default:

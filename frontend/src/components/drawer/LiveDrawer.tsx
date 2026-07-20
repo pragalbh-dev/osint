@@ -9,6 +9,7 @@
 import type { ReactNode } from 'react'
 import { useWorkbench } from '@/store/workbench'
 import { useEvidence } from '@/api/hooks'
+import { useDisplayName } from '@/api/viewmodel'
 import { evidenceToDrawerModel } from '@/api/adapters'
 import type { LiveDrawerModel, LiveClaimRow } from '@/api/adapters'
 import type { DocRef, Status } from '@/api/types'
@@ -31,8 +32,9 @@ function chipStatusFor(status: Status): ChipStatus {
 }
 
 // One claim's exact source pointer, rendered as a precise locator string (file + page/line/
-// row/frame/region/span). This IS the traceable reference; deep-linking into a served source
-// viewer is a follow-up once a doc route exists.
+// row/frame/region/span). The locator is the ADDRESS of the evidence; the verbatim span the
+// backend reads back from that address (see chanakya.api.quotes) is the evidence itself, and
+// leads the block. Deep-linking into a served source viewer is a follow-up once a doc route exists.
 function docRefLabel(ref: DocRef): string {
   const parts: string[] = [ref.file]
   if (ref.page != null) parts.push(`p.${ref.page}`)
@@ -56,20 +58,13 @@ function whySentence(m: LiveDrawerModel): string {
   return `Held at ${STATUS_WORD[m.status].toLowerCase()} — ${bits.join('; ')}.`
 }
 
+// The demo drawer's KICKER, verbatim (Drawer.tsx) — 10.5px sans, 0.06em tracking,
+// SENTENCE CASE. The copy deck is explicit: "Sentence case. Always. No ALL CAPS."
+// A mono/uppercase variant here was a second visual language for the same object.
+const KICKER = { fontSize: 10.5, color: 'var(--text-faint)', letterSpacing: '0.06em' } as const
+
 function Kicker({ children }: { children: ReactNode }) {
-  return (
-    <div
-      style={{
-        font: '10px/1 ui-monospace,Menlo,monospace',
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: 'var(--text-faint)',
-        marginBottom: 8,
-      }}
-    >
-      {children}
-    </div>
-  )
+  return <div style={{ ...KICKER, marginBottom: 8 }}>{children}</div>
 }
 
 function Section({ children }: { children: ReactNode }) {
@@ -96,7 +91,7 @@ function ClaimRow({ row, expanded, onToggle, status }: { row: LiveClaimRow; expa
             marginTop: 8,
             padding: '10px 12px',
             border: '1px solid var(--hairline)',
-            borderRadius: 6,
+            borderRadius: 4, // --radius-node; 6 was off-system
             background: 'var(--bg)',
             font: '10.5px/1.6 ui-monospace,Menlo,monospace',
             color: 'var(--text-dim)',
@@ -105,15 +100,39 @@ function ClaimRow({ row, expanded, onToggle, status }: { row: LiveClaimRow; expa
           {row.dates.event && <div>event · {row.dates.event}</div>}
           {row.dates.reported && <div>reported · {row.dates.reported}</div>}
           {row.dates.ingested && <div>ingested · {row.dates.ingested}</div>}
-          {row.docRefs.length > 0 && (
-            <div style={{ marginTop: 6 }}>
-              {row.docRefs.map((ref, i) => (
-                <div key={i} style={{ color: 'var(--live)' }} title="exact source locator">
+          {/* The cited source, quote first. Same order the demo drawer uses: dates, hairline,
+              then the words. The locator drops underneath as technical detail — an analyst
+              audits the claim by READING it, not by reading a byte range. */}
+          {row.docRefs.map((ref, i) => {
+            const quote = row.quotes[i] ?? ''
+            return (
+              <div
+                key={i}
+                style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--hairline)' }}
+              >
+                {quote ? (
+                  <div
+                    style={{
+                      font: '12px/1.5 ui-sans-serif,system-ui,sans-serif',
+                      color: 'var(--text)',
+                      textWrap: 'pretty',
+                    }}
+                  >
+                    “{quote}”
+                  </div>
+                ) : (
+                  // No quote is never papered over with a paraphrase — say the span could not
+                  // be read and leave the locator as the only claim being made.
+                  <div style={{ color: 'var(--text-faint)' }}>
+                    (the cited span could not be read back from this document)
+                  </div>
+                )}
+                <div style={{ marginTop: 6, color: 'var(--text-faint)' }} title="exact source locator">
                   → {docRefLabel(ref)}
                 </div>
-              ))}
-            </div>
-          )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
@@ -136,19 +155,18 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
             {STATUS_WORD[model.status]}
           </span>
         </div>
-        <div style={{ font: '11px/1 ui-monospace,Menlo,monospace', color: 'var(--text-faint)' }}>
-          {model.subjectRef}
-        </div>
+        {/* the ref itself now leads the header block above — not repeated here */}
         <div style={{ font: '12px/1.4 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginTop: 10 }}>
           {model.sources} source{model.sources === 1 ? '' : 's'} · {model.looks} independent look
           {model.looks === 1 ? '' : 's'}
         </div>
       </Section>
 
-      {/* why not confirmed / what's missing */}
+      {/* the sufficiency check — the pack's own copy ("To raise this", doc 09 §hierarchy
+          item 7). It names the next action and its date rather than the shortfall. */}
       {why && (
         <Section>
-          <Kicker>Why not confirmed</Kicker>
+          <Kicker>To raise this</Kicker>
           <div style={{ font: '12.5px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>{why}</div>
           {model.sufficiency?.nextCoverageDue && (
             <div style={{ font: '11px/1.4 ui-monospace,Menlo,monospace', color: 'var(--text-faint)', marginTop: 8 }}>
@@ -212,7 +230,13 @@ export function LiveDrawer() {
   const drawerOpen = useWorkbench((s) => s.drawerOpen)
   const selected = useWorkbench((s) => s.selected)
   const closeDrawer = useWorkbench((s) => s.closeDrawer)
+  const displayName = useDisplayName()
   const { data, isLoading, isError } = useEvidence(selected, drawerOpen)
+  // `site_rahwali` is a database key, not a name. The analyst-facing headline is the node's OWN
+  // name (never a paraphrase, never invented — an unnamed node falls back to its id), with the id
+  // kept underneath as the technical handle for anyone reading a log or a citation.
+  const heading = selected ? displayName(selected) : '—'
+  const showId = selected != null && heading !== selected
 
   return (
     <aside
@@ -224,23 +248,60 @@ export function LiveDrawer() {
         width: 560,
         maxWidth: '92vw',
         background: 'var(--surface)',
-        borderLeft: '1px solid var(--hairline)',
+        borderLeft: '1px solid var(--hairline-strong)',
         boxShadow: '-8px 0 24px rgba(0,0,0,0.35)',
         transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 300ms ease',
+        // doc 12's drawer budget — 160ms ease-out. It overlays, it never pushes.
+        transition: 'transform 160ms ease-out',
         zIndex: 50,
         overflowY: 'auto',
       }}
     >
-      <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 16px 0' }}>
-        <button
-          type="button"
-          onClick={closeDrawer}
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}
-          aria-label="Close provenance drawer"
-        >
-          ✕
-        </button>
+      {/* header — restates what is being proved, so covering the answer is safe (doc 08).
+          Ported from the demo drawer: "Proving" kicker + the claim line + a bordered
+          30x30 close control. Live has no prose claim, so the element ref IS the claim. */}
+      {/* no borderBottom here: the first <Section> below already draws that one hairline,
+          and two adjacent 1px rules read as a 2px rule that means nothing. */}
+      <div style={{ flex: 'none', padding: '20px 24px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <div style={{ ...KICKER, marginBottom: 7 }}>Proving</div>
+            <div style={{ fontSize: 16, lineHeight: 1.35, color: 'var(--text)' }}>{heading}</div>
+            {showId && (
+              <div
+                style={{
+                  fontFamily: 'var(--mono)',
+                  fontSize: 10.5,
+                  lineHeight: 1.4,
+                  color: 'var(--text-faint)',
+                  marginTop: 5,
+                }}
+              >
+                {selected}
+              </div>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={closeDrawer}
+            title="Dismiss"
+            style={{
+              flex: 'none',
+              width: 30,
+              height: 30,
+              border: '1px solid var(--hairline)',
+              borderRadius: 4,
+              background: 'transparent',
+              color: 'var(--text-dim)',
+              fontSize: 15,
+              cursor: 'pointer',
+              lineHeight: 1,
+            }}
+            aria-label="Close provenance drawer"
+          >
+            ✕
+          </button>
+        </div>
       </div>
       {!selected ? null : isLoading ? (
         <Section>

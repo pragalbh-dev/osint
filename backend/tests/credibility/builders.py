@@ -16,7 +16,12 @@ from chanakya.schemas import (
     SourceRegistryEntry,
 )
 from chanakya.schemas.claim import Triple
-from chanakya.schemas.config_models import CredibilityConfig, SourcesConfig, TemplatesConfig
+from chanakya.schemas.config_models import (
+    CredibilityConfig,
+    OntologyConfig,
+    SourcesConfig,
+    TemplatesConfig,
+)
 from chanakya.schemas.values import ExactDate
 
 
@@ -58,11 +63,13 @@ def bundle(
     credibility: CredibilityConfig | None = None,
     sources: list[SourceRegistryEntry] | None = None,
     templates: TemplatesConfig | None = None,
+    ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
     return ConfigBundle(
         credibility=credibility or cred_config(),
         sources=SourcesConfig(sources=sources or []),
         templates=templates or TemplatesConfig(templates=[]),
+        ontology=ontology or OntologyConfig(),
     )
 
 
