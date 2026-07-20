@@ -83,3 +83,22 @@ def test_supplier_end_direction_is_declared_per_edge() -> None:
     assert idx.supplier_end("exported-by") == "to"
     # an edge that declares nothing defaults to "from" (supplier == source, the dominant convention).
     assert idx.supplier_end("based-at") == "from"
+
+
+def test_freshness_class_accessor_reads_the_ontology() -> None:
+    # SC-2: the declared `freshness_class` was dead metadata; this accessor is what SCORE now reads.
+    idx = _index()
+    assert idx.freshness_class("based-at") == "perishable"
+    assert idx.freshness_class("inducted-into") == "semi-durable"
+    assert idx.freshness_class("manufactures") == "durable"
+    assert idx.freshness_class("supersedes") == "n/a"       # structural edge, declared n/a
+    assert idx.freshness_class("does-not-exist") is None    # unknown edge → None
+
+
+def test_every_decaying_edge_has_a_reachable_half_life() -> None:
+    # SC-2 gate (mirrors test_no_endpoint_collisions): a perishable/semi-durable/force-revalidated edge
+    # with NO bare half-life AND no half_life_defaults entry for its class would score as ETERNAL — a
+    # tripwire that can never go stale. The shipped config must leave none unreachable.
+    bundle = ConfigStore.seed_from(config_dir()).snapshot()
+    idx = EdgeLaneIndex(bundle.ontology)
+    assert idx.unreachable_half_lives(bundle.credibility) == {}

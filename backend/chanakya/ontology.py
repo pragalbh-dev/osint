@@ -17,10 +17,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from chanakya.schemas import OntologyConfig
+from chanakya.schemas import CredibilityConfig, OntologyConfig
 
 _FROM_END = "from"  # default supplier end (supplier == source; the dominant sustainment convention)
 _TO_END = "to"
+
+# Freshness classes (config/ontology.yaml `freshness_class`) that DECAY — an edge on one of these must
+# have a reachable half-life or it silently scores as eternal (the SC-2 defect). `durable` / `n/a` never
+# decay, so they are exempt from the reachability lint. Strings, not scoring numbers (gate G6).
+_DECAYING_CLASSES = frozenset({"perishable", "semi-durable", "force-revalidated"})
 
 
 @dataclass(frozen=True)
@@ -59,6 +64,7 @@ class EdgeLaneIndex:
         self._symmetric: set[str] = set()
         self._endpoints: dict[str, tuple[list[str], list[str]]] = {}
         self._supplier_end: dict[str, str] = {}  # sustainment edge → which endpoint holds the supplier
+        self._freshness_class: dict[str, str] = {}  # edge → its declared ontology freshness class
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
             if e.name not in self._names:
@@ -66,6 +72,11 @@ class EdgeLaneIndex:
             self._names.add(e.name)
             if e.symmetric:
                 self._symmetric.add(e.name)
+            # freshness_class is declared on every edge (config/ontology.yaml) and drives SCORE's
+            # class-level half-life default (D-P4.13/SC-2); read via getattr (ConfigModel extra="allow").
+            fclass = getattr(e, "freshness_class", None)
+            if isinstance(fclass, str):
+                self._freshness_class[e.name] = fclass
             # supplier_end is a plain YAML field (ConfigModel extra="allow"), read for the chokepoint
             # direction (D-P4.7); only from/to are meaningful, anything else is ignored.
             end = getattr(e, "supplier_end", None)
@@ -132,6 +143,43 @@ class EdgeLaneIndex:
         the nomination pass and the dependency-closure pass (``exported-by`` puts the supplier on ``to``).
         """
         return self._supplier_end.get(edge_type, _FROM_END)
+
+    def freshness_class(self, edge_type: str) -> str | None:
+        """The ontology ``freshness_class`` declared on an edge — ``perishable`` / ``semi-durable`` /
+        ``force-revalidated`` / ``durable`` / ``n/a`` — or ``None`` for an unknown edge (or one that
+        declares none).
+
+        The bridge SCORE's freshness lookup uses to fall back to a **class-level** half-life
+        (``credibility.half_life_defaults[<class>]``) when no per-edge/variant half-life is configured.
+        Without it the declared ``freshness_class`` is dead metadata and a perishable edge with only
+        variant sub-keys (``based-at.field``/``.garrison``, never a bare ``based-at``) scores as eternal —
+        the SC-2 defect. Config-driven: the class names live in ``config/ontology.yaml`` (gate G6).
+        """
+        return self._freshness_class.get(edge_type)
+
+    def unreachable_half_lives(self, credibility: CredibilityConfig) -> dict[str, str]:
+        """Decaying edges with **no reachable half-life** → ``{edge: freshness_class}`` (a config error).
+
+        An edge whose ``freshness_class`` decays (perishable / semi-durable / force-revalidated) but has
+        **neither** a bare ``<edge>`` key in ``credibility.half_lives_days`` **nor** a
+        ``half_life_defaults[<class>]`` entry falls through to no-decay and scores as **eternal** — a
+        perishable tripwire that can never go stale (the SC-2 trap). Variant sub-keys (``<edge>.<x>``) do
+        **not** count as reachable: nothing tags ``freshness_variant`` on a claim, so a claim on such an
+        edge would still miss them. Surfaced (like :attr:`collisions`) for the caller to assert-empty as a
+        loud gate; it does not hard-crash — mirroring the collisions precedent.
+        """
+        half_lives = getattr(credibility, "half_lives_days", {}) or {}
+        defaults = getattr(credibility, "half_life_defaults", {}) or {}
+        offenders: dict[str, str] = {}
+        for edge, fclass in self._freshness_class.items():
+            if fclass not in _DECAYING_CLASSES:
+                continue
+            if edge in half_lives:  # a bare per-edge half-life is reachable for any claim on this edge
+                continue
+            if defaults.get(fclass) is not None:  # a class default is reachable
+                continue
+            offenders[edge] = fclass
+        return offenders
 
     def is_known(self, name: str) -> bool:
         """True if ``name`` is any declared edge type (extractor or not)."""

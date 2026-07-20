@@ -83,6 +83,22 @@ half_lives_days:
   # sustained-by -> OMITTED (coarse rollup, not independently scored)
   # same-as, distinct-from, evidenced-by, corroborates, contradicts, supersedes, derived-from -> OMITTED (structural)
 
+half_life_defaults:
+  # Class-level fallback keyed by config/ontology.yaml `freshness_class` (spine/04:184-197). SCORE's
+  # freshness lookup tries "<edge>.<variant>" -> bare "<edge>" -> THIS class default -> no-decay. It is
+  # the fix for the dead `freshness_class` metadata (RCA SC-2): every edge declares a class, but half_lives_days
+  # only carries VARIANT sub-keys for based-at/inducted-into/replenishes and nothing tags `freshness_variant`
+  # on a claim, so those perishable/semi-durable edges fell through to no-decay and scored as ETERNAL. The
+  # class default gives every claim on a decaying edge a reachable half-life; when it fires (no per-edge/variant
+  # key matched) the claim is stamped `freshness-variant-assumed:<class>` in the provenance vector (we decayed
+  # at the class rate, the variant was NOT tagged — honest, not silent). Keys MUST match the freshness_class
+  # spellings in config/ontology.yaml (hyphenated: semi-durable, force-revalidated; n/a with a slash).
+  perishable: 540           # D-P4.13: garrison rate (spine/04 based-at garrison = 18mo = 540d); the only value that keeps Rawalpindi stale AND Rahwali fresh on the corpus's real dates
+  semi-durable: 540         # 18mo (spine/04 inducted-into named-unit = 18mo = 540d; matches the existing inducted-into.named-unit key)
+  force-revalidated: 1825   # 5y clock (spine/04: overhauled-at / trained-by / software-controlled-by = 5y = 1825d)
+  durable: null             # no decay (spine/04 durable class)
+  n/a: null                 # structural edges — no decay
+
 # INGEST attribution proposer (ingest/attribute.py) — offline, connection-triggered enrichment that turns an
 # unattributed subject-blind VLM shape into a cited variant-identity `inference` claim D. Namespaced knobs on
 # this surface (extra="allow", no F0-amendment; mirrors resolution.yaml's llm_candidate_gen). Model id is NOT
