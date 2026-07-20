@@ -52,52 +52,23 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "equips",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "source_quote": "Pakistan Air Force having taken delivery of the HQ-9/P"
+      "_object_mention": "d01-sipri-transfer-l8-9",
+      "_subject_mention": "d01-sipri-transfer-l6"
     },
-    "claim_id": "d01-sipri-transfer-l8",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-        "frame": null,
-        "line": 8,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          315,
-          369
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-        "frame": null,
-        "line": 8,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          315,
-          421
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-        "frame": null,
-        "line": 8,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          428,
-          508
-        ]
-      }
-    ],
+    "claim_id": "d01-sipri-transfer-l6-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        148,
+        166
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -113,10 +84,67 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "Pakistan Air Force",
+      "object": "PAF",
       "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "HQ-9/P"
+      "predicate": "same-as",
+      "subject": "Pakistan Air Force"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        363,
+        369
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "range_km": {
+          "approx": true,
+          "count_state": null,
+          "max": 125.0,
+          "min": 100.0,
+          "unit": "km",
+          "value": null
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
     },
     "polarity": "positive",
     "premises": [],
@@ -143,111 +171,8 @@
       "region": null,
       "row": null,
       "span": [
-        315,
-        421
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "event_type": "TransferEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/P",
-        "China",
-        "Pakistan Air Force"
-      ],
-      "time_interval": null
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-11",
-      "kind": "exact",
-      "raw": "2021-10-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d01_sipri_transfer",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l8-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-      "frame": null,
-      "line": 8,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        341,
-        421
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "China",
-      "object_value": null,
-      "predicate": "exported-by",
-      "subject": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-11",
-      "kind": "exact",
-      "raw": "2021-10-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d01_sipri_transfer",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l8-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-      "frame": null,
-      "line": 8,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        428,
-        508
+        363,
+        369
       ]
     },
     "event_time": {
@@ -321,8 +246,120 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d01-sipri-transfer-l8"
+    },
+    "claim_id": "d01-sipri-transfer-l8-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        363,
+        369
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9(P)",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_subject_mention": "d01-sipri-transfer-l8"
+    },
+    "claim_id": "d01-sipri-transfer-l8-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        363,
+        369
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "fenced compound near a PAF airbase in central Punjab",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d01-sipri-transfer-l6",
+      "_subject_mention": "d01-sipri-transfer-l8"
+    },
     "claim_id": "d01-sipri-transfer-l8-5",
     "doc_ref": {
       "bbox": null,
@@ -333,7 +370,73 @@
       "region": null,
       "row": null,
       "span": [
-        545,
+        423,
+        509
+      ]
+    },
+    "event_time": {
+      "approximate": true,
+      "as_of": null,
+      "end": {
+        "boundary_source": "relative",
+        "iso_date": "2021-12-31",
+        "kind": "exact",
+        "raw": "earlier this year"
+      },
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "relative",
+        "iso_date": "2021-01-01",
+        "kind": "exact",
+        "raw": "earlier this year"
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Air Force",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l8-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        522,
         601
       ]
     },
@@ -373,21 +476,38 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l8-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-      "frame": null,
-      "line": 8,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        545,
-        601
-      ]
+    "attributes": {
+      "_subject_mention": "d01-sipri-transfer-l8-6"
     },
+    "claim_id": "d01-sipri-transfer-l8-7",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+        "frame": null,
+        "line": 8,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          522,
+          601
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+        "frame": null,
+        "line": 8,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          545,
+          601
+        ]
+      }
+    ],
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -423,7 +543,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d01-sipri-transfer-l8-7",
+    "claim_id": "d01-sipri-transfer-l8-8",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -433,7 +553,7 @@
       "region": null,
       "row": null,
       "span": [
-        626,
+        602,
         632
       ]
     },
@@ -452,6 +572,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "origin_country": "China",
         "role": "trading arm"
       },
       "entity_type": "manufacturer",
@@ -471,13 +592,66 @@
     "targets": null
   },
   {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l8-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        644,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "equips",
+      "_event_time_rung": "report_time",
+      "_object_mention": "d01-sipri-transfer-l6",
       "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "source_quote": "supplementing the shorter-range LY-80 (HQ-16) batteries already in service"
+      "_subject_mention": "d01-sipri-transfer-l8-12",
+      "source_quote": "supplementing the shorter-range LY-80 (HQ-16) batteries already in service."
     },
-    "claim_id": "d01-sipri-transfer-l8-8",
+    "claim_id": "d01-sipri-transfer-l8-10",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -488,10 +662,15 @@
       "row": null,
       "span": [
         717,
-        791
+        792
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -526,7 +705,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d01-sipri-transfer-l8-9",
+    "claim_id": "d01-sipri-transfer-l8-11",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -536,7 +715,7 @@
       "region": null,
       "row": null,
       "span": [
-        731,
+        735,
         772
       ]
     },
@@ -554,11 +733,55 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "designators": [
-          "HQ-16"
-        ]
-      },
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-16"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l8-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        735,
+        772
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
       "entity_type": "variant",
       "form": "entity",
       "name": "LY-80"
@@ -577,36 +800,24 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l8-10",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-        "frame": null,
-        "line": 8,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          731,
-          772
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-        "frame": null,
-        "line": 8,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          749,
-          762
-        ]
-      }
-    ],
+    "attributes": {
+      "_object_mention": "d01-sipri-transfer-l8-11",
+      "_subject_mention": "d01-sipri-transfer-l8-12"
+    },
+    "claim_id": "d01-sipri-transfer-l8-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        749,
+        762
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -702,8 +913,8 @@
       "region": null,
       "row": null,
       "span": [
-        1099,
-        1242
+        1136,
+        1243
       ]
     },
     "event_time": null,
@@ -744,8 +955,11 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "source_quote": "lists a Pakistan order for an HQ-9(P) SAM system from China with delivery/deliveries in the 2021 timeframe."
+    },
     "claim_id": "d01-sipri-transfer-l10-3",
     "doc_ref": {
       "bbox": null,
@@ -756,8 +970,8 @@
       "region": null,
       "row": null,
       "span": [
-        1313,
-        1331
+        1136,
+        1243
       ]
     },
     "event_time": null,
@@ -774,10 +988,63 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "SIPRI register"
+      "form": "triple",
+      "object": "China",
+      "object_value": null,
+      "predicate": "exported-by",
+      "subject": "HQ-9(P) SAM system"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "source_quote": "lists a Pakistan order for an HQ-9(P) SAM system from China with delivery/deliveries in the 2021 timeframe."
+    },
+    "claim_id": "d01-sipri-transfer-l10-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1136,
+        1243
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan",
+      "object_value": null,
+      "predicate": "imported-by",
+      "subject": "HQ-9(P) SAM system"
     },
     "polarity": "positive",
     "premises": [],
@@ -833,7 +1100,7 @@
           "wgs84_lat": null,
           "wgs84_lon": null
         },
-        "occupancy_state": "occupied",
+        "occupancy_state": "subsequent occupation",
         "site_signature_geometry": "six-sided perimeter berms, separated launcher pads, a central engagement/fire-control radar pad",
         "site_type": "HQ-9/P site"
       },
@@ -856,7 +1123,153 @@
   {
     "asserts": "entity",
     "attributes": null,
+    "claim_id": "d01-sipri-transfer-l12-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2375,
+        2425
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "transporter-erector-launcher canister"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HQ-9/P TEL canister"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d01-sipri-transfer-l14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2600,
+        2673
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "batteries"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l14-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2681,
+        2757
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "fire units"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l14-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -902,9 +1315,12 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l14-2",
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d01-sipri-transfer-l14-5",
+      "_subject_mention": "d01-sipri-transfer-l14-3"
+    },
+    "claim_id": "d01-sipri-transfer-l14-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -914,7 +1330,56 @@
       "region": null,
       "row": null,
       "span": [
-        2938,
+        2903,
+        2977
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "HQ-9A"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l14-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2942,
         2977
       ]
     },
@@ -950,13 +1415,65 @@
     "targets": null
   },
   {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3076,
+        3206
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "Type 305B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "component-of",
+      "_object_mention": "d01-sipri-transfer-l8",
       "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d01-sipri-transfer-l16",
       "source_quote": "The engagement radar associated with the system is generally referred to in Chinese and Pakistani open literature as the Type 305B"
     },
-    "claim_id": "d01-sipri-transfer-l16",
+    "claim_id": "d01-sipri-transfer-l16-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -1003,9 +1520,11 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l16-2",
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d01-sipri-transfer-l16"
+    },
+    "claim_id": "d01-sipri-transfer-l16-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
@@ -1015,7 +1534,7 @@
       "region": null,
       "row": null,
       "span": [
-        3076,
+        3197,
         3226
       ]
     },
@@ -1033,59 +1552,8 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "component_class": "radar",
-        "functional_role": "engagement radar"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "Type 305B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-11",
-      "kind": "exact",
-      "raw": "2021-10-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d01_sipri_transfer",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d01-sipri-transfer-l16-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
-      "frame": null,
-      "line": 16,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3127,
-        3295
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
       "form": "triple",
-      "object": "HQ-9P fire control radar",
+      "object": "HT-233 derivative",
       "object_value": null,
       "predicate": "same-as",
       "subject": "Type 305B"
@@ -1115,7 +1583,7 @@
       "region": null,
       "row": null,
       "span": [
-        3258,
+        3227,
         3295
       ]
     },
@@ -1134,12 +1602,115 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "radar",
         "functional_role": "fire control radar"
       },
       "entity_type": "component",
       "form": "entity",
       "name": "HQ-9P fire control radar"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d01-sipri-transfer-l8",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d01-sipri-transfer-l16-4",
+      "source_quote": "The engagement radar associated with the system is generally referred to ... or, in some export literature, simply \"the HQ-9P fire control radar\""
+    },
+    "claim_id": "d01-sipri-transfer-l16-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3270,
+        3294
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HQ-9P fire control radar"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-11",
+      "kind": "exact",
+      "raw": "2021-10-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d01_sipri_transfer",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d01-sipri-transfer-l16-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d01_sipri_transfer.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3356,
+        3461
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "modified export variant",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "PLA's domestic HT-233"
     },
     "polarity": "positive",
     "premises": [],
@@ -1166,8 +1737,8 @@
       "region": null,
       "row": null,
       "span": [
-        3806,
-        3899
+        3574,
+        3713
       ]
     },
     "event_time": null,
@@ -1185,23 +1756,21 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "HQ-9/P",
-          "HQ-9(P)",
-          "HQ-9P"
-        ],
-        "range_km": {
-          "approx": true,
-          "count_state": null,
-          "max": 125.0,
-          "min": 100.0,
-          "unit": "km",
-          "value": null
-        }
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Islamabad",
+          "raw": "Islamabad",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "candidate coverage area"
       },
-      "entity_type": "variant",
+      "entity_type": "basing_site",
       "form": "entity",
-      "name": "HQ-9/P"
+      "name": "Islamabad"
     },
     "polarity": "positive",
     "premises": [],
@@ -1216,7 +1785,7 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d01-sipri-transfer-l18-2",
     "doc_ref": {
@@ -1228,8 +1797,8 @@
       "region": null,
       "row": null,
       "span": [
-        3806,
-        3899
+        3574,
+        3713
       ]
     },
     "event_time": null,
@@ -1246,11 +1815,22 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "HQ-9(P)",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Kahuta area",
+          "raw": "Kahuta area",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "candidate coverage area"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Kahuta area"
     },
     "polarity": "positive",
     "premises": [],
@@ -1265,7 +1845,7 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d01-sipri-transfer-l18-3",
     "doc_ref": {
@@ -1277,8 +1857,8 @@
       "region": null,
       "row": null,
       "span": [
-        3806,
-        3899
+        3574,
+        3713
       ]
     },
     "event_time": null,
@@ -1295,11 +1875,12 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "HQ-9/P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "site_type": "candidate coverage area"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "key PAF main operating bases"
     },
     "polarity": "positive",
     "premises": [],
@@ -1314,7 +1895,7 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d01-sipri-transfer-l18-4",
     "doc_ref": {
@@ -1326,8 +1907,8 @@
       "region": null,
       "row": null,
       "span": [
-        3806,
-        3899
+        4028,
+        4086
       ]
     },
     "event_time": null,
@@ -1344,11 +1925,20 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "HQ-9P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "family": "HQ-9/P",
+        "range_km": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "km",
+          "value": 200.0
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "extended-range round"
     },
     "polarity": "positive",
     "premises": [],

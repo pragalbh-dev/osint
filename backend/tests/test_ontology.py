@@ -12,7 +12,10 @@ from chanakya.ontology import EdgeLaneIndex
 from chanakya.settings import config_dir
 
 EXTRACTOR_ENUM = {
-    "based-at", "inducted-into", "imported-by", "exported-by", "equips",
+    # `observed-at` is the OBSERVED-occupancy lane (equipment -> site) added by EVAL RCA D-P4.2, kept
+    # distinct from `based-at` (formation -> site) so what a frame can honestly state and what must be
+    # derived from it stay separate claims at separate confidences.
+    "based-at", "observed-at", "inducted-into", "imported-by", "exported-by", "equips",
     "supplies-component", "manufactures", "design-authority-for", "component-of", "replenishes",
 }
 NON_EXTRACTOR = {

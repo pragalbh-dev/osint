@@ -1,0 +1,82 @@
+[
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "derived_layer": "unit-attribution",
+      "derived_via": "observed-at+inducted-into",
+      "formation_claim": "d04-armyrec-ranges-l9",
+      "formation_source_id": "d04_armyrec_ranges",
+      "observed_claim": "d18-rahwali-pass1-l10",
+      "observed_equipment": "var_hq9be",
+      "observed_site": "site_rahwali"
+    },
+    "claim_id": "d18-rahwali-pass1-unit-hq9b-site-rahwali-basing",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+        "frame": null,
+        "line": 10,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          309,
+          572
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 9,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1223,
+          1351
+        ]
+      }
+    ],
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2025",
+      "year": 2025
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": ""
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "site_rahwali",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "unit_hq9b"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d18-rahwali-pass1-l10",
+      "d04-armyrec-ranges-l9"
+    ],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d18_rahwali_pass1",
+    "targets": null
+  }
+]

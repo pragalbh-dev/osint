@@ -7,7 +7,7 @@
         "TCNU7712204",
         "TCNU7712341"
       ],
-      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "freight_forwarder": "AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
       "gd_no": "KPQA-HC-2020-118834",
       "hs_code": "8526.91.00"
     },
@@ -79,7 +79,7 @@
         "TCNU7712204",
         "TCNU7712341"
       ],
-      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "freight_forwarder": "AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
       "gd_no": "KPQA-HC-2020-118834",
       "hs_code": "8526.91.00"
     },
@@ -164,7 +164,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "chunk0-d05-customs-manifest-row18-1",
+      "_subject_mention": "d05-customs-manifest-row12"
+    },
     "claim_id": "d05-customs-manifest-row12-3",
     "doc_ref": {
       "bbox": null,
@@ -213,7 +216,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "d05-customs-manifest-row21",
+      "_subject_mention": "d05-customs-manifest-row12"
+    },
     "claim_id": "d05-customs-manifest-row12-4",
     "doc_ref": {
       "bbox": null,
@@ -294,7 +300,7 @@
         "region": null,
         "row": 18,
         "span": [
-          784,
+          801,
           937
         ]
       }
@@ -333,70 +339,6 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d05-customs-manifest-row21",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
-        "frame": null,
-        "line": 21,
-        "page": null,
-        "region": null,
-        "row": 21,
-        "span": [
-          938,
-          1056
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
-        "frame": null,
-        "line": 21,
-        "page": null,
-        "region": null,
-        "row": 21,
-        "span": [
-          938,
-          1105
-        ]
-      }
-    ],
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "SINO-GALAXY IMPEX CO, LTD",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "SINO-GALAXY IMP/EXP CO. LTD"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2020-11-25",
-      "kind": "exact",
-      "raw": "2020-11-25"
-    },
-    "resolved_ref": null,
-    "source_id": "d05_customs_manifest",
-    "targets": null
-  },
-  {
     "asserts": "entity",
     "attributes": {
       "bl_no": "YMLUW189234567",
@@ -404,11 +346,11 @@
         "TCNU7712204",
         "TCNU7712341"
       ],
-      "freight_forwarder": "AL-NOOR CARGO SERVICES",
+      "freight_forwarder": "AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
       "gd_no": "KPQA-HC-2020-118834",
       "hs_code": "8526.91.00"
     },
-    "claim_id": "d05-customs-manifest-row21-2",
+    "claim_id": "d05-customs-manifest-row21",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
@@ -418,8 +360,8 @@
       "region": null,
       "row": 21,
       "span": [
-        938,
-        1105
+        955,
+        1056
       ]
     },
     "event_time": null,
@@ -443,6 +385,57 @@
       "entity_type": "trading_org",
       "form": "entity",
       "name": "SINO-GALAXY IMP/EXP CO. LTD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2020-11-25",
+      "kind": "exact",
+      "raw": "2020-11-25"
+    },
+    "resolved_ref": null,
+    "source_id": "d05_customs_manifest",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d05-customs-manifest-row21"
+    },
+    "claim_id": "d05-customs-manifest-row21-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": 21,
+      "span": [
+        955,
+        1056
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SINO-GALAXY IMPEX CO, LTD",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "SINO-GALAXY IMP/EXP CO. LTD"
     },
     "polarity": "positive",
     "premises": [],
@@ -585,7 +578,7 @@
       "location": {
         "geocode_candidates": [
           {
-            "confidence": null,
+            "confidence": 0.9,
             "label": "Port Muhammad Bin Qasim",
             "lat": 24.767,
             "lon": 67.333,
@@ -625,7 +618,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "chunk0-d05-customs-manifest-row18-1",
+      "_subject_mention": "d05-customs-manifest-row35"
+    },
     "claim_id": "d05-customs-manifest-row35-3",
     "doc_ref": {
       "bbox": null,
@@ -674,7 +670,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "d05-customs-manifest-row41",
+      "_subject_mention": "d05-customs-manifest-row35"
+    },
     "claim_id": "d05-customs-manifest-row35-4",
     "doc_ref": {
       "bbox": null,
@@ -970,7 +969,7 @@
       "location": {
         "geocode_candidates": [
           {
-            "confidence": null,
+            "confidence": 0.9,
             "label": "Port Muhammad Bin Qasim",
             "lat": 24.767,
             "lon": 67.333,
@@ -1010,7 +1009,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "d05-customs-manifest-row73",
+      "_subject_mention": "d05-customs-manifest-row68"
+    },
     "claim_id": "d05-customs-manifest-row68-3",
     "doc_ref": {
       "bbox": null,
@@ -1059,7 +1061,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "d05-customs-manifest-row75",
+      "_subject_mention": "d05-customs-manifest-row68"
+    },
     "claim_id": "d05-customs-manifest-row68-4",
     "doc_ref": {
       "bbox": null,
@@ -1127,7 +1132,7 @@
       "region": null,
       "row": 73,
       "span": [
-        3300,
+        3317,
         3447
       ]
     },
@@ -1166,7 +1171,9 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_subject_mention": "d05-customs-manifest-row73"
+    },
     "claim_id": "d05-customs-manifest-row73-2",
     "doc_ref": {
       "bbox": null,
@@ -1177,7 +1184,7 @@
       "region": null,
       "row": 73,
       "span": [
-        3300,
+        3317,
         3447
       ]
     },

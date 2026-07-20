@@ -1,7 +1,9 @@
 [
   {
     "asserts": "event",
-    "attributes": null,
+    "attributes": {
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
+    },
     "claim_id": "d12-reshare-a-l1",
     "doc_ref": {
       "bbox": null,
@@ -75,7 +77,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025"
+      "posted_at": "May 8, 2025",
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
     },
     "claim_id": "d12-reshare-a-l1-2",
     "doc_ref": {
@@ -131,7 +134,9 @@
   },
   {
     "asserts": "event",
-    "attributes": null,
+    "attributes": {
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
+    },
     "claim_id": "d12-reshare-a-l2",
     "doc_ref": {
       "bbox": null,
@@ -142,89 +147,10 @@
       "region": null,
       "row": null,
       "span": [
-        103,
-        113
+        178,
+        204
       ]
     },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "May 8, 2025"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "strike"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "IAF"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-05-08",
-        "kind": "exact",
-        "raw": "May 8, 2025"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "2025-05-08"
-    },
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d12-reshare-a-l2-2",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-        "frame": null,
-        "line": 2,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          178,
-          204
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-        "frame": null,
-        "line": 12,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          695,
-          723
-        ]
-      }
-    ],
     "event_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -275,7 +201,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025"
+      "posted_at": "May 8, 2025",
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
     },
     "claim_id": "d12-reshare-a-l6",
     "doc_ref": {
@@ -332,7 +259,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025"
+      "posted_at": "May 8, 2025",
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
     },
     "claim_id": "d12-reshare-a-l11",
     "doc_ref": {
@@ -387,9 +315,76 @@
     "targets": null
   },
   {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
+    },
+    "claim_id": "d12-reshare-a-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        695,
+        723
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "neutralized!!"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HIMADS battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025"
+      "posted_at": "May 8, 2025",
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
     },
     "claim_id": "d12-reshare-a-l17",
     "doc_ref": {
@@ -445,7 +440,9 @@
   },
   {
     "asserts": "event",
-    "attributes": null,
+    "attributes": {
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
+    },
     "claim_id": "d12-reshare-a-l23",
     "doc_ref": {
       "bbox": null,
@@ -519,7 +516,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025"
+      "posted_at": "May 8, 2025",
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
     },
     "claim_id": "d12-reshare-a-l23-2",
     "doc_ref": {
@@ -575,7 +573,9 @@
   },
   {
     "asserts": "event",
-    "attributes": null,
+    "attributes": {
+      "status_url": "pic.twitter.com/9xT4vLmz2q"
+    },
     "claim_id": "d12-reshare-a-l23-3",
     "doc_ref": {
       "bbox": null,
@@ -610,7 +610,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "down"
+        "activity": "down!!"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -746,8 +746,7 @@
         "wgs84_lon": null
       },
       "participants": [
-        "HQ9/P",
-        "battery"
+        "HQ9/P Lahore battery"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -940,79 +939,6 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d12-reshare-a-l41-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 41,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2228,
-        2254
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "May 8, 2025"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "footage"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Lahore",
-        "raw": "Lahore",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "HQ-9/P"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-05-08",
-        "kind": "exact",
-        "raw": "May 8, 2025"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "2025-05-08"
-    },
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
     "asserts": "entity",
     "attributes": {
       "posted_at": "May 8, 2025"
@@ -1072,7 +998,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "Ground-level view of military vehicles with cylindrical canisters participating in a parade with onlookers.",
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "Ground-level view of large multi-axle transport vehicles carrying cylindrical canister assemblies on a paved road during a parade.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
@@ -1093,7 +1020,12 @@
       "row": null,
       "span": null
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
@@ -1108,40 +1040,35 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Consistent",
+        "caption_vs_image_consistency": "The image is a ground-level photograph rather than overhead satellite/aerial imagery.",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": 4.0,
           "min": 3.0,
-          "unit": "heavy multi-axle vehicles carrying cylindrical canisters",
+          "unit": "heavy multi-axle vehicles with cylindrical canisters",
           "value": null
         },
-        "description": "A ground-level photograph depicting a public parade. Multiple large, green, multi-axle heavy transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on its rear bed (arranged in a 2x2 bundle). The vehicles are driving in a column along a wide, paved city street. The street is lined with crowds of spectators on both sides, many of whom are holding up mobile phones to photograph the scene or waving small flags. In the background, there are streetlights, multi-story buildings, and numerous flags mounted on poles. Soldiers in uniform are also visible marching near the vehicles.",
+        "description": "A ground-level photograph showing several large green multi-axle military-style transport vehicles driving along a wide paved road. Each vehicle is configured with a rear-mounted assembly containing four large cylindrical canisters or tubes arranged horizontally in a group. The road is lined with spectators behind barriers, holding small flags and mobile devices. Several uniformed individuals are marching alongside the vehicles. Tall flagpoles displaying large flags are visible in the background and foreground.",
         "frame_kind": "ground-level photograph",
-        "geometry_tokens": [
-          "road",
-          "vehicles",
-          "crowd"
-        ],
-        "gsd_note": "Not applicable (ground-level photograph)",
+        "gsd_note": "Not applicable (ground-level perspective).",
         "observed_features": [
           {
-            "arrangement": "column",
-            "feature": "heavy wheeled vehicles",
-            "note": "Multi-axle large transport vehicles with green camouflage livery",
-            "shape": "rectangular cab and chassis"
+            "arrangement": "In a line/procession",
+            "feature": "large multi-axle vehicles with cylindrical canisters",
+            "note": "Each vehicle features a green camo pattern and carries four horizontal cylinders.",
+            "shape": "rectangular cab with cylindrical rear loads"
           },
           {
-            "arrangement": "2x2 cluster on vehicle beds",
-            "feature": "cylindrical canisters",
-            "note": "Large dark green tubes carried on the rear of each vehicle",
-            "shape": "cylindrical"
+            "arrangement": "Linear along the roadside",
+            "feature": "crowd of spectators and flags",
+            "note": "Spectators are viewing the procession, holding small flags and mobile phones.",
+            "shape": "unstructured crowd"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level photograph depicting a public parade. Multiple large, green, multi-axle heavy transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on its rear bed (arranged in a 2x2 bundle). The vehicles are driving in a column along a wide, paved city street. The street is lined with crowds of spectators on both sides, many of whom are holding up mobile phones to photograph the scene or waving small flags. In the background, there are streetlights, multi-story buildings, and numerous flags mounted on poles. Soldiers in uniform are also visible marching near the vehicles.",
+        "site_signature_geometry": "A ground-level photograph showing several large green multi-axle military-style transport vehicles driving along a wide paved road. Each vehicle is configured with a rear-mounted assembly containing four large cylindrical canisters or tubes arranged horizontally in a group. The road is lined with spectators behind barriers, holding small flags and mobile devices. Several uniformed individuals are marching alongside the vehicles. Tall flagpoles displaying large flags are visible in the background and foreground.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",

@@ -1,0 +1,82 @@
+[
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "derived_layer": "unit-attribution",
+      "derived_via": "observed-at+inducted-into",
+      "formation_claim": "d04-armyrec-ranges-l9",
+      "formation_source_id": "d04_armyrec_ranges",
+      "observed_claim": "d17-rawalpindi-2021-l12-3",
+      "observed_equipment": "var_hq9be",
+      "observed_site": "site_rawalpindi"
+    },
+    "claim_id": "d17-rawalpindi-2021-unit-hq9b-site-rawalpindi-basing",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+        "frame": null,
+        "line": 12,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          507,
+          512
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 9,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1223,
+          1351
+        ]
+      }
+    ],
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-09",
+      "kind": "exact",
+      "raw": "09 OCT 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": ""
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "site_rawalpindi",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "unit_hq9b"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d17-rawalpindi-2021-l12-3",
+      "d04-armyrec-ranges-l9"
+    ],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  }
+]

@@ -1,27 +1,126 @@
 [
   {
-    "asserts": "entity",
-    "attributes": {
-      "_rejected_relation": {
-        "object": "Sargodha",
-        "predicate": "based-at",
-        "reason": "no edge for (variant->basing_site)",
-        "source_quote": "deployments ... near Sargodha"
-      }
-    },
+    "asserts": "event",
+    "attributes": null,
     "claim_id": "d23-cpmiec-false-attribution-l4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        102,
+        108
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "near Sargodha",
+        "raw": "near Sargodha",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l6-8",
+      "_subject_mention": "d23-cpmiec-false-attribution-l6-2",
+      "_undated_perishable": true
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l4-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        102,
+        108
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Sargodha",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l6-2"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l6",
     "doc_ref": [
       {
         "bbox": null,
         "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
         "frame": null,
-        "line": 4,
+        "line": 6,
         "page": null,
         "region": null,
         "row": null,
         "span": [
-          102,
-          108
+          208,
+          235
         ]
       },
       {
@@ -33,8 +132,8 @@
         "region": null,
         "row": null,
         "span": [
-          480,
-          531
+          208,
+          317
         ]
       }
     ],
@@ -52,10 +151,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9/P"
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
     "premises": [],
@@ -67,7 +167,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l6",
+    "claim_id": "d23-cpmiec-false-attribution-l6-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -77,7 +177,7 @@
       "region": null,
       "row": null,
       "span": [
-        193,
+        208,
         317
       ]
     },
@@ -97,6 +197,7 @@
     "payload": {
       "attrs": {
         "designators": [
+          "HQ-9/P",
           "HQ-9P",
           "FD-2000"
         ],
@@ -115,8 +216,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l6-2",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l6-2"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l6-3",
     "doc_ref": [
       {
         "bbox": null,
@@ -127,7 +230,7 @@
         "region": null,
         "row": null,
         "span": [
-          193,
+          208,
           317
         ]
       },
@@ -174,36 +277,24 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l6-3",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
-        "frame": null,
-        "line": 6,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          193,
-          317
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
-        "frame": null,
-        "line": 6,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          208,
-          235
-        ]
-      }
-    ],
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l6-2",
+      "_subject_mention": "d23-cpmiec-false-attribution-l6-2"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l6-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        208,
+        317
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
@@ -219,7 +310,7 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HQ-9P",
+      "object": "HQ-9/P",
       "object_value": null,
       "predicate": "same-as",
       "subject": "HQ-9/P"
@@ -232,9 +323,9 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "event",
     "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l6-4",
+    "claim_id": "d23-cpmiec-false-attribution-l6-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -244,7 +335,111 @@
       "region": null,
       "row": null,
       "span": [
-        466,
+        429,
+        531
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Karachi coastal air defence belt",
+        "raw": "Karachi coastal air defence belt",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l6-7",
+      "_subject_mention": "d23-cpmiec-false-attribution-l6-2",
+      "_undated_perishable": true
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l6-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        429,
+        531
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Karachi coastal air defence belt",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l6-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        480,
         531
       ]
     },
@@ -263,16 +458,6 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "Karachi coastal air defence belt",
-          "raw": "Karachi coastal air defence belt",
-          "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
-        },
         "site_type": "air defence belt"
       },
       "entity_type": "basing_site",
@@ -289,7 +474,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l6-5",
+    "claim_id": "d23-cpmiec-false-attribution-l6-8",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -318,16 +503,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "Sargodha",
-          "raw": "Sargodha",
-          "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
-        }
+        "site_type": "deployment site"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -434,9 +610,248 @@
     "targets": null
   },
   {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_object_mention": "d23-cpmiec-false-attribution-l8",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d23-cpmiec-false-attribution-l6-2",
+      "_undated_perishable": true,
+      "source_quote": "The Pakistan Army Air Defence Command inducted the system beginning in the mid-2010s"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l8-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        565,
+        649
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence Command",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l8-3",
+    "claim_id": "d23-cpmiec-false-attribution-l8-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        689,
+        693
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-2"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-2"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l8-4",
+      "_subject_mention": "d23-cpmiec-false-attribution-l8-4"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l8-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        689,
+        693
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-2",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-2"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l8-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        698,
+        705
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "Crotale"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Crotale"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l8-6",
+      "_subject_mention": "d23-cpmiec-false-attribution-l8-6"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l8-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        698,
+        705
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Crotale",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Crotale"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l8-8",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -466,6 +881,7 @@
     "payload": {
       "attrs": {
         "designators": [
+          "LY-80",
           "HQ-16"
         ]
       },
@@ -482,8 +898,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l8-4",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l8-8"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l8-9",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -513,6 +931,53 @@
     "payload": {
       "form": "triple",
       "object": "HQ-16",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l8-8",
+      "_subject_mention": "d23-cpmiec-false-attribution-l8-8"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l8-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        800,
+        813
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "LY-80",
       "object_value": null,
       "predicate": "same-as",
       "subject": "LY-80"
@@ -556,12 +1021,56 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "radar",
+        "component_class": "phased-array engagement radar",
         "functional_role": "target tracking, missile guidance uplink and terminal illumination functions"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "HT-233 phased-array engagement radar"
+      "name": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l10-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1374,
+        1390
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Flap Lid",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "30N6E"
     },
     "polarity": "positive",
     "premises": [],
@@ -573,7 +1082,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l10-2",
+    "claim_id": "d23-cpmiec-false-attribution-l10-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -617,8 +1126,14 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l10-3",
+    "attributes": {
+      "_as_stated_predicate": "manufactures",
+      "_object_mention": "d23-cpmiec-false-attribution-l10",
+      "_relane_reason": "'manufactures'@(manufacturer->component) -> supplies-component",
+      "_subject_mention": "d23-cpmiec-false-attribution-l10-6",
+      "source_quote": "CPMIEC manufactures the HT-233 radar"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l10-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -647,9 +1162,9 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HT-233 radar",
+      "object": "HT-233",
       "object_value": null,
-      "predicate": "manufactures",
+      "predicate": "supplies-component",
       "subject": "CPMIEC"
     },
     "polarity": "positive",
@@ -661,8 +1176,14 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l10-4",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d23-cpmiec-false-attribution-l6-2",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d23-cpmiec-false-attribution-l10",
+      "source_quote": "HT-233 radar as the primary sensor of the HQ-9/P battery"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l10-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -672,7 +1193,7 @@
       "region": null,
       "row": null,
       "span": [
-        1545,
+        1549,
         1605
       ]
     },
@@ -693,67 +1214,8 @@
       "form": "triple",
       "object": "HQ-9/P",
       "object_value": null,
-      "predicate": "component-of",
-      "subject": "HT-233 radar"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d23_cpmiec_false_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l10-5",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
-        "frame": null,
-        "line": 10,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          1746,
-          1806
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
-        "frame": null,
-        "line": 10,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          1746,
-          1849
-        ]
-      }
-    ],
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "China Precision Machinery Import-Export Corporation",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "CPMIEC"
+      "predicate": "equips",
+      "subject": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
@@ -809,8 +1271,10 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l10-6"
+    },
     "claim_id": "d23-cpmiec-false-attribution-l10-7",
     "doc_ref": {
       "bbox": null,
@@ -821,8 +1285,97 @@
       "region": null,
       "row": null,
       "span": [
+        1746,
+        1849
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "China Precision Machinery Import-Export Corporation",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "CPMIEC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l10-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
         1831,
-        1836
+        1849
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2198,
+        2244
       ]
     },
     "event_time": null,
@@ -840,9 +1393,138 @@
     "kind": "observation",
     "payload": {
       "attrs": {},
-      "entity_type": "manufacturer",
+      "entity_type": "component",
       "form": "entity",
-      "name": "CASIC"
+      "name": "transporter erector launchers"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l12-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2245,
+        2274
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "missile canisters"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l12-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2276,
+        2305
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "command and control vehicle"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d23-cpmiec-false-attribution-l12-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2311,
+        2342
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "power/support trucks"
     },
     "polarity": "positive",
     "premises": [],
@@ -884,8 +1566,10 @@
     "payload": {
       "attrs": {
         "designators": [
+          "S-300PMU-2",
           "SA-20 Gargoyle"
-        ]
+        ],
+        "family": "S-300"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -900,8 +1584,57 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l14",
+      "_subject_mention": "d23-cpmiec-false-attribution-l14"
+    },
     "claim_id": "d23-cpmiec-false-attribution-l14-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2713,
+        2746
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-300PMU-2",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-300PMU-2"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l14"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l14-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -944,8 +1677,10 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l14-3",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l14-5"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l14-4",
     "doc_ref": [
       {
         "bbox": null,
@@ -1004,7 +1739,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l14-4",
+    "claim_id": "d23-cpmiec-false-attribution-l14-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
@@ -1034,6 +1769,7 @@
     "payload": {
       "attrs": {
         "designators": [
+          "S-400 Triumf",
           "Triumph",
           "SA-21 Growler"
         ]
@@ -1051,8 +1787,57 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d23-cpmiec-false-attribution-l14-5",
+    "attributes": {
+      "_object_mention": "d23-cpmiec-false-attribution-l14-5",
+      "_subject_mention": "d23-cpmiec-false-attribution-l14-5"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l14-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d23_cpmiec_false_attribution.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2761,
+        2838
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-400 Triumf",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d23_cpmiec_false_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d23-cpmiec-false-attribution-l14-5"
+    },
+    "claim_id": "d23-cpmiec-false-attribution-l14-7",
     "doc_ref": [
       {
         "bbox": null,
@@ -1199,6 +1984,7 @@
       "location": null,
       "participants": [
         "HQ-9/P",
+        "China",
         "Pakistan"
       ],
       "time_interval": null

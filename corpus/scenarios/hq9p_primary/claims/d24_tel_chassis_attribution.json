@@ -30,194 +30,10 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "component_class": "chassis",
-        "functional_role": "transporter-erector-launcher platform chassis"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "heavy 8x8 special wheeled chassis"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l1-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 1,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        0,
-        42
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "radar",
-        "functional_role": "engagement radar"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "HT-233 engagement radar"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l1-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 1,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        0,
-        42
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
       "attrs": {},
       "entity_type": "source",
       "form": "entity",
       "name": "CSIS Missile Threat"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "component-of",
-      "_relane_reason": "'component-of'@(component->variant) -> equips",
-      "source_quote": "the HT-233 engagement radar that the system depends on"
-    },
-    "claim_id": "d24-tel-chassis-attribution-l1-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 1,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        0,
-        42
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9",
-      "object_value": null,
-      "predicate": "equips",
-      "subject": "HT-233 engagement radar"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l1-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 1,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        0,
-        42
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "transporter-erector-launcher (TEL) platform",
-      "object_value": null,
-      "predicate": "component-of",
-      "subject": "heavy 8x8 special wheeled chassis"
     },
     "polarity": "positive",
     "premises": [],
@@ -272,7 +88,7 @@
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d24-tel-chassis-attribution-l5",
     "doc_ref": {
@@ -285,238 +101,7 @@
       "row": null,
       "span": [
         188,
-        194
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9BE",
-        "Pakistan"
-      ],
-      "time_interval": null
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l5-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 5,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        188,
-        194
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Pakistan",
-      "object_value": null,
-      "predicate": "imported-by",
-      "subject": "HQ-9BE"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l11",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        622,
-        665
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "launcher",
-        "functional_role": "transporter-erector-launcher platform"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "transporter-erector-launcher (TEL) platform"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "component-of",
-      "_relane_reason": "'component-of'@(component->variant) -> equips",
-      "source_quote": "The single most consistently attributable deep-tier element of the HQ-9 family is its transporter-erector-launcher (TEL) platform."
-    },
-    "claim_id": "d24-tel-chassis-attribution-l11-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        622,
-        665
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9",
-      "object_value": null,
-      "predicate": "equips",
-      "subject": "transporter-erector-launcher (TEL) platform"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l12",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        710,
-        778
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "family": "HQ-9"
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9A"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l12-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        710,
-        778
+        193
       ]
     },
     "event_time": null,
@@ -550,18 +135,18 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l12-3",
+    "claim_id": "d24-tel-chassis-attribution-l5-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
       "frame": null,
-      "line": 12,
+      "line": 5,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        710,
-        778
+        188,
+        194
       ]
     },
     "event_time": null,
@@ -584,6 +169,100 @@
       "entity_type": "variant",
       "form": "entity",
       "name": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d24_tel_chassis_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_object_mention": "d24-tel-chassis-attribution-l5-2",
+      "_relane_reason": "'equips' reoriented (variant->?)",
+      "source_quote": "For the HQ-9/P and HQ-9BE fielded by Pakistan"
+    },
+    "claim_id": "d24-tel-chassis-attribution-l5-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        188,
+        194
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "Pakistan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d24_tel_chassis_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d24-tel-chassis-attribution-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        730,
+        735
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9A"
     },
     "polarity": "positive",
     "premises": [],
@@ -640,9 +319,7 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "manufactures",
-      "_relane_reason": "'manufactures'@(manufacturer->component) -> supplies-component",
-      "source_quote": "the TEL rides a heavy 8x8 special wheeled chassis produced by the Taian (Wanshan) special-vehicle works"
+      "_subject_mention": "d24-tel-chassis-attribution-l13"
     },
     "claim_id": "d24-tel-chassis-attribution-l13-2",
     "doc_ref": {
@@ -673,7 +350,57 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "heavy 8x8 special wheeled chassis",
+      "object": "Taian/Wanshan",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Taian (Wanshan) special-vehicle works"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d24_tel_chassis_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "manufactures",
+      "_object_mention": "d24-tel-chassis-attribution-l14",
+      "_relane_reason": "'manufactures'@(manufacturer->component) -> supplies-component",
+      "_subject_mention": "d24-tel-chassis-attribution-l13",
+      "source_quote": "heavy 8x8 special wheeled chassis produced by the Taian (Wanshan) special-vehicle works of the WS-series lineage (variously rendered TAS5380 / WS2400-series"
+    },
+    "claim_id": "d24-tel-chassis-attribution-l13-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        847,
+        884
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "TAS5380",
       "object_value": null,
       "predicate": "supplies-component",
       "subject": "Taian (Wanshan) special-vehicle works"
@@ -717,7 +444,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "chassis"
+        "component_class": "chassis",
+        "functional_role": "mobility platform"
       },
       "entity_type": "component",
       "form": "entity",
@@ -732,8 +460,61 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d24-tel-chassis-attribution-l2",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d24-tel-chassis-attribution-l14",
+      "source_quote": "Across successive editions of the system — including the HQ-9, HQ-9A and the HQ-9B/HQ-9BE export configurations — the TEL rides a heavy 8x8 special wheeled chassis produced by the Taian (Wanshan) special-vehicle works of the WS-series lineage (variously rendered TAS5380 / WS2400-series"
+    },
     "claim_id": "d24-tel-chassis-attribution-l14-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        930,
+        937
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "TAS5380"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d24_tel_chassis_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d24-tel-chassis-attribution-l14-4",
+      "_subject_mention": "d24-tel-chassis-attribution-l14"
+    },
+    "claim_id": "d24-tel-chassis-attribution-l14-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
@@ -777,7 +558,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l14-3",
+    "claim_id": "d24-tel-chassis-attribution-l14-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
@@ -806,7 +587,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "chassis"
+        "component_class": "chassis",
+        "functional_role": "mobility platform"
       },
       "entity_type": "component",
       "form": "entity",
@@ -865,8 +647,13 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_object_mention": "d24-tel-chassis-attribution-l17",
+      "_relane_reason": "'equips' reoriented (variant->?)",
+      "source_quote": "For the HQ-9/P and HQ-9BE fielded by Pakistan"
+    },
     "claim_id": "d24-tel-chassis-attribution-l17-2",
     "doc_ref": {
       "bbox": null,
@@ -895,15 +682,57 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/P",
-        "Pakistan"
-      ],
-      "time_interval": null
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "Pakistan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d24_tel_chassis_attribution",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d24-tel-chassis-attribution-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1644,
+        1650
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
@@ -914,19 +743,25 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l17-3",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d24-tel-chassis-attribution-l2",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d24-tel-chassis-attribution-l21",
+      "source_quote": "HT-233 engagement radar that the system depends on"
+    },
+    "claim_id": "d24-tel-chassis-attribution-l21-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
       "frame": null,
-      "line": 17,
+      "line": 21,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1336,
-        1342
+        1644,
+        1650
       ]
     },
     "event_time": null,
@@ -944,10 +779,10 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "Pakistan",
+      "object": "HQ-9",
       "object_value": null,
-      "predicate": "imported-by",
-      "subject": "HQ-9/P"
+      "predicate": "equips",
+      "subject": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
@@ -987,9 +822,7 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "role": "radar house"
-      },
+      "attrs": {},
       "entity_type": "manufacturer",
       "form": "entity",
       "name": "CASIC"
@@ -1002,7 +835,7 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "relationship",
     "attributes": null,
     "claim_id": "d24-tel-chassis-attribution-l23-2",
     "doc_ref": {
@@ -1014,51 +847,8 @@
       "region": null,
       "row": null,
       "span": [
-        1800,
-        1823
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "23rd Research Institute"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l23-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1800,
-        1823
+        1796,
+        1864
       ]
     },
     "event_time": null,
@@ -1080,49 +870,6 @@
       "object_value": null,
       "predicate": "same-as",
       "subject": "23rd Research Institute"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l23-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1826,
-        1864
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "Beijing Institute of Radio Measurement"
     },
     "polarity": "positive",
     "premises": [],
@@ -1168,186 +915,6 @@
       "entity_type": "manufacturer",
       "form": "entity",
       "name": "CPMIEC"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l26",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 26,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2164,
-        2188
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "functional_role": "transmit/receive modules"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "transmit/receive modules"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l27",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 27,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2193,
-        2198
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "functional_role": "MMICs"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "MMICs"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l27-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 27,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2204,
-        2210
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "functional_role": "seeker"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "seeker"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d24_tel_chassis_attribution",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d24-tel-chassis-attribution-l27-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d24_tel_chassis_attribution.txt",
-      "frame": null,
-      "line": 27,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2220,
-        2228
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "functional_role": "datalink"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "datalink"
     },
     "polarity": "positive",
     "premises": [],

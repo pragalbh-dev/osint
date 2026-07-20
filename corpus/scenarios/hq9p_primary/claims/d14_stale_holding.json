@@ -13,7 +13,7 @@
       "row": null,
       "span": [
         226,
-        259
+        296
       ]
     },
     "event_time": null,
@@ -30,7 +30,9 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "service_branch": "Pakistan Army"
+      },
       "entity_type": "unit",
       "form": "entity",
       "name": "Pakistan Army Air Defence Command"
@@ -56,6 +58,51 @@
       "row": null,
       "span": [
         348,
+        354
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d14_stale_holding",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d14-stale-holding-l7-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        374,
         386
       ]
     },
@@ -74,58 +121,11 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "HQ-9/P"
-        ],
         "family": "HQ-9"
       },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l7-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        348,
-        386
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9/P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
+      "name": "HQ-9"
     },
     "polarity": "positive",
     "premises": [],
@@ -147,8 +147,8 @@
       "region": null,
       "row": null,
       "span": [
-        374,
-        386
+        462,
+        493
       ]
     },
     "event_time": null,
@@ -166,97 +166,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "HQ-9"
-        ]
+        "source_type": "publisher"
       },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l7-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        374,
-        386
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l7-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        466,
-        493
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
       "entity_type": "source",
       "form": "entity",
       "name": "Jane's"
@@ -271,7 +182,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d14-stale-holding-l7-7",
+    "claim_id": "d14-stale-holding-l7-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -281,7 +192,7 @@
       "region": null,
       "row": null,
       "span": [
-        466,
+        462,
         493
       ]
     },
@@ -299,7 +210,9 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "source_type": "think-tank"
+      },
       "entity_type": "source",
       "form": "entity",
       "name": "RUSI"
@@ -314,7 +227,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d14-stale-holding-l7-8",
+    "claim_id": "d14-stale-holding-l7-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -353,7 +266,6 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "count_state": "at least one",
         "quantity": {
           "approx": false,
           "count_state": null,
@@ -399,8 +311,11 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l7-9",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d14-stale-holding-l7-11"
+    },
+    "claim_id": "d14-stale-holding-l7-7",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -414,7 +329,17 @@
         612
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2016",
+      "year": 2016
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -431,7 +356,7 @@
       "form": "triple",
       "object": "garrison in China's western military district",
       "object_value": null,
-      "predicate": "based-at",
+      "predicate": "observed-at",
       "subject": "China HQ-9 battery"
     },
     "polarity": "positive",
@@ -444,7 +369,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d14-stale-holding-l7-10",
+    "claim_id": "d14-stale-holding-l7-8",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -455,7 +380,7 @@
       "row": null,
       "span": [
         681,
-        715
+        759
       ]
     },
     "event_time": null,
@@ -472,7 +397,9 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "service_branch": "People's Liberation Army Air Force"
+      },
       "entity_type": "unit",
       "form": "entity",
       "name": "People's Liberation Army Air Force"
@@ -485,9 +412,9 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
-    "claim_id": "d14-stale-holding-l7-11",
+    "claim_id": "d14-stale-holding-l7-9",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -497,8 +424,56 @@
       "region": null,
       "row": null,
       "span": [
-        822,
-        1021
+        867,
+        957
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "Type 305B (HT-233) fire-control set"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d14_stale_holding",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d14-stale-holding-l7-9"
+    },
+    "claim_id": "d14-stale-holding-l7-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        922,
+        957
       ]
     },
     "event_time": null,
@@ -529,53 +504,9 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l7-12",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        922,
-        940
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HT-233",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "Type 305B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d14-stale-holding-l7-13",
+    "claim_id": "d14-stale-holding-l7-11",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -585,53 +516,7 @@
       "region": null,
       "row": null,
       "span": [
-        922,
-        957
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "fire-control set",
-        "functional_role": "engagement radar"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "Type 305B (HT-233) fire-control set"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l7-14",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 7,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        973,
+        959,
         1020
       ]
     },
@@ -659,7 +544,8 @@
           "surface_format": "toponym",
           "wgs84_lat": null,
           "wgs84_lon": null
-        }
+        },
+        "site_type": "garrison"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -673,7 +559,7 @@
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d14-stale-holding-l9",
     "doc_ref": {
@@ -685,8 +571,8 @@
       "region": null,
       "row": null,
       "span": [
-        1262,
-        1521
+        1624,
+        1667
       ]
     },
     "event_time": null,
@@ -704,23 +590,11 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "quantity": {
-          "approx": false,
-          "count_state": null,
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 8.0
-        }
+        "service_branch": "Pakistan Air Force"
       },
-      "event_type": "TransferEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/P",
-        "Pakistan"
-      ],
-      "time_interval": null
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Air Force"
     },
     "polarity": "positive",
     "premises": [],
@@ -730,12 +604,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "equips",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "source_quote": "The Pakistan Air Force's stated requirement, per a 2015 procurement notice referenced in earlier issues of this Monitor, calls for a long-range SAM to complement the shorter-range LY-80 (HQ-16) already in service"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d14-stale-holding-l9-2",
     "doc_ref": {
       "bbox": null,
@@ -746,8 +616,8 @@
       "region": null,
       "row": null,
       "span": [
-        1624,
-        1836
+        1804,
+        1817
       ]
     },
     "event_time": null,
@@ -764,11 +634,12 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Pakistan Air Force",
-      "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "LY-80"
+      "attrs": {
+        "family": "HQ-16"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-16"
     },
     "polarity": "positive",
     "premises": [],
@@ -790,50 +661,7 @@
       "region": null,
       "row": null,
       "span": [
-        1628,
-        1646
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "unit",
-      "form": "entity",
-      "name": "Pakistan Air Force"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l9-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1790,
+        1804,
         1817
       ]
     },
@@ -852,56 +680,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "HQ-16"
-        ]
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-16"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l9-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1790,
-        1817
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "designators": [
-          "LY-80"
-        ]
+        "family": "HQ-16"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -916,96 +695,11 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l9-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1790,
-        1817
-      ]
+    "attributes": {
+      "_object_mention": "d14-stale-holding-l9-2",
+      "_subject_mention": "d14-stale-holding-l9-3"
     },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-16",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-16"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l9-7",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1790,
-        1817
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "LY-80",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "LY-80"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l9-8",
+    "claim_id": "d14-stale-holding-l9-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
@@ -1047,6 +741,52 @@
     "targets": null
   },
   {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d14-stale-holding-l9"
+    },
+    "claim_id": "d14-stale-holding-l9-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1804,
+        1817
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Air Force",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "LY-80 (HQ-16)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d14_stale_holding",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": null,
     "claim_id": "d14-stale-holding-l11",
@@ -1059,7 +799,7 @@
       "region": null,
       "row": null,
       "span": [
-        2182,
+        2093,
         2200
       ]
     },
@@ -1077,7 +817,9 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "role": "manufacturer / exporter"
+      },
       "entity_type": "manufacturer",
       "form": "entity",
       "name": "CASIC"
@@ -1103,7 +845,7 @@
       "row": null,
       "span": [
         2533,
-        2603
+        2626
       ]
     },
     "event_time": null,
@@ -1120,7 +862,10 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "origin_country": "China",
+        "role": "manufacturer / exporter"
+      },
       "entity_type": "manufacturer",
       "form": "entity",
       "name": "China National Precision Machinery Import & Export Corporation"
@@ -1134,7 +879,9 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_subject_mention": "d14-stale-holding-l13"
+    },
     "claim_id": "d14-stale-holding-l13-2",
     "doc_ref": {
       "bbox": null,
@@ -1146,7 +893,7 @@
       "row": null,
       "span": [
         2533,
-        2603
+        2626
       ]
     },
     "event_time": null,
@@ -1208,9 +955,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "HQ-9A"
-        ]
+        "family": "HQ-9"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -1224,7 +969,7 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d14-stale-holding-l17-2",
     "doc_ref": {
@@ -1236,8 +981,8 @@
       "region": null,
       "row": null,
       "span": [
-        2917,
-        2922
+        2924,
+        2929
       ]
     },
     "event_time": null,
@@ -1254,11 +999,12 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "HQ-9A",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9A"
+      "attrs": {
+        "family": "HQ-9"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9B"
     },
     "polarity": "positive",
     "premises": [],
@@ -1280,97 +1026,6 @@
       "region": null,
       "row": null,
       "span": [
-        2924,
-        2929
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "designators": [
-          "HQ-9B"
-        ]
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l17-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 17,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2924,
-        2929
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9B",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l17-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 17,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
         2948,
         2995
       ]
@@ -1390,9 +1045,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "FD-2000"
-        ]
+        "family": "HQ-9"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -1408,18 +1061,18 @@
   {
     "asserts": "relationship",
     "attributes": null,
-    "claim_id": "d14-stale-holding-l17-6",
+    "claim_id": "d14-stale-holding-l18",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
       "frame": null,
-      "line": 17,
+      "line": 18,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2948,
-        2995
+        3017,
+        3087
       ]
     },
     "event_time": null,
@@ -1437,55 +1090,10 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "FD-2000",
+      "object": "Type 305B",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "FD-2000"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l18",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 18,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3089,
-        3129
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "acquisition radar"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "Type 120"
+      "subject": "HT-233 engagement radar"
     },
     "polarity": "positive",
     "premises": [],
@@ -1526,11 +1134,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "acquisition radar"
+        "component_class": "radar",
+        "functional_role": "acquisition radar"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "YLC series"
+      "name": "Type 120 / YLC series"
     },
     "polarity": "positive",
     "premises": [],
@@ -1552,7 +1161,7 @@
       "region": null,
       "row": null,
       "span": [
-        3832,
+        3846,
         3852
       ]
     },
@@ -1570,7 +1179,9 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "source_type": "news agency"
+      },
       "entity_type": "source",
       "form": "entity",
       "name": "Antara"
@@ -1613,139 +1224,12 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "source_type": "publisher"
+      },
       "entity_type": "source",
       "form": "entity",
       "name": "Jane's Defence Weekly"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l29-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 29,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3886,
-        3915
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "CPMIEC promotional literature"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l29-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 29,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3917,
-        3952
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "regional embassy briefing summaries"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d14_stale_holding",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d14-stale-holding-l29-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d14_stale_holding.txt",
-      "frame": null,
-      "line": 29,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3958,
-        3982
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "aggregator forum reposts"
     },
     "polarity": "positive",
     "premises": [],

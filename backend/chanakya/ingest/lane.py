@@ -46,7 +46,7 @@ from chanakya.ingest import loaders
 from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.dedup import assign_claim_ids, dedup_within_doc, remap_claim_refs
 from chanakya.ingest.extract import extract_document
-from chanakya.ingest.imagery import LiteratureRef, read_image_document
+from chanakya.ingest.imagery import LiteratureRef, inherit_observation_time, read_image_document
 from chanakya.schemas import Alert, ClaimRecord, ConfigBundle, GraphView, IngestResult
 from chanakya.schemas.values import DateValue, Location
 from chanakya.store import DecisionLog, EvidenceLog
@@ -113,9 +113,14 @@ def _doc_token(source_id: str) -> str:
 
 
 def _finalize(claims: list[ClaimRecord], source_id: str, config: ConfigBundle) -> list[ClaimRecord]:
-    """The pure per-document reshaping: canonical edge direction → fold restatements → mint canonical ids.
+    """The pure per-document reshaping: date the frames → canonical edge direction → fold restatements →
+    mint canonical ids.
 
-    :func:`~chanakya.edge_direction.canonicalize_claims` orients every relationship claim to its type's
+    :func:`~chanakya.ingest.imagery.inherit_observation_time` runs **first**, so an undated VLM read
+    inherits the pass date its sibling text states before anything folds or ids it — without that, the
+    imagery observation a derived basing fact takes its valid time from is undated and the whole
+    ordering/ageing chain downstream has nothing to work with.
+    :func:`~chanakya.edge_direction.canonicalize_claims` then orients every relationship claim to its type's
     house direction **first** (using this document's own entity claims + the place gazetteer to type the
     endpoints), so oppositely-phrased restatements within one doc fold together in ``dedup_within_doc`` and
     what is appended to the immutable log is already correct (write-side of the canonical-direction fix).
@@ -124,7 +129,8 @@ def _finalize(claims: list[ClaimRecord], source_id: str, config: ConfigBundle) -
     observation. Runs *after* all of a document's extraction I/O has completed (serial + deterministic) yet
     still upstream of the append; the returned order is the canonical sorted order.
     """
-    oriented = canonicalize_claims(claims, config)
+    dated = inherit_observation_time(claims)
+    oriented = canonicalize_claims(dated, config)
     folded = dedup_within_doc(oriented)
     return assign_claim_ids(folded, doc_id=_doc_token(source_id))
 

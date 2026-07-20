@@ -1,19 +1,199 @@
 [
   {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d18-rahwali-pass1-l16",
+      "_subject_mention": "d18-rahwali-pass1-l10-4"
+    },
+    "claim_id": "d18-rahwali-pass1-l10",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+        "frame": null,
+        "line": 10,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          309,
+          572
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+        "frame": null,
+        "line": 10,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          437,
+          632
+        ]
+      }
+    ],
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2025",
+      "year": 2025
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Rahwali airfield",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d18_rahwali_pass1",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l5",
+    "claim_id": "d18-rahwali-pass1-l10-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
       "frame": null,
-      "line": 5,
+      "line": 10,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        123,
-        128
+        437,
+        530
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "echelon": "Command",
+        "service_branch": "Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Army Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d18_rahwali_pass1",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "stated",
+      "_object_mention": "d18-rahwali-pass1-l10-2",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d18-rahwali-pass1-l10-4",
+      "source_quote": "shows an array consistent with a Pakistan Army Air Defence Command long-range SAM deployment. Configuration is assessed as likely HQ-9B"
+    },
+    "claim_id": "d18-rahwali-pass1-l10-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        437,
+        572
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2025",
+      "year": 2025
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence Command",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d18_rahwali_pass1",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d18-rahwali-pass1-l10-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        531,
+        632
       ]
     },
     "event_time": null,
@@ -32,7 +212,7 @@
     "payload": {
       "attrs": {
         "confidence_language": "MODERATE",
-        "family": "HQ-9/HQ-9A"
+        "family": "HQ-9"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -48,18 +228,18 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d18-rahwali-pass1-l5-2",
+    "claim_id": "d18-rahwali-pass1-l16",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
       "frame": null,
-      "line": 5,
+      "line": 16,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        158,
-        174
+        1092,
+        1249
       ]
     },
     "event_time": null,
@@ -95,9 +275,8 @@
           "wgs84_lat": 32.23888888888889,
           "wgs84_lon": 74.13111111111111
         },
-        "occupancy_state": "recently occupied",
-        "site_signature_geometry": "radar/launcher spacing and revetment layout",
-        "site_type": "SAM deployment area"
+        "site_signature_geometry": "Center of signature: 32°14′20″N 074°07′52″E",
+        "site_type": "airfield"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -143,7 +322,7 @@
     "payload": {
       "attrs": {
         "component_class": "radar",
-        "functional_role": "engagement/fire-control radar pallet"
+        "functional_role": "engagement/fire-control radar"
       },
       "entity_type": "component",
       "form": "entity",
@@ -200,20 +379,19 @@
       "attrs": {
         "count": {
           "approx": false,
-          "count_state": null,
+          "count_state": "fielded",
           "max": null,
           "min": null,
           "unit": null,
           "value": 1.0
         },
-        "dimensions": "roughly consistent with HT-233 (or derivative) associated with HQ-9 series",
-        "object_type": "engagement/fire-control radar pallet"
+        "object_type": "probable engagement/fire-control radar pallet"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "engagement/fire-control radar pallet"
+        "probable engagement/fire-control radar pallet"
       ],
       "time_interval": {
         "boundary_source": "derived_from_label",
@@ -271,7 +449,7 @@
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "HQ-9 TEL"
+      "name": "TEL"
     },
     "polarity": "positive",
     "premises": [],
@@ -324,20 +502,19 @@
       "attrs": {
         "count": {
           "approx": false,
-          "count_state": null,
+          "count_state": "fielded",
           "max": null,
           "min": null,
           "unit": null,
           "value": 4.0
         },
-        "dimensions": "spacing loosely consistent with published HQ-9 TEL (transporter-erector-launcher) turning radii and canister counts",
-        "object_type": "object clusters"
+        "object_type": "object clusters (transporter-erector-launcher)"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "object clusters"
+        "object clusters (transporter-erector-launcher)"
       ],
       "time_interval": {
         "boundary_source": "derived_from_label",
@@ -350,6 +527,51 @@
         "raw": "2025",
         "year": 2025
       }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d18_rahwali_pass1",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d18-rahwali-pass1-l22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d18_rahwali_pass1.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2106,
+        2177
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "command post shelter"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "Support vehicles / possible command post shelter"
     },
     "polarity": "positive",
     "premises": [],
@@ -408,7 +630,7 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "Overhead view of a cleared compound with parked equipment rows in a hilly, wooded terrain.",
+      "_event_time_rung": "sibling-document-observation",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "80589d92106c266325ba9bad3376c608fce4f84dbe32ecf2d34d61b865b3c78b",
@@ -429,7 +651,17 @@
       "row": null,
       "span": null
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2025",
+      "year": 2025
+    },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
@@ -444,61 +676,44 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
-          "max": null,
-          "min": null,
-          "unit": "vehicles and equipment elements",
+          "max": 60.0,
+          "min": 20.0,
+          "unit": "vehicles and trailers",
           "value": null
         },
-        "description": "The overhead image shows a facility situated within a rugged, hilly, and partially forested landscape. At the center of the frame is a cleared, loop-shaped compound containing multiple graded dirt pads. On the southeastern pad, a linear row of approximately 9 to 11 rectangular vehicles or trailers is parked side-by-side. On the northwestern pad, a smaller linear row of approximately 5 to 7 vehicles is visible. Additional equipment, vehicles, and small support structures are clustered near the center of this loop. To the west and southwest, several larger rectangular support buildings are distributed along a dirt road network. On the eastern side of the image, a large rectangular double-bermed or double-fenced enclosure is situated on the slope of a hill. Numerous dirt tracks and trails traverse the surrounding hilly terrain.",
-        "frame_kind": "optical_overhead",
-        "geometry_tokens": [
-          "loop_road",
-          "graded_pad",
-          "linear_arrangement",
-          "berm",
-          "building",
-          "dirt_road",
-          "enclosure"
-        ],
+        "description": "An overhead view of a military or utility facility situated in hilly, partially forested terrain. The central feature is a large, light-colored cleared pad with several parking areas. A prominent row of approximately 10 to 12 rectangular vehicles or trailers is parked in a neat line in the southeastern portion of this pad, with other small clusters of vehicles dispersed nearby. To the south and southwest of this central area, a cluster of rectangular buildings and support structures is nestled among the trees. A network of winding dirt roads connects the different sectors of the site across the rugged, vegetated landscape.",
         "observed_features": [
           {
             "arrangement": "linear",
-            "feature": "parked vehicles",
-            "note": "A row of vehicles/trailers parked side-by-side on a southeastern graded pad.",
+            "feature": "vehicles",
+            "note": "A distinct row of rectangular vehicles or trailers parked side-by-side in the southeastern portion of the central pad.",
             "shape": "rectangular"
           },
           {
-            "arrangement": "linear",
-            "feature": "parked vehicles",
-            "note": "A smaller row of vehicles/trailers parked side-by-side on a northwestern graded pad.",
+            "arrangement": "clustered",
+            "feature": "cleared pad",
+            "note": "A large, central cleared area on high ground hosting several vehicle parking and staging zones.",
+            "shape": "irregular"
+          },
+          {
+            "arrangement": "dispersed",
+            "feature": "buildings",
+            "note": "Rectangular support or barracks buildings located to the southwest of the central pad.",
             "shape": "rectangular"
           },
           {
-            "arrangement": "loop",
-            "feature": "graded pads",
-            "note": "A central loop-shaped cleared area containing graded earth pads for vehicle parking.",
-            "shape": "oval"
-          },
-          {
-            "arrangement": "scattered",
-            "feature": "support buildings",
-            "note": "Rectangular buildings situated to the west and southwest of the main loop.",
-            "shape": "rectangular"
-          },
-          {
-            "arrangement": "isolated",
-            "feature": "enclosure",
-            "note": "A double-bermed or double-fenced rectangular area on the eastern slope.",
-            "shape": "rectangular"
+            "arrangement": "network",
+            "feature": "roads",
+            "note": "Winding, unpaved dirt tracks and roads traversing the hilly terrain.",
+            "shape": "linear"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "The overhead image shows a facility situated within a rugged, hilly, and partially forested landscape. At the center of the frame is a cleared, loop-shaped compound containing multiple graded dirt pads. On the southeastern pad, a linear row of approximately 9 to 11 rectangular vehicles or trailers is parked side-by-side. On the northwestern pad, a smaller linear row of approximately 5 to 7 vehicles is visible. Additional equipment, vehicles, and small support structures are clustered near the center of this loop. To the west and southwest, several larger rectangular support buildings are distributed along a dirt road network. On the eastern side of the image, a large rectangular double-bermed or double-fenced enclosure is situated on the slope of a hill. Numerous dirt tracks and trails traverse the surrounding hilly terrain.",
+        "site_signature_geometry": "An overhead view of a military or utility facility situated in hilly, partially forested terrain. The central feature is a large, light-colored cleared pad with several parking areas. A prominent row of approximately 10 to 12 rectangular vehicles or trailers is parked in a neat line in the southeastern portion of this pad, with other small clusters of vehicles dispersed nearby. To the south and southwest of this central area, a cluster of rectangular buildings and support structures is nestled among the trees. A network of winding dirt roads connects the different sectors of the site across the rugged, vegetated landscape.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",

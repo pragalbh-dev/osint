@@ -12,8 +12,8 @@
       "region": null,
       "row": null,
       "span": [
-        373,
-        449
+        389,
+        448
       ]
     },
     "event_time": null,
@@ -31,7 +31,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "confidence_language": "Analyst confidence: moderate on hardstand/laydown areas, low along obscured tree-line segment.",
+        "confidence_language": "suspected",
         "family": "HQ-9"
       },
       "entity_type": "variant",
@@ -51,9 +51,63 @@
     "targets": null
   },
   {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_object_mention": "d17b-withheld-gap-l9",
+      "_relane_reason": "'equips' reoriented (variant->?)",
+      "source_quote": "the HQ-9P long-range air defense system fielded by Pakistan"
+    },
+    "claim_id": "d17b-withheld-gap-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        389,
+        448
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P long-range air defense system",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "Pakistan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17b-withheld-gap-l9-2",
+    "claim_id": "d17b-withheld-gap-l9-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
@@ -85,14 +139,13 @@
         "coordinates": {
           "geocode_candidates": [],
           "precision_class": null,
-          "proposed_alias": "near the port road turnoff, not the garrison itself",
-          "raw": "near the port road turnoff, not the garrison itself",
+          "proposed_alias": "near the port road turnoff",
+          "raw": "near the port road turnoff",
           "resolved_place_ref": null,
           "surface_format": "toponym",
           "wgs84_lat": null,
           "wgs84_lon": null
         },
-        "occupancy_state": "negative TEL presence",
         "site_type": "forward SAM deployment area"
       },
       "entity_type": "basing_site",
@@ -143,7 +196,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "TEL",
+        "component_class": "launcher",
         "functional_role": "transporter-erector-launcher"
       },
       "entity_type": "component",
@@ -163,9 +216,70 @@
     "targets": null
   },
   {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "transporter-erector-launchers (TELs)",
+        "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-06-11",
+        "occupancy_state": "negative TEL presence"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d17b-withheld-gap-l22-2",
+    "claim_id": "d17b-withheld-gap-l22-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
@@ -229,7 +343,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17b-withheld-gap-l22-3",
+    "claim_id": "d17b-withheld-gap-l22-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
@@ -263,7 +377,7 @@
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "radar trailer"
+      "name": "possible radar trailer footprint"
     },
     "polarity": "positive",
     "premises": [],
@@ -278,9 +392,14 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d17b-withheld-gap-l22-4",
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "possible radar trailer footprint",
+        "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
@@ -319,13 +438,74 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "object_type": "possible radar trailer footprint"
+        "occupancy_observed_date": "2024-11",
+        "occupancy_state": "showed what was assessed as a possible radar trailer footprint"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "month",
+      "half": null,
+      "kind": "label",
+      "month": 11,
+      "quarter": null,
+      "raw": "2024-11",
+      "year": 2024
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "radar trailer footprint"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "possible radar trailer footprint"
+        "radar trailer footprint"
       ],
       "time_interval": {
         "boundary_source": "derived_from_label",
@@ -352,9 +532,9 @@
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17b-withheld-gap-l22-5",
+    "claim_id": "d17b-withheld-gap-l22-7",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
@@ -364,16 +544,11 @@
       "region": null,
       "row": null,
       "span": [
-        1487,
-        1630
+        1761,
+        1973
       ]
     },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-06-11",
-      "kind": "exact",
-      "raw": "2025-06-11"
-    },
+    "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
@@ -388,20 +563,13 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "object_type": "radar trailer footprint"
+        "missing_slots": [
+          "perimeter"
+        ]
       },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "radar trailer footprint"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-06-11",
-        "kind": "exact",
-        "raw": "2025-06-11"
-      }
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "perimeter"
     },
     "polarity": "positive",
     "premises": [],
@@ -429,7 +597,7 @@
       "row": null,
       "span": [
         1975,
-        2116
+        2162
       ]
     },
     "event_time": null,
@@ -447,8 +615,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "generator",
-        "functional_role": "generator trailer"
+        "component_class": "support",
+        "functional_role": "generator trailers"
       },
       "entity_type": "component",
       "form": "entity",
@@ -467,92 +635,20 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d17b-withheld-gap-l26",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
-      "frame": null,
-      "line": 26,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2297,
-        2384
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-06-11",
-      "kind": "exact",
-      "raw": "2025-06-11"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "count": {
-          "approx": false,
-          "count_state": "fielded",
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 2.0
-        },
-        "object_type": "light vehicles"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "light vehicles"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-06-11",
-        "kind": "exact",
-        "raw": "2025-06-11"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-06-11",
-      "kind": "exact",
-      "raw": "2025-06-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d17b_withheld_gap",
-    "targets": null
-  },
-  {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17b-withheld-gap-l38",
+    "claim_id": "d17b-withheld-gap-l34",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
       "frame": null,
-      "line": 38,
+      "line": 34,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        3826,
-        3882
+        3544,
+        3729
       ]
     },
     "event_time": null,
@@ -571,12 +667,12 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "SAR cross-check"
+          "northern tree line"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "SAR cross-check"
+      "name": "northern tree line"
     },
     "polarity": "positive",
     "premises": [],
@@ -593,7 +689,8 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "An overhead view of an urban compound featuring a central circular track layout surrounded by dense residential blocks.",
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "High-resolution overhead view of a prominent wedge-shaped central compound featuring a distinctive circular looping track layout, surrounded by urban residential blocks.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "0360adabf9dc4af5c34c5f77a5a84ab0baaa75025802a8115fdfa68808a3dffe",
@@ -614,7 +711,12 @@
       "row": null,
       "span": null
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
@@ -635,43 +737,48 @@
           "count_state": "fielded",
           "max": null,
           "min": null,
-          "unit": "vehicles and structures",
+          "unit": null,
           "value": null
         },
-        "description": "The image shows a high-resolution overhead view of a large, roughly triangular compound situated within a highly developed urban area. In the center of the compound is a prominent, symmetrical circular track layout containing internal loops, lobes, and pathways resembling a driving training course or specialized test track. Directly south of this circular feature are multiple rectangular administrative buildings, courtyards, and several rows of parked vehicles. To the west of the main compound, a small athletic field with a reddish running track is visible. The entire site is surrounded by dense grids of multi-story residential apartment buildings and a network of urban roads.",
+        "description": "This overhead frame captures a large wedge-shaped or pentagonal central compound embedded within a densely developed urban grid. The most prominent feature inside this compound is a highly symmetrical, circular paved road or track network featuring multiple internal loops arranged in a pattern resembling a cloverleaf or stylized wheel. Directly south of this circular track are several large rectangular buildings, courtyards, and potential vehicle parks. To the west of the compound, an athletic field with a reddish oval running track is visible. The surrounding areas to the east, west, north, and south consist of uniform, grid-aligned high-rise residential buildings, commercial structures, and multi-lane roadways with standard intersections.",
         "frame_kind": "satellite",
         "geometry_tokens": [
-          "circle",
-          "triangle",
-          "rectangle",
-          "oval"
+          "wedge-shaped",
+          "circular",
+          "oval",
+          "rectangular",
+          "loops",
+          "grid"
         ],
-        "gsd_note": "High-resolution satellite imagery with clearly defined road networks, buildings, and vehicle alignments.",
         "observed_features": [
           {
-            "arrangement": "symmetrical cloverleaf loops inside a outer circle",
-            "feature": "driving track",
+            "arrangement": "central",
+            "feature": "circular looping track network",
+            "note": "Symmetrical circular layout with internal clover-like loops and paths",
             "shape": "circular"
           },
           {
-            "arrangement": "neat rows and blocks",
-            "feature": "buildings",
+            "arrangement": "central",
+            "feature": "institutional compound",
+            "note": "Wedge-shaped property bounded by roads containing the circular track and buildings",
+            "shape": "wedge-shaped"
+          },
+          {
+            "arrangement": "grid",
+            "feature": "residential and commercial buildings",
+            "note": "High-density urban blocks surrounding the central compound",
             "shape": "rectangular"
           },
           {
-            "arrangement": "isolated adjacent to the west wall of the central plot",
+            "arrangement": "adjacent to central compound",
             "feature": "athletic field",
+            "note": "Sports field with a red running track layout",
             "shape": "oval"
-          },
-          {
-            "arrangement": "parallel rows",
-            "feature": "parked vehicles",
-            "shape": "rectangular"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "The image shows a high-resolution overhead view of a large, roughly triangular compound situated within a highly developed urban area. In the center of the compound is a prominent, symmetrical circular track layout containing internal loops, lobes, and pathways resembling a driving training course or specialized test track. Directly south of this circular feature are multiple rectangular administrative buildings, courtyards, and several rows of parked vehicles. To the west of the main compound, a small athletic field with a reddish running track is visible. The entire site is surrounded by dense grids of multi-story residential apartment buildings and a network of urban roads.",
+        "site_signature_geometry": "This overhead frame captures a large wedge-shaped or pentagonal central compound embedded within a densely developed urban grid. The most prominent feature inside this compound is a highly symmetrical, circular paved road or track network featuring multiple internal loops arranged in a pattern resembling a cloverleaf or stylized wheel. Directly south of this circular track are several large rectangular buildings, courtyards, and potential vehicle parks. To the west of the compound, an athletic field with a reddish oval running track is visible. The surrounding areas to the east, west, north, and south consist of uniform, grid-aligned high-rise residential buildings, commercial structures, and multi-lane roadways with standard intersections.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",

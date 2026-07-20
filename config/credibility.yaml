@@ -108,10 +108,28 @@ attribution_proposer:
   max_calls_per_rebuild: 8        # budget cap per enrichment pass; every non-firing candidate is logged
   log_skips: true
   candidate:
-    presence_edge_types: [based-at]                                    # deployment edges the co-location hangs on
+    presence_edge_types: [based-at, observed-at]                       # deployment + observed-occupancy edges the co-location hangs on
     reference_source_classes: [curated-register, think-tank, trade-media]  # what counts as fingerprint literature
     fingerprint_attrs: [site_signature_geometry, observable_fingerprint, equipment_fingerprint]  # geometry-bearing attrs
     variant_hop_edges: [inducted-into, equips]                         # 1-hop from the variant to reach unit/component fingerprints
+
+# INGEST basing proposer (ingest/basing.py) — the ATTRIBUTION layer of the two-layer basing model
+# (EVAL RCA D-P4.1/2/3). No source states "formation X is based at site Y"; sources state that equipment was
+# OBSERVED AT a site (`observed-at`, the observed layer) and that equipment serves with a formation
+# (`inducted-into`). This pass derives the missing `<unit, based-at, site>` edge from that pair as a cited
+# `inference` claim carrying BOTH premises and the observation's valid time — offline, upstream of the append,
+# never inside rebuild() (gate G1). Raise-only: it sets no status and no confidence, SCORE prices it, and an
+# inference shares an independence group with its premises so it can never self-corroborate to confirmed.
+# Unlike attribution_proposer this is a pure graph derivation — no model call, so it runs KEYLESS.
+# Absent block => dormant (no code-literal defaults).
+basing_proposer:
+  occupancy_edge_types: [observed-at]     # the OBSERVED layer this reads (equipment seen at a site)
+  formation_edge_types: [inducted-into]   # what associates that equipment with a named formation
+  equipment_hop_edges: [equips]           # 1 hop from an observed COMPONENT to the variant that carries the association
+  derived_edge: based-at                  # the lane the derived attribution is written on (must be declared in ontology.yaml)
+  require_located_site: true              # only a site you can point to (coordinate or gazetteer match) can be a BASE — a province or an "air defence sector" is an area of operation, not a basing site (md/13 precision spec)
+  max_units_per_site: 1                   # cap the attribution fan-out: the best-evidenced formation only, not every candidate
+  max_claims_per_pass: 20                 # budget cap; every non-firing occupancy edge is logged with its reason
 
 # INGEST in-document coreference (ingest/coref.py) — extraction pass 2. A second, scoped forced-tool call per
 # document that groups mentions the document itself treats as one entity ("CPMIEC" / "the export agency"), each

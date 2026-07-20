@@ -5,17 +5,17 @@
       "posted_at": "09 May 2025, 0620 hrs PKT",
       "status_url": "https://x.com/Reh_Baloch/status/1920783341122009871"
     },
-    "claim_id": "d08-social-sighting-l2",
+    "claim_id": "d08-social-sighting-l1",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 2,
+      "line": 1,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        7,
+        0,
         660
       ]
     },
@@ -93,8 +93,8 @@
       "location": {
         "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "near the port road, Karachi side",
-        "raw": "near the port road, Karachi side",
+        "proposed_alias": "near the port road, Karachi side, moving toward the old coastal battery turnoff",
+        "raw": "near the port road, Karachi side, moving toward the old coastal battery turnoff",
         "resolved_place_ref": null,
         "surface_format": "toponym",
         "wgs84_lat": null,
@@ -124,17 +124,17 @@
       "posted_at": "2025-05-09",
       "status_url": "https://x.com/SindhWatch_OSINT/status/1920801205564321098"
     },
-    "claim_id": "d08-social-sighting-l10",
+    "claim_id": "d08-social-sighting-l9",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 10,
+      "line": 9,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        674,
+        667,
         1155
       ]
     },
@@ -182,17 +182,17 @@
       "posted_at": "09-05-2025 (posted ~11 AM local)",
       "status_url": "https://x.com/DefenceLeaks_PK/status/1920815447700213456"
     },
-    "claim_id": "d08-social-sighting-l18",
+    "claim_id": "d08-social-sighting-l17",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 18,
+      "line": 17,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1169,
+        1162,
         1717
       ]
     },
@@ -245,7 +245,7 @@
       "row": null,
       "span": [
         1349,
-        1453
+        1481
       ]
     },
     "event_time": null,
@@ -263,7 +263,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "moving through Karachi outskirts, believed relocating"
+        "activity": "moving through Karachi outskirts, believed relocating from a known garrison area"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -365,7 +365,7 @@
       "row": null,
       "span": [
         1959,
-        2023
+        2061
       ]
     },
     "event_time": {
@@ -430,17 +430,17 @@
       "posted_at": "9th May",
       "status_url": "https://x.com/wajahat_ali_def/status/1920830092211456789"
     },
-    "claim_id": "d08-social-sighting-l33",
+    "claim_id": "d08-social-sighting-l32",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 33,
+      "line": 32,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2222,
+        2215,
         2805
       ]
     },
@@ -560,6 +560,8 @@
   {
     "asserts": "entity",
     "attributes": {
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "A ground-level nighttime photograph of a column of wheeled armored vehicles driving on a wet city street with onlookers on the sidewalk filming with mobile phones.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "fa62a45005fd178a3a36f82065b101a3db48bf5cf4fcc4a38b476cdcb6b3f212",
@@ -580,7 +582,12 @@
       "row": null,
       "span": null
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
@@ -595,45 +602,51 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "caption_vs_image_consistency": "Highly consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
-          "max": 8.0,
+          "max": 10.0,
           "min": 4.0,
-          "unit": "wheeled armored vehicles",
+          "unit": "armored vehicles",
           "value": null
         },
-        "description": "A ground-level perspective photograph taken at night on a wet city street, showing a convoy of wheeled armored vehicles. In the foreground, a large multi-wheeled armored vehicle with headlights on is driving on the asphalt. Behind it, a line of several more armored vehicles with headlights illuminated extends into the background. On the right side, onlookers standing on the sidewalk are holding up smartphones to film or photograph the passing convoy. The street surface is wet and reflective. Overhead streetlights and trolleybus or tram wires are visible. A timestamp reading 'OCT 26, 23:47' is located in the bottom right corner.",
-        "frame_kind": "ground-level perspective photograph",
+        "description": "A ground-level photograph taken at night on a wet urban street. A column of dark-colored, multi-wheeled armored vehicles is driving down the road with their headlights illuminated, casting bright reflections on the wet asphalt. On the right, several individuals in dark jackets and hoods are standing on the sidewalk, holding up smartphones to record or photograph the passing convoy. Overhead utility wires and streetlights are visible, and a date/time stamp 'OCT 26, 23:47' is printed in the lower right corner.",
+        "frame_kind": "ground-level photograph",
+        "geometry_tokens": [
+          "line",
+          "road"
+        ],
+        "gsd_note": "N/A (ground-level perspective)",
         "observed_features": [
           {
             "arrangement": "column",
             "feature": "wheeled armored vehicles",
-            "note": "Driving in a line on the street with headlights on",
-            "shape": "boxy, multi-wheeled"
+            "note": "Dark tactical vehicles with roof-mounted hatches/turret structures and illuminated headlights driving in sequence.",
+            "shape": "boxy/rectangular"
           },
           {
             "arrangement": "linear",
             "feature": "roadway",
-            "note": "Wet, reflective asphalt street with painted lane markings",
-            "shape": "linear"
+            "note": "Wet asphalt street reflecting streetlights and vehicle headlights.",
+            "shape": "straight line"
           },
           {
             "arrangement": "linear",
             "feature": "sidewalk",
-            "note": "Paved sidewalk with onlookers filming the vehicles",
-            "shape": "linear"
+            "note": "Paved sidewalk alongside the wet street.",
+            "shape": "straight line"
           },
           {
-            "arrangement": "overhead",
-            "feature": "streetlights and utility wires",
-            "note": "Suspended wires and elevated glowing lamps casting warm light",
-            "shape": "linear and point sources"
+            "arrangement": "line",
+            "feature": "pedestrians",
+            "note": "Bystanders in winter clothing holding up smartphones.",
+            "shape": "vertical profiles"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level perspective photograph taken at night on a wet city street, showing a convoy of wheeled armored vehicles. In the foreground, a large multi-wheeled armored vehicle with headlights on is driving on the asphalt. Behind it, a line of several more armored vehicles with headlights illuminated extends into the background. On the right side, onlookers standing on the sidewalk are holding up smartphones to film or photograph the passing convoy. The street surface is wet and reflective. Overhead streetlights and trolleybus or tram wires are visible. A timestamp reading 'OCT 26, 23:47' is located in the bottom right corner.",
+        "site_signature_geometry": "A ground-level photograph taken at night on a wet urban street. A column of dark-colored, multi-wheeled armored vehicles is driving down the road with their headlights illuminated, casting bright reflections on the wet asphalt. On the right, several individuals in dark jackets and hoods are standing on the sidewalk, holding up smartphones to record or photograph the passing convoy. Overhead utility wires and streetlights are visible, and a date/time stamp 'OCT 26, 23:47' is printed in the lower right corner.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
