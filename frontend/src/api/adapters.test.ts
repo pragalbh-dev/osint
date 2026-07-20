@@ -347,17 +347,25 @@ describe('viewToGraphNodes', () => {
 })
 
 describe('viewToGraphEdges', () => {
-  it('maps id/source/target/kind for every edge', () => {
+  it('maps id/source/target/kind/type for every edge', () => {
     expect(viewToGraphEdges(VIEW)).toEqual([
-      { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed' },
-      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale' },
-      { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable' },
-      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale' },
-      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap' },
-      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted' },
-      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-link' },
-      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede' },
+      { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed', type: 'based-at' },
+      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale', type: 'supplies-component' },
+      { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable', type: 'based-at' },
+      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale', type: 'based-at' },
+      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap', type: 'based-at' },
+      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted', type: 'based-at' },
+      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-link', type: 'same-as' },
+      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede', type: 'supersedes' },
     ])
+  })
+
+  // The graph stage separates DOMAIN relationships from resolution BOOKKEEPING, which is
+  // only possible if the ontology type survives the collapse into a visual `kind`
+  // (`e-link` is both `same-as` and `distinct-from`).
+  it('keeps the ontology type alongside the collapsed visual kind', () => {
+    const sameAs = viewToGraphEdges(VIEW).find((e) => e.id === 'sa1')
+    expect(sameAs).toMatchObject({ kind: 'e-link', type: 'same-as' })
   })
 })
 

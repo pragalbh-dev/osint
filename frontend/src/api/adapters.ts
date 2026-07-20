@@ -411,6 +411,11 @@ export function viewToGraphNodes(view: GraphView): GraphNodeDef[] {
     x: 0,
     y: 0,
     kind: statusToGraphKind(node),
+    // ontology type + bare name carried alongside the status `kind`: the graph stage
+    // separates the knowledge layer from the evidence layer (`source` nodes) and lays
+    // nodes out by supply-chain role, neither of which is derivable from `kind`.
+    type: node.type,
+    name: node.name ?? node.id,
   }))
 }
 
@@ -420,6 +425,10 @@ export function viewToGraphEdges(view: GraphView): GraphEdgeDef[] {
     source: edge.source,
     target: edge.target,
     kind: edgeToKind(edge),
+    // ontology type kept alongside the status `kind`: `e-link` collapses `same-as` and
+    // `distinct-from` into one treatment, but the graph stage has to tell a merge from a
+    // hard veto, and domain relationships from resolution bookkeeping.
+    type: edge.type,
   }))
 }
 
