@@ -201,9 +201,11 @@ export function MapView() {
       boxZoom: false,
       keyboard: false,
       minZoom: 3,
-      maxZoom: 7, // vendored tile range (z3-z7); no un-vendored tile requests
+      // Vendored tiles stop at z7; past that Leaflet scales the z7 tiles (maxNativeZoom below),
+      // so z8–z10 trade basemap sharpness for pin separation without any un-vendored tile requests.
+      maxZoom: 10,
     })
-    L.tileLayer(TILE_URL, { attribution: TILE_ATTR, minZoom: 3, maxZoom: 7, maxNativeZoom: 7 }).addTo(map)
+    L.tileLayer(TILE_URL, { attribution: TILE_ATTR, minZoom: 3, maxZoom: 10, maxNativeZoom: 7 }).addTo(map)
     map.fitBounds(AOI.bounds, { padding: [24, 24] })
     mapRef.current = map
 

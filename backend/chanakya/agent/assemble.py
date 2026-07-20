@@ -18,6 +18,18 @@ from chanakya.schemas import AnswerHop, AskAnswer, KnownGap, RefusalPayload
 from .context import ToolContext
 from .loop import AgentTrace
 
+# Sentence-class markers shared with the entailment validator. Two sentence classes assert something no
+# single cited claim can *entail* by construction, so they must NOT be sent to the NLI judge (they keep
+# deterministic citation validation — cited, citation exists, counts real):
+#   * DERIVED_METRIC — a value COMPUTED at rebuild() (chokepoint_status, substitutability). Its citations
+#     are the contributing evidence, not statements of the metric; no claim "entails" a derived number.
+#   * WEIGHED_NOT_CARRIED — a link the answer traversed, rated below the assertable band, and REJECTED. It
+#     reports the dismissal of the claim it cites; a claim can never entail its own rejection.
+# The validator matches these prefixes, so they are defined here (where the sentences are built) and
+# imported there — the two modules already share the sentence↔hop index contract.
+DERIVED_METRIC_PREFIX = "Chokepoint:"
+WEIGHED_NOT_CARRIED_PREFIX = "Weighed and not carried:"
+
 
 @dataclass
 class _Built:
@@ -117,7 +129,7 @@ def _weighed_not_carried(trace: AgentTrace, ctx: ToolContext, walked: set[str]) 
             }
             out.append(
                 (
-                    f"Weighed and not carried: {_hop_clause(ctx, hop)} — {nb.get('status')}; below the "
+                    f"{WEIGHED_NOT_CARRIED_PREFIX} {_hop_clause(ctx, hop)} — {nb.get('status')}; below the "
                     f"assertable band, so the assessment above does not rest on it",
                     cites,
                 )
@@ -157,7 +169,7 @@ def _from_paths(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
         gap = f" {suff.result.get('reason', '')}".rstrip() if suff else ""
         built.sentences.append(
             _sentence(
-                f"Chokepoint: {_name(ctx, comp_id)} — chokepoint_status={mat.get('chokepoint_status')}, "
+                f"{DERIVED_METRIC_PREFIX} {_name(ctx, comp_id)} — chokepoint_status={mat.get('chokepoint_status')}, "
                 f"substitutability={mat.get('substitutability_state')}.{gap}",
                 refs,
             )

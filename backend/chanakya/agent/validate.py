@@ -20,6 +20,7 @@ from dataclasses import dataclass, field
 
 from chanakya.schemas import AskAnswer, ClaimRecord, EntityDescriptor, EventDescriptor, Triple
 
+from .assemble import DERIVED_METRIC_PREFIX, WEIGHED_NOT_CARRIED_PREFIX
 from .client import LLMClient
 from .context import ToolContext
 from .loop import AgentTrace
@@ -34,7 +35,11 @@ _COUNT_RE = re.compile(r"(?<![\w-])(\d+)\s+(chokepoints?|components?|suppliers?|
 JUDGE_SYSTEM = (
     "You are a strict entailment judge for cited intelligence claims. Given a source CLAIM and a "
     "SENTENCE, answer only 'yes' if the claim's asserted content directly supports (entails) the "
-    "sentence, or 'no' otherwise. Default to 'no' if unsure. Answer with a single word."
+    "sentence, or 'no' otherwise. Default to 'no' if unsure. "
+    "When an IDENTITY line is present, it states entity equivalences the analysis graph already "
+    "resolved (e.g. an export designator and its system are one entity): treat a name the CLAIM uses "
+    "and its resolved equivalent in the SENTENCE as the SAME entity — an alias is not a mismatch. "
+    "Answer with a single word."
 )
 
 
@@ -94,12 +99,49 @@ def _count_ceiling(trace: AgentTrace) -> set[int]:
     return seen
 
 
-def _judge_entails(judge: LLMClient, ctx: ToolContext, sentence: str, cites: list[str]) -> bool:
+def _judge_entails(
+    judge: LLMClient,
+    ctx: ToolContext,
+    sentence: str,
+    cites: list[str],
+    resolved_entities: list[str] | None = None,
+) -> bool:
+    """Ask the judge whether the cited claims entail the sentence.
+
+    The sentence is written at the RESOLVED-knowledge layer (canonical entity names), while a cited claim
+    carries the RAW surface form a document used ("CASIC manufactures FD-2000" vs "…manufactures HQ-9/P").
+    Without the resolver's identity bindings the judge is comparing two altitudes and correctly says "no"
+    to a faithful sentence. So for a hop sentence we hand it the sentence's resolved entities (the hop's
+    own endpoints — the exact merge the resolver made): the equivalence is auditable graph state, not a
+    hint we invent. A genuinely unfaithful sentence still fails, because only the identity is bridged,
+    never the assertion.
+    """
     claims = [ctx.claims[c] for c in cites if c in ctx.claims]
     if not claims:
         return False
     joined = " ; ".join(_claim_text(c) for c in claims)
-    prompt = f"CLAIM: {joined}\nSENTENCE: {sentence}\nDoes the claim entail the sentence?"
+    identity = ""
+    resolved = list(dict.fromkeys(e for e in (resolved_entities or []) if e))
+    if resolved:
+        # The claim carries RAW surface terms (an export designator, a document's own wording); the
+        # sentence carries the RESOLVED entities the graph merged them into. Give the judge that
+        # equivalence — the resolver's own recorded merge, not a hint we invent — so it judges the
+        # RELATION, not the identity. Pairing is by meaning; the equivalence set is what is asserted.
+        raw_terms = list(
+            dict.fromkeys(
+                t
+                for c in claims
+                if isinstance(c.payload, Triple)
+                for t in (c.payload.subject, c.payload.object)
+            )
+        )
+        raw_str = "; ".join(f'"{t}"' for t in raw_terms) if raw_terms else "the source's raw names"
+        identity = (
+            f"IDENTITY: the analysis graph resolved the source's raw names [{raw_str}] to these "
+            f"entities: [{'; '.join(resolved)}]. A raw name and its resolved entity are the SAME "
+            f"entity — judge only whether the asserted RELATION holds between them.\n"
+        )
+    prompt = f"CLAIM: {joined}\n{identity}SENTENCE: {sentence}\nDoes the claim entail the sentence?"
     resp = judge.run_turn(system=JUDGE_SYSTEM, messages=[{"role": "user", "content": prompt}])
     return resp.text.strip().lower().startswith("y")
 
@@ -127,16 +169,23 @@ def validate_answer(
             if cid not in ctx.claims:
                 findings.append(Finding(sent, "citation_missing", detail=cid))
         # a hop sentence's citation must be in that hop's own claim set (supports its hop).
+        resolved_entities: list[str] = []
         if idx < len(answer.hops):
-            hop_claims = set(answer.hops[idx].claim_ids)
-            if not (set(cites) & hop_claims):
-                findings.append(Finding(sent, "not_supporting_hop", detail=f"hop {answer.hops[idx].step}"))
+            hop = answer.hops[idx]
+            if not (set(cites) & set(hop.claim_ids)):
+                findings.append(Finding(sent, "not_supporting_hop", detail=f"hop {hop.step}"))
+            # the sentence's resolved endpoints — the identity bridge for the entailment judge.
+            resolved_entities = [ctx.display_name(hop.src), ctx.display_name(hop.dst)]
         # every count in the sentence must be one the tools actually returned.
         for num, _noun in _COUNT_RE.findall(sent):
             if int(num) not in count_ceiling:
                 findings.append(Finding(sent, "count_mismatch", detail=num))
-        # entailment (only when a judge is available).
-        if judge is not None and not _judge_entails(judge, ctx, sent, cites):
+        # Entailment (only when a judge is available) — but NOT for the two sentence classes that no
+        # single claim can entail by construction (a rebuild-derived metric; a link reported as REJECTED).
+        # Those keep the deterministic checks above; sending them to the NLI judge would reject a faithful
+        # answer for asserting something citations were never meant to entail. (assemble.py owns the prefixes.)
+        nli_exempt = sent.startswith(DERIVED_METRIC_PREFIX) or sent.startswith(WEIGHED_NOT_CARRIED_PREFIX)
+        if judge is not None and not nli_exempt and not _judge_entails(judge, ctx, sent, cites, resolved_entities):
             findings.append(Finding(sent, "not_entailed"))
 
     return ValidationResult(ok=not findings, findings=findings)
