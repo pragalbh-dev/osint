@@ -17,6 +17,7 @@ from collections.abc import Callable
 
 from .aliases import AliasIndex
 from .entities import Entity, EntityGraph
+from .geo import separation_km
 from .normalize import name_similarity, normalize
 from .rconfig import ATTRIBUTE, RELATIONAL, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
 
@@ -43,6 +44,38 @@ COREF_EVIDENCE_ATTR = "_coref_evidence"
 COREF_QUOTE_ATTR = "source_quote"
 
 
+def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
+    """How far apart two entities state they are, **when that is too far to be one entity** — else ``None``.
+
+    The missing rail behind the "Karachi drawn in Gujranwala" class of bug. Every other guard in this
+    module compares *names, attributes and neighbourhoods*; none of them knows that Karachi and Sargodha
+    are 1,100 km apart. So a pair could be scored into the merge queue (or, at a high enough score,
+    merged outright) on name/neighbourhood alone, and the surviving node then keeps whichever of the two
+    coordinates its first claim happened to carry — i.e. one of the two places is silently redrawn at the
+    other. A map that lies about *where* something is is worse than a map that omits it.
+
+    So: an entity is in ONE place. If both sides carry their own frozen WGS84 coordinate and the geodesic
+    separation exceeds the configured per-type tolerance, they are not the same entity — no matter what
+    the score says. Deliberately narrow, because a wrong veto costs recall:
+
+    * only **stated** coordinates count. A side with no coordinate is *unknown*, never "somewhere else"
+      — absence is not disagreement, the same rule :func:`has_hard_conflict` follows;
+    * no gazetteer lookup, no geocoding, no inference from a toponym — that is the place layer's job
+      (``resolve.places``) and its own gates;
+    * the tolerance is config (``entity_geo_conflict_max_km``), per type, and **unset ⇒ off**.
+
+    Returns the separation in km when it is a conflict (so the caller can log/explain it), else ``None``.
+    """
+    tolerances = [cfg.geo_conflict_max_km(a.etype), cfg.geo_conflict_max_km(b.etype)]
+    stated = [t for t in tolerances if t is not None]
+    if not stated:
+        return None  # gate not configured for either type ⇒ off
+    km = separation_km(a, b)
+    if km is None:
+        return None  # at least one side states no coordinate ⇒ unknown, not incompatible
+    return km if km > min(stated) else None  # the stricter of the two types governs
+
+
 def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """True if a configured hard-conflict attribute is **stated on both sides and different**.
 
@@ -53,6 +86,11 @@ def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     definition. An attribute stated on only one side is **not** a conflict — absence is not disagreement.
     """
     if a.etype != b.etype:
+        return True
+    # Two stated positions too far apart to be one thing is a contradiction of exactly this kind, and
+    # the rail has to read it too — otherwise an authoritative coreference could bootstrap the very
+    # merge the cluster-level veto exists to refuse.
+    if geo_conflict_km(a, b, cfg) is not None:
         return True
     rules = cfg.attribute_rules(a.etype)
     for k in rules.get("conflict", []):

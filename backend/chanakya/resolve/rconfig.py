@@ -194,6 +194,24 @@ class ResolveConfig:
         v = self._extra("attribute_scoring", {}).get(name)
         return float(v) if v is not None else None
 
+    def geo_conflict_max_km(self, entity_type: str | None) -> float | None:
+        """How far apart two entities of this type may *state* they are and still be one entity.
+
+        The world statement behind the geographic veto (T2): a thing is in ONE place, so two mentions
+        that each carry their own coordinate and sit further apart than this cannot be the same thing,
+        however alike their names or neighbourhoods look. Per-type with an optional ``default`` row,
+        exactly like :meth:`place_allowed_precision_classes`; no row and no ``default`` (or no
+        ``entity_type``) ⇒ the gate is **off** for that type — the pre-fix behaviour, and no numeric
+        literal in code (gate G6).
+        """
+        configured = self._extra("entity_geo_conflict_max_km", None)
+        if not configured:
+            return None
+        row = configured.get(entity_type) if entity_type else None
+        if row is None:
+            row = configured.get("default")
+        return float(row) if row is not None else None
+
     # ── entity registry (config/entities.yaml — the 9th surface; mirrors ``places``) ────────────
     @property
     def entities(self) -> EntitiesConfig:

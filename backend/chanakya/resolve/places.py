@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any
 
 from geopy.distance import geodesic
 
@@ -24,14 +23,25 @@ from chanakya.schemas import PlaceEntry, pair_key
 from .aliases import AliasIndex
 from .cluster import ResolveResult
 from .entities import Entity, EntityGraph, unordered_pairs
+from .geo import LOCATION_ATTRS, Coords, location_attr, parse_coords
 from .normalize import normalize
 from .rconfig import ResolveConfig
 
-Coords = tuple[float, float]
-
-# The attr slots INGEST may freeze a canonical ``Location`` into, best-first. One list, shared with the
-# view assembly, so "where the coordinate lives" is stated once rather than re-guessed per reader.
-LOCATION_ATTRS: tuple[str, ...] = ("coordinates", "wgs84", "location")
+# ``LOCATION_ATTRS`` / ``location_attr`` / ``parse_coords`` now live in ``.geo`` (the scorer needs them
+# too and cannot import this module without a cycle) and are re-exported here so every existing
+# ``resolve.places`` reader keeps working unchanged.
+__all__ = [
+    "LOCATION_ATTRS",
+    "Coords",
+    "LocationMention",
+    "PlaceMatch",
+    "augment",
+    "location_attr",
+    "parse_coords",
+    "place_distinct_pairs",
+    "place_matches",
+    "resolve_place",
+]
 
 
 @dataclass
@@ -54,33 +64,6 @@ class LocationMention:
     toponym: str
     coords: Coords | None
     geocode_confidence: float | None = None
-
-
-def location_attr(attrs: Mapping[str, Any]) -> Any:
-    """The frozen-location value on an entity's attrs, whichever of :data:`LOCATION_ATTRS` INGEST used."""
-    for key in LOCATION_ATTRS:
-        value = attrs.get(key)
-        if value:
-            return value
-    return None
-
-
-def parse_coords(value: object) -> Coords | None:
-    """Read a frozen WGS84 coord from an attr: (lat, lon) tuple/list, or a dict with wgs84_lat/lon."""
-    if isinstance(value, (list, tuple)):
-        try:
-            lat, lon = value
-            return float(lat), float(lon)
-        except (TypeError, ValueError):
-            return None
-    if isinstance(value, dict):
-        lat, lon = value.get("wgs84_lat", value.get("lat")), value.get("wgs84_lon", value.get("lon"))
-        if lat is not None and lon is not None:
-            try:
-                return float(lat), float(lon)
-            except (TypeError, ValueError):
-                return None
-    return None
 
 
 def _toponym_matches(toponym: str, place: PlaceEntry, cfg: ResolveConfig) -> bool:
