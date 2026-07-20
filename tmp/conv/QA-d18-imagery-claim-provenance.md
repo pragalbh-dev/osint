@@ -1,5 +1,9 @@
 # QA observation — d18 "satellite image" claims carry text-only provenance
 
+> **⚠️ SUPERSEDED (2026-07-20)** by `DATA-C-d18-imagery-orphan-node.md`. This note framed the issue as
+> display-only. On the running graph the imagery claim IS present but orphans onto a separate node —
+> the real fix is a resolve/merge, not a card-rendering tweak. Use the newer note as the spec.
+
 **From:** live-QA remnant sweep (frontend session, 2026-07-20) · **For:** DATA-C / INGEST
 **Status:** observation + options — not fixed here (frozen corpus; any re-record is a keyed risk).
 
