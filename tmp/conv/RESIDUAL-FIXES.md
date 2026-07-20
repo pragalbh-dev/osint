@@ -345,6 +345,91 @@ No edge in the current worked-query chain is affected, so the demo is not at ris
 about corroboration counts or status distribution is suspect until this is understood. Fix it *before*
 re-running any evaluation numbers.
 
+## 17. 🔴 DEMO MODE IS A SECOND, UNQA'd APPLICATION — and it is what the app boots into
+
+**The single most demo-critical thing the 2026-07-20 QA sweep found.** Discovered the hard way: the user
+was handed a running instance, and three of the four defects they reported back were **demo-mode
+artifacts**, not real ones.
+
+**Why it bites.** `frontend/src/store/workbench.ts` ships `mode: 'demo'` as the default, and
+`ModeToggle.tsx` renders **only under `import.meta.env.DEV`** — deliberately, so the graded build stays
+pixel-clean. In a **production** build (i.e. `make run`, i.e. the hosted URL a reviewer opens) there is
+therefore **no visible way to reach live mode**; the only route is the undocumented **`?mode=live`** URL
+param. A reviewer will never guess it. So the default experience of the shipped app is the frozen
+scripted scenario, and **every improvement this sweep made lives behind a param they cannot discover.**
+
+Confirmed defects **in demo mode**, all verified in code, none of which exist in live mode:
+
+* **Every map pin opens the same drawer.** `DrawerHost` routes `mode !== 'live'` to `Drawer.tsx`, which
+  subscribes to `drawerOpen` / `expanded` / `ingested.d20` / three Rahwali selectors and **never reads
+  which node is selected** — there is no selection binding in it at all. It is one hardcoded Rahwali
+  panel. Clicking Rawalpindi, Sargodha or Karachi all render *"HQ-9B fire-unit occupied at Rahwali"*.
+* **Review cards do not open.** The three scripted queue rows do not route to a card, so the ★ HITL
+  control point — the thing the brief grades — cannot be exercised at all in the default mode.
+* **The hero question now contradicts its own scripted answer** (see #18).
+* **Only the 4 scripted pins render**, so the map looks as sparse as it did before the map work.
+
+**Why it went unnoticed:** every agent in the sweep verified in `?mode=live`, correctly, because that is
+where the real data is. Nobody was asked to look at the mode the app actually starts in. That is a
+briefing failure, not an agent failure.
+
+**Options, and this needs a call before the demo:**
+1. **Default the production build to `live`** and keep demo behind `?mode=demo`. Smallest change, biggest
+   effect; risk is that the cold-boot refusal (D1) then greets the reviewer.
+2. **Render the toggle in production** so both modes are reachable and labelled.
+3. **Fix demo mode's drawer + review routing** to be selection-aware. Most work, and duplicates in the
+   scripted path what the live path already does properly.
+4. **Drop demo mode from the graded build.** Cleanest story ("what you see is the real system"), but
+   forfeits the deterministic scripted walk that exists precisely because the live one can vary.
+
+## 18. 🔴 The demo's scripted hero answer contradicts the new hero question
+
+Introduced by the hero-query change (#T9) and **left deliberately unfixed — the demo narrative is
+hand-authored graded content and rewriting it is the user's call, not an integrator's.**
+
+`TARGET_QUERIES.hero` is a **single shared string** rendered as the first affordance in `ZeroView` in
+*both* modes. It now reads *"Trace the long-range SAM battery now based at **Rahwali**…"*, while the
+frozen `HERO_HOPS` walk still answers **step 1: "Where is the battery based?" → "Karachi — HQ-9/P pad
+signature"**. In demo mode the question and its answer openly disagree on the first hop.
+
+Partial alignment worth knowing before choosing a fix: the demo's **step 3** already answers *"CASIC —
+export agent CPMIEC"*, which **matches** the new query's real terminal answer, and its **step 4** ("Are
+there alternate suppliers? Unknown…") is exactly the substitutability gap in **#15**. Only step 1's
+premise is wrong. Options: re-author step 1 to Rahwali; or give demo its own question constant so each
+mode shows a question consistent with its own walk (they are currently coupled through one export).
+
+## 19. 🟡 A vetoed pair can still be offered as a merge candidate
+
+Found while integrating the QA branches (`tmp/conv/QA-INTEGRATION.md` §"Still open"). A
+`places.place_geo_conflict_pairs()` sibling to `place_distinct_pairs()` — vetoing when two *resolved
+gazetteer anchors* exceed `entity_geo_conflict_max_km` — computes the right **73 pairs**, but folding
+them into the `veto` set **did not suppress the candidate `same-as` edges**: it only drew 22 additional
+`distinct-from` edges, leaving the graph simultaneously asserting *"these are distinct"* and *"these might
+be the same"* about one pair. **The candidate-emission path does not consult `veto` the way the merge path
+does.** The change was reverted rather than shipped half-working.
+
+**Live consequence:** the user's original complaint class survives — `Army Air Defence Centre, Karachi` ↔
+`fenced compound near a PAF airbase in central Punjab` is still an open merge card at `merge_confidence`
+0.519, ~800 km apart. `scoring.geo_conflict_km` cannot catch it because it reads coordinates a *claim*
+states, and after toponym geocoding these entities are positioned from a gazetteer **anchor** instead
+(T5 closed six such pairs by hand with config `distinct_from` rows; this one was not among them).
+
+Fix properly: make candidate emission honour the same veto set the merge path uses, then re-add the
+anchor-distance rail. The other seven surviving candidates are genuinely good questions and must stay.
+
+## 20. 🟡 The map's honest area rendering is nearly invisible
+
+The user looked at a map carrying **12 plotted entities** and reported it as showing "only selected
+places". They were not wrong about what they could see: only ~4 nodes are point-precision and get a sharp
+reticle; the other 8 are area-precision and render as a **faint dashed ring** — and a ±150 km province
+envelope is so large against the dark basemap that it reads as background, not as a marker.
+
+The rendering is *correct* and the honesty is the point (#T5: never draw a province as a sharp dot). But
+a reviewer who cannot see that 12 things are located will conclude the map is empty — the same wrong
+conclusion the original "the whole map looks so empty" complaint came from. **Correct-but-illegible is
+still a demo problem.** Cheap fixes exist that cost no honesty: a count ("12 located · 4 point fixes · 8
+area-only"), a stronger area stroke, or a list beside the map. Not a data change.
+
 ---
 
 ## Open decisions and not-yet-done (as of the Phase-4 PR)

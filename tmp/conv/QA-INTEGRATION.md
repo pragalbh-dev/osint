@@ -20,7 +20,29 @@ t6-drawer-semantics → t3a-review-queue → t4-graph-legibility`.
 | **integrated** | **843 passed, 6 skipped, 1 xfailed** | |
 
 `788 + 6 + 10 + 20 + 17 + 2 = 843`. `ruff` and `mypy` clean (96 source files). Frontend: `tsc --noEmit`
-clean, **134** vitest tests (T5 + T6 + T3a + T4 suites all present and passing).
+clean, **155** vitest tests (T5 + T6 + T3a + T4 suites all present and passing).
+
+> **Correction (2026-07-20).** This line originally said 134 vitest tests. That was wrong — 134 was the
+> count after the T3a merge, before T4's suite landed. Both T10 and T11 independently re-measured the
+> branch at **155** (T10 verified by stashing its own changes and re-running). Recorded here rather than
+> silently edited, because two agents were briefed against the wrong baseline and correctly pushed back.
+
+## Second wave — T9, T11, T10 (merged 2026-07-20)
+
+| | tests (backend) | delta | frontend |
+|---|---|---|---|
+| first-wave integration | 843 | — | 155 |
+| + T9 (hero query) | 845 | +2 | 155 |
+| + T11 (config read + watching) | 854 | +9 | 162 |
+| + T10 (merge-card evidence) | **861** | +7 | **170** |
+
+`843 + 2 + 9 + 7 = 861` ✓ and `155 + 7 + 8 = 170` ✓. `ruff`, `mypy`, `tsc --noEmit` all clean. Graph
+unchanged at **166 / 84 / 19 / 457**. `make beat` still fires `obs-basing-relocation` with
+`before_ref = e:unit_hq9b:based-at:site_rawalpindi` → `after_ref = e:unit_hq9b:based-at:site_rahwali`.
+
+Only one conflict in the second wave: `DECISIONS.md` (T9 and T11 both appended a section) — unioned.
+T10 and T11 stayed off each other's files by design; T10 made **zero** changes to `api/routes/` and T11
+made **zero** changes to `adapters.ts`.
 
 **2. Every agent's own acceptance suite passes by name** — run individually, not just in aggregate:
 `test_geo_conflict` (7) · `test_map_position_integrity` (3) · `test_t3b_fragmentation` (12) ·
