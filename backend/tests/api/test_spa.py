@@ -12,11 +12,20 @@ from chanakya.api import spa as spa_mod
 from tests.api.conftest import build_golden_state
 
 
-def test_placeholder_when_no_spa_build(golden_client) -> None:
-    r = golden_client.get("/")
-    assert r.status_code == 200
-    assert "text/html" in r.headers["content-type"]
-    assert "Chanakya OSINT" in r.text  # the placeholder, since frontend/dist is absent
+def test_placeholder_when_no_spa_build(monkeypatch, tmp_path: Path) -> None:
+    # "No SPA build" has to be asserted HERMETICALLY rather than inferred from the developer's working
+    # tree. Reading the real frontend/dist made this test's result depend on the environment: it passes
+    # on a fresh clone and fails the moment anyone runs `npm run build` — and SHIP's image *always*
+    # bakes a dist, so a tree-dependent assertion could never hold in the shipped artifact. Point the
+    # seam at a missing dir instead (the same monkeypatch the built-SPA test uses, inverted). The
+    # intent — unbuilt SPA ⇒ browsable placeholder, never a 404 — is unchanged and now always testable.
+    monkeypatch.setattr(spa_mod, "_dist_dir", lambda: tmp_path / "no-such-dist")
+    with TestClient(create_app(build_golden_state())) as client:
+        r = client.get("/")
+        assert r.status_code == 200
+        assert "text/html" in r.headers["content-type"]
+        assert "Chanakya OSINT" in r.text  # the placeholder…
+        assert "has not been built into this image yet" in r.text  # …and specifically the placeholder
 
 
 def test_spa_does_not_shadow_the_json_api(golden_client) -> None:

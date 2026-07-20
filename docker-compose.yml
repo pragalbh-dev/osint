@@ -1,40 +1,56 @@
-# Chanakya OSINT — walking-skeleton compose (Session X0).
+# Chanakya OSINT — production compose (Session SHIP; supersedes X0's walking-skeleton compose).
 #
-#   Local (build + serve):   docker compose up --build app
-#   Pull the GHCR image:     docker compose pull app && docker compose up -d app
+#   Local (build + serve):   docker compose up --build app        # or simply: make run
+#   Pull the published one:  docker compose pull app && docker compose up -d app
 #   EC2 (app + tunnel):      docker compose --profile tunnel up -d
 #
-# SHIP extends this to the production service set. X0 proves the shape.
+# The build context is the repo root, so the image bakes the built SPA + config/ + corpus/ + the
+# pre-extracted claim bundles — the same single artifact GHCR serves. Rollback = pin a previous tag
+# (`IMAGE_TAG=<prev> docker compose up -d app`); nothing else about the deployment changes.
 
 services:
   app:
     build:
-      context: ./app_skeleton      # X0 is self-contained; SHIP repoints to "."
-      dockerfile: ../Dockerfile
-    image: ghcr.io/pragalbh-dev/osint:skeleton
+      context: .
+      dockerfile: Dockerfile
+    image: ghcr.io/pragalbh-dev/osint:${IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file:
-      - .env                       # ANTHROPIC_API_KEY (+ optional GEMINI_API_KEY) — injected, never baked
+      # ANTHROPIC_API_KEY (+ optional GEMINI_API_KEY, TUNNEL_TOKEN) — injected at runtime, NEVER baked
+      # into the image. Optional by design: the app boots fully keyless from the frozen claim bundles,
+      # so a reviewer who never created a .env still gets the whole demo.
+      - path: .env
+        required: false
+    environment:
+      # Keyed live extraction is OFF by default on a public deployment (a raw-doc POST is turned away
+      # toward the keyless bundle lane) so visitors cannot burn model quota. Flip to 1 with a key set.
+      CHANAKYA_ENABLE_EXTRACTION: "${CHANAKYA_ENABLE_EXTRACTION:-0}"
+      # Which documents the boot graph deliberately does NOT hold, so a reviewer can ingest them live
+      # and watch the tripwire fire. Unset = use config/sources.yaml → withheld_from_seed; empty
+      # string = full-corpus boot. Set this only to override at deploy time.
+      CHANAKYA_SEED_WITHHOLD: "${CHANAKYA_SEED_WITHHOLD-}"
     ports:
-      # Host-side debug port only — the tunnel reaches app:8000 over the compose
-      # network, so no host port is strictly required. Set APP_PORT in .env when
-      # co-locating on a box where 8000 is already taken. Localhost-only: no public inbound.
+      # Host-side debug port only — the tunnel reaches app:8000 over the compose network, so no host
+      # port is strictly required. Set APP_PORT in .env when 8000 is already taken on the box.
+      # Localhost-only: no public inbound.
       - "127.0.0.1:${APP_PORT:-8000}:8000"
     healthcheck:
+      # 200 only after the boot rebuild() — the tunnel must not route to a half-initialised app.
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/health').status==200 else 1)"]
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 20s
 
   # Cloudflare Tunnel: dials OUT to Cloudflare and serves the app at a real https
   # URL with managed TLS — no domain, no DNS, no open inbound security-group ports.
-  # Runs on EC2; gated behind the "tunnel" profile so local `up` skips it.
+  # Runs on EC2; gated behind the "tunnel" profile so a local `up` skips it.
   # Set TUNNEL_TOKEN in .env (Cloudflare Zero Trust dashboard). See deploy/README.md.
   cloudflared:
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     command: tunnel --no-autoupdate run --token ${TUNNEL_TOKEN:-}
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     profiles: ["tunnel"]

@@ -1,0 +1,41 @@
+# Build context = repo root (SHIP repointed it from app_skeleton/). Keep the context small and the
+# image reproducible: nothing here is needed to BUILD the app, and several entries would either bloat
+# the image by hundreds of MB or leak host state / secrets into it.
+
+# Secrets — never enter the build context, never bake into a layer.
+.env
+.env.*
+!.env.example
+*.pem
+
+# Heavy host-local trees (installed fresh inside the image instead).
+**/node_modules
+**/.venv
+**/venv
+.git
+.github
+
+# Caches / build detritus.
+**/__pycache__
+**/*.py[cod]
+**/.mypy_cache
+**/.pytest_cache
+**/.ruff_cache
+**/.vite
+**/*.egg-info
+.gstack
+
+# Pre-built SPA from the developer's host: the Node stage builds it from source inside the image, so
+# a stale host dist/ must never win. (frontend/public/tiles IS shipped — vite copies it into dist.)
+frontend/dist
+
+# Docs / planning / scratch — not runtime inputs. (corpus/** and config/** are COPYed explicitly and
+# are unaffected by these root-level entries.)
+artifacts
+tmp
+tools
+app_skeleton
+deploy
+CLAUDE.md
+DECISIONS.md
+AGENTS.md

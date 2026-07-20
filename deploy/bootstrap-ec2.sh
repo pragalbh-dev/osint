@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Chanakya OSINT — EC2 bring-up for the walking skeleton (Session X0).
+# Chanakya OSINT — EC2 bring-up (Session X0 shape; unchanged by SHIP — it only installs Docker).
 # Installs Docker Engine + the compose plugin on a fresh Ubuntu or Amazon Linux
 # 2023 box. Safe to run as EC2 user-data at launch, or by hand over SSH.
 # Idempotent: re-running is a no-op if Docker is already present.
