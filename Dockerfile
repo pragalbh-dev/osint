@@ -46,11 +46,12 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-# Manifest + package tree only (layer cache): the full pyproject dep set, no `[dev]` / `[gemini]` /
-# `[ocr]` extras — keyless boot needs none of them.
+# Manifest + package tree only (layer cache): the full pyproject dep set plus the `[gemini]` extra
+# (google-genai) so keyed live extraction can use a Gemini key — Anthropic remains the fallback, and
+# keyless boot still needs none of it. `[dev]` / `[ocr]` stay out — nothing in the served app uses them.
 COPY backend/pyproject.toml /src/backend/pyproject.toml
 COPY backend/chanakya /src/backend/chanakya
-RUN pip install --no-cache-dir /src/backend
+RUN pip install --no-cache-dir "/src/backend[gemini]"
 
 # ---- Stage 3: Python runtime — serves the API and the built SPA same-origin, one process ----
 FROM python:3.12-slim-bookworm AS runtime
