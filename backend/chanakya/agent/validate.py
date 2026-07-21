@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 
 from chanakya.schemas import AskAnswer, ClaimRecord, EntityDescriptor, EventDescriptor, Triple
 
-from .assemble import DERIVED_METRIC_PREFIX, WEIGHED_NOT_CARRIED_PREFIX
+from .assemble import DERIVED_METRIC_PREFIX, SUBQUESTION_HEADER_PREFIX, WEIGHED_NOT_CARRIED_PREFIX
 from .client import LLMClient
 from .context import ToolContext
 from .loop import AgentTrace
@@ -161,6 +161,14 @@ def validate_answer(
     count_ceiling = _count_ceiling(trace)
 
     for idx, sent in enumerate(sentences):
+        # A sub-question section header is a STRUCTURAL label ("▸ HQ-9/P — supply chain"), not a content
+        # sentence: it asserts nothing about the world's evidence, so it carries no citation and is exempt
+        # from every check here (the same principle as the two derived/rejected sentence classes below, but
+        # a full skip — there is nothing to cite or entail). The cited sub-answer sentences it precedes are
+        # validated normally, so the answer's assertions stay fully grounded. Emitted only when a question
+        # decomposed into ≥2 analyses; a single-shape answer never contains one.
+        if sent.startswith(SUBQUESTION_HEADER_PREFIX):
+            continue
         cites = _cites(sent)
         if not cites:
             findings.append(Finding(sent, "uncited"))

@@ -27,6 +27,11 @@ import { CitationChip, type ChipStatus } from '@/components/status/CitationChip'
 const CHIP_DOOR = 'transition-colors hover:text-text'
 const CHIP_TITLE = 'Show the claim this source made'
 
+// A decomposed answer (two+ sub-questions) prefixes each section with this glyph — mirrors the backend's
+// assemble.SUBQUESTION_HEADER_PREFIX. Such a line is a STRUCTURAL label (uncited), not an assertion, so it
+// renders as a lighter section heading rather than as prose. Never appears in a single-intent answer.
+const SUBQ_HEADER_GLYPH = '▸ '
+
 // THREE refusals, three different claims about the world — and an analyst must never see them
 // conflated. "Insufficient evidence to assess" says WE LOOKED AND THE WORLD IS THIN; printing it
 // over a capability outage says the evidence is thin when in fact nothing was ever consulted,
@@ -224,6 +229,20 @@ function Answer({ model }: { model: LiveAnswerModel }) {
         >
           {proseLines.map((line, i) => {
             const { text, cites } = splitCitedSentence(line)
+            // a sub-question section header (decomposed multi-part answer): a structural label, glyph
+            // stripped, rendered dimmer so the two sub-answers read as distinct sections. It carries no
+            // citation by construction (it asserts nothing), so no chips.
+            if (text.startsWith(SUBQ_HEADER_GLYPH)) {
+              return (
+                <div
+                  key={i}
+                  className="pt-[3px] text-[12.5px] leading-[1.5] tracking-[0.02em] text-text-dim"
+                  style={{ textWrap: 'pretty' }}
+                >
+                  {text.slice(SUBQ_HEADER_GLYPH.length)}
+                </div>
+              )
+            }
             return (
               <div key={i}>
                 <div className="text-[15px] leading-[1.55] text-text" style={{ textWrap: 'pretty' }}>
