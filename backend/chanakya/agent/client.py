@@ -9,8 +9,8 @@ protocol, never on ``anthropic`` directly. That indirection buys three things th
 * **an optional second provider** — Gemini (master §1) slots in as another impl.
 
 Model rules honoured (md/07, spine/09; verified against the current Anthropic API): model
-``claude-opus-4-8``; **no ``temperature``/``top_p``/``top_k``** (400 on Opus 4.8); reasoning effort ``low``
-via ``output_config={"effort": "low"}``; tools are ``strict`` with ``additionalProperties:false``; a plain
+``claude-opus-4-8``; **no ``temperature``/``top_p``/``top_k``** (400 on Opus 4.8); reasoning effort ``medium``
+via ``output_config={"effort": "medium"}``; tools are ``strict`` with ``additionalProperties:false``; a plain
 manual tool-use loop (``stop_reason == "tool_use"`` → run tools → feed ``tool_result`` back).
 """
 
@@ -21,8 +21,8 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
 MODEL = "claude-opus-4-8"
-EFFORT = "low"  # spine/09: reasoning effort low for the planner
-MAX_TOKENS = 4096  # planning turns are short; well under the streaming threshold
+EFFORT = "medium"  # planner deliberates tool choice + subject resolution before acting (low under-reasoned)
+MAX_TOKENS = 16384  # 4× headroom for longer reasoning + multi-step / decomposed plans
 
 
 @dataclass(frozen=True)
@@ -89,7 +89,7 @@ class ScriptedClient:
 # ── Anthropic client (live) ──────────────────────────────────────────────────────────────────
 
 class AnthropicClient:
-    """The live query-time client — Anthropic ``claude-opus-4-8``, effort low, no sampling params.
+    """The live query-time client — Anthropic ``claude-opus-4-8``, effort medium, no sampling params.
 
     Constructed only when a key is present (see :func:`build_default_client`); ``anthropic`` is imported
     lazily so importing this module never requires the SDK to be configured.
