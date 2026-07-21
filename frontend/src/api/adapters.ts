@@ -993,6 +993,17 @@ export function claimElementIndex(view: GraphView | null | undefined): Map<strin
   return idx
 }
 
+/** Split one assembled sentence "prose text [c1, c2, …]" into its prose and its citation ids.
+ *  The backend appends a trailing "[id, id]" marker to each sentence (a CLI-style inline cite);
+ *  the web panel renders those ids as clickable chips instead, so the marker is stripped from the
+ *  displayed prose. A sentence with no marker returns its text unchanged and no cites. */
+export function splitCitedSentence(line: string): { text: string; cites: string[] } {
+  const m = line.match(/^(.*)\s*\[([^[\]]+)\]\s*$/)
+  if (!m) return { text: line.trim(), cites: [] }
+  const cites = m[2].split(',').map((s) => s.trim()).filter(Boolean)
+  return { text: m[1].trim(), cites }
+}
+
 // ─────────────────── live tripwires / alert feed (derived from /view) ───────────────────
 // The alert feed rides in on GET /view — it is REAL fired state, not a picture of a
 // tripwire. Two shapes come out of it: a per-firing model (what changed, its evidence,

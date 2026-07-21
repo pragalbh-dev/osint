@@ -13,11 +13,12 @@ import {
   claimElementIndex,
   humanizeEdge,
   resolveHopElement,
+  splitCitedSentence,
   type LiveAnswerModel,
 } from '@/api/adapters'
 import { useDisplayName } from '@/api/viewmodel'
 import type { RefusalKind } from '@/api/types'
-import { CitationChip } from '@/components/status/CitationChip'
+import { CitationChip, type ChipStatus } from '@/components/status/CitationChip'
 
 // The hover cue that a citation is a door into its source — scoped to the answer's chips so the
 // frozen demo drawer's chips are untouched. Only applied when the chip actually resolves to an
@@ -112,24 +113,40 @@ function Refusal({ model }: { model: LiveAnswerModel }) {
 function Answer({ model }: { model: LiveAnswerModel }) {
   // the walk names its endpoints; an id the graph does not know passes through unchanged
   const displayName = useDisplayName()
-  // one-click from a cited source to the exact claim it made. Each hop resolves to the graph element
-  // whose provenance backs it, each loose citation to the element that carries it; clicking opens the
-  // SAME provenance drawer the graph/map/alerts use, pre-expanded to that claim's verbatim quote. The
-  // drawer docks BESIDE this answer (LiveDrawer.besideCard), so the walk never leaves the screen while
-  // the analyst rifles the sources. A null element leaves the chip inert rather than open a 404.
+  // one-click from a cited source to the exact claim it made. A HOP chip resolves to the edge it
+  // crossed (resolveHopElement); a prose/conclusion chip to the element that carries the claim
+  // (claimElementIndex). Clicking opens the SAME provenance drawer the graph/map/alerts use,
+  // pre-expanded to that claim's verbatim quote, docked BESIDE this answer (LiveDrawer.besideCard).
+  // A null element leaves the chip inert rather than open a 404.
   const liveView = useWorkbench((s) => s.liveView)
   const openProvenance = useWorkbench((s) => s.openProvenance)
   const claimIndex = useMemo(() => claimElementIndex(liveView), [liveView])
+
+  const chip = (c: string, status: ChipStatus) => {
+    const el = claimIndex.get(c) ?? null
+    return (
+      <CitationChip
+        key={c}
+        label={c}
+        status={status}
+        onClick={el ? () => openProvenance(el, c) : undefined}
+        title={el ? CHIP_TITLE : undefined}
+        className={el ? CHIP_DOOR : undefined}
+      />
+    )
+  }
+
+  // The assembled answer is one cited sentence per line. When there are hops, the first `hops.length`
+  // lines ARE the hop sentences (assemble emits hops first) and are shown as the structured walk below,
+  // so the prose block renders only the remaining lines (the chokepoint metric, "weighed and not
+  // carried"). Splitting on the newline the backend already writes stops the sentences collapsing into
+  // one paragraph, and each line's trailing "[ids]" marker becomes chips rather than inline text.
+  const lines = (model.answer ? model.answer.split('\n') : []).map((l) => l.trim()).filter(Boolean)
+  const proseLines = model.hops.length > 0 ? lines.slice(model.hops.length) : lines
+
   return (
     <div>
-      {/* the agent's answer, as-is */}
-      {model.answer && (
-        <div className="mb-[22px] text-[15px] leading-[1.55] text-text" style={{ textWrap: 'pretty' }}>
-          {model.answer}
-        </div>
-      )}
-
-      {/* the walk — hops formatted from structure; observed vs inferred is structural */}
+      {/* the walk FIRST — the trace the question asked for; observed vs inferred is structural */}
       {model.hops.length > 0 && (
         <>
           <div className="mb-[14px] text-[10.5px] tracking-[0.06em] text-text-faint">How this was traced</div>
@@ -175,25 +192,30 @@ function Answer({ model }: { model: LiveAnswerModel }) {
         </>
       )}
 
-      {/* trailing citations not already attached to a hop */}
-      {model.citations.length > 0 && (
-        <div className="mt-[22px] border-t border-hairline pt-[14px]">
-          <div className="mb-[9px] text-[10.5px] tracking-[0.06em] text-text-faint">Sources</div>
-          <div className="flex flex-wrap gap-[7px]">
-            {model.citations.map((c) => {
-              const el = claimIndex.get(c)
-              return (
-                <CitationChip
-                  key={c}
-                  label={c}
-                  status="confirmed"
-                  onClick={el ? () => openProvenance(el, c) : undefined}
-                  title={el ? CHIP_TITLE : undefined}
-                  className={el ? CHIP_DOOR : undefined}
-                />
-              )
-            })}
-          </div>
+      {/* the conclusion — the derived chokepoint line + "weighed and not carried" (and, when there
+          are no hops, the whole answer). A separator sets it off from the trace above. The flat
+          "Sources" list is dropped: every citation now appears inline on its sentence or on its hop. */}
+      {proseLines.length > 0 && (
+        <div
+          className={
+            model.hops.length > 0
+              ? 'mt-[22px] space-y-[15px] border-t border-hairline pt-[18px]'
+              : 'space-y-[15px]'
+          }
+        >
+          {proseLines.map((line, i) => {
+            const { text, cites } = splitCitedSentence(line)
+            return (
+              <div key={i}>
+                <div className="text-[15px] leading-[1.55] text-text" style={{ textWrap: 'pretty' }}>
+                  {text}
+                </div>
+                {cites.length > 0 && (
+                  <div className="mt-[8px] flex flex-wrap gap-[7px]">{cites.map((c) => chip(c, 'confirmed'))}</div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
