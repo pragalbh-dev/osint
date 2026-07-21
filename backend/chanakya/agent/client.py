@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
 MODEL = "claude-opus-4-8"
-EFFORT = "low"  # spine/09: reasoning effort low for the planner
+EFFORT = "medium"  # planner deliberates tool choice + subject resolution; low under-reasoned the picks
 MAX_TOKENS = 4096  # planning turns are short; well under the streaming threshold
 
 
