@@ -110,6 +110,15 @@ class CredibilityConfig(ConfigModel):
     # low-credibility attribution is indistinguishable from one that was never seen. Empty ⇒ no band is
     # declared, so ASK asserts nothing on status grounds (fails closed).
     assertable_status: list[str] = []
+    # ASK answer-integrity gate: the LLM entailment ("NLI") judge that runs ON TOP of the always-on
+    # deterministic citation checks (cited / citation exists / hop-support / real counts). The
+    # deterministic layer already guarantees no naked or fabricated sentence — every sentence is *built
+    # from* the claim_ids the tools returned — so this extra NLI pass is a belt on braces whose only
+    # marginal catch is analyst-authored edge phrasing that over-claims a relation. Because the judge
+    # "defaults to no when unsure" and is blind to resolved identity on non-hop sentences, it is the sole
+    # source of spurious whole-answer withholding on free-form queries. Default OFF: run on deterministic
+    # grounding alone. Flip true (hot-config, no restart) to re-enable the judge.
+    entailment_judge_enabled: bool = False
 
 
 # ── resolution.yaml ────────────────────────────────────────────────────────────────────────────
