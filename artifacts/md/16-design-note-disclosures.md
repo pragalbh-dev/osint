@@ -87,6 +87,28 @@ deliberate, defensible choices, not apologies.
   A (longitudinal baseline) and B (intent / I&W estimate) are new config + one scoring module, not core
   rework. We build C; we *describe* plugging in A/B.
 
+## Sub-question decomposition (multi-part answers)
+
+- **A question that asks two-plus distinct things is answered in parts.** When the planner decomposes a
+  question into several `graph_analyze` calls (e.g. an origin/supply trace AND a separate sole-source
+  assessment), the assembler renders each as its own cited section rather than picking one tool for the
+  whole thing or dropping a half. A single-intent question is unchanged and is never split.
+- **Section headers are uncited structural labels, by design.** A multi-part answer prefixes each section
+  with a short label ("HQ-9/P — supply chain"). That label asserts nothing about the world's evidence, so
+  it carries no citation and is exempt from the citation/entailment validator — the same principle already
+  used for the derived-metric and weighed-and-not-carried sentence classes. Every *assertion* in each
+  section is still cited to a real claim; only the navigation label is exempt.
+- **A decomposed answer shows its hops as cited prose, not as a single numbered timeline.** Two independent
+  traces have no one coherent walk, so the multi-section answer renders every hop line as a cited prose line
+  instead of a merged timeline (which would be misleading). Limitation: with the *optional* entailment judge
+  enabled (off by default), those prose-rendered hop lines lack the per-hop resolved-identity bridge the
+  single-shape path gives the judge, so a faithful multi-section answer could be withheld under the judge.
+  Off by default; single-intent answers (including the worked-query demo) are unaffected.
+- **Only multiple `graph_analyze` calls combine.** Combining multiple bare `find_paths` calls the same way
+  was deliberately skipped: the path builder pulls in shared state from other tool calls (node materiality,
+  neighbour "weighed-and-not-carried") that does not partition cleanly per path, so it would add risk for
+  little gain — the prompt steers multi-part questions to `graph_analyze`, which is self-contained per call.
+
 ---
 
 *(Append new disclosures here as they arise. Keep each one framed as a deliberate, defensible choice.)*

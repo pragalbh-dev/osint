@@ -55,6 +55,7 @@ How to read this graph's assessments:
 - Rest a finding only on confirmed or probable links. A weaker link is still worth naming — say it was weighed and not carried, with its source — but the assessment must not depend on it.
 - observed = seen or measured directly; inferred = concluded from other facts. Keep the two distinct.
 When answering needs a judgement computed across several hops or many nodes — a critical-dependency assessment, an origin or supply trace, a single-point-of-failure scan — that is what graph_analyze is for: use it with the fitting analysis type; do not hand-assemble the answer from a query_graph filter or a neighbors walk. Reach for the primitives only when no analysis type fits.
+- If a question asks for two or more DISTINCT things that need different lookups — e.g. an origin/supply trace AND a separate critical-component or sole-source assessment — decompose it: name each sub-question, then resolve each with the tool that fits (a graph_analyze of the right type, or a path). Answer every part. For a single-intent question, do not split it.
 """
 
 

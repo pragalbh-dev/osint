@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from chanakya.schemas import AnswerHop, AskAnswer, KnownGap, RefusalPayload
 
 from .context import ToolContext
-from .loop import AgentTrace
+from .loop import AgentTrace, RecordedCall
 
 # Sentence-class markers shared with the entailment validator. Two sentence classes assert something no
 # single cited claim can *entail* by construction, so they must NOT be sent to the NLI judge (they keep
@@ -29,6 +29,13 @@ from .loop import AgentTrace
 # imported there — the two modules already share the sentence↔hop index contract.
 DERIVED_METRIC_PREFIX = "Chokepoint:"
 WEIGHED_NOT_CARRIED_PREFIX = "Weighed and not carried:"
+# SUBQUESTION_HEADER — a structural section label emitted ONLY when a question decomposed into two or more
+# sub-answers (multiple graph_analyze calls). It names which sub-question the following cited sentences
+# answer (e.g. "HQ-9/P — supply chain"); it asserts nothing about the world's evidence, so — unlike every
+# content sentence — it carries no citation and is NOT sent to the citation/entailment validator (the
+# validator skips it by this prefix, exactly as it exempts the two derived/rejected sentence classes above).
+# A single-analysis answer never emits one, so this prefix cannot appear in the unchanged single-shape path.
+SUBQUESTION_HEADER_PREFIX = "▸ "
 
 
 @dataclass
@@ -116,32 +123,119 @@ def _refusal_from_analysis(r: dict) -> RefusalPayload:
     )
 
 
-def _from_analyze(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
-    """The general-analysis builder (``graph_analyze``): render a chokepoint / supply_chain / sole_source
-    result into cited sentences, mirroring the primitive builders' citation discipline exactly.
+# A human label per analysis type, for the sub-question section headers (the analysis id itself is a
+# machine token; a decomposed answer's header should read as an analyst's sub-question).
+_ANALYSIS_LABEL = {
+    "chokepoint": "chokepoint",
+    "supply_chain": "supply chain",
+    "sole_source": "sole-source components",
+}
 
-    A non-null ``refusal`` on the result becomes a first-class :attr:`AgentTrace.refusal` (and returns
-    ``None``, so :func:`assemble_answer` re-checks and emits the honest refusal rather than a positive body).
-    """
-    call = trace.last("analyze")
-    if call is None:
-        return None
-    r = call.result
+
+def _render_analysis(built: _Built, ctx: ToolContext, r: dict) -> None:
+    """Dispatch one analysis result to its per-shape renderer (chokepoint / supply_chain / sole_source).
+    Shared by the single- and multi-analysis paths so both render an analysis identically."""
     analysis = r.get("analysis")
-    if r.get("sub_questions"):
-        trace.sub_questions = list(r["sub_questions"])
-    if r.get("refusal"):
-        trace.refusal = _refusal_from_analysis(r["refusal"])
-        return None
-
-    built = _Built()
     if analysis == "chokepoint":
         _render_chokepoint(built, ctx, r)
     elif analysis == "supply_chain":
         _render_supply_chain(built, ctx, r)
     elif analysis == "sole_source":
         _render_sole_source(built, ctx, r)
+
+
+def _analysis_sublabel(ctx: ToolContext, r: dict) -> str:
+    """The plain "<subject> — <label>" naming this analysis's sub-answer (no header glyph) — used for the
+    ``AskAnswer.sub_questions`` decomposition record."""
+    subject = r.get("subject_name") or _name(ctx, str(r.get("subject", "")))
+    label = _ANALYSIS_LABEL.get(str(r.get("analysis")), str(r.get("analysis") or "analysis"))
+    return f"{subject} — {label}"
+
+
+def _from_analyze(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
+    """The general-analysis builder (``graph_analyze``): render chokepoint / supply_chain / sole_source
+    result(s) into cited sentences, mirroring the primitive builders' citation discipline exactly.
+
+    Two shapes, one entry point:
+
+    * **exactly one** successful analyze call → the ORIGINAL single-analysis body, byte-for-byte unchanged
+      (same sentences, same ``built.hops`` timeline). A non-null ``refusal`` becomes a first-class
+      :attr:`AgentTrace.refusal` and returns ``None``, so :func:`assemble_answer` emits the honest refusal.
+    * **two or more** successful analyze calls → the question decomposed into sub-answers: render each as a
+      cited section (:func:`_multi_analyze`).
+    """
+    calls = trace.all_of("analyze")
+    if not calls:
+        return None
+    if len(calls) == 1:
+        return _single_analyze(calls[0], trace, ctx)
+    return _multi_analyze(calls, trace, ctx)
+
+
+def _single_analyze(call: RecordedCall, trace: AgentTrace, ctx: ToolContext) -> _Built | None:
+    """The unchanged single-analysis body — kept identical so a single-intent answer never regresses."""
+    r = call.result
+    if r.get("sub_questions"):
+        trace.sub_questions = list(r["sub_questions"])
+    if r.get("refusal"):
+        trace.refusal = _refusal_from_analysis(r["refusal"])
+        return None
+    built = _Built()
+    _render_analysis(built, ctx, r)
     return built if built.sentences else None
+
+
+def _multi_analyze(calls: list[RecordedCall], trace: AgentTrace, ctx: ToolContext) -> _Built | None:
+    """Render TWO OR MORE analyses as cited sections — the sub-question-decomposition path.
+
+    Each successful analysis becomes its own section: a header line naming the sub-answer (subject + human
+    label), then that analysis's own cited sentences via the SAME per-analysis rendering used for a single
+    answer (hop lines, ``Chokepoint:``, ``also nominated``, ``Weighed and not carried:``, sole-source
+    lines). Sections are concatenated and their citations aggregated.
+
+    ASYMMETRY WITH THE SINGLE CASE (deliberate; documented for the frontend): a single analysis keeps its
+    ``built.hops`` timeline — the frontend renders the first ``len(hops)`` lines as the numbered walk and
+    the rest as prose. Two independent traces have NO single coherent timeline (interleaving them would be
+    misleading), so here ``built.hops`` is left EMPTY and EVERY line renders as cited prose — the hop info
+    still shows, as cited prose lines — which keeps the frontend's ``slice(hops.length)`` split valid.
+
+    Refusals stay honest: a refused part is NAMED with its templated reason under its own header (never
+    fabricated content), the successes render; the whole answer refuses outright only when EVERY part
+    refused (then :attr:`AgentTrace.refusal` is set and ``None`` returned, so the refusal path owns it).
+    """
+    sentences: list[str] = []
+    citations: list[str] = []
+    labels: list[str] = []
+    successes = 0
+    for call in calls:
+        r = call.result
+        header = f"{SUBQUESTION_HEADER_PREFIX}{_analysis_sublabel(ctx, r)}"
+        labels.append(_analysis_sublabel(ctx, r))  # the decomposition record, header glyph stripped
+        if r.get("refusal"):
+            # Name the part we could NOT answer under its header, with its templated reason — honest, never
+            # a fabricated finding. The header prefix makes the validator treat the whole line as a label.
+            reason = r["refusal"].get("reason", "insufficient evidence to assess")
+            sentences.append(f"{header}: {reason}")
+            continue
+        section = _Built()
+        _render_analysis(section, ctx, r)
+        if not section.sentences:
+            continue
+        successes += 1
+        sentences.append(header)             # the section header (uncited structural label) …
+        sentences.extend(section.sentences)  # … then this analysis's own cited sentences
+        citations.extend(c for c in section.citations if c not in citations)
+
+    # Record what the question decomposed into either way — a refusal still names the parts it tried.
+    trace.sub_questions = labels
+    if successes == 0:
+        # Every part refused → refuse outright with the first refusal, rather than emitting header-only prose.
+        first = next((c.result.get("refusal") for c in calls if c.result.get("refusal")), None)
+        if first is not None:
+            trace.refusal = _refusal_from_analysis(first)
+        return None
+
+    return _Built(sentences=sentences, hops=[], citations=citations)
 
 
 def _cite_ok(ctx: ToolContext, claim_ids: list[str]) -> list[str]:
