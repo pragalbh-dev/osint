@@ -391,6 +391,15 @@ independence machinery already carrying the relocation beat. What it would deman
 genuine research, not plumbing: separating exercise from mobilisation, resisting planted and withheld signals,
 and recognising when the system is being deceived rather than confidently mis-warning.
 
+**And, for a specific client, make the intake theirs.** The steps above are analytical depth; a shorter,
+orthogonal one makes the system *land*. Because ingestion is source-typed rather than use-case-typed and
+already reads both free text and pre-extracted bundles, wiring a small live scraper against the feeds a given
+client already works from — the NOTAM/NAVAREA services, the trade-press and customs portals, the accounts
+they trust — drops their own familiar sources onto the same claim schema with nothing downstream changing:
+it is a new source adapter in front of the extractor, not a new pipeline. The payoff is recognition rather
+than capability — an analyst watching the system reason over the exact material they read every morning is
+the difference between a clever prototype and their own workbench.
+
 ---
 
 *Stack: append-only SQLite evidence and decision logs; an in-memory knowledge view rebuilt in-process on every

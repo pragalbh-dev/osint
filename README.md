@@ -22,8 +22,8 @@ about running your own copy; skip to §4 if you're using the hosted one.
 The whole app (backend + the web UI) ships as **one Docker image**. It boots and runs the
 worked demo — graph, map, ingest, alerts, review — **with no API key and no outbound
 calls**: the corpus, the pre-analysed evidence and the map tiles are all baked in. Asking
-questions live — including the flagship multi-hop question, now planned by the general
-reasoning agent rather than a hardcoded script — needs a key (the recorded `?mode=demo`
+questions live — including the flagship multi-hop question, which the general reasoning
+agent plans and answers over the graph — needs a key (the recorded `?mode=demo`
 view shows the flagship thread keyless); §3 covers keyed vs. keyless in full.
 
 (Building the image, Path A below, does need network access to clone the repo and fetch
@@ -78,8 +78,8 @@ the graph right now and responds to what you do. Bookmark or share the `?mode=li
 **Keyless (the default, nothing to configure) runs the full worked demo** — graph, map,
 citations, ingest, alerts, review.
 
-**The flagship multi-hop question now runs live through the general reasoning agent**, not
-a hardcoded script. The agent plans it and calls the same general analysis it would use for
+**The flagship multi-hop question runs live through the general reasoning agent.** The
+agent plans it and calls the same general analysis it would use for
 any origin/supply-chain or critical-dependency question, so it needs a model key and its
 exact wording and path can vary run to run. A keyless deploy with no recorded transcript
 answers it with an honest "no model key" refusal, never a guess — while the recorded demo
@@ -136,9 +136,9 @@ Four regions, all visible at once (no tabs, no modals except one detail overlay)
 **On first open**, the right panel suggests three starting points — click any of them:
 - *"Trace the long-range SAM battery now based at Rahwali back to the organisation that
   builds its missile system, and name the fire-control chokepoint."* — the flagship
-  question. **On a fresh start this deliberately refuses**, because the evidence it needs
-  hasn't been added yet — that refusal is the point, and §5 walks you through making it
-  answerable. No key needed either way.
+  question. **On a fresh start it refuses**, because the evidence it needs hasn't been added
+  yet — naming that gap honestly is the point, and §5 walks you through making it answerable.
+  Asking it live needs a key (§3), or watch the thread in the recorded `?mode=demo` view.
 - *"Is this node confirmed or probable — and on what evidence?"* — click any pin on the
   map to see this answered for that specific fact.
 - *"What do we not know here?"* — the system naming its own gaps, rather than guessing
