@@ -6,11 +6,24 @@
 // due, in the same grammar the demo's GapsView uses. Renders only in LIVE mode
 // (panelView === 'answer'); the demo keeps its authored HeroAnswer / GapsView.
 
+import { useMemo } from 'react'
 import { useWorkbench } from '@/store/workbench'
-import { askToAnswerModel, humanizeEdge, type LiveAnswerModel } from '@/api/adapters'
+import {
+  askToAnswerModel,
+  claimElementIndex,
+  humanizeEdge,
+  resolveHopElement,
+  type LiveAnswerModel,
+} from '@/api/adapters'
 import { useDisplayName } from '@/api/viewmodel'
 import type { RefusalKind } from '@/api/types'
 import { CitationChip } from '@/components/status/CitationChip'
+
+// The hover cue that a citation is a door into its source — scoped to the answer's chips so the
+// frozen demo drawer's chips are untouched. Only applied when the chip actually resolves to an
+// element; an inert chip must not imply a click it cannot honour.
+const CHIP_DOOR = 'transition-colors hover:text-text'
+const CHIP_TITLE = 'Show the claim this source made'
 
 // THREE refusals, three different claims about the world — and an analyst must never see them
 // conflated. "Insufficient evidence to assess" says WE LOOKED AND THE WORLD IS THIN; printing it
@@ -99,6 +112,14 @@ function Refusal({ model }: { model: LiveAnswerModel }) {
 function Answer({ model }: { model: LiveAnswerModel }) {
   // the walk names its endpoints; an id the graph does not know passes through unchanged
   const displayName = useDisplayName()
+  // one-click from a cited source to the exact claim it made. Each hop resolves to the graph element
+  // whose provenance backs it, each loose citation to the element that carries it; clicking opens the
+  // SAME provenance drawer the graph/map/alerts use, pre-expanded to that claim's verbatim quote. The
+  // drawer docks BESIDE this answer (LiveDrawer.besideCard), so the walk never leaves the screen while
+  // the analyst rifles the sources. A null element leaves the chip inert rather than open a 404.
+  const liveView = useWorkbench((s) => s.liveView)
+  const openProvenance = useWorkbench((s) => s.openProvenance)
+  const claimIndex = useMemo(() => claimElementIndex(liveView), [liveView])
   return (
     <div>
       {/* the agent's answer, as-is */}
@@ -114,6 +135,7 @@ function Answer({ model }: { model: LiveAnswerModel }) {
           <div className="mb-[14px] text-[10.5px] tracking-[0.06em] text-text-faint">How this was traced</div>
           {model.hops.map((hop, i) => {
             const isLast = i === model.hops.length - 1
+            const hopEl = resolveHopElement(liveView, hop)
             return (
               <div key={`${hop.step}-${i}`} className="flex gap-[13px]">
                 <div className="flex flex-none flex-col items-center">
@@ -135,7 +157,14 @@ function Answer({ model }: { model: LiveAnswerModel }) {
                   {hop.citations.length > 0 && (
                     <div className="mt-[8px] flex flex-wrap gap-[7px]">
                       {hop.citations.map((c) => (
-                        <CitationChip key={c} label={c} status={hop.observed ? 'confirmed' : 'probable'} />
+                        <CitationChip
+                          key={c}
+                          label={c}
+                          status={hop.observed ? 'confirmed' : 'probable'}
+                          onClick={hopEl ? () => openProvenance(hopEl, c) : undefined}
+                          title={hopEl ? CHIP_TITLE : undefined}
+                          className={hopEl ? CHIP_DOOR : undefined}
+                        />
                       ))}
                     </div>
                   )}
@@ -151,9 +180,19 @@ function Answer({ model }: { model: LiveAnswerModel }) {
         <div className="mt-[22px] border-t border-hairline pt-[14px]">
           <div className="mb-[9px] text-[10.5px] tracking-[0.06em] text-text-faint">Sources</div>
           <div className="flex flex-wrap gap-[7px]">
-            {model.citations.map((c) => (
-              <CitationChip key={c} label={c} status="confirmed" />
-            ))}
+            {model.citations.map((c) => {
+              const el = claimIndex.get(c)
+              return (
+                <CitationChip
+                  key={c}
+                  label={c}
+                  status="confirmed"
+                  onClick={el ? () => openProvenance(el, c) : undefined}
+                  title={el ? CHIP_TITLE : undefined}
+                  className={el ? CHIP_DOOR : undefined}
+                />
+              )
+            })}
           </div>
         </div>
       )}

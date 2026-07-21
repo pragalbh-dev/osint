@@ -3,6 +3,7 @@ import type { AskAnswer, GraphView, ProvenanceDrawer } from './types'
 import {
   alertToFiring,
   askToAnswerModel,
+  claimElementIndex,
   clusterAreaPins,
   credibilityToDots,
   dateValueToString,
@@ -18,6 +19,7 @@ import {
   mergeDiffersOn,
   mergeDifferences,
   orderReviewQueue,
+  resolveHopElement,
   humanizeEdge,
   humanizeObservableId,
   isKnownElementId,
@@ -884,6 +886,71 @@ describe('askToAnswerModel', () => {
     expect(m.citations).toEqual([])
     expect(m.subQuestions).toEqual([])
     expect(m.refusal).toBeUndefined()
+  })
+})
+
+// ─────────── answer chips → provenance (resolveHopElement / claimElementIndex) ───────────
+
+describe('resolveHopElement', () => {
+  const HVIEW: GraphView = {
+    nodes: [
+      { id: 'unit', type: 'unit', claim_ids: ['n1'] },
+      { id: 'variant', type: 'variant', claim_ids: ['n2'] },
+    ],
+    edges: [
+      { id: 'e-equips', type: 'equips', source: 'unit', target: 'variant', claim_ids: ['d06'] },
+      // a second edge of the SAME type between the SAME pair — only claim overlap tells them apart
+      { id: 'e-equips-2', type: 'equips', source: 'unit', target: 'variant', claim_ids: ['d99'] },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  it('resolves a hop to the edge it crossed', () => {
+    expect(resolveHopElement(HVIEW, { src: 'unit', dst: 'variant', edge: 'equips' })).toBe('e-equips')
+  })
+
+  it('matches endpoints in either direction (the walk can cross an edge backwards)', () => {
+    expect(resolveHopElement(HVIEW, { src: 'variant', dst: 'unit', edge: 'equips' })).toBe('e-equips')
+  })
+
+  it('disambiguates duplicate edges by the claim the hop actually cited', () => {
+    const el = resolveHopElement(HVIEW, { src: 'unit', dst: 'variant', edge: 'equips', citations: ['d99'] })
+    expect(el).toBe('e-equips-2')
+  })
+
+  it('falls back to the destination node when no edge matches', () => {
+    expect(resolveHopElement(HVIEW, { src: 'unit', dst: 'variant', edge: 'inferred-link' })).toBe('variant')
+  })
+
+  it('returns null (chip stays inert) when neither an edge nor the dst node is known', () => {
+    expect(resolveHopElement(HVIEW, { src: 'x', dst: 'ghost', edge: 'equips' })).toBeNull()
+    expect(resolveHopElement(null, { src: 'unit', dst: 'variant', edge: 'equips' })).toBeNull()
+  })
+})
+
+describe('claimElementIndex', () => {
+  const CVIEW: GraphView = {
+    nodes: [{ id: 'unit', type: 'unit', claim_ids: ['n1', 'shared'] }],
+    edges: [{ id: 'e-equips', type: 'equips', source: 'unit', target: 'variant', claim_ids: ['d06', 'shared'] }],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  it('maps a claim to the element that carries it', () => {
+    const idx = claimElementIndex(CVIEW)
+    expect(idx.get('n1')).toBe('unit')
+    expect(idx.get('d06')).toBe('e-equips')
+  })
+
+  it('prefers the edge binding when a claim id sits on both a node and an edge', () => {
+    expect(claimElementIndex(CVIEW).get('shared')).toBe('e-equips')
+  })
+
+  it('is empty for a null view', () => {
+    expect(claimElementIndex(null).size).toBe(0)
   })
 })
 

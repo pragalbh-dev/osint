@@ -444,11 +444,15 @@ export function LiveDrawer() {
   const selected = useWorkbench((s) => s.selected)
   const closeDrawer = useWorkbench((s) => s.closeDrawer)
   const liveView = useWorkbench((s) => s.liveView)
-  // T10 — while an adjudication is open in the panel, the drawer slides in BESIDE it instead of on top
-  // of it. Checking the evidence must not take the decision off the screen: the three options and the
-  // record pair stay visible the whole time the analyst is reading the claims. It still overlays (the
-  // stage), never pushes, and everywhere else the drawer is exactly where it has always been.
-  const besideCard = useWorkbench((s) => s.panelView === 'card' && s.activeLiveItem !== null)
+  // Dock BESIDE the panel (never on top of it) whenever the drawer is opened from something the
+  // analyst must keep reading. Two cases: an open adjudication card (the three options + record pair
+  // must stay on screen while they read the claims — T10), AND a live answer whose walk they are
+  // tracing source-by-source. Covering the answer would strand them: they could not reach the next
+  // hop's citation without dismissing the evidence they just opened. It still overlays the stage,
+  // never pushes, and everywhere else the drawer is exactly where it has always been.
+  const besideCard = useWorkbench(
+    (s) => (s.panelView === 'card' && s.activeLiveItem !== null) || s.panelView === 'answer',
+  )
   const { data, isLoading, isError } = useEvidence(selected, drawerOpen)
   const model = data ? evidenceToDrawerModel(data, liveView) : null
   // `site_rahwali` is a database key, not a claim. The analyst-facing headline is the PROPOSITION

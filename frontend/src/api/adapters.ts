@@ -956,6 +956,43 @@ export function askToAnswerModel(data: AskAnswer): LiveAnswerModel {
   }
 }
 
+/** Turn one answer hop into the graph element whose provenance backs it — the EDGE the hop crossed,
+ *  chosen so its claim set contains the hop's own citations. Endpoints match in EITHER direction (the
+ *  walk can cross an edge against its stored source→target orientation); when several edges of that
+ *  type join the pair, the one that actually carries a cited claim wins. Falls back to the destination
+ *  node (a real provenance target in its own right) when no edge resolves, and null when even that is
+ *  unknown — a null MUST leave the chip inert, never open a drawer that would 404 into a false
+ *  "insufficient evidence". */
+export function resolveHopElement(
+  view: GraphView | null | undefined,
+  hop: { src: string; dst: string; edge: string; citations?: string[] },
+): string | null {
+  if (!view) return null
+  const cited = new Set(hop.citations ?? [])
+  const matches = view.edges.filter(
+    (e) =>
+      e.type === hop.edge &&
+      ((e.source === hop.src && e.target === hop.dst) ||
+        (e.source === hop.dst && e.target === hop.src)),
+  )
+  if (matches.length) {
+    const byClaim = matches.find((e) => (e.claim_ids ?? []).some((c) => cited.has(c)))
+    return (byClaim ?? matches[0]).id
+  }
+  return view.nodes.some((n) => n.id === hop.dst) ? hop.dst : null
+}
+
+/** claim_id → the element (edge preferred over node) whose provenance drawer holds it. Lets a loose
+ *  citation that is not attached to a hop still open on its exact claim. A claim backs a relationship
+ *  more often than a bare entity, so an edge binding overrides a node one for the same id. */
+export function claimElementIndex(view: GraphView | null | undefined): Map<string, string> {
+  const idx = new Map<string, string>()
+  if (!view) return idx
+  for (const n of view.nodes) for (const c of n.claim_ids ?? []) if (!idx.has(c)) idx.set(c, n.id)
+  for (const e of view.edges) for (const c of e.claim_ids ?? []) idx.set(c, e.id)
+  return idx
+}
+
 // ─────────────────── live tripwires / alert feed (derived from /view) ───────────────────
 // The alert feed rides in on GET /view — it is REAL fired state, not a picture of a
 // tripwire. Two shapes come out of it: a per-firing model (what changed, its evidence,
