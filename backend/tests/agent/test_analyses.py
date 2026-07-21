@@ -47,6 +47,29 @@ def test_chokepoint_answer_renders_a_cited_derived_line(view, claims, config) ->
     assert a.citations and all(c in claims for c in a.citations)
 
 
+def test_chokepoint_returns_its_traversal_and_renders_it_before_the_conclusion(view, claims, config) -> None:
+    """Every analysis shows how it was traced: the chokepoint result carries hops (subject → leading
+    component, same shape as supply_chain's), and the assembled answer puts that timeline FIRST, ahead of
+    the 'Chokepoint:' conclusion (the frontend reads the first len(hops) lines as the timeline)."""
+    ctx = _ctx(view, claims, config)
+    r = analyses.analyze(ctx, "site_karachi", "chokepoint")
+    # the internal traversal, in the same hop shape as supply_chain
+    assert [h["edge"] for h in r["hops"]] == ["based-at", "inducted-into", "equips"]
+    assert r["hops"][-1]["dst"] == "comp_ht233"  # the walk reaches the leading component
+    for h in r["hops"]:
+        assert set(h) >= {"src", "dst", "edge", "edge_id", "claim_ids", "status"}
+        assert h["claim_ids"] and all(c in claims for c in h["claim_ids"])
+
+    a = assemble_answer(analyses.run_analysis(ctx, "trace the chokepoint", "site_karachi", "chokepoint"), ctx)
+    assert a.refusal is None and a.answer is not None
+    # AskAnswer.hops is the timeline; it is non-empty and its lines come before the 'Chokepoint:' conclusion.
+    assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips"]
+    lines = a.answer.split("\n")
+    assert len(lines) > len(a.hops)  # timeline lines + at least the conclusion line
+    assert not lines[0].startswith("Chokepoint:")           # hop timeline comes first
+    assert lines[len(a.hops)].startswith("Chokepoint:")      # conclusion immediately after the timeline
+
+
 def test_chokepoint_empty_pool_is_an_honest_refusal_not_a_no(view, claims, config) -> None:
     # site_rahwali is an isolated stale node with no chokepoint component nearby → insufficiency, not "none".
     r = analyses.analyze(_ctx(view, claims, config), "site_rahwali", "chokepoint")

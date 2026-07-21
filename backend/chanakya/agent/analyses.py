@@ -131,6 +131,30 @@ def _weighed_links(ctx: ToolContext, links: list[Any], pivot: str, band: tuple[s
     return out
 
 
+def _trace_hops(ctx: ToolContext, src: str, dst: str) -> list[dict[str, Any]]:
+    """The internal traversal from ``src`` to ``dst`` on the active lens's lanes, as hop dicts (same shape
+    as supply_chain's hops). This is the "how this was traced" timeline every analysis shows behind its
+    finding. Best-effort: no path (or ``src == dst``) ⇒ ``[]`` — the conclusion stands even when the
+    traversal cannot be drawn, so a missing timeline never fails the analysis."""
+    import chanakya.agent.tools as tools
+
+    if src == dst:
+        return []
+    lens = _active_lens(ctx)
+    lanes = list(lens.trace_lanes) if (lens is not None and lens.trace_lanes) else None
+    try:
+        fp = tools.find_paths(ctx, src=src, dst=dst, edge_whitelist=lanes)
+    except tools.ToolError:
+        return []
+    return [
+        {
+            "src": h["src"], "dst": h["dst"], "edge": h["edge"], "edge_id": h["edge_id"],
+            "claim_ids": list(h.get("claim_ids") or []), "status": h.get("status"),
+        }
+        for h in fp.get("hops", [])
+    ]
+
+
 # ── the three analyses ───────────────────────────────────────────────────────────────────────────
 
 def _chokepoint(ctx: ToolContext, subject_id: str) -> dict[str, Any]:
@@ -163,9 +187,11 @@ def _chokepoint(ctx: ToolContext, subject_id: str) -> dict[str, Any]:
         el = _element(ctx, n)
         el["claim_ids"] = _evidence_claims(ctx, n)
         also_nominated.append(el)
+    # the traversal that reached the leading component — the "how this was traced" timeline.
+    hops = _trace_hops(ctx, subject_id, leading_node.id)
     return {
         "analysis": "chokepoint", "subject": subject_id, "subject_name": name,
-        "leading": leading, "also_nominated": also_nominated, "refusal": None,
+        "hops": hops, "leading": leading, "also_nominated": also_nominated, "refusal": None,
     }
 
 
@@ -358,9 +384,13 @@ def _sole_source(ctx: ToolContext, subject_id: str) -> dict[str, Any]:
             ),
             "next_coverage_due": None, "known_gap": None,
         }
+    # a scan can list many dependencies; keep the timeline clean by tracing only to the PRIMARY one
+    # (a confirmed sole-source first, else the first candidate) rather than tangling one path per item.
+    primary = (confirmed[0] if confirmed else candidates[0] if candidates else None)
+    hops = _trace_hops(ctx, subject_id, primary["node_id"]) if primary else []
     return {
         "analysis": "sole_source", "subject": subject_id, "subject_name": name,
-        "confirmed": confirmed, "candidates": candidates, "refusal": refusal,
+        "hops": hops, "confirmed": confirmed, "candidates": candidates, "refusal": refusal,
     }
 
 

@@ -149,7 +149,28 @@ def _cite_ok(ctx: ToolContext, claim_ids: list[str]) -> list[str]:
     return [c for c in claim_ids if c in ctx.claims]
 
 
+def _emit_hops(built: _Built, ctx: ToolContext, hops: list) -> None:
+    """Emit an analysis's internal traversal as the FIRST sentences — one cited hop line per step, in the
+    same per-hop format as ``_from_paths`` — so the answer's hop-timeline shows how the finding was reached.
+    A hop with no resolvable claim is dropped (G4), keeping ``built.hops`` and the leading sentences aligned
+    for the frontend (which reads the first ``len(hops)`` lines as the timeline) and the citation validator."""
+    for hop in hops:
+        cids = _cite_ok(ctx, list(hop.get("claim_ids", [])))
+        if not cids:
+            continue
+        oi = _kind_of(ctx, cids)
+        built.hops.append(
+            AnswerHop(
+                step=len(built.hops) + 1, edge=hop["edge"], src=hop["src"], dst=hop["dst"],
+                claim_ids=cids, observed_or_inferred=oi,
+            )
+        )
+        built.sentences.append(_sentence(f"{_hop_clause(ctx, hop)} — {hop.get('status')}, {oi}", cids))
+        built.citations.extend(c for c in cids if c not in built.citations)
+
+
 def _render_chokepoint(built: _Built, ctx: ToolContext, r: dict) -> None:
+    _emit_hops(built, ctx, r.get("hops", []))  # the "how this was traced" timeline first …
     leading = r.get("leading")
     if leading:
         cites = _cite_ok(ctx, list(leading.get("claim_ids", [])))
@@ -226,6 +247,7 @@ def _render_supply_chain(built: _Built, ctx: ToolContext, r: dict) -> None:
 
 
 def _render_sole_source(built: _Built, ctx: ToolContext, r: dict) -> None:
+    _emit_hops(built, ctx, r.get("hops", []))  # the traversal to the primary dependency, timeline first …
     for el in r.get("confirmed", []):
         cites = _cite_ok(ctx, list(el.get("claim_ids", [])))
         if not cites:
