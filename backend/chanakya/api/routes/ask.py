@@ -4,8 +4,9 @@ The API adds **no reasoning**: it builds the ``(question, view, config, claims)`
 validated output verbatim — the decomposed sub-questions, the ordered per-hop path with real per-hop
 citations, the observed-vs-inferred tags (read from each claim's ``kind``), and — on an evidence gap —
 the **first-class refusal payload** (what's-missing + ``next_coverage_due`` + the surfaced Known Gap),
-never a fabricated assessment (the non-negotiable). ``ask()`` resolves its own LLM client (live if keyed,
-the deterministic fixed hero path / honest refusal when keyless), so the API passes no ``llm``.
+never a fabricated assessment (the non-negotiable). ``ask()`` resolves its own LLM client (the live ReAct
+planner if keyed — which reaches a multi-hop judgement via the general ``graph_analyze`` tool, no query
+special-cased — or an honest capability refusal when keyless), so the API passes no ``llm``.
 """
 
 from __future__ import annotations

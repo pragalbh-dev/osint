@@ -7,9 +7,9 @@ from chanakya.agent.tool_specs import tool_specs
 from chanakya.agent.tools import _FUNCS
 
 
-def test_seven_namespaced_strict_tools() -> None:
+def test_eight_namespaced_strict_tools() -> None:
     specs = tool_specs()
-    assert len(specs) == 7
+    assert len(specs) == 8  # the seven primitives + graph_analyze (the general multi-hop analysis)
     for s in specs:
         assert s["name"].startswith("graph_")
         assert s["strict"] is True

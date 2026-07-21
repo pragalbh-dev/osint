@@ -169,9 +169,31 @@ TOOL_SPECS: list[dict[str, Any]] = [
         {"scope": {"type": "string", "description": "node id, edge id, or Known-Gap id to assess"}},
         ["scope"],
     ),
+    _spec(
+        "analyze",
+        """
+        Run one precomputed multi-hop analysis over the graph for a resolved subject, returning
+        status-labelled elements WITH their claim IDs. 'chokepoint' names the best-evidenced critical
+        single-point-of-failure component near the subject and lists the others nominated; 'supply_chain'
+        traces an observed system/unit/site back toward its origin maker, highlighting the chokepoint and
+        printing weaker supplier links it weighed but did not carry; 'sole_source' splits the subject's
+        dependencies into confirmed sole-source components and candidate sole-source Known Gaps. Resolve the
+        subject to a node_id with find_entity first, and prefer this over hand-assembling such a judgement
+        from many tool calls. Do NOT use it for a free-form attribute filter, a single point-to-point path,
+        or a one-node lookup — compose the primitive graph_* tools (query_graph / find_paths / get_node) for
+        those.
+        """,
+        {
+            "subject_id": {"type": "string", "description": "a resolved node id (from find_entity) to analyse"},
+            "analysis": {"type": "string", "enum": ["chokepoint", "supply_chain", "sole_source"],
+                         "description": "which precomputed analysis to run"},
+        },
+        ["subject_id", "analysis"],
+    ),
 ]
 
 
 def tool_specs() -> list[dict[str, Any]]:
-    """The seven ``graph_*`` tool schemas for the tool-calling API (a fresh copy per call)."""
+    """The ``graph_*`` tool schemas for the tool-calling API — the seven primitives + ``graph_analyze``
+    (the general multi-hop analysis), a fresh copy per call."""
     return [dict(s) for s in TOOL_SPECS]

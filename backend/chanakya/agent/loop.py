@@ -1,18 +1,17 @@
-"""The bounded ReAct loop + the deterministic fixed hero path (spine/09; master §4.5).
+"""The bounded ReAct loop (spine/09; master §4.5).
 
-Two execution modes over the same tools:
+:func:`run_react_loop` — a plain ``think → act → observe`` loop (no framework). The LLM plans and emits tool
+calls; the deterministic dispatcher runs each tool and feeds the structured result back; the model reads it
+and, when satisfied, stops. **All counting/filtering/materiality/analysis is in the tools** — the model
+never tallies in its head, and a judgement computed across many hops (a critical-dependency assessment, an
+origin/supply trace, a single-point-of-failure scan) is delegated to the one ``graph_analyze`` tool
+(:mod:`chanakya.agent.analyses`) rather than special-cased here. Bounds: a hard iteration cap and top-k/hop
+caps enforced *inside* the tools.
 
-* :func:`run_react_loop` — a plain ``think → act → observe`` loop (no framework). The LLM plans and emits
-  tool calls; the deterministic dispatcher runs each tool and feeds the structured result back; the model
-  reads it and, when satisfied, stops. **All counting/filtering/materiality is in the tools** — the model
-  never tallies in its head. Bounds: a hard iteration cap and top-k/hop caps enforced *inside* the tools.
-* :func:`run_fixed_hero_path` — the near-fixed ``link → gather → query_graph → cite`` plan for the flagship
-  query, run as a scripted tool sequence with **no LLM at all**. This is the reproducibility story and the
-  keyless / network-safety path; the recorded LLM transcript replays the *same* tool sequence via a
-  :class:`~chanakya.agent.client.ScriptedClient`.
-
-Both produce an :class:`AgentTrace` (the tool calls + their results); :mod:`chanakya.agent.assemble` turns a
-trace into the cited ``AskAnswer``, so citations are a *by-product of the computation*, not model prose.
+The loop produces an :class:`AgentTrace` (the tool calls + their results); :mod:`chanakya.agent.assemble`
+turns a trace into the cited ``AskAnswer``, so citations are a *by-product of the computation*, not model
+prose. The shared ranking/supplier-link helpers below (``_chokepoint_rank``, ``_supplier_links``,
+``_typed_anchor``, ``assertable_statuses``) are reused by the deterministic analyses.
 """
 
 from __future__ import annotations
@@ -21,7 +20,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from chanakya.schemas import KnownGap, RefusalPayload
+from chanakya.schemas import RefusalPayload
 
 from .client import LLMClient
 from .context import ToolContext
@@ -43,6 +42,12 @@ Rules you must follow:
   and NEVER a fabricated answer. UNKNOWN substitutability is a Known Gap, not "no substitute".
 - Stop as soon as you have enough evidence to answer; do not loop past what the question needs.
 Keep any prose terse — the final cited answer is assembled deterministically from your tool calls.
+
+How to read this graph's assessments:
+- Every node and edge carries a STATUS. confirmed = independent credible sources agree, briefable as fact. probable = one good look, or an inferred/attribution layer — usable, but call it probable. possible = weak or a single low-grade source — you may name it but must not rest a finding on it. insufficient / indeterminate / UNKNOWN = a Known Gap, NOT a "no" — report what is missing and when coverage is due, never a confident negative.
+- Rest a finding only on confirmed or probable links. A weaker link is still worth naming — say it was weighed and not carried, with its source — but the assessment must not depend on it.
+- observed = seen or measured directly; inferred = concluded from other facts. Keep the two distinct.
+When answering needs a judgement computed across several hops or many nodes — a critical-dependency assessment, an origin or supply trace, a single-point-of-failure scan — call graph_analyze with the analysis type that fits, rather than assembling it by hand. For questions with no matching analysis type, compose the primitive tools.
 """
 
 
@@ -141,59 +146,12 @@ def run_react_loop(
     return trace
 
 
-# ── fixed hero path (deterministic, no LLM) ────────────────────────────────────────────────────
-
-HERO_SUB_QUESTIONS = [
-    "Which deployed HQ-9/P battery are we tracing, and where is it based?",
-    "Which unit operates it, and which variant does that unit field?",
-    "Who builds that system — and which component is the fire-control chokepoint on it?",
-    "Is the chokepoint's own supplier a confirmed sole-source, or an unresolved Known Gap?",
-]
-
+# ── shared scripted helpers (reused by the deterministic analyses in analyses.py) ───────────────
 
 def _call(ctx: ToolContext, trace: AgentTrace, tool: str, params: dict[str, Any]) -> dict[str, Any]:
     result = run_tool(ctx, tool, params)
     trace.calls.append(RecordedCall(name=_bare(tool), input=dict(params), result=result))
     return result
-
-
-def _refuse(
-    trace: AgentTrace,
-    missing: list[str],
-    reason: str,
-    *,
-    next_due: str | None = None,
-    known_gap: dict[str, Any] | None = None,
-) -> AgentTrace:
-    """Stamp a first-class honest refusal on the trace and return it (the scripted short-circuit).
-
-    The reason names the *actual* unresolved input; ``missing`` is populated. No hardcoded/phantom id is
-    ever substituted — a step that did not resolve becomes a named gap, never a guessed answer (AS-2).
-    """
-    kg = None
-    if isinstance(known_gap, dict) and known_gap.get("id"):
-        kg = KnownGap(
-            id=known_gap["id"],
-            what_missing=known_gap.get("what_missing", ""),
-            observability_ceiling=known_gap.get("observability_ceiling", "confirmable"),
-            next_coverage_due=known_gap.get("next_coverage_due"),
-            related_ref=known_gap.get("related_ref"),
-            missing_slots=list(known_gap.get("missing_slots", [])),
-        )
-    trace.refusal = RefusalPayload(
-        missing=list(missing), next_coverage_due=next_due, known_gap=kg, reason=reason
-    )
-    trace.terminated = "fixed"
-    return trace
-
-
-def _top_candidate(fe_result: dict[str, Any]) -> str | None:
-    """The bindable node id from a find_entity result — top candidate iff exact/near_miss (never fuzzy/
-    ambiguous/none). Consumes the result the old path discarded (AS-2)."""
-    if fe_result.get("error") or fe_result.get("resolution") not in ("exact", "near_miss"):
-        return None
-    cands = fe_result.get("candidates") or []
-    return cands[0]["node_id"] if cands else None
 
 
 def _typed_anchor(ctx: ToolContext, anchors: list[str], node_type: str) -> str | None:
@@ -298,149 +256,6 @@ def _supplier_links(
         )
     band = assertable_statuses(ctx)
     return sorted(links, key=lambda link: link.rank(band))
-
-
-def run_fixed_hero_path(ctx: ToolContext, question: str, subject_id: str = "lens-hq9p-pk") -> AgentTrace:
-    """The scripted ``link → gather → query_graph → cite`` plan for the flagship trace — no LLM.
-
-    A scripted *plan* computes over the live graph; it does **not** substitute the expected answer. Every
-    id is resolved from the rebuilt view (anchors via find_entity, types via the node, the maker edge via
-    the ontology's canonical Manufacturer→Component lane) — and any step that fails to resolve
-    short-circuits to an HONEST refusal that names the actual unresolved input, never a hardcoded literal
-    (spine/09 AS-2). The end-state on a graph where the chain cannot reach the origin maker is a *scoped*
-    refusal on the chokepoint component (its supplier is a Known Gap), never a fabricated assessment.
-    """
-    trace = AgentTrace(question=question, sub_questions=list(HERO_SUB_QUESTIONS), terminated="fixed")
-    lens = ctx.config.subjects.as_map().get(subject_id)
-    anchors = list(lens.anchors) if lens else []
-
-    # link: resolve the variant the question names — and CONSUME the result (the old path discarded it).
-    fe = _call(ctx, trace, "graph_find_entity", {"text": "HQ-9/P", "type_hint": "variant"})
-    variant_id = _top_candidate(fe)
-    if variant_id is None:
-        detail = fe.get("error") or f"resolution={fe.get('resolution')!r} (no bindable candidate)"
-        hint = f" {fe.get('suggestion')}" if fe.get("suggestion") else ""
-        return _refuse(trace, ["HQ-9/P"], f"Could not resolve the subject variant 'HQ-9/P' in the rebuilt view: {detail}.{hint}")
-
-    # the basing site is a lens anchor typed basing_site — resolved from the graph, never an id prefix.
-    site = _typed_anchor(ctx, anchors, "basing_site")
-    if site is None:
-        unresolved = [a for a in anchors if a not in ctx.nodes_by_id]
-        # Analyst-facing prose names *entities*, never a Python list repr or an internal lens id
-        # (R-9). The machine-readable ids still travel in `missing`, which the UI resolves itself.
-        if unresolved:
-            detail = f"these anchors are not present in the rebuilt view: {_names(ctx, unresolved)}"
-        elif anchors:
-            detail = f"its anchors resolve, but none of them is a basing site: {_names(ctx, anchors)}"
-        else:
-            detail = "the lens declares no anchors at all"
-        return _refuse(
-            trace, unresolved or anchors or ["basing_site_anchor"],
-            f"The current subject lens has no basing site to anchor the basing→origin trace — {detail}.",
-        )
-
-    # gather + query_graph: the (candidate-or-confirmed) chokepoint component near the resolved variant.
-    chokepoints = _call(
-        ctx, trace, "graph_query_graph",
-        {"pattern": "component", "anchor": variant_id,
-         "constraints": [{"attr": "chokepoint_status", "op": "!=", "value": "none"}]},
-    )
-    pool = chokepoints.get("matches", []) + chokepoints.get("indeterminate", [])
-    if not pool:
-        vname = _name(ctx, variant_id)
-        return _refuse(
-            trace, ["chokepoint_component"],
-            f"No chokepoint component is currently identified near {vname} in the rebuilt view "
-            f"(materiality has nominated none): insufficient evidence to name the fire-control chokepoint.",
-        )
-    comp_id = min(pool, key=lambda m: _chokepoint_rank(ctx, m))["node_id"]
-
-    # Who makes it. Two lanes, both derived from the ontology, never a literal:
-    #   1. the chokepoint COMPONENT's own maker — the canonical Manufacturer→Component edge
-    #      (supplies-component; Phase-1 tightened 'manufactures' to Manufacturer→Variant);
-    #   2. failing that, the SYSTEM's origin maker — Manufacturer→Variant on the resolved variant.
-    #
-    # A candidate is carried only if the edge that claims it is inside the configured assertable band
-    # (credibility.assertable_status). This is the T3b §5 defect: the old code took the first
-    # manufacturer-typed neighbour with no regard for edge status, and so walked the corpus's planted
-    # `insufficient` CPMIEC attribution as if it were the answer. Everything gathered is kept on the trace
-    # either way — the rejected candidates are printed as "weighed and not carried", with their status and
-    # citation, so the trap is surfaced rather than hidden (see `_supplier_links`).
-    band = assertable_statuses(ctx)
-    comp_maker_edge = ctx.lane.canonical_edge("manufacturer", "component") if ctx.lane else None
-    component_links = _supplier_links(ctx, trace, comp_id, comp_maker_edge, "manufacturer")
-    carried = [link for link in component_links if link.status in band]
-
-    origin_links: list[SupplierLink] = []
-    if not carried:
-        # Climb from the part to the system: "who supplies this radar" has no assertable answer, but
-        # "who builds the system it sits in" is a different — and here far better evidenced — assertion.
-        # This is not a substitute answer for the first question: the component-level supplier stays an
-        # open Known Gap and is reported as one. It is the next honest link in the same dependency chain.
-        origin_edge = ctx.lane.canonical_edge("manufacturer", "variant") if ctx.lane else None
-        origin_links = _supplier_links(ctx, trace, variant_id, origin_edge, "manufacturer")
-        carried = [link for link in origin_links if link.status in band]
-    mfr_id = carried[0].node_id if carried else None
-
-    # find_paths: the flagship basing → origin chain, walked on the lens's declared traversal lanes (a
-    # subject is anchors + a traversal pattern). When no maker link clears the band, still trace basing →
-    # the chokepoint COMPONENT — the chain the evidence does support — and report the missing supplier as
-    # the gap. Refusing outright would throw away a fully-sourced multi-hop answer to punish a known unknown.
-    dst = mfr_id if mfr_id is not None else comp_id
-    path_params: dict[str, Any] = {"src": site, "dst": dst}
-    if lens is not None and lens.trace_lanes:
-        path_params["edge_whitelist"] = list(lens.trace_lanes)
-    _call(ctx, trace, "graph_find_paths", path_params)
-    path = trace.last("find_paths")
-    if path is not None and path.result.get("hops"):
-        for hop in path.result["hops"]:
-            _call(ctx, trace, "graph_get_evidence", {"ref_id": hop["edge_id"]})
-
-    # cite the chokepoint + the non-negotiable: confirmed sole-source, or a Known Gap? (comp_id exists.)
-    _call(ctx, trace, "graph_get_node", {"node_id": comp_id})
-    suff = _call(ctx, trace, "graph_check_sufficiency", {"scope": comp_id})
-
-    # If the chain never reached the origin maker, degrade to an HONEST scoped refusal on the chokepoint —
-    # naming the ACTUAL failure (the tool's own error), never a positive answer that hides the gap.
-    path = trace.last("find_paths")
-    if not (path is not None and path.result.get("hops")):
-        cname = _name(ctx, comp_id)
-        missing = list(suff.get("missing_slots") or [])
-        if mfr_id is not None:
-            # supplier resolved, but the basing→origin chain could not be traced — name the path failure.
-            fp = trace.last("find_paths", ok_only=False)
-            detail = fp.result.get("error") if fp is not None else "no path found"
-            reason = (
-                f"Traced the fire-control chokepoint to {cname} and its supplier {_name(ctx, mfr_id)}, but "
-                f"could not connect the basing site {_name(ctx, site)} to that supplier in the rebuilt view: {detail}."
-            )
-            missing = missing or [f"path:{site}->{mfr_id}"]
-        else:
-            # No assertable maker link AND no basing→component path either — name both, not just the
-            # maker gap. When maker links WERE found but all fell below the assertable band, say so in
-            # those words: "none was found" and "one was found and is too weak to carry" are different
-            # intelligence, and collapsing them would hide the very attribution the analyst must see.
-            edge_name = comp_maker_edge or "manufacturer→component"
-            fp = trace.last("find_paths", ok_only=False)
-            detail = (fp.result.get("error") if fp is not None else None) or "no path found"
-            weighed = [link for link in (*component_links, *origin_links) if link.status not in band]
-            if weighed:
-                rejected = ", ".join(
-                    f"{_name(ctx, link.node_id)} ({link.status})" for link in weighed
-                )
-                maker_clause = (
-                    f"every maker link on {cname} falls below the assertable band "
-                    f"({', '.join(band) or 'none declared'}): {rejected}"
-                )
-            else:
-                maker_clause = f"the rebuilt view has no {edge_name} edge to a manufacturer"
-            reason = suff.get("reason") or (
-                f"Traced the fire-control chokepoint to {cname}, but {maker_clause}, and no path connects "
-                f"the basing site {_name(ctx, site)} to {cname} either: {detail}."
-            )
-            missing = missing or [f"{edge_name}:{comp_id}", f"path:{site}->{comp_id}"]
-        return _refuse(trace, missing, reason, next_due=suff.get("next_coverage_due"), known_gap=suff.get("known_gap"))
-    return trace
 
 
 def _name(ctx: ToolContext, node_id: str) -> str:
