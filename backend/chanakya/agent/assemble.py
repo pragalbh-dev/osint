@@ -468,18 +468,83 @@ def _refusal(trace: AgentTrace) -> RefusalPayload:
             known_gap=known_gap,
             reason=r.get("reason", "insufficient evidence to assess"),
         )
+
+    # An unresolved NAMED subject is a sharper gap than "no path found": the reason should name the query
+    # that failed to bind, and — when the linker offered look-alikes — say they are DISTINCT entities, not
+    # the one asked about. A find_entity result with ``resolved is False`` (resolution near_miss / ambiguous
+    # / none: a candidate list, or nothing, but never a bind) is exactly that. Prefer the LAST such attempt.
+    # ``ok_only=False`` because a ``resolution == none`` result carries an ``error`` key (ok is False), and
+    # that no-match case is precisely the gap we want to name honestly.
+    unresolved = next(
+        (c for c in reversed(trace.calls) if c.name == "find_entity" and c.result.get("resolved") is False),
+        None,
+    )
+    if unresolved is not None:
+        r = unresolved.result
+        query = str(r.get("query") or "").strip()
+        closest = [str(c.get("name")) for c in r.get("candidates", []) if c.get("name")][:2]
+        if closest:
+            look_alikes = " / ".join(f"'{n}'" for n in closest)
+            reason = (
+                f"No entity matching '{query}' is in the current evidence — the closest matches "
+                f"({look_alikes}) are distinct entities, not the one asked about. This subject isn't "
+                f"established yet; ingest the evidence that would name it."
+            )
+        else:
+            reason = (
+                f"No entity matching '{query}' is in the current evidence. This subject isn't established "
+                f"yet; ingest the evidence that would name it."
+            )
+        return RefusalPayload(missing=[query or "unresolved_subject"], reason=reason)
+
     return RefusalPayload(
         missing=["supporting_evidence"],
         reason="Insufficient evidence to assess: no supporting path or indicators were found for this query.",
     )
 
 
-def _as_refusal(trace: AgentTrace) -> AskAnswer:
+def _refusal_hops(trace: AgentTrace, ctx: ToolContext) -> tuple[list[AnswerHop], list[str]]:
+    """The partial trace a refusal DID establish — the hops from the best hop source (the last
+    ``graph_analyze`` result's ``hops``, else the last ``find_paths`` ``hops``) — built with the SAME
+    citation discipline as a positive answer: claim ids filtered to real claims (G4), observed/inferred
+    read structurally, and a hop whose claims don't resolve dropped. Returned so a refusal can show "how
+    far this got" beside the gap **without ever asserting a positive finding** — these are only edges the
+    agent actually traced, each cited to a real claim; the refusal verdict stays the message."""
+    analyze_call = trace.last("analyze")
+    source_hops: list = list(analyze_call.result.get("hops") or []) if analyze_call is not None else []
+    if not source_hops:
+        fp = trace.last("find_paths")
+        source_hops = list(fp.result.get("hops") or []) if fp is not None else []
+    hops: list[AnswerHop] = []
+    citations: list[str] = []
+    for hop in source_hops:
+        cids = _cite_ok(ctx, list(hop.get("claim_ids", [])))
+        if not cids:  # G4: a hop with no resolvable claim behind it is dropped, never shown uncited
+            continue
+        hops.append(
+            AnswerHop(
+                step=len(hops) + 1, edge=hop["edge"], src=hop["src"], dst=hop["dst"],
+                claim_ids=cids, observed_or_inferred=_kind_of(ctx, cids),
+            )
+        )
+        citations.extend(c for c in cids if c not in citations)
+    return hops, citations
+
+
+def _as_refusal(trace: AgentTrace, ctx: ToolContext, refusal: RefusalPayload | None = None) -> AskAnswer:
+    """A first-class refusal that still CARRIES whatever partial trace the agent established: the hops it
+    did walk, cited to real claims, so the UI can show how far it got beside the gap. ``refusal`` falls
+    back to the one already set on the trace (an explicit / analysis-promoted refusal)."""
+    hops, citations = _refusal_hops(trace, ctx)
     return AskAnswer(
         question=trace.question,
         sub_questions=list(trace.sub_questions),
+        hops=hops,
         answer=None,
-        refusal=trace.refusal,
+        citations=citations,
+        observed_claims=[c for c in citations if _kind_of(ctx, [c]) == "observed"],
+        inferred_claims=[c for c in citations if _kind_of(ctx, [c]) == "inferred"],
+        refusal=refusal or trace.refusal,
     )
 
 
@@ -488,13 +553,13 @@ def assemble_answer(trace: AgentTrace, ctx: ToolContext) -> AskAnswer:
     # An explicit scripted refusal (a broken chain) wins over the builders — it names the actual unresolved
     # input, so we never let a positive builder paper over it (AS-2).
     if trace.refusal is not None:
-        return _as_refusal(trace)
+        return _as_refusal(trace, ctx)
     for builder in _BUILDERS:
         built = builder(trace, ctx)
         # A builder (e.g. _from_analyze) may promote an analysis-level refusal to a first-class one; honour
         # it immediately rather than falling through to a weaker positive shape or a generic refusal.
         if trace.refusal is not None:
-            return _as_refusal(trace)
+            return _as_refusal(trace, ctx)
         if built is not None and built.sentences:
             observed = [c for c in built.citations if _kind_of(ctx, [c]) == "observed"]
             inferred = [c for c in built.citations if _kind_of(ctx, [c]) == "inferred"]
@@ -507,9 +572,4 @@ def assemble_answer(trace: AgentTrace, ctx: ToolContext) -> AskAnswer:
                 observed_claims=observed,
                 inferred_claims=inferred,
             )
-    return AskAnswer(
-        question=trace.question,
-        sub_questions=list(trace.sub_questions),
-        answer=None,
-        refusal=_refusal(trace),
-    )
+    return _as_refusal(trace, ctx, _refusal(trace))

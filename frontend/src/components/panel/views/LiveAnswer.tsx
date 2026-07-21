@@ -14,6 +14,7 @@ import {
   humanizeEdge,
   resolveHopElement,
   splitCitedSentence,
+  type LiveAnswerHop,
   type LiveAnswerModel,
 } from '@/api/adapters'
 import { useDisplayName } from '@/api/viewmodel'
@@ -62,6 +63,60 @@ function BackButton({ onClick }: { onClick: () => void }) {
   )
 }
 
+// The "how this was traced" walk — the numbered timeline of hops the agent actually crossed, each cited
+// to a real claim. Shared by a positive Answer (the trace it rests on) AND a Refusal (how far it got
+// before the gap), so both render the SAME markup: a clickable citation chip opens the same provenance
+// drawer beside the card. A null hop element leaves the chip inert rather than 404. Renders nothing when
+// there are no hops. `header` names the section, since a refusal frames the same walk differently.
+function TracedHops({ hops, header }: { hops: LiveAnswerHop[]; header: string }) {
+  const displayName = useDisplayName()
+  const liveView = useWorkbench((s) => s.liveView)
+  const openProvenance = useWorkbench((s) => s.openProvenance)
+  if (hops.length === 0) return null
+  return (
+    <>
+      <div className="mb-[14px] text-[10.5px] tracking-[0.06em] text-text-faint">{header}</div>
+      {hops.map((hop, i) => {
+        const isLast = i === hops.length - 1
+        const hopEl = resolveHopElement(liveView, hop)
+        return (
+          <div key={`${hop.step}-${i}`} className="flex gap-[13px]">
+            <div className="flex flex-none flex-col items-center">
+              <span
+                className="flex h-[24px] w-[24px] items-center justify-center rounded-full border font-mono text-[11px] text-text-dim"
+                style={{ borderColor: 'var(--hairline-strong)' }}
+              >
+                {hop.step}
+              </span>
+              {!isLast && <span className="mt-1 w-px flex-1 bg-hairline" />}
+            </div>
+            <div style={{ paddingBottom: isLast ? 4 : 18 }}>
+              <div className={`text-[13.5px] leading-[1.45] ${hop.observed ? 'text-text' : 'text-text-dim'}`}>
+                {`${displayName(hop.src)} — ${humanizeEdge(hop.edge)} → ${displayName(hop.dst)}`}
+              </div>
+              <div className="mt-[3px] text-[11px] text-text-faint">{hop.observed ? 'observed' : 'inferred'}</div>
+              {hop.citations.length > 0 && (
+                <div className="mt-[8px] flex flex-wrap gap-[7px]">
+                  {hop.citations.map((c) => (
+                    <CitationChip
+                      key={c}
+                      label={c}
+                      status={hop.observed ? 'confirmed' : 'probable'}
+                      onClick={hopEl ? () => openProvenance(hopEl, c) : undefined}
+                      title={hopEl ? CHIP_TITLE : undefined}
+                      className={hopEl ? CHIP_DOOR : undefined}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
 function Refusal({ model }: { model: LiveAnswerModel }) {
   const r = model.refusal
   const displayName = useDisplayName()
@@ -106,16 +161,23 @@ function Refusal({ model }: { model: LiveAnswerModel }) {
           {r.nextCoverageDue}.
         </div>
       )}
+
+      {/* how far the trace got before the gap — the partial chain the agent DID establish, cited to real
+          claims. Rendered BELOW the verdict so the refusal stays the primary message; a refusal is still a
+          refusal, and every hop here is one the agent actually walked, never a fabricated path. */}
+      {model.hops.length > 0 && (
+        <div className="mt-[22px] border-t border-hairline pt-[18px]">
+          <TracedHops hops={model.hops} header="How far this got" />
+        </div>
+      )}
     </div>
   )
 }
 
 function Answer({ model }: { model: LiveAnswerModel }) {
-  // the walk names its endpoints; an id the graph does not know passes through unchanged
-  const displayName = useDisplayName()
   // one-click from a cited source to the exact claim it made. A HOP chip resolves to the edge it
-  // crossed (resolveHopElement); a prose/conclusion chip to the element that carries the claim
-  // (claimElementIndex). Clicking opens the SAME provenance drawer the graph/map/alerts use,
+  // crossed (resolveHopElement, inside TracedHops); a prose/conclusion chip to the element that carries
+  // the claim (claimElementIndex). Clicking opens the SAME provenance drawer the graph/map/alerts use,
   // pre-expanded to that claim's verbatim quote, docked BESIDE this answer (LiveDrawer.besideCard).
   // A null element leaves the chip inert rather than open a 404.
   const liveView = useWorkbench((s) => s.liveView)
@@ -147,50 +209,7 @@ function Answer({ model }: { model: LiveAnswerModel }) {
   return (
     <div>
       {/* the walk FIRST — the trace the question asked for; observed vs inferred is structural */}
-      {model.hops.length > 0 && (
-        <>
-          <div className="mb-[14px] text-[10.5px] tracking-[0.06em] text-text-faint">How this was traced</div>
-          {model.hops.map((hop, i) => {
-            const isLast = i === model.hops.length - 1
-            const hopEl = resolveHopElement(liveView, hop)
-            return (
-              <div key={`${hop.step}-${i}`} className="flex gap-[13px]">
-                <div className="flex flex-none flex-col items-center">
-                  <span
-                    className="flex h-[24px] w-[24px] items-center justify-center rounded-full border font-mono text-[11px] text-text-dim"
-                    style={{ borderColor: 'var(--hairline-strong)' }}
-                  >
-                    {hop.step}
-                  </span>
-                  {!isLast && <span className="mt-1 w-px flex-1 bg-hairline" />}
-                </div>
-                <div style={{ paddingBottom: isLast ? 4 : 18 }}>
-                  <div className={`text-[13.5px] leading-[1.45] ${hop.observed ? 'text-text' : 'text-text-dim'}`}>
-                    {`${displayName(hop.src)} — ${humanizeEdge(hop.edge)} → ${displayName(hop.dst)}`}
-                  </div>
-                  <div className="mt-[3px] text-[11px] text-text-faint">
-                    {hop.observed ? 'observed' : 'inferred'}
-                  </div>
-                  {hop.citations.length > 0 && (
-                    <div className="mt-[8px] flex flex-wrap gap-[7px]">
-                      {hop.citations.map((c) => (
-                        <CitationChip
-                          key={c}
-                          label={c}
-                          status={hop.observed ? 'confirmed' : 'probable'}
-                          onClick={hopEl ? () => openProvenance(hopEl, c) : undefined}
-                          title={hopEl ? CHIP_TITLE : undefined}
-                          className={hopEl ? CHIP_DOOR : undefined}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </>
-      )}
+      <TracedHops hops={model.hops} header="How this was traced" />
 
       {/* the conclusion — the derived chokepoint line + "weighed and not carried" (and, when there
           are no hops, the whole answer). A separator sets it off from the trace above. The flat
