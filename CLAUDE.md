@@ -140,9 +140,13 @@ not designing. Read every working agreement below through that lens:
   so.
 - **HITL is a service any layer can call, not per-stage code.** Route ambiguous / high-stakes items
   through the one adjudication service; overrides must propagate to downstream state.
-- **Keep the demo deterministic & reproducible.** The hero query must run the same every time. This one is
-  still worth protecting: when a change would make the demo non-repeatable, take the deterministic option —
-  only raise it if determinism costs something real.
+- **Keep the promised-reproducible surfaces reproducible.** The `?mode=demo` walkthrough and the keyless
+  worked-query regression are the byte-identical surfaces — protect those. The **live flagship is
+  model-planned now** (it runs through the general reasoning agent like any question, so its exact
+  wording/path varies run to run and needs a key) — that is by design, **not** a regression or a keyless
+  gap to flag, and there is no scripted/keyless flagship path to restore. What keeps a live answer honest
+  and stable in substance is the deterministic tool layer + the citation/sufficiency guardrails, not a
+  fixed path.
 - **Finish what's modelled; don't model more.** New entity/edge types need a live query behind them, and
   that bar is effectively closed now. Depth today means the existing provenance / credibility / HITL /
   retrieval machinery *working reliably*, not more of it.

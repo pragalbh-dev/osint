@@ -1336,3 +1336,26 @@ only safe way to edit a whole-section write) and `plan/sessions/API.md` scope 7 
 
 **Design-doc tails to enrich:** `spine/09` (entailment validator: state the altitude problem and the
 chosen fix once decided); `product/00-ux-brief` (watch panel = armed + fired, two sources).
+
+---
+
+### 2026-07-21 · General `graph_analyze` tool; hardcoded hero path removed (`feat/materiality-analysis`, PR #51)
+
+- **The keyword-triggered scripted hero path is gone; the flagship is model-planned like any question.**
+  *Principle: intelligence lives in the plan and the tools, never a special-cased path.* `ask()` no longer
+  routes the flagship to a fixed script — one general `graph_analyze(subject_id, analysis)` tool (enum
+  `chokepoint` / `supply_chain` / `sole_source`) does the deterministic multi-hop computation (reusing the
+  materiality precompute + the ranking that had been trapped in the hero script), returns status labels +
+  a claim behind every element (never a numeric confidence), and returns its own internal traversal as
+  hops. Generic prompt guidance (what each status means + "use an analysis when one fits", no query named)
+  steers the live agent to it; the 7 primitives keep full generality.
+- **Keylessness / determinism — state of the world, so no later agent re-flags it.** The live flagship now
+  **needs a key** and its exact wording/path **varies run to run — BY DESIGN**, not a regression or a
+  keyless gap. Byte-reproducibility lives in the recorded `?mode=demo` walkthrough and the keyless
+  worked-query regression (driven by a `run_analysis` helper), **not** a scripted/keyless flagship, and
+  there is no scripted flagship path to restore. This supersedes the T9 scripted-hero decision and the old
+  "the hero query must run the same every time" agreement. What keeps a live answer honest is the
+  deterministic tool layer + the citation/sufficiency guardrails (and the entailment judge is now an opt-in
+  flag, `credibility.entailment_judge_enabled`, default off — PR #49). Rejected: a materiality-aware
+  assembler builder (a disguised hardcode of the chokepoint case) and keeping the hero path as a keyless
+  fallback (re-introduces the special case).
