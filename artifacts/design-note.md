@@ -354,14 +354,18 @@ to one corpus?"
 it running. Two adjacent problems complete the picture, and the order matters.
 
 Widening is cheap here for a reason worth stating plainly, because it is easily mistaken for breadth-chasing.
-Nothing in this system was made configurable in order to be general. It was made configurable because C
-demanded it: a credibility judgement an analyst cannot inspect and retune is not auditable, an ontology
-welded into code cannot be corrected when a source proves it wrong, and a tripwire that requires a developer
-is not a tripwire. Every one of those pressures comes from doing *one* use case honestly. The by-product is
-that the analyst's reasoning ends up expressed as data — weights, thresholds, requirement templates, edge
-lanes, watch conditions — rather than as control flow. And once one analyst's reasoning is data, **a
-different analyst's reasoning is a different configuration, not a different system.** That is what makes the
-next two problems tractable, and it is a consequence of depth rather than a substitute for it.
+C was concretely in front of us the whole way — but the system was deliberately built around a *view*: encode
+the general way an analyst works, not the specifics of this one target. That generality was intended, by
+design; it is not overfitted to the problem and it did not have to be retrofitted for A and B. What keeps it
+from being breadth-chasing is that the view was disciplined by C at every turn — every configurable seam
+answers to a real pressure C created: a credibility judgement an analyst cannot inspect and retune is not
+auditable, an ontology welded into code cannot be corrected when a source proves it wrong, and a tripwire
+that requires a developer is not a tripwire. So the generality is grounded in one use case done honestly, not
+bolted on for imagined ones. What the view buys is that the analyst's reasoning ends up expressed as data —
+weights, thresholds, requirement templates, edge lanes, watch conditions — rather than as control flow. And
+once one analyst's reasoning is data, **a different analyst's reasoning is a different configuration, not a
+different system.** That is what makes the next two problems tractable — a deliberate design stance,
+disciplined by depth on C rather than a substitute for it.
 
 **A — the longitudinal air-posture picture** is next: baseline each location, flag deviation from that
 baseline, and separate genuine cross-area correlation from coincidence. It is the *volume* question — how much
@@ -388,12 +392,6 @@ genuine research, not plumbing: separating exercise from mobilisation, resisting
 and recognising when the system is being deceived rather than confidently mis-warning.
 
 ---
-
-*Nothing an analyst does in the application requires a restart: the credibility rubric, the half-lives, the
-ontology and the watch conditions are all live configuration, and changing any of them reprices the graph in
-place. Ingestion carries real formats end to end on real infrastructure — OCR over scanned procurement
-documents, a vision model reading a schematic out of a PDF, and place names resolved through a gazetteer to
-coordinates, landing within about two kilometres on the site the worked query turns on.*
 
 *Stack: append-only SQLite evidence and decision logs; an in-memory knowledge view rebuilt in-process on every
 change; LLM extraction into a single claim schema, live at ingest, with a seeded baseline so the app boots
