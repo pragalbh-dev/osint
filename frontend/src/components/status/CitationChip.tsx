@@ -18,6 +18,9 @@ interface Props {
   expandable?: boolean
   expanded?: boolean
   onClick?: () => void
+  /** native tooltip — the hover hint that a chip is a door into its source (e.g. "Show the claim
+   *  this source made"). Undefined leaves the chip exactly as it was, so the frozen demo is untouched. */
+  title?: string
   className?: string
 }
 
@@ -37,6 +40,7 @@ export function CitationChip({
   expandable,
   expanded,
   onClick,
+  title,
   className,
 }: Props) {
   const interactive = !!onClick
@@ -45,6 +49,7 @@ export function CitationChip({
       type={interactive ? 'button' : undefined}
       onClick={onClick}
       disabled={!interactive}
+      title={title}
       className={clsx(
         'inline-flex items-center gap-[9px] font-sans text-text-dim',
         interactive && 'cursor-pointer',
