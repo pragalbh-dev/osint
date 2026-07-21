@@ -22,6 +22,7 @@ from rapidfuzz import fuzz, process
 
 from chanakya.schemas import DateValue, EdgeView, NodeView, canonical_iso_bounds
 
+from . import analyses
 from .context import ToolContext, normalize, squash
 
 # ── tuning knobs (agent-local; gate G6 scopes credibility/resolve/materiality/observe, not agent) ──
@@ -642,6 +643,7 @@ _REQUIRED: dict[str, list[str]] = {
     "query_graph": ["pattern"],
     "get_evidence": ["ref_id"],
     "check_sufficiency": ["scope"],
+    "analyze": ["subject_id", "analysis"],
 }
 
 _FUNCS = {
@@ -652,6 +654,7 @@ _FUNCS = {
     "query_graph": query_graph,
     "get_evidence": get_evidence,
     "check_sufficiency": check_sufficiency,
+    "analyze": analyses.analyze,
 }
 
 

@@ -1,20 +1,12 @@
-"""The bounded ReAct loop + fixed hero path (spine/09 bounds; deterministic given the client)."""
+"""The bounded ReAct loop (spine/09 bounds; deterministic given the client)."""
 
 from __future__ import annotations
 
 from chanakya.agent.assemble import assemble_answer
 from chanakya.agent.context import ToolContext
-from chanakya.agent.loop import AgentTrace, RecordedCall, run_fixed_hero_path, run_react_loop
-from chanakya.schemas import ConfigBundle
-from chanakya.schemas.config_models import SubjectsConfig
+from chanakya.agent.loop import AgentTrace, RecordedCall, run_react_loop
 
 from .mock_llm import final, planner, tool_turn
-
-
-def _relens(config: ConfigBundle, anchors: list[str]) -> ConfigBundle:
-    """The same bundle with the hero lens re-anchored — exercises the no-basing-site refusal branch."""
-    lens = config.subjects.subjects[0].model_copy(update={"anchors": anchors})
-    return config.model_copy(update={"subjects": SubjectsConfig(subjects=[lens])})
 
 
 def test_errored_calls_are_invisible_to_builders(view, claims, config) -> None:
@@ -55,41 +47,17 @@ def test_loop_respects_hard_iteration_cap(view, claims, config) -> None:
     assert len(trace.calls) == 3
 
 
-def test_fixed_hero_path_builds_the_full_chain(view, claims, config) -> None:
+def test_free_loop_reaches_supply_chain_via_graph_analyze(view, claims, config) -> None:
+    """The flagship trace is no longer special-cased: the planner reaches it by calling graph_analyze.
+    The one analyze call carries the whole multi-hop chain + the chokepoint, assembled into a cited answer."""
     ctx = ToolContext.build(view, claims, config)
-    trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
-    path = trace.last("find_paths")
-    assert path is not None
-    assert [h["edge"] for h in path.result["hops"]] == ["based-at", "inducted-into", "equips", "supplies-component"]
-    # it also gathers the chokepoint via query_graph and checks sufficiency (the non-negotiable)
-    assert trace.last("query_graph") is not None
-    assert trace.last("check_sufficiency") is not None
-
-
-def test_missing_basing_anchor_refuses_in_analyst_prose(view, claims, config) -> None:
-    """R-9: the refusal body is read by an analyst — it must name entities, not print a Python list
-    repr or an internal lens id. Anchors that resolve are rendered as their node names, comma-joined."""
-    ctx = ToolContext.build(view, claims, _relens(config, ["unit_paad", "var_hq9p"]))
-    trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
-
-    assert trace.refusal is not None
-    reason = trace.refusal.reason
-    assert "Pakistan Army Air Defence — HQ-9/P Regiment, HQ-9P" in reason  # names, comma-joined
-    assert "lens-hq9p-pk" not in reason        # no internal lens id in analyst-facing text
-    assert "[" not in reason and "'" not in reason  # no Python container/str repr
-    # the machine-readable ids still travel in `missing` (the UI resolves them to names itself)
-    assert trace.refusal.missing == ["unit_paad", "var_hq9p"]
-
-
-def test_unresolved_anchor_refusal_names_what_is_absent(view, claims, config) -> None:
-    """The other branch: an anchor the rebuilt view does not hold at all. Still no repr, no lens id —
-    an id with no node falls back to itself rather than being dressed up as a name."""
-    ctx = ToolContext.build(view, claims, _relens(config, ["unit_paad", "site_not_in_view"]))
-    trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
-
-    assert trace.refusal is not None
-    reason = trace.refusal.reason
-    assert "not present in the rebuilt view: site_not_in_view" in reason
-    assert "lens-hq9p-pk" not in reason
-    assert "[" not in reason and "'" not in reason
-    assert trace.refusal.missing == ["site_not_in_view"]
+    llm = planner(tool_turn("graph_analyze", {"subject_id": "site_karachi", "analysis": "supply_chain"}), final())
+    trace = run_react_loop(ctx, "trace ... chokepoint", llm)
+    assert trace.terminated == "end_turn"
+    assert trace.last("analyze") is not None
+    a = assemble_answer(trace, ctx)
+    assert a.refusal is None and a.answer is not None
+    assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips", "supplies-component"]
+    # the chokepoint is still named, still labelled candidate, and its open gap stated (the non-negotiable)
+    assert "chokepoint_status=candidate" in a.answer
+    assert "insufficient evidence to assess" in a.answer.lower()

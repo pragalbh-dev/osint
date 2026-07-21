@@ -30,8 +30,8 @@ from chanakya.schemas import AskAnswer, ConfigBundle, GraphView, RefusalPayload
 
 from .assemble import assemble_answer
 from .client import ScriptedClient, build_default_client
-from .context import ToolContext, normalize
-from .loop import run_fixed_hero_path, run_react_loop
+from .context import ToolContext
+from .loop import run_react_loop
 from .propose import ObservableProposal, propose_observable_from_text
 from .validate import validate_answer
 
@@ -40,21 +40,6 @@ if TYPE_CHECKING:
     from chanakya.schemas import ClaimRecord
 
 __all__ = ["ask", "ToolContext", "propose_observable_from_text", "ObservableProposal"]
-
-# Keyword signature of the flagship trace — routes it to the deterministic fixed hero path (primary +
-# reproducible), independent of whether a key is present. Kept narrow so only the flagship query triggers.
-_HERO_KEYWORDS = ("trace", "chokepoint")
-_HERO_ALT = ("weak link",)
-
-
-def _is_hero_query(question: str, config: ConfigBundle) -> bool:
-    q = normalize(question)
-    for lens in config.subjects.subjects:
-        for tq in lens.target_queries:
-            if normalize(tq) == q:
-                return True
-    has_trace = "trace" in q and ("chokepoint" in q or "weak link" in q)
-    return has_trace and ("hq-9" in q or "battery" in q or "supplier" in q)
 
 
 def ask(
@@ -68,12 +53,13 @@ def ask(
     ctx = ToolContext.build(view, claims or {}, config)
     resolved_llm = llm if llm is not None else build_default_client()
 
-    if _is_hero_query(question, config):
-        trace = run_fixed_hero_path(ctx, question)
-    elif resolved_llm is not None:
+    if resolved_llm is not None:
+        # The LLM plans; the deterministic graph_* tools compute. No query is special-cased — a judgement
+        # needing many hops (an origin/supply trace, a single-point-of-failure scan) is reached via the
+        # general graph_analyze tool, not a hardcoded path.
         trace = run_react_loop(ctx, question, resolved_llm)
     else:
-        # Keyless, non-flagship, no recorded trace: refuse honestly — never fabricate an answer.
+        # Keyless, no recorded trace: refuse honestly — never fabricate an answer.
         # This is a CAPABILITY outage, not an evidence gap: nothing was consulted, so we must not
         # report a shortfall in the world's evidence. `missing` names the capability in the words an
         # analyst can act on, not an internal token.

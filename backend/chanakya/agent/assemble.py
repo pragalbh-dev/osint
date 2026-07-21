@@ -91,6 +91,179 @@ def _hop_clause(ctx: ToolContext, hop: dict) -> str:
     return f"{_name(ctx, src)} {phrase} {_name(ctx, dst)}"
 
 
+def _refusal_from_analysis(r: dict) -> RefusalPayload:
+    """A first-class :class:`RefusalPayload` from an analysis's ``refusal`` block (kind defaults to
+    ``evidence`` — an analysis refusal is a statement about the world's evidence, not the system)."""
+    kg = r.get("known_gap")
+    known_gap = (
+        KnownGap(
+            id=kg["id"],
+            what_missing=kg.get("what_missing", ""),
+            observability_ceiling=kg.get("observability_ceiling", "confirmable"),
+            next_coverage_due=kg.get("next_coverage_due"),
+            related_ref=kg.get("related_ref"),
+            missing_slots=list(kg.get("missing_slots", [])),
+        )
+        if kg
+        else None
+    )
+    return RefusalPayload(
+        kind="evidence",
+        missing=list(r.get("missing_slots", [])),
+        next_coverage_due=r.get("next_coverage_due"),
+        known_gap=known_gap,
+        reason=r.get("reason", "insufficient evidence to assess"),
+    )
+
+
+def _from_analyze(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
+    """The general-analysis builder (``graph_analyze``): render a chokepoint / supply_chain / sole_source
+    result into cited sentences, mirroring the primitive builders' citation discipline exactly.
+
+    A non-null ``refusal`` on the result becomes a first-class :attr:`AgentTrace.refusal` (and returns
+    ``None``, so :func:`assemble_answer` re-checks and emits the honest refusal rather than a positive body).
+    """
+    call = trace.last("analyze")
+    if call is None:
+        return None
+    r = call.result
+    analysis = r.get("analysis")
+    if r.get("sub_questions"):
+        trace.sub_questions = list(r["sub_questions"])
+    if r.get("refusal"):
+        trace.refusal = _refusal_from_analysis(r["refusal"])
+        return None
+
+    built = _Built()
+    if analysis == "chokepoint":
+        _render_chokepoint(built, ctx, r)
+    elif analysis == "supply_chain":
+        _render_supply_chain(built, ctx, r)
+    elif analysis == "sole_source":
+        _render_sole_source(built, ctx, r)
+    return built if built.sentences else None
+
+
+def _cite_ok(ctx: ToolContext, claim_ids: list[str]) -> list[str]:
+    """Keep only claim ids that resolve to a real claim (G4) — a sentence citing none is never emitted."""
+    return [c for c in claim_ids if c in ctx.claims]
+
+
+def _emit_hops(built: _Built, ctx: ToolContext, hops: list) -> None:
+    """Emit an analysis's internal traversal as the FIRST sentences — one cited hop line per step, in the
+    same per-hop format as ``_from_paths`` — so the answer's hop-timeline shows how the finding was reached.
+    A hop with no resolvable claim is dropped (G4), keeping ``built.hops`` and the leading sentences aligned
+    for the frontend (which reads the first ``len(hops)`` lines as the timeline) and the citation validator."""
+    for hop in hops:
+        cids = _cite_ok(ctx, list(hop.get("claim_ids", [])))
+        if not cids:
+            continue
+        oi = _kind_of(ctx, cids)
+        built.hops.append(
+            AnswerHop(
+                step=len(built.hops) + 1, edge=hop["edge"], src=hop["src"], dst=hop["dst"],
+                claim_ids=cids, observed_or_inferred=oi,
+            )
+        )
+        built.sentences.append(_sentence(f"{_hop_clause(ctx, hop)} — {hop.get('status')}, {oi}", cids))
+        built.citations.extend(c for c in cids if c not in built.citations)
+
+
+def _render_chokepoint(built: _Built, ctx: ToolContext, r: dict) -> None:
+    _emit_hops(built, ctx, r.get("hops", []))  # the "how this was traced" timeline first …
+    leading = r.get("leading")
+    if leading:
+        cites = _cite_ok(ctx, list(leading.get("claim_ids", [])))
+        if cites:
+            gap = leading.get("known_gap")
+            gap_clause = f" {gap['what_missing']}" if gap and gap.get("what_missing") else ""
+            built.sentences.append(
+                _sentence(
+                    f"{DERIVED_METRIC_PREFIX} {_name(ctx, leading['node_id'])} — "
+                    f"chokepoint_status={leading.get('chokepoint_status')}, "
+                    f"substitutability={leading.get('substitutability_state')}.{gap_clause}",
+                    cites,
+                )
+            )
+            built.citations.extend(c for c in cites if c not in built.citations)
+    for other in r.get("also_nominated", []):
+        cites = _cite_ok(ctx, list(other.get("claim_ids", [])))
+        if not cites:
+            continue
+        built.sentences.append(
+            _sentence(
+                f"{_name(ctx, other['node_id'])} — also nominated "
+                f"({other.get('chokepoint_status')}, {other.get('status')})",
+                cites,
+            )
+        )
+        built.citations.extend(c for c in cites if c not in built.citations)
+
+
+def _render_supply_chain(built: _Built, ctx: ToolContext, r: dict) -> None:
+    # hops — mirror _from_paths exactly (status + observed/inferred inline; per-hop AnswerHop).
+    for i, hop in enumerate(r.get("hops", []), start=1):
+        cids = list(hop.get("claim_ids", []))
+        oi = _kind_of(ctx, cids)
+        built.hops.append(
+            AnswerHop(step=i, edge=hop["edge"], src=hop["src"], dst=hop["dst"], claim_ids=cids, observed_or_inferred=oi)
+        )
+        built.sentences.append(_sentence(f"{_hop_clause(ctx, hop)} — {hop.get('status')}, {oi}", cids))
+    built.citations = list(dict.fromkeys(cid for h in built.hops for cid in h.claim_ids))
+
+    # the chokepoint as a rebuild-derived metric line (its open supplier gap appended verbatim).
+    ck = r.get("chokepoint")
+    if ck:
+        refs = _cite_ok(ctx, list(ck.get("claim_ids", [])))
+        if refs:
+            gap = f" {ck['gap_reason']}".rstrip() if ck.get("gap_reason") else ""
+            built.sentences.append(
+                _sentence(
+                    f"{DERIVED_METRIC_PREFIX} {_name(ctx, ck['node_id'])} — "
+                    f"chokepoint_status={ck.get('chokepoint_status')}, "
+                    f"substitutability={ck.get('substitutability_state')}.{gap}",
+                    refs,
+                )
+            )
+            built.citations.extend(c for c in refs if c not in built.citations)
+
+    # the weighed-and-not-carried links (below-band, printed and cited — never hidden).
+    walked = {str(h["edge_id"]) for h in r.get("hops", []) if h.get("edge_id")}
+    for w in r.get("weighed_not_carried", []):
+        if str(w.get("edge_id", "")) in walked:
+            continue
+        cites = _cite_ok(ctx, list(w.get("claim_ids", [])))
+        if not cites:
+            continue
+        hop = {"src": w["src"], "dst": w["dst"], "edge": w["edge"], "edge_id": w.get("edge_id", "")}
+        built.sentences.append(
+            _sentence(
+                f"{WEIGHED_NOT_CARRIED_PREFIX} {_hop_clause(ctx, hop)} — {w.get('status')}; below the "
+                f"assertable band, so the assessment above does not rest on it",
+                cites,
+            )
+        )
+        built.citations.extend(c for c in cites if c not in built.citations)
+
+
+def _render_sole_source(built: _Built, ctx: ToolContext, r: dict) -> None:
+    _emit_hops(built, ctx, r.get("hops", []))  # the traversal to the primary dependency, timeline first …
+    for el in r.get("confirmed", []):
+        cites = _cite_ok(ctx, list(el.get("claim_ids", [])))
+        if not cites:
+            continue
+        built.sentences.append(_sentence(f"{_name(ctx, el['node_id'])} — sole-source ({el.get('status')})", cites))
+        built.citations.extend(c for c in cites if c not in built.citations)
+    for el in r.get("candidates", []):
+        cites = _cite_ok(ctx, list(el.get("claim_ids", [])))
+        if not cites:
+            continue
+        gap = el.get("known_gap") or {}
+        what = gap.get("what_missing") or "substitutability is UNKNOWN — a Known Gap"
+        built.sentences.append(_sentence(f"{_name(ctx, el['node_id'])} — candidate sole-source; {what}", cites))
+        built.citations.extend(c for c in cites if c not in built.citations)
+
+
 # ── per-shape builders (return None when the shape isn't present / is empty) ────────────────────
 
 def _weighed_not_carried(trace: AgentTrace, ctx: ToolContext, walked: set[str]) -> list[tuple[str, list[str]]]:
@@ -267,7 +440,7 @@ def _from_get_evidence(trace: AgentTrace, ctx: ToolContext) -> _Built | None:
     return built or None
 
 
-_BUILDERS = (_from_paths, _from_query_graph, _from_neighbors, _from_get_node, _from_get_evidence)
+_BUILDERS = (_from_analyze, _from_paths, _from_query_graph, _from_neighbors, _from_get_node, _from_get_evidence)
 
 
 # ── refusal ─────────────────────────────────────────────────────────────────────────────────
@@ -301,19 +474,27 @@ def _refusal(trace: AgentTrace) -> RefusalPayload:
     )
 
 
+def _as_refusal(trace: AgentTrace) -> AskAnswer:
+    return AskAnswer(
+        question=trace.question,
+        sub_questions=list(trace.sub_questions),
+        answer=None,
+        refusal=trace.refusal,
+    )
+
+
 def assemble_answer(trace: AgentTrace, ctx: ToolContext) -> AskAnswer:
     """Build the cited answer for whatever shape the trace covers, or a first-class refusal."""
-    # An explicit scripted refusal (the hero path could not build the chain) wins over the builders — it
-    # names the actual unresolved input, so we never let a positive builder paper over a broken chain (AS-2).
+    # An explicit scripted refusal (a broken chain) wins over the builders — it names the actual unresolved
+    # input, so we never let a positive builder paper over it (AS-2).
     if trace.refusal is not None:
-        return AskAnswer(
-            question=trace.question,
-            sub_questions=list(trace.sub_questions),
-            answer=None,
-            refusal=trace.refusal,
-        )
+        return _as_refusal(trace)
     for builder in _BUILDERS:
         built = builder(trace, ctx)
+        # A builder (e.g. _from_analyze) may promote an analysis-level refusal to a first-class one; honour
+        # it immediately rather than falling through to a weaker positive shape or a generic refusal.
+        if trace.refusal is not None:
+            return _as_refusal(trace)
         if built is not None and built.sentences:
             observed = [c for c in built.citations if _kind_of(ctx, [c]) == "observed"]
             inferred = [c for c in built.citations if _kind_of(ctx, [c]) == "inferred"]

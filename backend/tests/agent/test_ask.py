@@ -9,8 +9,16 @@ from .mock_llm import final, planner, tool_turn
 HERO_Q = "trace this deployed HQ-9/P battery back to its component supplier and name the chokepoint"
 
 
+def _hero_planner():
+    """A scripted planner that reaches the flagship trace the way the live agent does — one graph_analyze
+    call (supply_chain, anchored on the fixture's basing site), then stop. Fresh per call (stateful client)."""
+    return planner(
+        tool_turn("graph_analyze", {"subject_id": "site_karachi", "analysis": "supply_chain"}), final()
+    )
+
+
 def test_hero_query_traces_the_chain_and_cites_each_hop(view, claims, config) -> None:
-    a = ask(HERO_Q, view, config, claims=claims)
+    a = ask(HERO_Q, view, config, llm=_hero_planner(), claims=claims)
     assert a.answer is not None and a.refusal is None
     assert [h.edge for h in a.hops] == ["based-at", "inducted-into", "equips", "supplies-component"]
     for h in a.hops:
@@ -23,7 +31,7 @@ def test_hero_query_traces_the_chain_and_cites_each_hop(view, claims, config) ->
 
 def test_ht233_renders_candidate_not_confirmed_sole_source(view, claims, config) -> None:
     """The disqualifying line: HT-233 is a CANDIDATE with UNKNOWN substitutability, never sole-source."""
-    a = ask(HERO_Q, view, config, claims=claims)
+    a = ask(HERO_Q, view, config, llm=_hero_planner(), claims=claims)
     assert a.answer is not None
     assert "chokepoint_status=candidate" in a.answer
     assert "substitutability=UNKNOWN" in a.answer
@@ -41,8 +49,8 @@ def test_planted_gap_returns_reasoned_insufficiency(view, claims, config) -> Non
 
 
 def test_hero_answer_is_deterministic(view, claims, config) -> None:
-    a = ask(HERO_Q, view, config, claims=claims)
-    b = ask(HERO_Q, view, config, claims=claims)
+    a = ask(HERO_Q, view, config, llm=_hero_planner(), claims=claims)
+    b = ask(HERO_Q, view, config, llm=_hero_planner(), claims=claims)
     assert a.model_dump() == b.model_dump()
 
 

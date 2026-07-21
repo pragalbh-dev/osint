@@ -12,7 +12,21 @@ from tests.agent.mock_llm import final, planner, tool_turn
 HERO_Q = "trace this deployed HQ-9/P battery back to its component supplier and name the chokepoint"
 
 
-def test_ask_hero_query_cited_multihop_answer(hero_client) -> None:
+def _use_hero_planner(monkeypatch) -> None:
+    """The flagship trace is no longer special-cased in ask(); the planner reaches it via graph_analyze.
+    Drive the endpoint's ReAct loop offline with a scripted planner that makes that one call (as ASK's own
+    tests do), so the API forwards the cited multi-hop answer without a live key."""
+    monkeypatch.setattr(
+        agent,
+        "build_default_client",
+        lambda *a, **k: planner(
+            tool_turn("graph_analyze", {"subject_id": "site_karachi", "analysis": "supply_chain"}), final()
+        ),
+    )
+
+
+def test_ask_hero_query_cited_multihop_answer(hero_client, monkeypatch) -> None:
+    _use_hero_planner(monkeypatch)
     r = hero_client.post("/ask", json={"question": HERO_Q})
     assert r.status_code == 200
     a = AskAnswer.model_validate(r.json())
@@ -46,7 +60,8 @@ def test_ask_planted_gap_returns_refusal_payload_and_known_gap(hero_client, monk
     assert "insufficient evidence" in a.refusal.reason.lower()
 
 
-def test_ask_is_deterministic_over_http(hero_client) -> None:
+def test_ask_is_deterministic_over_http(hero_client, monkeypatch) -> None:
+    _use_hero_planner(monkeypatch)  # a fresh planner per ask() call → byte-stable, deterministic replay
     a = hero_client.post("/ask", json={"question": HERO_Q}).json()
     b = hero_client.post("/ask", json={"question": HERO_Q}).json()
     assert a == b

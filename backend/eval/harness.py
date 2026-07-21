@@ -17,7 +17,7 @@ The functions here are thin, deterministic wrappers over the frozen seams:
 * :func:`fire_relocation_observable` — **stage a live ingest** (reduce the corpus without the relocation
   evidence, then with it) and run the MONITOR delta evaluator over that pair (the seeded
   Rawalpindi→Rahwali tripwire);
-* :func:`run_hero_query` — the deterministic fixed hero path through ASK (no LLM, keyless-reproducible).
+* :func:`run_hero_query` — the deterministic general ``supply_chain`` analysis (no LLM, keyless-reproducible).
 """
 
 from __future__ import annotations
@@ -28,7 +28,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from chanakya import settings
-from chanakya.agent import ask
 from chanakya.config import ConfigStore
 from chanakya.ingest.seed import seed_store_from_bundles
 from chanakya.observe import evaluate
@@ -225,22 +224,50 @@ def fire_relocation_observable(
     return evaluate(prev_view, view, inp.config_store.snapshot())
 
 
-# ── the deterministic worked query (fixed hero path, no LLM) ─────────────────────────────────────────
+# ── the deterministic worked query (general supply-chain analysis, no LLM) ───────────────────────────
 
 def run_hero_query(inp: ScenarioInputs, view: GraphView | None = None) -> AskAnswer:
-    """Run the worked multi-hop query through ASK's deterministic fixed hero path (keyless-reproducible).
+    """Run the worked multi-hop query through the general ``supply_chain`` analysis (keyless-reproducible).
 
-    Asks the **subject lens's** flagship ``target_queries[0]`` — the one string ASK matches exactly to take
-    the scripted ``link→gather→query_graph→cite`` hero path with no LLM call, giving a byte-stable
-    answer/path on every run. Deliberately NOT the oracle's ``worked_query.text``: the answer key is frozen
-    ground truth we grade against and must never double as the system's own input. Re-pointing the flagship
-    query is then a config edit (``config/subjects.yaml``), not an oracle edit. ``claims`` is passed so each
-    hop cites a real source span and observed/inferred tags resolve.
+    The flagship trace is no longer a special-cased path in ``ask()``: live, the planner reaches it by
+    calling ``graph_analyze``. This EVAL driver runs the SAME general analysis deterministically — anchored
+    on the lens's basing site, tracing back toward the origin maker — so the demo contract has a byte-stable
+    regression target without needing a model key. The question string is the lens's flagship
+    ``target_queries[0]`` (deliberately NOT the oracle's ``worked_query.text`` — the answer key is graded
+    against, never fed back in). ``inp.claims`` gives each hop a real source span + observed/inferred tag.
     """
+    from chanakya.agent.analyses import run_analysis
+    from chanakya.agent.assemble import assemble_answer
+    from chanakya.agent.context import ToolContext
+    from chanakya.agent.loop import _typed_anchor
+    from chanakya.agent.validate import validate_answer
+    from chanakya.schemas import RefusalPayload
+
     if view is None:
         view = build_view(inp)
     config = inp.config_store.snapshot()
     lens = config.subjects.as_map().get(DEFAULT_LENS)
     if lens is None or not lens.target_queries:
         raise ValueError(f"subject lens {DEFAULT_LENS!r} declares no target_queries to run as the worked query")
-    return ask(lens.target_queries[0], view, config, llm=None, claims=inp.claims)
+    ctx = ToolContext.build(view, inp.claims, config)
+    # The observed subject is the lens's basing site (the "battery now based at …"); fall back to the first
+    # anchor the view actually holds so the analysis' own generic variant-resolution can take over.
+    subject = _typed_anchor(ctx, list(lens.anchors), "basing_site") or next(
+        (a for a in lens.anchors if a in ctx.nodes_by_id), None
+    )
+    trace = run_analysis(ctx, lens.target_queries[0], subject or "", "supply_chain")
+    answer = assemble_answer(trace, ctx)
+    # Mirror ASK's deterministic tail: a positive answer that fails the citation checks is withheld, never
+    # emitted as unbacked prose (the non-negotiable). Keyless ⇒ no entailment judge (deterministic only).
+    if answer.answer is not None and not validate_answer(answer, trace, ctx, judge=None).ok:
+        return AskAnswer(
+            question=lens.target_queries[0],
+            sub_questions=answer.sub_questions,
+            answer=None,
+            refusal=RefusalPayload(
+                kind="withheld",
+                missing=["citation/entailment check failed"],
+                reason="Answer withheld: one or more sentences were uncited, unsupported, or not entailed by their evidence.",
+            ),
+        )
+    return answer

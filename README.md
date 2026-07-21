@@ -20,10 +20,11 @@ about running your own copy; skip to §4 if you're using the hosted one.
 ## 1. Run it — two identical paths, no setup required
 
 The whole app (backend + the web UI) ships as **one Docker image**. It boots and runs the
-entire worked demo — graph, map, ingest, alerts, review, and the flagship question —
-**with no API key and no outbound calls**: the corpus, the pre-analysed evidence and the
-map tiles are all baked in. A key is needed only to ask **free-form questions of your
-own**, which is what §3 covers.
+worked demo — graph, map, ingest, alerts, review — **with no API key and no outbound
+calls**: the corpus, the pre-analysed evidence and the map tiles are all baked in. Asking
+questions live — including the flagship multi-hop question, now planned by the general
+reasoning agent rather than a hardcoded script — needs a key (the recorded `?mode=demo`
+view shows the flagship thread keyless); §3 covers keyed vs. keyless in full.
 
 (Building the image, Path A below, does need network access to clone the repo and fetch
 dependencies. The running app doesn't.)
@@ -74,14 +75,18 @@ the graph right now and responds to what you do. Bookmark or share the `?mode=li
 
 ## 3. Running it keyed vs. keyless
 
-**Keyless (the default, nothing to configure) already runs the full worked demo** —
-graph, map, citations, ingest, alerts, review, and the flagship multi-hop question.
+**Keyless (the default, nothing to configure) runs the full worked demo** — graph, map,
+citations, ingest, alerts, review.
 
-That question works without a key because the *reasoning steps* for it are replayed from
-a recording, so the demo runs the same way every time. **The answer itself is not canned**
-— those steps run live against the graph as it stands, which is why the same question
-honestly refuses before you ingest the withheld evidence (§5) and traces a full cited
-chain afterwards.
+**The flagship multi-hop question now runs live through the general reasoning agent**, not
+a hardcoded script. The agent plans it and calls the same general analysis it would use for
+any origin/supply-chain or critical-dependency question, so it needs a model key and its
+exact wording and path can vary run to run. A keyless deploy with no recorded transcript
+answers it with an honest "no model key" refusal, never a guess — while the recorded demo
+mode (`?mode=demo`) and the reproducible worked-query regression still show the same cited
+thread without a key. Answered live, it is never canned: it runs against the graph as it
+stands, which is why the same question honestly refuses before you ingest the withheld
+evidence (§5) and traces a full cited chain afterwards, once a key is set.
 
 **Keyed** additionally unlocks two things. Both read their key from a `.env` file at the
 repo root (loaded at startup only, never baked into the image or logged):
@@ -162,8 +167,10 @@ text, it's already loaded and ready. Do this for both:
    from the new location all the way back to the manufacturer and naming the
    fire-control component as the open question in the supply chain.
 
-This works identically keyed or keyless — ingesting these two pre-packaged documents
-never calls a model, so it's exactly reproducible every time.
+Ingesting these two pre-packaged documents never calls a model, so the alert step is
+exactly reproducible every time, keyed or keyless. Asking the flagship question itself is
+now model-planned (§3), so run this thread with a key set — or in the recorded `?mode=demo`
+view — to see the before/after answer live; keyless live mode refuses it honestly.
 
 ---
 
@@ -198,8 +205,10 @@ else you add during a session.
 - **Stuck on "waiting for /health"** — give it up to 60 seconds on first start (it's
   building an internal index of the whole corpus); `make logs` shows what it's doing.
 - **Port already in use** — `PORT=8010 make run`, or change the `docker run -p` mapping.
-- **Free-form questions refuse with "need a key"** — expected without
-  `ANTHROPIC_API_KEY` set; the one flagship question above always works regardless.
+- **Questions refuse with "need a key"** — expected without `ANTHROPIC_API_KEY` set. The
+  flagship question is now model-planned like any other (§3), so it too needs a key in live
+  mode; the recorded `?mode=demo` view and the reproducible worked-query regression show it
+  keyless.
 - **A restart resets everything** — by design. Nothing you do in the app (ingesting a
   document, making a review decision) is written outside the container, so
   `docker restart chanakya` is always a guaranteed clean reset back to the starting

@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from chanakya.agent.analyses import run_analysis
 from chanakya.agent.assemble import assemble_answer
 from chanakya.agent.context import ToolContext
-from chanakya.agent.loop import run_fixed_hero_path
 from chanakya.agent.validate import validate_answer
 
 from .mock_llm import YesNoJudge
 
 
 def _hero(view, claims, config):
+    """The worked answer via the general supply_chain analysis (the path the live agent reaches through
+    graph_analyze) — anchored on the fixture's basing site, no LLM."""
     ctx = ToolContext.build(view, claims, config)
-    trace = run_fixed_hero_path(ctx, "trace ... chokepoint")
+    trace = run_analysis(ctx, "trace ... chokepoint", "site_karachi", "supply_chain")
     return assemble_answer(trace, ctx), trace, ctx
 
 
