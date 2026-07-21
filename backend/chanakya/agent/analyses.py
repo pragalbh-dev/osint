@@ -214,11 +214,14 @@ def _supply_chain(ctx: ToolContext, subject_id: str) -> dict[str, Any]:
     lens = _active_lens(ctx)
 
     def _refuse(
-        missing: list[str], reason: str, *, due: str | None = None, kg: dict[str, Any] | None = None
+        missing: list[str], reason: str, *, due: str | None = None, kg: dict[str, Any] | None = None,
+        hops: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
+        # ``hops`` carries the PARTIAL trace a scoped refusal could still establish (the connectable
+        # sub-segment) — the assembler surfaces it under "how far this got"; the refusal stays the message.
         return {
             "analysis": "supply_chain", "subject": subject_id, "subject_name": name,
-            "hops": [], "chokepoint": None, "maker": None, "weighed_not_carried": [], "sub_questions": [],
+            "hops": hops or [], "chokepoint": None, "maker": None, "weighed_not_carried": [], "sub_questions": [],
             "refusal": {"missing_slots": missing, "reason": reason, "next_coverage_due": due, "known_gap": kg},
         }
 
@@ -307,7 +310,24 @@ def _supply_chain(ctx: ToolContext, subject_id: str) -> dict[str, Any]:
                 f"{ctx.display_name(src)} to {cname} either: {detail}."
             )
             missing = missing or [f"{edge_name}:{comp_id}", f"path:{src}->{comp_id}"]
-        return _refuse(missing, reason, due=due, kg=kg)
+        # A refusal still shows the analyst how far the trace GOT: best-effort the sub-segment that remains
+        # connectable — the variant → maker leg, when a maker was identified — so the part of the chain we
+        # COULD establish is shown beside the gap, never a fabricated full path. Best-effort only: a
+        # ToolError or no path leaves the partial trace empty, and the refusal simply shows no timeline.
+        partial: list[dict[str, Any]] = []
+        if mfr_id is not None:
+            try:
+                seg = tools.find_paths(ctx, src=variant_id, dst=mfr_id, edge_whitelist=lanes)
+            except tools.ToolError:
+                seg = {"hops": []}
+            partial = [
+                {
+                    "src": h["src"], "dst": h["dst"], "edge": h["edge"], "edge_id": h["edge_id"],
+                    "claim_ids": list(h.get("claim_ids") or []), "status": h.get("status"),
+                }
+                for h in seg.get("hops", [])
+            ]
+        return _refuse(missing, reason, due=due, kg=kg, hops=partial)
 
     # positive: the cited chain + the highlighted chokepoint + the below-band links, weighed and not carried.
     chokepoint = None
