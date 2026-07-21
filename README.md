@@ -83,24 +83,28 @@ a recording, so the demo runs the same way every time. **The answer itself is no
 honestly refuses before you ingest the withheld evidence (§5) and traces a full cited
 chain afterwards.
 
-**Keyed** additionally unlocks:
+**Keyed** additionally unlocks two things. Both read their key from a `.env` file at the
+repo root (loaded at startup only, never baked into the image or logged):
+
 - **Free-form questions** — anything you type into the ask bar beyond the flagship
-  question, planned and answered live by a model reasoning over the graph. Without a key
-  these return an honest "no model key configured" refusal, naming what's missing rather
-  than guessing.
+  question, planned and answered live by a model reasoning over the graph. These run on
+  Anthropic. Without a key they return an honest "no model key configured" refusal, naming
+  what's missing rather than guessing.
 - **Extracting a brand-new document live** — pasting in a document's text and having the
   system read it and add it to the graph in real time, instead of only ingesting the
-  pre-packaged documents described in §5.
-
-To enable them, supply an Anthropic API key: put one line in a `.env` file at the repo
-root before `make run` (or pass `--env-file .env` to `docker run` for Path B):
+  pre-packaged documents in §5. This one needs **both** a key **and** an explicit switch —
+  the switch is off by default so a public instance can't have its model quota burned by a
+  passer-by uploading documents.
 
 ```
-ANTHROPIC_API_KEY=<key>
+ANTHROPIC_API_KEY=<key>          # free-form questions, and document extraction
+CHANAKYA_ENABLE_EXTRACTION=1     # turn live document extraction on
 ```
 
-That is the only key the app needs — nothing else goes in that file. It is read at
-startup only, never written to the image or logged.
+**Extraction can run on either provider.** If you'd rather it read documents with Google's
+model, add `GEMINI_API_KEY=<key>` — when a Gemini key is present it is used for extraction,
+with Anthropic as the fallback. Free-form questions always run on Anthropic, so an
+Anthropic key is what unlocks those regardless of which provider does the extraction.
 
 Without any key, nothing breaks — free-form questions get an honest refusal explaining
 that a key is needed, never a guess.
