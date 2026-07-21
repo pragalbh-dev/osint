@@ -87,6 +87,14 @@ supersede_floor:
 # assessment while keeping it *on* the page.
 assertable_status: [confirmed, probable]
 
+# ASK answer-integrity: the LLM entailment ("NLI") judge that runs ON TOP of the always-on deterministic
+# citation checks (cited / citation exists / hop-support / real counts). Those deterministic checks already
+# guarantee no naked or fabricated sentence — each sentence is BUILT FROM the tool-returned claim_ids — so
+# this NLI pass is a belt-on-braces whose only marginal catch is edge phrasing that over-claims a relation.
+# It "defaults to no when unsure" and is the sole source of spurious whole-answer withholding on free-form
+# queries. Default OFF (deterministic grounding only); set true to re-enable, no restart (hot-config).
+entailment_judge_enabled: false
+
 # ── SCORE resolver knobs (introduced by SCORE; DATA-C owns/tunes the values) ──────────────────────
 # Every numeric knob the Confidence Resolver reads lives here, never in code (gate G6).
 decay_base: 2                 # freshness = decay_base^(-age/half_life) → exactly halves at one half-life

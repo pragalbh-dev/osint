@@ -93,9 +93,13 @@ def ask(
         )
 
     answer = assemble_answer(trace, ctx)
-    # Entailment judge runs only for a live client; a ScriptedClient (offline/recorded transcript) is a
-    # fixed replay, not an interactive judge, so those paths use the deterministic validation only.
-    judge = None if isinstance(resolved_llm, ScriptedClient) else resolved_llm
+    # Entailment judge is an OPT-IN belt on top of the always-on deterministic citation checks
+    # (config.credibility.entailment_judge_enabled, default OFF). It runs only when explicitly enabled AND
+    # for a live client — a ScriptedClient (offline/recorded transcript) is a fixed replay, not an
+    # interactive judge, so those paths always use deterministic validation only. Off ⇒ answers rest on the
+    # deterministic grounding that already forbids naked/fabricated sentences.
+    judge_on = getattr(config.credibility, "entailment_judge_enabled", False)
+    judge = resolved_llm if (judge_on and not isinstance(resolved_llm, ScriptedClient)) else None
     verdict = validate_answer(answer, trace, ctx, judge=judge)
     if not verdict.ok:
         # A positive answer that fails citation/entailment validation is withheld — the non-negotiable
