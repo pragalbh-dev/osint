@@ -173,20 +173,24 @@ TOOL_SPECS: list[dict[str, Any]] = [
         "analyze",
         """
         Run one precomputed multi-hop analysis over the graph for a resolved subject, returning
-        status-labelled elements WITH their claim IDs. 'chokepoint' names the best-evidenced critical
-        single-point-of-failure component near the subject and lists the others nominated; 'supply_chain'
-        traces an observed system/unit/site back toward its origin maker, highlighting the chokepoint and
-        printing weaker supplier links it weighed but did not carry; 'sole_source' splits the subject's
-        dependencies into confirmed sole-source components and candidate sole-source Known Gaps. Resolve the
-        subject to a node_id with find_entity first, and prefer this over hand-assembling such a judgement
-        from many tool calls. Do NOT use it for a free-form attribute filter, a single point-to-point path,
-        or a one-node lookup — compose the primitive graph_* tools (query_graph / find_paths / get_node) for
-        those.
+        status-labelled elements WITH their claim IDs. Choose the analysis by what the question asks:
+        'supply_chain' when it TRACES or connects an observed system/unit/site back to who builds or
+        supplies it (origin maker, design authority, component makers) — it returns the ordered origin
+        trace AND highlights the chokepoint on it (plus weaker supplier links it weighed but did not
+        carry), so use it even when the question ALSO asks to name the chokepoint: it subsumes that.
+        'chokepoint' when the question asks ONLY which component is the critical single-point-of-failure of
+        a system, with NO trace back to a maker — it names the best-evidenced one and lists the others
+        nominated. 'sole_source' splits the subject's dependencies into confirmed sole-source components and
+        candidate sole-source Known Gaps. Resolve the subject to a node_id with find_entity first, and
+        prefer this over hand-assembling such a judgement from many tool calls. Do NOT use it for a
+        free-form attribute filter, a single point-to-point path, or a one-node lookup — compose the
+        primitive graph_* tools (query_graph / find_paths / get_node) for those.
         """,
         {
             "subject_id": {"type": "string", "description": "a resolved node id (from find_entity) to analyse"},
             "analysis": {"type": "string", "enum": ["chokepoint", "supply_chain", "sole_source"],
-                         "description": "which precomputed analysis to run"},
+                         "description": "which analysis to run; a question that traces a system back to its "
+                                        "maker/builder is supply_chain even if it also asks to name the chokepoint"},
         },
         ["subject_id", "analysis"],
     ),
