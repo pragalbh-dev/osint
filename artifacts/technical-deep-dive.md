@@ -21,8 +21,8 @@ If you read nothing else, read these five, in this order:
   the order of operations that makes it happen.
 - **14 — Reality check** is the candid inventory: what is load-bearing, what is an extensible seam, and
   what is built but not yet wired. Read it to calibrate everything the earlier chapters told you.
-- **13 — The knobs** is your control panel — what you can turn, what actually moves, and (more usefully)
-  what looks tunable but is wired to nothing.
+- **13 — The knobs** is your control panel — what you can turn, what actually moves, and
+  what looks tunable but has no live reader.
 
 Skim the rest as needed. Chapters **08 (HITL)**, **10 (Refusal)**, and **11 (Retrieval)** are the other
 three pillars and reward a full read if you have time. Chapters **02 (Substrate)**, **03 (Ingestion)**,
@@ -40,52 +40,14 @@ the machinery and can be read in any order or skimmed.
 | 05 | Resolution | How many mentions become one entity, the scoring bands, and how fragmented the real graph actually is. |
 | 06 | Credibility | The confidence arithmetic and the exact promotion rules for confirmed / probable / stale / insufficient. |
 | 07 | The rebuild | The ordered pipeline that assembles the graph, why the order matters, and where human overrides slot in. |
-| 08 | HITL | What actually changes when a human decides, whether it survives rebuild, and where the queue is dead. |
+| 08 | HITL | What actually changes when a human decides, whether it survives rebuild, and where the queue is not wired. |
 | 09 | Monitoring | The observable language, the alert lifecycle, and which shipped tripwires actually fire versus sit inert. |
 | 10 | Refusal | Every path that yields "insufficient evidence," and the adversarial question of whether a thin assertion can escape. |
 | 11 | Retrieval | The bounded agent loop, the graph tools, and exactly what the citation validator checks and does on failure. |
-| 12 | The surface | The HTTP endpoints grouped by what they do to the system, and how the UI encodes trust and what it fakes. |
-| 13 | The knobs | The full configurability inventory — plus the keys nothing reads and the thresholds hardcoded despite the pitch. |
-| 14 | Reality check | Load-bearing versus scaffolding, cold-boot and determinism behaviour, and the structural weaknesses that bite. |
+| 12 | The surface | The HTTP endpoints grouped by what they do to the system, and how the UI encodes trust and where it falls back to fixtures. |
+| 13 | The knobs | The full configurability inventory — plus the config keys with no live reader and the thresholds fixed in code. |
+| 14 | Reality check | Load-bearing versus built-but-not-wired, cold-boot and determinism behaviour, and the current limitations. |
 | 15 | Seams | Where a new source, node type, credibility factor, observable, or use case would actually plug in. |
-
-## Ten things worth knowing up front
-
-1. **The running demo does no live extraction at all.** Keyed LLM extraction is off by default and
-   PDF/image ingest is unconditionally rejected by the API — so on a stock deploy the only way evidence
-   enters is by replaying frozen bundles that were extracted offline. The "messy documents → live
-   extraction" story is a capability, not the default path. *(ch 3, 14)*
-2. **The logs are in-memory only.** Nothing persists to disk despite a documented data directory that no
-   boot path uses; a container restart silently discards every live ingest, adjudication, and config edit
-   back to the committed baseline. *(ch 12)*
-3. **The recall-biased review queue is dead code.** The prioritised triage/escalation abstraction — the
-   design's HITL centrepiece — has no production caller. Real review happens through a different path
-   (candidate edges in the graph plus on-demand POSTs). *(ch 8, 14)*
-4. **Confirmed is genuinely hard to earn, by design.** It requires two *cross-discipline* independent looks;
-   two same-discipline looks weigh 1.5, short of the threshold of 2. On the real corpus most nodes have a
-   single claim, so very little is ever promoted to confirmed — the conservatism is real, not cosmetic.
-   *(ch 6, 5)*
-5. **The clock never advances on its own.** The "as of" date ships null, so freshness and staleness are
-   always measured against the newest claim in the corpus, not today. Nothing makes evidence go stale with
-   the passage of real time unless someone posts a new "as of" date. *(ch 6, 9, 14)*
-6. **A whole credibility config block is unwired.** The adversary-denial gates (cap-at-probable,
-   exclude-from-grouping) have zero readers — the behaviour is hardcoded — even though the file banners
-   itself as "every number lives here, never in code." Editing that block changes nothing. *(ch 6, 13)*
-7. **The integrity-flag loop is only half-connected.** The scorer that taints a flagged fabricated origin is
-   fully wired, but no runtime path can *write* such a flag — the only producer is unrouted. The "analyst
-   flags a fake → taint propagates" story cannot be exercised through the app. *(ch 4, 14)*
-8. **Two of three shipped tripwires can't fire.** One compiles to an arm-only mode that never fires by
-   construction; another waits on an edge type the corpus never produces. Only the relocation flagship
-   actually trips. To its credit, the engine honestly surfaces the ignored keys. *(ch 9, 14)*
-9. **A human-forced "confirmed" is invisible as such.** A status override writes the new status with no
-   on-element marker, and no route exposes the decision log — so in the provenance drawer a human override
-   is indistinguishable from a machine-earned confirmation, even when its own computed confidence sits below
-   the 0.80 bar. *(ch 8, 10)*
-10. **Some rubric factors don't actually rate anything.** Two of the five credibility factors are constant
-    priors for every source class, and the per-type attribute-matching rules have live readers but ship
-    with empty config — so parts of the scoring story described in comments run on defaults and never
-    differentiate a source. *(ch 5, 6, 13)*
-
 
 ---
 
@@ -97,7 +59,7 @@ Everything the system knows lives in two append-only logs, and everything an ana
 
 The knowledge graph an analyst sees — nodes, edges, events, known-gaps, alerts, each with a status and a confidence breakdown — is **not stored anywhere**. It is a pure function of (evidence log + decision log + a config snapshot), recomputed from scratch on demand. There is no incremental update, no cache, no carry-over from the previous graph. This is the central fact of the architecture: the logs are the truth, the graph is a *view*, and the view is disposable.
 
-One honest caveat up front, because it colours everything: both logs are in-memory (`:memory:` SQLite). The `CHANAKYA_DATA_DIR` env var and `settings.data_dir()` that supposedly point them at a durable file are **dead — grep finds zero call sites** that construct a log with a path, so every log is process-lifetime only. The Dockerfile even provisions `/app/var/data` with correct ownership for a directory nothing ever touches. What survives a restart is only the frozen JSON claim bundles committed under `corpus/`, which are replayed at boot. Every claim ingested live and every HITL decision an analyst makes evaporates when the process dies. For a single-analyst demo this is fine; it is not a production persistence story, and the code is honest about neither.
+One caveat up front, because it colours everything: both logs are in-memory (`:memory:` SQLite). The `CHANAKYA_DATA_DIR` env var and `settings.data_dir()` that would point them at a durable file have no live caller — grep finds zero call sites that construct a log with a path, so every log is process-lifetime only. The Dockerfile provisions `/app/var/data` with correct ownership, though no code path currently writes to it. What survives a restart is only the frozen JSON claim bundles committed under `corpus/`, which are replayed at boot. Every claim ingested live and every HITL decision an analyst makes is not persisted and is lost when the process exits. For a single-analyst demo this is fine; it is not a production persistence story.
 
 ### The atomic record
 
@@ -227,8 +189,8 @@ an undated claim is always kept, so the rewind can under-hide but never over-hid
 the running system ever writes `as_of` from the wall clock, despite comments describing that as the intended
 live-monitoring behavior; the config ships with it unset, so "now" is permanently anchored to the newest
 date already in the corpus. The upshot is a freshness story that's calendar-independent — it reads the same
-whether opened the day it was built or months later — but that's an accident of what's left unset, not a
-feature that was wired.
+whether opened the day it was built or months later — but that follows from the config being left unset
+rather than from a wired feature.
 
 ### The ontology constrains connections hard and vocabulary softly
 
@@ -252,9 +214,9 @@ without distinguishing advisory from gate.
 One genuine defect sits at this boundary: the ontology declares a nested block meant to let an operator
 override which relationship types count toward a node's chokepoint/sole-supplier computation, and the code
 reading that override looks in the wrong place — a top-level attribute of the whole config bundle instead of
-the nested one the YAML actually populates. The override is therefore always silently ignored and the
-computation falls back to a fixed, hardcoded set of relationship types — invisible today only because
-nobody has tried the override yet.
+the nested one the YAML actually populates. The override is therefore silently ignored and the
+computation falls back to a fixed set of relationship types; because that set matches the shipped
+ontology, this has no effect today.
 
 ### The config store: nine files, one frozen snapshot per rebuild, no memory of its own
 
@@ -445,7 +407,7 @@ rebuild-and-swap afterward to avoid a double rebuild. So the in-lane rebuild bra
 tests, never the deployed endpoint. Append-then-rebuild is never parallelized: the same claims in always
 produce byte-identical IDs and a byte-identical view out.
 
-Two things are worth being blunt about. First, there is no cross-document or re-ingestion duplicate
+Two things are worth noting. First, there is no cross-document or re-ingestion duplicate
 check anywhere: within-document dedup only compares claims already scoped to one `(source_id, file)`,
 and the log has no uniqueness constraint on claim ID — replaying the same bundle twice silently
 double-inserts every claim under its own identical, deterministically-minted ID. Second, image
@@ -502,7 +464,7 @@ The second family is everything `rebuild()` itself conjures that is **not a clai
 only because an edge pointed at them, coordinates borrowed from a gazetteer file, do-not-merge edges whose
 only "source" is a YAML row, a relocation arrow minted from two other edges. These are inferences too, but
 they never pass through the claim log, so their provenance does not chain back to anything a source said.
-That is where the leak is, and this chapter ends there.
+That is where provenance stops short of a source, and this chapter ends there.
 
 ### The four offline passes at a glance
 
@@ -545,10 +507,10 @@ induction claim.
 One honest defect: **the derived basing claim is stamped `method:"llm"`**. The builder never sets an
 extraction record, so the default (`method="llm"`, `model_conf=1.0`) mislabels a keyless graph derivation
 as an LLM read. This is cosmetic to *confidence* — the credibility engine has no `model_conf` term (that
-seam is dead-coded at 1.0) and prices a claim purely off its source class, freshness and integrity — but it
-is a genuine lie in the audit trail about how the fact was produced.
+seam is fixed at 1.0) and prices a claim purely off its source class, freshness and integrity — but it
+is a genuine mismatch in the audit trail about how the fact was produced.
 
-### Attribution — elaborate and cited, but inert on the shipped demo data
+### Attribution — elaborate and cited, not yet exercised on the shipped demo data
 
 Attribution exists to let an image corroborate a textual "HQ-9 at X" report. It waits for resolution to
 co-locate three things at a `basing_site`: **A**, a subject-blind VLM shape observation with geometry
@@ -602,7 +564,7 @@ toponym, say. Only **6** fields may change (`surface_format`, `wgs84_lat/lon`, `
 `geocode_candidates`, `proposed_alias`); `raw`, `resolved_place_ref` and everything non-location are left
 alone; every edited row is re-validated and every change is written as a before→after audit row; and
 `apply` defaults to **False**, so it is a dry run unless the `ingest renormalize --apply` CLI flag is
-passed. Nothing at boot or in the API touches it. Its docstring oversells itself: it claims "additive,
+passed. Nothing at boot or in the API touches it. Its docstring overstates the guarantee: it claims "additive,
 never destructive", but `surface_format` and `proposed_alias` are rewritten *unconditionally* on any
 successful parse, including cleared to null when a toponym is reclassified as a grid. Only the coordinate is
 genuinely protected (a geocode-derived coord is never re-derived, and a disagreeing parse aborts the whole
@@ -619,7 +581,7 @@ attribution claim can never bootstrap itself and its own evidence up to "confirm
 separate corroboration. This rule lives in the credibility subsystem, not in the derivation passes, so the
 derivation code's own docstrings assert it without exercising it; but it is real.
 
-### The leak: what rebuild invents that no claim asserts
+### Derived-but-unsourced values that rebuild adds
 
 Everything above stays inside the claim log. These do not, and each is a place where "one click to the
 exact source" lands somewhere weaker than a source:
@@ -649,7 +611,7 @@ exact source" lands somewhere weaker than a source:
   So a "confirmed" that is really a human override is, from the element's drawer, indistinguishable from a
   machine confirmed, and its underlying `assertion_confidence` may sit *below* 0.80. Note the asymmetry: an
   integrity-flag override *does* leave a visible flag; a status override does not. It is not derivation in
-  the claim sense, but it is the sharpest crack in "confirmed is structurally separated from probable."
+  the claim sense, but it is the most significant exception to "confirmed is structurally separated from probable."
 
 
 ---
@@ -741,7 +703,7 @@ no randomness enters any of it — the model already ran upstream and its output
 
 A single sourced claim's credibility is `R(source) × Π(integrity) × freshness`. Three numbers between 0
 and 1, multiplied. There is deliberately no fourth term for model/extraction confidence — that seam
-exists in the schema but is dead-coded at 1.0, so extraction quality never touches the score.
+exists in the schema but is fixed at 1.0, so extraction quality never touches the score.
 
 **R(source)** is a normalized weighted sum of five analyst-tunable factors, read not from the individual
 source but from its *class* row: authority (weight 0.35), process (0.30), directness (0.10),
@@ -755,8 +717,8 @@ real code that never actually does anything. The class outputs land where you'd 
 unrecognized source can never silently score as credible. Second, two of the five factors are inert
 knobs: `track_record` is pinned at 0.5 for every class and `intrinsic_plausibility` at 1.0 for every
 class, and the promised "per-claim LLM downward override" of plausibility is **not wired anywhere**. So R
-is purely a function of source class, with no per-claim variation at all — a curated-register claim and a
-curated-register lie score identically at the source-reliability step.
+is purely a function of source class, with no per-claim variation at all — a truthful curated-register claim and a
+false one score identically at the source-reliability step.
 
 **Π(integrity)** is the product of four M4-table lookups, each keyed `<table>.<flag>`, with a missing key
 returning 1.0 so an absent signal never zeroes a claim. The tables and their penalties: recycled image
@@ -768,7 +730,7 @@ within Hamming radius 10 of, an earlier claim is "recycled" (×0.30); the first 
 The coordinated-inauthenticity flag has a precedence chain: an analyst `flag_origin` decision is
 strongest and taints *every* claim sharing that origin id, including claims ingested after the flag was
 raised; below that, a claim-level stated flag; below that, the source's own inauthenticity boolean; else
-"independent". Two honest gaps here. The `artifact_integrity` table is entirely dead — nothing in ingest
+"independent". Two honest gaps here. The `artifact_integrity` table has no live producer — nothing in ingest
 ever writes that attribute onto a claim, so the "is this image edited/synthetic" penalty never fires on
 real data and always contributes 1.0. And the **too_clean (0.4) penalty is built but not yet wired to fire
 automatically** — there is no too-clean detector; that attribute is set nowhere in ingest and lives only
@@ -782,13 +744,13 @@ gets flagged in provenance) and the evaluation "now". A future-dated or same-day
 nothing is fresher than the eval date. If there is no half-life, no base, or no reference date, freshness
 is 1.0 (no decay). The half-life lookup is a three-rung fallback: a variant-qualified key like
 `based-at.field` (30 days) if the claim carries a `freshness_variant` tag, then the bare edge key, then
-the edge's **freshness-class default**. Here is the trap: *no claim is ever tagged with a
+the edge's **freshness-class default**. The catch: *no claim is ever tagged with a
 `freshness_variant`*, so every dotted variant key is unreachable, and only one edge (`substitutable-by`,
 540) has a live bare key. Every other decay rate collapses to the class default. The upshot is that only
 two half-lives are actually alive in the running system: **540 days** (everything perishable or
-semi-durable) and **1825 days** (force-revalidated); durable edges never decay. The much-discussed 30-day
-"field occupancy" rate that would punish a stale field deployment does not exist at runtime — it is a
-dead number. The 540 is not arbitrary: it is tuned so that on the corpus's real dates, the 2021
+semi-durable) and **1825 days** (force-revalidated); durable edges never decay. The 30-day
+"field occupancy" rate that would punish a stale field deployment is unreachable at runtime — no claim
+carries the variant tag it keys off. The 540 is not arbitrary: it is tuned so that on the corpus's real dates, the 2021
 Rawalpindi position reads stale and the 2025 Rahwali position reads fresh.
 
 ### Independent looks, then noisy-OR pooling
@@ -846,11 +808,11 @@ labelled probable no matter what gates say; the gate reasons (`single-independen
 `aging-not-fresh`) are only annotations on *why* an otherwise-strong assertion was held at probable
 instead of promoted.
 
-A word on a dead knob you will find in the config. `credibility.yaml` ships a `gates` block declaring
+A word on a config block with no live reader. `credibility.yaml` ships a `gates` block declaring
 `exclude_from_grouping` and `cap_at_probable` for adversary-denial and decoy-risk. **No code reads it.**
 The behaviour it describes is real but hardcoded — grouping exclusion lives in the independence module
 keyed off the source's denial flag, and the probable cap lives in the status module as a literal set.
-Editing this block changes nothing.
+Editing this block has no effect.
 
 ### Supersession: how a newer fact retires an older one
 
@@ -1052,7 +1014,7 @@ never change a chokepoint verdict** — precompute has already read that edge's 
 lands. The only human lever that reaches materiality is excluding a claim, at the very top. Materiality
 is consumed by the answer-assembly text and as a *filter* in the `graph_analyze` supply-chain analysis (chokepoint_status ≠
 "none"), but not as a *ranking* input, and it feeds nothing in credibility or freshness. Its own claim
-to be config-overridable via a `config.materiality` surface is dead — no such config section exists — so
+to be config-overridable via a `config.materiality` surface is not wired — no such config section exists — so
 it always uses the hardcoded edge list (which happens to match the shipped ontology).
 
 ### What a lens does, and what the export carries
@@ -1086,7 +1048,7 @@ evaluator, not by rebuild.
 
 The HITL layer is designed as one cross-cutting service that every stage calls the same way: build a review card, let a human pick a verb, append the decision to an immutable log, and let the next rebuild replay it into graph state. That is the intent, and the envelope really is uniform. But in the running app, almost none of the service is reachable, and of the three control points advertised as "wired deep," only one actually changes the graph. This chapter is mostly about that gap — where a human decision becomes real state, and where it becomes an audit entry that nothing downstream ever reads.
 
-### One function is live; the rest is a library
+### One adjudication function is live; the rest is a callable library
 
 The service exposes two entry points. `enqueue` is the full design — it runs the escalate-vs-auto gate, parks escalated items on a queue, and can auto-dispose safe items. `dispose` is the bare analyst path: validate the chosen verb, append one decision record, done. **Only `dispose` is ever called by the running system.** The API funnels three endpoints — `/hitl/status`, `/hitl/alert`, `/hitl/merge` — straight into it. `enqueue`, the `ReviewQueue` container, `should_escalate`, `order_queue`, `TriageConfig`, the `STAR_TYPES` constant, and the entire eight-entry `CONTROL_POINTS` catalogue have no caller outside their own unit tests. The queue, the triage gate, and the recall-biased escalation are library capabilities, not live behaviour.
 
@@ -1107,7 +1069,7 @@ The catalogue names eight places a human could take the wheel. Their actual stat
 |---|---|---|
 | status-override | wired-deep ★ | **Genuinely propagates** — the only one that changes the graph |
 | merge | wired-deep ★ | Record appended but **read by nothing** — pure audit entry |
-| alert-disposition | wired-deep ★ | **Doubly dead** — effect unread, and its only reader has no caller |
+| alert-disposition | wired-deep ★ | **Not wired** — effect unread, and its only reader has no caller |
 | integrity-flag | built | Rebuild-side consumers are real, but **no HTTP route produces it** |
 | credibility-config | config | Read-only levers; the client-side rubric never writes back |
 | observable-definition | config | Config-authored, not a HITL card |
@@ -1120,7 +1082,7 @@ So the honest count is: one control point that works end-to-end, one that is sil
 
 On the request path there is no triage at all: the analyst POSTs a decision and it disposes directly. The escalate-vs-auto gate exists only in `should_escalate`, and it is deterministic and recall-biased by construction — an item auto-proceeds only if it is *provably* safe on every axis: confidence ≥ 0.85 **and** materiality < 0.5 **and** novelty < 0.5, with any missing value (a `None`) treated as unsafe so it escalates. When in doubt, escalate. This is exactly the "keep a human in the loop" logic the brief demands — and it is never invoked, because `enqueue` (its only caller) is never invoked.
 
-Queue ordering (`order_queue`) is likewise built and dead. It pins ★ items to the top by a fixed `star_priority` (status-override = 0, merge = 1, alert-disposition = 2, then item id), then applies a raise-only `frozen_rank` that structurally cannot drop, inject, or unpin an item, then falls back to insertion order. It is never called live, and `frozen_rank` is never supplied by anything.
+Queue ordering (`order_queue`) is likewise built but not wired. It pins ★ items to the top by a fixed `star_priority` (status-override = 0, merge = 1, alert-disposition = 2, then item id), then applies a raise-only `frozen_rank` that structurally cannot drop, inject, or unpin an item, then falls back to insertion order. It is never called live, and `frozen_rank` is never supplied by anything.
 
 What actually orders the queue in the shipped app is the **frontend**. There is no review-queue GET endpoint by design; the client scans the rebuilt view for three patterns — same-as edges (merges), elements carrying opposing claims or a contradicted status (overrides), and undispositioned alerts (tripwire firings) — and orders them by the same star-priority, then materiality (touches a chokepoint), then confidence, where an *unknown* confidence sorts as more urgent, never safer. So "recall-biased triage" and "★ pinned to the top" are real in the running app, but they live in the browser, re-derived every render, and the backend's own triage module is not what enforces them.
 
@@ -1128,7 +1090,7 @@ What actually orders the queue in the shipped app is the **frontend**. There is 
 
 Each card offers a fixed verb set: merge → accept / reject / split; status → promote / demote / reject; alert → real / noise / needs-more; integrity → flag. For status, the promote and demote targets are computed from the element's *current* status along a one-step ladder in the route — promote walks possible → probable → confirmed (top fixed), demote walks confirmed → probable → possible (floor fixed). The decision record's effect is copied verbatim from the option the analyst was shown, and its event id is derived deterministically as `dec:<item_id>:<chosen>` with no RNG and no clock, so replay is byte-identical.
 
-Note one designed-in shortcut: **reject is a forced demote.** For status it emits the same `set_status → demote_to` as demote; the intended richer behaviour — drop the underlying claim upstream of scoring so the machine re-derives the verdict from fewer independent looks — was deferred. Rebuild does contain that honest mechanism (an `exclude_claims` effect read at the very top of the pipeline, before scoring), but **no card ever emits `exclude_claims`.** It is a dead branch reachable from no HITL path. Reject is a relabel, not a re-derivation.
+Note one designed-in shortcut: **reject is a forced demote.** For status it emits the same `set_status → demote_to` as demote; the intended richer behaviour — drop the underlying claim upstream of scoring so the machine re-derives the verdict from fewer independent looks — was deferred. Rebuild does contain that honest mechanism (an `exclude_claims` effect read at the very top of the pipeline, before scoring), but **no card ever emits `exclude_claims`.** No HITL path reaches that branch. Reject is a relabel, not a re-derivation.
 
 ### What actually changes on a decision — per channel
 
@@ -1136,11 +1098,11 @@ This is the crux. Rebuild spreads decision effects across five different stages,
 
 **status-override — works, but it is a leaf-stamp, not a cascade.** The chosen verb maps to `set_status = {element_id: status}`. Rebuild applies this dead last (step 8, `apply_decision_effects`), after resolution, scoring, sufficiency, the status machine, the supersession floor, and materiality precompute — deliberately last, so the human override beats the machine. It walks all decision records in log order and writes `el.status`, indexing nodes, edges, and events alike, so any element type can be overridden. This is genuinely wired and tested. But because it runs *after* everything else and only stamps the one named element, it does not re-run the status machine, does not re-point materiality, does not re-assess incident edges, and does not touch the element's own confidence breakdown, sufficiency, or Known Gap. An element that failed its evidence-sufficiency template still emits an "insufficient evidence" gap at step 6; an override to confirmed at step 8 leaves that gap sitting there — the element can simultaneously read "confirmed" and carry a live insufficiency gap. Propagation is real only for consumers that read *that element's status field* (the confirmed-answer list, the ASK agent's view, the frontend badge).
 
-**merge — appended, read by nothing, cosmetic.** This is the sharp finding, and it is the highest-value control point per the design. An accept writes a record whose verdict lives under `decision.chosen` and whose entity pair lives only in `effects.grow_alias.same_as` and in `subject_ref` (`merge:a:b`). Rebuild *does* replay merge records — resolution's alias builder is handed the decision log — but the reader was written to a *different* producer's contract. It looks for the pair under `decision.pair` / `decision.members` / `context`, and for the verdict under `decision.verdict` / `decision.action` / `decision.accept`. **None of those keys exist** in what the HITL writeback produces. Traced by hand: the pair lookup returns nothing, so the record is skipped; accept grows no alias, reject records no distinct-from, split reverses nothing. The correctly-shaped sibling — the offline `merge_proposal` records — confirms the reader's intended contract, which makes the HITL writeback the side that drifted. The mismatch is untested: the golden fixture carries a status-override record but no merge record at all. Live consequence: the analyst accepts a same-as, the graph rebuilds unchanged (two nodes stay two nodes), and the frontend hides the card only because it locally marks the item id "decided" — a page reload re-derives it from the unchanged view and **the card visibly reappears.**
+**merge — appended, read by nothing, cosmetic.** This is the key finding, and it is the highest-value control point per the design. An accept writes a record whose verdict lives under `decision.chosen` and whose entity pair lives only in `effects.grow_alias.same_as` and in `subject_ref` (`merge:a:b`). Rebuild *does* replay merge records — resolution's alias builder is handed the decision log — but the reader was written to a *different* producer's contract. It looks for the pair under `decision.pair` / `decision.members` / `context`, and for the verdict under `decision.verdict` / `decision.action` / `decision.accept`. **None of those keys exist** in what the HITL writeback produces. Traced by hand: the pair lookup returns nothing, so the record is skipped; accept grows no alias, reject records no distinct-from, split reverses nothing. The correctly-shaped sibling — the offline `merge_proposal` records — confirms the reader's intended contract, which makes the HITL writeback the side that drifted. The mismatch is untested: the golden fixture carries a status-override record but no merge record at all. Live consequence: the analyst accepts a same-as, the graph rebuilds unchanged (two nodes stay two nodes), and the frontend hides the card only because it locally marks the item id "decided" — a page reload re-derives it from the unchanged view and **the card visibly reappears.**
 
-**alert-disposition — doubly dead.** Its effect `tune_tripwire` is read nowhere. There is a would-be reader in the observe module, but (a) it has no live caller anywhere, and (b) even if called it reads the verdict from `decision.disposition` / `decision.verdict` — again a mismatch with the writeback's `decision.chosen` — so it returns nothing and drops the record. The only visible effect is a deliberate side exception: the `/hitl/alert` route stamps `disposition` directly onto the in-memory alert object so the UI shows it resolved. That flag is not derived from the log and does not survive a rebuild-from-log — the one place in the whole system where state is not reconstructable by replaying the two logs.
+**alert-disposition — not wired.** Its effect `tune_tripwire` is read nowhere. There is a would-be reader in the observe module, but (a) it has no live caller anywhere, and (b) even if called it reads the verdict from `decision.disposition` / `decision.verdict` — again a mismatch with the writeback's `decision.chosen` — so it returns nothing and drops the record. The only visible effect is a deliberate side exception: the `/hitl/alert` route stamps `disposition` directly onto the in-memory alert object so the UI shows it resolved. That flag is not derived from the log and does not survive a rebuild-from-log — the one place in the whole system where state is not reconstructable by replaying the two logs.
 
-**integrity-flag — the one genuinely origin-wide effect, with no door to reach it.** Its two effects both have real readers. `add_integrity_flag` unions a display label onto the element at step 8 (after the machine, so it is display-only and does not cap status). `flag_origin` is the real one: `score_claims` at step 3 reads it and penalizes the credibility of *every* claim whose source shares the flagged `primary_origin_id`, including claims ingested after the flag — genuinely propagating into per-claim credibility → confidence → status, origin-wide. The penalty is concrete: the effect carries no `flag` field, so the reader defaults to "suspected" and multiplies matching claims by the credibility config's `coordinated_inauthenticity.suspected = 0.5`. **But there is no `/hitl/integrity` endpoint** and nothing else calls the integrity card builder, so an analyst cannot raise this flag in the running app at all. It is correctly wired downstream and completely unreachable upstream — exercisable only from a direct test harness. On the shipped corpus it would also be near-inert: the origins it would match already carry the coordinated-inauthenticity flag and are penalized at 0.5 anyway.
+**integrity-flag — the one genuinely origin-wide effect, with no endpoint to reach it.** Its two effects both have real readers. `add_integrity_flag` unions a display label onto the element at step 8 (after the machine, so it is display-only and does not cap status). `flag_origin` is the real one: `score_claims` at step 3 reads it and penalizes the credibility of *every* claim whose source shares the flagged `primary_origin_id`, including claims ingested after the flag — genuinely propagating into per-claim credibility → confidence → status, origin-wide. The penalty is concrete: the effect carries no `flag` field, so the reader defaults to "suspected" and multiplies matching claims by the credibility config's `coordinated_inauthenticity.suspected = 0.5`. **But there is no `/hitl/integrity` endpoint** and nothing else calls the integrity card builder, so an analyst cannot raise this flag in the running app at all. It is correctly wired downstream and completely unreachable upstream — exercisable only from a direct test harness. On the shipped corpus it would also be near-inert: the origins it would match already carry the coordinated-inauthenticity flag and are penalized at 0.5 anyway.
 
 ### Reversal
 
@@ -1154,11 +1116,11 @@ Reversal is always a new appended record, never an edit or delete of the prior o
 | `material_threshold` / `novelty_threshold` | 0.5 / 0.5 | No — same |
 | `gate_on_materiality` / `gate_on_novelty` | true / true | No — same |
 | `star_priority` | status-override 0, merge 1, alert 2 | Backend copy dead; the frontend mirrors these numbers |
-| `STAR_TYPES` | merge / status-override / alert-disposition | Fully dead — defined, re-exported, referenced nowhere |
+| `STAR_TYPES` | merge / status-override / alert-disposition | Not wired — defined, re-exported, referenced nowhere |
 | `frozen_rank` | (none supplied) | No — never passed |
 | status ladder (`_PROMOTE`/`_DEMOTE`) | possible↔probable↔confirmed | Yes — used to compute card targets |
 | `coordinated_inauthenticity.suspected` | 0.5 | Yes — but only via the unreachable integrity flag |
-| decision log path | `:memory:` | Yes — empty each boot, dies on restart |
+| decision log path | `:memory:` | Yes — empty each boot, cleared on restart |
 
 The through-line: the adjudication *envelope* is genuinely uniform and the append-only discipline is genuinely honoured, so status-override is a clean demonstration that a human decision survives rebuild by being replayed rather than by mutating state. Everything richer around it — the triage gate, the prioritised queue, the auto-disposition branch, and two of the three ★ control points — either has no live caller or is severed by a decision-record shape mismatch that no fixture exercises.
 
@@ -1223,7 +1185,7 @@ the **active** edge per group — the one not superseded, tie-broken toward the 
 something — and fires only when both the prior and new states are *known* and *differ*. A first
 appearance is not a crossing; that is what `new_edge` is for.
 
-### The alert lifecycle — such as it is
+### The alert lifecycle
 
 There is no new/acknowledged/suppressed/expired state machine. An alert has exactly two states:
 
@@ -1286,8 +1248,8 @@ half-life is resolved by a three-rung fallback — a variant-qualified key, then
 the edge's freshness-*class* default (`perishable` 540 days, `semi-durable` 540, `force-revalidated`
 1825, `durable`/`n/a` no decay). The honest reality: **no claim is ever tagged with a freshness
 variant and the load-bearing edges have no bare key**, so every variant-specific number in the config
-(including the 30-day "field occupancy" rate one might expect to punish a stale field deployment) is a
-dead number — `based-at`, `observed-at`, and `replenishes` all fall through to the perishable class
+(including the 30-day "field occupancy" rate one might expect to punish a stale field deployment) is
+unreachable at runtime — `based-at`, `observed-at`, and `replenishes` all fall through to the perishable class
 default of 540 days. Only two half-lives are actually live: 540 and 1825.
 
 The single most important fact about time here is that the reference "now" is resolved **without the
@@ -1320,9 +1282,9 @@ Three observables ship, and only one can fire on the frozen corpus:
 The geofence machinery — the `within_area` primitive, geofence compilation, area scoping — is a built
 and tested seam with **no shipped consumer**, and even where scope-area filtering exists it only
 filters node candidates; edge candidates ignore it entirely. And the adaptation "learning loop" is,
-as shipped, **dead code end to end**. The consumer that would compute which tripwires over-fire
+as shipped, **not wired end to end**. The consumer that would compute which tripwires over-fire
 (`read_dispositions`, the per-observable stats, the noise-rate signal) has **no caller** outside
-tests. Worse, the stat that would count how often a wire fired reads `alert_fired` decision records,
+tests. In addition, the stat that would count how often a wire fired reads `alert_fired` decision records,
 and **nothing anywhere writes one** — not the evaluator, not the arm back-scan — so that count would
 be zero even if the loop were wired. The only records actually written are `alert_disposition`s from
 the HITL alert route, and those feed no automatic retune: tightening a noisy tripwire is a manual hot-
@@ -1400,7 +1362,7 @@ runs, Known Gaps whose element was retired are dropped.
 The never-observable short-circuit is the other structural refusal: four template rows
 (`interceptor-depth`, `contract-terms`, `c2-topology`, `true-readiness`) carry `never_observable: true`
 and return unsatisfied immediately, with no coverage date and ceiling `never-observable` — a structural
-limit, not a lapse. **All four are dead on the real corpus.** No claim ever carries those strings as its
+limit, not a lapse. **None of the four fire on the real corpus.** No claim ever carries those strings as its
 type, so the short-circuit never fires; and even if one did, the refusal-string matcher (below) keys on
 slot-name intersection and these rows have no slots, so their prose is unreachable twice over.
 
@@ -1634,7 +1596,7 @@ replay, never an interactive judge). This is deliberate — the judge "defaults 
 it lets a flaky yes/no withhold an otherwise fully-sourced answer; left off, answers rest on the always-on
 deterministic grounding that already forbids naked or fabricated sentences. Second, an indeterminate node
 that happens to carry no claim
-ids would emit an uncited sentence and thereby withhold the entire answer — a latent self-sabotage.
+ids would emit an uncited sentence and thereby withhold the entire answer — a latent failure mode.
 
 ### The failure branches, honestly
 
@@ -1849,7 +1811,7 @@ This is the richest and most consequential knob surface. Per-claim credibility i
 | `decay_base` | 2 | Freshness halves at exactly one half-life. |
 | `half_life_defaults` | perishable 540d / semi-durable 540d / force-revalidated 1825d / durable = none | The per-freshness-class fallback. **This is what actually drives all decay.** perishable=540 is tuned to keep Rawalpindi-2021 stale and Rahwali-2025 fresh. |
 | `half_lives_days` | per-edge/variant | Ostensibly per-edge overrides — but every dotted `<edge>.<variant>` key is unreachable (nothing tags `freshness_variant`), so they all fall through to the class default. Only two half-lives are actually live: 540 and 1825; durable edges never decay. |
-| `integrity_penalties` | recycled .30 / mismatched-caption .30 / uncheckable-caption .9 / coord-inauth-suspected .5 / **too_clean .4** / edited .30 / synthetic .10 | Multipliers applied to `Π(integrity)`. A missing signal → 1.0 (never zeroes a claim). Note: the whole `artifact_integrity` table and the too-clean penalty are dead on the real corpus (see call-outs). |
+| `integrity_penalties` | recycled .30 / mismatched-caption .30 / uncheckable-caption .9 / coord-inauth-suspected .5 / **too_clean .4** / edited .30 / synthetic .10 | Multipliers applied to `Π(integrity)`. A missing signal → 1.0 (never zeroes a claim). Note: the whole `artifact_integrity` table and the too-clean penalty are inert on the real corpus (see call-outs). |
 | `pdq_recycled_hamming` | 10 | Perceptual-hash radius for calling an image "recycled". If unset, exact-sha only. |
 | `as_of` | **null** | The pinned evaluation date. Shipped null, so "now" is always the newest claim in the corpus — never the wall clock. Set it (via POST) to advance the clock and demote perishable edges to stale. |
 | `supersede_floor` | min_band probable, min_looks 1 | Quality bar the *newer* fact must clear to retire an older one. Absent → nothing is ever retired (fail-closed). |
@@ -1922,28 +1884,28 @@ The ASK agent's tuning is deliberately *not* under the config layer (the "no mag
 | `MAX_HOPS_CAP` | 4 | Caps the path tool's hop argument via `min(max_hops, 4)`. Distinct from the lens's own `max_hops`=3 (and 3<4, so the cap never bites the lens). |
 | `DEFAULT_TOP_K` / `FUZZY_SUGGEST_CUTOFF` | 3 / 60 | Candidate beam and fuzzy-match floor in entity lookup. BM25 blend (0.85/0.15) and tier scores (100/95) are hardcoded too. |
 
-### Config keys that nothing reads
+### Config keys with no live reader
 
-These sit in the YAML looking live and are not. Editing them changes nothing.
+These sit in the YAML looking live and are not. Editing them has no effect.
 
-- **credibility.yaml `gates:` block** (`adversary_denial`/`decoy_risk` with `exclude_from_grouping`/`cap_at_probable`) — the sharpest drift between the config surface and the implementation. Zero readers. The cap-at-probable and grouping-exclusion behaviour is real but **hardcoded** in the status and independence machinery off source boolean flags. Editing this block does nothing.
+- **credibility.yaml `gates:` block** (`adversary_denial`/`decoy_risk` with `exclude_from_grouping`/`cap_at_probable`) — the clearest drift between the config surface and the implementation. Zero readers. The cap-at-probable and grouping-exclusion behaviour is real but **hardcoded** in the status and independence machinery off source boolean flags. Editing this block has no effect.
 - **credibility.yaml `coreference` block** — commented out/dormant; `coref_authoritative_evidence` ships empty, so in-document coreference bootstraps nothing.
-- **credibility.yaml `<edge>.<variant>` half-life keys** — every dotted variant is unreachable; nothing tags `freshness_variant`. The 30-day "field occupancy" rate an analyst would expect does not exist at runtime.
-- **resolution.yaml `place_proximity_radius_m` block** — a dead duplicate; the live radii come from `proximity_radius_m` in *places.yaml*.
+- **credibility.yaml `<edge>.<variant>` half-life keys** — every dotted variant is unreachable; nothing tags `freshness_variant`. The 30-day "field occupancy" rate an analyst might expect is unreachable at runtime.
+- **resolution.yaml `place_proximity_radius_m` block** — an unused duplicate; the live radii come from `proximity_radius_m` in *places.yaml*.
 - **resolution.yaml `hard_id_fields` / `attribute_rules` / `attribute_scoring`** — these *do* have live readers, but the keys appear in no config file, so the attribute comparator runs with no per-type identity rules and no conflict penalties. Live code path, inert config — the weighting story in the comments overstates what is active.
 - **subjects.yaml `exclude_off_subject` / `materiality_attrs`** — declared but not consumed (an explicit, tracked no-op; wiring `exclude_off_subject` would leak the grading oracle). `min_chokepoint_count` / `chokepoint_status_in` are *implemented* but never set in the shipped config.
 - **observables.yaml secondary keys** — `from_type`, `to_type`, `event_subtype`, `source_class`, `implies_edge`, `target_status_ceiling` are all unconsumed (honestly surfaced under `unconsumed_keys`). `severity` is carried but never acted on.
 - **templates.yaml `on_fail`** (every template sets it, nothing reads it) and **`cross_interest`** (authored on `inducted-into`, read by nothing).
-- **HITL `TriageConfig` / `STAR_TYPES` / `CONTROL_POINTS`** — the escalate-vs-auto gate, the priority queue, and the 8-point catalogue exist but have no live caller; the app uses one function (`dispose`) through three endpoints. The `exclude_claims` effect that a status-`reject` was supposed to emit is a dead branch — reject is a forced demote instead.
+- **HITL `TriageConfig` / `STAR_TYPES` / `CONTROL_POINTS`** — the escalate-vs-auto gate, the priority queue, and the 8-point catalogue exist but have no live caller; the app uses one function (`dispose`) through three endpoints. The `exclude_claims` effect that a status-`reject` was supposed to emit is unreachable — reject is a forced demote instead.
 
-### Thresholds hardcoded despite being presented as configurable
+### Thresholds fixed in code
 
 - **Adversary-denial's cap-at-probable and exclude-from-grouping** — the config block advertises them; the numbers live in code.
-- **The six sustainment edge types and the `substitutable-by` constant** in materiality precompute — the comment says "overridable via `config.materiality`", but the reader looks at the wrong attribute (`config.materiality` instead of `config.ontology.materiality`), so any override is silently ignored and it always falls back to the hardcoded 6-edge tuple. Latent today because the tuple matches the ontology; it would surprise the first person who tries the documented override.
+- **The six sustainment edge types and the `substitutable-by` constant** in materiality precompute — the comment says "overridable via `config.materiality`", but the reader looks at the wrong attribute (`config.materiality` instead of `config.ontology.materiality`), so any override is silently ignored and it always falls back to the hardcoded 6-edge tuple. Latent today because the tuple matches the ontology; the documented override would have no effect if used.
 - **The entire retrieval agent** — model, effort, token cap, iteration cap, hop cap, beam, fuzzy cutoff, BM25 blend — all code constants outside the config layer.
 - **All ingest model/chunk constants** — model ids, token cap, PDF windowing thresholds.
 - **Geocode-confidence scores** (coord-parse 1.0, gazetteer 0.9, relative-offset 0.5, nominatim 0.4) — a `geocode_confidence` key is *expected* in places.yaml but not present, so these code literals rule.
-- **The extraction `model_conf` stamp** is pinned at 1.0 — the per-claim extraction-confidence seam is dead-coded.
+- **The extraction `model_conf` stamp** is pinned at 1.0 — the per-claim extraction-confidence seam is not wired.
 - **Silent-default traps** worth naming: `same_class_weight` (no code default — deleting it disables discipline down-weighting), the resolution `bands` (absent → resolver inert), `min_independent_groups` (unset → nothing confirms), and `place_identity_precision_classes` (removed → area anchors fuse) all change behaviour *by absence* rather than failing loud.
 
 ### Cookbook: to change behaviour X, turn knob Y
@@ -1960,7 +1922,7 @@ These sit in the YAML looking live and are not. Editing them changes nothing.
 
 ---
 
-## Reality check: what is load-bearing, what is scaffolding
+## Reality check: what is load-bearing and what is not yet wired
 
 The system sorts cleanly into four tiers. Tier one is fully wired and exercised against the real
 frozen corpus. Tier two is wired but only ever exercised by fixtures or scripted stand-ins — the real
@@ -2007,7 +1969,7 @@ materiality candidate-chokepoint gap, which bypasses templates entirely.
 The ReAct agent loop, the entailment judge, the API read routes, and the extraction lane all *exist
 and pass tests*, but nothing in the suite exercises them against real pipeline output or a real model.
 The agent loop is driven by a `ScriptedClient` replay; the live path self-skips without a key — so **which
-tools the agent chooses and whether its answers are any good is verified nowhere**. The entailment judge is a scripted yes/no
+tools the agent chooses, and the quality of its answers, is not exercised by the automated suite**. The entailment judge is a scripted yes/no
 in tests and is skipped outright when keyless. The API `/ask`, `/view`, `/node`, `/evidence` tests run
 against a hand-authored 8-node view whose statuses are *typed in by hand* (the conftest openly notes a
 real rebuild "would not reproduce the hand-faked statuses") — they prove the API forwards a known-good
@@ -2017,28 +1979,28 @@ untested. The confirmed-gate checker (G7) is validated only against a synthetic 
 fixture; the golden `expected_view.json` contains *zero* confirmed elements, so the "no invalid
 confirmed" assertion is vacuously true on real data.
 
-### Tier three — built but inert with the shipped config and data
+### Tier three — built but not exercised by the shipped config and data
 
 - **The live LLM extraction lane is off by default.** Keyed raw-text ingest needs both
   `CHANAKYA_ENABLE_EXTRACTION=1` (defaults off, to protect quota) *and* an extraction key; with
   neither it returns 403. On a stock hosted deploy the only way evidence enters is by POSTing frozen
   bundles. PDF/image ingest via `doc_path` is unconditionally rejected by the API (400, "a CLI
   concern") — multimodal extraction runs only through the CLI, never the hosted app.
-- **Azure OCR** is a nested gate below that: no `AZURE_DOCINTEL_*` key ships, so it is dead at
+- **Azure OCR** is a nested gate below that: no `AZURE_DOCINTEL_*` key ships, so it is inactive at
   runtime and silently falls back to pymupdf text.
 - **In-document coreference (extraction pass 2)** is dormant twice: the `credibility.coreference`
   config block is commented out (so the proposer returns `[]`), and it rides on the gated extraction
   lane anyway.
 - **The `gates:` config block** (adversary-denial / decoy-risk with `cap_at_probable` /
   `exclude_from_grouping`) has **zero readers** — the cap behaviour is a hardcoded frozenset in the
-  status module and a hardcoded field check in the independence grouper. Editing that block changes
-  nothing. This is the sharpest contradiction of the "every numeric knob lives in config" banner.
-- **`place_proximity_radius_m` in resolution.yaml is a dead duplicate**; the live radii come from
+  status module and a hardcoded field check in the independence grouper. Editing that block has no
+  effect. This is the clearest divergence between the "every numeric knob lives in config" description and the implementation.
+- **`place_proximity_radius_m` in resolution.yaml is an unused duplicate**; the live radii come from
   `places.yaml`. **`exclude_off_subject` and `materiality_attrs`** on the lens are read by nobody and
   land in the "unrecognised" bag. **`attribute_rules`/`attribute_scoring`/`hard_id_fields`** have live
   readers but no config content, so the attribute comparator runs on empty defaults. **`track_record`
   (0.50) and `intrinsic_plausibility` (1.0)** are identical for every source class — constant priors
-  dressed as rubric outputs that never differentiate a source.
+  that never differentiate a source.
 - **Two of three observables cannot fire on the shipped data.**
   `obs-followon-interceptor-order` waits on a `replenishes` edge that no bundle produces;
   `obs-spares-tender-probable-induction` compiles to ARM-ONLY and structurally cannot fire from a view
@@ -2054,9 +2016,9 @@ confirmed" assertion is vacuously true on real data.
   at request time; nothing writes it. It stays null, so freshness is always measured against the newest
   claim in the corpus.
 
-### Tier four — defined, never called
+### Tier four — defined but not yet called
 
-The HITL attention-triage queue — the design's centrepiece — is dead: `ReviewQueue`, `should_escalate`,
+The HITL attention-triage queue — the design's centrepiece — is not wired: `ReviewQueue`, `should_escalate`,
 `order_queue`, `TriageConfig`, and the `enqueue` service have no production caller. Nothing in the
 pipeline ever escalates onto a worklist. The learning-loop consumer `read_dispositions` is never
 called in production, and it would compute nothing useful anyway: it divides over `alert_fired`
@@ -2065,8 +2027,8 @@ observable proposer (`propose_observable_from_text`) has no API route, and it is
 of `explain()`, so the "describe a tripwire in plain English" and "here's why this can/can't fire"
 screens are absent from the served app. `eval/report.py` (the legible acceptance report) is imported
 by nothing. The 66 KB `answer_key.json` oracle is *loaded* but no test compares computed statuses to
-its `ground_truth` or the worked-query answer to its `expected_path` — its only live role is proving the
-pipeline can't read it. The keyless recorded-transcript replay that some docstrings describe as a
+its `ground_truth` or the worked-query answer to its `expected_path`, so it currently has no live
+consumer. The keyless recorded-transcript replay that some docstrings describe as a
 network-safety fallback is not present: `recorded_trace` is never passed and there is no transcript on
 disk. The offline enrichment steps (basing derivation, attribution proposer, renormalize) are
 CLI-only; the live API lane never derives them — it replays enrichment baked into the bundles offline.
@@ -2091,38 +2053,38 @@ identically on any calendar date — good for reproducibility. The one cosmetic 
 refusal months later may see a "next coverage due" date already in their past. Internally consistent,
 but noticeable.
 
-### What the green suite still hides
+### What the test suite does not cover
 
 The 810-function suite genuinely proves the structural spine: rebuild purity and cross-process
 determinism, append-only enforcement, structural traceability, the two-score separation, the
 insufficient-first-class contract, HITL override propagation, the relocation alert firing exactly once
-with before/after provenance, and no node plotted >25 km from its own evidence. What a green run still
-hides: nothing on the real corpus is ever asserted to reach *confirmed* (so a pipeline that promotes
+with before/after provenance, and no node plotted >25 km from its own evidence. What a green run does not
+cover: nothing on the real corpus is ever asserted to reach *confirmed* (so a pipeline that promotes
 nothing passes every test); the model is never really tested (scripted on fixtures, skipped live);
 most contract tests run on hand-faked data, not pipeline output; extraction accuracy is untested; the
 rich oracle is unused; the corpus-dependent suite silently skips (turning green) if bundles are
 absent; the no-magic-numbers scan omits `view/`, `sufficiency/`, and `agent/`; and an HITL override
 can force `confirmed` straight past the G7 gate with no test re-checking the invariant.
 
-### The structural weaknesses that most limit the system
+### Current limitations
 
-1. **Resolution fragmentation starves the headline idea.** Most nodes are single-claim, so almost
+1. **Resolution fragmentation limits the headline idea.** Most nodes are single-claim, so almost
    nothing crosses the two-independent-look bar, and the confirmed/probable distinction — the load-
    bearing credibility idea — is near-inert on the real corpus.
 2. **The hosted demo does no live extraction and no document ingest.** The "messy real documents →
    live extraction" narrative is, in the served app, the replay of frozen bundles extracted offline.
-3. **HITL collapses to on-demand adjudication.** The triage/queue/escalation abstraction is dead;
+3. **HITL collapses to on-demand adjudication.** The triage/queue/escalation abstraction is not wired;
    review happens only via merge-candidate edges plus POST, and a human status override leaves *no*
    on-element provenance marker, so an override-produced "confirmed" is indistinguishable from a
    machine one in the drawer.
 4. **The adaptation/learning loop is not wired.** Dispositions are recorded and never read, and the
-   counter the loop would read is never written — the "monitoring that adapts" pillar is scaffolding.
+   counter the loop would read is never written — the "monitoring that adapts" pillar is built but not yet wired.
 5. **The agent's real reasoning is unverified by CI.** The flagship runs the live agent path like any
    query, but tool choice and answer quality are exercised only against scripted/mocked clients in the test
    suite, so live-model behaviour is not covered by the automated tests.
 6. **Configurability is overstated in specific, tunable-looking places** — the `gates:` block, the
-   attribute-rule keys, the duplicate place radii, and `exclude_off_subject` all read as live knobs and
-   do nothing.
+   attribute-rule keys, the duplicate place radii, and `exclude_off_subject` all read as live knobs but
+   have no effect.
 
 
 ---
@@ -2140,7 +2102,7 @@ extraction schemas a document is parsed against, and the key the credibility eng
 five-factor score row. If you register a new source with a `source_type` string that has no matching row
 in the credibility class table, that source doesn't error — it silently scores `R = 0.0` on every claim it
 ever produces (the fail-closed default for an unrecognized class), which reads as "worthless source," not
-"missing config." Worse, on the live ingestion API this string is never checked against the registry at
+"missing config." And on the live ingestion API this string is never checked against the registry at
 all — a caller can hand `POST /ingest` any `source_type` they like, typo or not, and only find out something
 was wrong when that source's claims never confirm anything.
 
@@ -2249,8 +2211,8 @@ fixed three-axis function; (4) any genuinely new retrieval capability (a new `gr
 agent, a different traversal strategy) — the tool set and its iteration/hop caps are code constants, not
 config. If a new use case's needs fit inside those four seams, it is close to a pure-config exercise; if it
 needs a new axis of "these are/aren't the same evidence" or a new supply-dependency shape, budget for a
-small, specific code change rather than assuming the config surface covers it — and check the two dead
-knobs (the `gates` block, the `materiality` override) before spending time trying to configure your way
+small, specific code change rather than assuming the config surface covers it — and check the two
+knobs with no live reader (the `gates` block, the `materiality` override) before spending time trying to configure your way
 around them.
 
 
