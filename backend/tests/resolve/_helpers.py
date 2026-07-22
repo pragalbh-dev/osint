@@ -53,12 +53,14 @@ def mk_config(
     coref_authoritative_evidence: list[str] | None = None,
     entity_geo_conflict_max_km: dict[str, float] | None = None,
     relational_support_k: int | None = None,
+    auto_merge_by_type: dict[str, float] | None = None,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
     resolution = ResolutionConfig(
         coref_authoritative_evidence=coref_authoritative_evidence or [],
         entity_geo_conflict_max_km=entity_geo_conflict_max_km or {},
         relational_support_k=relational_support_k,
+        auto_merge_by_type=auto_merge_by_type or {},
         merge_weights=dict(WEIGHTS),
         bands=dict(BANDS),
         blocking_keys=blocking_keys or ["type", "country_or_domain_namespace", "name_token"],

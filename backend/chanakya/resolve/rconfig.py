@@ -101,6 +101,27 @@ class ResolveConfig:
     def auto_merge(self) -> float:
         return float(self._r.bands["auto_merge"])
 
+    def auto_merge_for_pair(self, etype_a: str, etype_b: str) -> float:
+        """The auto-merge floor for a candidate pair — per-type when both sides share a listed type.
+
+        On a single-subject corpus the fuzzy score cannot separate a genuine merge from a look-alike:
+        the top of the score distribution is dominated by variant-family and cross-namespace *traps*
+        (HQ-9 vs HQ-9B, PAF vs PAAD), so a lowered *global* floor auto-merges a trap before any real
+        merge. But for a handful of types a near-identical name reliably denotes ONE entity — an
+        organisation or trading-org whose only difference is spelling/abbreviation (CPMIEC vs
+        "China … Precision Machinery …", the SINO-GALAXY variants). ``bands.auto_merge_by_type`` lets
+        those types auto-merge at a lower floor while every identity-sensitive type keeps the strict
+        global bar. The floor applies only when **both** endpoints carry the listed type (a cross-type
+        pair is never a spelling variant); absent map ⇒ the global ``auto_merge`` for all pairs, so
+        behaviour is byte-unchanged (gate G2). The reviewer/veto machinery is untouched — a trap that
+        happens to share the type is still stopped by the vetoes, never by this floor.
+        """
+        if etype_a != etype_b:
+            return self.auto_merge
+        by_type = self._extra("auto_merge_by_type", None) or {}
+        v = by_type.get(etype_a)
+        return float(v) if v is not None else self.auto_merge
+
     @property
     def hitl_low(self) -> float:
         return float(self._r.bands["hitl_low"])

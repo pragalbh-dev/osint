@@ -1359,3 +1359,34 @@ chosen fix once decided); `product/00-ux-brief` (watch panel = armed + fired, tw
   flag, `credibility.entailment_judge_enabled`, default off — PR #49). Rejected: a materiality-aware
   assembler builder (a disguised hardcode of the chokepoint case) and keeping the hero path as a keyless
   fallback (re-introduces the special case).
+
+## RESOLVE — per-type auto-merge floor activates Phase 2 for organisation types (2026-07-21, `experiment/phase2-resolution`)
+
+- **D-P3.5.1 — The scored fixpoint (Phase 2) auto-merges nothing at the global bar, and that is a measured
+  property of a single-subject corpus, not a bug.** *Principle: identity comes from the alias table +
+  vetoes, never a fuzzy threshold guess.* `bands.auto_merge` (0.85) sits exactly at the deterministic
+  weight ceiling (0.40+0.40+0.05), so Phase 2 can never cross the auto line. A sweep of the real
+  `hq9p_primary` inputs showed **no global threshold is safe**: the top of the score distribution is
+  *traps*, not merges (HQ-9 vs HQ-9B at 0.56; a Karachi site vs a Punjab compound at 0.52; PAF vs PAAD at
+  0.50), and the one clean org merge (CPMIEC ≡ "China … Precision Machinery …", 0.53) is sandwiched among
+  them. Re-weighting toward the relational signal or loosening `relational_support_k` makes it worse — on a
+  single-subject corpus everything shares the HQ-9/P neighbourhood, so relational cannot discriminate and
+  the name signal *rewards* the variant-family prefix collisions that ARE the traps.
+- **D-P3.5.2 — The discriminator is TYPE, not score, so the auto floor is per-type (`auto_merge_by_type`).**
+  Measured per type, two types have a clean gap between their genuine spelling-variant merges and their
+  first same-type trap: `manufacturer` and `trading_org`, where a near-identical name reliably denotes one
+  entity. A floor of **0.37** for those two types (global 0.85 unchanged for every other) auto-merges
+  exactly the four evidence-checked pairs (CPMIEC≡CNPMIEC; Taian≡Taian/Wanshan; the two SINO-GALAXY
+  spellings) with margin above every same-type trap (CASIC ≠ its 23rd Institute at 0.34; ORIENT ≠
+  SINO-GALAXY at 0.29). `source` is deliberately EXCLUDED — cross-account persona links (@ISPR_Watch vs
+  @Sherdil_Watch, 0.38) sit right among the genuine ones, so that stays a HITL call. The floor applies only
+  when BOTH endpoints carry the listed type (a cross-type pair is never a spelling variant); `hitl_low`,
+  the source-asserted auto-exclusion and every veto are untouched, so a trap that shares the type is still
+  stopped by the vetoes, never by this floor. Absent map ⇒ global floor everywhere (byte-unchanged, G2).
+- **D-P3.5.3 — Honest limit: this reduces fragmentation but does NOT lift confirmation.** The three merges
+  drop the view from 175→172 nodes; the confirmed count stays at 13 (CPMIEC was already confirmed; Taian /
+  SINO-GALAXY still don't reach two independent source-groups). The deeper confirmation starvation is
+  driven by the trap-adjacent single-claim fragments that Phase 2 *cannot* safely merge — so it is a data /
+  corroboration problem, not a threshold one. Regression-tested: 12 new tests (mechanism + real-corpus
+  outcome), full suite 899 passed. Coverage gap logged separately: no test pins machine-derived `confirmed`
+  status on the real corpus.
