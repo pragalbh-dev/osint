@@ -26,6 +26,24 @@ bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge)
   auto_merge: 0.85
   hitl_low: 0.45
 
+# Per-type auto-merge floor (P3.5, 2026-07-21). The global auto_merge (0.85) sits at the deterministic score
+# ceiling, so the fuzzy fixpoint (Phase 2) never auto-merges — a deliberate precision floor, because on a
+# single-subject corpus the TOP of the score distribution is TRAPS (HQ-9 vs HQ-9B, PAF vs PAAD, a Karachi
+# site vs a compound in Punjab), not real merges, so lowering the *global* bar admits a trap before any
+# genuine merge. Measured per-type, though, two types have a CLEAN gap between their real spelling-variant
+# merges and their first same-type trap — manufacturers and trading-orgs, where a near-identical name
+# reliably denotes ONE entity. Floor 0.37 admits exactly the four evidence-checked merges (CPMIEC ≡
+# "China … Precision Machinery …"; Taian ≡ Taian/Wanshan; the two SINO-GALAXY spellings) with margin above
+# every same-type trap (CASIC ≠ its own 23rd Institute at 0.34; ORIENT ≠ SINO-GALAXY at 0.29). Applies only
+# when BOTH endpoints carry the listed type. Every identity-sensitive type keeps 0.85; `source` is
+# deliberately EXCLUDED — cross-account persona links (@ISPR_Watch vs @Sherdil_Watch) sit right among the
+# genuine ones, so that stays a HITL call. Only the auto floor moves: hitl_low, the source-asserted auto
+# exclusion and every veto are untouched, so a trap that happens to share the type is still stopped by the
+# vetoes, never by this floor. Absent map ⇒ global auto_merge for all pairs (byte-unchanged, gate G2).
+auto_merge_by_type:
+  manufacturer: 0.37
+  trading_org: 0.37
+
 # T3b-F — the relational term's missing denominator. A Jaccard overlap is scale-free, so two entities
 # whose ONLY neighbour is the same one score a perfect 1.0: eighteen basing_site pairs, each with a
 # single `based-at` edge from the same unit, were reading as "identical neighbourhood" and landing at

@@ -70,15 +70,23 @@ def _deterministic_total(bd: dict[str, float], cfg: ResolveConfig) -> float:
     return sum(cfg.weight(sig) * bd[sig] for sig in SIGNALS if sig != SOURCE_ASSERTED)
 
 
-def _band(bd: dict[str, float], cfg: ResolveConfig, has_raise: bool) -> str:
+def _band(bd: dict[str, float], cfg: ResolveConfig, has_raise: bool, auto_merge: float | None = None) -> str:
     """auto ≥ auto_merge (deterministic subtotal) · hitl in [hitl_low, auto_merge) OR raised · else separate.
 
     Raise-only is structural on **both** raise-only channels: ``has_raise`` (the frozen LLM proposal, and
     now the source-asserted identity pair) can only reach *hitl*, and the source-asserted *score* is
     excluded from the auto test — so neither can push a pair across the auto-merge line (the mandatory
     red-team patch, spine/08 §3.11, extended to identity claims by D-2.5).
+
+    ``auto_merge`` overrides the auto floor for this one pair — the caller passes the *per-type* floor
+    (``cfg.auto_merge_for_pair``) so a type where a near-identical name reliably means one entity
+    (organisation / trading-org spelling variants) can auto-merge at a lower bar than the strict global
+    default, while identity-sensitive types (variant, unit, site) keep the strict 0.85. ``None`` ⇒ the
+    global ``cfg.auto_merge``, so an absent per-type map is byte-unchanged (gate G2). Only the auto floor
+    moves; the ``hitl_low`` review band and the source-asserted exclusion are untouched.
     """
-    if _deterministic_total(bd, cfg) >= cfg.auto_merge:
+    floor = cfg.auto_merge if auto_merge is None else auto_merge
+    if _deterministic_total(bd, cfg) >= floor:
         return "auto"
     if bd["total"] >= cfg.hitl_low or has_raise:
         return "hitl"
@@ -302,7 +310,8 @@ def resolve_entities(
             if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
                 continue
             bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
-            if _band(bd, cfg, has_raise=False) == "auto":
+            floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
+            if _band(bd, cfg, has_raise=False, auto_merge=floor) == "auto":
                 merge(a, b, bd["total"], bd)
                 changed = True
 
@@ -319,7 +328,8 @@ def resolve_entities(
         if graph.entities[a].etype != graph.entities[b].etype and frozenset((a, b)) not in raise_only:
             continue
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
-        if _band(bd, cfg, has_raise=frozenset((a, b)) in raise_only) == "hitl":
+        floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
+        if _band(bd, cfg, has_raise=frozenset((a, b)) in raise_only, auto_merge=floor) == "hitl":
             res.candidates.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
             res.merge_breakdown[pair_key(a, b)] = bd
