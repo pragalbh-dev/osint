@@ -350,6 +350,20 @@ your source tiering just hardcoded?", and the decision ledger already records th
 Add a second frozen scenario so an evaluator can pick one live, which is the direct answer to "is this tuned
 to one corpus?"
 
+**Deeper still, encode the decision frameworks themselves.** What exists today is a *substrate* that can host
+an agency's analytic tradecraft — credibility kept decomposed, inference recorded as a claim with its premises,
+absence kept as evidence, observables declared as config — but not yet an encoding of the frameworks that
+substrate is meant to carry. The structured techniques a real desk runs on — analysis of competing hypotheses,
+a key-assumptions check, an indications-and-warning indicator battery, the analytic standards that force
+confidence and sourcing to be *stated* rather than assumed — are things the system can currently *support*, not
+things it *does*: the discipline still lives in the analyst's prose rather than in the tool. Making them
+first-class — so an analyst invokes "run an ACH across these hypotheses" and the system carries the procedure
+and enforces the standard — is what turns a well-structured graph into an analyst's instrument, and it is the
+largest single depth investment left. This is a deliberate fork. It is the work to spend on if we **drill down**
+past the demo and harden the system for sustained analytic use; if the nearer goal is instead a client demo in
+roughly four weeks, the **breadth** moves below — widening to the adjacent problems and putting the client's own
+sources on the intake — are the better use of the same time.
+
 **Then, widen the problem.** This use case is the *anatomy* — what an adversary has and what it needs to keep
 it running. Two adjacent problems complete the picture, and the order matters.
 
