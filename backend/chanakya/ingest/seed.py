@@ -41,7 +41,8 @@ from chanakya import settings
 from chanakya.ingest import adapters, dedup, extract, imagery, loaders
 from chanakya.ingest.client import ExtractionClient
 from chanakya.schemas import ClaimRecord, ConfigBundle, SourceRegistryEntry
-from chanakya.schemas.values import DateValue, ExactDate
+from chanakya.schemas.claim import EntityDescriptor
+from chanakya.schemas.values import DateValue, ExactDate, Location
 
 # The pinned ingest timestamp for the frozen baseline. A fixed value (never ``date.today()``) is what
 # makes the recorded bundles byte-stable across re-runs and machines (gate G10) — the demo's "the live
@@ -193,6 +194,74 @@ def _merge_chunks(chunks: list[list[ClaimRecord]]) -> list[ClaimRecord]:
     return claims
 
 
+def _read_geo_sidecar(image_url: str, *, geocoder: adapters.Geocoder | None) -> Location | None:
+    """Read an optional ``<image>.geo.json`` georeference sidecar beside the frame → a canonical Location.
+
+    The satellite product's DECLARED georeference (its AOI/tasking coordinate), carried as metadata beside
+    the image — never inferred from pixels, so the VLM stays subject-blind. Normalised through the same
+    Stage-A canonicaliser every stated location uses, so the coordinate lands on the imagery observation's
+    ``coordinates`` attr and RESOLVE merges the frame onto the real ``basing_site`` by coordinate. No
+    sidecar ⇒ ``None`` (the frame stays un-georeferenced, exactly as before). ``precision_class`` may be
+    overridden to reflect the product's real geolocation accuracy (an AOI centre is usually site-, not
+    pad-, precise). Format: ``{"location_text": "<coord|toponym>", "surface_format"?, "precision_class"?}``.
+    """
+    sidecar = _resolve_source_path(image_url).with_suffix(".geo.json")
+    if not sidecar.exists():
+        return None
+    data = json.loads(sidecar.read_text(encoding="utf-8"))
+    raw = data.get("location_text") or data.get("raw")
+    if not raw:
+        return None
+    loc = adapters.normalize_location(raw, surface_format=data.get("surface_format"), geocoder=geocoder)
+    if loc is not None and data.get("precision_class"):
+        loc = loc.model_copy(update={"precision_class": data["precision_class"]})
+    return loc
+
+
+def apply_geo_sidecars(scenario: str, *, geocoder: adapters.Geocoder | None = None) -> list[Path]:
+    """Deterministically stamp declared image georeferences onto a scenario's frozen imagery observations.
+
+    For every ``*.json`` bundle in ``corpus/scenarios/<scenario>/claims`` and every subject-blind VLM image
+    observation in it, read the optional ``<image>.geo.json`` sidecar beside the frame and freeze its
+    coordinate onto the observation's ``coordinates`` attr — **without re-running extraction**, so the
+    curated bundle structure is preserved (a full LLM re-record drifts/fragments it). RESOLVE then merges
+    that frame onto the real ``basing_site`` by coordinate at the next ``rebuild``. This is the frozen-bundle
+    counterpart of the live/record path (:func:`_read_geo_sidecar` in :func:`_extract_source`): the *same*
+    sidecar, applied to already-frozen bundles. Byte-stable and idempotent (re-stamping the same coordinate
+    is a no-op). ``geocoder`` defaults to ``None`` (offline — coord sidecars parse deterministically). Returns
+    the bundles it modified.
+    """
+    claims_dir = settings.corpus_dir() / "scenarios" / scenario / "claims"
+    modified: list[Path] = []
+    for bundle in sorted(claims_dir.glob("*.json")):
+        claims = [ClaimRecord.model_validate(r) for r in json.loads(bundle.read_text(encoding="utf-8"))]
+        changed = False
+        for c in claims:
+            p = c.payload
+            if not (isinstance(p, EntityDescriptor) and c.kind == "observation"
+                    and c.extraction.method == "vlm" and p.entity_type == "basing_site"
+                    and str(p.name or "").startswith("imagery-site:")):
+                continue
+            refs = c.doc_refs()
+            if not refs:
+                continue
+            loc = _read_geo_sidecar(refs[0].file, geocoder=geocoder)
+            if loc is None:
+                continue
+            dumped = loc.model_dump(mode="json")
+            if (p.attrs or {}).get("coordinates") == dumped:
+                continue  # idempotent — already stamped
+            attrs = dict(p.attrs or {})
+            attrs["coordinates"] = dumped
+            p.attrs.clear()
+            p.attrs.update(attrs)
+            changed = True
+        if changed:
+            _write_bundle(bundle, claims)
+            modified.append(bundle)
+    return modified
+
+
 def _extract_source(
     entry: SourceRegistryEntry, *, client: ExtractionClient, config: ConfigBundle,
     ingest_time: DateValue, geocoder: adapters.Geocoder | None = None,
@@ -223,6 +292,7 @@ def _extract_source(
         chunks.append(imagery.read_image_document(
             src_path.read_bytes(), file=citation_url, source_id=entry.source_id,
             config=config, client=client, report_time=report_time, ingest_time=ingest_time,
+            geo=_read_geo_sidecar(citation_url, geocoder=geocoder),
         ))
     else:
         loaded = loaders.load_document(src_path.read_bytes(), file=citation_url)
@@ -236,6 +306,7 @@ def _extract_source(
             chunks.append(imagery.read_image_document(
                 image_path.read_bytes(), file=image_url, source_id=entry.source_id,
                 config=config, client=client, report_time=report_time, ingest_time=ingest_time,
+                geo=_read_geo_sidecar(image_url, geocoder=geocoder),
             ))
 
     claims = _merge_chunks(chunks)

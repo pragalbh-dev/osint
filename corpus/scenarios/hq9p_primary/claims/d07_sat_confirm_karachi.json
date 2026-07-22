@@ -651,6 +651,24 @@
     "payload": {
       "attrs": {
         "caption_vs_image_consistency": "consistent",
+        "coordinates": {
+          "geocode_candidates": [
+            {
+              "confidence": 1.0,
+              "label": null,
+              "lat": 24.901,
+              "lon": 67.203,
+              "source": "coord-parse"
+            }
+          ],
+          "precision_class": "site",
+          "proposed_alias": null,
+          "raw": "24.901, 67.203",
+          "resolved_place_ref": null,
+          "surface_format": "DD",
+          "wgs84_lat": 24.901,
+          "wgs84_lon": 67.203
+        },
         "count": {
           "approx": true,
           "count_state": "fielded",
