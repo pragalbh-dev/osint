@@ -23,9 +23,23 @@ from .view import (
 
 # ── POST /ask (product/03 E) ─────────────────────────────────────────────────────────────────
 
+class PriorTurn(Record):
+    """One earlier turn in a client-held conversation thread, replayed as context so a follow-up can
+    resolve references ("who else supplies *that*?") to entities named in a prior answer.
+
+    ``answer`` is that turn's assembled answer text; ``None`` means the prior turn refused (no answer to
+    carry). The backend stays **stateless per request** — the client owns the thread and sends it up on
+    each ``/ask``; nothing is stored server-side.
+    """
+
+    question: str
+    answer: str | None = None  # the prior turn's assembled answer; None ⇒ it refused
+
+
 class AskRequest(Record):
     question: str
     subject: str | None = None  # apply a subject lens before answering
+    history: list[PriorTurn] = []  # client-held conversation thread (prior turns, in order); backend stateless
 
 
 class AnswerHop(Record):

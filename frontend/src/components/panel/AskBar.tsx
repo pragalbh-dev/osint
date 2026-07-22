@@ -42,6 +42,9 @@ function LiveAskBar() {
   const submit = () => {
     if (!text.trim() || pending) return
     void runAsk(text)
+    // Clear for the next question — each ask appends a turn to the thread rather than
+    // replacing one answer, so the input returns to empty ready for the follow-up.
+    setText('')
   }
 
   return (

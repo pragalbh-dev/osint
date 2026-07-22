@@ -28,6 +28,15 @@ interface IngestTrace {
   step: number
 }
 
+/** One completed turn of the in-session ASK chat thread. The raw `answer` (AskAnswer) is
+ *  kept whole so the transcript can both render it (hops, chips, refusal) AND build the
+ *  `history` sent with the next question. Client-held, in-memory only — a reload starts a
+ *  fresh thread by design (2–3 concurrent users stay isolated; no persistence, no sharing). */
+export interface AskTurn {
+  question: string
+  answer: AskAnswer
+}
+
 interface WorkbenchState {
   mode: Mode
   stage: Stage
@@ -44,9 +53,12 @@ interface WorkbenchState {
   weights: typeof CRED_DEFAULT_WEIGHTS
   liveView: GraphView | null
 
-  // live ask (POST /ask) — demo never touches these (askHero/askGaps stay scripted)
+  // live ask (POST /ask) — demo never touches these (askHero/askGaps stay scripted).
+  // askTurns is the in-memory chat transcript; askQuestion/askPending/askError are the
+  // in-flight turn. A follow-up carries the prior turns as `history` so the agent can
+  // resolve references. Not persisted — a reload starts a fresh, isolated thread.
   askQuestion: string
-  askResult: AskAnswer | null
+  askTurns: AskTurn[]
   askPending: boolean
   askError: boolean
 
@@ -70,6 +82,7 @@ interface WorkbenchState {
   // live ask
   setAskQuestion: (q: string) => void
   runAsk: (question: string) => Promise<void>
+  newThread: () => void
 
   // review queue
   toggleReview: () => void
@@ -131,7 +144,7 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   liveView: null,
 
   askQuestion: '',
-  askResult: null,
+  askTurns: [],
   askPending: false,
   askError: false,
 
@@ -158,25 +171,35 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   openCred: () => set({ panelView: 'cred' }),
   openWatch: () => set({ panelView: 'watch' }),
 
-  // LIVE only — POST /ask and show the structured answer (or refusal) in the panel.
-  // Guarded to live mode so the demo never fetches; the forming answer IS the loading
-  // state (no spinner in the answer grammar). A refusal is a normal result, not an error.
+  // LIVE only — POST /ask and append the structured answer (or refusal) to the running
+  // chat thread. Guarded to live mode so the demo never fetches; the forming answer IS the
+  // loading state (no spinner in the answer grammar). A refusal is a normal turn, not an error.
+  //
+  // The follow-up carries the prior turns as `history` (each { question, raw answer text or
+  // null-if-refused }) so the agent can resolve back-references; the first question of a fresh
+  // thread sends `history: []`, which is byte-identical to the old single-question request. On
+  // success the turn is appended (newest last). The in-flight question lives in askQuestion and
+  // doubles as the stale-response guard — a second ask flips it and the earlier response is dropped.
   setAskQuestion: (q) => set({ askQuestion: q }),
   runAsk: async (question) => {
     if (get().mode !== 'live') return
     const q = question.trim()
     if (!q) return
-    set({ askQuestion: q, askPending: true, askError: false, askResult: null, panelView: 'answer' })
+    const history = get().askTurns.map((t) => ({ question: t.question, answer: t.answer.answer ?? null }))
+    set({ askQuestion: q, askPending: true, askError: false, panelView: 'answer' })
     try {
-      const res = await api.ask({ question: q })
+      const res = await api.ask({ question: q, history })
       // Ignore a stale response if the user navigated away or asked again meanwhile.
       if (get().askQuestion !== q) return
-      set({ askResult: res, askPending: false })
+      set((s) => ({ askTurns: [...s.askTurns, { question: q, answer: res }], askPending: false }))
     } catch {
       if (get().askQuestion !== q) return
       set({ askError: true, askPending: false })
     }
   },
+  // Start a fresh thread: drop the whole transcript and the in-flight turn and return to the
+  // empty zero state. In-memory only — there was never anything persisted to clear.
+  newThread: () => set({ askTurns: [], askQuestion: '', askPending: false, askError: false, panelView: 'zero' }),
 
   toggleReview: () => set((s) => ({ reviewOpen: !s.reviewOpen })),
   openCard: (id) => set({ panelView: 'card', activeCard: id, reviewOpen: true }),

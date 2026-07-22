@@ -18,6 +18,7 @@ from .api_models import (
     HitlDecision,
     IngestRequest,
     IngestResult,
+    PriorTurn,
     ProvenanceDrawer,
     RefusalPayload,
     ReviewContext,
@@ -121,7 +122,7 @@ __all__ = [
     "EvidenceTemplate", "SubjectLens", "ObservableDef", "PlacesConfig", "PlaceEntry",
     "EntitiesConfig", "EntityEntry",
     # api
-    "AskRequest", "AskAnswer", "AnswerHop", "RefusalPayload", "ProvenanceDrawer", "ReviewQueueItem",
+    "AskRequest", "PriorTurn", "AskAnswer", "AnswerHop", "RefusalPayload", "ProvenanceDrawer", "ReviewQueueItem",
     "ReviewContext", "ReviewType", "HitlDecision", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
     "ConfigWriteResult", "HealthResponse",
 ]
