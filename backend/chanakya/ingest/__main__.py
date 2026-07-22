@@ -174,6 +174,26 @@ def _cmd_renormalize(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_georef(args: argparse.Namespace) -> int:
+    """Stamp declared image georeferences onto a scenario's frozen imagery observations (offline, keyless).
+
+    Reads each ``<image>.geo.json`` sidecar beside a frame and freezes its coordinate onto that frame's
+    subject-blind image observation — no re-extraction, so the curated bundle structure is preserved. The
+    coordinate merges the frame onto its real ``basing_site`` at the next ``rebuild``. Idempotent.
+    """
+    bundles_dir = settings.corpus_dir() / "scenarios" / args.scenario / "claims"
+    if not bundles_dir.is_dir():
+        print(f"no claim bundles at {bundles_dir}", file=sys.stderr)
+        return 2
+    from chanakya.ingest import seed
+
+    paths = seed.apply_geo_sidecars(args.scenario)
+    for p in paths:
+        print(f"stamped georeference into {p.name}")
+    print(f"georeferenced {len(paths)} bundle(s)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """Parse args and dispatch. Returns the process exit code."""
     parser = argparse.ArgumentParser(
@@ -216,6 +236,12 @@ def main(argv: list[str] | None = None) -> int:
     p_renorm.add_argument("--apply", action="store_true",
                           help="write the bundles; without it the pass only reports what would change")
     p_renorm.set_defaults(func=_cmd_renormalize)
+
+    p_georef = sub.add_parser(
+        "georef",
+        help="stamp <image>.geo.json georeferences onto a scenario's frozen imagery observations (offline)")
+    p_georef.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
+    p_georef.set_defaults(func=_cmd_georef)
 
     args = parser.parse_args(argv)
     return int(args.func(args))

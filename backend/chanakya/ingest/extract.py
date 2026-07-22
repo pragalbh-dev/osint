@@ -146,6 +146,10 @@ class VariantMention(BaseModel):
     designators: list[str] = []  # stated alternate designators (each a candidate same-as)
     range_text: str | None = None
     confidence_language: str | None = None  # the source's own hedge ("consistent with", "probable")
+    signature_geometry: str | None = None  # the source's CHARACTERISTIC / reference physical layout of THIS
+    # weapon TYPE in general (e.g. "consistent with HQ-9 deployments", "the characteristic X site layout",
+    # "associated with the X system") — set ONLY when the source generalizes a signature to the system/type,
+    # NEVER a single site's own observed geometry (that belongs on the site).
     source_quote: str | None = None
 
 
@@ -457,7 +461,16 @@ _SYSTEM_BASE = (
     "unstated identity. Use the generic type slots provided; put whatever names/designations the source "
     "uses as values. When you record a relationship the source dates — where something is based or was "
     "seen, when a system entered service, when a shipment moved — copy the source's own date wording "
-    "into that relation's `date_text`; leave it empty when the source gives no such date."
+    "into that relation's `date_text`; leave it empty when the source gives no such date. "
+    "A physical/visual SIGNATURE can describe either one specific SITE (that site's own observed layout) or "
+    "a WEAPON TYPE in general (the type's characteristic / reference layout, shared across its deployments). "
+    "Keep the two separate. Put a single site's observed geometry in that site's `signature_geometry`. Fill a "
+    "variant's `signature_geometry` ONLY when the source itself states what the TYPE characteristically looks "
+    "like — e.g. 'a layout consistent with prior HQ-9 deployments elsewhere', 'the characteristic HQ-9 site "
+    "layout', 'a signature associated with the HQ-9 system'. Do NOT fill it when the source merely identifies "
+    "one site by comparing it to references (e.g. 'assessed as HQ-9 based on its layout, compared against "
+    "reference signatures') — that is a site observation plus an identification method, not a stated type "
+    "signature. Never generalize a single site's observation into a type signature on your own."
 )
 _SYSTEM_PROMPTS: dict[str, str] = {
     "prose_claim": _SYSTEM_BASE + " This is analytic or official prose.",
@@ -1109,6 +1122,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
             em.entity("variant", name, ref, attrs={
                 "family": _str(m, "family"), "designators": _strlist(m, "designators"),
                 "range_km": _dump(rng), "confidence_language": _str(m, "confidence_language"),
+                "site_signature_geometry": _str(m, "signature_geometry"),
             })
             for desig in _strlist(m, "designators"):
                 em.triple(name, "same-as", desig, ref)
@@ -1317,7 +1331,8 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
         rng = adapters.normalize_quantity(_str(system, "range_text"))
         em.entity("variant", sname, sref, attrs={"family": _str(system, "family"),
                                                  "designators": _strlist(system, "designators"),
-                                                 "range_km": _dump(rng)})
+                                                 "range_km": _dump(rng),
+                                                 "site_signature_geometry": _str(system, "signature_geometry")})
         for desig in _strlist(system, "designators"):
             em.triple(sname, "same-as", desig, sref)
 
@@ -1456,7 +1471,8 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
         if name:
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("variant", name, ref, attrs={"family": _str(m, "family"),
-                                                   "confidence_language": _str(m, "confidence_language")})
+                                                   "confidence_language": _str(m, "confidence_language"),
+                                                   "site_signature_geometry": _str(m, "signature_geometry")})
 
     for m in _items(filled, "components"):
         name = _str(m, "name")

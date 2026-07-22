@@ -1,0 +1,85 @@
+[
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "attributed_variant": "ent:variant:HQ-9",
+      "confidence_language": "High confidence in structural consistency based on signature matching standard SAM \"petal\" / \"flower\" pad geometry.",
+      "corroborated_against": "d25-hq9-site-fingerprint-p1-5",
+      "decoy_risk": true,
+      "decoy_risk_flag": true,
+      "fingerprint_match": [
+        "Petal/flower-shaped radial hardstands/driving bays",
+        "Perimeter ring road enclosing radial launcher bays",
+        "Central axis road and hub arrangement"
+      ],
+      "matched_features": [
+        "Petal/flower-shaped radial hardstands/driving bays",
+        "Perimeter ring road enclosing radial launcher bays",
+        "Central axis road and hub arrangement"
+      ],
+      "rationale": "The observed signature describes an oval ring road enclosing a series of scalloped, loop-like, or petal-shaped hardstands radiating from a central axis, which closely matches the reference geometry's 'petal' or 'flower' pad layout with radial TEL revetments/bays surrounding a central radar/engagement area.",
+      "reference_source_id": "d25_hq9_site_fingerprint",
+      "single_pass": true
+    },
+    "claim_id": "d07-sat-confirm-karachi-full-ent-variant-hq-9-attr",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.png",
+        "frame": null,
+        "line": null,
+        "page": null,
+        "region": "full",
+        "row": null,
+        "span": null
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+        "frame": null,
+        "line": null,
+        "page": 1,
+        "region": null,
+        "row": null,
+        "span": [
+          619,
+          1230
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-flash-latest"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Probable Long-Range SAM Emplacement, Malir District, Karachi, Sindh Province, Pakistan",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P TEL"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d07-sat-confirm-karachi-full",
+      "d25-hq9-site-fingerprint-p1-5"
+    ],
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  }
+]

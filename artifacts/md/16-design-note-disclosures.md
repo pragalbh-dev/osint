@@ -38,6 +38,22 @@ deliberate, defensible choices, not apologies.
   recycled-image trap reserved for the parade chain; an ambiguous fresh frame wouldn't show the geometry
   cleanly. The schematic is honest reference literature *about* HQ-9 (subject-blindness applies only to the
   target-imagery leg, never to reference literature) and encodes the real published geometry.
+- **Imagery location is a DECLARED georeference, never inferred from pixels.** A satellite frame carries its
+  coordinate via a small `<image>.geo.json` sidecar (the product's stated AOI/grid — e.g. d07 = the Karachi
+  emplacement grid), stamped onto the image observation *deterministically* (no LLM, so the curated bundle
+  structure is preserved). That coordinate is what merges the frame onto its real `basing_site` node — so the
+  image itself now contributes location, not just corroboration. The VLM read stays subject-blind (it never
+  sees or infers the coordinate); reading a declared georeference is not "geolocating from pixels".
+- **Attribution now fires end-to-end, honestly — and refuses when it should.** The imagery-corroboration leg
+  is live in the demo: d07's real HQ-9 petal frame is matched against d25's recognition schematic and the
+  model affirms the geometry (petal/ring pad, ~six radial launcher berms, central radar hub), emitting a
+  cited inference held at *probable* by the single-pass `decoy_risk` cap. Two honesty notes worth stating:
+  (a) the same machinery *declines* on an ambiguous frame (the Nur Khan/d17 image reads as a generic
+  developed area, and the model returns "not consistent" — the anti-fabrication guardrail working, not a
+  bug); (b) making it fire required teaching extraction to separate a **site's observed geometry** (stays on
+  the site) from a **system-type reference signature** (belongs on the weapon variant, where the matcher can
+  reach it) — a scoped prompt change that only lifts a type signature when a reference-class source
+  *explicitly* generalises it, so it never promotes one site's observation into a fake type signature.
 
 ## Analytic honesty
 

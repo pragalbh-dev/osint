@@ -27,7 +27,7 @@ SCENARIO ?= hq9p_primary
 ENV_FILE_ARG = $(shell test -f .env && echo --env-file .env)
 
 .DEFAULT_GOAL := help
-.PHONY: help install lint typecheck test check extract build ingest ask run image stop logs push beat
+.PHONY: help install lint typecheck test check extract georef build ingest ask run image stop logs push beat
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -97,6 +97,9 @@ build:  ## Rebuild the knowledge view from the frozen logs + config, and report 
 
 extract:  ## Re-record the claim bundles from the raw corpus (KEYED: needs GEMINI_/ANTHROPIC_API_KEY)
 	cd $(BACKEND) && CHANAKYA_ROOT=$(CURDIR) .venv/bin/python -m chanakya.ingest extract --scenario $(SCENARIO) $(EXTRACT_ARGS)
+
+georef:  ## Stamp <image>.geo.json georeferences onto a scenario's frozen imagery observations (keyless)
+	cd $(BACKEND) && CHANAKYA_ROOT=$(CURDIR) .venv/bin/python -m chanakya.ingest georef --scenario $(SCENARIO)
 
 # The relocation tripwire, driven the way the design always specified: by an ingest, not a scripted
 # reveal. Holds the 2025 Rahwali overhead passes out of the evidence log, rebuilds, ingests them,
