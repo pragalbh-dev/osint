@@ -1,1 +1,1 @@
-{"location_text": "24.9012, 67.2034", "surface_format": "DD", "precision_class": "site", "_note": "d07 Karachi Malir emplacement georeference (image AOI center)."}
+{"location_text": "24.901, 67.203", "surface_format": "DD", "_note": "d07 Karachi Malir emplacement georeference (image AOI centre), stated to site precision (3 dp ~100 m) so the declared class matches the coordinate's own resolution."}

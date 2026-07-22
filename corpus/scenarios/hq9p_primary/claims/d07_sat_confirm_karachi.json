@@ -656,18 +656,18 @@
             {
               "confidence": 1.0,
               "label": null,
-              "lat": 24.9012,
-              "lon": 67.2034,
+              "lat": 24.901,
+              "lon": 67.203,
               "source": "coord-parse"
             }
           ],
           "precision_class": "site",
           "proposed_alias": null,
-          "raw": "24.9012, 67.2034",
+          "raw": "24.901, 67.203",
           "resolved_place_ref": null,
           "surface_format": "DD",
-          "wgs84_lat": 24.9012,
-          "wgs84_lon": 67.2034
+          "wgs84_lat": 24.901,
+          "wgs84_lon": 67.203
         },
         "count": {
           "approx": true,
