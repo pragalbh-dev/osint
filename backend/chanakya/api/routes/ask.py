@@ -39,4 +39,6 @@ def post_ask(req: AskRequest, state: AppState = Depends(get_state)) -> AskAnswer
             )
         view = apply_lens(view, lens, config=config)  # config enables registry/alias anchor tiers (AR-2)
     # claims map: the view cites claims by id; ASK needs the bodies for source/date/span + observed-vs-inferred.
-    return ask(req.question, view, config, claims=state.claims_map())
+    # history: the client-held conversation thread (backend stays stateless per request) — seeds prior turns
+    # as planner context so a follow-up can resolve references to entities named in an earlier answer.
+    return ask(req.question, view, config, claims=state.claims_map(), history=req.history)

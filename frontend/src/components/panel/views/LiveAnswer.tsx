@@ -6,8 +6,8 @@
 // due, in the same grammar the demo's GapsView uses. Renders only in LIVE mode
 // (panelView === 'answer'); the demo keeps its authored HeroAnswer / GapsView.
 
-import { useMemo } from 'react'
-import { useWorkbench } from '@/store/workbench'
+import { useEffect, useMemo, useRef } from 'react'
+import { useWorkbench, type AskTurn } from '@/store/workbench'
 import {
   askToAnswerModel,
   claimElementIndex,
@@ -55,16 +55,23 @@ const REFUSAL_COPY: Record<RefusalKind, { kicker: string; headline: string; miss
   },
 }
 
-function BackButton({ onClick }: { onClick: () => void }) {
+// The thread header — a running ASK conversation, not a single answer. "New thread" drops the
+// whole transcript back to the empty zero state. The thread is in-memory only (no persistence,
+// no cross-tab sharing): a reload or a second window each starts fresh, so 2–3 analysts stay
+// isolated. This control and the transcript are LIVE-only; the demo keeps its authored views.
+function ThreadHeader({ onNewThread }: { onNewThread: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title="Ask something else"
-      className="flex h-[26px] w-[26px] flex-none cursor-pointer items-center justify-center rounded border border-hairline bg-transparent text-[14px] leading-none text-text-dim hover:border-hairline-strong hover:text-text"
-    >
-      ←
-    </button>
+    <div className="mb-5 flex items-center justify-between">
+      <div className="text-[10.5px] tracking-[0.06em] text-text-faint">Thread</div>
+      <button
+        type="button"
+        onClick={onNewThread}
+        title="Clear this thread and start a new one"
+        className="cursor-pointer rounded border border-hairline bg-transparent px-[10px] py-[4px] text-[11.5px] leading-none text-text-dim hover:border-hairline-strong hover:text-text"
+      >
+        New thread
+      </button>
+    </div>
   )
 }
 
@@ -260,28 +267,60 @@ function Answer({ model }: { model: LiveAnswerModel }) {
   )
 }
 
+// The echoed question that heads each turn — what the analyst asked, verbatim. Kept at the
+// same weight as the previous single-answer echo, so a one-turn thread reads like it always did.
+function TurnQuestion({ question }: { question: string }) {
+  return <div className="mb-[18px] text-[12.5px] leading-[1.45] text-text-dim">{question}</div>
+}
+
+// One completed turn: the echoed question, then its answer or refusal rendered exactly as before
+// (same hops/chips/refusal grammar — nothing about a single answer's appearance changes). Turns
+// after the first are set off by a hairline separator so the transcript reads as a conversation.
+function Turn({ turn, first }: { turn: AskTurn; first: boolean }) {
+  const model = useMemo(() => askToAnswerModel(turn.answer), [turn.answer])
+  return (
+    <div className={first ? undefined : 'mt-[30px] border-t border-hairline pt-[26px]'}>
+      <TurnQuestion question={turn.question} />
+      {model.kind === 'refusal' ? <Refusal model={model} /> : <Answer model={model} />}
+    </div>
+  )
+}
+
 export function LiveAnswer() {
-  const backToZero = useWorkbench((s) => s.backToZero)
+  const newThread = useWorkbench((s) => s.newThread)
+  const turns = useWorkbench((s) => s.askTurns)
   const question = useWorkbench((s) => s.askQuestion)
-  const result = useWorkbench((s) => s.askResult)
   const pending = useWorkbench((s) => s.askPending)
   const isError = useWorkbench((s) => s.askError)
 
-  const model = result ? askToAnswerModel(result) : null
+  // Keep the newest turn in view as the thread grows — the in-flight question, then its answer,
+  // land at the bottom, so scroll there whenever the transcript changes.
+  const endRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ block: 'end' })
+  }, [turns.length, pending, isError])
 
+  const hasTail = pending || isError
   return (
     <div>
-      <div className="mb-5 flex items-start gap-[10px]">
-        <BackButton onClick={backToZero} />
-        <div className="pt-1 text-[12.5px] leading-[1.45] text-text-dim">{question}</div>
-      </div>
+      <ThreadHeader onNewThread={newThread} />
 
+      {turns.map((turn, i) => (
+        <Turn key={i} turn={turn} first={i === 0} />
+      ))}
+
+      {/* the in-flight turn: the forming answer IS the loading state (no spinner) */}
       {pending && (
-        <div className="text-[13px] leading-[1.5] text-text-faint">Tracing the graph…</div>
+        <div className={turns.length ? 'mt-[30px] border-t border-hairline pt-[26px]' : undefined}>
+          <TurnQuestion question={question} />
+          <div className="text-[13px] leading-[1.5] text-text-faint">Tracing the graph…</div>
+        </div>
       )}
 
-      {!pending && isError && (
-        <div>
+      {/* a transport failure (not a refusal — that's a normal turn) */}
+      {isError && (
+        <div className={turns.length ? 'mt-[30px] border-t border-hairline pt-[26px]' : undefined}>
+          <TurnQuestion question={question} />
           <div className="mb-[10px] text-[10.5px] tracking-[0.06em] text-text-faint">No answer</div>
           <div className="text-[13.5px] leading-[1.5] text-text-dim">
             The graph could not be reached to answer this. Nothing was assessed.
@@ -289,7 +328,7 @@ export function LiveAnswer() {
         </div>
       )}
 
-      {!pending && !isError && model && (model.kind === 'refusal' ? <Refusal model={model} /> : <Answer model={model} />)}
+      {(turns.length > 0 || hasTail) && <div ref={endRef} />}
     </div>
   )
 }

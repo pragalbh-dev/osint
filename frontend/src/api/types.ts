@@ -250,9 +250,21 @@ export interface RefusalPayload {
   reason?: string
 }
 
+/** One prior turn of an in-session chat thread, sent with a follow-up so the agent can
+ *  resolve back-references ("it", "that unit"). `answer` is the raw assembled answer text
+ *  from that turn's AskAnswer.answer — or null for a turn that refused (nothing to carry).
+ *  The thread is client-held and in-memory only; a reload starts fresh. */
+export interface PriorTurn {
+  question: string
+  answer: string | null
+}
+
 export interface AskRequest {
   question: string
   subject?: string | null
+  /** Prior turns, oldest first. Omitted / empty = the single-question behaviour (a brand-new
+   *  thread's first question). */
+  history?: PriorTurn[]
 }
 
 export interface AskAnswer {

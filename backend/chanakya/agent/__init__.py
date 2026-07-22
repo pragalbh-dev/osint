@@ -37,7 +37,7 @@ from .validate import validate_answer
 
 if TYPE_CHECKING:
     from chanakya.agent.client import LLMClient
-    from chanakya.schemas import ClaimRecord
+    from chanakya.schemas import ClaimRecord, PriorTurn
 
 __all__ = ["ask", "ToolContext", "propose_observable_from_text", "ObservableProposal"]
 
@@ -48,8 +48,14 @@ def ask(
     config: ConfigBundle,
     llm: LLMClient | None = None,
     claims: Mapping[str, ClaimRecord] | None = None,
+    history: list[PriorTurn] | None = None,
 ) -> AskAnswer:
-    """Answer a question over an already-rebuilt view with per-hop citations, or refuse honestly."""
+    """Answer a question over an already-rebuilt view with per-hop citations, or refuse honestly.
+
+    ``history`` is the optional client-held conversation thread (prior turns, in order). It is seeded as
+    planner context so a follow-up can resolve references to entities named in an earlier answer; the
+    backend stays stateless per request. ``None``/empty ⇒ the single-question path, unchanged.
+    """
     ctx = ToolContext.build(view, claims or {}, config)
     resolved_llm = llm if llm is not None else build_default_client()
 
@@ -57,7 +63,7 @@ def ask(
         # The LLM plans; the deterministic graph_* tools compute. No query is special-cased — a judgement
         # needing many hops (an origin/supply trace, a single-point-of-failure scan) is reached via the
         # general graph_analyze tool, not a hardcoded path.
-        trace = run_react_loop(ctx, question, resolved_llm)
+        trace = run_react_loop(ctx, question, resolved_llm, history=history)
     else:
         # Keyless, no recorded trace: refuse honestly — never fabricate an answer.
         # This is a CAPABILITY outage, not an evidence gap: nothing was consulted, so we must not

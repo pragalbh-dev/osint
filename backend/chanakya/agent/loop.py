@@ -20,7 +20,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
-from chanakya.schemas import RefusalPayload
+from chanakya.schemas import PriorTurn, RefusalPayload
 
 from .client import LLMClient
 from .context import ToolContext
@@ -28,6 +28,12 @@ from .tool_specs import tool_specs
 from .tools import run_tool
 
 HARD_ITERATION_CAP = 8  # spine/09 bound; the hop/top-k caps live inside the tools
+
+# The stand-in assistant message for a prior turn that REFUSED (``PriorTurn.answer is None``). A thread
+# turn must be a valid user→assistant pair, and the assistant half is never empty/None — an empty turn
+# would let the planner read the follow-up as if the earlier question had been answered. This marker keeps
+# the refusal honest in-context: the prior question was asked and could NOT be answered.
+REFUSED_TURN_MARKER = "[The previous question could not be answered — insufficient evidence in the graph.]"
 
 SYSTEM_PROMPT = """\
 You are an OSINT analysis agent answering questions over a curated, provenance-tracked knowledge graph.
@@ -118,11 +124,24 @@ def run_react_loop(
     question: str,
     llm: LLMClient,
     *,
+    history: list[PriorTurn] | None = None,
     max_iters: int = HARD_ITERATION_CAP,
 ) -> AgentTrace:
-    """Drive the LLM ↔ tools loop to a stop, recording every tool call. Deterministic given ``llm``."""
+    """Drive the LLM ↔ tools loop to a stop, recording every tool call. Deterministic given ``llm``.
+
+    ``history`` (the client-held conversation thread) is seeded ahead of the current question as
+    prior ``user``/``assistant`` turns, so a follow-up can resolve references to entities named in an
+    earlier answer. With no history the message list is exactly ``[{"role":"user","content":question}]``
+    — byte-identical to the single-question path.
+    """
     trace = AgentTrace(question=question)
-    messages: list[dict[str, Any]] = [{"role": "user", "content": question}]
+    # Seed the client-held thread first (prior turns, in order), then the current question. Empty/None
+    # history ⇒ the loop body runs zero times and the list is exactly the single-question seed (unchanged).
+    messages: list[dict[str, Any]] = []
+    for turn in history or []:
+        messages.append({"role": "user", "content": turn.question})
+        messages.append({"role": "assistant", "content": turn.answer if turn.answer else REFUSED_TURN_MARKER})
+    messages.append({"role": "user", "content": question})
     tools = tool_specs()
 
     for _ in range(max_iters):
