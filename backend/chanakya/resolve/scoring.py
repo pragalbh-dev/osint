@@ -202,6 +202,61 @@ def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
             return True
     return critical_attribute_conflict(a, b, cfg)  # D6: declared-critical roles are hard too
 
+
+def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """True if ``a`` and ``b`` state the SAME value of a declared **unique** hard identifier for their type.
+
+    The strongest, most durable identity signal there is — a serial / registration / unique key two records
+    share is one entity by construction. Reused verbatim by the Phase-1 bootstrap trigger
+    (``cluster.resolve_entities``) and by :func:`has_durable_identity_support`; one definition so the two can
+    never diverge on what "shared hard id" means.
+    """
+    for attr in cfg.hard_id_fields("unique").get(a.etype, []):
+        va, vb = a.attrs.get(attr), b.attrs.get(attr)
+        if va is not None and va == vb:
+            return True
+    return False
+
+
+def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """True if ``a`` and ``b`` share a **durable** line of identity evidence (Stage 3B-iii).
+
+    Durable = evidence that does not evaporate when a transient state changes. It is the counterpart to the
+    perishable-only confirmation cap (``cluster.resolve_entities``): a pair may score into the auto-merge band
+    purely on perishable/transient agreement (a shared location, status, posture — raised by
+    :func:`attribute_score`'s agreement path), and a shared transient state can be one entity or two that
+    merely passed through it. Durable support is what separates the two, so a confirm that has it (or still
+    confirms without the perishable bonus) is trusted and one that rests solely on transient agreement is
+    capped to ``probable``.
+
+    Two durable sources, both **pair-intrinsic** (partition-independent — the answer never changes as
+    clusters grow):
+
+    * a shared **unique** hard identifier (:func:`_shared_unique_id`);
+    * agreement on the SAME value of an identity-relevant attribute — the ``identity`` list ∪ the declared
+      critical/supporting roles — that is **not** declared ``perishable`` (``attribute_perishable is not True``,
+      so an undeclared or explicitly-durable attribute qualifies; a perishable one never does, because that is
+      exactly the transient evidence the cap exists to distrust). Same-value only: the ``ordered``-succession
+      waiver is a *perishable*-attribute allowance and is therefore not durable support.
+
+    Deliberately does NOT consult the name / coreference bootstrap triggers (alias-equivalence, exact-name,
+    containment, authoritative coref): those need the alias index / coref set the caller holds, so they are
+    accounted for **at the cap site**, not here (hence the ``(a, b, cfg)`` signature). Pure and deterministic
+    (no clock/RNG; no numeric literal — gate G6).
+    """
+    if _shared_unique_id(a, b, cfg):
+        return True
+    if a.etype != b.etype:
+        return False  # role attrs + perishability are per-type; a cross-type pair has no durable attr agreement
+    rules = cfg.attribute_rules(a.etype)
+    id_attrs = list(rules.get("identity", [])) + cfg.critical_role_attrs(a.etype) + cfg.supporting_role_attrs(a.etype)
+    for attr in id_attrs:
+        va = a.attrs.get(attr)
+        if va is not None and va == b.attrs.get(attr) and cfg.attribute_perishable(a.etype, attr) is not True:
+            return True
+    return False
+
+
 Canonical = Callable[[str], str]
 
 
@@ -234,11 +289,23 @@ def _neighbours(graph: EntityGraph, eid: str, canonical: Canonical, exclude: set
     return nbrs
 
 
-def attribute_score(a: Entity, b: Entity, cfg: ResolveConfig, alias_idx: AliasIndex | None = None) -> float:
+def attribute_score(
+    a: Entity, b: Entity, cfg: ResolveConfig, alias_idx: AliasIndex | None = None, durable_only: bool = False
+) -> float:
     """Name similarity (or identity-attr agreement), knocked down by hard-conflict attributes.
 
     Alias-equivalent names (seed or learned) score a full 1.0 — FD-2000 ≡ HQ-9/P by the alias table,
     even though the surface strings barely resemble each other.
+
+    ``durable_only`` (Stage 3B-iii): compute the score with **all perishable-attribute agreement removed** —
+    a perishable attribute is a transient state, so its agreement in EITHER form (a same value, or a clean
+    ``ordered`` succession of differing values) is dropped from the agreement ratio entirely and treated as
+    *neutral* (neither raising nor lowering it). Everything durable is unchanged: base name similarity,
+    alias-equivalence, the legacy ``identity`` list, and same-value agreement on a NON-perishable attribute
+    still count; a genuine conflict still lowers the ratio and fires the soft penalty. This is the "would this
+    pair still confirm on stable evidence alone?" score the perishable-only confirmation cap consults, and it
+    is consistent with :func:`has_durable_identity_support` (which likewise treats a perishable same-value
+    agreement as non-durable). ``False`` (the default) is the full Part-1 behaviour, byte-unchanged (gate G2).
     """
     if alias_idx is not None and alias_idx.equivalent(
         normalize(a.name, cfg.transliteration), normalize(b.name, cfg.transliteration)
@@ -247,12 +314,42 @@ def attribute_score(a: Entity, b: Entity, cfg: ResolveConfig, alias_idx: AliasIn
     sim = name_similarity(a.name, b.name, cfg.transliteration)
     rules = cfg.attribute_rules(a.etype) if a.etype == b.etype else {}
 
-    # Identity attrs agreeing can carry the pair even when the surface name drifts.
-    id_attrs = rules.get("identity", [])
-    present = [k for k in id_attrs if a.attrs.get(k) is not None and b.attrs.get(k) is not None]
+    # Identity-relevant attrs AGREEING can carry the pair even when the surface name drifts (Stage 3B-iii).
+    # The agreeing set is the union of the legacy ``identity`` list and the declared identity-bearing roles
+    # (critical ∪ supporting, D6) — every attribute whose agreement is positive identity evidence. An
+    # attribute counts as AGREEING when both sides state the SAME value, OR (for a perishable attribute) when
+    # their combined value-series is a clean ``ordered`` succession — a consistent trajectory over time reads
+    # as consistency, not disagreement. That is exactly the negation of the time-aware
+    # :func:`attribute_is_conflict` on an attribute both sides state, so it is routed through that one
+    # detector rather than a second copy of the succession logic. ``sim`` is raised to
+    # ``agreeing / present`` — the same formula and the same ``max`` the legacy identity path used (no new
+    # weight — gate G6). Byte-inert where only a non-perishable ``identity`` list is declared (``agreeing``
+    # collapses to the old strict ``equal``); it moves scores exactly where a role attr or a perishable
+    # trajectory now counts as agreement, which is the point.
+    id_attrs: list[str] = list(rules.get("identity", []))
+    if a.etype == b.etype:
+        id_attrs += cfg.critical_role_attrs(a.etype) + cfg.supporting_role_attrs(a.etype)
+    seen_id: set[str] = set()
+    present = 0
+    agreeing = 0
+    for k in id_attrs:
+        if k in seen_id:
+            continue
+        seen_id.add(k)
+        if a.attrs.get(k) is None or b.attrs.get(k) is None:
+            continue  # not stated on both sides ⇒ not part of the agreement ratio (absence ≠ evidence)
+        # ``durable_only``: a PERISHABLE attribute is a transient state, so its agreement — in EITHER form,
+        # a same value ("both active now") or a clean ordered succession — is not durable identity evidence.
+        # Drop it entirely (neutral), so it neither raises nor lowers the durable-only score. A non-perishable
+        # attribute (undeclared or explicitly durable) is unaffected: same-value agreement still counts, a
+        # genuine change still counts against it.
+        if durable_only and cfg.attribute_perishable(a.etype, k) is True:
+            continue
+        present += 1
+        if not attribute_is_conflict(a, b, k, cfg):
+            agreeing += 1
     if present:
-        equal = sum(1 for k in present if a.attrs[k] == b.attrs[k])
-        sim = max(sim, equal / len(present))
+        sim = max(sim, agreeing / present)
 
     # A disagreement on a SOFT identity attribute pulls the score down (the false-merge guard). Two
     # sources feed it, deduplicated: the legacy overloaded ``attribute_rules.conflict`` list (unchanged),
@@ -391,8 +488,15 @@ def merge_score(
     canonical: Canonical,
     cfg: ResolveConfig,
     alias_idx: AliasIndex | None = None,
+    durable_only: bool = False,
 ) -> dict[str, float]:
-    """Full weighted merge_score + the stored per-signal breakdown (explainability)."""
+    """Full weighted merge_score + the stored per-signal breakdown (explainability).
+
+    ``durable_only`` is threaded only to :func:`attribute_score` (the ATTRIBUTE term), dropping the
+    perishable ordered-succession bonus so the cap can ask "does this pair still confirm on stable evidence
+    alone?"; ``relational`` and ``temporal`` are left as-is (a purely-relational perishable case is out of
+    scope for Stage 3B-iii). Default ``False`` ⇒ the full score, byte-unchanged (gate G2).
+    """
     exclude = co_instances(graph, a.eid, b.eid)
     reloc = bool(exclude)
     # T3b-A: for some node types a shared neighbourhood is not identity evidence at all. Two AREAS of
@@ -407,7 +511,7 @@ def merge_score(
         else 0.0
     )
     parts = {
-        ATTRIBUTE: attribute_score(a, b, cfg, alias_idx),
+        ATTRIBUTE: attribute_score(a, b, cfg, alias_idx, durable_only=durable_only),
         RELATIONAL: relational,
         TEMPORAL: temporal_score(reloc),
         SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid, cfg.identity_source_weight),

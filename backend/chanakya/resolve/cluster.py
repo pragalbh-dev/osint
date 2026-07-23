@@ -22,7 +22,7 @@ from .aliases import AliasIndex
 from .entities import Entity, EntityGraph, as_pair, namespace_compatible, unordered_pairs
 from .normalize import normalize, tokens
 from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
-from .scoring import geo_conflict_km, merge_score
+from .scoring import _shared_unique_id, geo_conflict_km, has_durable_identity_support, merge_score
 
 Pair = frozenset[str]
 
@@ -118,6 +118,24 @@ def _bridge_reason(wall: tuple[str, str]) -> str:
     )
 
 
+def _perishable_confirm_reason() -> str:
+    """Analyst-facing rationale for a perishable-only confirmation capped to ``probable`` (Stage 3B-iii).
+
+    Prose only — no threshold, no code literal (gate G6). Deliberately distinct wording from the below-floor
+    critical-conflict raise (``resolve._critical_raise_reason``) and the bridge alarm (:func:`_bridge_reason`): a
+    would-be auto-merge that rests only on transient evidence is its own question, and the queue must say
+    which.
+    """
+    return (
+        "confirmed only on perishable / transient evidence — this pair scores into the auto-merge band, but "
+        "every identity signal that carried it there is a perishable or transient state (a location, a "
+        "status, a posture), not a durable identifier or a stable attribute the two sides agree on. A shared "
+        "transient state can be one entity, or two entities that passed through the same state — the score "
+        "cannot separate the two. The auto-merge is withheld and the pair is raised for analyst confirmation "
+        "(Stage 3B-iii)."
+    )
+
+
 def _name_alone(bd: dict[str, float]) -> bool:
     """True when the ONLY nonzero *identity* signal is the name/attribute term (D4 banked correction).
 
@@ -182,14 +200,6 @@ def _candidate_pairs(
             pairs.add(frozenset((a, b)))
 
     return pairs | raise_only
-
-
-def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
-    for attr in cfg.hard_id_fields("unique").get(a.etype, []):
-        va, vb = a.attrs.get(attr), b.attrs.get(attr)
-        if va is not None and va == vb:
-            return True
-    return False
 
 
 # ── the open-world name trigger (P3.3): containment + acronym expansion ────────────────────────
@@ -328,6 +338,49 @@ def resolve_entities(
         res.merge_breakdown[pair_key(a, b)] = bd
         uf.union(a, b)
 
+    def has_durable_trigger(a: str, b: str) -> bool:
+        """A DURABLE bootstrap trigger fires for this pair — pair-intrinsic support
+        (:func:`has_durable_identity_support`: shared unique id / same-value non-perishable agreement) PLUS the
+        durable name / coreference triggers the standalone helper cannot see (it lacks the alias index and the
+        coref set). Exactly the Phase-1 bootstrap disjunction: alias-equivalence, exact name + namespace, name
+        containment, authoritative coref. Each is a stable line of identity evidence that does not evaporate
+        when a transient state changes."""
+        ea, eb = graph.entities[a], graph.entities[b]
+        if has_durable_identity_support(ea, eb, cfg):
+            return True
+        na, nb = normalize(ea.name, trans), normalize(eb.name, trans)
+        same_ns = ea.namespace() == eb.namespace()
+        return (
+            alias_idx.equivalent(na, nb)
+            or (bool(na) and na == nb and same_ns)
+            or _name_containment(ea, eb, cfg, toks)
+            or frozenset((a, b)) in authoritative
+        )
+
+    def confirm_is_durable(a: str, b: str, floor: float) -> bool:
+        """Is a would-be auto-merge carried by DURABLE evidence rather than the perishable-succession bonus?
+
+        The decisive gate (Stage 3B-iii refinement): the pair still reaches the auto band on the **durable-only**
+        score — ``attribute_score`` recomputed with the perishable ordered-succession-as-agreement bonus removed
+        (base name similarity, alias-equivalence, and same-value agreement all still count; ``relational`` /
+        ``temporal`` are unchanged). A name-driven or durable-attribute confirm still autos here; a pair carried
+        over the line ONLY by a perishable trajectory does not. A durable bootstrap trigger (name/coref/shared-id)
+        is durable support on its own footing too, so it short-circuits. Only a confirm that fails BOTH rests
+        solely on transient agreement — that is the one the cap withholds."""
+        if has_durable_trigger(a, b):
+            return True
+        bd_durable = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx, durable_only=True)
+        return _band(bd_durable, cfg, has_raise=False, auto_merge=floor) == "auto"
+
+    # Stage 3B-iii: pairs that reach the auto band on the FULL score but NOT on the durable-only score — the
+    # perishable ordered-succession bonus is the sole thing carrying them to confirm — are blocked from
+    # auto-merge and forced to the HITL queue with a reason, the same block-merge-and-review contract as
+    # ``raise_walls``. Maintained across the Phase-2 fixpoint (the durable-only band reads the partition-
+    # dependent ``relational`` term, so a pair can gain durable support as clusters grow and must be
+    # re-evaluated, not permanently pinned); consumed in the candidate-collection loop. Empty ⇒ every
+    # auto-band pair confirmed on durable evidence and merged (byte-unchanged).
+    perishable_capped: dict[Pair, str] = {}
+
     # ── Phase 1: high-precision bootstrap (no relational term) ────────────────────────────────
     for a, b in pairs:
         if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
@@ -358,12 +411,25 @@ def resolve_entities(
             if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
                 continue
             if frozenset((a, b)) in raise_walls:
-                continue  # never auto-merge a below-floor critical conflict — it is the analyst's call
+                continue  # a below-floor critical conflict is the analyst's call — never auto-merged
             bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
             floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
             if _band(bd, cfg, has_raise=False, auto_merge=floor) == "auto":
-                merge(a, b, bd["total"], bd)
-                changed = True
+                # Stage 3B-iii: a would-be auto-merge that still confirms on DURABLE evidence merges; one that
+                # only confirms because a perishable ordered succession raised its score rests on a shared
+                # transient state — one entity, or two that passed through it — so it is withheld and capped to
+                # the review queue. The decision is re-made each pass: the durable-only band reads the
+                # partition-dependent relational term, so a pair can EARN durable support as clusters grow.
+                if confirm_is_durable(a, b, floor):
+                    perishable_capped.pop(frozenset((a, b)), None)  # earned durable support ⇒ no longer capped
+                    merge(a, b, bd["total"], bd)
+                    changed = True
+                else:
+                    perishable_capped[frozenset((a, b))] = _perishable_confirm_reason()
+            else:
+                # No longer a would-be auto-merge (its relational term dropped); it is not a perishable-only
+                # confirm any more, so clear any stale cap — the collection loop bands it on its own merits.
+                perishable_capped.pop(frozenset((a, b)), None)
 
     # D9 (Stage 3A-ii): the transitive wall a candidate straddle would cross. Computed once — the
     # partition is stable here (this loop never unions), so the vetoed-entity pairs and cluster roots do
@@ -389,17 +455,23 @@ def resolve_entities(
         # apply, finally applied to the scored queue as well. The escape hatch is deliberate: if a source
         # or the offline proposer explicitly asserts the identity, the pair is in `raise_only` and still
         # reaches the analyst — a cross-type assertion is exactly the kind of thing a human should see.
-        if graph.entities[a].etype != graph.entities[b].etype and frozenset((a, b)) not in raise_only:
+        if (
+            graph.entities[a].etype != graph.entities[b].etype
+            and frozenset((a, b)) not in raise_only
+            and frozenset((a, b)) not in perishable_capped  # a capped confirm is guaranteed its queue place
+        ):
             continue
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
         floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
         has_raise = frozenset((a, b)) in raise_only
         raised_wall = frozenset((a, b)) in raise_walls
-        band = _band(bd, cfg, has_raise=has_raise or raised_wall, auto_merge=floor)
-        # A below-floor critical conflict is blocked from merge upstream, so a high deterministic score
-        # would otherwise band it "auto" and drop it here — force it to the review queue. A critical
-        # disagreement is always the analyst's call: never silently walled, never silently merged.
-        if raised_wall and band == "auto":
+        capped_perishable = frozenset((a, b)) in perishable_capped
+        band = _band(bd, cfg, has_raise=has_raise or raised_wall or capped_perishable, auto_merge=floor)
+        # A below-floor critical conflict, or a perishable-only would-be confirm, is blocked from merge
+        # upstream, so a high deterministic score would otherwise band it "auto" and drop it here — force it
+        # to the review queue. Both are always the analyst's call: never silently walled/capped, never
+        # silently merged.
+        if (raised_wall or capped_perishable) and band == "auto":
             band = "hitl"
         # D9 (Stage 3A-ii) — the BRIDGE-ACROSS-A-WALL alarm. This pair cleared ``vetoed`` above (not
         # directly walled), but its union would fuse two clusters a hard wall holds apart (``bridged_wall``)
@@ -420,7 +492,7 @@ def resolve_entities(
         # the operator turned the dial on (default off ⇒ byte-unchanged).
         capped = (
             cfg.name_alone_caps_at_possible
-            and not (has_raise or raised_wall or is_bridge)
+            and not (has_raise or raised_wall or is_bridge or capped_perishable)
             and _name_alone(bd)
         )
         pfloor = cfg.possible_floor
@@ -428,10 +500,12 @@ def resolve_entities(
             res.candidates.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
             res.merge_breakdown[pair_key(a, b)] = bd
-            # A below-floor critical conflict (its own stated disagreement) takes precedence over the
-            # cluster-level bridge signal for the reason string; a plain bridge gets the D9 reason.
+            # Reason precedence: a below-floor critical conflict (its own stated disagreement) first, then a
+            # perishable-only capped confirm (Stage 3B-iii), then the cluster-level D9 bridge alarm.
             if raised_wall:
                 res.candidate_reasons[pair_key(a, b)] = raise_walls[frozenset((a, b))]
+            elif capped_perishable:
+                res.candidate_reasons[pair_key(a, b)] = perishable_capped[frozenset((a, b))]
             elif is_bridge and wall is not None:
                 res.candidate_reasons[pair_key(a, b)] = _bridge_reason(wall)
         # The retained `possible` watch-list (D4): a scored pair in [possible_floor, hitl_low) that today
