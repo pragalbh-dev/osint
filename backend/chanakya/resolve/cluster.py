@@ -100,6 +100,24 @@ def _band(bd: dict[str, float], cfg: ResolveConfig, has_raise: bool, auto_merge:
     return "separate"
 
 
+def _bridge_reason(wall: tuple[str, str]) -> str:
+    """The analyst-facing rationale for a bridge-across-a-wall candidate (D9, Stage 3A-ii).
+
+    Names the hard wall the straddle would have crossed so the analyst can go straight to it. Prose only —
+    no threshold, no code literal (gate G6). Deliberately distinct wording from the below-floor
+    critical-conflict raise (``resolve._critical_raise_reason``): a look-alike straddling a wall and a pair
+    stating an under-attested critical disagreement are different questions, and the queue must say which.
+    """
+    x, y = wall
+    return (
+        f"bridge across a wall: this pair scores as one entity, but merging it would fuse two clusters "
+        f"held apart by a hard do-not-merge wall ({x} ≠ {y}). The wall HOLDS — the pair is never "
+        f"merged — but a mention that looks like one entity yet straddles a wall means the wall is wrong, "
+        f"the pair is a conflation / extraction error, or it is deliberate deception. Analyst adjudication "
+        f"required (D9)."
+    )
+
+
 def _name_alone(bd: dict[str, float]) -> bool:
     """True when the ONLY nonzero *identity* signal is the name/attribute term (D4 banked correction).
 
@@ -347,6 +365,20 @@ def resolve_entities(
                 merge(a, b, bd["total"], bd)
                 changed = True
 
+    # D9 (Stage 3A-ii): the transitive wall a candidate straddle would cross. Computed once — the
+    # partition is stable here (this loop never unions), so the vetoed-entity pairs and cluster roots do
+    # not move. Returns the FIRST vetoed pair (sorted, deterministic) whose two endpoints currently sit in
+    # exactly the two clusters ``a`` and ``b`` belong to — i.e. the wall the union of (a,b) would fuse.
+    # ``None`` ⇔ ``not violates_veto_transitively(a, b)``; this variant also *names* the wall for the alarm.
+    veto_eid_pairs = _veto_eid_pairs(veto, alias_idx, graph, trans)
+
+    def bridged_wall(a: str, b: str) -> tuple[str, str] | None:
+        ra, rb = uf.find(a), uf.find(b)
+        for x, y in veto_eid_pairs:
+            if {uf.find(x), uf.find(y)} == {ra, rb}:
+                return (x, y)
+        return None
+
     # ── collect HITL candidates from the stable partition ─────────────────────────────────────
     for a, b in pairs:
         if uf.find(a) == uf.find(b) or vetoed(a, b):
@@ -369,17 +401,39 @@ def resolve_entities(
         # disagreement is always the analyst's call: never silently walled, never silently merged.
         if raised_wall and band == "auto":
             band = "hitl"
+        # D9 (Stage 3A-ii) — the BRIDGE-ACROSS-A-WALL alarm. This pair cleared ``vetoed`` above (not
+        # directly walled), but its union would fuse two clusters a hard wall holds apart (``bridged_wall``)
+        # AND it scores as a genuine would-be merge — band ``auto``/``hitl``, real corroboration to both
+        # sides, not an incidental low-score ``separate`` touch (the D9 corroboration gate, reusing the
+        # existing bands — no new threshold). The wall HOLDS: Phase 1/2 already refused the union and this
+        # loop never merges, so a bridge is surfaced to the analyst, never merged. An auto-band straddle
+        # (which the fixpoint would otherwise have merged) is forced down to the review queue for the same
+        # reason a below-floor critical conflict is — a would-be merge stopped by a wall is the analyst's
+        # call, never a silent non-event. OFF ⇒ ``bridged_wall`` is never consulted (pre-D9, byte-unchanged).
+        wall = bridged_wall(a, b) if cfg.surface_wall_bridges else None
+        is_bridge = wall is not None and band in ("auto", "hitl")
+        if is_bridge and band == "auto":
+            band = "hitl"
         # D4 banked correction: a name-alone pair may not reach the review queue — it caps at `possible`.
-        # Raise pairs are exempt (an explicit assertion, or a stated critical disagreement, is more than a
-        # name), and the cap is a no-op unless the operator turned the dial on (default off ⇒ byte-unchanged).
-        capped = cfg.name_alone_caps_at_possible and not (has_raise or raised_wall) and _name_alone(bd)
+        # Raise pairs AND wall bridges are exempt (an explicit assertion, a stated critical disagreement,
+        # or a straddle across a hard wall is *more than a name coincidence*); the cap is a no-op unless
+        # the operator turned the dial on (default off ⇒ byte-unchanged).
+        capped = (
+            cfg.name_alone_caps_at_possible
+            and not (has_raise or raised_wall or is_bridge)
+            and _name_alone(bd)
+        )
         pfloor = cfg.possible_floor
         if band == "hitl" and not capped:
             res.candidates.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
             res.merge_breakdown[pair_key(a, b)] = bd
+            # A below-floor critical conflict (its own stated disagreement) takes precedence over the
+            # cluster-level bridge signal for the reason string; a plain bridge gets the D9 reason.
             if raised_wall:
                 res.candidate_reasons[pair_key(a, b)] = raise_walls[frozenset((a, b))]
+            elif is_bridge and wall is not None:
+                res.candidate_reasons[pair_key(a, b)] = _bridge_reason(wall)
         # The retained `possible` watch-list (D4): a scored pair in [possible_floor, hitl_low) that today
         # is dropped as `separate`, PLUS any name-alone pair the dial just capped down out of `hitl`. Kept
         # with its identity confidence/breakdown; Partition-only (never drawn — see view/pipeline). Absent

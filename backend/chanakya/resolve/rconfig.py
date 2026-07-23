@@ -169,6 +169,26 @@ class ResolveConfig:
         """
         return bool(self._extra("name_alone_caps_at_possible", False))
 
+    @property
+    def surface_wall_bridges(self) -> bool:
+        """D9 (Stage 3A-ii): surface a **bridge across a hard wall** as a HITL candidate — default ON.
+
+        A hard wall (a ``distinct_from`` / geo / hard-identifier veto) is a cannot-link enforced
+        transitively before any merge: a pair whose union would place both endpoints of a vetoed pair into
+        one cluster is refused, so the wall holds even across a chain of merges. That refusal is normally a
+        *silent* non-event. D9 turns it into an alarm: a pair refused **only** by the transitive wall — not
+        directly vetoed, yet its union would fuse a vetoed pair — that nonetheless scores as a genuine
+        would-be merge (merge band ``auto``/``hitl``) is surfaced to the analyst with its own reason and
+        **never merged** (the wall is untouched). It means the wall is wrong, the pair is a
+        conflation/extraction error, or it is deliberate deception — exactly what a human should see.
+
+        The corroboration gate reuses the existing merge bands (no new threshold — gate G6): a band
+        ``separate`` (incidental low-score) touch is not a bridge (D9 take-care: "gate on real corroboration
+        to both sides, not any incidental touch"). ON by default (target-first); an operator may set it
+        ``False`` to silence the alarm, reverting to the pre-D9 silent non-merge (byte-unchanged).
+        """
+        return bool(self._extra("surface_wall_bridges", True))
+
     # ── source-weighted identity assertions (D-2.5 / D-P3.4) ──────────────────────────────────
     @property
     def identity_default_weight(self) -> float:
