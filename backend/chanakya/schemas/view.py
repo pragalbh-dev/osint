@@ -131,10 +131,10 @@ class NodeView(_Assessed):
     materiality: MaterialityAttrs | None = None  # precomputed (SCORE); None until it runs
     # Retained per-attribute value history (D7, §1B). ADDITIVE: ``attrs`` above is unchanged (first-claim
     # -wins scalar); this maps each claim-asserted attribute → the full time-ordered series of every value
-    # asserted for it. ``exclude=True`` keeps it OFF the wire dump, so the frozen view JSON is byte-
-    # unchanged — it is an in-memory carrier for the in-process succession core (Stage 3B), not yet a wire
-    # contract. Empty until the assembler folds attrs.
-    attr_history: dict[str, list[AttrValueClaim]] = Field(default_factory=dict, exclude=True)
+    # asserted for it — the entity's timeline. SURFACED on the wire (a target output — "store previous
+    # values, makes the KG more useful"); the frozen ``expected_view.json`` must be regenerated to match
+    # (data-refresh ledger §A). Empty until the assembler folds attrs.
+    attr_history: dict[str, list[AttrValueClaim]] = Field(default_factory=dict)
 
 
 class EdgeView(_Assessed):
@@ -151,10 +151,10 @@ class EdgeView(_Assessed):
     # Identity confidence — lives ONLY on same-as edges, NEVER fed into assertion_confidence (G5).
     merge_confidence: float | None = None
     # Validity interval carried onto the edge (D7, §1B) — mirrors ``EventView.time_interval``, which
-    # already carries an interval end-to-end. Populated from the edge's claim ``event_time``(s). ADDITIVE
-    # and ``exclude=True`` (in-memory only; the frozen view JSON stays byte-unchanged). ``None`` when no
-    # supporting claim is dated.
-    time_interval: Period | DateValue | None = Field(default=None, exclude=True)
+    # already carries an interval end-to-end. Populated from the edge's claim ``event_time``(s). SURFACED
+    # on the wire (a target output; frozen ``expected_view.json`` regenerated to match — data-refresh
+    # ledger §A). ``None`` when no supporting claim is dated.
+    time_interval: Period | DateValue | None = Field(default=None)
 
 
 class EventView(_Assessed):

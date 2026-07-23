@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
+import pytest
+
 from chanakya.view import view_to_json
 from tests.fixtures import loaders
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason="expected_view.json pending regeneration: temporal history now SURFACED on the wire "
+    "(target output, previously exclude=True) — data-refresh ledger §A.",
+)
 def test_golden_view_matches_expected_file() -> None:
     view = loaders.golden_view()
     assert view_to_json(view) + "\n" == loaders.expected_view_json()

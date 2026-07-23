@@ -147,8 +147,10 @@ def test_golden_pipeline_populates_attr_history_and_edge_interval() -> None:
     assert edges["e:unit_acme:fields:comp_gizmo"].time_interval == ExactDate(iso_date="2021-03-01")
 
 
-def test_new_carriers_are_excluded_from_the_wire_dump() -> None:
-    # The additive invariant: neither carrier appears in view_to_json → the frozen golden stays byte-equal.
+def test_new_carriers_are_surfaced_on_the_wire() -> None:
+    # SURFACED (D7, §1B — reversing the earlier exclude=True): the timeline carriers now appear in
+    # view_to_json — a target output ("store previous values, makes the KG more useful"), not hidden to
+    # keep a fixture byte-stable. The frozen expected_view.json must be regenerated (data-refresh ledger §A).
     body = json.loads(view_to_json(loaders.golden_view()))
-    assert all("attr_history" not in n for n in body["nodes"])
-    assert all("time_interval" not in e for e in body["edges"])
+    assert any(n.get("attr_history") for n in body["nodes"]), "attr_history not surfaced on the wire"
+    assert any(e.get("time_interval") for e in body["edges"]), "time_interval not surfaced on the wire"
