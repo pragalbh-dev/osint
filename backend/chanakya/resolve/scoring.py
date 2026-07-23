@@ -20,6 +20,7 @@ from .entities import Entity, EntityGraph
 from .geo import separation_km
 from .normalize import name_similarity, normalize
 from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
+from .succession import ORDERED, classify_succession
 
 # Predicates by which a *source* directly asserts an identity (feeds source_asserted — an identity
 # signal, never claim credibility, gate G5). Strings, not numbers — G6 bans only numeric literals.
@@ -76,18 +77,43 @@ def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
     return km if km > min(stated) else None  # the stricter of the two types governs
 
 
-def _stated_values_conflict(a: Entity, b: Entity, attrs: list[str]) -> bool:
-    """True if some attr in ``attrs`` is **stated on both sides and different** (absence ≠ conflict).
+def attribute_is_conflict(a: Entity, b: Entity, attr: str, cfg: ResolveConfig) -> bool:
+    """Do ``a`` and ``b`` *conflict* on ``attr`` — a **time-aware** stated disagreement (Stage 3B-ii).
+
+    A conflict requires both sides to STATE ``attr`` with DIFFERENT values (absence ≠ conflict; the same
+    value on both sides ≠ conflict — exactly the old stated-different rule). The time-awareness is the one
+    added waiver: when the two values differ, it is **still** a conflict *unless* the attribute is declared
+    ``perishable`` for this type AND the two sides' retained value-series, taken together, form a clean
+    ``ordered`` succession — a legitimate update over time (an old value cleanly superseded by a newer one),
+    which is a state change, not a contradiction. A perishable attribute that changed once, cleanly, is not
+    evidence that two profiles are different entities; it is one entity whose state moved.
+
+    Everything else stays a conflict exactly as before: a ``contradiction`` (two values true over
+    overlapping/equal time), an ``unorderable`` set (a distinct value with no usable date), and — crucially
+    — **any** disagreement on an attribute not declared ``perishable is True`` (``None``/``False`` ⇒ a
+    durable/undeclared attribute never earns the waiver; only an explicit ``True`` enables it). Pure and
+    deterministic (reuses the offline :func:`classify_succession`; no clock/RNG/parse) — safe in the
+    ``rebuild()`` path (gates G1/G2), and byte-inert wherever no attribute is declared perishable.
+    """
+    va, vb = a.attrs.get(attr), b.attrs.get(attr)
+    if va is None or vb is None or va == vb:
+        return False  # absence ≠ conflict; same value ≠ conflict
+    if cfg.attribute_perishable(a.etype, attr) is True:
+        series = a.attr_history.get(attr, []) + b.attr_history.get(attr, [])
+        if classify_succession(series).status == ORDERED:
+            return False  # a clean perishable update over time is not an identity conflict
+    return True
+
+
+def _stated_values_conflict(a: Entity, b: Entity, attrs: list[str], cfg: ResolveConfig) -> bool:
+    """True if some attr in ``attrs`` is a **time-aware conflict** across ``a`` and ``b`` (absence ≠ conflict).
 
     The one shared detection ``has_hard_conflict``, ``critical_attribute_conflict`` and the scorer's soft
-    penalty all read, so "what counts as a stated attribute disagreement" has exactly one definition. A
-    side that simply doesn't state the attribute is *unknown*, never *different* — the geo veto's rule too.
+    penalty all read, so "what counts as a stated attribute disagreement" has exactly one definition — now
+    routed, per attribute, through :func:`attribute_is_conflict` so a clean perishable succession no longer
+    counts. A side that simply doesn't state the attribute is *unknown*, never *different*.
     """
-    for k in attrs:
-        va, vb = a.attrs.get(k), b.attrs.get(k)
-        if va is not None and vb is not None and va != vb:
-            return True
-    return False
+    return any(attribute_is_conflict(a, b, k, cfg) for k in attrs)
 
 
 def critical_attribute_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
@@ -101,7 +127,7 @@ def critical_attribute_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> boo
     """
     if a.etype != b.etype:
         return False
-    return _stated_values_conflict(a, b, cfg.critical_role_attrs(a.etype))
+    return _stated_values_conflict(a, b, cfg.critical_role_attrs(a.etype), cfg)
 
 
 def _value_meets_grade_floor(ent: Entity, attr: str, value: object, cfg: ResolveConfig) -> bool:
@@ -138,9 +164,7 @@ def critical_conflict_disposition(a: Entity, b: Entity, cfg: ResolveConfig) -> t
     if a.etype != b.etype:
         return ("none", ())
     conflicting = tuple(
-        k
-        for k in cfg.critical_role_attrs(a.etype)
-        if (va := a.attrs.get(k)) is not None and (vb := b.attrs.get(k)) is not None and va != vb
+        k for k in cfg.critical_role_attrs(a.etype) if attribute_is_conflict(a, b, k, cfg)
     )
     if not conflicting:
         return ("none", ())
@@ -171,7 +195,7 @@ def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     if geo_conflict_km(a, b, cfg) is not None:
         return True
     rules = cfg.attribute_rules(a.etype)  # LEGACY overloaded conflict list (backward compat; inert on C)
-    if _stated_values_conflict(a, b, rules.get("conflict", [])):
+    if _stated_values_conflict(a, b, rules.get("conflict", []), cfg):
         return True
     for field_name, spec in rules.get("numeric_conflict", {}).items():
         if _numeric_conflict(a.attrs.get(field_name), b.attrs.get(field_name), spec.get("rel_tol")):
@@ -246,8 +270,7 @@ def attribute_score(a: Entity, b: Entity, cfg: ResolveConfig, alias_idx: AliasIn
             if k in seen:
                 continue
             seen.add(k)
-            va, vb = a.attrs.get(k), b.attrs.get(k)
-            if va is not None and vb is not None and va != vb:
+            if attribute_is_conflict(a, b, k, cfg):  # time-aware: a clean perishable update is no penalty
                 penalty *= cpen
     npen = cfg.attribute_scoring("numeric_conflict_penalty")
     if npen is not None:
