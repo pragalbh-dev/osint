@@ -35,6 +35,18 @@ bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge)
   # literal, gate G6) — sub-hitl pairs drop exactly as before.
   possible_floor: 0.25
 
+# Stage 4 (D11) — identity-resolution COVERAGE. Read aggregate, the three-status tail is a collection
+# signal: a type for which the resolver keeps producing candidate (`probable`) and watch-list (`possible`)
+# identity links but can CONFIRM (`same_as`) few or none is a type the open sources are not corroborating —
+# so the honest response is "collect more here", not "tune the resolver". The `GET /coverage` summary flags
+# such a type when its unresolved load `(probable + possible) / max(confirmed, 1)` reaches this ratio.
+# A POLICY dial (surfaced in the summary): raise it to flag only the starkest gaps, lower it to be more
+# sensitive. 2.0 = "twice as many unconfirmable links as confirmed merges" — a conservative default that
+# fires only on a genuinely lopsided type, not on ordinary single-subject sparsity. Absent ⇒ gap detection
+# is OFF (counts still reported; `collection_gaps` empty) — no code literal, gate G6. Reporting-only: it
+# reads the partition, changes no merge decision and draws nothing, so the view JSON is byte-unchanged (G2).
+coverage_gap_ratio: 2.0
+
 # Per-type auto-merge floor (P3.5, 2026-07-21). The global auto_merge (0.85) sits at the deterministic score
 # ceiling, so the fuzzy fixpoint (Phase 2) never auto-merges — a deliberate precision floor, because on a
 # single-subject corpus the TOP of the score distribution is TRAPS (HQ-9 vs HQ-9B, PAF vs PAAD, a Karachi

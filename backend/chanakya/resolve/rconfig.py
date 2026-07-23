@@ -170,6 +170,20 @@ class ResolveConfig:
         return bool(self._extra("name_alone_caps_at_possible", False))
 
     @property
+    def coverage_gap_ratio(self) -> float | None:
+        """Unresolved-identity load at which an entity type reads as a COLLECTION GAP (Stage 4 / D11).
+
+        A policy dial for the identity-coverage summary (:func:`chanakya.view.coverage.identity_coverage`):
+        a type whose ``(probable + possible) / max(confirmed, 1)`` reaches this ratio is one the resolver
+        keeps producing candidate / watch-list links for but cannot CONFIRM — so the operator needs more
+        collection there, not a better resolver. Absent ⇒ this config-driven threshold is unset (the
+        summary still reports counts) — no code literal here (gate G6), matching every other band/threshold
+        dial. The shipped ``config/resolution.yaml`` sets it; config is authoritative for the production run.
+        """
+        v = self._extra("coverage_gap_ratio", None)
+        return float(v) if v is not None else None
+
+    @property
     def surface_wall_bridges(self) -> bool:
         """D9 (Stage 3A-ii): surface a **bridge across a hard wall** as a HITL candidate — default ON.
 

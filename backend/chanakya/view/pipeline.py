@@ -38,6 +38,7 @@ from chanakya.resolve import (
     identity_ledger,
     location_attr,
     resolve,
+    resolve_with_types,
 )
 from chanakya.schemas import (
     AssertionInput,
@@ -631,24 +632,52 @@ def apply_decision_effects(view: GraphView, decisions: Iterable[DecisionRecord])
 
 # ── the orchestrator ─────────────────────────────────────────────────────────────────────────
 
-def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view: GraphView | None = None) -> GraphView:
-    """Reduce the two logs + config to the knowledge view — pure & deterministic (G1, G2)."""
+def _prepare_active_claims(
+    evidence: object, decision: object, config: ConfigBundle
+) -> tuple[list[ClaimRecord], list[DecisionRecord]]:
+    """``rebuild()``'s claim-preparation prologue, factored out so a *second* pure read of the resolution
+    state (Stage-4 identity coverage, ``partition_with_types``) prepares claims through the EXACT same
+    path — zero drift risk. In order:
+
+    * replay both logs;
+    * ``apply_retractions`` — drop retracted claims (append-only, gate G3);
+    * ``apply_claim_exclusions`` — HITL reject drops the look upstream of scoring;
+    * the ``config.credibility.as_of`` rewind — a *past* as-of hides claims not yet available then, an
+      honest point-in-time view (``is_available_by`` is clock-free — G1); unset/future ⇒ no-op (G2);
+    * ``canonicalize_claims`` — orient relationship claims the producer did not canonicalize so
+      oppositely-phrased claims of one fact key to the same ``edge_instance`` and corroborate; a no-op
+      when the ontology declares no directions, reorienting only this derived view, never the log.
+
+    Pure & deterministic (G1/G2).
+    """
     claims: list[ClaimRecord] = _replay(evidence, ClaimRecord)
     decisions: list[DecisionRecord] = _replay(decision, DecisionRecord)
     active = apply_retractions(claims)
-    active = apply_claim_exclusions(active, decisions)  # HITL reject → drop the look upstream of scoring
-
-    # Rewind: a *past* ``config.credibility.as_of`` hides claims not yet available then, so "as of DATE"
-    # is an honest point-in-time view (is_available_by is clock-free — G1). Unset/future ⇒ no-op (G2).
+    active = apply_claim_exclusions(active, decisions)
     if config.credibility.as_of:
         active = [c for c in active if is_available_by(c, config.credibility.as_of)]
-
-    # Read-side canonical-direction net (INGEST canonical-edge-direction): orient any relationship claim
-    # whose producer could not (or did not) canonicalize its endpoints at write-time, so oppositely-phrased
-    # claims of one fact still key to the same edge_instance and corroborate. Pure & deterministic (G1/G2)
-    # and a no-op when the ontology declares no directions — it reorients only this derived view, never the
-    # immutable log (INGEST enforces the convention at write; this is the belt-and-suspenders fallback).
     active = canonicalize_claims(active, config)
+    return active, decisions
+
+
+def partition_with_types(
+    evidence: object, decision: object, config: ConfigBundle
+) -> tuple[Partition, dict[str, str]]:
+    """The resolver's identity :class:`Partition` + its entity→type map, from the same logs + config
+    ``rebuild()`` reads — the inputs the Stage-4 coverage summary (``GET /coverage``) folds over.
+
+    Claims are prepared through the identical prologue :func:`_prepare_active_claims`, so this reproduces
+    the partition behind the current view exactly; ``prev_view`` is irrelevant to the partition
+    (``resolve`` does not read it), so it is not needed here. A SEPARATE derivation from the drawn view —
+    it computes no nodes/edges and never touches the view JSON (gate G2).
+    """
+    active, decisions = _prepare_active_claims(evidence, decision, config)
+    return resolve_with_types(active, config, None, decisions)
+
+
+def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view: GraphView | None = None) -> GraphView:
+    """Reduce the two logs + config to the knowledge view — pure & deterministic (G1, G2)."""
+    active, decisions = _prepare_active_claims(evidence, decision, config)
 
     # 1. resolution — resolve() is a pure function of (claims, config, prev_view, decision log): the
     #    decision log carries the offline LLM proposer's frozen merge_proposal records + the analyst's

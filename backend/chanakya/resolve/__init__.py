@@ -52,6 +52,8 @@ from .scoring import (
 
 __all__ = [
     "resolve",
+    "resolve_with_types",
+    "ResolveConfig",
     "resolve_anchors",
     "AnchorResolution",
     "propose_candidates",
@@ -70,6 +72,36 @@ def resolve(
     decisions: list[DecisionRecord] | None = None,
 ) -> Partition:
     """Resolve claims into entities/edges: candidate-gen → bootstrap → relational fixpoint → places."""
+    partition, _types = _resolve(claims, config, prev_view, decisions)
+    return partition
+
+
+def resolve_with_types(
+    claims: list[ClaimRecord],
+    config: ConfigBundle,
+    prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
+) -> tuple[Partition, dict[str, str]]:
+    """:func:`resolve` + the resolver's entity→ontology-type map (Stage 4 identity coverage, D11).
+
+    Identical computation to :func:`resolve`: the returned ``Partition`` is byte-for-byte the one
+    :func:`resolve` returns (gate G2). It *additionally* returns ``{entity_id: type}`` for every entity
+    the resolver knows — the complete id universe the partition's ``same_as`` / ``candidates`` /
+    ``possible`` links can reference (claim-backed entities, registry-seeded priors, and minted
+    triple-endpoints, after node-type refinement). It is a **read** of the resolver's own typing (never a
+    second, divergent notion of an entity's type), and is the ``type_of`` source
+    :func:`chanakya.view.coverage.identity_coverage` consumes.
+    """
+    return _resolve(claims, config, prev_view, decisions)
+
+
+def _resolve(
+    claims: list[ClaimRecord],
+    config: ConfigBundle,
+    prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
+) -> tuple[Partition, dict[str, str]]:
+    """Shared body: the identity :class:`Partition` + the resolver's post-refinement entity→type map."""
     cfg = ResolveConfig.from_bundle(config)
     lane = EdgeLaneIndex(config.ontology)  # the edge index: endpoint typing + the functional instance key
     graph = entities.build(claims, lane)
@@ -149,7 +181,12 @@ def resolve(
     places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
 
-    return _to_partition(claims, result, mention, minted, place_of, lane, graph)
+    partition = _to_partition(claims, result, mention, minted, place_of, lane, graph)
+    # The resolver's own typing, for Stage-4 coverage (D11): every entity id the partition can reference
+    # — claim-backed, registry-seeded, or minted endpoint — mapped to its refined ontology type. A read,
+    # not a re-derivation: ``graph.entities`` is the exact universe the merge decisions scored over.
+    type_map = {eid: ent.etype for eid, ent in graph.entities.items()}
+    return partition, type_map
 
 
 # ── the entity registry as a resolution prior (P3.0) ───────────────────────────────────────────
