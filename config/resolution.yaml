@@ -25,6 +25,15 @@ merge_weights:
 bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge) -> HITL; < hitl_low -> keep separate
   auto_merge: 0.85
   hitl_low: 0.45
+  # D4 Stage 2 — the retained `possible` tier (identity as a three-status hypothesis). A pair scored in
+  # [possible_floor, hitl_low) is no longer DROPPED as `separate`; it is kept as a latent watch-list link
+  # (confidence + breakdown), OFF the analyst's desk. This is the antidote to fragmentation: the
+  # unresolved tail is neither a false merge nor a lonely singleton — it is an honest `possible` link the
+  # analyst can see but is not pestered by. In-memory ONLY (Partition.possible) — never drawn as a wire
+  # edge, so the view JSON is byte-unchanged. A policy dial (Stage 4 exposes it): lower it to widen the
+  # watch-list, raise it to keep only the more-plausible latent links. Absent => the tier is off (no code
+  # literal, gate G6) — sub-hitl pairs drop exactly as before.
+  possible_floor: 0.25
 
 # Per-type auto-merge floor (P3.5, 2026-07-21). The global auto_merge (0.85) sits at the deterministic score
 # ceiling, so the fuzzy fixpoint (Phase 2) never auto-merges — a deliberate precision floor, because on a
@@ -118,6 +127,19 @@ identity_source_weight_default: 1.0  # weight for a source the registry has neve
                                      # because a same-as is structurally raise-only: HITL, never auto-merge.
 identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analyst's time. 0.0 = surface them
                                      # all (recall-biased triage); raise it if the merge queue ever floods.
+
+# D4 banked correction — a bare NAME match must never spend analyst attention. When true, a pair whose
+# ONLY nonzero identity signal is `attribute` (i.e. relational == 0 AND source_asserted == 0) may NOT reach
+# `probable`/HITL — it is capped at `possible` (the watch-list). `temporal_consistency` is a near-constant
+# background term, not an identity signal, so it is not counted. A raise-only channel (a source-asserted or
+# LLM-proposed pair) is exempt: an explicit external assertion is more than a name, so it still reaches the
+# analyst. DEFAULT FALSE preserves current banding exactly — no existing candidate is reclassified. The cap
+# only routes an over-eager name match down to `possible`; it never merges, never vetoes. (Requires
+# `possible_floor` for the capped pair to land somewhere; without it the capped pair simply drops.)
+# TARGET DEFAULT: on. A bare name match is `possible`, never `probable` (D4 banked correction). If this
+# reclassifies a synthetic candidate the answer key still expects, that is a DATA-REFRESH item (logged in
+# the calibration ledger), not a reason to default it off — the demo data bends to the target, not vice versa.
+name_alone_caps_at_possible: true
 
 # In-document coreference (INGEST extraction pass 2, ingest/coref.py): which evidence categories may
 # BOOTSTRAP (auto-merge) rather than merely raise. This is the one signal allowed past the raise-only rule

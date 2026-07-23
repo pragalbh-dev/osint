@@ -47,6 +47,7 @@ from .scoring import (
     IDENTITY_PREDICATES,
     critical_attribute_conflict,
     has_hard_conflict,
+    identity_ledger,
 )
 
 __all__ = [
@@ -55,6 +56,7 @@ __all__ = [
     "AnchorResolution",
     "propose_candidates",
     "location_attr",
+    "identity_ledger",
     "IDENTITY_PREDICATES",
     "DISTINCT_PREDICATES",
     "COREF_PREDICATE",
@@ -699,6 +701,7 @@ def _to_partition(
         resolved_ref=resolved_ref,
         same_as=result.same_as,
         candidates=result.candidates,
+        possible=result.possible,
         distinct_from=result.distinct_from,
         merge_confidence=result.merge_confidence,
         merge_breakdown=result.merge_breakdown,

@@ -13,13 +13,13 @@ This is what keeps a relocation from masquerading as a shared-neighbourhood merg
 from __future__ import annotations
 
 from collections import defaultdict
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from .aliases import AliasIndex
 from .entities import Entity, EntityGraph
 from .geo import separation_km
 from .normalize import name_similarity, normalize
-from .rconfig import ATTRIBUTE, RELATIONAL, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
+from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
 
 # Predicates by which a *source* directly asserts an identity (feeds source_asserted — an identity
 # signal, never claim credibility, gate G5). Strings, not numbers — G6 bans only numeric literals.
@@ -347,3 +347,24 @@ def merge_score(
 
 def _clamp(x: float) -> float:
     return max(0.0, min(1.0, x))
+
+
+def identity_ledger(breakdown: Mapping[str, float]) -> list[dict[str, float | str]]:
+    """The merge's own corroboration ledger, derived purely from a stored ``merge_breakdown`` (D4).
+
+    "Merge corroboration, not assertion corroboration": one entry per independent identity signal
+    (:data:`SIGNALS` — ``attribute`` / ``relational`` / ``temporal_consistency`` / ``source_asserted``)
+    whose raw value is **> 0**, in signal order (deterministic — gate G2). It records *which* independent
+    lines of evidence say two profiles co-refer, with their values — the merge's own accounting, separate
+    from whether any fact about the entity is true (gate G5).
+
+    Empty for a degenerate breakdown carrying only ``total`` (nothing corroborated), so a caller records it
+    only when there is something to record — keeping the pre-Stage-2 provenance shape byte-identical where
+    no signal fired. Pure function of the breakdown ⇒ callable on any stored breakdown, incl. a confirmed
+    merge's ``resolved_from`` entry.
+    """
+    return [
+        {"signal": sig, "value": float(breakdown[sig])}
+        for sig in SIGNALS
+        if breakdown.get(sig, 0.0) > 0
+    ]

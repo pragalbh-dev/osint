@@ -32,7 +32,13 @@ from chanakya.credibility import (
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
 from chanakya.ontology import EdgeLaneIndex, NodeTypeIndex
-from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
+from chanakya.resolve import (
+    COREF_PREDICATE,
+    IDENTITY_PREDICATES,
+    identity_ledger,
+    location_attr,
+    resolve,
+)
 from chanakya.schemas import (
     AssertionInput,
     AttrValueClaim,
@@ -194,6 +200,14 @@ def _merge_provenance(nodes: dict[str, NodeView], partition: Partition) -> None:
         breakdown = partition.merge_breakdown.get(key)
         if breakdown:
             entry["breakdown"] = breakdown
+            # D4 Stage 2 — the merge's own corroboration ledger, ADDITIVELY beside ``breakdown`` (never
+            # replacing it): which independent identity signals corroborated this confirmed merge, with
+            # their values ("merge corroboration, not assertion corroboration"). Derived purely from the
+            # breakdown, and recorded ONLY when a signal fired — a degenerate breakdown ({"total": …}) adds
+            # no key, so the pre-Stage-2 ``resolved_from`` shape is preserved byte-for-byte.
+            ledger = identity_ledger(breakdown)
+            if ledger:
+                entry["identity_ledger"] = ledger
         node.attrs.setdefault("resolved_from", []).append(entry)
 
 
@@ -210,6 +224,13 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
     for a, b in sorted(partition.candidates):
         if a in node_ids and b in node_ids:
             key = pair_key(a, b)
+            breakdown = partition.merge_breakdown.get(key, {})
+            # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
+            # which independent identity signals corroborated this candidate. Only when a signal fired.
+            attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
+            ledger = identity_ledger(breakdown)
+            if ledger:
+                attrs["identity_ledger"] = ledger
             out.append(
                 EdgeView(
                     id=f"same-as:{key}",
@@ -223,7 +244,7 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
                     # alone), but where a source did speak, the analyst must be able to read it — and
                     # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
                     claim_ids=list(partition.identity_claims.get(key, [])),
-                    attrs={"merge_band": "candidate", "breakdown": partition.merge_breakdown.get(key, {})},
+                    attrs=attrs,
                 )
             )
     for a, b in sorted(partition.distinct_from):

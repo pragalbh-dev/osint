@@ -57,6 +57,13 @@ class Partition(Record):
     resolved_ref: dict[str, ResolvedRef] = {}  # claim_id → resolved_ref (shared entity_id ⇒ collapse to one node)
     same_as: list[tuple[str, str]] = []  # accepted merges (member, canonical) — collapse via resolved_ref
     candidates: list[tuple[str, str]] = []  # HITL-band pairs kept separate → candidate same-as edges + review queue
+    # D4 Stage 2 — identity as a three-status hypothesis. ``possible`` is the retained watch-list: pairs
+    # scored in ``[possible_floor, hitl_low)`` that today would be dropped as ``separate``. Kept as latent
+    # links (their ``merge_confidence``/``merge_breakdown`` still ride the same dicts) so the unresolved tail
+    # is neither a false merge nor a lonely singleton — the antidote to fragmentation. **In-memory ONLY**:
+    # never rendered as a wire edge (unlike ``candidates``), so the drawn view JSON is byte-unchanged. The
+    # status label for any identity link (confirmed / probable / possible) is :meth:`identity_status`.
+    possible: list[tuple[str, str]] = []  # retained sub-HITL identity links (watch-list) — NOT drawn
     distinct_from: list[tuple[str, str]] = []  # explicit do-not-merge (FD-2000 ≠ FT-2000) — hard veto before banding
     merge_confidence: dict[str, float] = {}  # pair_key(a, b) → identity confidence (same_as + candidates)
     merge_breakdown: dict[str, dict[str, float]] = {}  # pair_key(a, b) → {attribute, relational, temporal_consistency, source_asserted, total}
@@ -84,6 +91,24 @@ class Partition(Record):
     # map — had a reader and no writer. Keyed by the POST-merge canonical entity id so ``rebuild()`` can
     # stamp it straight onto the node. Empty ⇒ nothing matched a curated anchor ⇒ view unchanged (G2).
     place_refs: dict[str, PlaceRef] = {}  # canonical entity id → its curated-gazetteer anchor + evidence
+
+    def identity_status(self, a: str, b: str) -> str | None:
+        """The three-status label for an identity link (D4): ``confirmed`` | ``probable`` | ``possible``.
+
+        ``confirmed`` — an accepted merge (in :attr:`same_as`, collapsed to one node); ``probable`` — a
+        HITL candidate ``same-as`` edge (in :attr:`candidates`); ``possible`` — a retained sub-review link
+        (in :attr:`possible`, the watch-list). ``None`` when the resolver never linked the two. Membership
+        is order-independent. This is the derived status axis Stage 3C (link weighting) and Stage 4
+        (coverage) consume; it *reports*, it draws nothing.
+        """
+        pair = frozenset((a, b))
+        if any(frozenset(p) == pair for p in self.same_as):
+            return "confirmed"
+        if any(frozenset(p) == pair for p in self.candidates):
+            return "probable"
+        if any(frozenset(p) == pair for p in self.possible):
+            return "possible"
+        return None
 
 
 class AssertionInput(Record):

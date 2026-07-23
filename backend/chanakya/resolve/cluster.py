@@ -52,6 +52,7 @@ class ResolveResult:
     canonical: dict[str, str] = field(default_factory=dict)  # merged eid → display canonical id
     same_as: list[tuple[str, str]] = field(default_factory=list)  # (member, canonical)
     candidates: list[tuple[str, str]] = field(default_factory=list)  # HITL-band pairs (sorted)
+    possible: list[tuple[str, str]] = field(default_factory=list)  # retained sub-HITL watch-list (D4; NOT drawn)
     distinct_from: list[tuple[str, str]] = field(default_factory=list)  # vetoed pairs surfaced as edges
     merge_confidence: dict[str, float] = field(default_factory=dict)
     merge_breakdown: dict[str, dict[str, float]] = field(default_factory=dict)
@@ -91,6 +92,17 @@ def _band(bd: dict[str, float], cfg: ResolveConfig, has_raise: bool, auto_merge:
     if bd["total"] >= cfg.hitl_low or has_raise:
         return "hitl"
     return "separate"
+
+
+def _name_alone(bd: dict[str, float]) -> bool:
+    """True when the ONLY nonzero *identity* signal is the name/attribute term (D4 banked correction).
+
+    ``temporal_consistency`` is a near-constant background term (1.0 on any non-relocation pair), not a
+    line of identity evidence, so it is deliberately excluded — the test is purely ``relational == 0`` and
+    ``source_asserted == 0``. A pair that agrees on nothing but its name has not *earned* an analyst's
+    attention; with the policy dial on it caps at ``possible`` rather than reaching the review queue.
+    """
+    return bd[ATTRIBUTE] > 0 and bd[RELATIONAL] == 0 and bd[SOURCE_ASSERTED] == 0
 
 
 def _candidate_pairs(
@@ -329,8 +341,23 @@ def resolve_entities(
             continue
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
         floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
-        if _band(bd, cfg, has_raise=frozenset((a, b)) in raise_only, auto_merge=floor) == "hitl":
+        has_raise = frozenset((a, b)) in raise_only
+        band = _band(bd, cfg, has_raise=has_raise, auto_merge=floor)
+        # D4 banked correction: a name-alone pair may not reach the review queue — it caps at `possible`.
+        # Raise-only pairs are exempt (an explicit external assertion is more than a name), and the cap
+        # is a no-op unless the operator turned the dial on (default off ⇒ current banding, byte-unchanged).
+        capped = cfg.name_alone_caps_at_possible and not has_raise and _name_alone(bd)
+        pfloor = cfg.possible_floor
+        if band == "hitl" and not capped:
             res.candidates.append((a, b))
+            res.merge_confidence[pair_key(a, b)] = bd["total"]
+            res.merge_breakdown[pair_key(a, b)] = bd
+        # The retained `possible` watch-list (D4): a scored pair in [possible_floor, hitl_low) that today
+        # is dropped as `separate`, PLUS any name-alone pair the dial just capped down out of `hitl`. Kept
+        # with its identity confidence/breakdown; Partition-only (never drawn — see view/pipeline). Absent
+        # `possible_floor` ⇒ the tier is off and the pair drops exactly as before.
+        elif pfloor is not None and bd["total"] >= pfloor:
+            res.possible.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
             res.merge_breakdown[pair_key(a, b)] = bd
 
@@ -432,6 +459,23 @@ def finalise(
         {as_pair(p) for p in res.candidates if uf.find(p[0]) != uf.find(p[1]) and as_pair(p) not in distinct}
     )
     res.distinct_from = sorted(distinct)
+
+    # The retained `possible` watch-list (D4) survives the reset on the SAME rule as candidates — a pair
+    # that later merged, was vetoed apart, or was promoted to a candidate is no longer merely "possible" —
+    # and carries its identity confidence/breakdown through. Partition-only; nothing here is drawn.
+    cand_set = set(res.candidates)
+    possible_surv = {
+        as_pair(p)
+        for p in res.possible
+        if uf.find(p[0]) != uf.find(p[1]) and as_pair(p) not in distinct and as_pair(p) not in cand_set
+    }
+    for a, b in sorted(possible_surv):
+        key = pair_key(a, b)
+        if key in raw_conf:
+            res.merge_confidence[key] = raw_conf[key]
+        if key in raw_bd:
+            res.merge_breakdown[key] = raw_bd[key]
+    res.possible = sorted(possible_surv)
 
 
 def _rep[T](raw: dict[str, T], m: str, key: str, default: T) -> T:

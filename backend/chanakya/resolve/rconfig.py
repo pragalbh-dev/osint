@@ -133,6 +133,24 @@ class ResolveConfig:
     def hitl_low(self) -> float:
         return float(self._r.bands["hitl_low"])
 
+    @property
+    def possible_floor(self) -> float | None:
+        """Lower bound of the retained ``possible`` watch-list tier (D4 Stage 2).
+
+        A scored pair in ``[possible_floor, hitl_low)`` — today dropped as ``separate`` — is kept as a
+        latent identity link (Partition-only; never drawn). Absent ⇒ the tier is off and sub-hitl pairs
+        drop exactly as before (no code literal, gates G2/G6). A policy dial (Stage 4 surfaces it).
+        """
+        v = self._r.bands.get("possible_floor")
+        return float(v) if v is not None else None
+
+    @property
+    def name_alone_caps_at_possible(self) -> bool:
+        """D4 banked correction: a pair whose ONLY nonzero identity signal is ``attribute`` (name) may not
+        reach ``probable``/HITL — it caps at ``possible``. Default ``False`` ⇒ current banding, byte-unchanged.
+        """
+        return bool(self._extra("name_alone_caps_at_possible", False))
+
     # ── source-weighted identity assertions (D-2.5 / D-P3.4) ──────────────────────────────────
     @property
     def identity_default_weight(self) -> float:

@@ -55,15 +55,21 @@ def mk_config(
     entity_geo_conflict_max_km: dict[str, float] | None = None,
     relational_support_k: int | None = None,
     auto_merge_by_type: dict[str, float] | None = None,
+    possible_floor: float | None = None,
+    name_alone_caps_at_possible: bool = False,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
+    bands = dict(BANDS)
+    if possible_floor is not None:
+        bands["possible_floor"] = possible_floor
     resolution = ResolutionConfig(
         coref_authoritative_evidence=coref_authoritative_evidence or [],
         entity_geo_conflict_max_km=entity_geo_conflict_max_km or {},
         relational_support_k=relational_support_k,
         auto_merge_by_type=auto_merge_by_type or {},
+        name_alone_caps_at_possible=name_alone_caps_at_possible,
         merge_weights=dict(WEIGHTS),
-        bands=dict(BANDS),
+        bands=bands,
         blocking_keys=blocking_keys or ["type", "country_or_domain_namespace", "name_token"],
         alias_table=alias_table or {},
         transliteration=transliteration or {},
