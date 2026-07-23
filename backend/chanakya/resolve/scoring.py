@@ -76,14 +76,44 @@ def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
     return km if km > min(stated) else None  # the stricter of the two types governs
 
 
+def _stated_values_conflict(a: Entity, b: Entity, attrs: list[str]) -> bool:
+    """True if some attr in ``attrs`` is **stated on both sides and different** (absence ≠ conflict).
+
+    The one shared detection ``has_hard_conflict``, ``critical_attribute_conflict`` and the scorer's soft
+    penalty all read, so "what counts as a stated attribute disagreement" has exactly one definition. A
+    side that simply doesn't state the attribute is *unknown*, never *different* — the geo veto's rule too.
+    """
+    for k in attrs:
+        va, vb = a.attrs.get(k), b.attrs.get(k)
+        if va is not None and vb is not None and va != vb:
+            return True
+    return False
+
+
+def critical_attribute_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """A STATED disagreement on a declared-**critical** attribute (D5/D6) — the attribute wall only.
+
+    The detection the critical→veto contributor (``resolve._critical_attribute_veto``) rides: a stated,
+    different value on an attribute the config declares ``critical`` for this type is a cannot-link no
+    similarity score may cross. Same-type only (a cross-type pair is handled by its own type gate, not by
+    THIS attribute rail), and absence is never disagreement. Type/geo walls stay separate rails — see
+    :func:`has_hard_conflict`, which composes this with them.
+    """
+    if a.etype != b.etype:
+        return False
+    return _stated_values_conflict(a, b, cfg.critical_role_attrs(a.etype))
+
+
 def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """True if a configured hard-conflict attribute is **stated on both sides and different**.
 
     The over-merge rail for an *authoritative* coreference merge (proposal §4): a cluster that looks
     coreferent but whose entities disagree on a hard attribute (origin country, designator, a numeric
-    spec beyond tolerance) must go to an analyst rather than merge. Deliberately reads the same
-    ``attribute_rules`` the scorer's conflict penalty uses, so "what counts as a contradiction" has one
-    definition. An attribute stated on only one side is **not** a conflict — absence is not disagreement.
+    spec beyond tolerance) must go to an analyst rather than merge. It composes three hard rails: a type
+    mismatch, a geographic impossibility, the legacy overloaded ``attribute_rules.conflict`` list (kept
+    for backward compatibility), and the declared-**critical** roles (D6) via
+    :func:`critical_attribute_conflict`. An attribute stated on only one side is **not** a conflict —
+    absence is not disagreement.
     """
     if a.etype != b.etype:
         return True
@@ -92,15 +122,13 @@ def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     # merge the cluster-level veto exists to refuse.
     if geo_conflict_km(a, b, cfg) is not None:
         return True
-    rules = cfg.attribute_rules(a.etype)
-    for k in rules.get("conflict", []):
-        va, vb = a.attrs.get(k), b.attrs.get(k)
-        if va is not None and vb is not None and va != vb:
-            return True
+    rules = cfg.attribute_rules(a.etype)  # LEGACY overloaded conflict list (backward compat; inert on C)
+    if _stated_values_conflict(a, b, rules.get("conflict", [])):
+        return True
     for field_name, spec in rules.get("numeric_conflict", {}).items():
         if _numeric_conflict(a.attrs.get(field_name), b.attrs.get(field_name), spec.get("rel_tol")):
             return True
-    return False
+    return critical_attribute_conflict(a, b, cfg)  # D6: declared-critical roles are hard too
 
 Canonical = Callable[[str], str]
 
@@ -154,11 +182,22 @@ def attribute_score(a: Entity, b: Entity, cfg: ResolveConfig, alias_idx: AliasIn
         equal = sum(1 for k in present if a.attrs[k] == b.attrs[k])
         sim = max(sim, equal / len(present))
 
-    # Hard-conflict attrs pull the score down (the false-merge guard).
+    # A disagreement on a SOFT identity attribute pulls the score down (the false-merge guard). Two
+    # sources feed it, deduplicated: the legacy overloaded ``attribute_rules.conflict`` list (unchanged),
+    # and the declared-**supporting** roles (D6) — for which a stated disagreement is soft negative
+    # evidence, never a wall (that is the critical role's job). Gated on ``conflict_penalty`` being
+    # configured, so it stays inert wherever the penalty is unset (no code literal, gate G6).
     penalty = 1.0
     cpen = cfg.attribute_scoring("conflict_penalty")
     if cpen is not None:
-        for k in rules.get("conflict", []):
+        soft_attrs: list[str] = list(rules.get("conflict", []))
+        if a.etype == b.etype:
+            soft_attrs += cfg.supporting_role_attrs(a.etype)
+        seen: set[str] = set()
+        for k in soft_attrs:
+            if k in seen:
+                continue
+            seen.add(k)
             va, vb = a.attrs.get(k), b.attrs.get(k)
             if va is not None and vb is not None and va != vb:
                 penalty *= cpen

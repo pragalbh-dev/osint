@@ -263,6 +263,52 @@ toponym_descriptive_markers: [",", "~", "/", " km "]
 # false / absent => off.
 place_bind_on_curated_toponym: true
 
+# ── attribute roles (D5/D6): critical / supporting / neutral, per entity type ────────────────────
+# Every attribute has an identity ROLE. UNLISTED ⇒ NEUTRAL (no identity effect) — the safe, extendable
+# default, so this block never has to enumerate the whole ontology.
+#   * critical   — a STATED disagreement is a HARD veto: a cannot-link no similarity score may cross,
+#                  enforced before scoring and transitively (the D5 wall, generalised from the geographic
+#                  and hard-identifier walls to declared attributes). Absence is never a conflict.
+#   * supporting — agreement raises identity confidence; a stated disagreement is a SOFT penalty
+#                  (× attribute_scoring.conflict_penalty), never fatal. Inert here until conflict_penalty
+#                  is configured (it is not), so these declarations are documentation + a later-stage seam.
+#   * perishable — OPTIONAL, SCHEMA ONLY in this stage: durable (false) vs a value expected to change over
+#                  time (true). Read but NOT yet consumed — the update-vs-stale framework (D8) lands later.
+# Conservative starter taxonomy (err toward NOT walling). Exactly ONE critical is wired — variant
+# .operator_branch, the D5 marquee wall — and it was verified ADDITIVE-AND-INERT on the frozen corpus:
+# no variant STATES operator_branch (the China/Pakistan traps are already held apart by
+# config/entities.yaml distinct_from), so it produces zero veto pairs and changes no partition. It is
+# declared anyway because the mechanism must be designed for the discipline, not for the corpus in hand.
+#
+# NORMALISATION FINDING (why unit.service_branch and trading_org.origin_country are NOT critical). Both
+# are natural D5 walls in principle (a different branch / country ⇒ a different entity), but the corpus
+# STATES them unnormalised: service_branch appears as 'Air Force' / 'PAF' / 'Pakistan Air Force' (all one
+# branch) and 'Army' / 'Pakistan Army'; origin_country as 'CHINA' vs 'China'. A critical veto compares
+# values exactly (absence ≠ conflict, but 'CHINA' ≠ 'China'), so walling them SHATTERS legitimate merges —
+# it split the three SINO-GALAXY trading-org spellings and would false-wall 'PAF' from 'PAF air defense
+# units'. So they are SUPPORTING here (identity-relevant, never a wall); promoting them to critical needs
+# value normalisation first (a later stage). This is the honest limit of an exact-match wall on this data.
+attribute_roles:
+  variant:
+    operator_branch: {role: critical}                 # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
+                                                       # cannot be one entity — a stated branch difference is a wall.
+                                                       # Currently inert: no variant states operator_branch.
+    family:          {role: supporting, perishable: false}   # a durable spec — a disagreement lowers confidence.
+    range_class:     {role: supporting, perishable: false}
+  unit:
+    service_branch:  {role: supporting, perishable: false}   # a D5 wall in principle, but the corpus states it
+                                                             # unnormalised (Air Force / PAF / Pakistan Air Force) —
+                                                             # see the normalisation finding above. Kept soft for now.
+  trading_org:
+    origin_country:  {role: supporting, perishable: false}   # likewise: 'CHINA' vs 'China' would false-wall the
+                                                             # SINO-GALAXY spellings. NOT a namespace field, so it
+                                                             # would be a genuinely new wall once values are normalised.
+  component:
+    radar_band:      {role: supporting, perishable: false}
+    component_class: {role: supporting, perishable: false}
+  manufacturer:
+    tier:            {role: supporting, perishable: false}
+
 # Non-place keep-separate traps (the geographic Karachi-Port vs Port-Qasim pair lives in places.yaml's
 # own distinct_from field — intentionally NOT duplicated here).
 distinct_from:

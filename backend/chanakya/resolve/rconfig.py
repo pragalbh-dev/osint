@@ -28,6 +28,13 @@ TEMPORAL = "temporal_consistency"
 SOURCE_ASSERTED = "source_asserted"
 SIGNALS = (ATTRIBUTE, RELATIONAL, TEMPORAL, SOURCE_ASSERTED)
 
+# Attribute-role names (D5/D6) — an attribute's declared bearing on IDENTITY, per entity type. Strings,
+# not numbers, so gate G6 (no magic numbers in ``resolve/``) is untouched. The default for any undeclared
+# attribute is NEUTRAL (no identity effect) — the safe, extendable default.
+ROLE_CRITICAL = "critical"      # a STATED disagreement is a hard veto (feeds the D5 wall)
+ROLE_SUPPORTING = "supporting"  # agreement raises the score; a stated disagreement is a SOFT penalty
+ROLE_NEUTRAL = "neutral"        # no identity effect (and the default for an undeclared attribute)
+
 
 class ResolveConfig:
     """A read-through view over the resolution + places + entity-registry config surfaces."""
@@ -248,6 +255,51 @@ class ResolveConfig:
         """A named attribute-scoring knob (conflict_penalty, numeric_conflict_penalty, name_floor)."""
         v = self._extra("attribute_scoring", {}).get(name)
         return float(v) if v is not None else None
+
+    # ── attribute roles (D5/D6): critical / supporting / neutral, per entity type ───────────────
+    def attribute_roles(self, entity_type: str) -> dict[str, Any]:
+        """Raw per-type attribute-role declarations (D6); default ``{}`` (every attribute neutral).
+
+        The declarative block an author writes in ``config/resolution.yaml``::
+
+            attribute_roles:
+              <entity_type>:
+                <attr_name>: {role: critical|supporting|neutral, perishable: true|false}
+
+        ``role`` decides identity bearing (compiled by :meth:`critical_role_attrs` /
+        :meth:`supporting_role_attrs`); the optional ``perishable`` flag is SCHEMA ONLY in Stage 1A —
+        read by :meth:`attribute_perishable` but not yet consumed by any behaviour (the update/stale
+        framework, D8, lands later). An attribute not listed here is **neutral** — no identity effect.
+        """
+        return dict(self._extra("attribute_roles", {}).get(entity_type, {}))
+
+    def _role_attrs(self, entity_type: str, role: str) -> list[str]:
+        """Attributes of ``entity_type`` declared with ``role``, sorted (deterministic — gate G2)."""
+        roles = self._extra("attribute_roles", {}).get(entity_type, {})
+        return sorted(a for a, spec in roles.items() if isinstance(spec, dict) and spec.get("role") == role)
+
+    def critical_role_attrs(self, entity_type: str) -> list[str]:
+        """Compiler: attrs whose STATED disagreement is a hard veto (the D5 wall). Absent ⇒ ``[]``.
+
+        Lowered onto the existing detectors — :func:`scoring.critical_attribute_conflict` (and through it
+        the veto contributor + :func:`scoring.has_hard_conflict`) — rather than a second scoring path.
+        """
+        return self._role_attrs(entity_type, ROLE_CRITICAL)
+
+    def supporting_role_attrs(self, entity_type: str) -> list[str]:
+        """Compiler: attrs whose disagreement is a SOFT penalty in ``attribute_score``, never a wall."""
+        return self._role_attrs(entity_type, ROLE_SUPPORTING)
+
+    def attribute_perishable(self, entity_type: str, attr: str) -> bool | None:
+        """Whether a declared attribute is PERISHABLE (durable ⇒ ``False``). SCHEMA ONLY (Stage 1A).
+
+        Read here but not yet consumed: the perishable/durable distinction drives the update-vs-stale
+        framework (D8) in a later stage. ``None`` ⇒ the attribute declares no perishability.
+        """
+        spec = self.attribute_roles(entity_type).get(attr)
+        if not isinstance(spec, dict) or "perishable" not in spec:
+            return None
+        return bool(spec["perishable"])
 
     def geo_conflict_max_km(self, entity_type: str | None) -> float | None:
         """How far apart two entities of this type may *state* they are and still be one entity.

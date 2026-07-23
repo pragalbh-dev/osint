@@ -45,6 +45,7 @@ from .scoring import (
     COREF_PREDICATE,
     DISTINCT_PREDICATES,
     IDENTITY_PREDICATES,
+    critical_attribute_conflict,
     has_hard_conflict,
 )
 
@@ -114,7 +115,13 @@ def resolve(
     # do-not-merge about a mention that only *became* an entity in the line above. Idempotent (a set union).
     # T3b-C — and add the hard-identifier rail: two entities whose names state DIFFERENT bill-of-lading /
     # contract references are a veto, not a low score (config/ontology.yaml ``identifier_patterns``).
-    veto |= _claim_distinct_pairs(graph, cfg, alias_idx) | _identifier_veto(graph, cfg)
+    # D5/D6 — and the declared-critical-attribute rail: two same-type entities STATING different values of
+    # a critical attribute (a different country/branch, a unique serial) are a wall no score may cross.
+    veto |= (
+        _claim_distinct_pairs(graph, cfg, alias_idx)
+        | _identifier_veto(graph, cfg)
+        | _critical_attribute_veto(graph, cfg)
+    )
 
     # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
@@ -428,6 +435,39 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
     for members in by_type.values():
         for (a, ident_a), (b, ident_b) in unordered_pairs(members):
             if ident_a != ident_b:
+                out.add(frozenset((a, b)))
+    return out
+
+
+# ── D5/D6: the declared-critical-attribute rail (a country/branch/serial disagreement is a wall) ──
+
+def _critical_attribute_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
+    """Two same-type entities STATING different values of a declared-**critical** attribute → a hard veto.
+
+    The D5 wall, generalised from the geographic (``geo_conflict_km``) and hard-identifier
+    (:func:`_identifier_veto`) rails to *any* attribute the ontology's ``attribute_roles`` declares
+    ``critical`` for a type — a stated different country / operator branch / service branch / unique
+    serial is a cannot-link no similarity score may cross. It joins the veto set beside the identifier
+    rail, so transitive enforcement and the before-scoring guard are already handled by the existing
+    machinery (``cluster.vetoed`` / ``violates_veto_transitively``), and — like the identifier veto — the
+    refused pair stays **drawn** in the view so the analyst can see the wall.
+
+    Reuses :func:`scoring.critical_attribute_conflict` (same-type, absence ≠ conflict), so "what counts as
+    a critical disagreement" has one definition shared with ``has_hard_conflict``. A type that declares no
+    critical attribute is unaffected; a pair where either side is silent is never walled.
+
+    SEAM (Stage 3A): the veto is deliberately **unconditional** here. The credibility floor on the
+    vetoing claim (D5 take-care (a) — one flaky low-grade source must not shatter a well-corroborated
+    merge, only flag it) is a later stage; this rail wires the critical→veto plainly first.
+    """
+    by_type: dict[str, list[str]] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        if cfg.critical_role_attrs(ent.etype):  # only types that declare a critical attribute
+            by_type.setdefault(ent.etype, []).append(eid)
+    out: set[Pair] = set()
+    for eids in by_type.values():
+        for a, b in unordered_pairs(eids):
+            if critical_attribute_conflict(graph.entities[a], graph.entities[b], cfg):
                 out.add(frozenset((a, b)))
     return out
 
