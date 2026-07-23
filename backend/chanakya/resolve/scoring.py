@@ -14,9 +14,10 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Callable, Mapping
+from typing import Any
 
 from .aliases import AliasIndex
-from .entities import Entity, EntityGraph
+from .entities import AttrClaim, Entity, EntityGraph
 from .geo import separation_km
 from .normalize import name_similarity, normalize
 from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
@@ -218,6 +219,19 @@ def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     return False
 
 
+def _identity_relevant_attrs(etype: str, cfg: ResolveConfig) -> list[str]:
+    """The identity-bearing attributes for a type: the legacy ``identity`` list ∪ the declared critical/supporting roles.
+
+    One definition of "identity-relevant attribute" shared by :func:`has_durable_identity_support` and
+    :func:`has_transition_witness`, so the two can never diverge on which attributes bear identity (the same
+    reason :func:`_shared_unique_id` is factored out). Order follows the config declaration (identity, then
+    critical, then supporting); no dedup — a repeated attr is harmless to every reader and keeps
+    ``has_durable_identity_support`` byte-identical to its pre-refactor loop (gate G2).
+    """
+    rules = cfg.attribute_rules(etype)
+    return list(rules.get("identity", [])) + cfg.critical_role_attrs(etype) + cfg.supporting_role_attrs(etype)
+
+
 def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """True if ``a`` and ``b`` share a **durable** line of identity evidence (Stage 3B-iii).
 
@@ -229,7 +243,7 @@ def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bo
     confirms without the perishable bonus) is trusted and one that rests solely on transient agreement is
     capped to ``probable``.
 
-    Two durable sources, both **pair-intrinsic** (partition-independent — the answer never changes as
+    Three durable channels, all **pair-intrinsic** (partition-independent — the answer never changes as
     clusters grow):
 
     * a shared **unique** hard identifier (:func:`_shared_unique_id`);
@@ -237,7 +251,11 @@ def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bo
       critical/supporting roles — that is **not** declared ``perishable`` (``attribute_perishable is not True``,
       so an undeclared or explicitly-durable attribute qualifies; a perishable one never does, because that is
       exactly the transient evidence the cap exists to distrust). Same-value only: the ``ordered``-succession
-      waiver is a *perishable*-attribute allowance and is therefore not durable support.
+      waiver is a *perishable*-attribute allowance and is therefore not durable support **unless a single
+      source witnessed the change** — which is the third channel;
+    * a **witnessed transition** (:func:`has_transition_witness`, Stage 3B-iii-B, D8): one source that asserted
+      BOTH an older and a newer value of a clean succession *watched the state change*, which is durable
+      evidence of one entity that changed over time — unlike a bare perishable coincidence across two sources.
 
     Deliberately does NOT consult the name / coreference bootstrap triggers (alias-equivalence, exact-name,
     containment, authoritative coref): those need the alias index / coref set the caller holds, so they are
@@ -248,11 +266,62 @@ def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bo
         return True
     if a.etype != b.etype:
         return False  # role attrs + perishability are per-type; a cross-type pair has no durable attr agreement
-    rules = cfg.attribute_rules(a.etype)
-    id_attrs = list(rules.get("identity", [])) + cfg.critical_role_attrs(a.etype) + cfg.supporting_role_attrs(a.etype)
-    for attr in id_attrs:
+    for attr in _identity_relevant_attrs(a.etype, cfg):
         va = a.attrs.get(attr)
         if va is not None and va == b.attrs.get(attr) and cfg.attribute_perishable(a.etype, attr) is not True:
+            return True
+    # A perishable succession is normally NOT durable (the cap distrusts it) — but a single source that
+    # witnessed the old→new change is, so it lifts the cap here rather than at a separate gate (D8).
+    return has_transition_witness(a, b, cfg)
+
+
+def has_transition_witness(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
+    """True if a **single source witnessed an old→new change** on an identity-relevant attribute (D8, 3B-iii-B).
+
+    The refinement of the perishable-only confirmation cap. A perishable value that merely *coincides* across
+    two mentions from separate sources is a transient coincidence — 3B-iii-A caps a would-be-confirm resting on
+    it, because a shared transient state can be one entity or two that passed through the same state. But if ONE
+    source asserted BOTH an older and a newer value of a clean succession, that source *watched the state
+    change*: a single witness to continuity is durable evidence of ONE entity that changed over time, not two
+    that happened through the same state. So a witnessed transition is durable support — consumed by
+    :func:`has_durable_identity_support` (and, through it, the cap's durability gate ``cluster.confirm_is_durable``)
+    — and LIFTS the cap; an unwitnessed succession or coincidence does not.
+
+    True iff, for some identity-relevant attribute (:func:`_identity_relevant_attrs` — the ``identity`` list ∪
+    the declared critical/supporting roles), the two sides' COMBINED retained series classifies as a clean
+    ``ordered`` succession (:func:`classify_succession`) AND at least one single ``source_id`` asserted ≥2
+    DIFFERENT values within it (:func:`_source_witnessed_change`). An unknown / ``None`` source is not a witness
+    and is ignored. Same-type only — roles and perishability are per-type. Pure and deterministic (reuses the
+    offline succession core; no clock/RNG/parse; no numeric literal — gate G6), and byte-inert wherever no
+    source witnesses a change.
+    """
+    if a.etype != b.etype:
+        return False
+    for attr in _identity_relevant_attrs(a.etype, cfg):
+        series = a.attr_history.get(attr, []) + b.attr_history.get(attr, [])
+        if classify_succession(series).status == ORDERED and _source_witnessed_change(series):
+            return True
+    return False
+
+
+def _source_witnessed_change(series: list[AttrClaim]) -> bool:
+    """True if some single (non-``None``) ``source_id`` in ``series`` asserted a value **different from the
+    first it asserted** — one source that saw the value change, not two sources that each saw one state.
+
+    Each of a source's subsequent values is compared against the FIRST value it asserted, so a mere
+    restatement of the same value never counts and the answer is independent of iteration order (any two
+    differing values from one source trip it). Literal-free by construction (gate G6): "≥2 distinct values" is
+    detected as "a later value differs from the first", never a ``len(...) >= 2``. The caller has already
+    established that ``series`` is a clean ``ordered`` succession, so every value here belongs to that
+    succession — a witnessed pair therefore spans the old→new transition.
+    """
+    first: dict[str, Any] = {}
+    for ac in series:
+        if ac.source_id is None:
+            continue  # an unknown source is not a witness
+        if ac.source_id not in first:
+            first[ac.source_id] = ac.value
+        elif not (ac.value == first[ac.source_id]):
             return True
     return False
 
