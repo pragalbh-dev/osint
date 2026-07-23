@@ -78,10 +78,12 @@ from .values import (
     Quantity,
     SurfaceFormat,
     canonical_iso_bounds,
+    report_bounded_validity,
 )
 from .view import (
     Alert,
     AlertProvenance,
+    AttrValueClaim,
     ConfidenceBreakdown,
     EdgeView,
     EventView,
@@ -103,6 +105,7 @@ __all__ = [
     "make_claim_id", "is_claim_id",
     # values
     "ExactDate", "LabelDate", "Period", "DateSpec", "DateValue", "canonical_iso_bounds",
+    "report_bounded_validity",
     "Granularity", "BoundarySource", "Location", "GeocodeCandidate", "PrecisionClass",
     "SurfaceFormat", "Quantity", "CountState",
     # claim / evidence log
@@ -114,6 +117,7 @@ __all__ = [
     "Partition", "PlaceRef", "AssertionInput", "AssertionAssessment", "pair_key",
     # view
     "GraphView", "NodeView", "EdgeView", "EventView", "KnownGap", "Alert", "AlertProvenance",
+    "AttrValueClaim",
     "ConfidenceBreakdown", "IndependenceGroup", "Freshness", "SufficiencyEval", "MaterialityAttrs",
     "Status", "ObservabilityCeiling",
     # config

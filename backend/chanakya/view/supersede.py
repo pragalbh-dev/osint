@@ -40,7 +40,7 @@ from chanakya.credibility.supersession import (
     PENDING_NEWER,
     PENDING_OLDER,
 )
-from chanakya.schemas import ClaimRecord, EdgeView, Triple, canonical_iso_bounds
+from chanakya.schemas import ClaimRecord, DateValue, EdgeView, Triple, canonical_iso_bounds
 
 
 def _interval(claims: list[ClaimRecord]) -> tuple[str, str] | None:
@@ -81,6 +81,22 @@ def _relation(older: tuple[str, str], newer: tuple[str, str]) -> str:
     return CONTRADICTION
 
 
+def _representative_event_time(claims: list[ClaimRecord]) -> DateValue | None:
+    """The edge's validity anchor — the ``event_time`` of its earliest-dated claim (D7, §1B).
+
+    Mirrors ``EventView.time_interval``: a real, verbatim ``event_time`` carried onto the derived edge,
+    not a synthesized span. When several claims corroborate the same ``(source, predicate, target)`` the
+    earliest asserted validity is the anchor — deterministic (canonical lower bound, then ``claim_id``).
+    Undated claims are ignored; ``None`` when no supporting claim is dated. **Data availability only** —
+    no supersede / ordering decision (the >1-target branch below and Stage 3B own that).
+    """
+    dated = [c for c in claims if canonical_iso_bounds(c.event_time)[0] is not None]
+    if not dated:
+        return None
+    earliest = min(dated, key=lambda c: (canonical_iso_bounds(c.event_time)[0] or "", c.claim_id))
+    return earliest.event_time
+
+
 def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[EdgeView]:
     """Build the EdgeView(s) for one resolved edge instance, applying supersede/contradict.
 
@@ -102,6 +118,7 @@ def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[
                 target=obj,
                 edge_instance=edge_instance,
                 claim_ids=sorted(c.claim_id for c in cs),
+                time_interval=_representative_event_time(cs),  # D7/§1B: validity carried onto the edge
             )
         )
 

@@ -35,6 +35,7 @@ from chanakya.ontology import EdgeLaneIndex, NodeTypeIndex
 from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
 from chanakya.schemas import (
     AssertionInput,
+    AttrValueClaim,
     ClaimRecord,
     ConfidenceBreakdown,
     ConfigBundle,
@@ -50,7 +51,9 @@ from chanakya.schemas import (
     Partition,
     PlacesConfig,
     SourceRegistryEntry,
+    canonical_iso_bounds,
     pair_key,
+    report_bounded_validity,
 )
 from chanakya.sufficiency import check
 from chanakya.timeref import effective_as_of, is_available_by
@@ -239,6 +242,36 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
 
 # ── graph assembly (+ supersede/contradict) ──────────────────────────────────────────────────
 
+def _attr_value_claim(value: Any, claim: ClaimRecord) -> AttrValueClaim:
+    """One retained attribute value + the time axes its claim asserted it over (D7, §1B).
+
+    ``report_time`` is the upper bound on the value's validity where no explicit interval was stated —
+    computed by the pure :func:`report_bounded_validity` helper (no clock/parse — G1). Pure record; no
+    ordering or supersede decision is taken here (deferred to Stage 3B).
+    """
+    valid_from, valid_until = report_bounded_validity(claim.event_time, claim.report_time)
+    return AttrValueClaim(
+        value=value,
+        claim_id=claim.claim_id,
+        event_time=claim.event_time,
+        report_time=claim.report_time,
+        valid_from=valid_from,
+        valid_until=valid_until,
+    )
+
+
+def _series_sort_key(entry: AttrValueClaim) -> tuple[bool, str, str, str]:
+    """Deterministic oldest→newest order for a retained attribute series (data availability, not a decision).
+
+    Ordered by ``event_time`` lower bound, then ``report_time`` lower bound, then ``claim_id`` (unique →
+    a total, hash-seed-independent order — G2). Undated entries sort last. This is presentation ordering
+    for the retained series; it makes no supersede/contradiction/winner decision (that is Stage 3B).
+    """
+    ev_lo, _ = canonical_iso_bounds(entry.event_time)
+    rep_lo, _ = canonical_iso_bounds(entry.report_time)
+    return (ev_lo is None, ev_lo or "", rep_lo or "", entry.claim_id)
+
+
 def _assemble(
     resolved: list[ClaimRecord],
     entity_canonical: dict[str, str] | None = None,
@@ -298,7 +331,10 @@ def _assemble(
             if c.claim_id not in node.claim_ids:
                 node.claim_ids.append(c.claim_id)
             for k, v in payload.attrs.items():
-                node.attrs.setdefault(k, v)  # first claim wins; deterministic in replay order
+                node.attrs.setdefault(k, v)  # scalar contract UNCHANGED: first claim wins (replay order)
+                # ADDITIVE (D7, §1B): retain EVERY asserted value with its time axes — role-agnostic, so a
+                # later/conflicting value is just another entry rather than a silently-dropped one.
+                node.attr_history.setdefault(k, []).append(_attr_value_claim(v, c))
             if node.location is None:
                 node.location = _node_location(payload.attrs)  # first claim wins, as the attrs do
         elif isinstance(payload, EventDescriptor):
@@ -373,6 +409,11 @@ def _assemble(
                     name=display(endpoint, _endpoint_display_name(endpoint)),
                     claim_ids=list(e.claim_ids),
                 )
+
+    # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
+    for node in nodes.values():
+        for series in node.attr_history.values():
+            series.sort(key=_series_sort_key)
 
     return nodes, edges, events
 

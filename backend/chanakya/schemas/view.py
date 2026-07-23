@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from pydantic import Field
+
 from .base import Record
 from .values import DateValue, Location, Period
 
@@ -81,6 +83,31 @@ class MaterialityAttrs(Record):
     contributing_refs: list[str] = []  # claim/edge IDs so the attribute still cites its basis
 
 
+class AttrValueClaim(Record):
+    """One asserted value for a derived node attribute, with the time axes it was asserted over (D7, §1B).
+
+    The **retained history** the assembler no longer drops. ``NodeView.attrs[k]`` still holds the single
+    first-claim-wins scalar every existing consumer reads; ``NodeView.attr_history[k]`` keeps *every*
+    value any claim asserted for that attribute, so a later — possibly conflicting — value is simply
+    another entry and nothing is hidden. **Role-agnostic:** values are retained regardless of the
+    attribute's critical/supporting/neutral role (that classification lives in RESOLVE / Stage 1A, never
+    here). The time carrier mirrors ``EventView.time_interval`` (events already carry an interval
+    end-to-end; nodes/edges did not).
+
+    ``event_time`` is the stated validity anchor; ``report_time`` the publication date. ``valid_from`` /
+    ``valid_until`` are the report-bounded validity window from :func:`values.report_bounded_validity`
+    (report_time as the upper bound where no explicit validity interval was stated) — a pure record, no
+    decision. Ordering / supersede / contradiction over these entries is deferred to Stage 3B.
+    """
+
+    value: Any = None
+    claim_id: str
+    event_time: DateValue | None = None  # when true in the world (stated validity anchor)
+    report_time: DateValue | None = None  # when the source published (upper bound on validity)
+    valid_from: str | None = None  # ISO lower bound of validity (from event_time), pure-derived
+    valid_until: str | None = None  # ISO upper bound of validity (report_time, unless explicit interval)
+
+
 class _Assessed(Record):
     """Fields shared by nodes and edges — the assessment attached to a derived element."""
 
@@ -102,6 +129,12 @@ class NodeView(_Assessed):
     attrs: dict[str, Any] = {}  # per-type attributes (functional_role, decoy_risk_flag, …)
     location: Location | None = None
     materiality: MaterialityAttrs | None = None  # precomputed (SCORE); None until it runs
+    # Retained per-attribute value history (D7, §1B). ADDITIVE: ``attrs`` above is unchanged (first-claim
+    # -wins scalar); this maps each claim-asserted attribute → the full time-ordered series of every value
+    # asserted for it. ``exclude=True`` keeps it OFF the wire dump, so the frozen view JSON is byte-
+    # unchanged — it is an in-memory carrier for the in-process succession core (Stage 3B), not yet a wire
+    # contract. Empty until the assembler folds attrs.
+    attr_history: dict[str, list[AttrValueClaim]] = Field(default_factory=dict, exclude=True)
 
 
 class EdgeView(_Assessed):
@@ -117,6 +150,11 @@ class EdgeView(_Assessed):
     supersedes: str | None = None  # the older edge this one retires
     # Identity confidence — lives ONLY on same-as edges, NEVER fed into assertion_confidence (G5).
     merge_confidence: float | None = None
+    # Validity interval carried onto the edge (D7, §1B) — mirrors ``EventView.time_interval``, which
+    # already carries an interval end-to-end. Populated from the edge's claim ``event_time``(s). ADDITIVE
+    # and ``exclude=True`` (in-memory only; the frozen view JSON stays byte-unchanged). ``None`` when no
+    # supporting claim is dated.
+    time_interval: Period | DateValue | None = Field(default=None, exclude=True)
 
 
 class EventView(_Assessed):
