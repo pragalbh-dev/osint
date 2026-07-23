@@ -59,6 +59,22 @@ The current corpus is single-subject and sparse; several target mechanisms have 
    one with different values at the *same* time (a `contradiction` → still a conflict). This makes the
    "an update is not a contradiction" behavior visible end-to-end.
 
+5. **Trajectory-aware support + perishable-only confirmation cap (3B-iii-A).** Attribute *agreement* now
+   raises identity scores, and a would-be-confirm resting SOLELY on a perishable trajectory caps to
+   `probable`. Dormant on the corpus (agreement crosses no band boundary for any primary pair; no
+   `perishable:true` attribute exists). Full recipe to make it live + demonstrable (from a sandbox
+   exercise that was then removed): for a chosen perishable attribute (e.g. `unit.readiness_state` /
+   `alert_posture` — a unit's transient posture): **(a)** declare it
+   `attribute_roles.unit.<attr>: {role: supporting, perishable: true}`; **(b)** declare a durable
+   counterpart (e.g. `unit.oob_designation` as a non-perishable attr or a hard-id) so the
+   confirm-vs-cap split is exercisable; **(c)** a low `auto_merge_by_type.unit` floor (~0.35) so a
+   perishable-agreement pair can reach the auto band at all — at the 0.85 global floor it tops out at 0.45
+   and is never a would-be-confirm; **(d)** *the key finding* — the perishable attribute must ALSO be a
+   **blocking key** (a `hard_id_fields.categorical` entry, or the two mentions must share a name token),
+   because a perishable-only pair is only compared (hence only cappable) if blocking generates it as a
+   candidate. So the cap is meaningful precisely for pairs that block together yet share only a transient
+   state.
+
 ---
 
 *Maintained by the redesign work (branch `design/resolution-redesign`). Append new entries as later stages
