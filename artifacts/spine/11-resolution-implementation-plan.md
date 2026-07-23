@@ -143,6 +143,15 @@ generalize its seam.
 (old records load), and validated purely (no clock/parse — rebuild G1). Don't over-reach into a full
 bitemporal store; carry the two axes we already have.
 
+**Delivered (Stage 1B, commit `f79d093`):** the *view-side* half — `NodeView.attr_history` +
+`EdgeView.time_interval` + the pure `report_bounded_validity` helper, additive and `Field(exclude=True)`
+(populated in-memory, off the wire, so the frozen view JSON is byte-identical). This realizes the
+retained-history / audit goal and is the in-process carrier. **Carry-forward into 3B:** the RESOLVER's
+`Entity` profile still folds attribute values first-claim-wins and drops their dates, so the *resolver-side*
+time-aware attributes that D8's attribute-based reasoning needs are built in Stage 3B (their consumer),
+together with the slot-agnostic succession-core extraction. 1B is the view/product half of D7; 3B carries
+the resolver half.
+
 ---
 
 ## Stage 2 — Identity as an evidence-backed hypothesis (the spine)
@@ -184,7 +193,10 @@ high-priority adjudication item rather than a silent non-merge.
 
 ### 3B — The update / stale decision framework (D8)
 
-Depends on 1A (roles + perishability) and 1B (time). Build: the **overlap window as a signal, not a gate**
+Depends on 1A (roles + perishability) and 1B (time). **First builds the resolver-side temporal foundation
+1B deferred** — time-aware attribute values on the resolver's `Entity` (today first-claim-wins, date
+dropped) and the slot-agnostic succession core extracted from `supersede` (fed by edge-instances and
+attribute-series) — then the decision logic on top: the **overlap window as a signal, not a gate**
 (agreement = corroboration; non-critical disagreement = soft negative weighed against commonality; critical
 disagreement = the 3A wall); the **bridge-node cases** (per-attribute temporal alignment → toward confirmed,
 credibility-gated; single current dateline with mixed values → probable/HITL); **explicit-transition claims**
