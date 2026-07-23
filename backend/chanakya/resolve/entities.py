@@ -17,7 +17,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from chanakya.ontology import EdgeLaneIndex, build_edge_instance_key
-from chanakya.schemas import ClaimRecord, ResolvedRef, canonical_iso_bounds
+from chanakya.schemas import ClaimRecord, DateValue, ResolvedRef, canonical_iso_bounds
 
 
 def unordered_pairs[T](seq: list[T]) -> Iterator[tuple[T, T]]:
@@ -57,6 +57,37 @@ def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedR
     return ResolvedRef(entity_id=f"event:{p.event_type}:{claim.claim_id}")
 
 
+@dataclass(frozen=True)
+class AttrClaim:
+    """One asserted value for an ``Entity`` attribute, + the claim/time axes that asserted it.
+
+    Stage 3-prep: mirrors the view layer's ``AttrValueClaim`` (``schemas/view.py``, D7 §1B) one stage
+    earlier in the pipeline. ``Entity.attrs[k]`` stays the first-claim-wins scalar every existing resolve
+    reader depends on; ``Entity.attr_history[k]`` is the role-agnostic full time-ordered series of every
+    value any claim asserted for that attribute, so a later — possibly conflicting — value is retained,
+    not silently dropped. Pure data: no ordering/veto/scoring decision is taken here — that stays in
+    ``resolve/scoring.py`` (3A's credibility-gated walls, 3B's update/stale, consume this; they do not
+    populate it).
+    """
+
+    value: Any
+    claim_id: str
+    event_time: DateValue | None = None  # when true in the world (stated validity anchor)
+    report_time: DateValue | None = None  # when the source published
+
+
+def _attr_history_sort_key(entry: AttrClaim) -> tuple[bool, str, str, str]:
+    """Deterministic oldest→newest order for a retained attribute series (mirrors ``view.pipeline``'s).
+
+    Ordered by ``event_time`` lower bound, then ``report_time`` lower bound, then ``claim_id`` (unique →
+    a total, hash-seed-independent order — G2). Undated entries sort last. Presentation/consumption
+    ordering only; makes no supersede/contradiction/winner decision (that is 3A/3B).
+    """
+    ev_lo, _ = canonical_iso_bounds(entry.event_time)
+    rep_lo, _ = canonical_iso_bounds(entry.report_time)
+    return (ev_lo is None, ev_lo or "", rep_lo or "", entry.claim_id)
+
+
 @dataclass
 class Entity:
     eid: str
@@ -70,6 +101,10 @@ class Entity:
     # real claim resolves onto it, but when it does, its cluster adopts its id (see ``cluster._preferred``)
     # so the graph, the lenses and the oracle share one id namespace.
     registry: bool = False
+    # ADDITIVE (Stage 3-prep, mirrors view's ``attr_history`` — §1B one stage earlier). Role-agnostic: every
+    # claim-asserted value for an attribute is retained here, time-ordered, even one ``attrs[k]`` (first-
+    # claim-wins) drops. Empty for entities carrying no claim of their own (registry seeds, T3b mints).
+    attr_history: dict[str, list[AttrClaim]] = field(default_factory=dict)
 
     def namespace(self) -> str | None:
         """The 'country / domain namespace' blocking dimension, read from stated attrs (None ⇒ wildcard)."""
@@ -146,7 +181,12 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                 ent.claim_ids.append(c.claim_id)
             ent.source_ids.add(c.source_id)
             for k, v in p.attrs.items():
-                ent.attrs.setdefault(k, v)  # first claim wins (deterministic in replay order)
+                ent.attrs.setdefault(k, v)  # scalar contract UNCHANGED: first claim wins (replay order)
+                # ADDITIVE (Stage 3-prep): retain EVERY asserted value + its time axes, role-agnostic — a
+                # later/conflicting value is just another entry, never a silently-dropped one.
+                ent.attr_history.setdefault(k, []).append(
+                    AttrClaim(value=v, claim_id=c.claim_id, event_time=c.event_time, report_time=c.report_time)
+                )
         elif p.form == "triple":
             rr = base_ref(c, lane)
             edges.append(
@@ -161,4 +201,10 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                     attributes=c.attributes,
                 )
             )
+
+    # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
+    for ent in entities.values():
+        for series in ent.attr_history.values():
+            series.sort(key=_attr_history_sort_key)
+
     return EntityGraph(entities=entities, edges=edges)
