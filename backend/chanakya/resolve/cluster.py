@@ -13,6 +13,7 @@ the HITL band but never reach auto-merge, which stays reachable by the determini
 
 from __future__ import annotations
 
+from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
@@ -266,6 +267,42 @@ def _name_containment(a: Entity, b: Entity, cfg: ResolveConfig, toks: dict[str, 
     return _descriptor_extension(short, long_, cfg) or _acronym_expansion(short, long_, cfg)
 
 
+def _bottleneck_confidence(edges: Mapping[Pair, float], x: str, y: str) -> float:
+    """Widest-path unification confidence between two already-merged entities (D10 take-care a).
+
+    ``edges`` maps each recorded union ``{u, v}`` → the confidence it was merged at (a bootstrap / confirmed
+    merge = 1.0, a fuzzy Phase-2 merge = its total). Two entities that ended up in one cluster were unified
+    along some chain of these merges; their unification confidence is the **maximum over all connecting
+    chains of the minimum merge confidence along the chain** — the strongest available chain, limited by its
+    weakest link. A single direct merge therefore returns that merge's own confidence; a chain returns its
+    bottleneck (so a strong chain is not dragged down by an unrelated weak merge elsewhere in the cluster,
+    and a weak link anywhere on the chain is not hidden behind a strong one).
+
+    A label-correcting fixpoint over a finite graph: bottleneck labels only rise and are bounded by the edge
+    confidences, so it converges to the unique widest-path solution independent of iteration order
+    (deterministic — gate G2). Returns 0.0 when no chain connects ``x`` and ``y`` (defensive — a shared
+    neighbour's two endpoints always share a cluster). Literal-free beyond the 0/1 bounds of the confidence
+    scale the module already uses (gate G6).
+    """
+    adj: dict[str, list[tuple[str, float]]] = defaultdict(list)
+    for pair, conf in edges.items():
+        u, v = sorted(pair)
+        adj[u].append((v, conf))
+        adj[v].append((u, conf))
+    best: dict[str, float] = {x: 1.0}
+    changed = True
+    while changed:
+        changed = False
+        for u in list(best):
+            reach = best[u]
+            for v, conf in adj.get(u, ()):
+                cand = reach if reach < conf else conf  # min(reach-so-far, this merge) — bottleneck of the chain
+                if cand > best.get(v, 0.0):
+                    best[v] = cand
+                    changed = True
+    return best.get(y, 0.0)
+
+
 def resolve_entities(
     graph: EntityGraph,
     cfg: ResolveConfig,
@@ -332,19 +369,40 @@ def resolve_entities(
                 return True
         return False
 
+    # D10 take-care a: the ACTUAL union edges (kept separate from res.merge_confidence, which the later
+    # collection loop also fills with candidate/possible confidences that are NOT merges) → the graph
+    # ``pair_confidence`` reads to weight a shared neighbour by how confidently the two sides' neighbours
+    # were resolved to one canonical.
+    merge_edges: dict[Pair, float] = {}
+
     def merge(a: str, b: str, confidence: float, bd: dict[str, float]) -> None:
         res.same_as.append((a, b))  # raw merge pair; _finalise stars it to the cluster canonical
         res.merge_confidence[pair_key(a, b)] = confidence
         res.merge_breakdown[pair_key(a, b)] = bd
+        merge_edges[frozenset((a, b))] = confidence
         uf.union(a, b)
+
+    def pair_confidence(x: str, y: str) -> float:
+        """Confidence at which raw entities x and y were resolved to one canonical (D10 take-care a).
+
+        1.0 when they are the SAME raw entity (identical — no merge needed); else the widest merge-chain's
+        bottleneck (:func:`_bottleneck_confidence`) — a bootstrap / confirmed unification is 1.0, a
+        low-confidence fuzzy one is < 1.0. 0.0 when they were never unified (defensive — a shared neighbour's
+        two endpoints always share a cluster). Reads the LIVE partition + merge edges, so a shared neighbour
+        is weighted by the merge it currently rests on and the weight is monotone as clusters grow."""
+        if x == y:
+            return 1.0
+        if uf.find(x) != uf.find(y):
+            return 0.0
+        return _bottleneck_confidence(merge_edges, x, y)
 
     def has_durable_trigger(a: str, b: str) -> bool:
         """A DURABLE bootstrap trigger fires for this pair — pair-intrinsic support
-        (:func:`has_durable_identity_support`: shared unique id / same-value non-perishable agreement) PLUS the
-        durable name / coreference triggers the standalone helper cannot see (it lacks the alias index and the
-        coref set). Exactly the Phase-1 bootstrap disjunction: alias-equivalence, exact name + namespace, name
-        containment, authoritative coref. Each is a stable line of identity evidence that does not evaporate
-        when a transient state changes."""
+        (:func:`has_durable_identity_support`: shared unique id / same-value non-perishable agreement / a
+        single-source witnessed transition, D8) PLUS the durable name / coreference triggers the standalone
+        helper cannot see (it lacks the alias index and the coref set). Exactly the Phase-1 bootstrap
+        disjunction: alias-equivalence, exact name + namespace, name containment, authoritative coref. Each is
+        a stable line of identity evidence that does not evaporate when a transient state changes."""
         ea, eb = graph.entities[a], graph.entities[b]
         if has_durable_identity_support(ea, eb, cfg):
             return True
@@ -369,7 +427,10 @@ def resolve_entities(
         solely on transient agreement — that is the one the cap withholds."""
         if has_durable_trigger(a, b):
             return True
-        bd_durable = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx, durable_only=True)
+        bd_durable = merge_score(
+            graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx,
+            durable_only=True, pair_confidence=pair_confidence,
+        )
         return _band(bd_durable, cfg, has_raise=False, auto_merge=floor) == "auto"
 
     # Stage 3B-iii: pairs that reach the auto band on the FULL score but NOT on the durable-only score — the
@@ -400,7 +461,7 @@ def resolve_entities(
             # veto/type/namespace/contradiction gates upstream — evidence no string comparison can reach.
             or frozenset((a, b)) in authoritative
         ):
-            bd = merge_score(ea, eb, graph, uf.find, cfg, alias_idx)
+            bd = merge_score(ea, eb, graph, uf.find, cfg, alias_idx, pair_confidence=pair_confidence)
             merge(a, b, 1.0, bd)  # unambiguous evidence → identity confidence 1.0
 
     # ── Phase 2: relational fixpoint (iterate to no-new-auto-merge; monotone ⇒ terminates) ────
@@ -412,7 +473,10 @@ def resolve_entities(
                 continue
             if frozenset((a, b)) in raise_walls:
                 continue  # a below-floor critical conflict is the analyst's call — never auto-merged
-            bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
+            bd = merge_score(
+                graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx,
+                pair_confidence=pair_confidence,
+            )
             floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
             if _band(bd, cfg, has_raise=False, auto_merge=floor) == "auto":
                 # Stage 3B-iii: a would-be auto-merge that still confirms on DURABLE evidence merges; one that
@@ -461,7 +525,10 @@ def resolve_entities(
             and frozenset((a, b)) not in perishable_capped  # a capped confirm is guaranteed its queue place
         ):
             continue
-        bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
+        bd = merge_score(
+            graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx,
+            pair_confidence=pair_confidence,
+        )
         floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
         has_raise = frozenset((a, b)) in raise_only
         raised_wall = frozenset((a, b)) in raise_walls

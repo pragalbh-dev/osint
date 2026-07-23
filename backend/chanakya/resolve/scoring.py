@@ -327,6 +327,11 @@ def _source_witnessed_change(series: list[AttrClaim]) -> bool:
 
 
 Canonical = Callable[[str], str]
+#: ``pair_confidence(x, y)`` — the confidence at which two RAW entities were resolved to one canonical:
+#: 1.0 for the same raw entity (identical, no merge) or a bootstrap/confirmed unification, < 1.0 for a
+#: low-confidence fuzzy one, 0.0 if never unified. Supplied by ``resolve_entities`` (which holds the
+#: merge-confidence map + the union-find); absent ⇒ every shared neighbour is weighted 1.0 (D10 take-care a).
+PairConfidence = Callable[[str, str], float]
 
 
 def co_instances(graph: EntityGraph, a: str, b: str) -> set[str]:
@@ -345,16 +350,27 @@ def co_instances(graph: EntityGraph, a: str, b: str) -> set[str]:
     return out
 
 
-def _neighbours(graph: EntityGraph, eid: str, canonical: Canonical, exclude: set[str]) -> set[tuple[str, str, str]]:
-    """Resolved neighbourhood: {(predicate, direction, canonical(other))}, minus excluded instances."""
-    nbrs: set[tuple[str, str, str]] = set()
+def _neighbours(
+    graph: EntityGraph, eid: str, canonical: Canonical, exclude: set[str]
+) -> dict[tuple[str, str, str], set[str]]:
+    """Resolved neighbourhood keyed by ``(predicate, direction, canonical(other))``, each key mapping to the
+    set of **raw** other-endpoints that produced it (minus excluded instances).
+
+    The key is exactly the pre-D10 neighbour identity — ``set(...)`` over the keys is the old returned set,
+    so an unweighted overlap is byte-unchanged (gate G2). The raw-endpoint values are what
+    :func:`relational_score` needs to weight a shared neighbour by *how confidently* the two sides'
+    endpoints were resolved to that one canonical (D10 take-care a): a key can carry several raw endpoints
+    when one side connects, under the same predicate/direction, to two entities that resolved to the same
+    canonical.
+    """
+    nbrs: dict[tuple[str, str, str], set[str]] = {}
     for e in graph.incident(eid):
         if e.edge_instance in exclude:
             continue
         if e.subject == eid:
-            nbrs.add((e.predicate, "out", canonical(e.object)))
+            nbrs.setdefault((e.predicate, "out", canonical(e.object)), set()).add(e.object)
         if e.object == eid:
-            nbrs.add((e.predicate, "in", canonical(e.subject)))
+            nbrs.setdefault((e.predicate, "in", canonical(e.subject)), set()).add(e.subject)
     return nbrs
 
 
@@ -461,6 +477,20 @@ def _numeric_conflict(va: object, vb: object, rel_tol: object) -> bool:
     return abs(fa - fb) / scale > tol
 
 
+def _shared_weight(raw_a: set[str], raw_b: set[str], pair_confidence: PairConfidence) -> float:
+    """Weight of ONE shared neighbour: the confidence of the strongest identity resolution that unifies the
+    two sides' raw endpoints to their shared canonical (D10 take-care a).
+
+    ``raw_a`` / ``raw_b`` are the raw other-endpoints (on ``a``'s and ``b``'s side) that both resolved to
+    this shared canonical. The shared neighbour genuinely exists if ANY endpoint of one side is the same
+    entity as — or was confidently unified with — an endpoint of the other, so the weight is the **maximum**
+    unification confidence across the two sides' endpoints: 1.0 when a single raw entity is common to both
+    (``pair_confidence(x, x)`` is identity), else the confidence at which the two differing endpoints were
+    merged into one canonical. Both sets are non-empty (each is why its key exists), so ``max`` is defined.
+    """
+    return max(pair_confidence(x, y) for x in raw_a for y in raw_b)
+
+
 def relational_score(
     graph: EntityGraph,
     a: str,
@@ -468,8 +498,9 @@ def relational_score(
     canonical: Canonical,
     exclude: set[str],
     support_k: int | None = None,
+    pair_confidence: PairConfidence | None = None,
 ) -> float:
-    """Jaccard overlap of the two resolved neighbourhoods, discounted by how much it rests on (T3b-F).
+    """(Confidence-weighted) Jaccard overlap of the two resolved neighbourhoods, discounted by support (T3b-F).
 
     A raw Jaccard **saturates at a perfect 1.0 on a one-element neighbourhood**: two basing sites whose
     only edge is a ``based-at`` from the same unit overlap totally, so the collective-ER signal — the
@@ -484,15 +515,28 @@ def relational_score(
     both connect to one hub are not thereby the same entity — the hub is the evidence that they are two
     things attached to the same third thing.
 
-    Unset (or ``<= 1``) ⇒ the raw Jaccard, byte-identical to the pre-fix behaviour (gates G2/G6).
+    ``pair_confidence`` (D10 take-care a — the cascade guard) makes the overlap a **weighted** Jaccard: two
+    entities "share a neighbour" when their two endpoints resolve to one canonical, but that canonical
+    equality may itself rest on a WEAK merge. So each shared neighbour contributes its unification
+    confidence (:func:`_shared_weight`) rather than a flat 1 — a neighbour unified at confidence ``c``
+    contributes ``c``, so a shared neighbour that exists only because of a low-confidence over-merge lends
+    proportionally less relational certainty and cannot cascade into an unearned identity claim. The
+    denominator (``union``) and the ``support_k`` scaling read the *count* of distinct neighbours, exactly as
+    before. Absent (the default) ⇒ every shared neighbour weighs 1.0, byte-identical to the pre-D10 raw
+    overlap (gate G2); ``support_k`` unset / ``<= 1`` ⇒ no support discount (gates G2/G6).
     """
     na = _neighbours(graph, a, canonical, exclude)
     nb = _neighbours(graph, b, canonical, exclude)
-    union = na | nb
+    keys_a, keys_b = set(na), set(nb)
+    union = keys_a | keys_b
     if not union:
         return 0.0
-    shared = na & nb
-    overlap = len(shared) / len(union)
+    shared = keys_a & keys_b
+    if pair_confidence is None:
+        numerator = float(len(shared))  # equal weight ⇒ the pre-D10 count of shared neighbours
+    else:
+        numerator = sum(_shared_weight(na[t], nb[t], pair_confidence) for t in shared)
+    overlap = numerator / len(union)
     if support_k is None or support_k <= 1:
         return overlap
     return overlap * min(1.0, len(shared) / support_k)
@@ -558,6 +602,7 @@ def merge_score(
     cfg: ResolveConfig,
     alias_idx: AliasIndex | None = None,
     durable_only: bool = False,
+    pair_confidence: PairConfidence | None = None,
 ) -> dict[str, float]:
     """Full weighted merge_score + the stored per-signal breakdown (explainability).
 
@@ -565,6 +610,10 @@ def merge_score(
     perishable ordered-succession bonus so the cap can ask "does this pair still confirm on stable evidence
     alone?"; ``relational`` and ``temporal`` are left as-is (a purely-relational perishable case is out of
     scope for Stage 3B-iii). Default ``False`` ⇒ the full score, byte-unchanged (gate G2).
+
+    ``pair_confidence`` (D10 take-care a) is threaded straight to :func:`relational_score` so a shared
+    neighbour resting on a weak merge counts proportionally less; absent ⇒ the pre-D10 equal-weight
+    relational term (gate G2).
     """
     exclude = co_instances(graph, a.eid, b.eid)
     reloc = bool(exclude)
@@ -575,7 +624,7 @@ def merge_score(
     # every other type keeps the collective-ER signal untouched, and an area can still merge or queue on
     # name/alias evidence, which is the only honest identity signal it has.
     relational = (
-        relational_score(graph, a.eid, b.eid, canonical, exclude, cfg.relational_support_k)
+        relational_score(graph, a.eid, b.eid, canonical, exclude, cfg.relational_support_k, pair_confidence)
         if _relational_counts(a, b, cfg)
         else 0.0
     )
