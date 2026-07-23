@@ -57,6 +57,12 @@ class Partition(Record):
     resolved_ref: dict[str, ResolvedRef] = {}  # claim_id → resolved_ref (shared entity_id ⇒ collapse to one node)
     same_as: list[tuple[str, str]] = []  # accepted merges (member, canonical) — collapse via resolved_ref
     candidates: list[tuple[str, str]] = []  # HITL-band pairs kept separate → candidate same-as edges + review queue
+    # pair_key(a, b) → analyst-facing rationale, populated ONLY for a candidate that was RAISED by a
+    # below-floor critical-attribute conflict (D5 take-care a, Stage 3A): the difference is on a declared-
+    # critical attribute but is not credibly attested (below ``critical_veto_min_grade``), so instead of
+    # walling the pair the resolver hands it to a human with the reason. Empty for every ordinary scored
+    # candidate ⇒ byte-unchanged where no such raise fired.
+    candidate_reasons: dict[str, str] = {}  # pair_key(a, b) → why a below-floor critical conflict was raised
     # D4 Stage 2 — identity as a three-status hypothesis. ``possible`` is the retained watch-list: pairs
     # scored in ``[possible_floor, hitl_low)`` that today would be dropped as ``separate``. Kept as latent
     # links (their ``merge_confidence``/``merge_breakdown`` still ride the same dicts) so the unresolved tail

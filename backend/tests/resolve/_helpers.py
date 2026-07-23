@@ -51,6 +51,8 @@ def mk_config(
     containment_min_short_tokens: int | None = None,
     acronym_min_len: int | None = None,
     source_grades: dict[str, str] | None = None,
+    source_reliability_grades: dict[str, str] | None = None,
+    critical_veto_min_grade: str | None = None,
     coref_authoritative_evidence: list[str] | None = None,
     entity_geo_conflict_max_km: dict[str, float] | None = None,
     relational_support_k: int | None = None,
@@ -90,12 +92,22 @@ def mk_config(
         containment_min_descriptor_len=containment_min_descriptor_len,
         containment_min_short_tokens=containment_min_short_tokens,
         acronym_min_len=acronym_min_len,
+        critical_veto_min_grade=critical_veto_min_grade,
     )
     places_cfg = PlacesConfig(places=places or [], proximity_radius_m=proximity_radius_m or {})
     # ``source_grades``: {source_id: source_class} + a one-factor rubric, so R(source) == the number below
     # and a test can state "this class is worth X" without restating the whole credibility surface.
+    # ``source_reliability_grades``: {source_id: STANAG letter} — the intrinsic reliability grade the D5
+    # credibility floor reads (a source may set a class, a grade, or both; source_type is required so an
+    # otherwise class-less source defaults to a neutral placeholder class).
+    src_kw: dict[str, dict[str, str]] = {}
+    for sid, cls in (source_grades or {}).items():
+        src_kw.setdefault(sid, {})["source_type"] = cls
+    for sid, grade in (source_reliability_grades or {}).items():
+        src_kw.setdefault(sid, {}).setdefault("source_type", "curated-register")
+        src_kw[sid]["reliability_grade"] = grade
     sources_cfg = SourcesConfig(
-        sources=[SourceRegistryEntry(source_id=sid, source_type=cls) for sid, cls in (source_grades or {}).items()]
+        sources=[SourceRegistryEntry(source_id=sid, **kw) for sid, kw in src_kw.items()]
     )
     credibility = CredibilityConfig(
         factor_weights={"authority": 1.0} if source_grades else {},
@@ -123,10 +135,10 @@ def _cid(prefix: str) -> str:
     return f"{prefix}-{_counter['n']}"
 
 
-def entity(eid: str, etype: str, name: str, **attrs: Any) -> ClaimRecord:
+def entity(eid: str, etype: str, name: str, *, source: str = "src-t", **attrs: Any) -> ClaimRecord:
     return ClaimRecord(
         claim_id=_cid(eid),
-        source_id="src-t",
+        source_id=source,
         doc_ref=DocRef(file="d.txt", span=(0, 1)),
         kind="observation",
         asserts="entity",

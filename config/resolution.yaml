@@ -331,6 +331,27 @@ attribute_roles:
   manufacturer:
     tier:            {role: supporting, perishable: false}
 
+# ── credibility floor on the critical-attribute veto (D5 take-care a, Stage 3A) ──────────────────
+# A source-credibility floor on the critical→veto wall above. A stated critical-attribute disagreement
+# is a HARD wall only when it is trustworthy on BOTH sides — each side's conflicting value asserted by a
+# source whose STANAG reliability_grade (config/sources.yaml) is at/above this floor. Below it, the pair
+# is NOT walled and NOT silently merged: it is RAISED to the analyst as a `probable` candidate with a
+# reason, so one flaky low-grade source cannot shatter a well-corroborated merge (only flag it).
+#
+# STANAG grades are ordinal, A (most reliable) → F (least); `C` walls on A/B/C and raises on D/E/F.
+# TARGET = C: in this corpus C is the boundary between the working analytic tier (curated register B,
+# trade-media / customs-tender C — whose stated country/branch/serial is trustworthy enough to wall a
+# merge on) and the D/E social-repost / spoof / adversary tier the floor exists to neutralise (d08/d16
+# grade-D social, d12/d13/d20 grade-E reshares & relocation-spoof, d23 grade-D false-attribution). A
+# country/serial clash asserted only by that tier is exactly the "flaky low-grade source" D5 warns about.
+#
+# Scoped STRICTLY to the critical-attribute veto — curated distinct_from, geo, and hard-identifier vetoes
+# are structural/curated and stay unconditional. Absent ⇒ floor OFF ⇒ the critical veto is unconditional
+# (pre-Stage-3A, byte-unchanged). ON at the target here; currently INERT on the frozen corpus because no
+# variant STATES operator_branch (the one wired critical attr), so it walls zero pairs today — declared
+# for the discipline, exercised by the unit tests.
+critical_veto_min_grade: C
+
 # Non-place keep-separate traps (the geographic Karachi-Port vs Port-Qasim pair lives in places.yaml's
 # own distinct_from field — intentionally NOT duplicated here).
 distinct_from:

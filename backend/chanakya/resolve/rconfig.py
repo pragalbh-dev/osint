@@ -35,6 +35,24 @@ ROLE_CRITICAL = "critical"      # a STATED disagreement is a hard veto (feeds th
 ROLE_SUPPORTING = "supporting"  # agreement raises the score; a stated disagreement is a SOFT penalty
 ROLE_NEUTRAL = "neutral"        # no identity effect (and the default for an undeclared attribute)
 
+# STANAG-2022 source-reliability grades are an ORDINAL letter scale, A (most reliable) → F (least). The
+# scale's letters are a domain constant, not a tunable — "at or above floor X" is therefore just the
+# lexicographic test ``grade <= floor`` on a single uppercase letter (no numeric mapping, no scoring
+# literal — gate G6 untouched; the floor value itself is read from config).
+_GRADE_LETTERS = "ABCDEF"
+
+
+def grade_meets_floor(grade: str | None, floor: str) -> bool:
+    """True iff STANAG ``grade`` is at/above ``floor`` (A best). Fail-closed on an unreadable grade/floor.
+
+    An unknown / unreadable grade is treated as *below* the floor — the safe direction for the credibility
+    gate: a conflict we cannot vouch for must not be allowed to shatter a merge on its own (it raises to a
+    human instead). Mirrors the credibility rubric's fail-closed doctrine (``credibility.reliability``).
+    """
+    if not grade or grade not in _GRADE_LETTERS or floor not in _GRADE_LETTERS:
+        return False
+    return grade <= floor
+
 
 class ResolveConfig:
     """A read-through view over the resolution + places + entity-registry config surfaces."""
@@ -189,6 +207,49 @@ class ResolveConfig:
         """
         v = self._extra("identity_raise_min_weight", None)
         return float(v) if v is not None else 0.0
+
+    # ── credibility floor on the critical-attribute veto (D5 take-care a, Stage 3A) ─────────────
+    @property
+    def critical_veto_min_grade(self) -> str | None:
+        """Minimum STANAG source-reliability grade for a stated critical conflict to WALL (else raise).
+
+        D5 take-care (a): one flaky low-grade source must not be able to shatter a well-corroborated
+        merge. A declared-critical-attribute disagreement is a hard veto only when the conflicting value
+        on **both** sides is asserted by at least one source graded at/above this floor; below it the
+        pair is **raised to the analyst** (a ``probable`` candidate) rather than silently walled OR
+        silently merged. STANAG A is most reliable, F least, so a floor of ``C`` walls on A/B/C and
+        raises on D/E/F. Scoped strictly to the critical-attribute veto — curated ``distinct_from``, geo,
+        and hard-identifier vetoes are structural and stay unconditional.
+
+        Absent ⇒ the floor is OFF and every critical conflict walls unconditionally (the pre-Stage-3A
+        behaviour, byte-unchanged — no code literal, gate G6). The shipped ``config/resolution.yaml``
+        sets it ON at the target ``C``.
+        """
+        v = self._extra("critical_veto_min_grade", None)
+        return str(v).strip().upper() if v is not None else None
+
+    def source_grade(self, source_id: str | None) -> str | None:
+        """The STANAG ``reliability_grade`` declared for a source (``config/sources.yaml``); None if unknown.
+
+        Read straight off the registry entry — the intrinsic, analyst-authored reliability letter, the
+        human-legible instrument for a coarse *admissibility* gate ("is this source trustworthy enough to
+        be allowed to shatter a merge?"), distinct in role from the fine-grained weight ``R(source)`` that
+        rides the continuous similarity score.
+        """
+        if source_id is None or self._bundle is None:
+            return None
+        if self._source_index is None:
+            self._source_index = dict(self._bundle.sources.as_map())
+        source = self._source_index.get(source_id)
+        grade = getattr(source, "reliability_grade", None) if source is not None else None
+        return str(grade).strip().upper() if grade else None
+
+    def source_meets_critical_veto_floor(self, source_id: str | None) -> bool:
+        """Is this source graded at/above :attr:`critical_veto_min_grade`? (Floor OFF ⇒ always True.)"""
+        floor = self.critical_veto_min_grade
+        if floor is None:
+            return True  # floor unset ⇒ the critical veto is unconditional (pre-Stage-3A, byte-unchanged)
+        return grade_meets_floor(self.source_grade(source_id), floor)
 
     @property
     def coref_authoritative_evidence(self) -> set[str]:

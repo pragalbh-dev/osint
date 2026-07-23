@@ -74,6 +74,11 @@ class AttrClaim:
     claim_id: str
     event_time: DateValue | None = None  # when true in the world (stated validity anchor)
     report_time: DateValue | None = None  # when the source published
+    # The source that asserted this value. Load-bearing for the D5 credibility floor (Stage 3A): a stated
+    # critical-attribute conflict WALLS only when the conflicting value on each side is attested by a
+    # source graded at/above the floor; below it the pair is raised to the analyst rather than walled. So
+    # the wall must reach the *per-value* source, not just the entity-level union (``Entity.source_ids``).
+    source_id: str | None = None
 
 
 def _attr_history_sort_key(entry: AttrClaim) -> tuple[bool, str, str, str]:
@@ -185,7 +190,13 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                 # ADDITIVE (Stage 3-prep): retain EVERY asserted value + its time axes, role-agnostic — a
                 # later/conflicting value is just another entry, never a silently-dropped one.
                 ent.attr_history.setdefault(k, []).append(
-                    AttrClaim(value=v, claim_id=c.claim_id, event_time=c.event_time, report_time=c.report_time)
+                    AttrClaim(
+                        value=v,
+                        claim_id=c.claim_id,
+                        event_time=c.event_time,
+                        report_time=c.report_time,
+                        source_id=c.source_id,
+                    )
                 )
         elif p.form == "triple":
             rr = base_ref(c, lane)

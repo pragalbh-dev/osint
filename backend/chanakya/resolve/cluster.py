@@ -13,6 +13,7 @@ the HITL band but never reach auto-merge, which stays reachable by the determini
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 
 from chanakya.schemas import pair_key
@@ -52,6 +53,11 @@ class ResolveResult:
     canonical: dict[str, str] = field(default_factory=dict)  # merged eid → display canonical id
     same_as: list[tuple[str, str]] = field(default_factory=list)  # (member, canonical)
     candidates: list[tuple[str, str]] = field(default_factory=list)  # HITL-band pairs (sorted)
+    # pair_key → analyst-facing rationale, only for a candidate RAISED by a below-floor critical conflict
+    # (D5 take-care a, Stage 3A). Empty for every ordinary scored candidate — a raise-with-a-reason is a
+    # different question ("a critical attribute disagrees, but not credibly enough to wall") than a
+    # look-alike, and the analyst needs to see which.
+    candidate_reasons: dict[str, str] = field(default_factory=dict)
     possible: list[tuple[str, str]] = field(default_factory=list)  # retained sub-HITL watch-list (D4; NOT drawn)
     distinct_from: list[tuple[str, str]] = field(default_factory=list)  # vetoed pairs surfaced as edges
     merge_confidence: dict[str, float] = field(default_factory=dict)
@@ -239,6 +245,7 @@ def resolve_entities(
     veto: set[Pair],
     raise_only: set[Pair],
     authoritative: set[Pair] | None = None,
+    raise_walls: Mapping[Pair, str] | None = None,
 ) -> ResolveResult:
     """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
 
@@ -251,8 +258,17 @@ def resolve_entities(
     ``resolve._coref_pairs`` (empty by default). It joins the bootstrap rather than the fixpoint because
     it is the same *kind* of evidence the other bootstrap triggers are — a direct, high-precision
     statement of identity — and it is still subject to the veto checks every bootstrap merge runs.
+
+    ``raise_walls`` (D5 take-care a, Stage 3A) is the *below-floor critical-conflict* channel: same-type
+    pairs that STATE a different value of a declared-critical attribute but whose conflict is not
+    trustworthy enough to wall (the conflicting value on some side comes only from below-floor sources).
+    Unlike ``raise_only`` it is a **block-merge-and-review** set: the pair may neither bootstrap nor
+    auto-merge (a critical disagreement must not slip through), yet it is guaranteed a place in the HITL
+    candidate queue with a reason — never silently walled, never silently merged. Maps each pair → its
+    reason string. Empty by default ⇒ no effect.
     """
     authoritative = authoritative or set()
+    raise_walls = raise_walls or {}
     res = ResolveResult()
     if not cfg.scorable:
         return res  # no bands configured ⇒ inert (identity partition) — no code literal needed
@@ -263,7 +279,7 @@ def resolve_entities(
     toks = _token_index(graph, cfg)
     pairs = sorted(
         tuple(sorted(p))
-        for p in _candidate_pairs(graph, cfg, alias_idx, raise_only | authoritative, toks)
+        for p in _candidate_pairs(graph, cfg, alias_idx, raise_only | authoritative | set(raise_walls), toks)
     )
 
     def vetoed(a: str, b: str) -> bool:
@@ -298,6 +314,8 @@ def resolve_entities(
     for a, b in pairs:
         if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
             continue
+        if frozenset((a, b)) in raise_walls:
+            continue  # a below-floor critical conflict may not bootstrap-merge — it is raised to HITL
         ea, eb = graph.entities[a], graph.entities[b]
         na, nb = normalize(ea.name, trans), normalize(eb.name, trans)
         same_ns = ea.namespace() == eb.namespace()
@@ -321,6 +339,8 @@ def resolve_entities(
         for a, b in pairs:
             if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
                 continue
+            if frozenset((a, b)) in raise_walls:
+                continue  # never auto-merge a below-floor critical conflict — it is the analyst's call
             bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
             floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
             if _band(bd, cfg, has_raise=False, auto_merge=floor) == "auto":
@@ -342,16 +362,24 @@ def resolve_entities(
         bd = merge_score(graph.entities[a], graph.entities[b], graph, uf.find, cfg, alias_idx)
         floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
         has_raise = frozenset((a, b)) in raise_only
-        band = _band(bd, cfg, has_raise=has_raise, auto_merge=floor)
+        raised_wall = frozenset((a, b)) in raise_walls
+        band = _band(bd, cfg, has_raise=has_raise or raised_wall, auto_merge=floor)
+        # A below-floor critical conflict is blocked from merge upstream, so a high deterministic score
+        # would otherwise band it "auto" and drop it here — force it to the review queue. A critical
+        # disagreement is always the analyst's call: never silently walled, never silently merged.
+        if raised_wall and band == "auto":
+            band = "hitl"
         # D4 banked correction: a name-alone pair may not reach the review queue — it caps at `possible`.
-        # Raise-only pairs are exempt (an explicit external assertion is more than a name), and the cap
-        # is a no-op unless the operator turned the dial on (default off ⇒ current banding, byte-unchanged).
-        capped = cfg.name_alone_caps_at_possible and not has_raise and _name_alone(bd)
+        # Raise pairs are exempt (an explicit assertion, or a stated critical disagreement, is more than a
+        # name), and the cap is a no-op unless the operator turned the dial on (default off ⇒ byte-unchanged).
+        capped = cfg.name_alone_caps_at_possible and not (has_raise or raised_wall) and _name_alone(bd)
         pfloor = cfg.possible_floor
         if band == "hitl" and not capped:
             res.candidates.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
             res.merge_breakdown[pair_key(a, b)] = bd
+            if raised_wall:
+                res.candidate_reasons[pair_key(a, b)] = raise_walls[frozenset((a, b))]
         # The retained `possible` watch-list (D4): a scored pair in [possible_floor, hitl_low) that today
         # is dropped as `separate`, PLUS any name-alone pair the dial just capped down out of `hitl`. Kept
         # with its identity confidence/breakdown; Partition-only (never drawn — see view/pipeline). Absent
@@ -459,6 +487,10 @@ def finalise(
         {as_pair(p) for p in res.candidates if uf.find(p[0]) != uf.find(p[1]) and as_pair(p) not in distinct}
     )
     res.distinct_from = sorted(distinct)
+    # Carry a raise reason only for candidates that survived the reset — a raised pair that later merged
+    # or was vetoed apart is no longer an open question (keyed by pair_key, matching res.candidate_reasons).
+    surviving_keys = {pair_key(a, b) for a, b in res.candidates}
+    res.candidate_reasons = {k: v for k, v in res.candidate_reasons.items() if k in surviving_keys}
 
     # The retained `possible` watch-list (D4) survives the reset on the SAME rule as candidates — a pair
     # that later merged, was vetoed apart, or was promoted to a candidate is no longer merely "possible" —

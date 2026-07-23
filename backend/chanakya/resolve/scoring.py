@@ -104,6 +104,54 @@ def critical_attribute_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> boo
     return _stated_values_conflict(a, b, cfg.critical_role_attrs(a.etype))
 
 
+def _value_meets_grade_floor(ent: Entity, attr: str, value: object, cfg: ResolveConfig) -> bool:
+    """Is ``ent``'s conflicting ``value`` for ``attr`` attested by ≥1 source at/above the credibility floor?
+
+    Reads the per-value provenance retained in ``Entity.attr_history`` (Stage 3-prep): the sources that
+    asserted exactly this value. A value with **no** source-attributed claim — a curated registry seed,
+    say — is not a flaky source and counts as credible (the floor exists to neutralise identifiable
+    low-grade *sources*, not analyst-curated facts). Otherwise the value is credible iff any asserting
+    source clears :meth:`ResolveConfig.source_meets_critical_veto_floor` (floor OFF ⇒ always true).
+    """
+    source_ids = [ac.source_id for ac in ent.attr_history.get(attr, []) if ac.value == value and ac.source_id]
+    if not source_ids:
+        return True  # curated / not source-attributable ⇒ not a flaky source ⇒ credible
+    return any(cfg.source_meets_critical_veto_floor(sid) for sid in source_ids)
+
+
+def critical_conflict_disposition(a: Entity, b: Entity, cfg: ResolveConfig) -> tuple[str, tuple[str, ...]]:
+    """Classify a same-type pair's critical-attribute situation for the D5 wall (Stage 3A credibility floor).
+
+    Returns ``(disposition, conflicting_attrs)`` where disposition is one of:
+
+    * ``"none"``  — no *stated* critical-attribute conflict (absence ≠ conflict);
+    * ``"wall"``  — at least one conflicting critical attr is **credible on both sides** (each side's
+      conflicting value is attested by a source at/above ``critical_veto_min_grade``) ⇒ a hard veto;
+    * ``"raise"`` — a critical conflict exists but **none** is credible on both sides ⇒ below the floor,
+      so the pair is raised to the analyst rather than walled (D5 take-care a).
+
+    ``conflicting_attrs`` is the sorted tuple of the critical attributes actually in disagreement (the
+    credible ones for a wall, all of them for a raise) — the material for a human-legible reason. Pure and
+    deterministic (sorted, no clock/RNG); floor OFF ⇒ every conflict is credible ⇒ always ``"wall"``,
+    byte-identical to the pre-Stage-3A unconditional veto.
+    """
+    if a.etype != b.etype:
+        return ("none", ())
+    conflicting = tuple(
+        k
+        for k in cfg.critical_role_attrs(a.etype)
+        if (va := a.attrs.get(k)) is not None and (vb := b.attrs.get(k)) is not None and va != vb
+    )
+    if not conflicting:
+        return ("none", ())
+    credible = tuple(
+        k
+        for k in conflicting
+        if _value_meets_grade_floor(a, k, a.attrs[k], cfg) and _value_meets_grade_floor(b, k, b.attrs[k], cfg)
+    )
+    return ("wall", credible) if credible else ("raise", conflicting)
+
+
 def has_hard_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """True if a configured hard-conflict attribute is **stated on both sides and different**.
 
