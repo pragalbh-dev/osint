@@ -22,6 +22,22 @@
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
 | SHIP | Production packaging & deploy | 2 | not-started | — | API (+X0, DATA-C, INGEST) | — |
 
+### Replumb board — identity re-key / type-instance (plan `01-replumb-implementation-plan.md`)
+_Post-deadline substrate rework. The core chain RK-ATOMS → RK-LAYER → RK-COREF → RK-NAMECUT is strict
+(plan §2); contended files are owned one stage at a time (plan §3). Contract amendments A1–A7 are logged in
+the section below + `DECISIONS.md`._
+
+| ID | Session | Wave | Status | PR | Depends (merged) | Merged commit |
+|----|---------|------|--------|----|--------------------|---------------|
+| RK-SPIKE | S0 — close micro-decisions + prototype characterize-and-cluster + claim-gold slice | 0 | in-progress | — | — | — |
+| RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
+| RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | not-started | — | RK-SPIKE | — |
+| RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | not-started | — | RK-ATOMS | — |
+| RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | not-started | — | RK-LAYER | — |
+| RK-NAMECUT | S4 — cut the name-key + re-anchor decisions/config + golden regen | 4 | not-started | — | RK-COREF | — |
+| RK-MATERIALITY | Two-layer operator-scoped chokepoints | 4 | not-started | — | RK-COREF | — |
+| RK-DATA | Corpus / answer-key / golden regeneration + coverage additions | 2–4 | not-started | — | contract-freeze per stage | — |
+
 ## Contract amendments (F0-amendment PRs)
 _Post-F0 changes to a frozen contract go here. Each entry: what changed, which contract §, which sessions must rebase._
 
