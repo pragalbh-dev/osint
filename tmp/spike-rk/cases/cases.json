@@ -1,0 +1,1353 @@
+{
+  "cases": [
+    {
+      "case_id": "rk-01-alias-lowgrade-no-bind",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "E",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "Kotra East air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Air Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the Kotra East air-defence battery (also reported as the Barha air-defence battery)"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Barha air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Air Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the Kotra East air-defence battery (also reported as the Barha air-defence battery)"
+              },
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-02-alias-highgrade-binds",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "Kotra East air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Air Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the Kotra East air-defence battery (also reported as the Barha air-defence battery)"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Barha air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Air Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the Kotra East air-defence battery (also reported as the Barha air-defence battery)"
+              },
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-03-explicit-eq-quote-lacks-second-surface",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR) was raised in 2011"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East battery",
+              "entity_type": "unit",
+              "attrs": {},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR) was raised in 2011"
+              },
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-04-name-variant-is-raise-only",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "Meridian Precision Works",
+              "entity_type": "manufacturer",
+              "attrs": {},
+              "coref": {
+                "cluster": "c1",
+                "category": "NAME_VARIANT",
+                "quote": "Meridian Precision Works, elsewhere given as Meridian Precision Engineering"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Meridian Precision Engineering",
+              "entity_type": "manufacturer",
+              "attrs": {},
+              "coref": {
+                "cluster": "c1",
+                "category": "NAME_VARIANT",
+                "quote": "Meridian Precision Works, elsewhere given as Meridian Precision Engineering"
+              },
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-05-anaphor-type-unique-binds",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "UNAMBIGUOUS_ANAPHOR",
+                "quote": "The 5th Air Defence Regiment took delivery in March. The regiment moved to Barha in June."
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "The regiment",
+              "entity_type": "unit",
+              "attrs": {},
+              "coref": {
+                "cluster": "c1",
+                "category": "UNAMBIGUOUS_ANAPHOR",
+                "quote": "The 5th Air Defence Regiment took delivery in March. The regiment moved to Barha in June."
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "Barha",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m4",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m2",
+              "predicate": "based-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-06-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-06-anaphor-two-antecedents-no-bind",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "UNAMBIGUOUS_ANAPHOR",
+                "quote": "The 5th Air Defence Regiment and the 9th Air Defence Regiment both reported readiness in May. The regiment has since deployed to Barha."
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "9th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "9th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "The regiment",
+              "entity_type": "unit",
+              "attrs": {},
+              "coref": {
+                "cluster": "c1",
+                "category": "UNAMBIGUOUS_ANAPHOR",
+                "quote": "The 5th Air Defence Regiment and the 9th Air Defence Regiment both reported readiness in May. The regiment has since deployed to Barha."
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m4",
+              "surface": "Barha",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m3",
+              "predicate": "based-at",
+              "object_local_id": "m4",
+              "kind": "observation",
+              "event_time": "2025-06-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-07-referent-declines-on-discriminator-conflict",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR), which the same bulletin elsewhere calls the 9th Air Defence Regiment"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "5 ADR",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Ground Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR), which the same bulletin elsewhere calls the 9th Air Defence Regiment"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "9th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "9th", "service_branch": "Zarrin Ground Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR), which the same bulletin elsewhere calls the 9th Air Defence Regiment"
+              },
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-08-referent-absent-attr-does-not-decline",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR)"
+              },
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "5 ADR",
+              "entity_type": "unit",
+              "attrs": {},
+              "coref": {
+                "cluster": "c1",
+                "category": "EXPLICIT_EQUIVALENCE",
+                "quote": "the 5th Air Defence Regiment (5 ADR)"
+              },
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-09-contrast-enumeration-two-sites",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "an air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m2",
+              "surface": "an air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m3",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m4",
+              "surface": "Barha",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-02"
+            },
+            {
+              "subject_local_id": "m2",
+              "predicate": "based-at",
+              "object_local_id": "m4",
+              "kind": "observation",
+              "event_time": "2025-04-02"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-10-colocated-presence-no-contrast-merges",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-02"
+            },
+            {
+              "subject_local_id": "m2",
+              "predicate": "observed-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-05"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-11-colocated-presence-contrast-capped",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m2",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m3",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-02"
+            },
+            {
+              "subject_local_id": "m2",
+              "predicate": "observed-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-05"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-12-contrast-lowgrade-still-capped",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "E",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m2",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m3",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-02"
+            },
+            {
+              "subject_local_id": "m2",
+              "predicate": "observed-at",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-04-05"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-13-ceiling-cannot-shatter-corroborated-cluster",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-02-01"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5 ADR",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-02-20"
+            }
+          ]
+        },
+        {
+          "doc_id": "d03",
+          "source_grade": "C",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            },
+            {
+              "local_id": "m2",
+              "surface": "9th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "9th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": "g1"
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-14-shared-designation-operator-differs-no-confirm",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "3rd Air Defence Battalion",
+              "entity_type": "unit",
+              "attrs": {"designator": "3rd", "service_branch": "Zarrin Air Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "3rd Air Defence Battalion",
+              "entity_type": "unit",
+              "attrs": {"designator": "3rd", "service_branch": "Marnian Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-15-composite-operator-designation-confirms",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "3rd Air Defence Battalion",
+              "entity_type": "unit",
+              "attrs": {"designator": "3rd", "service_branch": "Zarrin Air Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-03-01"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "3 ADB",
+              "entity_type": "unit",
+              "attrs": {"designator": "3rd", "service_branch": "Zarrin Air Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-03-14"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-16-name-only-no-fuse-at-any-floor",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "Meridian Precision Works",
+              "entity_type": "manufacturer",
+              "attrs": {},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Sarband Air Defence Group",
+              "entity_type": "unit",
+              "attrs": {},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "Meridian Precision Works",
+              "entity_type": "manufacturer",
+              "attrs": {},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Sarband Air Defence Group",
+              "entity_type": "unit",
+              "attrs": {},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-17-design-name-plus-one-signal-confirms",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"origin_country": "Zarrin", "design_bureau": "Meridian Design Bureau"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"origin_country": "Zarrin", "design_bureau": "Meridian Design Bureau"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-18-unnormalized-operator-no-false-wall",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "ZAF"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5 ADR",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Air Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d03",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "  zarrin  air  force "},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-19-thin-context-insufficient-evidence",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "C",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-05-01"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "C",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "rk-20-colocation-no-fabricated-relocation",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "an air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-01-10"
+            },
+            {
+              "subject_local_id": "m3",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-01-10"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "an air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-01-12"
+            },
+            {
+              "subject_local_id": "m3",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-01-12"
+            }
+          ]
+        },
+        {
+          "doc_id": "d03",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Barha",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "an air-defence battery",
+              "entity_type": "unit",
+              "attrs": {"service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-06-20"
+            },
+            {
+              "subject_local_id": "m3",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-06-20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-21-earned-relocation-is-drawn",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-01-10"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5 ADR",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Barha",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-06-20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-22-garrison-plus-forward-site-not-relocation",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Sarband Garrison",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "garrison"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-03-01"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "A",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5 ADR",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-03-05"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-23-two-candidate-formations-no-silent-pick",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "TL-7B Sarband",
+              "entity_type": "variant",
+              "attrs": {"operator": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m3",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m4",
+              "surface": "9th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "9th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "observed-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-03-01"
+            },
+            {
+              "subject_local_id": "m1",
+              "predicate": "inducted-into",
+              "object_local_id": "m3",
+              "kind": "observation",
+              "event_time": "2025-01-01"
+            },
+            {
+              "subject_local_id": "m1",
+              "predicate": "inducted-into",
+              "object_local_id": "m4",
+              "kind": "observation",
+              "event_time": "2025-01-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "rk-24-reprint-is-not-independent-corroboration",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-02-01"
+            }
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {
+              "local_id": "m1",
+              "surface": "5th Air Defence Regiment",
+              "entity_type": "unit",
+              "attrs": {"designator": "5th", "service_branch": "Zarrin Ground Force"},
+              "coref": null,
+              "contrast_group": null
+            },
+            {
+              "local_id": "m2",
+              "surface": "Kotra East",
+              "entity_type": "basing_site",
+              "attrs": {"site_type": "field site"},
+              "coref": null,
+              "contrast_group": null
+            }
+          ],
+          "edges": [
+            {
+              "subject_local_id": "m1",
+              "predicate": "based-at",
+              "object_local_id": "m2",
+              "kind": "observation",
+              "event_time": "2025-02-01"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

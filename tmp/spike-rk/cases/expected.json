@@ -1,0 +1,417 @@
+{
+  "_invariants": [
+    {
+      "id": "I1-atom-conservation",
+      "op": "atom_conservation",
+      "why": "Every input mention must appear in exactly one instance's membership. D-13.11: atoms 'never split or merge'; D-13.18: 'No atom splits; the grouping declines.' A dropped mention is the D2 failure class (silent truncation)."
+    },
+    {
+      "id": "I2-no-fabricated-discriminator",
+      "op": "no_fabricated_discriminator",
+      "why": "Every value in instances[].discriminators must either occur in the attrs of one of that instance's member mentions, or be the literal 'unknown'. D-13.8: absent -> 'unknown', 'never fabricated'. CLAUDE.md: fabrication is disqualifying."
+    },
+    {
+      "id": "I3-determinism",
+      "op": "stable_under_rerun",
+      "why": "Two runs over identical input yield identical output up to a consistent renaming of instance_id/referent_id. G17/G2: rebuild is a pure recompute."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "rk-01-alias-lowgrade-no-bind",
+      "intent": "D-13.17 grade gate. A grade-E document states an in-document equivalence between two formations. Structurally the quote licenses the bind; the source grade does not. Must NOT bind.",
+      "_assert": [
+        {"op": "count_equals", "path": "referent_atoms[doc=d01]", "value": 2,
+         "why": "A looser cluster mints one referent atom per member (D-13.17, 'What \"held looser\" means mechanically')."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": false,
+         "why": "Below the grade floor the bind is raise-only, not authoritative (R10.1)."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.grade", "value": "fail",
+         "why": "The gate that must fire here is the grade gate, not something else."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.structural", "value": "pass",
+         "why": "The quote occurs verbatim, contains BOTH surfaces and a parenthetical marker - the structural gate is satisfied, so the case isolates the grade gate."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"],
+         "why": "An uncapped, unbanded fusion on a grade-E assertion is the inversion D10/R10.1 forbids."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed",
+         "why": "'confirmed means the pair FUSED'; the pair must be queued and reported instead (D8/R8.1)."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].same_doc", "value": true,
+         "why": "Doc-sameness must be carried on the pair (D-13.19 carrier: Entity.doc_ids)."},
+        {"op": "contains", "path": "pair_verdicts[@d01.m1|@d01.m2].reason", "value": "also reported as the Barha air-defence battery",
+         "advisory": true,
+         "why": "D-13.17: 'The raise-only licensing quote is written but read nowhere... Wire it, or the mitigation that makes raise-only acceptable is fictional.' Advisory only because the I/O contract has no dedicated licensing-quote field."}
+      ]
+    },
+    {
+      "case_id": "rk-02-alias-highgrade-binds",
+      "intent": "Mirror of rk-01: byte-identical document at grade B. Both gates pass, so the cluster MUST bind. Without this case rk-01 is passed by any implementation that never binds anything.",
+      "_assert": [
+        {"op": "count_equals", "path": "referent_atoms[doc=d01]", "value": 1,
+         "why": "'Only an authoritative cluster mints one shared referent atom' (D-13.17)."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": true,
+         "why": "EXPLICIT_EQUIVALENCE is authoritative once the deterministic and grade gates pass (D-13.17 policy table)."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].category", "value": "EXPLICIT_EQUIVALENCE", "why": "The binding category must be recorded."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.structural", "value": "pass", "why": "Quote verbatim + both surfaces + parenthetical marker."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.grade", "value": "pass", "why": "Grade B clears a floor set strictly above the stated-same-as floor (C)."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].declined", "value": false, "why": "No member carries a conflicting critical discriminator, so there is nothing to decline (D-13.18)."},
+        {"op": "contains", "path": "referent_atoms[has=d01.m1].member_local_ids", "value": "m2", "why": "One shared atom over both members."},
+        {"op": "same_instance", "value": ["d01.m1", "d01.m2"], "why": "The authoritative bind fuses; this is lever 1, 'the biggest fragmentation lever' (spine/13 6)."},
+        {"op": "count_equals", "path": "instances", "value": 1, "advisory": true, "why": "Two unit mentions, one referent, one instance-layer citizen."}
+      ]
+    },
+    {
+      "case_id": "rk-03-explicit-eq-quote-lacks-second-surface",
+      "intent": "D-13.17 deterministic gate. A grade-A document, category EXPLICIT_EQUIVALENCE, but the licensing quote does not contain the second member's surface form - a category mislabel. Must NOT bind.",
+      "_assert": [
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.structural", "value": "fail",
+         "why": "Gate: 'quote contains BOTH members' surface forms' (D-13.17 policy table). It contains only m1's."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.grade", "value": "pass",
+         "why": "Grade A - so the ONLY reason to refuse is structural. This isolates the deterministic gate from the grade gate."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": false,
+         "why": "'A model's self-report is not evidence; a model's self-report plus a structural check any reader can re-derive is.'"},
+        {"op": "count_equals", "path": "referent_atoms[doc=d01]", "value": 2, "why": "De-graded to one atom per member."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"], "why": "A mislabelled category must not buy an uncapped fusion."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed", "why": "Raise-only means queued, never fused."}
+      ]
+    },
+    {
+      "case_id": "rk-04-name-variant-is-raise-only",
+      "intent": "D-13.17: NAME_VARIANT is raise-only PERMANENTLY. Grade A and a verbatim quote naming both surfaces - every gate a naive reader would check passes. It must still not bind, because an authoritative bind bypasses banding and would rebuild the exact-name auto-merge lane D-13.1 deletes.",
+      "_assert": [
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": false,
+         "why": "'NAME_VARIANT is raise-only for a mechanical reason, not out of caution... \"authoritative NAME_VARIANT\" IS the exact-normalized-name auto-merge lane that D-13.1 exists to delete.'"},
+        {"op": "count_equals", "path": "referent_atoms[doc=d01]", "value": 2, "why": "One atom per member for a loose cluster."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed",
+         "why": "Name is a contributor, never a verdict, at every layer (D-13.10)."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling", "value": "possible",
+         "why": "The pair's only support is name similarity: 'name -> ceiling at possible, every layer' (D-13.20 ladder table)."},
+        {"op": "present", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling_reason", "why": "A cap must reach the analyst with a reason (D8/R8.1: 'not fused; queued and reported')."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"], "advisory": true,
+         "why": "Advisory: manufacturer is a design-layer type and the output contract's `instances` list may carry only instance-layer citizens."},
+        {"op": "contains", "path": "pair_verdicts[@d01.m1|@d01.m2].reason", "value": "elsewhere given as", "advisory": true,
+         "why": "The licensing quote is the whole mitigation for raise-only; it must be surfaced somewhere."}
+      ]
+    },
+    {
+      "case_id": "rk-05-anaphor-type-unique-binds",
+      "intent": "D-13.17: UNAMBIGUOUS_ANAPHOR is authoritative behind the type-unique-antecedent gate. The document holds exactly one other `unit` mention; the variant and basing_site mentions are NOT candidate antecedents. Must bind.",
+      "_assert": [
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": true,
+         "why": "Gate: 'type-unique antecedent - the document contains no second mention of a compatible entity type that the anaphor could mean' (D-13.17). Satisfied."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].category", "value": "UNAMBIGUOUS_ANAPHOR", "why": "Category recorded."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.structural", "value": "pass",
+         "why": "The type-unique check passes. An implementation that counts ALL other mentions (including the variant and the site) instead of compatible-type ones fails here - which is the point."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.grade", "value": "pass", "why": "Grade B clears the floor."},
+        {"op": "contains", "path": "referent_atoms[has=d01.m1].member_local_ids", "value": "m2", "why": "The anaphor joins its antecedent."},
+        {"op": "same_instance", "value": ["d01.m1", "d01.m2"],
+         "why": "Raise-only for anaphora 'forfeits lever 1... and manufactures a fragmentation class of nameless orphans' (D-13.17)."},
+        {"op": "contains", "path": "instances[@d01.m1].discriminators.designation", "value": "5th", "advisory": true,
+         "why": "The bound referent should carry the facts of both mentions - the anaphor's based-at edge and the antecedent's designation on one instance (D-13.7)."}
+      ]
+    },
+    {
+      "case_id": "rk-06-anaphor-two-antecedents-no-bind",
+      "intent": "D-13.17 mirror of rk-05: two `unit` mentions of the same type precede the anaphor, so the category's own licensing condition fails. Must NOT bind - and must not silently pick either antecedent.",
+      "_assert": [
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": false,
+         "why": "The type-unique gate is the decision: 'Conditional: if the type-unique gate is not built, this decision flips to raise-only.'"},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].gate_results.structural", "value": "fail",
+         "why": "A second compatible-type mention exists, so 'there is, by construction,' ambiguity to resolve."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m3"], "why": "No fusion on an ambiguous anaphor."},
+        {"op": "distinct_instance", "value": ["d01.m2", "d01.m3"], "why": "And not with the other candidate either - a silent pick is the D2 failure class."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"], "why": "Differing designations (5th vs 9th) are a hard veto (D-13.20 ladder)."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m3].verdict", "value": "confirmed", "why": "Raised, not fused."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m2|@d01.m3].verdict", "value": "confirmed", "why": "Raised, not fused."},
+        {"op": "present", "path": "gaps[about=@d01.m3]", "advisory": true,
+         "why": "The unbound anaphor is a nameless orphan; D-13.12 wants the residual reported as a measured gap rather than invisible sprawl."}
+      ]
+    },
+    {
+      "case_id": "rk-07-referent-declines-on-discriminator-conflict",
+      "intent": "D-13.18. An authoritative EXPLICIT_EQUIVALENCE cluster at grade A whose three members carry designator {5th, absent, 9th}. Both gates pass, so the bind is licensed - the rebuild must DECLINE the grouping. The trap: first-wins scalar collapse reads designator='5th' and sees no conflict at all.",
+      "_assert": [
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].declined", "value": true,
+         "why": "'An intra-referent critical-discriminator conflict makes the rebuild DECLINE the grouping - de-grouping to claim-atom granularity and raising for an analyst.'"},
+        {"op": "present", "path": "referent_atoms[has=d01.m1].decline_reason",
+         "why": "The analyst must be told why the source's own equivalence was not honoured."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m3"],
+         "why": "'New code required, and it is not obvious: an intra-referent conflict is currently invisible, because Entity.attrs is first-claim-wins scalar... The decline check must read history, not attrs.'"},
+        {"op": "count_gte", "path": "instances", "value": 2, "why": "The grouping declined, so the members are not one instance."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m3].verdict", "value": "confirmed", "why": "A declined grouping must not fuse via another route."},
+        {"op": "atom_conservation", "why": "'No atom splits; the grouping declines' (D-13.18). All three mentions must survive."},
+        {"op": "count_equals", "path": "instances", "value": 3, "advisory": true,
+         "why": "Advisory: the literal reading is full de-grouping to claim-atom granularity (3). Whether the safe sub-pair {m1,m2} may re-bind at Tier 1 is NOT stated by the spec - see RATIONALE open question O3."},
+        {"op": "present", "path": "gaps[about=@d01.m1]", "advisory": true, "why": "'...and raising for an analyst.' The contract has no dedicated raise channel; a gap is the closest slot."}
+      ]
+    },
+    {
+      "case_id": "rk-08-referent-absent-attr-does-not-decline",
+      "intent": "D-13.18 mirror. One member states designator '5th', the other states nothing. Absence is `unknown`, never a conflict - so the grouping must NOT decline. Without this case, an implementation that declines on any attribute asymmetry passes rk-07.",
+      "_assert": [
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].authoritative", "value": true, "why": "Both gates pass at grade A."},
+        {"op": "equals", "path": "referent_atoms[has=d01.m1].declined", "value": false,
+         "why": "D-13.8: discriminators are 'critical-if-present: absent -> unknown (under-individuated + named gap), never fabricated, never rejected, never a wall.'"},
+        {"op": "absent", "path": "referent_atoms[has=d01.m1].decline_reason", "why": "Nothing to decline."},
+        {"op": "same_instance", "value": ["d01.m1", "d01.m2"], "why": "The source is authority on its own coreference (spine/13 4)."},
+        {"op": "contains", "path": "instances[@d01.m1].discriminators.designation", "value": "5th",
+         "why": "The stated value carries onto the merged instance; the absent one contributes no conflict."}
+      ]
+    },
+    {
+      "case_id": "rk-09-contrast-enumeration-two-sites",
+      "intent": "D-13.19. One grade-B document enumerates two sibling batteries, one at each of two sites: identical surfaces, identical operator, same document, same date - every naive signal points at merge. Both must survive, and the stated order-of-battle figure (2) should be captured as data.",
+      "_assert": [
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"],
+         "why": "spine/13 6: 'A same-doc pair carries a prior against merging ONLY when the source syntactically contrasts them (an enumeration...)'. Fusing them is the OOB undercount D-13.14 calls 'the harmful error for this use case'."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed",
+         "why": "'contrast means \"not automatically\", never \"not at all.\"'"},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].same_doc", "value": true, "why": "The contrast channel is doc-scoped, so doc-sameness must be observable."},
+        {"op": "count_equals", "path": "derived_edges[kind=relocation,drawn=true]", "value": 0,
+         "why": "Two sibling batteries at two sites must never become one unit's before/after (D1, chain step 3-4)."},
+        {"op": "any_of", "why": "The pair must be held by a STATED mechanism - either the contrast ceiling (D-13.19) or the relationship-conflict wall (G18, two sites at overlapping times). Either is target-correct; being held by neither is not.",
+         "asserts": [
+           {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling", "value": "probable"},
+           {"op": "present", "path": "pair_verdicts[@d01.m1|@d01.m2].walls"}
+         ]},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling", "value": "probable", "advisory": true,
+         "why": "D-13.19: 'A same-doc stated-contrast pair is capped at probable.' Advisory because G18's relationship wall may legitimately dominate this particular pair."},
+        {"op": "equals", "path": "instances[@d01.m1].discriminators.count", "value": 2, "advisory": true,
+         "why": "'A source that says \"two batteries\" is stating the order-of-battle figure. Capture it as a sourced count attribute on the presence (D-13.13).' Advisory twice over: the I/O contract has no slot for a sourced count (open question O1), and the enumerated siblings here are formations while the decision's wording says 'on the presence' (open question O6). The size of the contrast group is the only place the figure can come from, since the input carries no document text."}
+      ]
+    },
+    {
+      "case_id": "rk-10-colocated-presence-no-contrast-merges",
+      "intent": "D-13.19 mirror, point 1 of a 3-point series (rk-10/11/12) that varies one thing at a time. Two same-doc sightings of the same design by the same operator at the same site, NO contrast. Absence of contrast is neutral, so the pair is judged on merits - and a presence merge on co-location is explicitly safe. MUST fuse.",
+      "_assert": [
+        {"op": "same_instance", "value": ["d01.m1", "d01.m2"],
+         "why": "spine/13 6: 'Two co-located reports of HQ-9/P at Rahwali by the same operator collapse into one presence - safe, because a presence asserts only presence, which co-location evidence genuinely supports.'"},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed",
+         "why": "'Absence of contrast is neutral - never a prior for merging either'; on merits this pair merges."},
+        {"op": "equals", "path": "instances[@d01.m1].citizen", "value": "presence",
+         "why": "An observed-at sighting materializes a presence, never a formation (D-13.13, spine/13 5 step 3)."},
+        {"op": "count_equals", "path": "instances[citizen=formation]", "value": 0,
+         "why": "'A bare sighting never forces a formation (D-13.13/D-13.14)' - G15."},
+        {"op": "count_equals", "path": "derived_edges[kind=based-at,drawn=true]", "value": 0,
+         "why": "G15: 'An observed-at equipment sighting never becomes a based-at formation basing without organizational evidence.' There is none here."}
+      ]
+    },
+    {
+      "case_id": "rk-11-colocated-presence-contrast-capped",
+      "intent": "D-13.19, point 2: byte-identical to rk-10 except that the source enumerates the two sightings as siblings. One variable changed, so the contrast ceiling is fully isolated - nothing else can explain a different outcome. Must NOT fuse.",
+      "_assert": [
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"],
+         "why": "Stated anti-identity evidence: 'A same-doc pair carries a prior against merging... when the source syntactically contrasts them' (spine/13 6)."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed",
+         "why": "'it reaches the analyst with its licensing quote and can never auto-merge' (D-13.19)."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling", "value": "probable",
+         "why": "'A same-doc stated-contrast pair is capped at probable.' Here no wall applies (same site, same operator), so the ceiling is the only available mechanism and must be reported as such."},
+        {"op": "present", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling_reason",
+         "why": "'Why a ceiling, not a score penalty' - a ceiling states the intent to the analyst; a silent demotion 'drops the pair out of the analyst queue entirely'."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].same_doc", "value": true, "why": "Doc-scoped channel."}
+      ]
+    },
+    {
+      "case_id": "rk-12-contrast-lowgrade-still-capped",
+      "intent": "D-13.19, point 3: identical to rk-11 at grade E. The ceiling is UNGRADED and still applies. This is the contested call (analyst B wanted a grade gate) and is therefore pinned deliberately.",
+      "_assert": [
+        {"op": "distinct_instance", "value": ["d01.m1", "d01.m2"],
+         "why": "Decided: 'band ceiling at probable, UNGRADED - the ceiling cannot shatter, which removes the harm the grade gate defended'."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d01.m2].verdict", "value": "confirmed", "why": "Not fused; queued and reported."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling", "value": "probable",
+         "why": "'Why no grade gate... a band ceiling cannot shatter anything - it withholds a NEW fusion for one pair; it cannot retract an existing merge... so the gate would be a knob buying no risk reduction.'"},
+        {"op": "present", "path": "pair_verdicts[@d01.m1|@d01.m2].ceiling_reason", "why": "The low-grade licensing quote is exactly what the analyst needs to overrule it."}
+      ]
+    },
+    {
+      "case_id": "rk-13-ceiling-cannot-shatter-corroborated-cluster",
+      "intent": "D-13.19's safety argument, made testable. d01+d02 (grade A and B, independent, different surfaces) corroborate one formation into a confirmed cluster. d03 (grade C) then enumerates 'the 5th ... and the separate 9th'. The contrast must neither retract the existing merge nor block the cross-document join - it is doc-local by construction.",
+      "_assert": [
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "Composite (service_branch, designator) match across two independent sources: 'corroborated discriminator + relational agreement can reach confirmed' (D-13.9)."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed", "why": "The well-corroborated cluster forms."},
+        {"op": "same_instance", "value": ["d01.m1", "d03.m1"],
+         "why": "'a doc-local contrast cannot leak onto cross-doc pairs' (D-13.19 carrier rationale) and 'a band ceiling... cannot retract an existing merge, and a cluster can still form transitively through its other pairs.'"},
+        {"op": "distinct_instance", "value": ["d03.m1", "d03.m2"],
+         "why": "The enumerated sibling with a differing designation stays separate - the contrast does its job locally."},
+        {"op": "not_equals", "path": "pair_verdicts[@d03.m1|@d03.m2].verdict", "value": "confirmed", "why": "5th vs 9th: differing designation is the ladder's veto rung."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d03.m1].same_doc", "value": false, "advisory": true,
+         "why": "Cross-doc pair; may be skipped if the pair has already fused into one instance (see README matching semantics)."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d03.m1].ceiling", "value": null, "advisory": true,
+         "why": "A composite unique identifier 'lifts all caps' (D-13.20 rung table); the doc-local contrast must not appear on this pair at all."}
+      ]
+    },
+    {
+      "case_id": "rk-14-shared-designation-operator-differs-no-confirm",
+      "intent": "D-13.20's load-bearing call. Two documents, identical unit names, identical designator '3rd', DIFFERENT service branches. A designation is not a unique identifier and designations are reused across armies. Must NOT confirm - and note the names are identical, so this also tests that name-sameness does not launder the operator wall (D3b).",
+      "_assert": [
+        {"op": "distinct_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "'One shared designation string may NEVER confirm a formation merge' (D-13.20 / R5.1), and 'a discriminator conflict (different operator...) -> hard wall' (spine/13 7)."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed",
+         "why": "spine/13 3: 'never across operators within the instance layer.' D4 records that this is currently the most dangerous live over-merge class and that no gate names it."},
+        {"op": "present", "path": "pair_verdicts[@d01.m1|@d02.m1].walls",
+         "why": "The refusal must be a reported WALL, not a quiet low score - G18 requires an analyst-visible reason and D7 warns an unreported wall passes the gate while staying invisible."},
+        {"op": "contains", "path": "pair_verdicts[@d01.m1|@d02.m1].walls", "value": "operator", "advisory": true,
+         "why": "Advisory: the wall's vocabulary is not fixed by the spec; 'service_branch' is equally acceptable."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "separate", "advisory": true,
+         "why": "A hard veto should not merely be queued; it is not a question for the analyst."}
+      ]
+    },
+    {
+      "case_id": "rk-15-composite-operator-designation-confirms",
+      "intent": "D-13.20 mirror of rk-14 and the instance-layer must-succeed case. Same designator AND same operator, from two independent documents with different surfaces and different dates. The composite AND-key is an identifier; it must reach confirmed and lift the caps.",
+      "_assert": [
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "'hard_id_fields.unique is a list of composite AND-keys - (service_branch, designator) IS an identifier' (D-13.20); rung table: composite unique id 'lifts all caps'."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed",
+         "why": "D-13.9: 'Confirmed identity does NOT require a unique id... corroborated discriminator + relational agreement can reach confirmed', and the designation is the required non-perishable discriminator."},
+        {"op": "absent", "path": "pair_verdicts[@d01.m1|@d02.m1].walls", "advisory": true, "why": "Nothing conflicts."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].ceiling", "value": null, "advisory": true,
+         "why": "'composite unique id ... lifts all caps'. Advisory: may be skipped once the pair has fused."}
+      ]
+    },
+    {
+      "case_id": "rk-16-name-only-no-fuse-at-any-floor",
+      "intent": "Defect D3a. Two name-only pairs across two documents with nothing else in common: a `manufacturer` pair (the type whose per-type floor was LOWERED to 0.37, where the D3 hole is reachable) and a `unit` pair (the global floor). Neither may fuse at any floor.",
+      "_assert": [
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed",
+         "why": "R3.1: 'D-13.10's invariant - name is a contributor, never a verdict, at every layer - must bind THE FUSION PATH, not only the queue band.' New gate clause: 'assert that a name-only pair does not FUSE, at every configured floor including per-type overrides.'"},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].ceiling", "value": "possible",
+         "why": "D-13.10: 'a name match reaches at most a possible merge'."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d02.m1"], "advisory": true,
+         "why": "Advisory: design-layer nodes may not appear in the output's `instances` list - see RATIONALE open question O2."},
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m2|@d02.m2].verdict", "value": "confirmed",
+         "why": "Same invariant at the instance layer, where 'a name is NEVER sufficient; identity is fully earned' (spine/13 7)."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m2|@d02.m2].ceiling", "value": "possible", "why": "Ceiling at possible, every layer (D-13.10)."},
+        {"op": "distinct_instance", "value": ["d01.m2", "d02.m2"], "why": "Honest fragmentation is the correct outcome here (spine/13 6)."}
+      ]
+    },
+    {
+      "case_id": "rk-17-design-name-plus-one-signal-confirms",
+      "intent": "D-13.10 mirror of rk-16, and the case that stops an implementation from passing by refusing every name-driven merge. Same design name PLUS one more agreeing signal (origin country, design bureau). The design layer must still collapse readily.",
+      "_assert": [
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed",
+         "why": "D-13.10: 'The design layer collapses readily (a low corroboration bar) but never on name alone: a name match reaches at most a possible merge, and ONE MORE trivially-available signal ... clears it, so designs still collapse into one node in practice.'"},
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"], "advisory": true,
+         "why": "Advisory: see O2 - design-layer nodes may not be listed in `instances`."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].ceiling", "value": null, "advisory": true,
+         "why": "The name ceiling is cleared once a non-name signal agrees; it must not remain latched."}
+      ]
+    },
+    {
+      "case_id": "rk-18-unnormalized-operator-no-false-wall",
+      "intent": "Defect D5 / G18's normalization clause. One formation reported by three documents whose service_branch values differ only in surface form: an initialism ('ZAF'), the expansion ('Zarrin Air Force'), and a case/whitespace variant. Normalization must fire BEFORE the wall is tested, so no false wall and the merges hold.",
+      "_assert": [
+        {"op": "absent", "path": "pair_verdicts[@d01.m1|@d02.m1].walls",
+         "why": "G18: 'value normalization (PAF = \"Pakistan Air Force\") fires before the wall is tested'; config comment: exact-match walling 'SHATTERS legitimate merges'."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed",
+         "why": "Post-normalization this is the same composite (service_branch, designator) key as rk-15."},
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"], "why": "R5.2: normalization must precede conflict detection AND namespace derivation, else the namespaces stay split and the merge never even gets compared."},
+        {"op": "absent", "path": "pair_verdicts[@d02.m1|@d03.m1].walls", "why": "Case/whitespace normalization is the easy half; separating the two pairs makes partial credit visible."},
+        {"op": "equals", "path": "pair_verdicts[@d02.m1|@d03.m1].verdict", "value": "confirmed", "why": "Same key after trivial normalization."},
+        {"op": "same_instance", "value": ["d01.m1", "d03.m1"], "advisory": true, "why": "Transitively one formation."}
+      ]
+    },
+    {
+      "case_id": "rk-19-thin-context-insufficient-evidence",
+      "intent": "The non-negotiable. One grade-C sighting of equipment at a site with no organizational evidence, plus a look-alike named formation in another document with no site of its own. The tempting-but-wrong outcomes are (a) attributing the sighting to the look-alike formation and (b) collapsing the two. Correct: a presence, an explicit named gap, and no attribution.",
+      "_assert": [
+        {"op": "equals", "path": "instances[@d01.m1].citizen", "value": "presence",
+         "why": "spine/13 3a: observation evidence creates a presence; a formation is 'minted ONLY when organizational evidence exists'."},
+        {"op": "count_equals", "path": "derived_edges[kind=based-at,drawn=true]", "value": 0,
+         "why": "G15: no observed-at becomes a based-at without organizational evidence. 'We do not force a formation node: reifying an organizational individual we cannot source would violate the non-negotiable.'"},
+        {"op": "distinct_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "Never a collapse into a look-alike: the two are different citizens in different documents with no shared discriminator."},
+        {"op": "present", "path": "gaps[about=@d01.m1]",
+         "why": "CLAUDE.md non-negotiable: the system 'returns an explicit \"insufficient evidence to assess\" - naming what is missing and when next coverage is due.' D-13.14: the residual is 'a first-class coverage item'."},
+        {"op": "present", "path": "gaps[about=@d01.m1].missing", "why": "'naming what is missing' - an empty list is a hand-wave."},
+        {"op": "present", "path": "gaps[about=@d01.m1].sentence",
+         "why": "spine/04: 'Because the template is explicit, the gap statement is GENERATED, not hand-written' - a literal analyst-facing sentence."},
+        {"op": "equals", "path": "instances[@d01.m1].discriminators.designation", "value": "unknown",
+         "why": "D-13.8: absent -> 'unknown', 'never fabricated'. Inventing '5th' here from the neighbouring document is the fabrication this case exists to catch."},
+        {"op": "equals", "path": "gaps[about=@d01.m1].kind", "value": "formation-unresolved", "advisory": true, "why": "Kind vocabulary is not fixed by the spec."},
+        {"op": "contains", "path": "gaps[about=@d01.m1].sentence", "value": "designation", "advisory": true,
+         "why": "D-13.14's model sentence names the missing item: 'presence confirmed; formation count unresolved; designation coverage needed'."},
+        {"op": "equals", "path": "gaps[about=@d01.m1].ceiling", "value": "probable", "advisory": true, "why": "Presence is asserted; formation identity is not."}
+      ]
+    },
+    {
+      "case_id": "rk-20-colocation-no-fabricated-relocation",
+      "intent": "Defect D1 - the severe one. Two grade-B reports of the same design and operator co-located at one site two days apart, plus a third report of the same design and operator at a second site five months later. No designations anywhere. The presences may merge; the formations may not; and no relocation may be drawn. This is the clause G16 is missing.",
+      "_assert": [
+        {"op": "count_equals", "path": "derived_edges[kind=relocation,drawn=true]", "value": 0,
+         "why": "THE assertion. 'Gate clause (G16, amended): G16 must assert THE ABSENCE OF A DERIVED supersedes / drawn relocation edge, not merely the absence of a confirmed merge. As written it goes green while the harm it exists to prevent is realized one stage downstream.' R1.4: machine promotion is only legitimate over an identity the system actually earned."},
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "The safe half must still happen: 'Merging co-located reports into one presence is safe (a presence asserts only presence)' (spine/13 7). An implementation that separates everything fails here."},
+        {"op": "distinct_instance", "value": ["d01.m1", "d03.m1"],
+         "why": "A presence is 'individuated by operator + site + time' (3a); a different site is a different presence."},
+        {"op": "distinct_instance", "value": ["d01.m3", "d02.m3"],
+         "why": "D-13.14: 'merging them into one FORMATION on co-location alone would undercount the order of battle - the harmful error for this use case.' R1.2: such a merge 'must never fuse, therefore never create a shared supersede instance key.'"},
+        {"op": "distinct_instance", "value": ["d01.m3", "d03.m3"],
+         "why": "Fusing these is link 3 of the D1 chain: 'the moment two batteries fuse into one unit, their two distinct site edges become one unit's before/after.'"},
+        {"op": "count_gte", "path": "gaps[kind=formation-unresolved]", "value": 1,
+         "why": "D-13.14: 'The residual is a first-class coverage item: \"HQ-9/P presence at Rahwali confirmed; formation/unit count unresolved (1-2 candidates); designation coverage needed\" - the honest OOB answer.'"},
+        {"op": "present", "path": "gaps[kind=formation-unresolved].sentence", "why": "The analyst-facing sentence is the deliverable, not just a flag."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m3|@d02.m3].ceiling", "value": "probable", "advisory": true,
+         "why": "D-13.14: co-location 'tops out at probable'; R8.1: implemented as the perishable_capped shape - withheld merge, queued with a reason."},
+        {"op": "present", "path": "pair_verdicts[@d01.m3|@d02.m3].ceiling_reason", "advisory": true,
+         "why": "'its analyst-facing reason belongs beside _perishable_confirm_reason (prose-only, no thresholds - G6-clean).'"},
+        {"op": "present", "path": "derived_edges[kind=relocation].withheld_reason", "advisory": true,
+         "why": "If a relocation candidate is emitted at all it must carry why it was withheld - the contract's own example says 'identity sub-confirmed'."}
+      ]
+    },
+    {
+      "case_id": "rk-21-earned-relocation-is-drawn",
+      "intent": "Mirror of rk-20, and the case without which rk-20 is passed by an implementation that simply never draws a relocation. Same designation and operator at two field sites five months apart, from two independent sources. Identity is earned, so the relocation must be drawn.",
+      "_assert": [
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "Composite (service_branch, designator) identifier across independent sources - the same key that confirms in rk-15."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed", "why": "The non-perishable discriminator satisfies D-13.9(a)'s perishable cap."},
+        {"op": "count_equals", "path": "derived_edges[kind=relocation,drawn=true]", "value": 1,
+         "why": "spine/13 6's ladder: 'confirmed relocation -> + designation continuity or an explicit transition claim (credibility-gated).' Designation continuity is present, the observations are five months apart (far outside any plausible overlap window), so the relocation is earned - and R1.4 only withholds machine promotion when the underlying identity is sub-confirmed."},
+        {"op": "contains", "path": "derived_edges[kind=relocation,drawn=true].from", "value": "Kotra", "why": "Direction must follow the time order (earlier site is superseded)."},
+        {"op": "contains", "path": "derived_edges[kind=relocation,drawn=true].to", "value": "Barha", "why": "Direction must follow the time order."}
+      ]
+    },
+    {
+      "case_id": "rk-22-garrison-plus-forward-site-not-relocation",
+      "intent": "Requirement R1.3. One formation (identical composite key) reported at a garrison and at a forward field site four days apart. A unit legitimately held at both is two valid basing instances, not a movement. NOTE: this case also exposes a spec contradiction (R1.3 vs G18) - see RATIONALE open question O5 - so only the non-contested half is pinned hard.",
+      "_assert": [
+        {"op": "count_equals", "path": "derived_edges[kind=relocation,drawn=true]", "value": 0,
+         "why": "R1.3: 'based-at's supersede instance key must be tagged by SITE_TYPE ... so a unit legitimately at a garrison AND a forward site is two valid instances rather than a relocation.' True under either reading of the identity question, so it is the hard pin."},
+        {"op": "same_instance", "value": ["d01.m1", "d02.m1"], "advisory": true,
+         "why": "CONTESTED. R1.3 presumes one unit at two site types; G18 says 'a stated based-at conflict at overlapping times hard-walls a merge'. The spec does not say whether differing site_type makes the basings non-conflicting. Recorded, not enforced."},
+        {"op": "absent", "path": "pair_verdicts[@d01.m1|@d02.m1].walls", "advisory": true,
+         "why": "Records which reading the implementation took; a wall here means it chose the G18 reading."}
+      ]
+    },
+    {
+      "case_id": "rk-23-two-candidate-formations-no-silent-pick",
+      "intent": "Defect D2 - an order-of-battle undercount with no merge involved. One sighting at a site is linked by inducted-into to TWO different named formations. Correct: two attributions, or one plus an explicitly named gap. Never a silent pick.",
+      "_assert": [
+        {"op": "not_silently_dropped", "value": "d01.m4",
+         "why": "R2.1: 'two candidate formations -> two attributions, or one attribution plus an explicitly named gap. NEVER a silent pick.' The truncation path 'appends nothing... no skip record, no coverage item, no gap' and 'neither G15 nor G16 can see it'."},
+        {"op": "any_of", "why": "Amended G15 clause: 'a truncated/ambiguous formation attribution must produce a named gap.' Either both attributions are drawn, or the ambiguity is stated.",
+         "asserts": [
+           {"op": "count_gte", "path": "derived_edges[kind=based-at]", "value": 2},
+           {"op": "count_gte", "path": "gaps", "value": 1}
+         ]},
+        {"op": "distinct_instance", "value": ["d01.m3", "d01.m4"],
+         "why": "5th vs 9th - differing designations veto (D-13.20). The two candidates must not be quietly reconciled into one instead of being reported."},
+        {"op": "atom_conservation", "why": "The second candidate's atom must exist in the output at all - the D2 signature is that it simply vanishes."},
+        {"op": "present", "path": "gaps[about=@d01.m4]", "advisory": true, "why": "The most legible shape is a gap naming the unattributed candidate."}
+      ]
+    },
+    {
+      "case_id": "rk-24-reprint-is-not-independent-corroboration",
+      "intent": "D-13.9(b) independence. Two documents carrying one underlying observation - a verbatim recycle: identical surfaces, identical attrs, identical event date, same grade. The composite key matches (so rk-15's logic would confirm), but corroboration that is not independent must not confirm.",
+      "_assert": [
+        {"op": "not_equals", "path": "pair_verdicts[@d01.m1|@d02.m1].verdict", "value": "confirmed",
+         "why": "D-13.9(b): 'source-independence - \"enough independent corroboration\" inherits the corroboration ledger's independence / too-clean machinery (spine/04), so two reprints of one almanac cannot confirm.' D6: 'Two reprints of one almanac must not confirm an identity merge.'"},
+        {"op": "distinct_instance", "value": ["d01.m1", "d02.m1"],
+         "why": "'confirmed means the pair FUSED' - so not-confirmed must show as two surviving instances."},
+        {"op": "equals", "path": "pair_verdicts[@d01.m1|@d02.m1].ceiling", "value": "probable", "advisory": true,
+         "why": "Withheld, queued and reported - not discarded (R8.1)."},
+        {"op": "contains", "path": "pair_verdicts[@d01.m1|@d02.m1].reason", "value": "independen", "advisory": true,
+         "why": "The analyst must see WHY a perfect-looking match was withheld; 'too-clean' is equally acceptable wording."}
+      ]
+    }
+  ]
+}
