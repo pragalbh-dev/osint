@@ -71,7 +71,7 @@ Claim IDs are human-readable and content-derived (`d05-row12`, `d18-l3-2`), mint
 
 `rebuild()` (in `view/pipeline.py`) is the one reduction from logs to graph. It is meant to be pure and deterministic: no clock, no network, no LLM, no randomness. The LLM already ran, upstream, at ingest, and its output is frozen in the log; `rebuild()` only *disposes* — it applies deterministic rules to already-frozen facts. Given identical logs and config, it emits a byte-identical view. This is why nearly every interesting question about the system reduces to "what does rebuild do at stage N?" — status, corroboration, merges, chokepoints, gaps, and supersession are all decided inside this one function, in a fixed order, and the order is itself load-bearing.
 
-Measured, a full boot rebuild over the shipped seed (~29 bundles) takes ~560–600 ms and produces **166 nodes / 84 edges / 66 events / 19 known-gaps from 457 claims** with the two Rahwali documents withheld, or **175 / 92 / 21 from 499 claims** with nothing withheld. (The reviewer-facing numbers in `deploy/README.md` — 171/105 and 180/114 — are stale against the corpus actually on disk.) `rebuild()` is triggered on boot and by every write path (`/ingest`, `/hitl`, `/config`) through `AppState.rebuild_and_swap`, which recomputes under one lock and atomically swaps the held view; reads are lock-free. That swap *is* the entire "nothing needs a restart" mechanism — there is no file watcher and no polling.
+Measured, a full boot rebuild over the shipped seed (~29 bundles) takes ~560–600 ms and produces **160 nodes / 73 edges / 66 events / 18 known-gaps from 450 claims** with the two Rahwali documents withheld — the default keyless boot the app shows — or **169 / 80 / 71 / 20 from 492 claims** with nothing withheld. `rebuild()` is triggered on boot and by every write path (`/ingest`, `/hitl`, `/config`) through `AppState.rebuild_and_swap`, which recomputes under one lock and atomically swaps the held view; reads are lock-free. That swap *is* the entire "nothing needs a restart" mechanism — there is no file watcher and no polling.
 
 The stages, in execution order, are the hooks for the rest of this document:
 
@@ -352,7 +352,7 @@ in those classes is flagged, never given a made-up date. Denials, negations, and
 deliberately never turned into edges, so a "not present" claim doesn't mint a junk node to hang the
 negation on.
 
-### Imagery: a subject-blind observation always fires; the variant inference never does, in production
+### Imagery: a subject-blind observation always fires; the variant inference ships frozen, not live
 
 A single overhead frame produces at most two claims on very different footing. The first always fires,
 even on an empty read: generic geometry tokens, an occupancy word, a caption note, and a count that is a
@@ -365,12 +365,15 @@ most recent observed date (flagged as inherited, tie-broken by claim id).
 The second claim — actually naming what the shape suggests, a signature→variant inference — needs a
 literature reference passed to the call, a deterministic pre-gate (something observed, an
 affirmatively-occupied word, resolution not "insufficient," frame not explicitly non-overhead), and a
-second LLM call returning an explicit "consistent" verdict. In production this never fires: every real
-caller (live ingest, batch recorder, API route) leaves that argument at its default of `None`.
-Corroborating a shape against a literature fingerprint actually happens in a separate module, the
-attribution proposer, which reuses this one's gate and prompt machinery but drives its own
-orchestration, has no bundles in the shipped corpus, and no boot-time caller — only a CLI subcommand
-with a key. So in production, imagery ingestion produces only the subject-blind claim. A related gap:
+second LLM call returning an explicit "consistent" verdict. The inline second call still never fires in
+production: every real caller (live ingest, batch recorder, API route) leaves that literature argument at
+its default of `None`, so live imagery *ingestion* produces only the subject-blind claim. Corroborating a
+shape against a literature fingerprint happens instead in a separate module, the attribution proposer,
+which reuses this one's gate and prompt machinery but drives its own orchestration and runs only through a
+keyed CLI subcommand. What changed on this branch is that its *output* is now frozen into the corpus: one
+`d07_sat_confirm_karachi__attr.json` bundle ships and is globbed in at every keyless boot, so the
+VLM-corroboration result reaches the demo even though the proposer itself never runs live (see the
+attribution section). A related gap:
 the argument meant to carry authoritative text coordinates into an image claim is likewise never
 populated by any caller, so an imagery observation's coordinates are always absent on the path that
 actually runs.
@@ -471,7 +474,7 @@ That is where provenance stops short of a source, and this chapter ends there.
 | Pass | Live on the shipped demo? | Uses an LLM? | Emits | Marked as derived? |
 |---|---|---|---|---|
 | Basing | **Yes** (3 frozen bundles booted keyless) | No — pure traversal | `<unit, based-at, site>` claim | `kind=inference` + premises; but `method` mislabelled `llm` |
-| Attribution | **No** — zero bundles, CLI-only | Yes (one scoped call/triangle) | variant-identity claim copying an existing edge | `kind=inference` + both premises |
+| Attribution | **Yes** — 1 frozen bundle booted keyless | Yes (one scoped call/triangle, offline) | `observed-at` inference copying an existing presence edge | `kind=inference` + both premises |
 | Coreference | **No** — held back pending evaluation | Yes (one forced-tool call/doc) | `coref-same-as` claim | `inference` if a member is declared, else `observation` |
 | Renormalisation | **No** — CLI-only, dry-run default | No | rewrites 6 location fields on frozen bundles | edits in place, before→after audit row |
 
@@ -510,7 +513,7 @@ as an LLM read. This is cosmetic to *confidence* — the credibility engine has 
 seam is fixed at 1.0) and prices a claim purely off its source class, freshness and integrity — but it
 is a genuine mismatch in the audit trail about how the fact was produced.
 
-### Attribution — elaborate and cited, not yet exercised on the shipped demo data
+### Attribution — elaborate and cited, and now exercised at boot via a frozen bundle
 
 Attribution exists to let an image corroborate a textual "HQ-9 at X" report. It waits for resolution to
 co-locate three things at a `basing_site`: **A**, a subject-blind VLM shape observation with geometry
@@ -524,15 +527,23 @@ same vocabulary — an "insuff" resolution, or an explicitly non-overhead frame)
 cites both the image bounding box and the literature span, and stamps `decoy_risk=True` and
 `single_pass=True`. The call budget is `max_calls_per_rebuild`, which is **8**.
 
-Where the fact does fire its provenance is clean, but it does not fire in the product: **there are zero
-`*__attr.json` bundles in the corpus and no boot, seed or API path calls the proposer** — only the
-`ingest attribute` CLI subcommand and the tests. So the whole VLM-corroboration mechanism contributes
-nothing to the shipped keyless demo unless a human runs the CLI with an extraction key. Two footnotes worth
-knowing: its `decoy_risk=True` is meant to hold the inference at probable, and it does — but through a
-**hardcoded** cap-flag set in the status machine, not through the `gates.decoy_risk.cap_at_probable` config
-key, which (see the credibility chapter) nothing reads. And its idempotence guard is *not* lane-scoped: it
-skips any observation already used as a premise of *any* inference, so running basing first can suppress a
-legitimate attribution — an order-dependent coupling between two passes that are never actually both run.
+Where the fact fires its provenance is clean — and on this branch it does fire in the shipped demo. One
+frozen `d07_sat_confirm_karachi__attr.json` bundle ships in the primary scenario, and because the boot
+seed globs derived bundles (`__attr.json` alongside `__basing.json`) it is replayed at every keyless boot
+with no key and no proposer run. The live proposer itself still has no boot/seed/API caller — only the
+keyed `ingest attribute` CLI subcommand produces a bundle — but the pre-computed result is now part of the
+graph the reviewer sees. Concretely, the inference lands as a cited **Inferred** corroboration: an
+`observed-at` edge from `comp_tel_chassis` (the TEL chassis, matched from the bundle's `HQ-9/P TEL` subject
+via a registry alias) to the Karachi emplacement, status **possible** (assertion confidence ≈0.11 — below
+the probable floor, pulled down by freshness decay on the 2022 report and held under the decoy-risk cap),
+cited to both the attribution-bundle claim and the backing satellite source line, and visible in the
+evidence drawer at boot. Two footnotes on the mechanism: its `decoy_risk=True` caps the inference at
+probable through a **hardcoded** cap-flag in the status machine, not through the
+`gates.decoy_risk.cap_at_probable` config key, which (see the credibility chapter) nothing reads — though
+on this bundle the confidence floor binds first and the edge lands at *possible*, below even the cap. And
+its idempotence guard is *not* lane-scoped: it skips any observation already used as a premise of *any*
+inference, so running basing first can suppress a legitimate attribution — an order-dependent coupling
+between two passes only one of which now ships a bundle.
 
 ### Coreference — built, and deliberately held back pending evaluation
 
@@ -636,7 +647,7 @@ One subtlety the reader should hold onto, because it governs the China-vs-Pakist
 
 Phase 1 is the precision floor. For each non-vetoed candidate it *bootstrap-merges at confidence 1.0* if any of these hold: a shared unique id; alias-equivalent names; an exact normalised name with a matching, non-empty namespace; a containment/acronym match; or membership in the authoritative coref set. No scoring, no relational term — these are treated as statements of identity.
 
-Phase 2 is the collective step. It iterates over all candidate pairs, recomputes the merge score against the *current* partition, auto-merges anything in the `auto` band, and repeats until a full pass adds nothing. Because clusters only ever grow within a rebuild, a no-new-merge pass is the fixed point and termination is guaranteed. The relational signal reading the *live* partition is what makes this collective rather than pairwise: as clusters grow, two entities that share a neighbour can start to look alike even though neither string matched.
+Phase 2 is the collective step. It iterates over all candidate pairs, recomputes the merge score against the *current* partition, and bands each pair into one of three identity statuses rather than a merge/no-merge binary: **confirmed** (score clears the auto floor → merged into the cluster), **probable** (≥ `hitl_low` → a candidate for the analyst), or **possible** (≥ `possible_floor` → a latent watch-list link, held in memory, never drawn). It auto-merges the `auto`-band pairs and repeats until a full pass adds nothing; because clusters only ever grow within a rebuild, a no-new-merge pass is the fixed point and termination is guaranteed. Two things shape which pairs clear the auto floor. The floor is now **per type**: it sits at the global 0.85 for identity-sensitive types but drops to 0.37 for `manufacturer` and `trading_org` (`auto_merge_by_type`), where a near-identical name reliably denotes one entity — this is what auto-merges the CPMIEC, SINO-GALAXY and Taian/Wanshan spelling variants the global bar would never reach, while every variant/unit/site trap stays split. And a *bare fuzzy name match* (name similarity alone, no shared neighbourhood, no source-asserted identity) is capped at *possible* by `name_alone_caps_at_possible`, so an over-eager string match never even reaches the analyst's desk — this cap does not touch the exact-name/alias-class 1.0 bootstrap above. The relational signal reading the *live* partition is what makes this collective rather than pairwise: as clusters grow, two entities that share a neighbour can start to look alike even though neither string matched.
 
 ### The score and its four signals
 
@@ -651,43 +662,55 @@ The merge score is a weighted sum, clamped to [0,1]:
 
 Name and neighbourhood are co-equal at 0.40 each. **attribute** short-circuits to 1.0 whenever the alias index calls the pair equivalent — which also bypasses any conflict penalty. Otherwise it is pure Jaro–Winkler on the token-sorted, transliterated, punctuation-split forms. That normalisation is load-bearing: `HQ-9/P` tokenises to `[hq,9,p]` and `HQ-9` to `[hq,9]`, so they do *not* read as identical — and Jaro–Winkler's prefix reward is exactly why the `FD-2000`/`FT-2000` trap scores high and must be stopped by a veto, not by the metric.
 
-**relational** is Jaccard over each side's *resolved* neighbourhood, scaled by `min(1, shared/support_k)` with `support_k = 2`. This fixes a real artefact: raw Jaccard saturates at 1.0 on a *single* shared neighbour, and eighteen basing-site pairs each hanging off the same unit's one `based-at` edge were reading as "identical neighbourhood" and flooding the analyst's queue. Now one shared hub gives half strength, two give full. Two further gates fire on this corpus: for types whose ontology declares neighbourhood is not identity evidence (`area_of_operations` — sectors and provinces share neighbours by construction), relational is forced to 0.0; and the relocation edge-instance that zeros the temporal signal is *also excluded from both neighbourhoods* before the overlap is taken, so a relocation can't sneak back in as a shared neighbour.
+**relational** is Jaccard over each side's *resolved* neighbourhood, scaled by `min(1, shared/support_k)` with `support_k = 2`. This fixes a real artefact: raw Jaccard saturates at 1.0 on a *single* shared neighbour, and eighteen basing-site pairs each hanging off the same unit's one `based-at` edge were reading as "identical neighbourhood" and flooding the analyst's queue. Now one shared hub gives half strength, two give full. Two further gates fire on this corpus: for types whose ontology declares neighbourhood is not identity evidence (`area_of_operations` — sectors and provinces share neighbours by construction), relational is forced to 0.0; and the relocation edge-instance that zeros the temporal signal is *also excluded from both neighbourhoods* before the overlap is taken, so a relocation can't sneak back in as a shared neighbour. One further refinement is now wired: a shared neighbour no longer counts full strength regardless of how solid the link is — each contributes the *bottleneck confidence* of the merge chain that unified the two sides' endpoints, so a neighbour reached only through a weak merge lends proportionally less relational certainty. That is the cascade guard against a shaky merge propagating into new ones. On this corpus almost every unification is a 1.0 bootstrap merge, so the weighting rarely moves a score — but the guard is live.
 
 **temporal** carries only 0.05 — its weight barely moves the total. Its real teeth are the two zeroing effects above, not the arithmetic term.
 
 ### The bands and what they actually gate
 
-Three bands, from `config/resolution.yaml`: `auto_merge` at 0.85, `hitl_low` at 0.45, and below that, separate.
+The banding is a three-status ladder, from `config/resolution.yaml`: at or above `auto_merge` (0.85, or the per-type floor) a pair is **confirmed** and merged; in [`hitl_low` 0.45, auto) it is **probable** and reaches the analyst queue; in [`possible_floor` 0.25, hitl_low) it is **possible** — retained as a latent watch-list link that carries a confidence breakdown but is held in memory only and never drawn as a wire edge, so the view JSON stays byte-identical; below `possible_floor` it drops. That `possible` tier is the deliberate antidote to fragmentation: the unresolved tail is neither a false merge nor a lonely singleton, but an honest link the analyst can query without being pestered by it. (`auto_merge`/`hitl_low` unchanged from before; `possible_floor` is new.)
 
-The critical wrinkle is *what number is compared to `auto_merge`*. It is not the full total — it is the **deterministic subtotal**, the total minus the `source_asserted` term. Since the three deterministic weights sum to exactly 0.85, the fuzzy path can auto-merge *only* on simultaneous perfection of name, neighbourhood and timeline. In practice that never happens on real data; every real auto-merge comes from a Phase-1 bootstrap rule. This subtraction is deliberate — it makes source-asserted identity structurally *raise-only* no matter what the weights are set to. A source claiming two things are the same can lift a pair into the analyst queue but can never merge it. HITL banding uses the *full* total (≥0.45) or arrival on a raise-only channel; anything below stays separate.
+The critical wrinkle is *what number is compared to the auto floor*. It is not the full total — it is the **deterministic subtotal**, the total minus the `source_asserted` term. Since the three deterministic weights sum to exactly 0.85, at the *global* floor the fuzzy path can auto-merge *only* on simultaneous perfection of name, neighbourhood and timeline — which never happens on real data, so at the global bar every auto-merge comes from a Phase-1 bootstrap rule. The exception is the per-type floor: at 0.37 for `manufacturer`/`trading_org` the fuzzy subtotal genuinely does clear the bar for the org spelling-variant pairs — the one place a Phase-2 fuzzy score auto-merges. The `source_asserted` subtraction is deliberate — it makes source-asserted identity structurally *raise-only* no matter what the weights are set to: a source claiming two things are the same can lift a pair into the analyst queue but can never, by itself, merge it. HITL banding uses the *full* total (≥0.45) or arrival on a raise-only channel; below that a pair drops to the *possible* watch-list (≥0.25) or, lower still, is dropped entirely.
 
 ### Vetoes: where geography can kill a merge
 
-Vetoes ("cannot-link") are computed up front and enforced at bootstrap, at the fixpoint, *and* on the HITL queue. They come from curated `distinct_from` pairs, registry distinct pairs, gazetteer place-distinct pairs, source-asserted distinct-from claims, learned `barred` pairs, conflicting hard-identifier references, and geography. A veto propagates transitively: any union that would place a vetoed pair into one cluster is refused outright.
+Vetoes ("cannot-link") are computed up front and enforced at bootstrap, at the fixpoint, *and* on the HITL queue. They come from curated `distinct_from` pairs, registry distinct pairs, gazetteer place-distinct pairs, source-asserted distinct-from claims, learned `barred` pairs (now grown from HITL rejects — see below), conflicting hard-identifier references, geography, and — new on this branch — a stated conflict on a declared *critical* attribute (credibility-gated; detailed in the redesign section below). A veto propagates transitively: any union that would place a vetoed pair into one cluster is refused outright.
 
 Two *independent* geographic vetoes exist and are easy to conflate. The first works at the raw-entity level: if both entities carry their own frozen WGS84 coordinate and the geodesic separation exceeds the per-type tolerance (`basing_site` 25 km, default 100 km), the pair is refused — no score, no queue, because a geographic impossibility is not a question worth an analyst's time. A side with *no* coordinate is unknown, never "elsewhere," so absence never triggers it. The second works through the gazetteer: place resolution snaps location-bearing entities onto curated places in `config/places.yaml` (by ICAO/LOCODE hard id, then exact toponym, then banded proximity), and pairs of curated places marked `distinct_from` — Port Qasim vs Karachi Port, the four area anchors against each other — veto apart *any* entities that resolved onto them. The raw veto is arithmetic and is not drawn; a curated distinct-from stays drawn as a visible trap edge.
 
 Geography can also *support* identity without being an inference from distance: `places.augment` fuses two entities that resolved to the *same* place only when that place's precision class is in `place_identity_precision_classes` (`pad`, `site`, `terminal`). Two batteries sharing a *province* or *city* are never fused — an area anchor denotes a region, not a thing. This is a curated property of the anchor, not a distance threshold. Note one fragile default: remove that config line and every area anchor becomes fusion-eligible, silently reintroducing a bug the config comments say already bit once.
 
+### Identity as an evidence-backed status — the redesign, mostly waiting on data
+
+The three-status ladder above is the visible half of a larger redesign that treats a *merge* the way the credibility layer treats a *claim*: a hypothesis backed by evidence, not a boolean. Each merge or candidate carries a **merge-corroboration ledger** — one entry per identity signal (name, neighbourhood, timeline, source-asserted) that actually contributed — surfaced on the wire (a confirmed merge's `resolved_from`, a candidate's `merge_confidence` breakdown). This is a *parallel* status machine to the claim-credibility ladder and never crosses it: `merge_confidence` answers "are these two mentions one entity," is never folded into a node's `assertion_confidence`, and identity-confirmed is a different axis from credibility-confirmed. The two even disagree in scale on the corpus — at default boot the resolver reports 62 confirmed identity merges while the credibility machine confirms only 12 node *assessments*. The ledger is recomputed each rebuild rather than banked across rebuilds; durability of a confirmation is enforced separately, by the perishable cap below.
+
+Three further mechanisms are built and wired, and are the clearest instance of this document's built-versus-exercised discipline: they are **byte-inert on the current sparse single-subject corpus** because nothing in it triggers them, and `artifacts/spine/12-data-refresh-calibrations.md` is the standing record of exactly which corpus additions would light each one up.
+
+- **Attribute roles.** Every attribute carries a per-type identity role (`config/resolution.yaml → attribute_roles`): *critical* — a stated disagreement is a hard cannot-link wall no similarity can cross; *supporting* — agreement raises the merge score, disagreement is a soft penalty; *neutral* (the default for anything unlisted) — both values are retained with provenance and identity is unaffected. The critical wall is **credibility-gated** (`critical_veto_min_grade: C`): it only walls when the conflicting value is asserted by a source at STANAG grade A/B/C on *both* sides; a low-grade (D/E/F) source raises the pair to a *probable* HITL candidate instead of walling, so one flaky repost can't shatter a well-supported merge. Exactly one attribute is declared critical (`variant.operator_branch`, the PLA-vs-Pakistan wall), and it is inert today because no claim in the corpus actually *states* `operator_branch` — the China/Pakistan traps are held apart by the registry's `distinct_from` instead. The supporting *agreement* half is live; the supporting *penalty* half needs a `conflict_penalty` knob that ships unset, so it is dormant too.
+- **Bridge-across-a-wall alarm.** A candidate whose union would fuse two clusters that a `distinct_from` wall holds apart is never auto-merged; it surfaces as a *probable* candidate flagged "bridge across a wall" so the analyst sees the near-miss. Live and default-on; it fires zero times on this corpus because no in-band pair straddles a wall.
+- **Temporal identity.** Claims carry event, report and ingest time, and the resolver classifies a value's history over time as *single* / *ordered* / *contradiction* / *unorderable*: a clean update-over-time (an ordered succession on a perishable attribute) is explicitly *not* a contradiction, a would-be confirmation resting only on a perishable trajectory is capped to *probable*, and a single source that witnessed the change across the succession lifts that cap. All of this is gated behind an attribute declared `perishable: true` — of which the shipped config has none — so the classifier runs but has no live consumer here; the value-timeline it feeds does surface on the wire as a node's `attr_history`.
+
+The honest summary: the identity *substrate* (three statuses, the ledger, the value-timeline, the credibility-gated walls) is fully as-built and running, and its recall-and-precision refinements are wired and unit-tested — but on a corpus that is one weapon family of sparse, mostly single-source mentions the refinements have little to bite on, and the `spine/12` ledger names the additions that would exercise each.
+
 ### Clustering, canonicals, and conflicting merges
 
 Resolution is fully clustered via union-find, never pairwise. Entity merges and place merges are reconciled in *one* union pass, veto-guarded again so a place-merge can't smuggle a vetoed pair together. Each cluster elects its canonical by ranked preference: registry stable id, then alias-table canonical name, then highest degree, then lexicographically smallest id. When merges "conflict," there is no arbitration heuristic — the transitive veto simply refuses any union that would co-locate a forbidden pair, and the offending candidates are dropped from the queue rather than resolved by majority.
 
-### Alias-table learning: built, not yet wired on the production path
+### Alias-table learning: the accept→auto-merge loop, now wired
 
-The design intends an analyst *accept* to become alias-equivalence (and so an auto-merge) on the next rebuild, with *reject/split* feeding a learned do-not-merge set. The replay code exists and is exercised by fixtures, but on the production path the HITL writeback stores its decision under a different key than the replay reads: the writeback nests the pair under `effects.grow_alias`, and nothing consumes `grow_alias`. So a live accept does not yet feed the next rebuild — the "same pair auto-resolves next time" behaviour fires in tests, not in production. The seeded alias table (the HQ-9 family, CASIC, the S-400 transliterations) is live and does its job; the *learning* layer on top of it is a wiring gap tracked for a follow-up, not a design flaw.
+An analyst *accept* becomes alias-equivalence — and so an auto-merge — on the next rebuild, and a *reject/split* feeds a learned do-not-merge set the resolver honours transitively. This is a real closed loop on this branch. It was silently broken on an earlier build: the HITL writeback nested the pair under `effects.grow_alias` while the replayer read `decision.pair`/`verdict`, so every live merge record was skipped and the seeded alias table did all the work — the "same pair auto-resolves next time" behaviour fired only in tests. The fix (commit `e868ae3`) aligned the keys *and* made the route carry the candidates' **names**, which the name-keyed alias index actually needs. Now the merge card genuinely mutates resolver state: the writeback copies the chosen verb's structured effect verbatim — `grow_alias` (accept), `record_distinct` (reject), `split_merge` (split), each carrying the pair's names — and resolution's alias builder replays every `merge_adjudication` record, calling `link(a,b)` to grow the alias equivalence class on an accept and `distinct.add` to record a durable veto on a reject/split. The seeded alias table (the HQ-9 family, CASIC, the S-400 transliterations) remains the precision floor; the *learning* layer on top of it now works, and is covered by a test that drives the real producer → writeback → replay path.
 
-Several other resolution refinements ship **built but dormant under the shipped config — deliberately, pending the evaluation that would justify enabling them**: the LLM candidate proposer (`propose.py`) has no runtime caller on the live path (the "recover H-200 → HT-233" recall demo needs `merge_proposal` records already in the log); authoritative coref never bootstraps (empty allow-list *and* commented-off producer); the attribute conflict-penalty is real code with no effect while `attribute_rules` is empty, so `attribute` collapses to pure Jaro–Winkler or an alias 1.0; and `identity_raise_min_weight = 0.0` leaves that gate open so every source `same-as` reaches the queue. These are additive seams, not load-bearing paths — the shipped precision comes from the bootstrap rules and vetoes above. One is worth flagging as a genuine sharp edge rather than a benign seam: bootstrap is namespace-gated but not consistently *type*-gated, so the alias-equivalence and hard-id paths could in principle merge two different-typed entities that share an alias class — the one place a cross-type fusion could slip past the type filter the HITL queue otherwise applies.
+Several other resolution refinements ship **built but dormant under the shipped config — deliberately, pending the evaluation that would justify enabling them**: the LLM candidate proposer (`propose.py`) has no runtime caller on the live path (the "recover H-200 → HT-233" recall demo needs `merge_proposal` records already in the log); authoritative coref never bootstraps (empty allow-list *and* commented-off producer); the supporting-attribute *conflict penalty* is real code with no effect while `conflict_penalty` ships unset, so a supporting-attribute disagreement never actually docks a merge (its agreement half does count), and there is no `hard_id_fields` config so the unique-hard-id bootstrap never fires; and `identity_raise_min_weight = 0.0` leaves that gate open so every source `same-as` reaches the queue. These are additive seams, not load-bearing paths — the shipped precision comes from the bootstrap rules and vetoes above. One is worth flagging as a genuine sharp edge rather than a benign seam: bootstrap is namespace-gated but not consistently *type*-gated, so the alias-equivalence and hard-id paths could in principle merge two different-typed entities that share an alias class — the one place a cross-type fusion could slip past the type filter the HITL queue otherwise applies.
 
-### Where resolution precision comes from — and why the scored fixpoint stays gated
+### Where resolution precision comes from — and how the type-keyed auto-merge was activated
 
 Precision rests on the Phase-1 bootstrap (alias class / exact name / containment / acronym) plus the vetoes, not on the scored fixpoint — and that is a deliberate design decision, not an accident of tuning. The auto-merge line sits at **0.85**, which is exactly the ceiling the three deterministic signals can reach together (0.40 + 0.40 + 0.05); the `source_asserted` term is subtracted before the comparison, so a fuzzy pair can auto-merge *only* on simultaneous perfection of name, neighbourhood, and timeline. On real data that never happens — which is the intended effect. It keeps source-asserted identity structurally raise-only, and it forces every genuine auto-merge through an exact, auditable rule rather than a soft score.
 
 The threshold cannot simply be lowered, and this was confirmed with a direct experiment over the real corpus. On a **single-subject** corpus — everything is one weapon family — the two fuzzy signals are structurally the wrong instruments. The neighbourhood signal cannot discriminate, because a trap shares as much context as a real match (every entity hangs off the same hub). And the name signal is token-sorted Jaro–Winkler, whose prefix reward actively *favours* the variant-family near-names — `HQ-9`/`HQ-9B`, `S-300`/`S-300PMU`, `FD-2000`/`FD-2000B` — that must stay **separate**. Dumping the score distribution over every candidate pair made this unambiguous: the highest-scoring pairs are traps, not merges — `HQ-9 ↔ HQ-9B` (distinct variants), a Karachi-vs-central-Punjab site pair ~1,000 km apart, and the flagship `PAF ↔ Army Air Defence` unit trap — all of them outscoring the one clean real merge (two spellings of the CNPMIEC manufacturer). No global threshold admits the good ones and keeps the traps out; every setting either misses the real merge or admits a trap first.
 
-The one signal that *does* separate real merges from traps is **entity type**: for organisations and source handles a near-name means the same thing (`CNPMIEC ≡ CPMIEC`, the `SINO-GALAXY` spellings, `Taian ≡ Taian/Wanshan`); for weapon variants, units, and sites a near-name is a trap. So the scored fixpoint is left gated not because it is broken but because a *safe* activation has to key on **type**, not on a score threshold — a concrete, scoped next step rather than a knob to turn. Type is already used throughout resolution to *suppress* merges (the HITL same-type gate, the per-type relational gate, type-gated bootstrap); a type-keyed auto-*activation* — "a near-name is safe for orgs and handles, a trap for variants/units/sites" — is the one piece not yet built.
+The one signal that *does* separate real merges from traps is **entity type**: for organisations a near-name means the same thing (`CPMIEC ≡ China … Precision Machinery`, the `SINO-GALAXY` spellings, `Taian ≡ Taian/Wanshan`); for weapon variants, units, and sites a near-name is a trap. This branch acts on exactly that. `auto_merge_by_type` drops the auto floor to 0.37 for `manufacturer` and `trading_org` only, which admits those organisation spelling-variant merges with margin above every same-type trap (CASIC ≠ its own 23rd Institute at 0.34; ORIENT ≠ SINO-GALAXY at 0.29), while every identity-sensitive type keeps the global 0.85 and `source` handles are deliberately excluded (cross-account personas stay a HITL call). Type was already used throughout resolution to *suppress* merges (the HITL same-type gate, the per-type relational gate, type-gated bootstrap); the type-keyed auto-*activation* is the piece this branch added, and it is pinned by an acceptance test over the real corpus.
 
-This conservatism carries an honest downstream cost worth stating plainly. Confirmation is computed *after* resolution and requires two *independent* sources pooled onto one node; when mentions that should be one entity stay split, their corroborating claims never pool, the independent-group count stays at one, and the node cannot promote. On the golden fixture the view sits entirely at `probable` with nothing `confirmed`, and no acceptance test yet asserts a `confirmed` status on the real corpus — so the system's most load-bearing credibility claim has no positive coverage on production data. That is a gap in the *evaluation*, not a hidden bug in the logic: the pipeline is deliberately biased toward not-merging, and closing the loop — proving the confirmation path fires end-to-end on real data — is a scoped evaluation task and the honest counterweight to the precision the vetoes buy.
+A downstream cost remains worth stating plainly. Confirmation is computed *after* resolution and requires two *independent* sources pooled onto one node; when mentions that should be one entity stay split, their corroborating claims never pool and the node cannot promote. The per-type org merges reduce that fragmentation — collapsing the CPMIEC and SINO-GALAXY spellings pools their claims onto one node each — but they do not by themselves lift the confirmed-*status* count. On the real corpus the credibility machine confirms **12 nodes and 2 edges** at default boot (13 nodes on the full corpus, adding `site_rahwali`; the two confirmed edges are both `equips` links), while the large single-source tail stays at probable or below. So confirmation genuinely fires end-to-end on production data — but sparsely: the pipeline is still deliberately biased toward not-merging, and the honest counterweight to the precision the vetoes buy is that the confirmed set stays small. The `/coverage` surface makes exactly this legible, per type.
 
 
 ---
@@ -775,6 +798,10 @@ group, and group confidence is a max, not a sum.
 
 ### Status is earned through a strict precedence ladder
 
+One clarification up front: this ladder scores an *assertion* — whether a claimed fact is true — and runs
+in parallel to, never mixed with, the resolver's own three-status *identity* ladder (possible / probable /
+confirmed for "are these two mentions one entity"). A node can be identity-confirmed yet
+assertion-probable, and a merge's `merge_confidence` is never fed into an element's `assertion_confidence`.
 The status machine reads the pooled confidence plus a set of gate flags assembled elsewhere in the
 pipeline, and walks an if/elif chain — the *first* matching rung wins, so the order is the logic:
 
@@ -856,18 +883,19 @@ compounds it — even a node with two looks fails if both are textual (1.0 + 0.5
 credibility ceiling itself bites: a lone satellite image caps at ≈0.86 for one look, but one look can
 never be strong, and adding a second same-discipline look only brings 0.5 of weight.
 
-The honest evidence that this rarely fires: the golden view fixture the determinism gates run against
+The honest evidence that this fires *sparingly*: the golden view fixture the determinism gates run against
 contains **zero confirmed elements** — five probable nodes, and edges that are probable, possible, stale,
 or unscored. The confirmed *checker* (gate G7) is validated only against a hand-built synthetic
 status-cases fixture, never against a real corpus element, so a pipeline that promotes *nothing* to
-confirmed would leave every test green. Even the flagship worked-query acceptance test passes on a
-`probable` terminus, because the assertable band includes probable. So the load-bearing distinction of the
-whole system — confirmed versus probable — has no positive coverage on real data; it is exercised only on
-fixtures. The machinery is correct and the thresholds are real, but on the corpus as shipped the graph
-lives almost entirely in the probable/possible band, and confirmed is reached — if at all — only where a
-deliberately staged beat (imagery plus text on the same resolved unit) or an explicit analyst status
-override forces it. That override, incidentally, is applied dead-last in the pipeline and can push an
-element to confirmed *past* the G7 arithmetic gate, which no test re-checks.
+confirmed would still leave every determinism test green, and even the flagship worked-query acceptance
+test passes on a `probable` terminus because the assertable band includes probable. So the load-bearing
+distinction of the whole system — confirmed versus probable — has thin *test* coverage. But it does fire on
+the corpus as shipped, just sparsely: **12 nodes and 2 edges** confirm at default boot (13 nodes on the
+full corpus), while the graph otherwise lives in the probable/possible band. Confirmation lands where the
+evidence genuinely doubles up across disciplines — the two `equips` edges, and a staged imagery-plus-text
+beat on a resolved unit — or where an explicit analyst status override forces it. That override,
+incidentally, is applied dead-last in the pipeline and can push an element to confirmed *past* the G7
+arithmetic gate, which no test re-checks.
 
 
 ---
@@ -892,10 +920,10 @@ observable evaluator on the delta, and atomically swaps the held view. Reads (`G
 always sees one whole view, never a half-built one.
 
 There is **no incrementality and no caching whatsoever**. A one-claim ingest replays the entire evidence
-log and rebuilds all 166 nodes from scratch. The only cross-rebuild memory is the logs themselves and the
-config store. On the shipped keyless seed — roughly 29 claim bundles producing 166 nodes / 84 edges / 66
-events / 19 known-gaps — a full rebuild measures about 560–600 ms, warm or cold; at demo scale the cost
-of "recompute everything on every write" is invisible.
+log and rebuilds all 160 nodes from scratch. The only cross-rebuild memory is the logs themselves and the
+config store. On the shipped keyless seed — roughly 29 claim bundles producing 160 nodes / 73 edges / 66
+events / 18 known-gaps at default boot — a full rebuild measures about 560–600 ms, warm or cold; at demo
+scale the cost of "recompute everything on every write" is invisible.
 
 One thing that is *not* what the code comments claim: `rebuild()` accepts a `prev_view` argument and
 passes it into resolution "for merge stability," but the resolver body never reads it. Every rebuild
@@ -1028,18 +1056,23 @@ events if any participant does; gaps and alerts follow their node. An all-miss a
 *diagnosed* empty view, never a bare one. Two shipped filter keys, `exclude_off_subject` and
 `materiality_attrs`, are declared in config but deliberately unimplemented, so the lens's real chaff
 protection is the type allow-list alone. At default boot the flagship lens loses one anchor —
-`site_rahwali` is withheld for the live-ingest demo — so only `unit_paad` anchors it (166 → 28 nodes);
-with the full corpus both resolve (175 → 33).
+`site_rahwali` is absent from the graph in this config, so the lens reports it under `anchors_missing`
+and runs on the single resolved anchor `unit_paad` (160 → 27 nodes / 44 edges / 7 gaps); with the full
+corpus both anchors resolve (169 → 30 / 52 / 8).
 
 Each exported node carries its id, refined type, per-type attributes (including place-match band,
-distance, uncertainty radius and location source), a `Location`, the `materiality` block, and the shared
+distance, uncertainty radius and location source), a per-attribute value **history** (`attr_history`: for
+each claim-asserted attribute, the full time-ordered series of every value any claim asserted for it — the
+entity's own value-timeline, retained *alongside* the first-claim-wins scalar so a later or conflicting
+value is simply another entry and nothing is hidden), a `Location`, the `materiality` block, and the shared
 assessment block: cited claim ids, status, the full confidence breakdown (per-claim credibility,
 integrity flags, independence groups, freshness factor, noisy-OR assertion confidence), freshness,
 grouped supporting claims, opposing claims, and sufficiency. Edges add their edge instance, the
-`superseded_by`/`supersedes` links, and — for same-as candidates only — a `merge_confidence` that is
-about identity, never truth. The view also holds events (never merged — each event claim becomes its own
-event, unlike entities and edges), the first-class known-gaps, and an alert feed filled by the monitoring
-evaluator, not by rebuild.
+`superseded_by`/`supersedes` links, a `time_interval` (the edge's validity window, derived from its
+supporting claims' event times; `None` when nothing is dated), and — for same-as candidates only — a
+`merge_confidence` that is about identity, never truth. The view also holds events (never merged — each
+event claim becomes its own event, unlike entities and edges), the first-class known-gaps, and an alert
+feed filled by the monitoring evaluator, not by rebuild.
 
 
 ---
@@ -1068,7 +1101,7 @@ The catalogue names eight places a human could take the wheel. Their actual stat
 | Control point | Advertised depth | Reality in the running app |
 |---|---|---|
 | status-override | wired-deep ★ | **Genuinely propagates** — the only one that changes the graph |
-| merge | wired-deep ★ | Record appended but **read by nothing** — pure audit entry |
+| merge | wired-deep ★ | **Genuinely propagates** — accept grows the alias table, reject/split write a durable veto; both replay into the resolver on the next rebuild |
 | alert-disposition | wired-deep ★ | **Not wired** — effect unread, and its only reader has no caller |
 | integrity-flag | built | Rebuild-side consumers are real, but **no HTTP route produces it** |
 | credibility-config | config | Read-only levers; the client-side rubric never writes back |
@@ -1076,7 +1109,7 @@ The catalogue names eight places a human could take the wheel. Their actual stat
 | ontology-extension | roadmap | Named, typed, not built |
 | assessment-review | roadmap | Named, typed, not built |
 
-So the honest count is: one control point that works end-to-end, one that is silently broken by a data-shape mismatch, one that is cosmetic, one that is wired downstream but has no door to reach it, and four that are config or roadmap.
+So the honest count is: two control points that work end-to-end (status-override and merge), one that is cosmetic (alert-disposition — its effect is unread), one that is wired downstream but has no door to reach it (integrity-flag), and four that are config or roadmap.
 
 ### How an item reaches the analyst — and how it is meant to be triaged
 
@@ -1098,7 +1131,7 @@ This is the crux. Rebuild spreads decision effects across five different stages,
 
 **status-override — works, but it is a leaf-stamp, not a cascade.** The chosen verb maps to `set_status = {element_id: status}`. Rebuild applies this dead last (step 8, `apply_decision_effects`), after resolution, scoring, sufficiency, the status machine, the supersession floor, and materiality precompute — deliberately last, so the human override beats the machine. It walks all decision records in log order and writes `el.status`, indexing nodes, edges, and events alike, so any element type can be overridden. This is genuinely wired and tested. But because it runs *after* everything else and only stamps the one named element, it does not re-run the status machine, does not re-point materiality, does not re-assess incident edges, and does not touch the element's own confidence breakdown, sufficiency, or Known Gap. An element that failed its evidence-sufficiency template still emits an "insufficient evidence" gap at step 6; an override to confirmed at step 8 leaves that gap sitting there — the element can simultaneously read "confirmed" and carry a live insufficiency gap. Propagation is real only for consumers that read *that element's status field* (the confirmed-answer list, the ASK agent's view, the frontend badge).
 
-**merge — appended, read by nothing, cosmetic.** This is the key finding, and it is the highest-value control point per the design. An accept writes a record whose verdict lives under `decision.chosen` and whose entity pair lives only in `effects.grow_alias.same_as` and in `subject_ref` (`merge:a:b`). Rebuild *does* replay merge records — resolution's alias builder is handed the decision log — but the reader was written to a *different* producer's contract. It looks for the pair under `decision.pair` / `decision.members` / `context`, and for the verdict under `decision.verdict` / `decision.action` / `decision.accept`. **None of those keys exist** in what the HITL writeback produces. Traced by hand: the pair lookup returns nothing, so the record is skipped; accept grows no alias, reject records no distinct-from, split reverses nothing. The correctly-shaped sibling — the offline `merge_proposal` records — confirms the reader's intended contract, which makes the HITL writeback the side that drifted. The mismatch is untested: the golden fixture carries a status-override record but no merge record at all. Live consequence: the analyst accepts a same-as, the graph rebuilds unchanged (two nodes stay two nodes), and the frontend hides the card only because it locally marks the item id "decided" — a page reload re-derives it from the unchanged view and **the card visibly reappears.**
+**merge — now genuinely propagates.** This is the highest-value control point per the design, and on an earlier build it was silently severed: the HITL writeback wrote its verdict under `decision.chosen` and nested the entity pair under `effects.grow_alias`, while resolution's alias replayer looked for the pair under `decision.pair`/`context` and the verdict under `decision.verdict` — none of those keys existed in what the writeback produced, so every live merge record was skipped (accept grew no alias, reject recorded no distinct-from). Two things drifted at once: the key names, and the fact that the alias index is *name*-keyed while the route shipped candidates with ids but no names, so even the right key wouldn't have matched. Both are fixed on this branch (commit `e868ae3`). The merge card now writes structured per-verb effects — `grow_alias` (accept), `record_distinct` (reject), `split_merge` (split), each carrying the pair's **names** — and the route threads node names into the candidates. Resolution's alias builder replays every `merge_adjudication` record through a reader that consumes exactly those keys (names first): an accept calls `link(a, b)` and grows the alias equivalence class, so the same pair auto-resolves on the next rebuild; a reject/split calls `distinct.add`, a durable do-not-merge veto the resolver honours transitively. Live consequence: the analyst accepts a same-as, the next rebuild merges the two nodes into one and the card does not come back; a reject splits them and keeps them apart. The loop is covered by a test that drives the real producer → writeback → replay path, not a hand-shaped fixture.
 
 **alert-disposition — not wired.** Its effect `tune_tripwire` is read nowhere. There is a would-be reader in the observe module, but (a) it has no live caller anywhere, and (b) even if called it reads the verdict from `decision.disposition` / `decision.verdict` — again a mismatch with the writeback's `decision.chosen` — so it returns nothing and drops the record. The only visible effect is a deliberate side exception: the `/hitl/alert` route stamps `disposition` directly onto the in-memory alert object so the UI shows it resolved. That flag is not derived from the log and does not survive a rebuild-from-log — the one place in the whole system where state is not reconstructable by replaying the two logs.
 
@@ -1106,7 +1139,7 @@ This is the crux. Rebuild spreads decision effects across five different stages,
 
 ### Reversal
 
-Reversal is always a new appended record, never an edit or delete of the prior one. For status it works cleanly: `apply_decision_effects` applies each `set_status` in log order, so last-write-wins — a later promote overrides an earlier demote on the same element, deterministically. For merge, reversal is moot because nothing propagates in the first place. For integrity, there is **no reversal path at all**: the flag effect only *unions* a label in, there is no remove-flag effect, and the card offers only "flag" — so once an origin flag is somehow appended, no later append can undo it.
+Reversal is always a new appended record, never an edit or delete of the prior one. For status it works cleanly: `apply_decision_effects` applies each `set_status` in log order, so last-write-wins — a later promote overrides an earlier demote on the same element, deterministically. For merge, reversal now works the same way — appended, never edited: a later `record_distinct` veto overrides an earlier `grow_alias` link (a hard do-not-merge always wins over a soft alias-grow), so an analyst who accepts then rejects a pair ends with them separate, deterministically on replay. For integrity, there is **no reversal path at all**: the flag effect only *unions* a label in, there is no remove-flag effect, and the card offers only "flag" — so once an origin flag is somehow appended, no later append can undo it.
 
 ### The knobs
 
@@ -1122,7 +1155,7 @@ Reversal is always a new appended record, never an edit or delete of the prior o
 | `coordinated_inauthenticity.suspected` | 0.5 | Yes — but only via the unreachable integrity flag |
 | decision log path | `:memory:` | Yes — empty each boot, cleared on restart |
 
-The through-line: the adjudication *envelope* is genuinely uniform and the append-only discipline is genuinely honoured, so status-override is a clean demonstration that a human decision survives rebuild by being replayed rather than by mutating state. Everything richer around it — the triage gate, the prioritised queue, the auto-disposition branch, and two of the three ★ control points — either has no live caller or is severed by a decision-record shape mismatch that no fixture exercises.
+The through-line: the adjudication *envelope* is genuinely uniform and the append-only discipline is genuinely honoured, so status-override is a clean demonstration that a human decision survives rebuild by being replayed rather than by mutating state. Everything richer around it — the triage gate, the prioritised queue, the auto-disposition branch, and one of the three ★ control points (alert-disposition) — still has no live caller or reader. (Merge, the decision-record shape mismatch this chapter once flagged, is fixed on this branch: an accept now grows the alias table and a reject writes a durable veto, both replayed by the resolver.)
 
 
 ---
@@ -1410,14 +1443,16 @@ no per-sentence pruning.
 
 ### Reachability with shipped defaults on the frozen corpus
 
-On a cold default boot, template-driven insufficiency fires on exactly **9 edges** (5 `inducted-into`,
-2 `supplies-component`, 2 `based-at`) → 9 Known Gaps, plus **10 candidate-chokepoint gaps**, for **19
-total**. The `supplies-component` gap carries a real generated date (2026-07-26); the `inducted-into`
+On a cold default boot, template-driven insufficiency fires on exactly **8 edges** (4 `inducted-into`,
+2 `supplies-component`, 2 `based-at`) → 8 Known Gaps, plus **10 candidate-chokepoint gaps**, for **18
+total**. The `supplies-component` gap carries a real generated date; the `inducted-into`
 gaps come back with `next_coverage_due = None`, because no official-class source declares a numeric
-cadence to schedule against. The load-bearing fact: **zero edges are ever "confirmed"** — even the
-strongest basing edge tops out at *probable* (≈0.79, under the 0.80 cut and short of the two-look gate).
-Only nodes reach confirmed (12 cold). So the refusal machinery is genuinely live and does most of its
-work through the chokepoint family, while template refusals cluster on those nine edges.
+cadence to schedule against. The load-bearing nuance: only **two** edges ever reach *confirmed* — both
+`equips` edges (`Pakistan → var_hq9p` and `comp_ht233 → var_hq9p`); the strongest *basing* edge tops out
+at *probable* (≈0.79, under the 0.80 cut and short of the two-look gate) and never confirms. **12** nodes
+reach confirmed at default boot (13 on the full corpus, which adds `site_rahwali`). So the refusal
+machinery is genuinely live and does most of its work through the chokepoint family, while template
+refusals cluster on those eight edges.
 
 ### The adversarial half — how a confident assertion can still escape thin
 
@@ -1474,9 +1509,16 @@ applies a subject lens (404 if the lens id is unknown), and calls the agent entr
 the view, the config, and a `claim_id → record` map. That map matters: the served view references claims by
 id only, but the agent needs the bodies — source, date, span, and the `kind` field that decides
 observed-vs-inferred — so the route replays the evidence log to hand them over. The route adds no reasoning
-of its own; it forwards the agent's output verbatim. (One honest gap: `/ask` has no readiness guard, so a
-call that lands before boot finishes raises and returns a 500 rather than the honest 503 that `/health`
-would give.)
+of its own; it forwards the agent's output verbatim. The request may also carry a `history` field — a list
+of prior `{question, answer}` turns — which the route passes through untouched; the ReAct loop seeds them
+as prior user/assistant message pairs *before* the current question, so a follow-up ("and where is *that*
+based?") resolves against the running thread. The backend stays fully stateless: the client owns the
+transcript and re-sends it on every call, nothing is stored server-side, and a refused prior turn is
+carried in-context as an explicit marker ("[The previous question could not be answered — insufficient
+evidence in the graph.]") rather than a fabricated answer. With `history` empty or omitted the message list
+is exactly the single question — the single-shot path is byte-for-byte unchanged. (One honest gap: `/ask`
+has no readiness guard, so a call that lands before boot finishes raises and returns a 500 rather than the
+honest 503 that `/health` would give.)
 
 The agent first builds a **`ToolContext`** — an in-memory index over the already-rebuilt view: id→node,
 id→edge, in/out adjacency, a name index (node names plus attribute aliases plus the config alias-table
@@ -1685,11 +1727,24 @@ resolves each claim's source against live config, and then — this is the elega
 cited span out of the on-disk source document *at request time*. The quote is never stored, so it cannot
 drift from the append-only claim; it is capped (documents over 4 MB or outside the repo are refused, quotes
 truncate at 700 characters on a word boundary), and a claim whose file or span cannot be resolved yields an
-empty quote, never a paraphrase.
+empty quote, never a paraphrase. One more pure read is new: `GET /coverage` reports the resolver's
+*identity* coverage — how many entity `same-as` links are confirmed, probable (an analyst candidate), and
+possible (the in-memory watch-list), overall and per entity type — and names the types whose unresolved
+identity load is high relative to confirmed merges (`(probable + possible) / max(confirmed, 1)` past a
+configurable ratio) as explicit **collection gaps**. It is deliberately kept out of `/view` so the
+drawn-graph JSON stays byte-identical, and it re-reads the same logs and config `rebuild()` does. It is a
+first-class gap surface for *identity* — the mirror of the Known-Gap surface for assertions — and it reads
+lopsided on the shipped single-subject corpus (at default boot 62 confirmed / 15 probable / 305 possible
+links, flagging five types as collection gaps), which is the honest signal that open sources under-corroborate
+identity here, not a resolver to re-tune.
 
 **The question endpoint** is a pure read of graph state — no write, no rebuild — but it does call out to the
 LLM agent, unless the deployment is keyless, in which case it falls back to the agent's own deterministic
-refusal path. Its refusals are first-class payloads forwarded unmodified, not errors.
+refusal path. Its refusals are first-class payloads forwarded unmodified, not errors. It is also
+conversational: the request may carry a `history` of prior `{question, answer}` turns that the agent seeds
+ahead of the current question, so an in-session follow-up resolves against the thread — but the server holds
+no session state, the client re-sends the whole transcript each call, and an empty/omitted history is the
+unchanged single-shot path.
 
 **The ingest endpoint mutates.** Exactly one of two shapes is legal: a pre-extracted claim bundle (keyless,
 validated against the claim schema then appended) or raw text for live LLM extraction (keyed). The keyed
@@ -1825,7 +1880,13 @@ Merge score is a weighted sum of four signals, banded into auto-merge / HITL / s
 | Knob | Default | Effect |
 |---|---|---|
 | `merge_weights` | attribute .40 / relational .40 / temporal .05 / source_asserted .15 | The deterministic subtotal (everything but source_asserted) tops out at exactly 0.85, so the *fuzzy* path auto-merges only on simultaneous perfect name + neighbourhood + non-relocation; real auto-merges come from the bootstrap rules. |
-| `bands.auto_merge` / `.hitl_low` | 0.85 / 0.45 | ≥0.85 auto-merges, [0.45, 0.85) → HITL, <0.45 stays separate. **If either is absent the resolver is inert** (identity partition). |
+| `bands.auto_merge` / `.hitl_low` | 0.85 / 0.45 | ≥0.85 auto-merges (identity *confirmed*), [0.45, 0.85) → HITL (identity *probable*). **If either is absent the resolver is inert** (identity partition). |
+| `bands.possible_floor` | 0.25 | The three-status floor. A pair in [0.25, 0.45) is retained as a *possible* watch-list link (in-memory `Partition.possible`, **never drawn as a wire edge** — view JSON is byte-unchanged) rather than dropped: the antidote to fragmentation. Absent → the tier is off and sub-HITL pairs drop exactly as before. |
+| `auto_merge_by_type` | manufacturer 0.37 / trading_org 0.37 | Per-type auto-merge floor. For these two org types a near-identical name reliably denotes one entity, so a lower floor auto-merges the spelling-variant pairs (CPMIEC ≡ China … Precision Machinery; the SINO-GALAXY spellings; Taian ≡ Taian/Wanshan) the global 0.85 could never reach. Applies only when **both** endpoints carry the listed type; every identity-sensitive type keeps 0.85; `source` is deliberately excluded (persona links stay HITL). Only the auto floor moves — vetoes and `hitl_low` are untouched. Reduces org-node fragmentation; does **not** lift the SCORE-stage confirmed-*status* count. |
+| `name_alone_caps_at_possible` | **true** | A *fuzzy* pair whose only nonzero signal is name (`attribute` > 0, relational = 0, source-asserted = 0) is capped at *possible*, never *probable*/HITL — a bare name match must not spend analyst attention. Raise-only channels (source-asserted / LLM-proposed) are exempt. Does **not** touch the exact-name / alias-class 1.0 bootstrap. |
+| `attribute_roles` | 1 critical (`variant.operator_branch`), 7 supporting, 0 perishable-true | Per-type identity role of each attribute. *critical* = a stated disagreement is a hard wall; *supporting* = agreement raises the score (the soft-penalty half is inert — `conflict_penalty` is unset); *neutral* (unlisted) = retained with provenance, no identity effect. The one critical wall is **inert on the corpus** (no claim states `operator_branch`); every declared attr is `perishable: false`, so the perishable path is dormant too. |
+| `critical_veto_min_grade` | C | Credibility floor on the critical-attribute wall: a stated critical disagreement walls only when both conflicting values come from a source at STANAG grade A/B/C; a D/E/F source *raises* the pair to a *probable* HITL candidate instead of walling, so one flaky low-grade source can't shatter a well-supported merge. Inert today (the wall it gates never fires). |
+| `coverage_gap_ratio` | 2.0 | `GET /coverage` flags a type as a collection gap when `(probable + possible) / max(confirmed, 1)` reaches this. Reporting-only — changes no merge decision, draws nothing. Absent → gap detection off. |
 | `relational_support_k` | 2 | How many shared neighbours = full relational strength; one shared hub reads as half. |
 | `entity_geo_conflict_max_km` | default 100, basing_site 25 | Two entities both stating coordinates farther apart than this are vetoed from merging outright — no score, no HITL. |
 | `containment_min_descriptor_len` / `_short_tokens` / `acronym_min_len` | 3 / 2 / 3 | Open-world name-bootstrap triggers; any absent → that trigger off. |
@@ -1892,7 +1953,7 @@ These sit in the YAML looking live and are not. Editing them has no effect.
 - **credibility.yaml `coreference` block** — commented out/dormant; `coref_authoritative_evidence` ships empty, so in-document coreference bootstraps nothing.
 - **credibility.yaml `<edge>.<variant>` half-life keys** — every dotted variant is unreachable; nothing tags `freshness_variant`. The 30-day "field occupancy" rate an analyst might expect is unreachable at runtime.
 - **resolution.yaml `place_proximity_radius_m` block** — an unused duplicate; the live radii come from `proximity_radius_m` in *places.yaml*.
-- **resolution.yaml `hard_id_fields` / `attribute_rules` / `attribute_scoring`** — these *do* have live readers, but the keys appear in no config file, so the attribute comparator runs with no per-type identity rules and no conflict penalties. Live code path, inert config — the weighting story in the comments overstates what is active.
+- **resolution.yaml `attribute_scoring.conflict_penalty` / `hard_id_fields`** — these have live readers but ship *unset*, so the supporting-attribute soft penalty never docks a merge and the unique-hard-id bootstrap never fires. (The sibling `attribute_roles` block *is* now populated — a per-type critical/supporting taxonomy whose agreement term and one credibility-gated critical wall are wired — but the wall is inert on the corpus, since no claim states the one attribute declared critical.)
 - **subjects.yaml `exclude_off_subject` / `materiality_attrs`** — declared but not consumed (an explicit, tracked no-op; wiring `exclude_off_subject` would leak the grading oracle). `min_chokepoint_count` / `chokepoint_status_in` are *implemented* but never set in the shipped config.
 - **observables.yaml secondary keys** — `from_type`, `to_type`, `event_subtype`, `source_class`, `implies_edge`, `target_status_ceiling` are all unconsumed (honestly surfaced under `unconsumed_keys`). `severity` is carried but never acted on.
 - **templates.yaml `on_fail`** (every template sets it, nothing reads it) and **`cross_interest`** (authored on `inducted-into`, read by nothing).
@@ -1913,7 +1974,7 @@ These sit in the YAML looking live and are not. Editing them has no effect.
 - **Make more findings reach "confirmed."** Lower `thresholds.confirmed` (0.80) and/or `min_independent_groups` (2→1) in credibility.yaml. But the real blocker is upstream: most corpus nodes are single-claim, and same-discipline looks are half-weight, so two looks of one discipline sum to only 1.5. Two *different* disciplines corroborating is what actually confirms.
 - **Advance the clock / age things out.** POST a credibility section with `as_of` set to a future date (it ships null, pinned to the newest claim). Push it past 540 days from a perishable edge's date and that edge demotes to stale.
 - **Re-tune what decays how fast.** Edit `half_life_defaults` in credibility.yaml — not the `half_lives_days` dotted keys (those are dead). Only perishable/semi-durable (540) and force-revalidated (1825) are live; durable never decays.
-- **Widen or narrow auto-merge vs analyst review.** Move `bands.auto_merge` (0.85) and `bands.hitl_low` (0.45) in resolution.yaml. Lower auto_merge → more silent merges; raise hitl_low → fewer HITL cards but more silent separations.
+- **Widen or narrow auto-merge vs analyst review.** Move `bands.auto_merge` (0.85) and `bands.hitl_low` (0.45) in resolution.yaml. Lower auto_merge → more silent merges; raise hitl_low → fewer HITL cards but more silent separations. For the two org types (`manufacturer`, `trading_org`) a per-type floor `auto_merge_by_type` (0.37) already sits below the global bar; add types there — or lower the floor — to auto-merge more spelling variants without touching the global 0.85. And `bands.possible_floor` (0.25) governs the *possible* watch-list: lower it to retain more latent identity links off the analyst's desk, raise it to keep only the more-plausible ones.
 - **Tighten the "can't be the same place" veto.** Lower `entity_geo_conflict_max_km` (basing_site 25 km) in resolution.yaml — smaller tolerance splits more aggressively. Do *not* delete `place_identity_precision_classes` or area anchors start fusing distinct batteries.
 - **Add a tripwire that lights up immediately.** POST `/config/observable` — writing that section back-scans the current view, so an EXISTS/MATCH observable fires on existing state at once. Use `on: new_edge` or an operator predicate; `on: new_claim` compiles to arm-only and never fires from a view delta.
 - **Re-weight source credibility.** Edit `factor_weights` and `source_class_factors` in credibility.yaml. Remember an unrecognised source class scores R = 0.0 (fail-closed), so adding a class *row* matters as much as the weights.
@@ -1946,13 +2007,19 @@ decisions as edges, sort. No LLM, no network, no clock, no RNG live inside it �
 Riding on that: the credibility → confirmed/probable status machine (reads its thresholds live from
 config), provenance/traceability (every node and assertion edge carries claim_ids that the
 `/evidence` drawer resolves back to doc spans), the resolution/entity-merge banding (≥0.85
-auto-merge, 0.45–0.85 to HITL, <0.45 stays separate), sufficiency checking, materiality/chokepoint
-precompute, and the request-time lens (175→33 nodes on the full corpus, 166→28 at default boot). The
-one observable that fires on real data — `obs-basing-relocation` — is exercised by the eval harness,
-which stages the two withheld Rahwali docs and watches the unit's active based-at edge cross from
-Rawalpindi to Rahwali. And the flagship worked query runs through the *same* live ReAct loop as
-every other question, steered to the `graph_analyze` tool — the flagship answer, like any keyed answer,
-depends on a model key and a live plan rather than a canned result.
+auto-merge/confirmed, 0.45–0.85 probable/HITL, 0.25–0.45 a retained *possible* watch-list, below that
+separate), sufficiency checking, materiality/chokepoint precompute, and the request-time lens (169→30
+nodes on the full corpus, 160→27 at default boot). The one observable that fires on real data —
+`obs-basing-relocation` — is exercised by the eval harness, which stages the two withheld Rahwali docs
+and watches the unit's active based-at edge cross from Rawalpindi to Rahwali. Two offline-derived
+enrichments also ship *frozen* and are replayed at every keyless boot, so their results are tier-one even
+though the passes that produced them are CLI-only: the three `__basing.json` bundles (the `based-at` edges
+the ORBAT question needs) and one `__attr.json` bundle (the image-corroboration `observed-at` inference for
+`comp_tel_chassis`, a cited *possible* "Inferred" link visible in the drawer at boot). And `GET /coverage`
+reports the resolver's confirmed/probable/possible identity tail per type as a first-class collection-gap
+surface. And the flagship worked query runs through the *same* live ReAct loop as every other question,
+steered to the `graph_analyze` tool — the flagship answer, like any keyed answer, depends on a model key
+and a live plan rather than a canned result.
 
 Two load-bearing caveats sit inside tier one. First, the status machine runs, but **confirmation is
 almost never reached on the real corpus**: confirmed requires pooled confidence ≥ 0.80 *and* ≥ 2
@@ -1997,10 +2064,12 @@ confirmed" assertion is vacuously true on real data.
   effect. This is the clearest divergence between the "every numeric knob lives in config" description and the implementation.
 - **`place_proximity_radius_m` in resolution.yaml is an unused duplicate**; the live radii come from
   `places.yaml`. **`exclude_off_subject` and `materiality_attrs`** on the lens are read by nobody and
-  land in the "unrecognised" bag. **`attribute_rules`/`attribute_scoring`/`hard_id_fields`** have live
-  readers but no config content, so the attribute comparator runs on empty defaults. **`track_record`
-  (0.50) and `intrinsic_plausibility` (1.0)** are identical for every source class — constant priors
-  that never differentiate a source.
+  land in the "unrecognised" bag. **`attribute_roles`** now ships a populated per-type critical/supporting
+  taxonomy — its agreement term and one credibility-gated critical wall are wired — but the critical wall
+  is inert on the corpus (no claim states the one attribute declared critical), and the supporting
+  soft-penalty (`conflict_penalty`) and `hard_id_fields` remain unset, so those paths never fire.
+  **`track_record` (0.50) and `intrinsic_plausibility` (1.0)** are identical for every source class —
+  constant priors that never differentiate a source.
 - **Two of three observables cannot fire on the shipped data.**
   `obs-followon-interceptor-order` waits on a `replenishes` edge that no bundle produces;
   `obs-spares-tender-probable-induction` compiles to ARM-ONLY and structurally cannot fire from a view
@@ -2068,17 +2137,20 @@ can force `confirmed` straight past the G7 gate with no test re-checking the inv
 
 ### Current limitations
 
-1. **Resolution fragmentation limits the headline idea.** Most nodes are single-claim, so almost
-   nothing crosses the two-independent-look bar, and the confirmed/probable distinction — the load-
-   bearing credibility idea — is near-inert on the real corpus.
+1. **Resolution fragmentation limits the headline idea.** Most nodes are single-claim, so most
+   never cross the two-independent-look bar; the confirmed/probable distinction — the load-bearing
+   credibility idea — does fire but sparsely (12 confirmed nodes and 2 edges at default boot), with the
+   graph otherwise sitting in the probable/possible band.
 2. **The hosted demo does no live extraction and no document ingest.** The "messy real documents →
    live extraction" narrative is, in the served app, the replay of frozen bundles extracted offline.
 3. **HITL collapses to on-demand adjudication.** The triage/queue/escalation abstraction is not wired;
    review happens only via merge-candidate edges plus POST, and a human status override leaves *no*
    on-element provenance marker, so an override-produced "confirmed" is indistinguishable from a
    machine one in the drawer.
-4. **The adaptation/learning loop is not wired.** Dispositions are recorded and never read, and the
-   counter the loop would read is never written — the "monitoring that adapts" pillar is built but not yet wired.
+4. **The alert-driven adaptation loop is not wired.** Merge and status adjudications now do feed back
+   (a merge accept grows the alias table, a reject writes a durable veto), but the *learning-from-alerts*
+   loop still is not: the disposition counter it would read is never written — the "monitoring that adapts"
+   pillar is built but not yet wired.
 5. **The agent's real reasoning is unverified by CI.** The flagship runs the live agent path like any
    query, but tool choice and answer quality are exercised only against scripted/mocked clients in the test
    suite, so live-model behaviour is not covered by the automated tests.
