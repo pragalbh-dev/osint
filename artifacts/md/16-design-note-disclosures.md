@@ -128,3 +128,43 @@ deliberate, defensible choices, not apologies.
 ---
 
 *(Append new disclosures here as they arise. Keep each one framed as a deliberate, defensible choice.)*
+
+## Resolution substrate — from the RK-SPIKE audit (2026-07-24)
+
+These are properties of the **shipped** resolution layer that the identity re-key (`spine/13`) is being built
+to fix. Each was verified against code, not inferred. They are stated here because a reader who assumes the
+graded behaviour degrades *gracefully* would be wrong in specific, nameable ways.
+
+- **Relational scaffolding is a step function, not a gradient.** The status-weighted relational signal counts
+  only **completed** merges — a merely `probable` anchor contributes **exactly zero**. So the design's
+  "the fuzzy instance layer resolves by its connections to well-resolved anchors" holds only where those
+  anchors actually merge; where they sit at `probable`, the scaffolding is not weakened, it is **absent**.
+  Accepted deliberately: the fix reintroduces a feedback loop that threatens the monotone-termination
+  argument the clustering fixpoint rests on, and its absence errs toward honest fragmentation — which the
+  design declares the goal.
+- **Places are named as a clean anchor but are not mechanically one.** The place-resolution pass runs *after*
+  entity resolution, so place merges are invisible while pairs are being scored: two units based at
+  differently-named-but-identical sites do not share a neighbour key. Combined with the point above, the
+  anchor-scaffolding lever is weaker than the architecture describes in **two independent ways**.
+- **A name-only pair can still fuse at a lowered per-type floor.** The "name alone caps at *possible*" policy
+  is applied where pairs are *collected for review*, not on the path that actually unions nodes — so at the
+  reduced organisation-type floor a pair agreeing on nothing but its name can auto-merge. Unreachable at the
+  strict global floor; reachable at the lowered one. A guard that did not follow a lowered threshold.
+- **Identity caps are permeable to name-sameness.** The perishable-evidence cap short-circuits when a
+  "durable trigger" is present, and an exact normalized-name match counts as one — so name sameness can
+  launder a confirm that rests only on transient evidence.
+- **Source-independence is enforced for claim corroboration but not for identity merges.** Two derivative
+  reprints of one source can each contribute to an identity merge; nothing in the merge path notices they are
+  not independent. (The "independent identity signal" ledger is about signal *classes* — attribute,
+  relational, temporal — not about source independence, and should not be read as that guard.)
+- **An order-of-battle undercount is reachable without any merge at all.** Where two candidate formations are
+  associated with one observed equipment sighting, the attribution pass keeps the best-evidenced one and
+  discards the other **without recording a skip** — every other rejection path in that pass records its
+  reason. The re-key's requirement is explicit: two candidates ⇒ two attributions, or one plus a named gap,
+  never a silent pick.
+- **The most consequential one: an identity error can become a movement assessment.** Unit-to-site basing is
+  functional and keyed on the unit, so fusing two co-located batteries makes their two sites read as one
+  unit's before-and-after; the supersession step then promotes that pair, **removes it from the analyst's
+  queue** ("adjudicated by the machine"), and draws a relocation. This is why the re-key treats the
+  co-location cap as **anti-fabrication machinery** rather than order-of-battle hygiene, and why its gate must
+  assert the absence of a *drawn relocation edge* rather than merely the absence of a confirmed merge.
