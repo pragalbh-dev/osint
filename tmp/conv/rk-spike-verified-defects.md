@@ -282,3 +282,55 @@ source grade.
 | **G18** relationship-conflict-wall | names `operated-by`, which **does not exist**; does not name the wall *channel* | S3 either adds the predicate (scope it) or the gate tests half of itself; the gate must **name the channel** and assert an analyst-visible reason |
 | **G17** atom-immutability | fine | ensure the fixture is non-vacuous (plan already flags this) |
 | **new** | — | a namespace clause for the Phase-2 fixpoint (D4) — currently **no gate names the most dangerous over-merge class** |
+
+---
+
+## D11 — [DATA, needs adjudication] The flagship "confirmed" may rest on nominal rather than real independence
+
+Raised by the independent data hand while hand-labelling the gold slice. **Recorded here, not resolved** — it
+concerns the frozen corpus and the graded oracle, so it belongs to DATA-C / EVAL, and the spike must not
+re-adjudicate it.
+
+**The concern.** The Rahwali occupancy confirm rests on `d18_rahwali_pass1` + `d19_rahwali_confirm`, which the
+config frames as a *discipline-independent* pair — `config/credibility.yaml:104-105`: *"2025 overhead pass —
+first Rahwali occupancy indicator (single-pass → probable)"* / *"2025 discipline-independent confirmation →
+confirmed + supersedes Rawalpindi"*. Mechanically they satisfy independence by **construction**: different
+`source_id`, different `source_type` (`satellite` vs `think-tank`), both grade B (`config/sources.yaml:41-42`),
+and `min_independent_groups: 2` (`config/credibility.yaml:101`).
+
+**But the data hand reports (spans verified byte-for-byte against the corpus) that d19 explicitly reads d18's
+report** — *"confirms the … cluster first detected on the single-pass collection reported earlier"* — and that
+d19's own claimed second signal is an unnamed vendor via an unnamed intermediary that released no
+geolocation, with the desk disowning its own radar identification.
+
+**Why it matters.** If d19 is a second *analysis* of the same collection rather than a second *look at the
+phenomenon*, then the independence is nominal (different publisher class) rather than real, and "confirmed"
+over-claims. That is the exact failure D-13.9(b) names — *two reprints of one almanac must not confirm* — and
+the project's own too-clean / independence machinery exists to catch it. **The system asserting `confirmed`
+where the honest verdict is `probable` is the soft edge of the one disqualifying failure**, so it is worth
+resolving on its merits regardless of any demo consequence.
+
+**What is NOT yet established** (and why this is `[DATA]`, not `[V]`): whether d19's phrasing means *derivative
+of d18* or *independently collected and concurring*. That is an interpretation of the source text, not a code
+fact, and it is the crux. **Action: DATA-C / EVAL adjudicate the source text.** If derivative, either the
+independence grouping must treat cite-of-a-prior-report as same-group, or the corpus must carry a genuinely
+independent second look.
+
+**Two things it reinforces regardless of the outcome:**
+- **D6** — the same nominal-vs-real independence problem applies to *identity merges*, where (unlike claim
+  corroboration) there is no independence machinery at all.
+- The independence check should key on **evidential lineage** (does this source cite / derive from that one),
+  not only on publisher class. Discipline-diversity is a *proxy* for independence, and this is the case that
+  shows the proxy failing.
+
+## D12 — [DATA, ontology] The schema makes the sourced relation inexpressible and the unsourced one easy
+
+Also from the data hand: the customs document's actual spine — *event ↔ consignee ↔ shipper* — **cannot be
+represented**, because no edge type connects `contract_import_event` to `trading_org`; meanwhile the schema
+*does* offer `imported-by → unit`, which that document never states.
+
+**A schema that makes the sourced thing inexpressible while making the unsourced thing easy is an
+anti-fabrication hazard** — it pressures extraction toward asserting the thing no source said. This is a
+genuine ontology gap and a design input (unlike D11, it needs no corpus adjudication).
+**Owner: RK-LAYER (S2), which owns `config/ontology.yaml`.** Add the event↔trading_org edge; re-examine
+whether `imported-by → unit` should require a stated unit.
