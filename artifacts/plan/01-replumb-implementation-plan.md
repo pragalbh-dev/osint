@@ -691,6 +691,43 @@ ledger); spine/13 §12 (migration/regen). DECISIONS: the graded-regen entry this
   numbered-unit ORBAT doc + a corroborating source so a *stated* `based-at` reaches confirmed, distinct from the
   capped derived edge), plus the existing §B1–B5 items the replumb makes live (attribute-role wall, credibility
   floor, bridge-across-a-wall, perishable succession, trajectory cap).
+
+  **Sharpened by RK-SPIKE's data pass (2026-07-24)** — the independent data hand hand-labelled 7 representative
+  documents (125 claim rows, 32 coref clusters, every span and licensing quote verified byte-for-byte) and
+  established the following corpus-wide facts. Deliverables in `tmp/spike-rk/gold/`; findings in
+  `tmp/spike-rk/gold/DATA-FINDINGS.md`.
+  - **§B6 is confirmed and wider than assumed.** Across all 52 documents there is **exactly one** numbered
+    formation and **exactly one** stated "based at" — both the same off-subject unit in a chaff doc — and
+    **zero serials or registrations anywhere**. So **the entire top of D-13.20's discriminator ladder is inert
+    on the current corpus**, and "formation identity unresolved" is the *only honest outcome available*, not a
+    conservative choice. The answer key independently agrees: every `based-at` is `basis: derived`.
+    **This is legitimate byte-inertness** (working-principles #5: a consequence of sparse data, mechanism at
+    full strength) — **not** a reason to weaken the ladder. Two consequences: (i) the G16/G18/G19 fixtures
+    **must** be abstract, because the corpus cannot exercise them; (ii) RK-DATA owes the numbered-unit ORBAT
+    doc, and until it lands the formation layer correctly reports unresolved.
+  - **NEW — the OOB-undercount trap does not exist in the corpus and must be authored.** Over-merge traps
+    exist at *event*, *site* and *design* level, but **never at formation level**: there is no pair of
+    individuated batteries at one garrison. The nearest doc raises co-location only as an *uncertainty*, which
+    is useless as an anti-merge test. **Author it** — it is the shape D-13.14 / G16 exist for, and the one that
+    guards the D1 fabricated-relocation path.
+  - **NEW — the Rahwali confirm needs a genuinely independent second look** (defect register **D11**). Five
+    documents mention Rahwali, three are deceptions, and the real pair may not be independent: the confirming
+    document appears to *read* the first one's report, and its own claimed second signal is an unnamed vendor
+    via an unnamed intermediary that released no geolocation. **DATA-C / EVAL adjudicate the source text
+    first**; if it is derivative, either the independence grouping must treat cite-of-a-prior-report as
+    same-group, or the corpus needs a real second look. Do not tidy this quietly — the honest fix may be to
+    *lower* the flagship to `probable`.
+  - **NEW — an ontology gap, not a data one** (defect register **D12**, owner **RK-LAYER/S2**): the customs
+    document's actual spine (event ↔ consignee ↔ shipper) is **unrepresentable** — no edge connects
+    `contract_import_event` to `trading_org` — while the schema *does* offer `imported-by → unit`, which that
+    document never states. A schema that makes the sourced relation inexpressible and the unsourced one easy
+    **pressures extraction toward fabrication**.
+  - **Answer-key items flagged, deliberately not fixed** (frozen-data rule): the ground truth contains no
+    `trading_org` and none of the customs declarations — the concrete reason slice recall must score against
+    the **per-slice sub-oracle**, never the full oracle (§8 item 2) — and the flagship `distinct-from` is
+    graded `confirmed` on one hedged grade-C source while a grade-B document blurs the same designators. Also
+    recorded: three irreconcilable induction dates, three range figures for one designator, and one document's
+    self-inconsistent geography that **looks deliberate and should not be tidied**.
 - **Full regen is a consequence of the re-key, coordinated with EVAL — and gated by a DECISIONS entry.** Re-extract
   the corpus with the bake-off's chosen (**pinned**) model, re-elect canonical ids, regenerate `answer_key.json` +
   the golden + the id-pinned tests. The **`__basing.json` bundles are NOT regenerated — they cease to exist** (basing
