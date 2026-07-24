@@ -310,3 +310,78 @@ contributes a *rarity-graded* score"). Either S3 builds it or the design must st
 | Doc-sameness carrier | `Entity.doc_ids` | atom→doc index | parse the claim-id prefix | **`Entity.doc_ids`** — no id-format coupling |
 | Designation | composite AND-key identifier | non-perishable discriminator | non-perishable discriminator | **composite AND-key** — makes the operator requirement structural, not dependent on the broken namespace check |
 | F9 | accept + disclose | accept + disclose | accept + disclose | **accept + disclose** |
+
+---
+
+## Spec closures forced by the independent case author (2026-07-24)
+
+The independent test hand authored 24 cases from this spec alone and reported **12 places the spec was silent
+or self-contradictory**. Four are load-bearing and are closed here. Recording them as closures rather than
+quietly patching, because one is a **contradiction between two of my own requirements** — precisely what the
+three-hands separation exists to catch, and it would have reached S3 as a coding-time surprise.
+
+### C1 — R1.3 contradicted G18. Resolved: the wall fires **within one `site_type`**
+
+**The contradiction.** Defect-register **R1.3** says to tag `based-at`'s supersede instance key by `site_type`,
+so a unit legitimately at a garrison *and* a forward site is **two valid basings**, not a relocation. **G18**
+hard-walls a `based-at` conflict at **overlapping times** — i.e. it says two instances at different sites at
+overlapping times are **different units**. Nothing stated that differing `site_type` de-conflicts them, so as
+written **R1.3's scenario cannot arise**: G18 would wall the very unit R1.3 describes.
+
+**Closure — one declaration serves both.** The two rules are about different questions, and `site_type` is
+exactly the boundary between them:
+> **G18's relationship-conflict wall fires on a `based-at` conflict at overlapping times *within the same
+> `site_type`*. A differing `site_type` is NOT a conflict.** Two candidate instances both at a *garrison* at
+> overlapping times are different units (the wall fires). One unit at its garrison *and* concurrently at a
+> forward site is one unit with two basings (the wall does not fire).
+
+This is the same `site_type` refinement R1.3 asks for, so it is **one config declaration, not two mechanisms**.
+The ontology already flags it as a deferred "Tier-4 refinement" resting on the current corpus
+(`config/ontology.yaml:40-44`) — which working-principles #1 forbids. **Close it before S3 writes G18.**
+
+### C2 — `instances` are **provisional**; G16 asserts on the outcome
+
+`instances` in the spike contract are **post-Tier-0, pre-Tier-1 provisional** instances. The `pair_verdicts` are
+the Tier-1 decisions. The **post-resolution node count is derived** from the two together (provisional
+instances minus the fusions that `verdict: "confirmed"` licenses).
+
+So G16 asserts on the **observable outcome**, not on a pair verdict alone — the test hand is right that these
+are only the same assertion once this is settled:
+> **G16 asserts (i)** no `confirmed` formation-level pair verdict on co-location alone, **(ii)** the resulting
+> formation node count is preserved (both survive), **and (iii)** no drawn relocation edge (the D1 clause).
+> A presence-level merge in the same case is *expected* and must not fail the gate.
+
+### C3 — D-13.18's decline triggers on **relationship** conflicts too
+
+The test hand correctly noticed that D-13.8 declares discriminators to be *attributes **+ relationships** +
+derived geo*, while D-13.18's decline mechanics as I wrote them are **attribute-only** (read `attr_history`).
+That is an inconsistency in my own decision, not in the design.
+
+**Closure:**
+> **The D-13.18 decline fires on a conflicting *critical discriminator* of either kind.** For **attributes**,
+> the check reads the full member value set (`attr_history`, never the first-wins scalar). For
+> **relationships**, the check is **the same overlapping-time conflict test G18 uses, under C1's `site_type`
+> rule** — so the decline and the wall share one predicate rather than drifting apart.
+
+Unifying them is the point: a coref cluster that binds two mentions the *relationships* say are different
+things must decline, for the same reason and by the same test as the cross-document wall.
+
+### C4 — Contract limitations, and what the spike therefore does NOT verify
+
+The spike's I/O contract (authored by the orchestrator) has **no slot** for: a sourced `count`, design-layer
+nodes, the **licensing quote**, a **source identity**, or config values. These are limitations of the *spike
+harness*, not of the design — but they bound what the spike proves, and that must be stated rather than
+implied:
+
+- **the licensing quote** — D-13.17 makes it load-bearing and the audit separately found it is *written but
+  read nowhere* in production. The spike cannot verify it is surfaced. **S3 must carry it end-to-end.**
+- **source identity** — so **D6 / D-13.9(b) source-independence is NOT verified by the spike**; the case suite
+  proxies it with verbatim duplication only. Independence remains **new code in S3, unverified here.**
+- **sourced `count`** — D-13.19 adopts count-capture; the spike does not exercise it.
+- **design-layer nodes** — so the arithmetic reachability of the D3 name-only-fusion hole (which lands on
+  organisation-type floors) is **argued, not exercised**.
+- **config** — the prototype carries its own config file; the spike does not prove the production knobs are
+  wired.
+
+**One shape deliberately untested by the case author:** whether a *relationship* conflict triggers the decline
+— left out to keep the grade-gate mirror unconfounded. **C3 closes the spec question; S3 owns the test.**
