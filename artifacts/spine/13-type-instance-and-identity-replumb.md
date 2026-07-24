@@ -604,13 +604,68 @@ concentrate.
 cluster** (edge endpoints and attribute mentions of one referent attach to it; supersedes any per-edge
 minting).
 
-**Open micro-decisions (still live):**
-- **Tier-0 auto-bind by coref category** — an explicit-equivalence / apposition link binds tightly; a bare
-  pronoun chain is held looser as a proposal. (This grading policy *is* the open auto-bind-threshold decision;
-  trades intra-doc fragmentation against intra-doc over-merge.)
-- **Tier-1 same-document comparison (F5)** — Tier 1 compares *all* provisional-instance pairs including
-  same-doc ones (so Tier-0 under-binding can rejoin); a same-doc pair carries a prior *against* merging only
-  when the source syntactically contrasts them (enumeration, "another", distinct designations), else neutral.
-  Open: how strong that contrastive prior is.
-- **Discriminator priority** for cross-doc clustering (working assumption: designation > operator+geo >
-  relational > name-as-recall).
+**Micro-decisions — CLOSED by RK-SPIKE (2026-07-24).** Full rationale, the mechanism tables, and the
+three-way disagreements and how they resolved: `../../tmp/conv/rk-spike-DECISIONS.md`. The verified code
+baseline the decisions rest on: `../../tmp/conv/rk-spike-code-facts.md`. The defects they must design around:
+`../../tmp/conv/rk-spike-verified-defects.md`.
+
+**The mechanical fact that governs all of them.** An "authoritative" coref pair is a Phase-1 **bootstrap
+trigger**: it merges at hardcoded confidence `1.0` and **bypasses banding entirely** (`resolve/cluster.py:462-465`).
+No cap restrains it — not the name cap, not the perishable cap, not a band ceiling. So authorizing a category
+authorizes an *uncapped, unbanded fusion on a model-chosen label*, and a category may only be authoritative
+behind **both** a deterministic code-verified precondition **and** a source-grade floor.
+
+- **D-13.17 — Tier-0 auto-bind by coref category.** `EXPLICIT_EQUIVALENCE` and `UNAMBIGUOUS_ANAPHOR` are
+  **authoritative**, each behind a deterministic gate (equivalence: the licensing quote contains *both*
+  surface forms *and* a configured equivalence marker; anaphor: a **type-unique antecedent** — no second
+  compatible-type mention in the document it could mean) **and** a source-grade floor set *strictly above* the
+  stated-`same-as` floor. `NAME_VARIANT` is **raise-only, permanently** — because an authoritative bind bypasses
+  banding, "authoritative name-variant" *is* the exact-normalized-name lane D-13.1 exists to delete, rebuilt on
+  another predicate and immune to D-13.10's cap. A coref bind today acts **harder** than a source-stated
+  `same-as` (which is grade-floored *and* raise-only) while reading **no grade at all** — that inversion is the
+  sharpest gap in the substrate, and **stated ≠ trusted** (§5) closes it.
+- **D-13.18 — "held looser", and the grouping the rebuild may DECLINE.** Only an authoritative cluster mints
+  **one shared referent atom**; a looser cluster mints **one referent atom per member** plus an injected Tier-1
+  candidate pair carrying its licensing quote. **The referent atom is *evidence about a grouping*, never the
+  address of the provisional instance** — rebuild groups **claim atoms**, and an intra-referent
+  critical-discriminator conflict makes the rebuild **decline** the grouping, de-grouping to claim-atom
+  granularity and raising. *No atom splits; the grouping declines.* This is what makes §4's "challengeable
+  proposal" true; **without it S3 would make intra-document over-merge permanent**, which is disqualifying.
+  (D-13.7/D-13.11 and plan §7 RK-COREF item 1 currently read either way — they must be written the safe way
+  before S3 starts. The decline check must read `attr_history`, not `attrs`: first-claim-wins scalar storage
+  makes an intra-referent conflict invisible.) *Not implementable:* a per-link authoritative closure — the
+  coref category is stamped per **cluster**, not per link.
+- **D-13.19 — Tier-1 same-document comparison + the contrastive prior (closes F5).** Tier 1 **already** compares
+  same-doc pairs — there is **no document filter anywhere** in `resolve/**`, so that half of F5 needs no code.
+  A same-doc **stated-contrast** pair is **capped at *probable*** (reaches the analyst with its quote; can never
+  auto-merge); absence of contrast is **neutral**, never a prior *for* merging. The config value is a **band
+  name, not a float** — a coefficient is rejected because at the shipped thresholds a ×0.5 penalty drops a pair
+  *two* bands, silently out of the analyst's queue. The ceiling is **ungraded**, because unlike a veto it
+  **cannot shatter** an existing cluster — it withholds one new fusion. Carriers: **`Entity.doc_ids`** (populated
+  where the doc ref is currently dropped; *not* by parsing a claim-id format, and *not* `source_ids`, which is the
+  publisher) and a **new contrastive channel on coref** on its own `coref-distinct-from` lane — *never* the stated
+  `distinct-from` rail, which is hard, transitive and ungraded (every ORBAT list contains an enumeration).
+  Separately: a source saying *"two batteries"* is **stating the OOB figure** — capture it as a sourced `count`
+  attribute on the presence (D-13.13). "Distinct designations" is **not** a syntactic contrast and moves to
+  D-13.20.
+- **D-13.20 — Discriminator priority.** **differing designation (veto) > composite unique identifier >
+  temporally-witnessed continuity > shared designation > operator (post-normalization) > geography (perishable)
+  > relational (F9-limited) > name (ceiling at *possible*)**. Priority manifests in **three shapes — blocking,
+  score, cap/wall — not one dial.** The load-bearing call: **a shared designation is NOT a unique identifier**
+  (designations are reused across armies and across time), so `hard_id_fields.unique` is a list of **composite
+  AND-keys** — `(service_branch, designator)` identifies; a bare `designator` does not. This makes the operator
+  requirement *structural in the identifier declaration* rather than dependent on a namespace check that is
+  **broken in the Phase-2 fixpoint**. One shared designation string may never confirm a formation merge. The
+  codebase already embodies this asymmetry for bills of lading (differing identifiers veto; shared ones do not
+  confirm) — preserve it. Enabling change: **split `attribute_score` into two signals (`name` / `discriminator`)**
+  — already computed independently and fused at one `max`, so a small change, and **without it D-13.10 cannot
+  function at all.**
+
+**Corrections this forces on the text above.** (i) "Capped at *probable*" is **not expressible as written** —
+there are three bands, no `reject` verdict, and only `same_as` fuses; read every such phrase as **"not fused;
+queued and reported."** (ii) **Lever 2 is weaker than §6 claims, in two independent ways**: F9 (only *completed*
+merges carry relational weight) *and* `places.augment` running **after** `resolve_entities`
+(`resolve/__init__.py:181` vs `:177`), so place merges are invisible to `relational_score` — places are
+mechanically **not** the clean anchor the design names. (iii) **"Rarity-graded name" has no implementation
+anywhere**, yet D-13.2 and D-13.10 both rest on it. (iv) The raise-only **licensing quote is written but read
+nowhere** — the mitigation that makes raise-only acceptable does not yet exist.
