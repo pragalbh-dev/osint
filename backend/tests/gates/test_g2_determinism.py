@@ -25,12 +25,6 @@ def test_two_rebuilds_are_byte_identical() -> None:
     assert view_to_json(loaders.golden_view()) == view_to_json(loaders.golden_view())
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="expected_view.json pending regeneration: temporal history (attr_history/time_interval) is now "
-    "SURFACED on the wire (target output, previously exclude=True) — data-refresh ledger §A. "
-    "Determinism itself still holds (see test_two_rebuilds_are_byte_identical + the hash-seed subproc test).",
-)
 def test_matches_committed_golden_file() -> None:
     # The committed expected_view.json is written with a trailing newline.
     assert view_to_json(loaders.golden_view()) + "\n" == loaders.expected_view_json()
