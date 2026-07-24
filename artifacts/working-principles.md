@@ -11,6 +11,13 @@ current data or a golden fixture green. Build the target's capability even when 
 data; let the data catch up. "Extendable" means the target is extendable — not that the current demo is
 preserved.
 
+**And nothing about the *current running state* gates the design either** — not the present graph / partition
+/ node-ids, not keyless boot, not the cost of re-extracting the corpus. All of these are regenerable or
+re-runnable (and new data is often being built in parallel), so choose the design that is correct for the
+**north goal** and let the data, the graph, and the extraction be redone to match it. The only thing that
+constrains a design decision is north-goal correctness — never "what would the current corpus / the keyless
+boot / the already-extracted claims do."
+
 ## 2. Three surfaces, three separate hands — nobody validates their own work
 The three surfaces of a change — **code** (implementation), **test** (validation), **data** (corpus /
 sandbox / fixtures) — must each be authored by a *different* hand. A test may *reference* code (import/call

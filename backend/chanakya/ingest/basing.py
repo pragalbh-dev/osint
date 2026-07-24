@@ -1,8 +1,8 @@
 """The basing proposer — turn an *observed occupancy* into a cited **unit-attribution** inference.
 
-**The problem.** No open source states the fact the order-of-battle question actually needs. A satellite
-write-up says *"six TEL-type objects consistent with HQ-9B occupy a revetment complex at PAF Base Nur
-Khan, 09 OCT 2021"*; an induction announcement says *"the HQ-9/P has entered service with Army Air
+**The problem.** *Usually* no open source states the fact the order-of-battle question actually needs. A
+satellite write-up says *"six TEL-type objects consistent with HQ-9B occupy a revetment complex at PAF Base
+Nur Khan, 09 OCT 2021"*; an induction announcement says *"the HQ-9/P has entered service with Army Air
 Defence"*. Neither says **"formation X is based at site Y"** — the edge the relocation beat, the
 freshness decay and the supersede all hang on. D-2.7 read that absence as "so don't extract basing at
 all", which left the edge unowned by every service (EVAL RCA §2.2); D-P4.1/2/3 replace it with a
@@ -16,6 +16,14 @@ two-layer model:
 They are **never fused** into one flat confident basing assertion. That separation is the whole point:
 the corpus contains a recycled-image trap and a grade-E relocation spoof built to punish a system that
 collapses "kit was photographed here" into "this formation is stationed here".
+
+**The stated path exists too — this derivation is a fallback, not the only source of the edge.** When a
+source *does* name a formation at a site directly (an ORBAT / military-balance reference — rarer in open
+source, but real), that is a **stated** ``<unit, based-at, site>`` (``kind="observation"``, extractor-
+emitted, carrying normal source credibility, able to reach *confirmed* with independent corroboration).
+This pass only supplies the edge for the common case where formation-at-site is *unstated*; it never
+displaces or overrides a stated basing. ("No open source states basing" was a property of the early
+corpus, not a rule — the system handles a stated basing wherever one appears.)
 
 **Where it runs.** Offline, upstream of the append, over the *previous frozen resolved view* — the same
 connection-triggered discipline as :mod:`chanakya.ingest.attribute`, and for the same reason: the

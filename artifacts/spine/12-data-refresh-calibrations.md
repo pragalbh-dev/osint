@@ -86,6 +86,20 @@ The current corpus is single-subject and sparse; several target mechanisms have 
    candidate. So the cap is meaningful precisely for pairs that block together yet share only a transient
    state.
 
+6. **Stated formation-at-site / ORBAT direct basing (replumb D-13.13).** `based-at` has two provenance
+   paths — *stated* (a source names a unit at a site directly → `kind=observation`, normal credibility, can
+   confirm) and *derived* (`observed-at` + `inducted-into` → `kind=inference`, capped at *probable*). The
+   corpus captures a stated based-at only weakly — `d19` states a "PAF/Army Air Defence Command HQ-9BE
+   battery … at Rahwali" (a formation-associated *battery string*), but there is **no crisp numbered-unit
+   ORBAT document** ("the 8th Air Defence Battalion is garrisoned at Nur Khan"), so the *stronger* stated
+   path is barely exercised and the system reads as if formation-at-site is only ever derived. *Add:* (a) an
+   ORBAT-style reference (IISS Military Balance / think-tank grade) naming a *designated* unit at a named
+   base, plus (b) a second independent corroborating source, so a **stated** based-at reaches *confirmed* —
+   demonstrating the stronger provenance path as distinct from the capped derived one; and (c) optionally a
+   doc where a stated basing and a derived basing land on the same unit, to show they resolve without
+   double-counting (shared source ⇒ one independence group). Note: this is a *corpus* gap, not a code gap —
+   the extractor already emits `based-at` and SCORE already prices stated vs inference correctly.
+
 ---
 
 *Maintained by the redesign work (branch `design/resolution-redesign`). Append new entries as later stages

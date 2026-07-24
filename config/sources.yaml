@@ -79,6 +79,13 @@ sources:
   - {source_id: cd19_rumor_missile, source_type: anon-social, reliability_grade: E, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd19_rumor_missile.txt"}
   - {source_id: cd20_defense_budget, source_type: trade-media, reliability_grade: C, bias_vector: operator-state, cadence: "30d", citation_url: "corpus/scenarios/hq9p_chaff/docs/cd20_defense_budget.txt"}
 
+  # ── hq9p_sandbox — Card B1 (D5 critical-attribute wall on variant.operator_branch) ──────────────
+  # Working-tree only during sandbox iteration — do NOT commit; replaced with hq9p_primary paths at
+  # promotion (see tmp/conv/data-pass-case-cards.md, "Operational recipe"). Membership is by citation_url
+  # path segment, not a scenario field.
+  - {source_id: d26_pla_hq9_register, source_type: curated-register, reliability_grade: B, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_sandbox/docs/d26_pla_hq9_register.txt", report_date: "2023-03-14"}
+  - {source_id: d27_pak_hq9_army, source_type: trade-media, reliability_grade: C, bias_vector: third-party, cadence: "30d", citation_url: "corpus/scenarios/hq9p_sandbox/docs/d27_pak_hq9_army.txt", report_date: "2023-08-21"}
+
 # ── withheld from the boot seed (the reviewer's live-ingest set) ────────────────────────────────────
 # These documents EXIST and their frozen claim bundles are shipped — they are simply not appended at
 # boot, so the app stands up in the state that PRECEDES their arrival. A reviewer then ingests them

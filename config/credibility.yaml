@@ -152,13 +152,16 @@ attribution_proposer:
     variant_hop_edges: [inducted-into, equips]                         # 1-hop from the variant to reach unit/component fingerprints
 
 # INGEST basing proposer (ingest/basing.py) — the ATTRIBUTION layer of the two-layer basing model
-# (EVAL RCA D-P4.1/2/3). No source states "formation X is based at site Y"; sources state that equipment was
-# OBSERVED AT a site (`observed-at`, the observed layer) and that equipment serves with a formation
-# (`inducted-into`). This pass derives the missing `<unit, based-at, site>` edge from that pair as a cited
-# `inference` claim carrying BOTH premises and the observation's valid time — offline, upstream of the append,
-# never inside rebuild() (gate G1). Raise-only: it sets no status and no confidence, SCORE prices it, and an
-# inference shares an independence group with its premises so it can never self-corroborate to confirmed.
-# Unlike attribution_proposer this is a pure graph derivation — no model call, so it runs KEYLESS.
+# (EVAL RCA D-P4.1/2/3). USUALLY no source states "formation X is based at site Y" directly; the common
+# open-source case is equipment OBSERVED AT a site (`observed-at`, the observed layer) plus equipment serving
+# with a formation (`inducted-into`), and this pass derives the missing `<unit, based-at, site>` edge from
+# that pair as a cited `inference` claim carrying BOTH premises and the observation's valid time — offline,
+# upstream of the append, never inside rebuild() (gate G1). Raise-only: it sets no status and no confidence,
+# SCORE prices it, and an inference shares an independence group with its premises so it can never
+# self-corroborate to confirmed. Unlike attribution_proposer this is a pure graph derivation — no model call,
+# so it runs KEYLESS. (When a source DOES name a formation at a site directly — an ORBAT / military-balance
+# reference — that is a STATED `based-at`: extractor-emitted, kind=observation, normal credibility, able to
+# confirm. This derivation is the FALLBACK for the usual unstated case, never the only source of the edge.)
 # Absent block => dormant (no code-literal defaults).
 basing_proposer:
   occupancy_edge_types: [observed-at]     # the OBSERVED layer this reads (equipment seen at a site)

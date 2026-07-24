@@ -390,12 +390,19 @@ and a *split on the next rebuild*?
 **Recommendation: monotone within a rebuild, with no general backtracking.** Reasoning, against the north
 star:
 
-- **The hard case can't actually arise, so backtracking buys almost nothing.** All hard walls (D5) are
-  computed up front from the full claim set and enforced *transitively before any soft merge* — so a merge
-  can never place a wall-violating pair into one cluster in the first place (the union is refused, including
-  the A-silent-B, C-conflicts-A straddle). That means the only contradiction a merge can *reveal* mid-loop
-  is a **soft** one (a perishable or supporting-attribute disagreement) — and by D8 those are never
-  separators anyway, just negative evidence. There is no case that *requires* an undo.
+- **The hard case is rare and, when it occurs, is handled without backtracking — so backtracking buys
+  almost nothing.** All hard walls (D5) that are computable *up front from the full claim set* are enforced
+  *transitively before any soft merge*, so a merge can never place a pair with a pre-stated wall conflict
+  into one cluster in the first place (the union is refused, including the A-silent-B, C-conflicts-A
+  straddle). The **usual** contradiction a merge reveals mid-loop is therefore a **soft** one (a perishable
+  or supporting-attribute disagreement), and by D8 those are never separators anyway. **One qualification
+  (aligns with `13-*` §5/§7):** once the substrate materializes provisional instances, a *derived*
+  discriminator can become visible only **after** a merge — e.g. a provisional unit acquires derived geo
+  through an anchor merge, and only then conflicts with a sibling at overlapping time — so a hard conflict
+  *revealed post-merge* is rare but **not impossible**, and "computed up front" is not strictly true for
+  derived discriminators. This does **not** motivate backtracking: the revealed conflict becomes a **visible
+  flag now and a split on the next rebuild** (the normal, in-the-loop outcome below), which is exactly
+  reversal-by-evidence. No case *requires* an in-pass undo.
 
 - **Monotone guarantees termination and determinism for free.** Clusters only grow and statuses only
   strengthen within a rebuild, so the fixpoint is a finite monotone climb — it always terminates, and it
@@ -423,10 +430,12 @@ star:
   relational signal is weighted by link status (`possible` links carry little weight). That contains
   cascades at their source, without any undo machinery.
 
-**Net:** adopt monotone-within-a-rebuild. If a genuine need for late correction ever appears, the only
-principled exception would be a narrow, deterministic un-merge that fires *solely* to enforce a hard wall
-(a monotone constraint that cannot oscillate) — but the analysis above says even that can't be triggered
-mid-loop given up-front transitive veto enforcement, so we should not build it speculatively.
+**Net:** adopt monotone-within-a-rebuild. A hard conflict *revealed* by a post-merge derived discriminator
+(the `13-*` qualification above) is handled by the flag-now / split-next-rebuild path, not by an in-pass
+undo — so even that case does not motivate backtracking. If a genuine need for late correction ever
+appears, the only principled exception would be a narrow, deterministic un-merge that fires *solely* to
+enforce a hard wall (a monotone constraint that cannot oscillate) — but since the revealed-conflict case is
+already covered by flag-then-split, we should not build it speculatively.
 
 ---
 
