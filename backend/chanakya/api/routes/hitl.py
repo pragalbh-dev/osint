@@ -88,8 +88,9 @@ def hitl_alert(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
 
 @router.post("/hitl/merge", response_model=GraphView)
 def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> GraphView:
+    view = state.view()
     edge = next(
-        (e for e in state.view().edges if e.id == decision.subject and e.type == "same-as"),
+        (e for e in view.edges if e.id == decision.subject and e.type == "same-as"),
         None,
     )
     if edge is None:
@@ -97,10 +98,14 @@ def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
             404, detail={"error": "no candidate same-as edge for subject", "id": decision.subject}
         )
     breakdown = edge.attrs.get("breakdown") or {}
+    # Carry each node's NAME, not just its id: RESOLVE's learned alias table is keyed on normalised
+    # names, so an accept/reject only links/bars on the next rebuild if the record ships the names (the
+    # ids alone never bite — aliases.build has no graph to map an id back to a name). See build_merge_item.
+    labels = {n.id: n.name for n in view.nodes}
     item = build_merge_item(
         item_id=decision.item_id or f"merge:{edge.id}",
-        candidate_a={"id": edge.source},
-        candidate_b={"id": edge.target},
+        candidate_a={"id": edge.source, "name": labels.get(edge.source)},
+        candidate_b={"id": edge.target, "name": labels.get(edge.target)},
         signals=[breakdown] if breakdown else [],
         merge_score=edge.merge_confidence or 0.0,
         band="needs-you",

@@ -91,15 +91,69 @@ def build(
     for d in decisions or []:
         if d.type != "merge_adjudication":
             continue
-        pair = _pair(d)
-        if pair is None:
+        adj = _adjudication(d)
+        if adj is None:
             continue
-        a, b = norm(pair[0]), norm(pair[1])
-        if _accepted(d):
+        verdict, (pa, pb) = adj
+        a, b = norm(pa), norm(pb)
+        if verdict == "accept":
             idx.link(a, b)
-        elif _separated(d):
+        elif verdict == "bar":
             idx.distinct.add(frozenset((a, b)))
     return idx
+
+
+def _adjudication(d: DecisionRecord) -> tuple[str, tuple[str, str]] | None:
+    """Recover ``("accept" | "bar", (name_a, name_b))`` from a ``merge_adjudication`` record, or ``None``.
+
+    Two record shapes reach replay and both must work:
+
+    * **legacy / direct-construction** — the pair *and* the verdict sit in ``decision``/``context``
+      (``{"pair": [...], "verdict": "accept"}``). ``_pair`` + ``_accepted``/``_separated`` read that.
+    * **live producer** — ``hitl.build_merge_item`` → ``writeback.build_record`` leaves ``decision`` as
+      ``{"chosen": ..., "rationale": ...}`` and moves the substance into the structured ``effects`` the
+      analyst was shown: ``grow_alias`` ⇒ accept, ``record_distinct``/``split_merge`` ⇒ bar. This is the
+      shape the API route writes, and the one the loop was silently dropping (``_pair`` returned ``None``).
+
+    The pair is read **names-first** (``effects[…]["names"]``): the alias index is keyed by normalised
+    names, so the entity ids in ``same_as``/``pair`` — kept for provenance and the split reversal — would
+    match nothing here and are only a last-resort fallback. Pure/deterministic: dict reads, no clock/RNG.
+    """
+    # 1. legacy explicit shape — the pair and verdict both stated in decision/context.
+    pair = _pair(d)
+    if pair is not None:
+        if _accepted(d):
+            return "accept", pair
+        if _separated(d):
+            return "bar", pair
+    # 2. live producer shape — the verdict is encoded by which effect the analyst chose.
+    eff = d.effects if isinstance(d.effects, dict) else {}
+    grow = eff.get("grow_alias")
+    if isinstance(grow, dict):
+        p = _effect_pair(grow)
+        if p is not None:
+            return "accept", p
+    for key in ("record_distinct", "split_merge"):
+        payload = eff.get(key)
+        if isinstance(payload, dict):
+            p = _effect_pair(payload)
+            if p is not None:
+                return "bar", p
+    return None
+
+
+def _effect_pair(payload: dict) -> tuple[str, str] | None:
+    """The (name_a, name_b) an effect concerns — ``names`` first (the alias index is name-keyed), then ids."""
+    for key in ("names", "same_as", "pair", "members"):
+        val = payload.get(key)
+        if isinstance(val, (list, tuple)):
+            try:
+                x, y = val
+            except ValueError:
+                continue
+            if x and y:
+                return str(x), str(y)
+    return None
 
 
 def _pair(d: DecisionRecord) -> tuple[str, str] | None:

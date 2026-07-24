@@ -32,9 +32,17 @@ from chanakya.credibility import (
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
 from chanakya.ontology import EdgeLaneIndex, NodeTypeIndex
-from chanakya.resolve import COREF_PREDICATE, IDENTITY_PREDICATES, location_attr, resolve
+from chanakya.resolve import (
+    COREF_PREDICATE,
+    IDENTITY_PREDICATES,
+    identity_ledger,
+    location_attr,
+    resolve,
+    resolve_with_types,
+)
 from chanakya.schemas import (
     AssertionInput,
+    AttrValueClaim,
     ClaimRecord,
     ConfidenceBreakdown,
     ConfigBundle,
@@ -50,7 +58,9 @@ from chanakya.schemas import (
     Partition,
     PlacesConfig,
     SourceRegistryEntry,
+    canonical_iso_bounds,
     pair_key,
+    report_bounded_validity,
 )
 from chanakya.sufficiency import check
 from chanakya.timeref import effective_as_of, is_available_by
@@ -191,6 +201,14 @@ def _merge_provenance(nodes: dict[str, NodeView], partition: Partition) -> None:
         breakdown = partition.merge_breakdown.get(key)
         if breakdown:
             entry["breakdown"] = breakdown
+            # D4 Stage 2 — the merge's own corroboration ledger, ADDITIVELY beside ``breakdown`` (never
+            # replacing it): which independent identity signals corroborated this confirmed merge, with
+            # their values ("merge corroboration, not assertion corroboration"). Derived purely from the
+            # breakdown, and recorded ONLY when a signal fired — a degenerate breakdown ({"total": …}) adds
+            # no key, so the pre-Stage-2 ``resolved_from`` shape is preserved byte-for-byte.
+            ledger = identity_ledger(breakdown)
+            if ledger:
+                entry["identity_ledger"] = ledger
         node.attrs.setdefault("resolved_from", []).append(entry)
 
 
@@ -207,6 +225,13 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
     for a, b in sorted(partition.candidates):
         if a in node_ids and b in node_ids:
             key = pair_key(a, b)
+            breakdown = partition.merge_breakdown.get(key, {})
+            # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
+            # which independent identity signals corroborated this candidate. Only when a signal fired.
+            attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
+            ledger = identity_ledger(breakdown)
+            if ledger:
+                attrs["identity_ledger"] = ledger
             out.append(
                 EdgeView(
                     id=f"same-as:{key}",
@@ -220,7 +245,7 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
                     # alone), but where a source did speak, the analyst must be able to read it — and
                     # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
                     claim_ids=list(partition.identity_claims.get(key, [])),
-                    attrs={"merge_band": "candidate", "breakdown": partition.merge_breakdown.get(key, {})},
+                    attrs=attrs,
                 )
             )
     for a, b in sorted(partition.distinct_from):
@@ -238,6 +263,36 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
 
 
 # ── graph assembly (+ supersede/contradict) ──────────────────────────────────────────────────
+
+def _attr_value_claim(value: Any, claim: ClaimRecord) -> AttrValueClaim:
+    """One retained attribute value + the time axes its claim asserted it over (D7, §1B).
+
+    ``report_time`` is the upper bound on the value's validity where no explicit interval was stated —
+    computed by the pure :func:`report_bounded_validity` helper (no clock/parse — G1). Pure record; no
+    ordering or supersede decision is taken here (deferred to Stage 3B).
+    """
+    valid_from, valid_until = report_bounded_validity(claim.event_time, claim.report_time)
+    return AttrValueClaim(
+        value=value,
+        claim_id=claim.claim_id,
+        event_time=claim.event_time,
+        report_time=claim.report_time,
+        valid_from=valid_from,
+        valid_until=valid_until,
+    )
+
+
+def _series_sort_key(entry: AttrValueClaim) -> tuple[bool, str, str, str]:
+    """Deterministic oldest→newest order for a retained attribute series (data availability, not a decision).
+
+    Ordered by ``event_time`` lower bound, then ``report_time`` lower bound, then ``claim_id`` (unique →
+    a total, hash-seed-independent order — G2). Undated entries sort last. This is presentation ordering
+    for the retained series; it makes no supersede/contradiction/winner decision (that is Stage 3B).
+    """
+    ev_lo, _ = canonical_iso_bounds(entry.event_time)
+    rep_lo, _ = canonical_iso_bounds(entry.report_time)
+    return (ev_lo is None, ev_lo or "", rep_lo or "", entry.claim_id)
+
 
 def _assemble(
     resolved: list[ClaimRecord],
@@ -298,7 +353,10 @@ def _assemble(
             if c.claim_id not in node.claim_ids:
                 node.claim_ids.append(c.claim_id)
             for k, v in payload.attrs.items():
-                node.attrs.setdefault(k, v)  # first claim wins; deterministic in replay order
+                node.attrs.setdefault(k, v)  # scalar contract UNCHANGED: first claim wins (replay order)
+                # ADDITIVE (D7, §1B): retain EVERY asserted value with its time axes — role-agnostic, so a
+                # later/conflicting value is just another entry rather than a silently-dropped one.
+                node.attr_history.setdefault(k, []).append(_attr_value_claim(v, c))
             if node.location is None:
                 node.location = _node_location(payload.attrs)  # first claim wins, as the attrs do
         elif isinstance(payload, EventDescriptor):
@@ -373,6 +431,11 @@ def _assemble(
                     name=display(endpoint, _endpoint_display_name(endpoint)),
                     claim_ids=list(e.claim_ids),
                 )
+
+    # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
+    for node in nodes.values():
+        for series in node.attr_history.values():
+            series.sort(key=_series_sort_key)
 
     return nodes, edges, events
 
@@ -569,24 +632,52 @@ def apply_decision_effects(view: GraphView, decisions: Iterable[DecisionRecord])
 
 # ── the orchestrator ─────────────────────────────────────────────────────────────────────────
 
-def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view: GraphView | None = None) -> GraphView:
-    """Reduce the two logs + config to the knowledge view — pure & deterministic (G1, G2)."""
+def _prepare_active_claims(
+    evidence: object, decision: object, config: ConfigBundle
+) -> tuple[list[ClaimRecord], list[DecisionRecord]]:
+    """``rebuild()``'s claim-preparation prologue, factored out so a *second* pure read of the resolution
+    state (Stage-4 identity coverage, ``partition_with_types``) prepares claims through the EXACT same
+    path — zero drift risk. In order:
+
+    * replay both logs;
+    * ``apply_retractions`` — drop retracted claims (append-only, gate G3);
+    * ``apply_claim_exclusions`` — HITL reject drops the look upstream of scoring;
+    * the ``config.credibility.as_of`` rewind — a *past* as-of hides claims not yet available then, an
+      honest point-in-time view (``is_available_by`` is clock-free — G1); unset/future ⇒ no-op (G2);
+    * ``canonicalize_claims`` — orient relationship claims the producer did not canonicalize so
+      oppositely-phrased claims of one fact key to the same ``edge_instance`` and corroborate; a no-op
+      when the ontology declares no directions, reorienting only this derived view, never the log.
+
+    Pure & deterministic (G1/G2).
+    """
     claims: list[ClaimRecord] = _replay(evidence, ClaimRecord)
     decisions: list[DecisionRecord] = _replay(decision, DecisionRecord)
     active = apply_retractions(claims)
-    active = apply_claim_exclusions(active, decisions)  # HITL reject → drop the look upstream of scoring
-
-    # Rewind: a *past* ``config.credibility.as_of`` hides claims not yet available then, so "as of DATE"
-    # is an honest point-in-time view (is_available_by is clock-free — G1). Unset/future ⇒ no-op (G2).
+    active = apply_claim_exclusions(active, decisions)
     if config.credibility.as_of:
         active = [c for c in active if is_available_by(c, config.credibility.as_of)]
-
-    # Read-side canonical-direction net (INGEST canonical-edge-direction): orient any relationship claim
-    # whose producer could not (or did not) canonicalize its endpoints at write-time, so oppositely-phrased
-    # claims of one fact still key to the same edge_instance and corroborate. Pure & deterministic (G1/G2)
-    # and a no-op when the ontology declares no directions — it reorients only this derived view, never the
-    # immutable log (INGEST enforces the convention at write; this is the belt-and-suspenders fallback).
     active = canonicalize_claims(active, config)
+    return active, decisions
+
+
+def partition_with_types(
+    evidence: object, decision: object, config: ConfigBundle
+) -> tuple[Partition, dict[str, str]]:
+    """The resolver's identity :class:`Partition` + its entity→type map, from the same logs + config
+    ``rebuild()`` reads — the inputs the Stage-4 coverage summary (``GET /coverage``) folds over.
+
+    Claims are prepared through the identical prologue :func:`_prepare_active_claims`, so this reproduces
+    the partition behind the current view exactly; ``prev_view`` is irrelevant to the partition
+    (``resolve`` does not read it), so it is not needed here. A SEPARATE derivation from the drawn view —
+    it computes no nodes/edges and never touches the view JSON (gate G2).
+    """
+    active, decisions = _prepare_active_claims(evidence, decision, config)
+    return resolve_with_types(active, config, None, decisions)
+
+
+def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view: GraphView | None = None) -> GraphView:
+    """Reduce the two logs + config to the knowledge view — pure & deterministic (G1, G2)."""
+    active, decisions = _prepare_active_claims(evidence, decision, config)
 
     # 1. resolution — resolve() is a pure function of (claims, config, prev_view, decision log): the
     #    decision log carries the offline LLM proposer's frozen merge_proposal records + the analyst's

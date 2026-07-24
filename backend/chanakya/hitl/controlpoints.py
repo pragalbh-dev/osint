@@ -84,11 +84,19 @@ def build_merge_item(
     (split) — each a RESOLVE-consumed payload appended to the log, reversible by another append (G3).
     """
     a_id, b_id = candidate_a["id"], candidate_b["id"]
+    a_name, b_name = candidate_a.get("name"), candidate_b.get("name")
+    # RESOLVE's alias index is keyed by *normalised names*, not entity ids (aliases.build has no graph to
+    # map an id back to a name). So the effect must carry the two NAMES for the accept-link / reject-bar
+    # to actually bite on the next rebuild — the ids alone would land in a name closure that matches
+    # nothing. ``names`` is emitted only when both candidates supplied one; ``same_as``/``pair`` keep the
+    # ids for provenance + the split reversal, and the shape the direct-construction tests assert is intact.
+    names = [a_name, b_name] if a_name and b_name else None
+    _names = {"names": names} if names else {}
     effects = {
         "accept": {"grow_alias": {"same_as": [a_id, b_id],
-                                  "alias": {"canonical": a_id, "surface": candidate_b.get("name")}}},
-        "reject": {"record_distinct": {"pair": [a_id, b_id]}},
-        "split": {"split_merge": {"pair": [a_id, b_id], "reverses": prior_merge_event}},
+                                  "alias": {"canonical": a_id, "surface": b_name}, **_names}},
+        "reject": {"record_distinct": {"pair": [a_id, b_id], **_names}},
+        "split": {"split_merge": {"pair": [a_id, b_id], "reverses": prior_merge_event, **_names}},
     }
     payload = {
         "candidate_a": candidate_a,

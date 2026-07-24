@@ -45,15 +45,20 @@ from .scoring import (
     COREF_PREDICATE,
     DISTINCT_PREDICATES,
     IDENTITY_PREDICATES,
+    critical_conflict_disposition,
     has_hard_conflict,
+    identity_ledger,
 )
 
 __all__ = [
     "resolve",
+    "resolve_with_types",
+    "ResolveConfig",
     "resolve_anchors",
     "AnchorResolution",
     "propose_candidates",
     "location_attr",
+    "identity_ledger",
     "IDENTITY_PREDICATES",
     "DISTINCT_PREDICATES",
     "COREF_PREDICATE",
@@ -67,6 +72,36 @@ def resolve(
     decisions: list[DecisionRecord] | None = None,
 ) -> Partition:
     """Resolve claims into entities/edges: candidate-gen → bootstrap → relational fixpoint → places."""
+    partition, _types = _resolve(claims, config, prev_view, decisions)
+    return partition
+
+
+def resolve_with_types(
+    claims: list[ClaimRecord],
+    config: ConfigBundle,
+    prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
+) -> tuple[Partition, dict[str, str]]:
+    """:func:`resolve` + the resolver's entity→ontology-type map (Stage 4 identity coverage, D11).
+
+    Identical computation to :func:`resolve`: the returned ``Partition`` is byte-for-byte the one
+    :func:`resolve` returns (gate G2). It *additionally* returns ``{entity_id: type}`` for every entity
+    the resolver knows — the complete id universe the partition's ``same_as`` / ``candidates`` /
+    ``possible`` links can reference (claim-backed entities, registry-seeded priors, and minted
+    triple-endpoints, after node-type refinement). It is a **read** of the resolver's own typing (never a
+    second, divergent notion of an entity's type), and is the ``type_of`` source
+    :func:`chanakya.view.coverage.identity_coverage` consumes.
+    """
+    return _resolve(claims, config, prev_view, decisions)
+
+
+def _resolve(
+    claims: list[ClaimRecord],
+    config: ConfigBundle,
+    prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
+) -> tuple[Partition, dict[str, str]]:
+    """Shared body: the identity :class:`Partition` + the resolver's post-refinement entity→type map."""
     cfg = ResolveConfig.from_bundle(config)
     lane = EdgeLaneIndex(config.ontology)  # the edge index: endpoint typing + the functional instance key
     graph = entities.build(claims, lane)
@@ -114,7 +149,18 @@ def resolve(
     # do-not-merge about a mention that only *became* an entity in the line above. Idempotent (a set union).
     # T3b-C — and add the hard-identifier rail: two entities whose names state DIFFERENT bill-of-lading /
     # contract references are a veto, not a low score (config/ontology.yaml ``identifier_patterns``).
-    veto |= _claim_distinct_pairs(graph, cfg, alias_idx) | _identifier_veto(graph, cfg)
+    # D5/D6/3A — and the declared-critical-attribute rail, now credibility-gated: two same-type entities
+    # STATING different values of a critical attribute (a different country/branch, a unique serial) WALL
+    # only when the conflict is trustworthy on both sides (each conflicting value attested by a source
+    # at/above ``critical_veto_min_grade``). Below the floor the pair is not walled — it is RAISED to the
+    # analyst (``crit_raises``, threaded into the resolver as a block-merge-and-review set), so one flaky
+    # low-grade source cannot silently shatter a well-corroborated merge (D5 take-care a).
+    crit_walls, crit_raises = _critical_attribute_walls(graph, cfg)
+    veto |= (
+        _claim_distinct_pairs(graph, cfg, alias_idx)
+        | _identifier_veto(graph, cfg)
+        | crit_walls
+    )
 
     # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
@@ -128,12 +174,19 @@ def resolve(
         | coref_raise
     )
 
-    result = resolve_entities(graph, cfg, alias_idx, veto, raise_only, coref_authoritative)
+    result = resolve_entities(
+        graph, cfg, alias_idx, veto, raise_only, coref_authoritative, raise_walls=crit_raises
+    )
     result.candidates.extend(ambiguous)  # an endpoint with >1 irreconcilable match is adjudicated, never guessed
     places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
 
-    return _to_partition(claims, result, mention, minted, place_of, lane, graph)
+    partition = _to_partition(claims, result, mention, minted, place_of, lane, graph)
+    # The resolver's own typing, for Stage-4 coverage (D11): every entity id the partition can reference
+    # — claim-backed, registry-seeded, or minted endpoint — mapped to its refined ontology type. A read,
+    # not a re-derivation: ``graph.entities`` is the exact universe the merge decisions scored over.
+    type_map = {eid: ent.etype for eid, ent in graph.entities.items()}
+    return partition, type_map
 
 
 # ── the entity registry as a resolution prior (P3.0) ───────────────────────────────────────────
@@ -432,6 +485,61 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
     return out
 
 
+# ── D5/D6/3A: the declared-critical-attribute rail, credibility-gated (a serial/branch clash walls) ──
+
+def _critical_attribute_walls(
+    graph: EntityGraph, cfg: ResolveConfig
+) -> tuple[set[Pair], dict[Pair, str]]:
+    """Split same-type declared-critical conflicts into hard **walls** and analyst **raises** (D5 + 3A).
+
+    The D5 wall, generalised from the geographic (``geo_conflict_km``) and hard-identifier
+    (:func:`_identifier_veto`) rails to *any* attribute the ontology's ``attribute_roles`` declares
+    ``critical`` for a type. Stage 3A adds the credibility floor of D5 take-care (a): a stated critical
+    disagreement is a hard **wall** only when it is *trustworthy on both sides* — each side's conflicting
+    value attested by a source graded at/above ``critical_veto_min_grade``. Below the floor the pair is a
+    **raise** (returned separately, mapped to a human-legible reason): one flaky low-grade source must not
+    silently shatter a well-corroborated merge, so the pair goes to the analyst as a ``probable`` candidate
+    rather than being walled — or silently merged.
+
+    * ``walls`` join the veto set beside the identifier rail, so transitive enforcement, the before-scoring
+      guard and the drawn do-not-merge edge are all handled by the existing machinery
+      (``cluster.vetoed`` / ``violates_veto_transitively``).
+    * ``raises`` are threaded to the resolver as its ``raise_walls`` set: blocked from bootstrap/auto-merge
+      *and* forced into the HITL candidate queue (never dropped).
+
+    Reuses :func:`scoring.critical_conflict_disposition` (same-type, absence ≠ conflict), so "what counts
+    as a critical disagreement" keeps one definition. A type that declares no critical attribute is
+    unaffected; a pair where either side is silent is never walled. Floor OFF ⇒ every conflict is credible
+    ⇒ ``raises`` is empty and ``walls`` is exactly the pre-Stage-3A unconditional veto (byte-unchanged).
+    """
+    floor = cfg.critical_veto_min_grade
+    by_type: dict[str, list[str]] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        if cfg.critical_role_attrs(ent.etype):  # only types that declare a critical attribute
+            by_type.setdefault(ent.etype, []).append(eid)
+    walls: set[Pair] = set()
+    raises: dict[Pair, str] = {}
+    for eids in by_type.values():
+        for a, b in unordered_pairs(eids):
+            disposition, attrs = critical_conflict_disposition(graph.entities[a], graph.entities[b], cfg)
+            if disposition == "wall":
+                walls.add(frozenset((a, b)))
+            elif disposition == "raise":
+                raises[frozenset((a, b))] = _critical_raise_reason(attrs, floor)
+    return walls, raises
+
+
+def _critical_raise_reason(attrs: tuple[str, ...], floor: str | None) -> str:
+    """The analyst-facing rationale for a below-floor critical-conflict raise (D5 take-care a)."""
+    which = ", ".join(attrs) if attrs else "a critical attribute"
+    at = f" (grade < {floor})" if floor else ""
+    return (
+        f"critical-attribute conflict on {which} below the source-credibility floor{at}: the conflicting "
+        f"value is asserted only by below-floor sources on at least one side, so the difference is not "
+        f"trustworthy enough to wall — raised for analyst adjudication (D5)."
+    )
+
+
 # ── RES-4: identity read from the claim stream, source-weighted (P3.2, D-2.5 / D-P3.4) ─────────
 
 def _asserted_pairs(
@@ -659,6 +767,8 @@ def _to_partition(
         resolved_ref=resolved_ref,
         same_as=result.same_as,
         candidates=result.candidates,
+        candidate_reasons=result.candidate_reasons,
+        possible=result.possible,
         distinct_from=result.distinct_from,
         merge_confidence=result.merge_confidence,
         merge_breakdown=result.merge_breakdown,
