@@ -175,14 +175,23 @@ directly contradicts spine/13 §3's "never across operators within the instance 
 
 ---
 
-## D6 — [R] D-13.9's source-independence guard is not implemented in the merge path
+## D6 — [V] D-13.9's source-independence guard is not implemented in the merge path
 
-Reported by the failure-first analyst, **not yet re-verified**: `source_asserted_score` is a `max` over grades
-(`scoring.py:550-566`) and is excluded from the auto band entirely (`cluster.py:78`), so nothing in the merge
-path enforces that corroboration be source-*independent*. Plan §7 RK-COREF item 5 reads as though this were
-configuration ("corroboration inherits source-independence"); if the report holds it is **new code**.
-**Action: verify, then scope it in S3 — do not let it be assumed.** Two reprints of one almanac must not
-confirm an identity merge.
+**Verified.** Source-independence machinery *does* exist in this codebase — the claim-level corroboration
+ledger (`credibility/status.py`, `schemas/claim.py`, `view/pipeline.py`, and the spine/04 independence-group
+design). **It appears nowhere in `resolve/`.** A grep for `independen` across `resolve/**` returns only
+*iteration-order* independence (`cluster.py:282`, `scoring.py:312`, `normalize.py:47`, `entities.py:88`) and
+"independent identity **signal**" (`scoring.py:648-650`).
+
+**The precision that matters:** `identity_ledger`'s "one entry per independent identity signal" is about
+**signal classes** (attribute / relational / temporal / source_asserted), **not** about source independence.
+It is the thing most likely to be mistaken for the guard, and it is a different concept. So two derivative
+reprints of one almanac contribute two `source_ids`, can raise attribute/relational agreement, and **nothing
+in the merge path notices they are not independent.**
+
+Plan §7 RK-COREF item 5 reads as though this were configuration ("corroboration inherits source-independence").
+**It is new code.** Scope it in S3 or disclose it — do not let it be assumed. Two reprints of one almanac must
+not confirm an identity merge (D-13.9(b)).
 
 ---
 

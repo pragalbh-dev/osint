@@ -241,6 +241,35 @@ like G1/G2) so it is immune to the re-key's data churn. New rows:
 auto-bind threshold, the relationship-wall's overlap window, and any discriminator-priority weights live in
 `config/`, never as code literals.
 
+### 5a. Gate amendments forced by RK-SPIKE (2026-07-24)
+
+RK-SPIKE verified ten substrate defects (`../../tmp/conv/rk-spike-verified-defects.md`) and found that **three
+of the gates above would pass while the harm they name is realized.** A gate that cannot fail is a gate that
+lies. These amendments are **mandatory** for the stages that own them; the register carries the `file:line`
+evidence for each.
+
+| Gate | Defect | Required amendment |
+|---|---|---|
+| **G15** presence-not-fused | **D2** | As written it **passes vacuously** — `basing.find_candidates` already skips when no formation link exists (`ingest/basing.py:296-300`), so the asserted behaviour is *current* behaviour. Keep it as a regression guard and **add the clause that bites**: an **ambiguous or truncated formation attribution must produce a named gap**. Today `formations[:max_units]` (`basing.py:301`, `max_units_per_site: 1`) silently discards a second candidate formation while **every other rejection path appends a `SkipRecord`** — an order-of-battle undercount with **no merge involved**, which is why neither G15 nor G16 can currently see it. *Two candidate formations ⇒ two attributions, or one plus an explicit named gap. Never a silent pick.* (Requirement on **S2's replacement**, since the pass itself is deleted — §7 RK-LAYER item 4.) |
+| **G16** co-location-cap | **D1, D3** | **Add the D1 clause: assert the absence of a derived `supersedes` / drawn relocation edge**, not merely the absence of a confirmed merge. `based-at` is FUNCTIONAL and keyed on the unit alone (`config/ontology.yaml:146`, `instance_key: [from]`), so fusing two co-located batteries makes their two sites one unit's before/after; `promote_supersessions` (`credibility/supersession.py:165-209`, called at `view/pipeline.py:795`) then promotes it, **pops the pair out of the analyst's queue** ("adjudicated by the machine — no longer a question for the analyst") and **draws** the edge when the targets differ. An identity error therefore becomes a **fabricated movement assessment with the human removed** — the non-negotiable breached structurally. Without this clause G16 goes green one stage upstream of the harm. **Also add the D3 clause:** a name-only pair must not **fuse** at *any* configured floor, including `auto_merge_by_type` overrides. |
+| **G18** relationship-conflict-wall | **D7** | Two holes. (i) **`operated-by` does not exist** as a predicate anywhere in `config/ontology.yaml` — either S3 adds it (and the stage scope says so) or the gate silently tests half of itself. (ii) The gate **does not name which kind of wall**, and the two available kinds are not equivalent: membership in `veto` is hard **and transitive** and re-applied in `finalise` (`cluster.py:363-370`, `:638-648`), whereas consultation inside `vetoed()` only is hard, **pairwise and invisible** to `finalise`, the D9 bridge alarm and `res.distinct_from` (how the geo veto is wired, `cluster.py:357-361`). Built the geo-veto way, the wall is non-transitive *and unreported* and G18 still passes. **The gate must name the channel and assert an analyst-visible reason.** |
+| **G19** *(new)* cross-namespace-non-fusion | **D4** | **No gate currently names the most dangerous over-merge class for an operator-scoped OOB map.** `namespace_compatible` gates only bootstrap-exact-name, `_name_containment` (`cluster.py:261`), `_identity_pairs` (`resolve/__init__.py:596`) and `_coref_pairs` (`:654`) — **never the Phase-2 fuzzy fixpoint** — and relational blocking emits pairs with **no namespace key** (`cluster.py:182-187`). So a PLA-side and a PAF-side instance can be scored and auto-merged, directly contradicting spine/13 §3 ("never across operators within the instance layer"). RK-COREF owns closing it. Note D-13.20's composite AND-key identifier depends on this. |
+
+**Two further items that are new code, not configuration — do not let them be assumed:**
+- **D6 — the D-13.9(b) source-independence guard does not exist in the merge path.** The independence machinery
+  exists for *claim* corroboration (`credibility/status.py`, spine/04) and appears **nowhere in `resolve/`**.
+  `identity_ledger`'s "one entry per independent identity **signal**" is about signal *classes*, not source
+  independence — it is the thing most likely to be mistaken for the guard. §7 RK-COREF item 5 currently reads
+  as configuration. **Scope it in S3 or disclose it.**
+- **"Rarity-graded name" has no implementation anywhere**, yet D-13.2 and D-13.10 both rest on it. Either S3
+  builds it or the design stops claiming it.
+
+**And one ordering fix, cheap and load-bearing:** `places.augment` runs **after** `resolve_entities`
+(`resolve/__init__.py:181` vs `:177`), so place merges are invisible to `relational_score`. spine/13 §6 lever 2
+names places as a clean anchor the instance layer crystallizes onto — **mechanically they are not one.**
+Together with **F9** (only *completed* merges carry relational weight) this makes lever 2 weaker than the design
+assumes in **two independent ways**. Fix the ordering in S3.
+
 ---
 
 ## 6. Running a stage (orchestrator + subagents)
