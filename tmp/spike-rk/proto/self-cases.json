@@ -1,0 +1,381 @@
+{
+  "_authorship": "AUTHORED BY THE IMPLEMENTER HAND (corpus-blind). These are MY OWN development shapes, not acceptance cases — a separate test hand is independently authoring acceptance cases from the same spec, and this prototype has never seen them. Entities are invented in a neutral survey/hydrography domain: no real designations, no real place names, no real manufacturers. The implementer has not read the project corpus, the answer key, or any gold data.",
+  "_covers": {
+    "characterize": "every case (the discriminator bag, and 'unknown' + a named gap where the source is silent)",
+    "cluster": "cases 2-14 (the three ladder shapes; name and discriminator as separate signals)",
+    "degrade-to-gap": "case 12 thin-context-degrade (the spike's acceptance criterion), plus 4, 6, 10, 14",
+    "decline-a-grouping": "case 6 decline-on-conflict (D-13.18)",
+    "D1-structural-guard": "case 10 relocation-withheld (withheld) vs case 11 relocation-earned (drawn)"
+  },
+  "cases": [
+    {
+      "case_id": "01-authoritative-equivalence",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "3rd Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate", "echelon": "brigade"},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the 3rd Survey Brigade (3 Svy Bde) completed the sweep"},
+             "contrast_group": null},
+            {"local_id": "m2", "surface": "3 Svy Bde", "entity_type": "unit",
+             "attrs": {},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the 3rd Survey Brigade (3 Svy Bde) completed the sweep"},
+             "contrast_group": null},
+            {"local_id": "m3", "surface": "Depot Kestrel", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m3",
+             "kind": "observation", "event_time": "2024-03-01"}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "02-name-variant-held-loose",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "A",
+          "mentions": [
+            {"local_id": "m1", "surface": "Type-40 Sounder", "entity_type": "variant",
+             "attrs": {"base_designator": "Type-40"},
+             "coref": {"cluster": "c1", "category": "NAME_VARIANT", "quote": "the Type-40 Sounder"},
+             "contrast_group": null},
+            {"local_id": "m2", "surface": "T-40 Sounder array", "entity_type": "variant",
+             "attrs": {"base_designator": "Type-40"},
+             "coref": {"cluster": "c1", "category": "NAME_VARIANT", "quote": "the T-40 Sounder array"},
+             "contrast_group": null}
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "03-anaphor-type-unique",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "7th Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "7th", "service_branch": "Coastal Directorate", "echelon": "brigade"},
+             "coref": {"cluster": "c1", "category": "UNAMBIGUOUS_ANAPHOR",
+                       "quote": "the 7th Survey Brigade"},
+             "contrast_group": null},
+            {"local_id": "m2", "surface": "the brigade", "entity_type": "unit",
+             "attrs": {},
+             "coref": {"cluster": "c1", "category": "UNAMBIGUOUS_ANAPHOR",
+                       "quote": "the brigade relocated in April"},
+             "contrast_group": null},
+            {"local_id": "m3", "surface": "Depot Larch", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m3",
+             "kind": "observation", "event_time": "2024-04-01"}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "04-anaphor-ambiguous-held-loose",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "7th Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "7th", "service_branch": "Coastal Directorate"},
+             "coref": {"cluster": "c1", "category": "UNAMBIGUOUS_ANAPHOR",
+                       "quote": "the 7th Survey Brigade"},
+             "contrast_group": null},
+            {"local_id": "m2", "surface": "12th Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "12th", "service_branch": "Coastal Directorate"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m3", "surface": "the brigade", "entity_type": "unit",
+             "attrs": {},
+             "coref": {"cluster": "c1", "category": "UNAMBIGUOUS_ANAPHOR",
+                       "quote": "the brigade stood down in May"},
+             "contrast_group": null}
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "05-grade-floor-blocks-bind",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "D",
+          "mentions": [
+            {"local_id": "m1", "surface": "3rd Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate"},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the 3rd Survey Brigade (3 Svy Bde)"},
+             "contrast_group": null},
+            {"local_id": "m2", "surface": "3 Svy Bde", "entity_type": "unit",
+             "attrs": {},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the 3rd Survey Brigade (3 Svy Bde)"},
+             "contrast_group": null}
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "06-decline-on-conflict",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "the survey brigade", "entity_type": "unit",
+             "attrs": {"echelon": "brigade"},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the survey brigade"},
+             "contrast_group": null},
+            {"local_id": "m2", "surface": "3 Svy Bde", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate"},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the survey brigade (3 Svy Bde) was reported first"},
+             "contrast_group": null},
+            {"local_id": "m3", "surface": "7 Svy Bde", "entity_type": "unit",
+             "attrs": {"designator": "7th", "service_branch": "Northern Directorate"},
+             "coref": {"cluster": "c1", "category": "EXPLICIT_EQUIVALENCE",
+                       "quote": "the survey brigade (7 Svy Bde) followed"},
+             "contrast_group": null}
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "07-co-location-cap-same-doc",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "a survey battery", "entity_type": "unit",
+             "attrs": {"echelon": "battery", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "a survey battery", "entity_type": "unit",
+             "attrs": {"echelon": "battery", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m3", "surface": "Depot Marten", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m3",
+             "kind": "observation", "event_time": "2024-07-01"},
+            {"subject_local_id": "m2", "predicate": "based-at", "object_local_id": "m3",
+             "kind": "observation", "event_time": "2024-07-01"}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "08-co-location-with-stated-contrast",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "a survey battery", "entity_type": "unit",
+             "attrs": {"echelon": "battery", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": "g1"},
+            {"local_id": "m2", "surface": "a survey battery", "entity_type": "unit",
+             "attrs": {"echelon": "battery", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": "g1"},
+            {"local_id": "m3", "surface": "Depot Marten", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m3",
+             "kind": "observation", "event_time": "2024-07-01"},
+            {"subject_local_id": "m2", "predicate": "based-at", "object_local_id": "m3",
+             "kind": "observation", "event_time": "2024-07-01"}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "09-contrast-vs-identifier-contradiction",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "3rd Survey Battery", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate", "echelon": "battery"},
+             "coref": null, "contrast_group": "g1"},
+            {"local_id": "m2", "surface": "3rd Survey Battery", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate", "echelon": "battery"},
+             "coref": null, "contrast_group": "g1"}
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "10-relocation-withheld",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "a survey battery", "entity_type": "unit",
+             "attrs": {"echelon": "battery", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "Depot Kestrel", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m2",
+             "kind": "observation", "event_time": "2024-06-01"}
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "a survey battery", "entity_type": "unit",
+             "attrs": {"echelon": "battery", "service_branch": "ND"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "Depot Larch", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m2",
+             "kind": "observation", "event_time": "2024-09-01"}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "11-relocation-earned",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "3rd Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate", "echelon": "brigade"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "Depot Kestrel", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m2",
+             "kind": "observation", "event_time": "2024-06-01"}
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "3 Svy Bde", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "ND", "echelon": "brigade"},
+             "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "Depot Larch", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "based-at", "object_local_id": "m2",
+             "kind": "observation", "event_time": "2024-09-01"}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "12-thin-context-degrade",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "C",
+          "mentions": [
+            {"local_id": "m1", "surface": "the survey element", "entity_type": "unit",
+             "attrs": {}, "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "Depot Kestrel", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "observed-at", "object_local_id": "m2",
+             "kind": "observation", "event_time": null}
+          ]
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "C",
+          "mentions": [
+            {"local_id": "m1", "surface": "a survey element", "entity_type": "unit",
+             "attrs": {}, "coref": null, "contrast_group": null},
+            {"local_id": "m2", "surface": "Depot Kestrel", "entity_type": "basing_site",
+             "attrs": {}, "coref": null, "contrast_group": null}
+          ],
+          "edges": [
+            {"subject_local_id": "m1", "predicate": "observed-at", "object_local_id": "m2",
+             "kind": "observation", "event_time": null}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "13-designation-spelling-veto",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "3rd Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "3rd", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": null}
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "III Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "III", "service_branch": "Northern Directorate"},
+             "coref": null, "contrast_group": null}
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "case_id": "14-operator-unnormalized-no-wall",
+      "documents": [
+        {
+          "doc_id": "d01",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "9th Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "9th", "service_branch": "Southern Bureau"},
+             "coref": null, "contrast_group": null}
+          ],
+          "edges": []
+        },
+        {
+          "doc_id": "d02",
+          "source_grade": "B",
+          "mentions": [
+            {"local_id": "m1", "surface": "9th Survey Brigade", "entity_type": "unit",
+             "attrs": {"designator": "9th", "service_branch": "Sthn Bureau"},
+             "coref": null, "contrast_group": null}
+          ],
+          "edges": []
+        }
+      ]
+    }
+  ]
+}
