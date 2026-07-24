@@ -333,6 +333,11 @@ attribute_roles:
     service_branch:  {role: supporting, perishable: false}   # a D5 wall in principle, but the corpus states it
                                                              # unnormalised (Air Force / PAF / Pakistan Air Force) —
                                                              # see the normalisation finding above. Kept soft for now.
+    alert_posture:   {role: supporting, perishable: true}    # a stated readiness/alert status — expected to
+                                                             # CHANGE over time (never a durable identity trait),
+                                                             # so agreement is soft-supporting and it is flagged
+                                                             # perishable for the time-aware conflict axis (D8/3B):
+                                                             # a clean update over time is not a contradiction.
   trading_org:
     origin_country:  {role: supporting, perishable: false}   # likewise: 'CHINA' vs 'China' would false-wall the
                                                              # SINO-GALAXY spellings. NOT a namespace field, so it

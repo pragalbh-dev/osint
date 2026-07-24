@@ -135,6 +135,15 @@ class UnitMention(BaseModel):
     echelon: str | None = None
     service_branch: str | None = None
     home_garrison: str | None = None
+    alert_posture: str | None = Field(
+        default=None,
+        description=(
+            "The unit's current operational/alert/readiness posture — fill ONLY when the source "
+            "explicitly states it (e.g. 'on heightened alert', 'assessed non-operational', 'routine "
+            "readiness during exercise X'). This is a TRANSIENT status expected to change over time, not "
+            "a fixed attribute — leave empty when the source says nothing about readiness; never infer it."
+        ),
+    )
     source_quote: str | None = None
 
 
@@ -150,6 +159,15 @@ class VariantMention(BaseModel):
     # weapon TYPE in general (e.g. "consistent with HQ-9 deployments", "the characteristic X site layout",
     # "associated with the X system") — set ONLY when the source generalizes a signature to the system/type,
     # NEVER a single site's own observed geometry (that belongs on the site).
+    operator_branch: str | None = Field(
+        default=None,
+        description=(
+            "The military service/branch that OPERATES this system — fill ONLY when the source "
+            "explicitly states it (e.g. 'operated by the PLA', 'in PAF service', 'Army Air Defence "
+            "operates...'). Leave empty when the source does not say who operates it; never infer the "
+            "operator from context."
+        ),
+    )
     source_quote: str | None = None
 
 
@@ -1111,7 +1129,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("unit", name, ref, attrs={
                 "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
-                "home_garrison": _str(m, "home_garrison"),
+                "home_garrison": _str(m, "home_garrison"), "alert_posture": _str(m, "alert_posture"),
             })
 
     for m in _items(filled, "variants"):
@@ -1123,6 +1141,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
                 "family": _str(m, "family"), "designators": _strlist(m, "designators"),
                 "range_km": _dump(rng), "confidence_language": _str(m, "confidence_language"),
                 "site_signature_geometry": _str(m, "signature_geometry"),
+                "operator_branch": _str(m, "operator_branch"),
             })
             for desig in _strlist(m, "designators"):
                 em.triple(name, "same-as", desig, ref)
@@ -1321,7 +1340,8 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
         assert oname is not None
         oref = _resolve_doc_ref(loaded, _str(org, "source_quote"), fallback=oname)
         em.entity("unit", oname, oref, attrs={"echelon": _str(org, "echelon"),
-                                              "service_branch": _str(org, "service_branch")})
+                                              "service_branch": _str(org, "service_branch"),
+                                              "alert_posture": _str(org, "alert_posture")})
 
     system = _obj(filled, "system")
     if system and _str(system, "name"):
@@ -1332,7 +1352,8 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
         em.entity("variant", sname, sref, attrs={"family": _str(system, "family"),
                                                  "designators": _strlist(system, "designators"),
                                                  "range_km": _dump(rng),
-                                                 "site_signature_geometry": _str(system, "signature_geometry")})
+                                                 "site_signature_geometry": _str(system, "signature_geometry"),
+                                                 "operator_branch": _str(system, "operator_branch")})
         for desig in _strlist(system, "designators"):
             em.triple(sname, "same-as", desig, sref)
 
@@ -1472,7 +1493,8 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("variant", name, ref, attrs={"family": _str(m, "family"),
                                                    "confidence_language": _str(m, "confidence_language"),
-                                                   "site_signature_geometry": _str(m, "signature_geometry")})
+                                                   "site_signature_geometry": _str(m, "signature_geometry"),
+                                                   "operator_branch": _str(m, "operator_branch")})
 
     for m in _items(filled, "components"):
         name = _str(m, "name")
@@ -1487,7 +1509,7 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("unit", name, ref, attrs={
                 "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
-                "home_garrison": _str(m, "home_garrison"),
+                "home_garrison": _str(m, "home_garrison"), "alert_posture": _str(m, "alert_posture"),
             })
 
     # The OBSERVED-occupancy lane (D-P4.2 / §2.3) — what a frame can honestly state: equipment seen at a
