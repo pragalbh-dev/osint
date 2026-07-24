@@ -1,0 +1,530 @@
+{
+  "schema_version": "rk-spike-abstract-shapes/1.0",
+  "purpose": "Abstracted structural fixtures for a corpus-blind characterize-and-cluster implementer. Invented entities in a neutral domain; the real slice's mention counts, coreference licences, discriminator presence/absence, grades, dates and presence/formation distinctions are preserved. Expected outcomes are PROSE ONLY — no thresholds, scores or config values.",
+  "constraints": [
+    "No real designations, place names, manufacturers, document ids or source ids.",
+    "No numeric thresholds, scores or config values anywhere — the implementer chooses those on general principle and the test author asserts them independently.",
+    "An unstated discriminator is 'unknown': never inferred from context, never treated as a conflict."
+  ],
+  "preamble": "These seven fixtures carry the **structural difficulty** of the real slice with none of its\ncontent. Everything is invented: a fictional regional-infrastructure domain with made-up plant\noperators, sites, sections and equipment types. What is preserved from the real documents is what\nmatters for characterize-and-cluster:\n\n- how many mentions there are, and which ones co-refer;\n- **which category licenses each binding** — `EXPLICIT_EQUIVALENCE`, `NAME_VARIANT`, or\n  `UNAMBIGUOUS_ANAPHOR` — and which bindings are genuinely `AMBIGUOUS`;\n- which discriminators (operator / geography / designation / time) are **present** vs **absent**;\n- source grade and dates, including staleness and report-vs-event divergence;\n- the **presence vs formation** distinction (equipment seen at a place vs a named organizational\n  body based there).\n\n**No thresholds, scores or config values appear anywhere in this file, by design.** Each fixture\nstates the required *outcome* in prose. Choose the mechanism and the numbers on general principle;\nthe test author asserts them independently.\n\n**One standing rule across all seven:** where a discriminator is not stated, it is `unknown` — never\ninferred from context, and never treated as a conflict. Absence must leave an instance\nunder-individuated and flagged, not walled and not merged.",
+  "cross_fixture_notes": "**Three things only become visible across fixtures, and they are deliberate.**\n\n1. **S2 says two designators name distinct designs; S3 says one is 'sometimes rendered' as the other;\n   S6 uses both designators at one site in an overlapping window.** No single fixture can resolve\n   this. Run together, they are the cross-document identity problem in miniature, and the honest\n   outcome is a flagged contradiction held for a human — not a merge, not a wall.\n2. **S1/S2 assign the design to one operator; S7 assigns it to the other, eight years earlier.** The\n   operator discriminator must be able to *conflict*, and the conflict must survive as a conflict.\n   Resolving it by source grade alone is wrong here, because the low-grade source is also the old one.\n3. **The numeric capacity attribute differs across S1, S2 and S7 for the same designator.** So on this\n   data, numeric attribute agreement is not evidence of identity and numeric disagreement is not\n   evidence against it. Any mechanism that leans on attribute agreement must survive that.\n\n**And one shape that is absent on purpose, because the real corpus does not contain it:** nowhere in\nthese seven fixtures does a source name a *designated* organizational body AND the site it is based\nat. S1 names a body without a designation or a site; S3 names a higher command and an anonymous\nsection; S7 counts sections and assigns them to a command, never to a place. Every basing is\ntherefore derived. If a fixture is later needed where a *stated* body-at-site basing reaches full\nconfirmation, it has to be authored — it cannot be abstracted from anything that exists.",
+  "counts": {
+    "fixtures": 7,
+    "total_chains": 30,
+    "total_negative_gold": 21
+  },
+  "fixtures": [
+    {
+      "shape_id": "S1-within-doc-coref-workhorse",
+      "purpose": "The Tier-0 workhorse: several coreference chains in one short document, including one acronym apposition, one full definite-anaphor ladder, one chain whose referent type is not in the ontology, and one near-identical pair that must NOT bind.",
+      "source_grade": "B",
+      "source_bias": "operator-of-the-asset (interested party)",
+      "doc_date": "2021-10-14",
+      "text": "PRESS NOTE — Northern Grid Authority (NGA)\nDated: 14 October 2021\n\nDIRECTOR VISITS CENTRAL PUMPING ESTABLISHMENT, LOWFIELD\n\nLowfield - 14 October 2021: The Director of Regional Works (DRW), Mr A. Halloway, today visited\nthe Central Pumping Establishment, Lowfield, where a new High-Volume Transfer Set (HVTS),\nreportedly the TL-40, was formally commissioned into service with a Northern Grid Works (NGW)\nsection.\n\nOn arrival, the DRW was received by the Officer in Charge and senior staff of Grid Works. He was\ngiven a briefing on the operating employment and integration of the newly commissioned set within\nthe Regional Control and Telemetry (RCT) network.\n\nThe set, believed to be a variant of the Vanguard family (TL-40/V-40 family) of transfer plant, is\nunderstood to raise regional throughput well beyond 60 units.\n\nThe exact number of pump skids commissioned was not disclosed, in keeping with the Authority's\nstanding practice of not releasing establishment detail for critical plant. An NGA official,\nspeaking on background, said only that \"sufficient numbers\" had been commissioned, and that further\ncommissioning may follow in phases.\n\nThe DRW, addressing the staff of the newly raised/re-equipped section, said the commissioning\nreflected continued modernisation. Later he interacted with staff of the section and reviewed a\nguard of honour with the officers of the section.",
+      "mention_structure": [
+        {
+          "chain": "equipment",
+          "count": 6,
+          "mentions": [
+            "a new High-Volume Transfer Set (HVTS), reportedly the TL-40",
+            "the newly commissioned set",
+            "The set",
+            "the set's ... (implicit)",
+            "the newly commissioned set (second occurrence)",
+            "the commissioning"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE for the '(HVTS)' apposition; UNAMBIGUOUS_ANAPHOR for each later definite NP (exactly one set is in the discourse)",
+          "licensing_quote": "a new High-Volume Transfer Set (HVTS), reportedly the TL-40"
+        },
+        {
+          "chain": "organizational-body",
+          "count": 4,
+          "mentions": [
+            "a Northern Grid Works (NGW) section",
+            "the newly raised/re-equipped section",
+            "staff of the section",
+            "the officers of the section"
+          ],
+          "licence": "UNAMBIGUOUS_ANAPHOR ('the section', one section in the discourse); the '(NGW)' apposition licenses the parent-body NAME only",
+          "licensing_quote": "addressing the staff of the newly raised/re-equipped section"
+        },
+        {
+          "chain": "person (type not in the ontology)",
+          "count": 4,
+          "mentions": [
+            "The Director of Regional Works (DRW), Mr A. Halloway",
+            "the DRW",
+            "He",
+            "The DRW"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE (title apposition) + UNAMBIGUOUS_ANAPHOR (pronoun)",
+          "licensing_quote": "The Director of Regional Works (DRW), Mr A. Halloway, today visited"
+        },
+        {
+          "chain": "ANTI-COREF pair",
+          "count": 2,
+          "mentions": [
+            "a Northern Grid Works (NGW) section",
+            "senior staff of Grid Works"
+          ],
+          "licence": "AMBIGUOUS -> must resolve to ANTI-COREF. 'Grid Works' is the parent body; 'a Northern Grid Works section' is one body within it. Near-total token overlap, different referents, and the document never contrasts them.",
+          "licensing_quote": "the DRW was received by the Officer in Charge and senior staff of Grid Works"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED ('Northern Grid Works', 'Northern Grid Authority')",
+        "geography": "STATED but coarse — a named establishment in a named town, no coordinates",
+        "designation": "ABSENT — the section has no number and no echelon",
+        "time": "STATED exactly (2021-10-14)"
+      },
+      "presence_formation": "**Formation, weakly licensed.** The document states a commissioning INTO a named-type body, which is organizational evidence, not a bare sighting. But the body carries no designation, and the place is an establishment (a ceremony venue), not an operating position. So: a formation may exist; its identity may not be asserted; and no based-at is stated.",
+      "expected_outcome": "All four chains must be recovered as chains, including the pronoun. The equipment chain binds tightly (an apposition plus unambiguous definite anaphora); the acronym expansion licenses a name, not the body's identity. The alias implied by the FAMILY parenthetical ('TL-40/V-40 family') must be bound at family level only — reading it as the variant-level identity 'V-40 is the same object as TL-40' over-reads this source. The parent-body vs section pair must NOT bind, and the honest reason is semantic, not stated, so a system that only respects stated contrasts will get it wrong. The withheld skid count must surface as a gap that names the missing slot AND the reason it will not close (a stated policy of non-disclosure). 'further commissioning may follow in phases' must produce NO claim. The person chain is perfect coreference evidence with no ontology type to land on — the system must not discard the chain silently, and must not invent a node type for it.",
+      "negative_gold": [
+        "'further commissioning may follow in phases' — prospective modal, no claim.",
+        "the guard of honour and the reviewing — ceremonial, no claim.",
+        "'senior staff of Grid Works' must not bind to 'a Northern Grid Works (NGW) section'."
+      ]
+    },
+    {
+      "shape_id": "S2-contrastive-twins-plus-refuted-third",
+      "purpose": "Two same-family designs, same country of origin, same maker, same customer, distinguished ONLY by operator and one numeric attribute — with an explicit 'not one thing fielded twice' — plus a third design that is named and explicitly NOT acquired.",
+      "source_grade": "C",
+      "source_bias": "third-party trade press",
+      "doc_date": "2021-10",
+      "text": "A Closer Look at the TL-40 and TL-40X Installations\nStaff correspondent - October 2021\n\nNearly three years after commissioning was first confirmed by aerial survey, the regional use of the\nVanguard family remains under-reported, even as both the Grid Works and the Water Authority (WA)\ncontinue to field distinct variants of the set under different programme names.\n\nGrid Works operates a skid-level installation reportedly designated TL-40 (some trade reporting\nstill uses TL40, and the export designation V-40 continues to circulate in older brochures). The\nGrid Works variant is generally credited with a throughput in the region of 140 units.\n\nSeparately, the Water Authority is believed to operate a higher-capacity variant referred to in\nrecent trade literature as the TL-40X. This variant, procured under a separate contract, is credited\nwith a throughput around 290 units, roughly double that of the Grid Works sections. That figure is\nnot clarified by either the Authority or the manufacturer, Meridian Works Corporation (MWC).\n\nIt is worth stressing that despite the shared \"TL-40\" family name, the Grid Works and Water\nAuthority sets appear to be genuinely separate procurement lines rather than a single set fielded\ntwice - different impellers, reportedly different control cabinets, and possibly different telemetry\narchitectures.\n\nSome confusion also stems from the fact that MWC markets a lower-tier derivative, the FV-200\n(sometimes rendered FV-200A), which uses a passive float sensor rather than the active telemetry of\nthe TL-40 family proper. There is no confirmed evidence that this region has acquired the FV-200, and\nit is mentioned mainly because trade materials list it alongside TL-40 variants, which has led to at\nleast one erroneous claim that \"FV-200 skids\" are in service - a claim this publication was unable to\nsubstantiate.\n\nNeither authority responded to requests for comment on section numbers, installation locations, or\nthe precise contractual designations. Readers should treat the figures above as indicative rather\nthan authoritative.",
+      "mention_structure": [
+        {
+          "chain": "design A",
+          "count": 5,
+          "mentions": [
+            "a skid-level installation reportedly designated TL-40",
+            "TL40",
+            "the export designation V-40",
+            "The Grid Works variant",
+            "the Grid Works sections"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE — the parenthetical states, in the author's voice, that TL40 and V-40 are other designations FOR THIS SYSTEM",
+          "licensing_quote": "reportedly designated TL-40 (some trade reporting still uses TL40, and the export designation V-40 continues to circulate in older brochures)"
+        },
+        {
+          "chain": "design B",
+          "count": 4,
+          "mentions": [
+            "a higher-capacity variant referred to in recent trade literature as the TL-40X",
+            "This variant, procured under a separate contract",
+            "the TL-40X",
+            "sets"
+          ],
+          "licence": "UNAMBIGUOUS_ANAPHOR ('This variant' immediately follows its antecedent)",
+          "licensing_quote": "referred to in recent trade literature as the TL-40X. This variant, procured under a separate contract"
+        },
+        {
+          "chain": "design C (refuted acquisition)",
+          "count": 3,
+          "mentions": [
+            "the FV-200 (sometimes rendered FV-200A)",
+            "the FV-200",
+            "\"FV-200 skids\""
+          ],
+          "licence": "NAME_VARIANT (explicit rendering variant)",
+          "licensing_quote": "the FV-200 (sometimes rendered FV-200A)"
+        },
+        {
+          "chain": "ANTI-COREF pair (the whole point)",
+          "count": 2,
+          "mentions": [
+            "The Grid Works variant",
+            "the TL-40X"
+          ],
+          "licence": "Stated contrast — 'appear to be genuinely separate procurement lines rather than a single set fielded twice'. HEDGED.",
+          "licensing_quote": "despite the shared \"TL-40\" family name, the Grid Works and Water Authority sets appear to be genuinely separate procurement lines rather than a single set fielded twice"
+        },
+        {
+          "chain": "ANTI-COREF: family vs variant",
+          "count": 2,
+          "mentions": [
+            "the Vanguard family",
+            "TL-40"
+          ],
+          "licence": "Semantic — the family term is the parent of BOTH designs in this document.",
+          "licensing_quote": "the regional use of the Vanguard family remains under-reported"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED for both, and DIFFERENT (the two operators are the only clean separator)",
+        "geography": "ABSENT — no site is named anywhere",
+        "designation": "STATED at design level (TL-40 / TL-40X / FV-200); ABSENT at body level",
+        "time": "STATED as a month, and INTERNALLY INCONSISTENT: the opening line dates first confirmation to ~three years earlier than the document's own month"
+      },
+      "presence_formation": "**Neither.** No equipment is observed at a place and no organizational body is named. 'the Grid Works sections' is a bare plural with no designation and no site — a count-shaped hint, not a formation. Nothing licenses a based-at; nothing licenses even an observed-at, because no site exists in the text.",
+      "expected_outcome": "The two designs must NOT merge, and the honest confidence in keeping them apart should be tempered rather than absolute: everything about them agrees except operator and one number, the contrast is stated by a single mid-grade source, and the source hedges it. The three alias statements for design A must bind. The family term must bind to NEITHER design. The third design must exist as an entity while the claim that it is in service must be recorded as REFUTED — and note that a negative-existence claim of the form 'operator X does not operate design Y' has no relationship carrier if the ontology models operator only as an attribute; the implementer must decide where that goes rather than dropping it. The stated difference in unnamed sub-components is the strongest anti-identity evidence in the fixture and is likewise uncarriable as a relation — it must not be silently lost. The internal date inconsistency must survive as an inconsistency, not be resolved by picking one.",
+      "negative_gold": [
+        "The comparative aside about an unrelated third-party product family — no claim.",
+        "'the Vanguard family' must not bind to either variant.",
+        "The retracted figures ('indicative rather than authoritative') must not be promoted to established attributes."
+      ]
+    },
+    {
+      "shape_id": "S3-presence-vs-formation-and-self-disclaimed-alias",
+      "purpose": "The load-bearing case. A named higher command plus an ANONYMOUS sub-unit at a site (presence, not formation); two different counts (one observed, one estimated with a stated confidence caveat); an alias the document states and then disclaims; two other thin same-type sites enumerated; and a relocation asserted with NO origin.",
+      "source_grade": "B",
+      "source_bias": "third-party aggregator (self-declared)",
+      "doc_date": "2025-04-04",
+      "text": "Regional Infrastructure Monitor - Weekly Survey & Telemetry Digest\nIssue dated: 04 April 2025 (reporting period 24-31 March 2025)\n\nNORTHERN CORRIDOR - PLANT BELT\n\nNorthgate Yard (Grid Works/Water Authority joint-use facility, ~8 km NW of Brightwater along the\ntrunk road corridor): aerial survey collected 27 March (0.5m) confirms the skid and control cluster\nfirst detected on the single-pass survey reported earlier this quarter, in the northeast apron. Six\nskid-pattern units remain in a fan arrangement consistent with prior TL-40X associated installations\nelsewhere; a large octagonal control-cabinet signature, believed to be the RC-118 telemetry cabinet\nassociated with the TL-40X set, is again visible on its prepared pad roughly 250 m east of the skid\ncluster - position essentially unchanged from that earlier single pass.\n\nOf note this cycle: a second, non-survey indicator has closed some of the ambiguity around the site.\nA commercial telemetry aggregator feed (operator not disclosed to subscribers, relayed via a\nthird-party monitoring service) logged an emitter-on fix in the same general locale during the\nreporting window; the fix window is described by the vendor only as \"high confidence, single pass\"\nwith no further geolocation detail released at this tier. Separately, a repeat aerial pass on 29\nMarch (different platform than the 27 March pass) again shows the pad occupied and skid count\nunchanged. Analysts should still treat the RC-118 identification itself as the vendor's\ncharacterization, not independently re-derived by this desk.\n\nEstablishment context: Northgate Yard had not previously been cited as a TL-40-family site; this is\nthe first survey cycle to associate a Water Authority/Grid Works Plant Command TL-40X (export\nvariant, sometimes rendered TL-40 in regional service literature) section with the location,\nconsistent with a recent relocation rather than a long-standing installation. Section strength at\nthis site is estimated at 4-6 skids plus one control cabinet and an associated telemetry van, though\nthe desk's confidence in the \"8\" upper bound remains low given intermittent visibility across passes.\n\nNo new activity to report at the previously tracked Calder-area and Redlow apron sites this\nperiod; both remain in a \"last confirmed\" state from the 07 March pass.\n\nCross-reference: readers tracking the TL-40/TL-40X/TL40 designator family should note continuing\ninconsistency across sources in how regional service designators map to the baseline TL-40X marketing\ndesignation; this digest uses \"TL-40\" generically per prior issues unless a source specifies\notherwise.\n\nCompiled from open commercial survey, subscriber telemetry relay reporting, and prior digest issues\n(14 Feb 2025, 07 Mar 2025).",
+      "mention_structure": [
+        {
+          "chain": "site",
+          "count": 7,
+          "mentions": [
+            "Northgate Yard (joint-use facility, ~8 km NW of Brightwater ...)",
+            "the site",
+            "the same general locale",
+            "the location",
+            "this site",
+            "a TL-40-family site",
+            "Northgate Yard (second occurrence)"
+          ],
+          "licence": "UNAMBIGUOUS_ANAPHOR — one site in focus throughout",
+          "licensing_quote": "a second, non-survey indicator has closed some of the ambiguity around the site"
+        },
+        {
+          "chain": "presence (equipment at site)",
+          "count": 4,
+          "mentions": [
+            "the skid and control cluster",
+            "Four skid-pattern units",
+            "a ... Plant Command TL-40X ... section",
+            "Section strength at this site"
+          ],
+          "licence": "UNAMBIGUOUS_ANAPHOR, tied within one sentence",
+          "licensing_quote": "Section strength at this site is estimated at 4-6 skids plus one control cabinet and an associated telemetry van"
+        },
+        {
+          "chain": "component (identification disclaimed)",
+          "count": 4,
+          "mentions": [
+            "a large octagonal control-cabinet signature, believed to be the RC-118 telemetry cabinet",
+            "the pad",
+            "one control cabinet",
+            "the RC-118 identification"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE, hedged — and then explicitly non-endorsed",
+          "licensing_quote": "Analysts should still treat the RC-118 identification itself as the vendor's characterization, not independently re-derived by this desk"
+        },
+        {
+          "chain": "AMBIGUOUS: generic vs specific designator",
+          "count": 3,
+          "mentions": [
+            "TL-40 (used generically)",
+            "TL-40X (the specific export designation)",
+            "TL40"
+          ],
+          "licence": "AMBIGUOUS — an equivalence is stated in one paragraph and the mapping is disclaimed in another, and one surface is declared a GENERIC label",
+          "licensing_quote": "this digest uses \"TL-40\" generically per prior issues unless a source specifies otherwise"
+        },
+        {
+          "chain": "two other same-type sites (enumerated)",
+          "count": 2,
+          "mentions": [
+            "the previously tracked Calder-area ... site",
+            "... Redlow apron site"
+          ],
+          "licence": "ANTI_COREF by stated enumeration with explicit cardinality",
+          "licensing_quote": "the previously tracked Calder-area and Redlow apron sites this period; both remain in a \"last confirmed\" state"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED BUT DISJUNCTIVE — 'Water Authority/Grid Works', two operators joined by a slash. Not a usable discriminator, and must not be silently resolved to either.",
+        "geography": "STATED as a RELATIVE fix only ('~8 km NW of Brightwater along the trunk road corridor'); no grid, no coordinates",
+        "designation": "ABSENT at body level; the only designation-shaped token is the component type, which the source disowns",
+        "time": "STATED precisely for each observation (27 Mar, 29 Mar, reporting period 24-31 Mar)"
+      },
+      "presence_formation": "**Presence, not formation — and this is the borderline that gets misread.** A named COMMAND sits next to an anonymous SECTION. A command is named; the section is not. An anonymous body attributed to a named higher command is NOT a named formation, so this is equipment-at-a-place with a count, and any basing of a named body is derived. The sentence reads like an establishment association purely because a proper noun sits next to the word 'section'.",
+      "expected_outcome": "The site chain and the presence chain must bind. The presence must NOT be promoted to a named organizational body — the honest output is 'equipment presence at this site is well supported; the operating body and its count are unresolved'. The two counts must stay two distinct claims (one observed on a dated pass, one an estimate whose own upper bound the source distrusts); collapsing them into a single number invents precision the source refuses. The component identification must be recorded as attributed, not as the desk's own finding. The generic-vs-specific designator pair must come out as AMBIGUOUS: it is a refinement relation, not identity, and if the schema cannot express refinement between two designs then the honest result is an unresolved pair, not a merge and not a split. The two other sites must not merge with each other or with the main site, and note that the only thing keeping them apart is the source's word 'both'. The asserted relocation has NO origin anywhere in the document, so the state change is not expressible as a two-ended fact from this source alone. Finally: three signals inside ONE document are not three independent sources — the document self-describes as an aggregator, and the second 'independent' signal is an unnamed vendor relayed by an unnamed intermediary with no geolocation released.",
+      "negative_gold": [
+        "'an aerial-only assessment carried real decoy risk ... elsewhere in the region' style reasoning — methodological, asserts nothing about THIS site.",
+        "The non-endorsement sentence must not be read as an identification.",
+        "Distribution/subscription boilerplate."
+      ]
+    },
+    {
+      "shape_id": "S4-structured-tabular-with-identifier-licensed-identity",
+      "purpose": "A structured record whose shape is nothing like prose: three near-identical rows that MUST NOT merge (licensed only by distinct identifiers, while a shared container pushes hard the other way), one identifier-backed rename, four surfaces for one counterparty, five surfaces for one place, a truncated reference, a name-collision place trap, and a self-disclaimed cross-reference note cut off mid-token.",
+      "source_grade": "C",
+      "source_bias": "commercial record",
+      "doc_date": "2020-11",
+      "text": "REGIONAL PORT AUTHORITY - INBOUND DECLARATION EXTRACT\nTerminal:        Brightwater International Freight Terminal / BIFT NG\nPeriod Covered:  01-NOV-2020 to 30-NOV-2020\n\n-----------------------------------------------------------------------------\nDEC No: NGQA-HC-2020-204471          Filing Date: 04-11-2020\nPoint of Discharge: NORTHGATE HARBOUR BASIN (NG)\nVessel: MV CLEARWATER  Voy: 0091E\nWaybill No: CLWW307556104\n\nReceiver:        BRAMWELL ELECTRO TRADING (PVT) LTD\n                 Suite 4-C, Kingsway Commercial Complex,\n                 Brightwater -- REG 5107443-9\nSender:          HALCYON IMP/EXP CO. LTD\n                 (see also HALCYON IMPEX CO, LTD -- inv. #HG-20-8362)\nSender Ctry:     CALDONIA (Origin: Eastport)\n\nTariff Code:     9914.61.00\nDescription (as filed): \"SENSOR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE,\n                 FOR INDUSTRIAL METERING AID, NOT FOR RESALE, 1 LOT\"\nContainer:       BXLU5530918 / BXLU5531042 (2 x 40ft HC)\nFreight Fwdr:    ASHLAND CARGO SERVICES, Northgate Basin Town, Brightwater\n\n-----------------------------------------------------------------------------\nDEC No: NGQA-HC-2020-204472          Filing Date: 04-11-2020\nPoint of Discharge: NORTHGATE BASIN\nVessel: MV CLEARWATER  Voy: 0091E\nWaybill No: CLWW307556105\n\nReceiver:        BRAMWELL ELECTRO TRADING (PVT) LTD\nSender:          HALCYON IMP & EXP. CO.\nSender Ctry:     CALDONIA\n\nTariff Code:     9914.62.00\nContainer:       BXLU5530918 (shared, see line 204471)\n\nAnnex A / Line-Item Detail (attached to DEC 204472, page 2 of 2 -- scan quality poor):\n  Item 1  -- WAVEGUIDE ASSY, QTY 4\n  Item 2  -- SERVO DRIVE UNIT, QTY 2 .......... ref dwg RC118-\n             -- FrOm: j.tam@halcyon-export.cd\n             Subject: RE: shipping docs pkg 2 attached pls confirm addr, urgent\n  Item 3  -- INTERFACE MODULE, QTY 1\n\nEnd-user certificate on file: NOT ATTACHED TO DEC (ref. letter RPA/IMP/2020/7180\ncited in broker cover note, copy not scanned)\nDelivery instructions (broker note, handwritten annotation on file copy):\n  \"receiver to arrange onward clearance -- final destination Plant Depot,\n  ~14 km NNE of Kestrel Ridge / Ashcombe Yard area\"\n\n-----------------------------------------------------------------------------\nDEC No: NGQA-HC-2020-205318          Filing Date: 09-11-2020\nPoint of Discharge: Northgate Basin\nVessel: MV STONEHAVEN  Voy: 118W\nWaybill No: STHV4290337815\n\nReceiver:        BRAMWELL ELECTRO TRADING PVT LTD (formerly BRAMWELL ELECTRONIC\n                 TRADING CO -- name change ref REGISTRY CUIN 0031905, 2019)\nSender:          HALCYON IMPEX CO, LTD\nSender Ctry:     Caldonia\n\nTariff Code:     9914.61.00\nContainer:       MRTU8817663\n\nRemarks (system-generated, exam order):\n  EXAM TYPE: GREEN CHANNEL -- NO PHYSICAL EXAMINATION\n  Risk flag auto-cleared by trusted-trader status of freight forwarder (ASHLAND\n  CARGO SERVICES -- Cert No. RG-TT-0774)\n\n-----------------------------------------------------------------------------\nCROSS-REFERENCE NOTE (internal data-matching, non-adjudicative):\nReceiver BRAMWELL ELECTRO TRADING (PVT) LTD / BRA",
+      "mention_structure": [
+        {
+          "chain": "receiver",
+          "count": 5,
+          "mentions": [
+            "BRAMWELL ELECTRO TRADING (PVT) LTD",
+            "BRAMWELL ELECTRO TRADING (PVT) LTD",
+            "BRAMWELL ELECTRO TRADING PVT LTD",
+            "BRAMWELL ELECTRONIC TRADING CO",
+            "Receiver BRAMWELL ELECTRO TRADING (PVT) LTD / BRA"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE — a registry rename cited with its identifier; plus NAME_VARIANT for punctuation. NOTE the surfaces differ by a WHOLE TOKEN ('ELECTRO' vs 'ELECTRONIC'), so string similarity alone under-binds.",
+          "licensing_quote": "BRAMWELL ELECTRO TRADING PVT LTD (formerly BRAMWELL ELECTRONIC TRADING CO -- name change ref REGISTRY CUIN 0031905, 2019)"
+        },
+        {
+          "chain": "sender",
+          "count": 5,
+          "mentions": [
+            "HALCYON IMP/EXP CO. LTD",
+            "HALCYON IMPEX CO, LTD",
+            "HALCYON IMP & EXP. CO.",
+            "HALCYON IMPEX CO, LTD",
+            "j.tam@halcyon-export.cd"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE via 'see also' + a shared invoice number for two surfaces; the third surface is licensed only TRANSITIVELY; the email domain is a weak fourth signal",
+          "licensing_quote": "(see also HALCYON IMPEX CO, LTD -- inv. #HG-20-8362)"
+        },
+        {
+          "chain": "place (point of discharge)",
+          "count": 5,
+          "mentions": [
+            "NORTHGATE HARBOUR BASIN (NG)",
+            "NORTHGATE BASIN",
+            "Northgate Basin",
+            "BIFT NG",
+            "NG"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE for the '(NG)' abbreviation apposition + NAME_VARIANT for the casing/shortening variants",
+          "licensing_quote": "Point of Discharge: NORTHGATE HARBOUR BASIN (NG)"
+        },
+        {
+          "chain": "three records (MUST NOT MERGE)",
+          "count": 3,
+          "mentions": [
+            "DEC No: NGQA-HC-2020-204471",
+            "DEC No: NGQA-HC-2020-204472",
+            "DEC No: NGQA-HC-2020-205318"
+          ],
+          "licence": "ANTI_COREF by distinct stated identifiers (declaration numbers AND waybill numbers), reinforced by the record's own cross-reference treating two of them as separate lines",
+          "licensing_quote": "Container:       BXLU5530918 (shared, see line 204471)"
+        },
+        {
+          "chain": "ANTI-COREF place traps",
+          "count": 3,
+          "mentions": [
+            "Northgate Basin Town, Brightwater (a TOWN, the forwarder's address)",
+            "NORTHGATE HARBOUR BASIN (a terminal)",
+            "Brightwater International Freight Terminal (a terminal whose NAME begins with a different settlement's name)"
+          ],
+          "licence": "Semantic — a town and a harbour basin sharing a name, and a terminal named after a settlement it is not in",
+          "licensing_quote": "Freight Fwdr:    ASHLAND CARGO SERVICES, Northgate Basin Town, Brightwater"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED as country of the sender, with CASING DRIFT ('CALDONIA' twice, 'Caldonia' once) — the value-normalization case, inside one record",
+        "geography": "STATED for the discharge point (five surfaces, one referent) and RELATIVE-ONLY for the final destination ('~14 km NNE of Kestrel Ridge / Ashcombe Yard area', from a handwritten note, with TWO alternative anchors)",
+        "designation": "STATED as hard identifiers for the records and the parties (declaration numbers, waybills, a registry CUIN, a trusted-trader certificate) — and TRUNCATED for the one technical reference ('ref dwg RC118-')",
+        "time": "STATED exactly per record (04-11-2020, 04-11-2020, 09-11-2020)"
+      },
+      "presence_formation": "**Neither.** No equipment is observed at a place and no organizational body is named. The only place-like objects are a point of discharge and a destination from a handwritten annotation. If the schema has no node type for a port or terminal, the discharge point has to be forced into a site type that means something else, or dropped.",
+      "expected_outcome": "The three records must remain three. This is the fixture's whole point: they share a receiver, a sender cluster, a tariff-code family, a vessel voyage, and — for two of them — a CONTAINER, so both name similarity and shared neighbourhood argue for merging, and only the identifiers argue against. A system whose identity evidence is dominated by name and neighbourhood will merge them and silently corrupt the count; the honest handling is that two records which each state a reference and state DIFFERENT ones are held apart before any graded judgement runs. Conversely the receiver's rename MUST merge, even though the surfaces differ by a whole token, because an identifier licenses it — so the same fixture requires the identifier to be decisive in both directions. The five place surfaces must collapse to one referent while the town and the same-named terminal must NOT be pulled in. The truncated technical reference must remain a reference on ONE line item and must NOT become a claim about what the consignment contains: the declared purpose is explicitly civil metering, no physical examination was performed, and the end-user certificate is stated as not attached. The cross-reference note is cut off mid-token AND self-labelled non-adjudicative — the system must not finish the sentence.",
+      "negative_gold": [
+        "The pasted email subject line and the 'FrOm' casing garble — document noise. The email DOMAIN is a weak signal for the sender cluster; the message body asserts nothing.",
+        "The truncated cross-reference note must not be completed or acted on.",
+        "'SENSOR APPARATUS PARTS ... FOR INDUSTRIAL METERING AID' is a STATED CIVIL purpose. Any other reading is derived and must be labelled as such."
+      ]
+    },
+    {
+      "shape_id": "S5-thin-context-and-explicit-refusal-to-corefer",
+      "purpose": "The must-degrade-to-gap case, and the only fixture where the SOURCE ITSELF declines to say whether two mentions are the same thing. Every discriminator slot is empty or explicitly declared empty, the geography description is internally inconsistent, and the central observation is a negative.",
+      "source_grade": "B",
+      "source_bias": "third-party",
+      "doc_date": "2025-06-11",
+      "text": "AERIAL SURVEY SUMMARY - COMMERCIAL DERIVED\nSubject: Plant Infrastructure, Southern Approaches - Site Activity Check\n\n1. Purpose\n\nThis report provides a visual update on a suspected forward plant staging area previously flagged in\nopen discussion threads as associated with the TL40 transfer system in regional use. The site in\nquestion - referred to in prior open reporting simply as \"the old Ashcombe-area site\" near the harbour\nroad turnoff, not the yard itself - was tasked for revisit following unconfirmed claims of a skid\nrelocation.\n\n2. Collection Details\n\nSurvey date: 2025-06-11 (single pass, ~1030 local)\nCloud cover: ~10%, partial obscuration along the northern tree line\nPrior baseline reference: chip from 2024-11 pass (same vendor, cataloged separately)\n\n3. Observations\n\nThe area consistent with the suspected forward site shows the previously noted perimeter berm and\naccess road configuration largely unchanged from the 2024-11 baseline.\n\nNo skid units are visible on any of the pads or along the access spur at the time of this pass. The\ncleared laydown area that in the 2024-11 chip showed what was assessed as a possible cabinet trailer\nfootprint is empty in the current image. No covered or tarped objects of skid-consistent dimensions\nwere identified on either the northern or southern pad clusters.\n\nNo unusual vehicle staging, generator trailers, or tented storage was noted anywhere within the\nfenced compound this pass.\n\n4. Comparative Note\n\nA separate item circulating on an open aggregator channel (post dated 11 June, timestamped 0640Z -\nroughly four hours before the collection above) asserted that \"fresh TL40 skid deployment confirmed\nnear harbour road site, imagery pending,\" citing an unnamed \"regional source.\" No imagery accompanied\nthat post, and the claim predates the pass documented in Section 2. The present collection does not\ncorroborate the assertion; whether the two references concern the same site footprint could not be\nindependently established from the post's description alone, as it gives no coordinates and describes\nthe location only as \"near the harbour road, same as always.\"\n\n5. Assessment\n\nCurrent imagery is assessed as a negative skid presence observation for the pass window noted. This\ndoes not preclude dispersal, maintenance rotation to an unobserved facility, or a collection-timing\ngap relative to the aggregator claim. A follow-up tasking is recommended within the next 5-7 days,\nideally cross-referenced against a second vendor's catalog for the same window.\n\n6. Caveats\n\n- Single pass; no complementary sensor cross-check this cycle.\n- Site identity as \"the forward TL40 site\" rests on prior open association rather than confirmed\n  establishment documentation; no body markings or signage visible in any pass to date.",
+      "mention_structure": [
+        {
+          "chain": "site",
+          "count": 5,
+          "mentions": [
+            "a suspected forward plant staging area",
+            "The site in question - referred to in prior open reporting simply as \"the old Ashcombe-area site\" near the harbour road turnoff, not the yard itself",
+            "the suspected forward site",
+            "the fenced compound",
+            "\"the forward TL40 site\""
+          ],
+          "licence": "UNAMBIGUOUS_ANAPHOR — one site in focus throughout. NOTE: a well-bound cluster whose referent is nonetheless unidentifiable.",
+          "licensing_quote": "The area consistent with the suspected forward site shows the previously noted perimeter berm and access road configuration largely unchanged"
+        },
+        {
+          "chain": "baseline artifact",
+          "count": 4,
+          "mentions": [
+            "chip from 2024-11 pass (same vendor, cataloged separately)",
+            "the 2024-11 baseline",
+            "the 2024-11 chip",
+            "prior imagery"
+          ],
+          "licence": "NAME_VARIANT — binds on the date token",
+          "licensing_quote": "Prior baseline reference: chip from 2024-11 pass (same vendor, cataloged separately)"
+        },
+        {
+          "chain": "AMBIGUOUS: two site references, explicitly unresolvable",
+          "count": 2,
+          "mentions": [
+            "the suspected forward site (this report's area of interest)",
+            "\"near harbour road site\" (the aggregator post)"
+          ],
+          "licence": "AMBIGUOUS — and the source says so IN ITS OWN VOICE, naming the missing discriminator",
+          "licensing_quote": "whether the two references concern the same site footprint could not be independently established from the post's description alone, as it gives no coordinates"
+        }
+      ],
+      "discriminators": {
+        "operator": "ABSENT entirely",
+        "geography": "STATED BUT SELF-INCONSISTENT — the subject line says 'Southern Approaches' while the site's only name places it in an 'old Ashcombe-area' with a 'harbour road turnoff'. NO coordinates anywhere. The slot is UNUSABLE, not merely coarse, and must not be averaged into a position.",
+        "designation": "EXPLICITLY DECLARED ABSENT — 'no body markings or signage visible in any pass to date'. Not merely missing: stated missing across the entire collection history.",
+        "time": "STATED precisely for the pass (2025-06-11 ~1030 local), for the baseline (2024-11), and for the competing claim (11 June 0640Z — four hours EARLIER)"
+      },
+      "presence_formation": "**Presence, negated — and the formation is explicitly disclaimed.** The report records a negative equipment-at-site observation, then states outright that the site's identity rests on prior open association rather than confirmed establishment documentation, and that no body marking has ever been visible. That is a source telling you no organizational evidence exists. Deriving an organizational basing here would be fabrication.",
+      "expected_outcome": "The site mentions must bind into one cluster, and the cluster must nonetheless come out as UNIDENTIFIED — a well-bound referent that cannot be placed. This is the 'under-determined + gap' outcome, and it is the whole reason the fixture exists: binding correctly and still declining to identify is the right answer, not a failure. The negative observation must be evidence, scoped to the pass window the source scopes it to, and must NOT be generalised into 'the site is empty'. The explicit refusal to co-refer must survive as an unresolved pair with the reason attached (no coordinates) — neither a merge nor a stated distinctness. The competing positive claim must be recorded as attributed, and the fact that it PREDATES the survey by four hours must be preserved, because it means the two are not strictly in contradiction. The site's own distinct-from statement ('not the yard itself') must hold as a wall even though neither endpoint is locatable — anti-identity evidence can arrive before any identity evidence does. The stated follow-up window is the 'when next coverage is due' half of a gap and must be carried, not dropped. Finally, note that 'the present collection does not corroborate the assertion' is a THIRD state — checked and failed to confirm — which is neither corroboration nor contradiction.",
+      "negative_gold": [
+        "'This does not preclude dispersal, maintenance rotation ..., or a collection-timing gap' — three alternatives listed, none asserted.",
+        "The site-identity disclaimer must not be read as a site-to-system claim.",
+        "Collection metadata (cloud fraction, sun angle) is context, not claims."
+      ]
+    },
+    {
+      "shape_id": "S6-low-grade-echo-with-mutating-content",
+      "purpose": "The deception case and the hardest coreference problem: one 'document' of eight posts from six handles that is really ONE claim echoed four times — where the echo MUTATES the destination — plus a designator conflict, three explicit refusals to assert, and one post dated a month earlier than the claim it appears to rebut.",
+      "source_grade": "E",
+      "source_bias": "hostile / promotional; flagged for deception risk",
+      "doc_date": "2025-06",
+      "text": "POST 1\nHandle: @northgate_watch\nDate: 2025-06-11\nStatus URL: [link unavailable, account locked/protected - h/t repost by @plantspotter]\nText: \"exclusive sources telling me the TL40X skid grp that was sitting at Northgate has QUIETLY\nrelocated, gone since early this wk, moved out toward the old Ashcombe site. nobody talking abt it\nopenly but convoy was seen night time. big move if true\"\n\nPOST 2\nHandle: @r_kestrel\nDate: 2025-05-09\nStatus URL: (live link)\nText: \"Aerial imagery from earlier this year confirms TL-40 (HVTS) skid group co-located near\nNorthgate yard, Brightwater - consistent with the reported 2025 relocation. No sign of it leaving per\nopen imagery.\"\n\nPOST 3\nHandle: @corridorsentry (hobby account, ~3,100 followers)\nDate: 2025-06-11\nText: \"per the Northgate 'left the yard' claim going around - cannot confirm, would want imagery\nbefore believing it. single unverified source afaik. treating with caution\"\n\nPOST 4\nHandle: @plantspotter (fan-run spotting page)\nDate: 2025-06-11\nStatus URL: [status link not recoverable - post since deleted/edited]\nText: \"RT @northgate_watch huge if confirmed. TL40X out of Northgate, redeployed near the harbour\nroad area allegedly. keeping eyes open.\"\n\nPOST 5\nHandle: @plantanalystX (self-described \"open source plant analyst\")\nDate: 2025-06-12\nText: \"Following up on yesterday's report - TL40X skid group gone from Northgate per my contact,\nrelocation underway, will not disclose more. trust the process\"\n\nPOST 6\nHandle: @r_kestrel\nDate: 2025-06-12\nText: \"Seeing chatter about a TL-40 'move' out of Northgate. No imagery, no second source, one guy's\nthread going viral. Would treat as unconfirmed until proven otherwise - this happens every few months\nwith this site.\"\n\nPOST 7\nHandle: @northgate_watch\nDate: 2025-06-12\nText: \"to ppl asking for proof - I don't share sources sorry but trust me its moved. Northgate site\nbasically empty now allegedly, whole grp gone to new loc. more soon\"\n\nPOST 8 [PARAPHRASED]\nHandle: @corridor_aggregate (small aggregator account)\nDate: 2025-06-13\nParaphrase: Account reposted the \"Northgate empty\" claim without independent verification, adding\nonly that \"several people are sharing this now\" and linking back to @northgate_watch's original post\nas the sole source.",
+      "mention_structure": [
+        {
+          "chain": "the equipment group (ONE claim, echoed)",
+          "count": 5,
+          "mentions": [
+            "the TL40X skid grp that was sitting at Northgate",
+            "TL40X out of Northgate",
+            "TL40X skid group gone from Northgate",
+            "whole grp gone to new loc",
+            "the \"Northgate empty\" claim"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE at the CLAIM level — Post 4 is an explicit repost of Post 1, Post 5 self-declares as a follow-up to it, Post 7 is the same author, Post 8 names Post 1 as the sole source",
+          "licensing_quote": "linking back to @northgate_watch's original post as the sole source"
+        },
+        {
+          "chain": "AMBIGUOUS: two designators, one site, overlapping window",
+          "count": 3,
+          "mentions": [
+            "the TL40X skid grp ... at Northgate (Post 1, 2025-06-11)",
+            "TL-40 (HVTS) skid group co-located near Northgate yard (Post 2, 2025-05-09)",
+            "a TL-40 'move' out of Northgate (Post 6, 2025-06-12)"
+          ],
+          "licence": "AMBIGUOUS — and the ambiguity is unresolvable from this document: another fixture (S2) says these two designators name DISTINCT designs, while a third (S3) says one is 'sometimes rendered' as the other",
+          "licensing_quote": "Aerial imagery from earlier this year confirms TL-40 (HVTS) skid group co-located near Northgate yard"
+        },
+        {
+          "chain": "AMBIGUOUS: three incompatible destinations for ONE move",
+          "count": 3,
+          "mentions": [
+            "the old Ashcombe site (Post 1)",
+            "near the harbour road area (Post 4 — a REPOST of Post 1)",
+            "new loc (Post 7, unnamed)"
+          ],
+          "licence": "AMBIGUOUS — a repost that CHANGES the destination",
+          "licensing_quote": "RT @northgate_watch huge if confirmed. TL40X out of Northgate, redeployed near the harbour road area allegedly."
+        },
+        {
+          "chain": "refusals to assert (negative gold)",
+          "count": 3,
+          "mentions": [
+            "Post 3 ('cannot confirm, would want imagery')",
+            "Post 6 ('Would treat as unconfirmed until proven otherwise')",
+            "Post 8 ('without independent verification')"
+          ],
+          "licence": "n/a — these assert nothing about the world",
+          "licensing_quote": "cannot confirm, would want imagery before believing it. single unverified source afaik."
+        }
+      ],
+      "discriminators": {
+        "operator": "ABSENT from all eight posts — no operating body is ever named",
+        "geography": "One end named ('Northgate'); the other end has THREE incompatible names and no coordinates for any of them",
+        "designation": "ABSENT — 'grp' and 'group' are size words with no identifier, no parent body",
+        "time": "STATED per post, and one post (the imagery-citing one) is dated A MONTH EARLIER than the claim it appears to rebut"
+      },
+      "presence_formation": "**Presence only, and mostly negated or unsourced — while the CLAIM is formation-level.** A relocation is a claim about something that persists through a move, which is organizational. No post names an organizational body, so the document asserts a formation-level fact with zero formation evidence. The honest reading is 'presence claim unsourced; continuity unresolved'.",
+      "expected_outcome": "Apparent multiplicity must collapse to ONE origin. Six handles and eight posts must not read as six sources: one is an explicit repost, one self-declares as a follow-up, one is the same author, one is an aggregator that names the origin as its sole source, and three assert nothing at all. A system that counts posts as corroboration will confirm a single unsourced claim — which is the failure this fixture exists to catch. The three refusals must produce NO claims; note that one of them inverts if misread, since it *mentions* the relocation in order to doubt it. The destination must come out UNRESOLVED: one claim arriving with three incompatible objects, none locatable, and one of the incompatibilities introduced BY the repost — so an echo can mutate content, not merely repeat it. The two designators at one site in an overlapping window must come out ambiguous rather than merged or split, because the discriminator that would settle it (a body designation) is absent from every post. The month-early imagery post must not be treated as a contemporaneous rebuttal. Finally, the origin author's explicit refusal to source, and the aggregator's use of sharing VOLUME as if it were corroboration, are the decisive credibility facts and must be visible in the output rather than buried.",
+      "negative_gold": [
+        "All three refusal posts.",
+        "'several people are sharing this now' — volume is not corroboration.",
+        "Follower counts and dead-link notes are provenance metadata, not claims."
+      ]
+    },
+    {
+      "shape_id": "S7-cardinality-without-individuation",
+      "purpose": "The order-of-battle shape: a stale record that states a COUNT of organizational bodies with no designator and no site for any of them, assigns them to the WRONG operator relative to the other fixtures, states a generic composition as if it were an observation, names a role-holder falsely with perfect syntax, and declares its own publication date unrecoverable.",
+      "source_grade": "C",
+      "source_bias": "third-party",
+      "doc_date": "cached 2015-06; source page last modified 2013-03",
+      "text": "Regional Plant Systems Database (cached copy)\nRecord ID: RPS-PL-0447 | Retrieved via cache: 12 May 2015 07:41 GMT\n[Note: original page last modified per server header - 24 February 2013 16:08 GMT]\n\nTL-40 High-Volume Transfer Set\n\nOverview\n\nThe TL-40 is the export variant of the Vanguard high-volume transfer set. Regional interest in a\nhigh-volume transfer layer to supplement ageing low-lift plant has been reported since the mid-2000s.\n\nAs of this writing, the Water Authority's Plant Command is believed to operate the TL-40 within its\nsouthern transfer belt covering approaches to Brightwater and the coastal sector. Set composition is\nestimated at one control vehicle, four single-stage skid units each carrying six canisters,\nassociated RC-118 cabinets, and a monitoring element, broadly mirroring the originating operator's own\nregimental structure.\n\nForce Levels\n\nA widely-cited figure - drawn from a 2015 establishment assessment compiled by a regional balance\npublication - places regional holdings at two operational sections (approximately six to ten\nskid units per section equivalent, figures vary by source) assigned to the Water Authority's Central\nCommand, with a third section reportedly in the delivery pipeline. This 2015 figure continues to be\nreproduced in subsequent trade press without apparent revision, and no independent confirmation of\nstrength has surfaced since.\n\nThe set itself is reported to have a maximum throughput on the order of 230 units, with a secondary\ncapability claimed by the manufacturer, Castellan Precision Import-Export Corporation (CPIEC).\n\nAcquisition Background\n\nOfficials, speaking on condition of anonymity, characterised the set in 2013 as \"already commissioned\nin limited numbers,\" a characterisation that has not been formally retracted since. As of [publication\ndate not machine-readable in cached header], the operational status was described in near-identical\nlanguage by a separate industry newsletter, suggesting continued reliance on the same underlying 2013\nsourcing rather than fresh reporting.\n\nInstallation sites are believed to include positions oriented toward the coastal approach and, per\nunconfirmed reporting, a secondary group near the northern border sector, though this latter\ninstallation has not been corroborated by survey available to this desk.\n\n*[cached fetch truncated - remainder of record unavailable; full text requires subscriber access]*",
+      "mention_structure": [
+        {
+          "chain": "the design",
+          "count": 5,
+          "mentions": [
+            "The TL-40",
+            "the TL-40",
+            "the set",
+            "The set itself",
+            "the operational status"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE (the opening states the export-variant-of relation) + UNAMBIGUOUS_ANAPHOR for the later definite NPs",
+          "licensing_quote": "The TL-40 is the export variant of the Vanguard high-volume transfer set."
+        },
+        {
+          "chain": "AMBIGUOUS: bodies as a CARDINALITY, not as mentions",
+          "count": 4,
+          "mentions": [
+            "two operational sections",
+            "per section equivalent",
+            "a third section reportedly in the delivery pipeline",
+            "a secondary group near the northern border sector"
+          ],
+          "licence": "AMBIGUOUS — cardinality WITHOUT individuation. There are no two mentions to keep apart; there is one claim with a quantity, plus a prospective one, plus a fourth under-determined reference.",
+          "licensing_quote": "places regional holdings at two operational sections (approximately six to ten skid units per section equivalent, figures vary by source) assigned to the Water Authority's Central Command, with a third section reportedly in the delivery pipeline"
+        },
+        {
+          "chain": "a falsely-attributed role, stated with perfect syntax",
+          "count": 1,
+          "mentions": [
+            "the manufacturer, Castellan Precision Import-Export Corporation (CPIEC)"
+          ],
+          "licence": "EXPLICIT_EQUIVALENCE (acronym apposition) — clean syntax binding to a role the entity's own name contradicts ('Import-Export Corporation')",
+          "licensing_quote": "claimed by the manufacturer, Castellan Precision Import-Export Corporation (CPIEC)"
+        },
+        {
+          "chain": "ANTI-COREF: areas are not sites",
+          "count": 3,
+          "mentions": [
+            "its southern transfer belt covering approaches to Brightwater and the coastal sector",
+            "positions oriented toward the coastal approach",
+            "near the northern border sector"
+          ],
+          "licence": "Semantic — head-anchored area words (belt, sector, approach) denote responsibilities, not places a set sits",
+          "licensing_quote": "believed to operate the TL-40 within its southern transfer belt covering approaches to Brightwater and the coastal sector"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED — and it CONFLICTS with fixtures S1/S2, which assign this design to the other authority. Operator is critical-if-present, so this is a genuine conflict, arriving from a stale low-grade source.",
+        "geography": "AREAS ONLY — belts, sectors and approaches. No site, no coordinates. A relocation trigger cannot fire on 'the coastal sector'.",
+        "designation": "ABSENT for every one of the four body references",
+        "time": "DECLARED UNUSABLE by the document itself ('[publication date not machine-readable in cached header]'). Only a cache-retrieval stamp (2015) and a last-modified header (2013) exist, and they are two years apart."
+      },
+      "presence_formation": "**Formation, as a bare cardinality.** The only fixture that treats organizational bodies as countable objects, and it individuates none of them. Basing is stated only as areas of responsibility. Nothing licenses either a body-at-a-site or an equipment-at-a-site claim.",
+      "expected_outcome": "The count must NOT become two body nodes: a cardinality is not two referents, and minting two invents individuals the source never named — while discarding the number loses the only establishment figure available. The faithful output is one under-determined organizational claim carrying the count as a sourced attribute, plus a separate, clearly PROSPECTIVE row for the third. The generic composition must route to the DESIGN layer, not to any instance: apply the routing test — would this fact change if a different operator fielded the same design? It would not. Routing it to an instance manufactures a sighting of six skid units that nobody observed. The operator conflict with the other fixtures must be flagged rather than averaged or silently overridden by grade, and the reason matters: this source is not merely lower-grade, it is EIGHT YEARS EARLIER, so the operator could genuinely have changed. The role attribution is a clean apposition binding to a role the entity's own name contradicts — clean syntax is not evidence of a true relation, and on this fixture alone there is nothing available to refute it, so it must be carried weakly and flagged, never established. The areas must not satisfy any site-level claim. The numeric attribute here conflicts with the SAME designator's value in S1 and S2, so numeric agreement cannot be a merge signal and numeric disagreement cannot be a wall.",
+      "negative_gold": [
+        "The truncated tail ('*[cached fetch truncated...]*') — the record is cut off mid-sentence and must not be completed.",
+        "The comparative paragraph about unrelated programmes.",
+        "'As of [publication date not machine-readable in cached header]' — the time slot is stated unusable and must not be filled with the cache-retrieval date as though it were a publication date."
+      ]
+    }
+  ]
+}
