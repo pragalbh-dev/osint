@@ -52,7 +52,7 @@ from chanakya.schemas import GraphView
 from eval.gold.adapter import EmittedSpan
 
 from .gold import SubOracle
-from .matcher import MatchResult, similarity
+from .matcher import MatchResult, normalizations, similarity
 from .negative_gold import NegativeGold
 from .policy import MatchPolicy, Pricing
 from .recording import CallRecord
@@ -238,17 +238,30 @@ EntailmentJudge = Callable[[SurfaceClaim, str], bool]
 
 
 def _lexically_grounded(claim: SurfaceClaim, haystack: str, policy: MatchPolicy) -> bool:
-    """Every role surface must appear (fuzzily) inside ``haystack``."""
-    hay = normalize_surface(haystack)
-    if not hay:
-        return False
-    for surface in claim.role_surfaces():
-        needle = normalize_surface(surface)
-        if not needle:
+    """Every role surface must appear (fuzzily) inside ``haystack``, under the policy's readings.
+
+    The identifier rule has to apply **here too**, and this is the lane where it matters most. Measured
+    against the real slice documents at the declared 0.85 floor, the prose reading scores a faithful but
+    de-hyphenated designator as ABSENT from a document that states it — ``HT233`` against d19 reads 0.80,
+    ``HQ9P`` against d02 reads 0.75, the GD number reads 0.81 — so the harness would report a model that
+    quoted the page correctly as having fabricated. That is a false positive on ``citation_faithfulness``
+    and ``extract_only_stated``, the two metrics this bake-off declares non-negotiable, and it is a worse
+    error than the recall dent the same normalisation caused in the matcher. Under
+    ``designator_aware`` all five read 1.00. It cannot launder a fabrication: gluing removes punctuation
+    *inside* a letters-and-digits token, so an invented surface only becomes groundable if the document
+    already states the same string in a different rendering — which is what "grounded" means.
+    """
+    for norm in normalizations(policy):
+        hay = norm(haystack)
+        if not hay:
             continue
-        if float(fuzz.partial_ratio(needle, hay)) / 100.0 < policy.grounding_similarity:
-            return False
-    return True
+        if all(
+            not norm(surface)
+            or float(fuzz.partial_ratio(norm(surface), hay)) / 100.0 >= policy.grounding_similarity
+            for surface in claim.role_surfaces()
+        ):
+            return True
+    return False
 
 
 def _slice_spans(claim: SurfaceClaim, doc_texts: Mapping[str, str]) -> tuple[list[str], list[str]]:

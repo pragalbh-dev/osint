@@ -68,6 +68,20 @@ class MatchPolicy(_Strict):
     require_same_polarity: bool = True
     predicate_policy: Literal["exact", "normalized", "ignore"] = "normalized"
     entity_type_policy: Literal["exact", "normalized", "ignore"] = "normalized"
+    #: How punctuation *inside* an alphanumeric token is read. ``prose`` treats ``-_/`` as a word boundary
+    #: everywhere — right for a predicate, wrong for a designator, because it splits ``HT-233`` into two
+    #: tokens while ``HT233`` stays one and the kernel then scores a legitimate variant a non-match.
+    #: ``designator_aware`` (the shipped decision) *also* scores the glued reading and keeps the better of
+    #: the two, so a de-hyphenated designator matches and nothing that matched before stops matching.
+    #: Measured on the labeled gold: legitimate de-hyphenated variants below the role floor 16/61 → 0/61.
+    identifier_policy: Literal["prose", "designator_aware"] = "designator_aware"
+    #: Whether a **designator disagreement is a veto**. Designation is a discriminator in this domain:
+    #: ``HQ-9B`` and ``HQ-9BE`` are different variants, and the three GD numbers are different import
+    #: events, yet a fuzzy kernel scores those pairs 0.91 and 0.95 — above any usable floor. Under
+    #: ``nested_or_equal`` a pair may not be scored at all unless one side's identifier set is contained in
+    #: the other's (an empty set is contained in everything, so prose is unaffected). Measured on the
+    #: labeled gold: genuinely-different designator pairs conflated at the role floor 40/684 → 0/684.
+    identifier_agreement: Literal["ignore", "nested_or_equal"] = "nested_or_equal"
     role_min_similarity: float = Field(ge=0.0, le=1.0)
     pair_min_similarity: float = Field(ge=0.0, le=1.0)
     span_policy: Literal["ignore", "bonus", "require"] = "bonus"
@@ -81,6 +95,8 @@ class MatchPolicy(_Strict):
             f"similarity        : {self.similarity} (rapidfuzz, scaled 0..1)",
             f"same form/polarity: form={self.require_same_form}  polarity={self.require_same_polarity}",
             f"predicate         : {self.predicate_policy}      entity_type: {self.entity_type_policy}",
+            f"identifiers       : {self.identifier_policy} (HQ-9/P ≡ HQ9P), "
+            f"agreement={self.identifier_agreement} (HQ-9B ≢ HQ-9BE)",
             f"thresholds        : per-role >= {self.role_min_similarity}, pair mean >= {self.pair_min_similarity}",
             f"spans             : {self.span_policy} (IoU floor {self.span_iou_floor}, bonus weight {self.span_bonus_weight})",
             f"grounding         : surface must reach {self.grounding_similarity} against the cited text",

@@ -247,20 +247,24 @@ def test_an_identity_over_read_is_not_also_excused(adapted: dict[str, Any]) -> N
 
 # ── the same claims, measured through the real scorer ──────────────────────────────────────────────
 
-def _policy() -> Any:
+def _policy(**overrides: Any) -> Any:
     """The bake-off's declared match policy, pinned to the values in ``config/bakeoff.yaml``.
 
     Pinned rather than loaded so this test measures the ADAPTER: if someone later slackens the config, the
-    loader-artefact proof must not quietly start measuring the new leniency instead.
+    loader-artefact proof must not quietly start measuring the new leniency instead. The identifier knobs
+    are named for the same reason — they were decided on 2026-07-25 and they move every recall number in
+    the bake-off, so this proof must state which setting it was measured under rather than inherit it.
     """
     from eval.extraction.policy import MatchPolicy
 
-    return MatchPolicy(
+    declared: dict[str, Any] = dict(
         similarity="token_sort_ratio", require_same_form=True, require_same_polarity=True,
         predicate_policy="normalized", entity_type_policy="normalized",
+        identifier_policy="designator_aware", identifier_agreement="nested_or_equal",
         role_min_similarity=0.70, pair_min_similarity=0.80, span_policy="bonus",
         span_iou_floor=0.30, span_bonus_weight=0.15, grounding_similarity=0.85,
     )
+    return MatchPolicy(**{**declared, **overrides})
 
 
 @pytest.fixture
@@ -311,6 +315,15 @@ def test_perfect_model_scores_one_through_the_adapter(
     assert result.precision == 1.0
     assert len(result.pairs) == EXPECTED["claims"]
     assert result.missed_gold == ()
+
+    # The 2026-07-25 identifier decision must NOT be what produces the 1.0 — a perfect model scores 1.0
+    # under every setting of it, because a perfect model's surfaces are byte-identical to the gold's. If
+    # this ever diverges, the identifier rule has started deciding the headline number instead of the
+    # loader semantics this file exists to prove.
+    for override in ({"identifier_policy": "prose"}, {"identifier_agreement": "ignore"},
+                     {"identifier_policy": "prose", "identifier_agreement": "ignore"}):
+        under = matcher_mod.match_claims(gold, candidate, _policy(**override))
+        assert (under.recall, under.precision) == (1.0, 1.0), override
 
 
 def test_the_naive_load_caps_the_same_model_at_070(

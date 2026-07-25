@@ -138,13 +138,67 @@ match_policy:
   # "Type-7 Coupler assembly" = 0.76) can be missed. That error direction is the safer one here — missed
   # matches add run-to-run variance, and more variance makes the margin rule MORE reluctant to call a
   # gap material, whereas leniency quietly inflates every candidate and hides the fabrication line.
-  # Whoever owns the claim gold should sanity-check this choice against a labeled sample.
+  # The gold owner sanity-checked this against the labeled sample on 2026-07-25 and kept it; what that
+  # audit DID change is the identifier rule below.
   similarity: token_sort_ratio
   # A gold claim and an extracted claim may only pair if these hold.
   require_same_form: true       # triple / entity / event must agree
   require_same_polarity: true   # a negation is NOT a match for the assertion
   predicate_policy: normalized  # exact | normalized (casefold + unify -_/space) | ignore
   entity_type_policy: normalized
+
+  # ── The identifier rule (DECIDED 2026-07-25 by the gold owner, against the labeled slice) ─────────
+  # Two knobs, one subject: how the matcher reads a DESIGNATOR. They were deferred to whoever owns the
+  # labeled gold precisely because re-tuning the kernel moves every number this bake-off produces, and
+  # every figure below is measured over the gold's own 247 distinct surfaces — not taste.
+  #
+  # THE RULE, in words a reviewer can check:
+  #   (a) Where `- _ / .` joins parts of a token that mixes LETTERS AND DIGITS, the punctuation is a
+  #       rendering choice and is deleted: HQ-9/P ≡ HQ9P, HT-233 ≡ HT233, KPQA-HC-2020-118834 ≡
+  #       KPQAHC2020118834. Everywhere else it stays a word boundary: AL-NOOR CARGO, fire-control/
+  #       engagement and supplies-component are unchanged, and 2024-11 is a date, not an identifier.
+  #       Both readings are scored and the BETTER one kept, so (a) can only ever ADD a match.
+  #   (b) A DESIGNATOR DISAGREEMENT IS A VETO. Per role, the identifier-shaped tokens of the two surfaces
+  #       must be equal or nested (an empty set nests into anything, so prose is untouched). Nested, not
+  #       equal, so `the FT-2000` may pair with `the FT-2000 (sometimes rendered FT-2000A)`. NOT
+  #       prefix-tolerant: {hq9} does not nest into {hq9p}, so HQ-9 and HQ-9/P stay different things.
+  #
+  # WHY (a), measured. `prose` — the previous, emergent behaviour — rewrote hyphens to spaces before
+  # scoring, splitting HT-233 into two tokens while HT233 stayed one; token_sort_ratio then scored that
+  # pair 0.5455, a NON-match for a variant any analyst calls the same designator. Across the labeled gold
+  # 16 of 61 legitimately de-hyphenated designator surfaces fell below the 0.70 role floor and 24 of 61
+  # below the 0.80 pair floor. Under `designator_aware`: 0 of 61 below either. This corpus is made of
+  # exactly that shape, so the loss was systematic, hit every candidate, and added variance to a
+  # comparison already fighting non-determinism.
+  #
+  # WHY (b) — the finding that actually decided this. The fear was that loosening the kernel would start
+  # matching HQ-9A to HQ-9B. Measured: THE PROSE KERNEL ALREADY DID. HQ-9A/HQ-9B scored 0.80,
+  # HQ-9B/HQ-9BE 0.91, FT-2000/FT-2000A 0.93, S-400/S-300 0.80 and two different GD numbers 0.95 — all
+  # above the role floor, because one changed character in a six-character designator is a tiny edit
+  # distance and splitting it into tokens lets the shared tokens carry the pair. Over 684 pairs of
+  # genuinely-different designator spellings, prose conflated 40; with the veto, 0. Over all 30,371 cross
+  # pairs of the gold's own surfaces, pairs above the role floor fall 128 → 84, and those the gold labels
+  # as DIFFERENT NODES fall 30 → 9. So the decision is tighter on over-merge and looser on legitimate
+  # variants at once; it is not a leniency trade.
+  #
+  # WHAT IT COSTS, stated rather than buried. Exactly two same-node pairs in the labeled sample stop
+  # matching, both to the veto:
+  #   * `the FT-2000` vs `FT-2000A` (0.7368 → veto). This gold declares FT-2000/FT-2000A ONE node because
+  #     d04 says "sometimes rendered"; in general a suffixed designator IS a different variant (HQ-9B vs
+  #     HQ-9BE), so the veto is right in the general case and wrong on this documented alias. Fixing it
+  #     needs an alias table, and an alias-aware matcher hands the extractor credit for resolution work it
+  #     did not do.
+  #   * `HT-233-band engagement-radar parameters` vs `HT-233 engagement radar` (0.7419 → veto), because the
+  #     glue swallows an adjacent hyphenated word into the identifier (`ht233band` ≠ `ht233`).
+  # Both err toward a MISSED match — the safer direction, for the reason given above the similarity knob.
+  #
+  # WHAT IT DOES NOT FIX. 9 cross-node pairs still clear the role floor and every one is prose, not a
+  # designator: `the HQ-9B system` vs `the system` (0.80), `the PAF variant` vs `the Army variant`
+  # (0.8387), `the site` vs `the system` (0.7778). Those are anaphora and operator discriminators; this
+  # matcher compares surfaces and can see neither. Set `identifier_agreement: ignore` to reproduce the
+  # pre-decision numbers — a measurement-policy choice for a reader, not a compatibility switch.
+  identifier_policy: designator_aware    # prose | designator_aware
+  identifier_agreement: nested_or_equal  # ignore | nested_or_equal
   # Per-role similarity floor (subject, object, name, each participant) and the floor on their mean.
   role_min_similarity: 0.70
   pair_min_similarity: 0.80

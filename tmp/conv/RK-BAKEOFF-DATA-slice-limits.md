@@ -197,6 +197,43 @@ Each of these is a hole, not a weakness — no score on this slice says anything
   bake-off selects for, and it lands on `surface_f1` (weight 3.0). `eval.gold.adapter` ships the hooks
   (`trap_avoidance`, `identity_over_read`, `precision_exclusions`); nothing calls them, and §5 of the
   rendered scorecard now says so on every run.
+- **The identifier match rule is DECIDED (2026-07-25) — and it moved numbers in both directions.** The
+  matcher used to read `-_/` as a word boundary everywhere, which split `HT-233` into two tokens while
+  `HT233` stayed one and scored that pair **0.5455 — a non-match**. Measured over the 247 distinct surfaces
+  in this slice, that cost **16 of 61** legitimately de-hyphenated designator surfaces (below the 0.70 role
+  floor; **24 of 61** below the 0.80 pair floor) — a systematic charge against every candidate, on a corpus
+  whose key surfaces are all that shape. The decided rule glues punctuation *inside* a letters-and-digits
+  token (`HQ-9/P` ≡ `HQ9P`) and leaves everything else split (`AL-NOOR`, `fire-control/engagement`,
+  `2024-11`), scoring both readings and keeping the better: **0 of 61** now fall below either floor.
+  The measurement also overturned the reason it had been deferred. The worry was that loosening would start
+  merging `HQ-9A` into `HQ-9B` — but **the old kernel already did**: 0.80 for HQ-9A/HQ-9B, 0.91 for
+  HQ-9B/HQ-9BE, 0.93 for FT-2000/FT-2000A, 0.95 for two different GD numbers. One changed character in a
+  six-character designator is a tiny edit distance, and splitting it into tokens lets the shared tokens
+  carry the pair, so no threshold separates them. Designator disagreement is therefore now a **veto**
+  (identifier token sets must be equal or nested). Result: genuinely-different designator pairs conflated at
+  the role floor **40 of 684 → 0**; across all 30,371 cross pairs of this slice's surfaces, pairs above the
+  role floor **128 → 84** and those the gold labels as *different nodes* **30 → 9**. Both deciding checks
+  are unmoved and are now asserted under every setting of the rule: a perfect model still scores recall and
+  precision **1.0000**, and a trap-emitting model still loses precision to **0.8553 (65/76)**.
+  The same rule now governs the grounding proxies, and that is the half that mattered most: at the declared
+  0.85 floor the old reading scored a *faithful* de-hyphenated designator as ABSENT from the document that
+  states it (`HT233` vs d19 = 0.80, `HQ9P` vs d02 = 0.75, the GD number = 0.81), i.e. it reported a model
+  that quoted the page correctly as fabricating — on `citation_faithfulness` and `extract_only_stated`, the
+  two metrics this bake-off calls non-negotiable. All five now read 1.00, and an invented designator is
+  still ungrounded.
+  **What it costs, and the ceiling it leaves.** Two same-node pairs in this slice stop matching, both to the
+  veto: `the FT-2000` vs `FT-2000A` (this gold declares them one node because d04 says "sometimes rendered";
+  in general a suffixed designator *is* a different variant, so the veto is right generally and wrong on
+  this documented alias) and `HT-233-band engagement-radar parameters` vs `HT-233 engagement radar` (the
+  glue swallows the adjacent hyphenated word). Both err toward a *missed* match, the safer direction here.
+  And **9 cross-node pairs still clear the role floor — every one of them prose, not a designator**:
+  `the HQ-9B system` vs `the system` (0.80), `the PAF variant` vs `the Army variant` (0.8387), `the site` vs
+  `the system` (0.7778), and the Sialkot/Pasrur phrase pair (0.7789). Those are anaphora and an *operator*
+  discriminator; this matcher compares surfaces and can see neither. **So the matcher separates designators
+  and does not separate referents** — read a surface-F1 number with that in mind, and do not treat it as
+  evidence about entity resolution, which is a different stage. Full rule, numbers and knobs:
+  `config/bakeoff.yaml` → `identifier_policy`; re-derived on every test run by
+  `backend/tests/gold_adapter/test_identifier_match_policy.py`.
 - **Do not score a trap by span overlap alone.** Trap `d20-r13`'s span overlaps positive claim `d20-r14`'s,
   so a bare overlap test charges a fabrication to a model that read `d20-r14` correctly. A trap hit requires
   the claim to be *unpaired* against the positive gold as well as overlapping. Separately, the existing
