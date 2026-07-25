@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from chanakya.credibility.scoring import reliability
-from chanakya.ontology import NodeTypeIndex
+from chanakya.ontology import LayerRouting, NodeTypeIndex
 from chanakya.schemas import (
     ConfigBundle,
     EntitiesConfig,
@@ -348,6 +348,19 @@ class ResolveConfig:
             return canonical
 
         return _norm
+
+    @property
+    def layer_routing(self) -> LayerRouting:
+        """S2's layer block — read here **only** for its ``site_type`` vocabulary + normaliser.
+
+        G18's ``based-at`` half fires within one *site class* (C1), and the closed vocabulary plus its
+        fail-safe already live there (ruling L1). Reading them rather than declaring a second copy is the
+        point: C1 is "one declaration, two consumers", and two vocabularies would drift. Note this reads the
+        vocabulary irrespective of ``layer_routing.enabled`` — the *declaration* is unconditional; what S2's
+        flag gates is the *keying*, which is a different consumer.
+        """
+        ontology = self._bundle.ontology if self._bundle is not None else OntologyConfig()
+        return LayerRouting.from_ontology(ontology)
 
     # ── node-type identity rules (config/ontology.yaml — T3b) ─────────────────────────────────
     @property

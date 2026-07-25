@@ -168,6 +168,12 @@ class Edge:
     object: str
     edge_instance: str | None
     latest_iso: str | None  # event_time upper bound (for relocation/temporal reasoning)
+    # ADDITIVE (RK-COREF/S3, G18). The wall asks whether two STATED relationships hold at **overlapping
+    # times**, which needs the interval, not just its upper bound — and whether the relationship was
+    # *stated* at all, because a rebuild-derived or proposer-inferred basing is not a source saying "this
+    # unit is there" and must never wall a merge on its own. Pure data; no decision is taken here.
+    earliest_iso: str | None = None  # event_time LOWER bound
+    kind: str = ""  # the claim's kind: "observation" (stated) | "inference" (derived) | …
     # The source that asserted this triple. Load-bearing for identity (D-2.5/D-P3.4): a ``same-as`` is an
     # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
     # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
@@ -232,16 +238,19 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                 )
         elif p.form == "triple":
             rr = base_ref(c, lane)
+            lo, hi = canonical_iso_bounds(c.event_time)
             edges.append(
                 Edge(
                     subject=p.subject,
                     predicate=p.predicate,
                     object=p.object,
                     edge_instance=rr.edge_instance,
-                    latest_iso=canonical_iso_bounds(c.event_time)[1],
+                    latest_iso=hi,
                     source_id=c.source_id,
                     claim_id=c.claim_id,
                     attributes=c.attributes,
+                    earliest_iso=lo,
+                    kind=c.kind,
                 )
             )
 

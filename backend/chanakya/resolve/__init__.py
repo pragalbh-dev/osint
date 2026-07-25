@@ -161,11 +161,19 @@ def _resolve(
     # analyst (``crit_raises``, threaded into the resolver as a block-merge-and-review set), so one flaky
     # low-grade source cannot silently shatter a well-corroborated merge (D5 take-care a).
     crit_walls, crit_raises = _critical_attribute_walls(graph, cfg)
+    # D-13.8/G18 (S3, NEW code) — the RELATIONSHIP rail the judge never had. A stated `based-at`/`operated-by`
+    # conflict at overlapping times within one site class is a hard wall; an unreadable class or an undated
+    # statement takes C7's third state (no wall, no fusion, a named reason). The walls join `veto` on purpose:
+    # that channel is hard AND transitive, re-applied in `finalise`, visible to the D9 bridge alarm and DRAWN,
+    # whereas the geo veto's channel is pairwise and invisible — and G18 would pass over either.
+    rel_walls, rel_wall_reasons, rel_raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
     veto |= (
         _claim_distinct_pairs(graph, cfg, alias_idx)
         | _identifier_veto(graph, cfg)
         | crit_walls
+        | rel_walls
     )
+    crit_raises = {**crit_raises, **rel_raises}
 
     # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
@@ -196,6 +204,9 @@ def _resolve(
         raise_walls=crit_raises, place_identity=place_authoritative,
     )
     result.candidates.extend(ambiguous)  # an endpoint with >1 irreconcilable match is adjudicated, never guessed
+    # G18: the wall must be READABLE. A wall nobody can read is indistinguishable from a missing edge, so the
+    # reason rides the drawn do-not-merge edge (``view/pipeline._resolution_edges``).
+    result.wall_reasons.update({pair_key(*sorted(p)): why for p, why in rel_wall_reasons.items()})
     if not cfg.earned_identity_on:
         places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
@@ -532,20 +543,74 @@ def _critical_attribute_walls(
     ⇒ ``raises`` is empty and ``walls`` is exactly the pre-Stage-3A unconditional veto (byte-unchanged).
     """
     floor = cfg.critical_veto_min_grade
+    earned_on = cfg.earned_identity_on
     by_type: dict[str, list[str]] = {}
     for eid, ent in sorted(graph.entities.items()):
-        if cfg.critical_role_attrs(ent.etype):  # only types that declare a critical attribute
+        # S3 widens the enumeration: a type that declares no *critical* attribute may still declare a
+        # ``constitutive`` one (C6) or hold an unreadable wall-eligible slot (C7), and both must bind the
+        # fusion path. Flag off ⇒ exactly the pre-S3 selection (byte-unchanged, gate G2).
+        interesting = bool(cfg.critical_role_attrs(ent.etype)) or (
+            earned_on and bool(cfg.constitutive_attrs(ent.etype))
+        )
+        if interesting or (earned_on and cfg.earned_identity.normalization_required_attrs):
             by_type.setdefault(ent.etype, []).append(eid)
     walls: set[Pair] = set()
     raises: dict[Pair, str] = {}
     for eids in by_type.values():
         for a, b in unordered_pairs(eids):
-            disposition, attrs = critical_conflict_disposition(graph.entities[a], graph.entities[b], cfg)
+            ea, eb = graph.entities[a], graph.entities[b]
+            disposition, attrs = critical_conflict_disposition(ea, eb, cfg)
             if disposition == "wall":
                 walls.add(frozenset((a, b)))
-            elif disposition == "raise":
+                continue
+            if disposition == "raise":
                 raises[frozenset((a, b))] = _critical_raise_reason(attrs, floor)
+                continue
+            if not earned_on:
+                continue
+            # C7's THIRD STATE, on the attribute rail. An unreadable stated value on a slot we intend to wall
+            # on is neither a conflict nor an agreement — so it may not wall (that would shatter a legitimate
+            # merge) and it may not FUSE (that would assert an identity the evidence does not support). It
+            # joins the block-merge-and-review channel, which is what makes the gap *bind* rather than merely
+            # annotate — the rk-14 probe bug generalised: the prototype named the missing operator gap and
+            # then drew the cross-army relocation anyway.
+            unreadable = scoring.unnormalizable_critical_values(ea, eb, cfg)
+            if unreadable:
+                raises[frozenset((a, b))] = _unnormalizable_reason(unreadable)
+                continue
+            # C6's negative half: a difference on a ``constitutive`` attribute is DISTINCTNESS. Raised rather
+            # than walled, because the strength of a constitutive difference depends on the attribute being
+            # read correctly and a stated value we have not grade-checked should not shatter a cluster.
+            differing = scoring.constitutive_difference(ea, eb, cfg)
+            if differing:
+                raises[frozenset((a, b))] = _constitutive_difference_reason(differing)
     return walls, raises
+
+
+def _unnormalizable_reason(attrs: tuple[str, ...]) -> str:
+    """C7's third state on the attribute rail: no wall, no fusion, a named gap. Prose only (gate G6)."""
+    which = ", ".join(attrs)
+    return (
+        f"unreadable critical value on {which} — both sides state it, the values differ, and at least one is "
+        f"not a member of any declared equivalence class, so the system cannot tell a genuine disagreement "
+        f"from a spelling. Walling on it would shatter a legitimate merge ('PAF' vs 'Pakistan Air Force'); "
+        f"letting the pair confirm would assert an identity the evidence does not support. So it does "
+        f"NEITHER: the merge is withheld and the pair is raised with the missing normalisation named. Add the "
+        f"stated form to that attribute's equivalence classes and the pair resolves on its merits (C7)."
+    )
+
+
+def _constitutive_difference_reason(attrs: tuple[str, ...]) -> str:
+    """C6's negative half: a difference on a CONSTITUTIVE attribute is distinctness. Prose only (G6)."""
+    which = ", ".join(attrs)
+    return (
+        f"constitutive difference on {which} — this attribute is part of what the instance IS (a presence "
+        f"*is* its operator, its design, its site and its window), so it cannot change without the thing "
+        f"being a DIFFERENT instance. A difference here is therefore evidence of distinctness, not of a "
+        f"stale reading, and it is not something a later report can 'update'. The merge is withheld and the "
+        f"pair is raised: if these really are one instance, one of the two stated constitutive values is "
+        f"wrong, and that is the question to adjudicate (C6)."
+    )
 
 
 def _critical_raise_reason(attrs: tuple[str, ...], floor: str | None) -> str:
@@ -556,6 +621,192 @@ def _critical_raise_reason(attrs: tuple[str, ...], floor: str | None) -> str:
         f"critical-attribute conflict on {which} below the source-credibility floor{at}: the conflicting "
         f"value is asserted only by below-floor sources on at least one side, so the difference is not "
         f"trustworthy enough to wall — raised for analyst adjudication (D5)."
+    )
+
+
+# ── D-13.8 / G18: the relationship-conflict WALL (NEW code — the judge had no relationship rail) ─
+
+#: The predicate whose claim was *stated by a source* rather than derived by the rebuild or a proposer.
+#: A derived basing is not a source saying "this unit is there", so it may never wall a merge on its own.
+_STATED_KIND = "observation"
+
+
+def _intervals_overlap(a: tuple[str | None, str | None], b: tuple[str | None, str | None]) -> bool:
+    """Do two ISO validity intervals overlap? An UNKNOWN bound fails **safe** — it counts as overlapping.
+
+    The wall exists to keep two units that are in different places *at the same time* apart. If we cannot
+    read when one of the statements held, we do not get to conclude they were at different times: the honest
+    reading is "possibly concurrent", and the fail-safe direction here is towards *not fusing*. (The caller
+    then softens an unknown-time conflict from a hard wall to a raise — the same asymmetry C1 gives an
+    unknown ``site_type``: never de-conflicted, but not silently walled either.)
+    """
+    lo_a, hi_a = a
+    lo_b, hi_b = b
+    if hi_a is not None and lo_b is not None and hi_a < lo_b:
+        return False
+    if hi_b is not None and lo_a is not None and hi_b < lo_a:
+        return False
+    return True
+
+
+def _same_place(a: str, b: str, graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex,
+                place_of: dict[str, places.PlaceMatch]) -> bool:
+    """Are two relationship OBJECTS the same thing, before resolution has run?
+
+    The wall is computed up front (it has to be — it joins ``veto``, which is consulted before any band), so
+    it cannot ask the partition. Three cheap, evidence-backed tests instead: the same id; the same curated
+    gazetteer anchor (the place layer's own answer to "same place", already computed in this pass); or two
+    names in one alias class. Anything else counts as *different*, which is the direction that walls — so
+    this predicate is deliberately generous, because a wrong "different" costs a legitimate merge.
+    """
+    if a == b:
+        return True
+    ma, mb = place_of.get(a), place_of.get(b)
+    if ma is not None and mb is not None and ma.place_id is not None and ma.place_id == mb.place_id:
+        return True
+    ea, eb = graph.entities.get(a), graph.entities.get(b)
+    if ea is None or eb is None:
+        return False
+    return alias_idx.equivalent(
+        normalize(ea.name, cfg.transliteration), normalize(eb.name, cfg.transliteration)
+    )
+
+
+def _stated_relations(
+    graph: EntityGraph, cfg: ResolveConfig, lane: EdgeLaneIndex
+) -> dict[tuple[str, str], list[tuple[str, str | None, str | None, str, bool]]]:
+    """``(subject, predicate) → [(object, lo_iso, hi_iso, scope_bucket, scope_known)]`` for wall predicates.
+
+    **C1 as amended by S2 — the scope decision is per ``(subject, predicate)``, over EVERY relationship of
+    that subject, and it is a post-pass, never a key input.** A ``based-at`` conflict is only a conflict
+    *within one kind of site*: a unit at its garrison and concurrently at a forward site is one unit with two
+    valid basings. Scoping by class is therefore *de-confliction* — and separation IS de-confliction, so a
+    **partial** tag is worse than none. S2 measured this the hard way: a per-edge tag put the flagship
+    relocation's two ends in different buckets (one describes a revetment complex, the other an airfield) and
+    the supersede silently never fired, with nothing anywhere to say so.
+
+    So: all of a subject's classes readable ⇒ scope by class; **any** unreadable ⇒ the whole subject collapses
+    to one shared bucket with ``scope_known=False``, which the caller turns into "no wall, no fusion, a named
+    reason" rather than a silent de-confliction in either direction.
+    """
+    earned = cfg.earned_identity
+    layers = cfg.layer_routing
+    scope_attr = earned.wall_scope_attr
+    out: dict[tuple[str, str], list[tuple[str, str | None, str | None, str, bool]]] = {}
+    raw: dict[tuple[str, str], list[tuple[str, str | None, str | None, str, bool]]] = {}
+    for e in graph.edges:
+        if e.predicate not in earned.wall_predicates or e.kind != _STATED_KIND:
+            continue
+        # The scope attribute lives on the endpoint the functional key DROPS (for ``based-at``, the site,
+        # whose class says what kind of basing this is) — the same endpoint S2's ``_tag_of`` reads. A
+        # predicate the ontology gives no ``instance_key_tag`` (``operated-by``) is unscoped: a change of
+        # operator is never de-conflicted by anything, so every such relation shares one bucket.
+        tagged = lane.instance_key_tag(e.predicate) == scope_attr and bool(scope_attr)
+        if tagged:
+            obj = graph.entities.get(e.object)
+            bucket, mapped = layers.normalise_tag(obj.attrs.get(scope_attr) if obj is not None else None)
+        else:
+            bucket, mapped = "", True
+        raw.setdefault((e.subject, e.predicate), []).append(
+            (e.object, e.earliest_iso, e.latest_iso, bucket, mapped)
+        )
+    for key, rows in raw.items():
+        if all(mapped for *_rest, mapped in rows):
+            out[key] = rows
+        else:  # any unreadable class ⇒ ONE bucket for the whole subject, flagged unknown (C1 ⊂ C7)
+            out[key] = [(obj, lo, hi, "", False) for obj, lo, hi, _bucket, _mapped in rows]
+    return out
+
+
+def _relationship_walls(
+    graph: EntityGraph,
+    cfg: ResolveConfig,
+    lane: EdgeLaneIndex,
+    alias_idx: AliasIndex,
+    place_of: dict[str, places.PlaceMatch],
+) -> tuple[set[Pair], dict[Pair, str], dict[Pair, str]]:
+    """G18: a STATED ``based-at``/``operated-by`` conflict at overlapping times → ``(walls, reasons, raises)``.
+
+    **The judge had no relationship discriminator at all.** ``relational_score`` is a Jaccard over *shared*
+    neighbour keys, so it can only ever say "these two look alike because they touch the same things"; there
+    was no comparison of two candidates' basing or operator *values*, and therefore no way for the system to
+    notice that two profiles are in different places at the same time. Two units at different sites at
+    overlapping times are **different units**, and that is a cannot-link no similarity score may cross —
+    a wall, not a term.
+
+    **The channel is named deliberately.** ``walls`` join the ``veto`` set, which is hard **and transitive**,
+    re-applied in ``finalise``, visible to the D9 bridge alarm, and **drawn** as a do-not-merge edge. Built
+    the way the geographic veto is built — consulted only inside ``cluster.vetoed`` — the wall would be
+    pairwise, non-transitive **and invisible**, and G18 would still pass. ``reasons`` is what makes it
+    analyst-visible: a wall nobody can read is indistinguishable from a missing edge.
+
+    ``raises`` is C7's third state, reached when the ``site_type`` scope is unreadable on either side: **no
+    wall** (an unreadable class must not shatter a legitimate merge) **and no fusion** (it must not confirm
+    either) **plus a named reason**. All three or none.
+    """
+    walls: set[Pair] = set()
+    reasons: dict[Pair, str] = {}
+    raises: dict[Pair, str] = {}
+    if not cfg.earned_identity_on or not cfg.earned_identity.wall_predicates:
+        return walls, reasons, raises
+
+    relations = _stated_relations(graph, cfg, lane)
+    subjects_by_pred: dict[str, list[str]] = {}
+    for subject, predicate in relations:
+        subjects_by_pred.setdefault(predicate, []).append(subject)
+
+    for predicate, subjects in sorted(subjects_by_pred.items()):
+        for a, b in unordered_pairs(sorted(set(subjects))):
+            ea, eb = graph.entities.get(a), graph.entities.get(b)
+            if ea is None or eb is None or ea.etype != eb.etype:
+                continue  # a cross-type pair is not fusable anyway (G19) — nothing for the wall to add
+            for oa, lo_a, hi_a, bucket_a, known_a in relations[(a, predicate)]:
+                for ob, lo_b, hi_b, bucket_b, known_b in relations[(b, predicate)]:
+                    if bucket_a != bucket_b:
+                        continue  # a DIFFERING class is not a conflict (C1) — garrison + forward site is fine
+                    if _same_place(oa, ob, graph, cfg, alias_idx, place_of):
+                        continue  # both stated the same thing — agreement, not conflict
+                    if not _intervals_overlap((lo_a, hi_a), (lo_b, hi_b)):
+                        continue  # sequential, not concurrent — that is a relocation, not two entities
+                    pair = frozenset((a, b))
+                    timed = lo_a is not None and hi_a is not None and lo_b is not None and hi_b is not None
+                    if known_a and known_b and timed:
+                        walls.add(pair)
+                        reasons[pair] = _wall_reason(predicate, bucket_a)
+                        raises.pop(pair, None)
+                    elif pair not in walls:
+                        raises[pair] = _wall_third_state_reason(predicate, known_a and known_b, timed)
+    return walls, reasons, raises
+
+
+def _wall_reason(predicate: str, bucket: str) -> str:
+    """The analyst-facing reason a relationship wall holds this pair apart (G18). Prose only (gate G6)."""
+    scope = f" within one '{bucket}' site class" if bucket else ""
+    return (
+        f"stated '{predicate}' conflict at overlapping times{scope} — two sources place these two profiles "
+        f"in different, concurrently-valid relationships that one entity cannot hold at once. Two units at "
+        f"different sites at the same time are different units, so this is a cannot-link no similarity score "
+        f"may cross: it holds transitively (no chain of merges may fuse them either) and it is not a low "
+        f"score to be argued up. If the two really are one unit, the fault is in one of the two stated "
+        f"relationships or in their dates — adjudicate those, not this wall (D-13.8/G18)."
+    )
+
+
+def _wall_third_state_reason(predicate: str, scope_known: bool, timed: bool) -> str:
+    """C7's third state on the relationship rail: no wall, no fusion, a named reason. Prose only (G6)."""
+    missing = []
+    if not scope_known:
+        missing.append("the kind of site is not stated, or is stated in words the closed vocabulary "
+                       "cannot read, on at least one of this subject's relationships")
+    if not timed:
+        missing.append("at least one of the two statements carries no readable validity interval")
+    why = "; and ".join(missing)
+    return (
+        f"unreadable '{predicate}' conflict — these two profiles state different, apparently concurrent "
+        f"relationships, but {why}. So the disagreement can be neither trusted as a wall nor waved away: "
+        f"walling on an unreadable value would shatter a legitimate merge, and letting the pair confirm "
+        f"would assert an identity the evidence does not support. The merge is withheld and the pair is "
+        f"raised with this gap named — a gap that does not bind the fusion path is decoration (C7)."
     )
 
 
@@ -789,6 +1040,7 @@ def _to_partition(
         candidate_reasons=result.candidate_reasons,
         possible=result.possible,
         distinct_from=result.distinct_from,
+        wall_reasons={k: v for k, v in result.wall_reasons.items()},
         merge_confidence=result.merge_confidence,
         merge_breakdown=result.merge_breakdown,
         identity_claims=identity_claims,
