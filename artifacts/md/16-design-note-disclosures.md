@@ -157,6 +157,14 @@ graded behaviour degrades *gracefully* would be wrong in specific, nameable ways
   reprints of one source can each contribute to an identity merge; nothing in the merge path notices they are
   not independent. (The "independent identity signal" ledger is about signal *classes* — attribute,
   relational, temporal — not about source independence, and should not be read as that guard.)
+- **Independence is detected by publisher, not by evidential lineage — a deliberate, deferred refinement.**
+  The *rule* is the right one and is enforced: an assessment reaches `confirmed` only on **two independent
+  looks**. What counts as "independent" is currently keyed on the source's identity and type, so where one
+  source's report openly *reads* another's, the system may count two looks where a strict reading sees one.
+  The architecture already has the correct concept one level down — a derived claim "shares an independence
+  group with its premises so it can never self-corroborate" — so extending that same logic to a source that
+  cites a prior report is a small, well-seamed change we have chosen to schedule rather than rush. Stated
+  because it is the honest boundary of a corroboration claim, not because it is unknown.
 - **An order-of-battle undercount is reachable without any merge at all.** Where two candidate formations are
   associated with one observed equipment sighting, the attribution pass keeps the best-evidenced one and
   discards the other **without recording a skip** — every other rejection path in that pass records its

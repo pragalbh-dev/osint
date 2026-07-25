@@ -285,7 +285,7 @@ source grade.
 
 ---
 
-## D11 — [DEFECT, by the system's own rule] Independence is keyed on publisher class, not evidential lineage
+## D11 — [ROADMAP + DISCLOSE, user ruling 2026-07-25] Independence is keyed on publisher class, not evidential lineage
 
 Raised by the independent data hand while hand-labelling the gold slice. **Recorded here, not resolved** — it
 concerns the frozen corpus and the graded oracle, so it belongs to DATA-C / EVAL, and the spike must not
@@ -316,7 +316,33 @@ fact, and it is the crux. **Action: DATA-C / EVAL adjudicate the source text.** 
 independence grouping must treat cite-of-a-prior-report as same-group, or the corpus must carry a genuinely
 independent second look.
 
-**RECLASSIFIED 2026-07-25 — this is not an open question, and I was wrong to frame it as one.** The system
+**USER RULING (2026-07-25) — do NOT re-key independence now; note it for later.** Two things were tangled
+here and they separate cleanly:
+
+1. **The rule is correct and stays as-is: two independent sources ⇒ `confirmed`.** Nothing about that is in
+   question, and `min_independent_groups: 2` implements it correctly for what it measures.
+2. **How independence is *detected* is a refinement, not a defect to fix now.** Grouping keys on publisher /
+   source-type rather than evidential lineage. **The mechanism already exists** — independence groups are a
+   first-class concept, and the config already applies the lineage idea to inferences
+   (`config/credibility.yaml:160`: an inference *"shares an independence group with its premises so it can
+   never self-corroborate to confirmed"*). Because the seam is already there, re-keying it on lineage is a
+   **cheap later change**, so it is **roadmap, not S3 scope** (removed from the RK-COREF scope list; C8 is
+   downgraded accordingly).
+
+**What that means for the flagship:** mechanically it *is* two independent looks and stays `confirmed`; the
+lineage reading is what would change that, and we are deliberately not applying the lineage reading yet. So
+this is **not** a claim that the flagship is wrong — it is a **stated limitation**: where one source's report
+reads another's, the system may count two looks where a strict reading sees one. That goes in the design-note
+disclosures (an honest stated limitation is acceptable; a hidden one is not).
+
+**What is NOT deferred — and is a separate, firm defect:** the **sub-oracle grades twelve entries `confirmed`
+on a single source document**. That violates the rule in (1) directly, with no re-keying question involved: one
+source cannot confirm. The yardstick built to grade the system is more confident than the system's own rule
+allows, in exactly the direction that matters. **Owner: DATA.** (See the gold-slice findings.)
+
+---
+
+**Earlier framing, superseded by the ruling above (kept for the record).** The system
 already states the rule *and* the principle:
 - **The rule:** `min_independent_groups: 2` — *"≥2 independent looks required to reach `confirmed`"*
   (`config/credibility.yaml:101`). One source cannot confirm. There is nothing to adjudicate about that.

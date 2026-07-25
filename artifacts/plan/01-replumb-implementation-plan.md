@@ -289,7 +289,7 @@ what the hands actually read — **this appendix alone does not reach them.**
 | **C5** | The Tier-0 gate is evaluated **per link**; a cluster binds only over passing links and each failing link becomes an injected Tier-1 candidate pair — a **partial** bind, not all-or-nothing (the spec's "**both** members' surface forms" never generalised to n-ary clusters) | §7 RK-COREF 7 |
 | **C6** | `perishable` is declared **per (type, attribute)**: geography is perishable for a *formation*, **constitutive** for a *presence*, **identifying** for a *place*. Without it no anchor/design can confirm and lever 2 cannot exist. Plus fix the `places.augment` ordering | §7 RK-COREF 7 |
 | **C7** | Value normalization is a prerequisite for walling on **any** slot (not just operator); an unnormalizable stated critical value ⇒ **no wall AND no fusion** + a named gap. **A gap must bind the fusion path, not merely annotate it** | §5 G18, §7 RK-COREF 7 |
-| **C8** | Independence keys on **evidential lineage, not document count** — inherit spine/04's independence groups; a cite-of-a-prior-report is same-group. **New code**; same root cause as D11 | §7 RK-COREF 7 |
+| **C8** | **ROADMAP, not S3 (user ruling 2026-07-25).** The rule stands unchanged — **two independent sources ⇒ `confirmed`**. Re-keying *detection* onto evidential lineage (a cite-of-a-prior-report is same-group) is deferred: the independence-group mechanism already exists and already applies the lineage idea to inferences (`config/credibility.yaml:160`), so the change is cheap later. **Disclosed** in the meantime | roadmap + disclosures |
 | **C9** | An authoritative coref bind may instantiate **only over entity ids attested in the contributing document** — decisions (a) and (b) share the `Entity.doc_ids` carrier and (a) must not ship without it | §7 RK-COREF 7 |
 | **C10** | A relocation may be drawn from one source only when that source authoritatively co-refers its own mentions **and** clears the authoritative-bind grade floor; a bare single-member instance never licenses one | §7 RK-COREF 7 |
 
@@ -562,9 +562,13 @@ fragmentation metrics are meaningful.
    - **C7** normalization is a prerequisite for walling on **any** slot (not just operator); an unnormalizable
      stated critical value ⇒ **no wall AND no fusion**, plus a named gap. **A gap must bind the fusion path,
      not merely annotate it.**
-   - **C8** the independence predicate is **evidential lineage, not document count** — inherit spine/04's
-     independence groups; a cite-of-a-prior-report is same-group. **New code** (D6), and it is the same root
-     cause as D11.
+   - **C8 — NOT in this stage's scope (user ruling 2026-07-25).** The independence *rule* is correct and
+     unchanged: **two independent sources ⇒ `confirmed`**. Re-keying how independence is *detected* (evidential
+     lineage rather than publisher / source-type, so a cite-of-a-prior-report is same-group) is a **roadmap
+     refinement**, because the independence-group mechanism already exists and the config already applies the
+     lineage idea to inferences (`config/credibility.yaml:160`) — so extending it later is cheap. **Do not
+     build it here.** It is **disclosed** instead (design-note disclosures): where one source's report reads
+     another's, the system may count two looks where a strict reading sees one.
    - **C9** an authoritative coref bind may instantiate **only over entity ids attested in the contributing
      document** — it shares decision (b)'s `Entity.doc_ids` carrier and must not ship without it.
    - **C10** a relocation may be drawn from one source only when that source authoritatively co-refers its own
