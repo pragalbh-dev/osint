@@ -27,7 +27,11 @@ import pytest
 
 from tests import _rk_coref as rc
 
-QUOTE = "the 8th AD Battalion … the battalion"
+#: A licensing span that clears the EXPLICIT_EQUIVALENCE structural gate on its own terms: it names BOTH
+#: surface forms AND carries a declared ``equivalence_markers`` term ("hereafter"). The earlier wording
+#: joined the two forms with an ellipsis, which is mere CO-OCCURRENCE — the gate rejects it by design, so
+#: every fixture built on it was testing the gate rather than the mechanism under test.
+QUOTE = "the 8th AD Battalion, hereafter the battalion"
 
 
 def _opted():
@@ -40,15 +44,21 @@ def _grouping(second_designator: str) -> list:
     ``e2``'s first claim agrees with ``e1``; only its second disagrees. ``Entity.attrs`` is first-claim-wins
     (``setdefault``), so a check that compares ``attrs`` sees two agreeing '8's and binds; only the retained
     ``attr_history`` series carries the '12'. That is the whole point of the trap.
+
+    **``service_branch`` is deliberately absent.** With it, ``(service_branch, designator)`` is a COMPLETE
+    ``hard_id_fields.unique.unit`` AND-key, and the pair fuses on that rail with the coref claim *removed
+    entirely* — so the consistent mirror below would report a bind the coreference lane never made, and the
+    decline tests would be walling a route their fixture does not take. ``designator`` alone is still a key
+    *component*, which is what the decline reads, so the trap survives; only the free bind goes.
     """
     return [
         rc.ent("e1", "unit", "8th AD Battalion",
-               attrs={"service_branch": "PAF", "designator": "8"}, doc="d1", cid="c-e1"),
+               attrs={"designator": "8"}, doc="d1", cid="c-e1"),
         rc.ent("e2", "unit", "the battalion",
-               attrs={"service_branch": "PAF", "designator": "8"}, doc="d1", cid="c-e2-first",
+               attrs={"designator": "8"}, doc="d1", cid="c-e2-first",
                iso="2025-01-01"),
         rc.ent("e2", "unit", "the battalion",
-               attrs={"service_branch": "PAF", "designator": second_designator}, doc="d1",
+               attrs={"designator": second_designator}, doc="d1",
                cid="c-e2-second", iso="2025-06-01"),
         rc.coref("e1", "e2", doc="d1", quote=QUOTE),
     ]
