@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from chanakya.schemas import AssertionInput, ConfigBundle, EdgeView
+from chanakya.schemas import AssertionInput, ConfigBundle, EdgeView, NodeView
 
 from .status import SUPERSEDED, assign_status
 
@@ -59,6 +59,9 @@ _MIN_BAND = "min_band"  # names a key in credibility.thresholds — never a bare
 _MIN_LOOKS = "min_independent_looks"
 _BLOCKING = "blocking_gate_flags"
 _ALLOWED_STATUS = "newer_status_allow"
+# R1.4 — the EARNED-IDENTITY gate on the promotion (see :func:`_identity_failures`).
+_REQUIRE_EARNED = "require_earned_identity"
+_PROVISIONAL = "provisional"           # a build-materialized instance: identity not earned, by definition
 
 
 @dataclass
@@ -68,6 +71,13 @@ class SupersedeOutcome:
     drawn_edges: list[EdgeView] = field(default_factory=list)
     retired_element_ids: list[str] = field(default_factory=list)  # older edges now *stale*
     held_pairs: list[tuple[str, str]] = field(default_factory=list)  # (older, newer) still for HITL
+    #: R1.4(a) — pairs held because the *identity* under the movement is still an open question, as opposed
+    #: to the credibility floor. A subset of :attr:`held_pairs`, reported separately because the two are
+    #: different questions for the analyst: "is the newer look good enough?" vs "is this one unit?".
+    identity_unearned_pairs: list[tuple[str, str]] = field(default_factory=list)
+    #: R1.4(b) — retired assertions whose honest `insufficient` was NOT overwritten with `stale`. The
+    #: pipeline reads this to leave their Known Gaps in place.
+    protected_refusals: list[str] = field(default_factory=list)
 
 
 def _floor(config: ConfigBundle) -> dict[str, object] | None:
@@ -108,6 +118,95 @@ def _floor_failures(newer: EdgeView, floor: dict[str, object], config: ConfigBun
         failures.extend(f"newer-deception-gate:{f}" for f in hit)
 
     return failures
+
+
+def identity_is_unearned(
+    older: EdgeView,
+    newer: EdgeView,
+    nodes: dict[str, NodeView] | None,
+    unsettled_identities: set[str],
+    floor: dict[str, object],
+) -> str | None:
+    """R1.4 — is this promotion's *subject identity* still an open question? A reason string, or ``None``.
+
+    **The chain this addresses.** Two co-located batteries with no designations look nearly identical to the
+    identity judge, so a formation merge is the path of least resistance. ``based-at`` is functional and
+    keyed on the unit, so the moment they fuse their two distinct sites become *one unit's before and
+    after*. This pass then clears the credibility floor on the newer of the two, sets the supersede link,
+    **pops the pair out of the analyst's queue** — "adjudicated by the machine" — and, because the targets
+    differ, **draws a relocation edge**. One identity error therefore becomes a positively-asserted movement
+    assessment the analyst is never asked about: the non-negotiable breached without any component lying.
+
+    **What firing means: the pair stays with the analyst.** Nothing is retired, nothing is drawn, and the
+    pair keeps ``candidate_supersede`` with the reason recorded — which D-P4.4 already makes the *default*
+    outcome, not the exception. With the identity in question, the analyst is exactly who should decide.
+
+    **And it must not disable promotion generally** — the legitimate relocation beat has to keep working.
+    That is a property of the **trigger**, and it is measured rather than hoped for: on the real corpus the
+    flagship's subject is in **no** open candidate merge and is not provisional, so this never fires on it.
+    (An earlier attempt to buy that safety by weakening the *consequence* instead — promote anyway, just do
+    not pop the queue — was the wrong lever: it left the machine asserting a movement over an identity it had
+    not earned.) Worth recording as a pattern: an implementer closing an over-promotion hole reaches for the
+    broadest guard, because every test it can see rewards caution. **Timidity is a failure mode here, not a
+    safe default** — so the guard is kept sharp by a mirror test that asserts the earned case still promotes.
+
+    Scoped to promotions that would **draw** a relocation across *differing* targets — a same-target refresh
+    asserts no movement, so there is nothing to fabricate — and it fires when the subject is:
+
+    * a **provisional** instance (build-materialized: there is no earned identity to rest on at all); or
+    * an endpoint of an **open `candidate` merge** — a same-as the resolver put in front of the analyst and
+      nobody has adjudicated.
+
+    **What "sub-confirmed" is NOT.** Not the node's assessed *status*. The legitimate flagship relocation
+    sits at *probable*, so reading the confidence label would suppress the very beat this leaves working. The
+    question is about the identity **decision**, in the merge-band vocabulary: is it still open? A
+    never-merged subject, and one whose merges are all settled, both pass.
+
+    The co-location-specific half of this (making such a merge fail to *fuse* in the first place) is the
+    identity layer's job; this is the downstream backstop that keeps a human in the loop if it does.
+    """
+    if not bool(floor.get(_REQUIRE_EARNED)):
+        return None
+    if newer.target == older.target:
+        return None  # a same-target refresh asserts no movement; there is nothing to fabricate
+    node = (nodes or {}).get(newer.source)
+    if node is not None and node.attrs.get(_PROVISIONAL):
+        return "subject-identity-provisional"
+    if newer.source in unsettled_identities:
+        return "subject-identity-open-candidate-merge"
+    return None
+
+
+def protects_an_honest_refusal(older: EdgeView) -> bool:
+    """R1.4(b) — must this retirement leave its honest *insufficient* (and its Known Gap) alone?
+
+    True when the older assertion's evidence requirement was unmet — the same condition as "it raised a
+    Known Gap", since both read ``sufficiency.satisfied``. Then the supersede link is still written (the
+    newer fact stands and the older one *is* retired) but two things do not happen: the label is not
+    restated to ``stale``, and the pipeline does not drop the gap.
+
+    **What settles this, and it is the shipped vocabulary rather than a doc.** ``credibility/status.py``
+    defines the label: ``_STALE`` is *"the freshest supporting look older than 1 half-life → demote
+    confirmed→stale"*. So in this system's own terms ``stale`` means **"this WAS confirmed and has since
+    aged out."** Writing it over an ``insufficient`` therefore asserts something *false*: that the position
+    was once established and has merely gone out of date. **An assertion that was never established cannot
+    go stale — there is nothing to age.** That is an over-claim about provenance, which is the disqualifying
+    class, so the rule cannot be conditional on anything.
+
+    **Unconditional — and it does not cost the relocation beat.** I first tied this to R1.4(a)'s
+    unearned-identity trigger, reasoning from D-13.14's sentence (which names the gap deletion as a
+    consequence *of the over-merge*) and from the measured fact that the flagship's own older basing is
+    ``insufficient``, so protecting it stops it reading ``stale``. That reading was wrong about the *cost*:
+    retirement is carried by :attr:`EdgeView.superseded_by`, which is independent of the status label. The
+    older position is retired **because it is superseded**; it is *not confirmed* because nobody confirmed
+    it. Both facts survive, which is strictly more informative than either label alone.
+
+    (a) and (b) guard **different** things and are therefore independent: (a) guards *identity* — is this one
+    unit? — while (b) guards the origin's *evidential status* — did we ever establish it was there? An earned
+    identity with an unestablished origin is still a relocation whose premise was never confirmed.
+    """
+    suff = older.sufficiency
+    return suff is not None and not suff.satisfied
 
 
 def _restate(older: EdgeView, config: ConfigBundle) -> None:
@@ -162,12 +261,30 @@ def _drawn_edge(older: EdgeView, newer: EdgeView) -> EdgeView:
     )
 
 
-def promote_supersessions(edges: list[EdgeView], config: ConfigBundle) -> SupersedeOutcome:
+def promote_supersessions(
+    edges: list[EdgeView],
+    config: ConfigBundle,
+    nodes: dict[str, NodeView] | None = None,
+    unsettled_identities: set[str] | None = None,
+    *,
+    layer_routing: bool = False,
+) -> SupersedeOutcome:
     """Promote each ordered candidate pair that clears the floor; leave the rest for HITL.
 
     Idempotent and order-independent: it reads the candidate attrs ``view/supersede.py`` wrote and the
     assessment the status machine just attached, so replaying the same logs + config yields the same
     edges byte-for-byte (gate G2).
+
+    ``nodes`` and ``unsettled_identities`` supply R1.4's two inputs: whether the subject is a
+    build-materialized provisional instance, and whether its identity is still an open ``candidate`` merge.
+    Both optional and default-``None`` so every existing caller is unchanged; absent (or with the gate
+    unconfigured) the behaviour is exactly the pre-S2 one.
+
+    ``layer_routing`` is the stage flag: **both** of R1.4's prohibitions ride it, like everything else S2
+    changes, so flag-off promotion behaviour is untouched by construction. They are independent of each other
+    — (a) :func:`identity_is_unearned` guards *identity*, (b) :func:`protects_an_honest_refusal` guards the
+    origin's *evidential status* — and neither is conditioned on the other. An earned relocation whose origin
+    was never established is still promoted, retired and drawn; it simply does not read ``stale``.
     """
     outcome = SupersedeOutcome()
     floor = _floor(config)
@@ -180,7 +297,20 @@ def promote_supersessions(edges: list[EdgeView], config: ConfigBundle) -> Supers
             continue
         # No floor configured ⇒ retire nothing. A safety gate whose config is missing must fail closed;
         # the pair simply stays in the analyst's queue where supersede.py left it.
-        failures = ["supersede-floor-not-configured"] if floor is None else _floor_failures(newer, floor, config)
+        if floor is None:
+            failures = ["supersede-floor-not-configured"]
+        else:
+            failures = _floor_failures(newer, floor, config)
+            # R1.4(a) — clearing the CREDIBILITY floor is not enough. Promoting also retires the older
+            # position, takes the pair off the analyst's desk and draws a relocation, and that is only the
+            # machine's call over an identity it earned.
+            if layer_routing:
+                unearned = identity_is_unearned(
+                    older, newer, nodes, unsettled_identities or set(), floor
+                )
+                if unearned is not None:
+                    failures = [*failures, unearned]
+                    outcome.identity_unearned_pairs.append((older.id, newer.id))
         if failures:
             older.attrs[GATE] = GATE_HELD
             newer.attrs[GATE] = GATE_HELD
@@ -202,8 +332,15 @@ def promote_supersessions(edges: list[EdgeView], config: ConfigBundle) -> Supers
             newer.attrs.pop(PENDING_OLDER, None)
             newer.attrs.pop(CANDIDATE, None)
         older.attrs.pop(PENDING_NEWER, None)
-        _restate(older, config)
-        outcome.retired_element_ids.append(older.id)
+        # R1.4(b): the older position IS retired — `superseded_by` above says so, independently of any
+        # label — but an assertion that was never established cannot go *stale*, because `stale` means
+        # "was confirmed, has since aged out". So an honest `insufficient` keeps its label and (in the
+        # pipeline) its Known Gap. Every assessable retirement restates to `stale` exactly as before.
+        if layer_routing and protects_an_honest_refusal(older):
+            outcome.protected_refusals.append(older.id)
+        else:
+            _restate(older, config)
+            outcome.retired_element_ids.append(older.id)
         if newer.target != older.target:
             outcome.drawn_edges.append(_drawn_edge(older, newer))
 

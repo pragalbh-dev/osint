@@ -12,10 +12,12 @@ passes that run *between* them:
 * ``seed --scenario <name>`` — the **keyless boot check.** Append the scenario's frozen bundles into a
   fresh in-memory evidence log and report the claim count — a fast, side-effect-free validation that the
   keyless path parses and loads (the same path the app boot runs).
-* ``attribute`` / ``basing --scenario <name>`` — the **offline enrichment passes**: the connection-triggered
-  variant-identity proposer (keyed) and the derived unit→site basing proposer (keyless). Both read the
-  frozen resolved view, emit cited ``inference`` claims upstream of the append, and ``--record`` freezes
-  them as ``*__attr.json`` / ``*__basing.json`` bundles that survive a re-record of the source documents.
+* ``attribute --scenario <name>`` — the **offline enrichment pass**: the connection-triggered
+  variant-identity proposer (keyed). It reads the frozen resolved view, emits cited ``inference`` claims
+  upstream of the append, and ``--record`` freezes them as ``*__attr.json`` bundles that survive a re-record
+  of the source documents. (The sibling ``basing`` pass is **gone** — RK-LAYER moved the unit→site basing
+  derivation *inside* ``rebuild()`` as a pure derived-layer edge citing its two premise claim-atoms, so
+  there is nothing left to mint offline or freeze. See ``view/basing.py``.)
 * ``renormalize --scenario <name>`` — re-run the deterministic location canonicaliser over the bundles.
 """
 
@@ -29,7 +31,6 @@ from chanakya.config.store import ConfigStore
 from chanakya.ingest import adapters, seed
 from chanakya.ingest.client import build_extraction_client
 from chanakya.schemas import ConfigBundle
-from chanakya.schemas.claim import Triple
 from chanakya.store.log import EvidenceLog
 
 
@@ -113,45 +114,6 @@ def _cmd_attribute(args: argparse.Namespace) -> int:
     return 0
 
 
-def _cmd_basing(args: argparse.Namespace) -> int:
-    """Derive cited ``<unit, based-at, site>`` attributions over the frozen resolved view (offline).
-
-    The attribution layer of the two-layer basing model (D-P4.1/2/3): an observed equipment-at-site
-    occupancy plus a formation reference become one derived, doubly-cited ``inference`` claim carrying the
-    observation's valid time. Unlike ``attribute``, this pass is a pure graph derivation, so it needs **no
-    extraction key** — the demo materialises the attribution layer keyless. ``--record`` freezes the
-    derived claims as ``*__basing.json`` bundles; otherwise they are appended and the view re-rebuilt.
-    """
-    bundles_dir = settings.corpus_dir() / "scenarios" / args.scenario / "claims"
-    if not bundles_dir.is_dir():
-        print(f"no claim bundles at {bundles_dir}", file=sys.stderr)
-        return 2
-    config = _load_config()
-    store = EvidenceLog()
-    seed.seed_store_from_bundles(store, bundles_dir)
-
-    from chanakya.ingest import basing
-    from chanakya.view.pipeline import rebuild
-
-    if args.record:
-        prev = rebuild(store, [], config)
-        run = basing.propose_basing(prev, {c.claim_id: c for c in store.replay()}, config)
-        for path in basing.freeze_bundles(run, bundles_dir):
-            print(f"wrote {path}")
-    else:
-        run = basing.enrich(store, config)
-    for skip in run.skipped:
-        print(f"skip {skip.site_id}: {skip.reason}", file=sys.stderr)
-    for claim in run.claims:
-        triple = claim.payload
-        if isinstance(triple, Triple):
-            print(f"derived {triple.subject} -{triple.predicate}-> {triple.object} "
-                  f"(premises={claim.premises}, event_time={claim.event_time})")
-    print(f"derived {len(run.claims)} basing attribution(s); "
-          f"fired {len(run.fired)}, skipped {len(run.skipped)}")
-    return 0
-
-
 def _cmd_renormalize(args: argparse.Namespace) -> int:
     """Re-run the deterministic location canonicaliser over a scenario's frozen bundles.
 
@@ -220,14 +182,6 @@ def main(argv: list[str] | None = None) -> int:
     p_attr.add_argument("--record", action="store_true",
                         help="freeze proposed inferences as *__attr.json bundles; else append + re-rebuild")
     p_attr.set_defaults(func=_cmd_attribute)
-
-    p_basing = sub.add_parser(
-        "basing",
-        help="derive cited unit->site basing attributions over the frozen view (offline, KEYLESS)")
-    p_basing.add_argument("--scenario", required=True, help="scenario name, e.g. hq9p_primary")
-    p_basing.add_argument("--record", action="store_true",
-                          help="freeze the derived claims as *__basing.json bundles; else append + rebuild")
-    p_basing.set_defaults(func=_cmd_basing)
 
     p_renorm = sub.add_parser(
         "renormalize",

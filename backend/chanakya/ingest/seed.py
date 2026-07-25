@@ -109,7 +109,12 @@ def ingest_bundle(path: str | Path) -> list[ClaimRecord]:
 
 
 def seed_store_from_bundles(
-    store: SupportsAppendMany, bundles_dir: str | Path, *, exclude_docs: Sequence[str] = ()
+    store: SupportsAppendMany,
+    bundles_dir: str | Path,
+    *,
+    exclude_docs: Sequence[str] = (),
+    skip_suffixes: Sequence[str] = (),
+    config: ConfigBundle | None = None,
 ) -> int:
     """Append every ``<source_id>.json`` bundle under ``bundles_dir`` into ``store``; return the count.
 
@@ -124,9 +129,28 @@ def seed_store_from_bundles(
     full seed would have produced (the append is order-independent at the reduction, and the arrival is
     what an alert is *about*). A held-back document is a demo/staging choice, never a data edit: no bundle
     contents change, only which of them are present at boot.
+
+    A derived bundle family whose derivation now happens at **rebuild** instead is left **unread**
+    (RK-LAYER). The distinction from ``exclude_docs`` matters: a held-back document is *not yet collected*
+    and will arrive later, whereas a retired derived bundle is *stale output of a deleted mechanism* and must
+    never arrive, because reading it alongside the live derivation delivers the same conclusion twice — once
+    frozen and never ageing or re-deriving, once derived. Which family that is comes from the layer-routing
+    flag, so with the flag **off** the glob is exactly as it always was — and that is what keeps the keyless
+    boot byte-identical.
+
+    Two ways to say it, because a loader that can be handed the config is easier to call *correctly* than one
+    that makes every call site remember an accessor: pass ``config`` and the retirement is read off it, or
+    pass ``skip_suffixes`` when the caller has already resolved the list (or wants to state it outright).
+    ``config`` wins where both are given, and neither is required.
     """
+    if config is not None:
+        from chanakya.ontology import LayerRouting  # local: keep the module's import graph shallow
+
+        skip_suffixes = LayerRouting.from_ontology(config.ontology).retired_bundle_suffixes()
     total = 0
     for path in sorted(Path(bundles_dir).glob("*.json")):
+        if any(path.name.endswith(suffix) for suffix in skip_suffixes):
+            continue
         if any(bundle_belongs_to_doc(path.name, doc) for doc in exclude_docs):
             continue
         claims = ingest_bundle(path)

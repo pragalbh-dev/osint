@@ -26,6 +26,7 @@ from pathlib import Path
 from chanakya import settings
 from chanakya.config import ConfigStore
 from chanakya.observe import evaluate
+from chanakya.ontology import LayerRouting
 from chanakya.schemas import Alert, ClaimRecord, GraphView
 from chanakya.store import DecisionLog, EvidenceLog
 from chanakya.view import rebuild
@@ -149,6 +150,7 @@ def seed_evidence_keyless(
     *,
     scenario: str | None = None,
     withheld_docs: Sequence[str] = (),
+    skip_suffixes: Sequence[str] = (),
 ) -> int:
     """Seed the evidence log from committed pre-extracted claim bundles, if any are present.
 
@@ -160,12 +162,18 @@ def seed_evidence_keyless(
     see :func:`resolve_withheld_docs`. The hold-back runs inside the *same* sorted append
     (``seed_store_from_bundles(exclude_docs=…)``), so a withheld boot is bit-for-bit the boot that would
     have happened had those documents not yet been collected — deterministic, gate G2.
+
+    ``skip_suffixes`` retires a derived bundle family whose derivation now happens at rebuild (RK-LAYER),
+    so a frozen conclusion is not seeded beside the live one. Read from the layer-routing flag by the
+    caller; empty with the flag off, which keeps the keyless boot byte-identical.
     """
     from chanakya.ingest import seed_store_from_bundles  # lazy: keep `import chanakya.api` light
 
     bundles_dir = scenario_bundles_dir(scenario)
     if bundles_dir.is_dir() and any(bundles_dir.glob("*.json")):
-        return seed_store_from_bundles(evidence, bundles_dir, exclude_docs=withheld_docs)
+        return seed_store_from_bundles(
+            evidence, bundles_dir, exclude_docs=withheld_docs, skip_suffixes=skip_suffixes
+        )
     return 0
 
 
@@ -177,5 +185,12 @@ def build_default_state(*, scenario: str | None = None, clock: Clock = utc_now_i
     config = ConfigStore.seed_from(settings.config_dir())
     evidence = EvidenceLog()
     decision = DecisionLog()
-    seed_evidence_keyless(evidence, scenario=scenario, withheld_docs=resolve_withheld_docs(config))
+    seed_evidence_keyless(
+        evidence,
+        scenario=scenario,
+        withheld_docs=resolve_withheld_docs(config),
+        # The flag-gated retirement of the derived basing bundles: with layer routing on, rebuild derives
+        # that edge itself, so seeding the frozen copy too would deliver the same attribution twice.
+        skip_suffixes=LayerRouting.from_ontology(config.snapshot().ontology).retired_bundle_suffixes(),
+    )
     return AppState(evidence, decision, config, clock=clock)

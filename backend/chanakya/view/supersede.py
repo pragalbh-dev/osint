@@ -97,36 +97,22 @@ def _representative_event_time(claims: list[ClaimRecord]) -> DateValue | None:
     return earliest.event_time
 
 
-def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[EdgeView]:
-    """Build the EdgeView(s) for one resolved edge instance, applying supersede/contradict.
+def order_instance_edges(
+    edges: list[EdgeView], intervals: dict[str, tuple[str, str] | None]
+) -> list[EdgeView]:
+    """Apply supersede/contradict ordering across the edges of ONE instance, in place.
 
-    One EdgeView per distinct ``(source, type, target)``; supersede/contradict links are set across
-    them when the instance holds more than one target.
+    Factored out of :func:`build_instance_edges` so the **derived** layer runs the identical rule: the
+    rebuild-materialized basing edges (``view/basing.py``) are not built from claim groups, so they cannot
+    reuse the claim-shaped path — but a state change must not be invisible in the one layer that derives it,
+    and a second copy of this rule would be free to drift. ``intervals`` maps edge id → the ``event_time``
+    interval that edge is asserted over, ``None`` when it is undated or half-bounded (D-P4.4 iii: *missing*
+    ⇒ unorderable, never guessed).
     """
-    by_target: dict[tuple[str, str, str], list[ClaimRecord]] = defaultdict(list)
-    for c in claims:
-        t = cast(Triple, c.payload)  # caller guarantees relationship claims (payload is a Triple)
-        by_target[(t.subject, t.predicate, t.object)].append(c)
-
-    edges: list[EdgeView] = []
-    for (subj, pred, obj), cs in sorted(by_target.items()):
-        edges.append(
-            EdgeView(
-                id=f"e:{subj}:{pred}:{obj}",
-                type=pred,
-                source=subj,
-                target=obj,
-                edge_instance=edge_instance,
-                claim_ids=sorted(c.claim_id for c in cs),
-                time_interval=_representative_event_time(cs),  # D7/§1B: validity carried onto the edge
-            )
-        )
-
     if len(edges) <= 1:
         return edges  # single target → plain corroboration, nothing to supersede
 
-    # Order the targets by their asserted intervals; resolve state-change vs contradiction vs uncertainty.
-    timed = [(e, _interval(by_target[(e.source, e.type, e.target)])) for e in edges]
+    timed = [(e, intervals.get(e.id)) for e in edges]
     if any(iv is None for _, iv in timed):
         for e, _ in timed:
             e.attrs[CANDIDATE] = True  # can't order → don't overwrite; HITL adjudicates
@@ -159,3 +145,31 @@ def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[
             newest_edge.attrs[PENDING_OLDER] = sorted({*pending, older_edge.id})
             newest_edge.attrs[GATE] = GATE_PENDING
     return edges
+
+
+def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[EdgeView]:
+    """Build the EdgeView(s) for one resolved edge instance, applying supersede/contradict.
+
+    One EdgeView per distinct ``(source, type, target)``; supersede/contradict links are set across
+    them when the instance holds more than one target.
+    """
+    by_target: dict[tuple[str, str, str], list[ClaimRecord]] = defaultdict(list)
+    for c in claims:
+        t = cast(Triple, c.payload)  # caller guarantees relationship claims (payload is a Triple)
+        by_target[(t.subject, t.predicate, t.object)].append(c)
+
+    edges: list[EdgeView] = []
+    for (subj, pred, obj), cs in sorted(by_target.items()):
+        edges.append(
+            EdgeView(
+                id=f"e:{subj}:{pred}:{obj}",
+                type=pred,
+                source=subj,
+                target=obj,
+                edge_instance=edge_instance,
+                claim_ids=sorted(c.claim_id for c in cs),
+                time_interval=_representative_event_time(cs),  # D7/§1B: validity carried onto the edge
+            )
+        )
+    intervals = {e.id: _interval(by_target[(e.source, e.type, e.target)]) for e in edges}
+    return order_instance_edges(edges, intervals)

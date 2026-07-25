@@ -37,6 +37,26 @@ def _as_list(v: str | list[str] | None) -> list[str]:
 #: untyped bag. ``None`` = this attribute is not a discriminator slot.
 DiscriminatorClass = Literal["operator", "geography", "designation", "time"]
 
+#: The two **layers** of the type/instance split (plan §4 A2, spine/13 §3/§5, D-13.3). ``design`` is the
+#: abstract, geography-agnostic, legitimately-shared side (a variant, a component, a manufacturer, a
+#: place); ``instance`` is the concrete, operator-bound, located, timed side (a presence, a formation, an
+#: import event). The operational test is one question — *does this fact change if a different operator
+#: fields the same design?* No ⇒ ``design``; yes ⇒ ``instance`` (spine/13 §3a).
+#:
+#: Layer is a property of the **type**, uniform — never contextual. A genuinely dual-natured attribute (a
+#: design's *nominal* range vs a deployment's *effective* range) is split into **two attribute types**, one
+#: per layer, rather than being tagged "depends" (D-13.3). That rule is what keeps the straddle-split
+#: trigger decidable from the declaration alone.
+#:
+#: ``meta`` is the **third value** (ruling L3): system/bookkeeping kinds — a source, an indicator, a known
+#: gap, an operator — are *neither* a design nor an instance of one, and A2's "every node type gains a
+#: layer" would otherwise force a false choice. Forcing a meta kind into ``design`` is not merely untidy:
+#: the straddle-split trigger fires on a layer **mismatch**, so a meta type mislabelled ``design`` would
+#: generate phantom splits the moment any of its attributes were tagged ``instance``. ``meta`` is stated
+#: explicitly in config rather than left implicit, and it means *outside the two-layer routing*: nothing
+#: splits, nothing materializes, nothing binds across.
+LayerName = Literal["design", "instance", "meta"]
+
 
 class AttrDef(ConfigModel):
     """One declared attribute of a node/edge/event type (A7's structured-attrs representation).
@@ -57,10 +77,8 @@ class AttrDef(ConfigModel):
     **The seam.** This entry carries what is *ontological* — what kind of thing the attribute is. Identity
     *semantics* (an attribute's ``role`` — identity / critical / supporting — and its per-``(type,
     attribute)`` ``perishable`` flag, C6) stay in ``config/resolution.yaml``'s ``attribute_roles``, read via
-    ``chanakya.resolve.rconfig``. Mixing the two is how the two files start duplicating each other. On the
-    ontological side of that line exactly one field is still to come: **RK-LAYER (S2) adds ``layer``
-    (design | instance) here for A2** — one added key on each entry, nothing reshaped (plan §3 item 6),
-    which is why the migrated YAML puts one attribute per line.
+    ``chanakya.resolve.rconfig``. Mixing the two is how the two files start duplicating each other. That
+    line is why ``layer`` (below) lives here while ``role`` / ``perishable`` do not.
     """
 
     name: str
@@ -68,6 +86,14 @@ class AttrDef(ConfigModel):
     #: undeclared for every attribute today: absence reads *unknown*, never "not a discriminator", so a
     #: gap in the declaration can never masquerade as a positive statement about the attribute.
     discriminator: DiscriminatorClass | None = None
+    #: The attribute's layer (A2/D-13.3). The **per-attribute** layer is the non-obvious half of A2: an
+    #: *instance*-layer attribute sitting on a *design*-layer node type is the **straddle-split trigger** —
+    #: the signal that the extractor lumped a design and one of its instances into a single mention. If
+    #: attributes only inherited their host node's layer the misplacement would be invisible. Optional so
+    #: an undeclared attribute reads *unknown* (never "design by default", which would silently disarm the
+    #: trigger); :class:`~chanakya.ontology.NodeTypeIndex` treats an undeclared attribute as un-routable
+    #: rather than as a design fact.
+    layer: LayerName | None = None
 
 
 class TypeDef(ConfigModel):
@@ -86,6 +112,13 @@ class TypeDef(ConfigModel):
     #: The type's declared attributes, as :class:`AttrDef` **mappings** (A7) — a bare string is rejected,
     #: not coerced. Use :meth:`attr_names` where only the names are wanted.
     attrs: list[AttrDef] = []
+    #: The **node type's** layer (A2/D-13.3) — design | instance, by the routing test in
+    #: :data:`LayerName`. Inert on edge/event types: an *edge* endpoint's layer is never declared, it is
+    #: derived from the endpoint node types the edge already names in ``from``/``to``
+    #: (:meth:`~chanakya.ontology.EdgeLaneIndex.endpoint_layers`), so there is exactly one place a layer
+    #: is authored. Optional: an undeclared node type is outside the two-layer routing (nothing splits,
+    #: nothing materializes) rather than defaulting into either layer.
+    layer: LayerName | None = None
     # edge-only (ignored on node/event types) — D-A:
     from_type: str | list[str] | None = Field(default=None, alias="from")  # domain: subject node type(s)
     to_type: str | list[str] | None = Field(default=None, alias="to")      # range:  object  node type(s)
