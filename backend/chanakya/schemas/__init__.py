@@ -61,7 +61,7 @@ from .config_models import (
     TypeDef,
 )
 from .decision import Actor, DecisionRecord, DecisionType, Stage
-from .ids import is_claim_id, make_claim_id
+from .ids import REFERENT_PREFIX, is_claim_id, is_referent_id, make_claim_id, make_referent_id
 from .stage_io import AssertionAssessment, AssertionInput, Partition, PlaceRef, pair_key
 from .values import (
     BoundarySource,
@@ -101,8 +101,8 @@ from .view import (
 __all__ = [
     # base
     "Record", "ConfigModel",
-    # ids
-    "make_claim_id", "is_claim_id",
+    # ids — the two atom levels (A1): claim atom (live) + referent atom (constructor only until S3)
+    "make_claim_id", "is_claim_id", "make_referent_id", "is_referent_id", "REFERENT_PREFIX",
     # values
     "ExactDate", "LabelDate", "Period", "DateSpec", "DateValue", "canonical_iso_bounds",
     "report_bounded_validity",

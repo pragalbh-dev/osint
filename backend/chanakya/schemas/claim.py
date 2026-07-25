@@ -112,7 +112,30 @@ class ResolvedRef(Record):
 class ClaimRecord(Record):
     """One sourced claim: *Source S, dated D, asserts <s,p,o>* (master §4.2, spine/08 §3.1)."""
 
+    # THE CLAIM ATOM (plan §4 A1). The canonical value — the one assigned by
+    # ``ingest.dedup.assign_claim_ids`` — is the per-mention addressing bedrock of the whole system: it is
+    # minted once at ingest, immutable, and **never splits or merges**. The id present at construction is
+    # only *provisional* (unique within one extraction call); dedup reassigns it, folds restatements, and
+    # rewrites every cross-claim reference in lockstep. Everything that must survive a re-key addresses
+    # this, never a derived node id and never a name (A5/A6).
     claim_id: str  # human-readable, e.g. "d05-row12" (schemas.ids)
+    # THE REFERENT ATOM (plan §4 A1) — one per **document-local coreference cluster**, ``ref:<doc>-<c>``
+    # (``schemas.ids.make_referent_id``). **Dormant in S1: always ``None``.** Populated at ingest from S3,
+    # when coreference becomes a required tier and a cluster grain exists to mint against; optional-by-
+    # default is what keeps this a non-breaking amendment on an ``extra="forbid"`` record, so the frozen
+    # pre-S1 bundles still validate unchanged.
+    #
+    # It is a **grouping signal the rebuild consults and may decline** (D-13.18), never an address: a
+    # knowledge node is a derived grouping of *claim* atoms (claim-atom-primary, A1/A5), so declining a
+    # referent grouping simply de-groups to claim-atom granularity and raises for an analyst — no atom
+    # ever splits. ``resolved_ref`` below stays the *derived* pointer at what a claim resolved to; this is
+    # evidence-layer provenance and is never written by ``rebuild()`` (gate G17).
+    #
+    # Grain: an **entity-form** claim carries the referent of the mention it names. A relationship/event
+    # claim has *two or more* mentions and therefore no single referent — its endpoints' referents are
+    # reached through the tier-3 mention refs (``_subject_mention`` / ``_object_mention``, which name the
+    # endpoint *claims*), so the field stays ``None`` on those forms.
+    referent_id: str | None = None
     source_id: str  # → SourceRegistryEntry
     doc_ref: DocRef | list[DocRef]  # one, or many spans for one within-doc restatement
     kind: Kind
