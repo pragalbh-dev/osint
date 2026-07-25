@@ -1469,3 +1469,57 @@ that this class of protection arrives at the S3 cutover, not before it.
    not `possible` into the same `capped_probable` bucket, so `confirmed` is a no-op relabel of `probable`.
    Only an **empty** value lifts the cap. These are pre-existing cap semantics, not something S3 changed —
    logged because the natural reading of the knob is the wrong one.
+
+### AH-1 — an unresolved anchor must be loud on both surfaces (2026-07-25)
+
+A tripwire anchored on a node id that no longer resolves watched **nothing** and said **nothing**: measured
+on the real corpus, the flagship `obs-basing-relocation` fires 1 alert; re-point its `watch_instances` at an
+id no node carries and it fires 0, with no exception, no log line and no surface change. Latent today
+because the shipped anchors resolve — **live** the moment RK-NAMECUT re-keys node ids. Full probe + numbers
+in the branch's session notes; fix on `fix/anchor-resolution-honesty`.
+
+| Decision | Why | → |
+|---|---|---|
+| **Scope semantics are PRESERVED; only the diagnosis is new.** An observable whose anchors all miss still returns its (non-matching) `watch_instances` set, never `None` | `None` means *unscoped* to `evaluator._in_scope` — **match everything**. Deleting the literal seed at `observable.py:242` would convert a silent-no-alerts bug into a silent-**ALL**-alerts bug: every `based-at` change in the graph firing a unit-relocation tripwire, attributed to a subject it is no longer scoped to | **rejects** "empty scope = disarm" and "empty scope = unscoped" alike. The failure is made **loud**, not different. Pinned by `test_all_anchors_missing_keeps_the_non_matching_scope_not_unscoped` |
+| **The raw-config-string seed is removed from the *success* path** — a watch instance contributes the id it actually **resolved to** | The seed was a **masking bug**: `resolve_scope` returned a set containing `unit_hq9b` while the real node was excluded, so anyone debugging saw the expected id sitting in scope. A raw string that is not a view node id can never match `_watched` (always a real node id), so it was inert — inert but misleading | Behaviour-identical by construction (a raw string that *is* a node id resolves literally and arrives via the BFS anyway); verified against the 169/80/71/20 baseline and the flagship's 1 alert |
+| **Three failure modes are named separately, because they have opposite consequences**: *watching nothing* (narrowed to an empty set) · *unscoped* (silently widened to the whole graph) · *partial* (one good anchor laundering a bad one) | "watching 0 nodes" and "now evaluating every element in the graph" are not the same warning, and a partially-scoped tripwire is the shape that hides longest in the field | The sentence is composed **once**, in `observable._scope_warning`, and every surface renders it verbatim — so the API and the SPA cannot drift on what the fault means |
+| **In-app anchor validation is a WARNING carried on the response, not a 422** | An anchor may legitimately be armed *before* the entity exists — "arm the tripwire, then ingest the document that creates the node" is a real workflow, and a hard rejection breaks it. Silence, by contrast, breaks nothing except the analyst's trust | Live check, re-run on every read against the current view (hot-config: no restart, no cached verdict, no boot-time-only validation). It clears itself the moment coverage creates the entity — pinned by `test_the_check_is_live_not_boot_time` |
+| **The lens's `meta.anchors_missing` (present since AR-2, consumed by nothing) is routed into a first-class Known Gap** | A grep across `frontend/` and `backend/chanakya/api/` found zero consumers outside `lens.py` and its tests, so an analyst got a quietly smaller graph. A Known Gap is the object this system already uses for "what we do not know": it rides on `GET /view`, the retrieval tools read it, and it sits off the confidence scale rather than as a low score | Emitted **only** when an anchor misses, so a healthy lens is byte-identical. `next_coverage_due` stays `None` — this is a scoping failure with no source cadence behind it, and inventing a date would be the fabrication the gap exists to prevent; it names the fix instead |
+
+**Disclosure for the design note.** The SPA never requests `GET /view?subject=` (`useLiveSync()` is called with
+no subject), so there is no lens surface in the UI for the Known Gap to render on today; it is honest in the
+API and in ASK's tool reads, not on screen. The *observable* half of the same fault **is** on screen — the
+Watch panel and the rail's "Watching" row — because that is the path the flagship demo actually walks.
+
+### AH-2 — "awaiting coverage" is not "broken": the honesty fix must not cry wolf (2026-07-25)
+
+Integration triage of AH-1 against the **shipped default boot state**, not a fixture. `config/sources.yaml`
+withholds `d18`/`d19` from the seed *on purpose* so a reviewer can ingest them live and watch the flagship
+tripwire fire — which means `site_rahwali` legitimately has no node at first paint. Measured on a real
+`create_app()` boot, AH-1 therefore reported **three** anchor warnings reading "…is NOT being watched, and
+silence about it is not an all-clear", turned all three Watch cards live-bordered and made the rail read
+"3 armed · 3 anchor unresolved · none fired" — on a healthy system, one ingest away from firing correctly.
+The alarm was loudest while nothing was wrong and fell silent the moment the demo alert fired.
+
+That is not a cosmetic problem. A monitoring surface that cries wolf while healthy teaches its analyst to
+ignore it, which is the same failure as silence arrived at from the other side — and it landed on the hero
+demo path at first paint.
+
+| Decision | Why | → |
+|---|---|---|
+| **A missing anchor is split into `pending_coverage` vs `dangling`**, and only `dangling` is a fault | The discriminator was already free: `resolve/anchor.py` consults `config.entities.as_map()` as its rung-2 registry. An anchor that **is** a declared entity with no view node is a *coverage* statement; one that is neither node id, nor registry entry, nor alias is a *broken reference* — the actual RK-NAMECUT threat model | "Correct the anchor id" is now attached only to ids there is something to correct about. `site_rahwali` at boot reports as a coverage gap that "binds itself when a document creates it. No edit is needed" |
+| **Severity, not the length of `missing`, drives loudness** — `ScopeResolution.severity` ∈ ok / pending_coverage / dangling / watching_nothing / unscoped | The three AH-1 modes were kept apart in the *wording* but every surface still rendered every entry identically loud | The rail counts faults only (boot caption is byte-identical to before); the Watch panel renders `pending_coverage` in its neutral register as "AWAITING COVERAGE". An **unknown/absent** severity still counts as a fault — an underclaim is as dishonest as an overclaim |
+| **The warning names the config object that actually declared the anchor** | Two of the three shipped observables declare **no** `watch_instances` and inherit every anchor from the lens, yet each was told "this tripwire… correct the anchor id" — sending the analyst to `config/observables.yaml`, where there is no anchor to correct. One lens typo produced N identical misdirected warnings | `declared_in` maps each anchor to `watch_instances` or `subject:<lens id>`, and the sentence points at `config/subjects.yaml` when that is the file to edit |
+| **`arm-only` observables are excluded from `anchor_diagnostics`** | Both `_fire` and `arm` return on `ARM_ONLY` *before* calling `resolve_scope`, so the scope is provably never consulted. Blaming an anchor for a silence that `explain()` already attributes, correctly and separately, to arm-only mode is a false alarm about an unused value | Not hidden: `explain()` still reports that observable's anchors in full |
+| **Two silent-unscoping holes AH-1 left are now diagnosed** — a `subject:` naming no lens, and a lens declaring `anchors: []` | Both yield "match everything" with no error (`anchors: []` has no `min_length`; a dangling subject id 404s everywhere else in the codebase but is accepted here). The tripwire evaluates the whole graph while claiming a subject | **Scope is untouched** in both cases — same `None`, same behaviour — exactly as AH-1 decided. Only the silence is removed. A tripwire with no subject *and* no `watch_instances` stays silent: that config asked for a global tripwire |
+| **`propose_observable_from_text` now passes its view/config to `explain()`** | The analyst's confirm screen is the one moment a tripwire's anchors are reviewed before arming, and it was the single production surface where AH-1's check reported "not performed" | Both arguments were already in scope; one-line change |
+
+**Verified after the fix:** 169 nodes / 80 edges / 71 events / 20 gaps · flagship `obs-basing-relocation`
+still fires exactly 1 alert (`unit_hq9b`, `site_rawalpindi → site_rahwali`) · its scope is still
+`{site_rahwali, unit_hq9b, unit_paad}` with `severity: ok` · `anchor_diagnostics` is `[]` on the full view ·
+S1 golden byte-identity gate passes · `ruff check` clean (AH-1 had left 2 `I001` errors failing `make lint`
+and `make check`) · mypy back to the base 289 · 1222 backend + 196 frontend tests, `tsc --noEmit` clean.
+
+**Still true, still disclosed:** the lens half reaches no UI surface (see AH-1's disclosure) — it is honest
+in `GET /view?subject=` and in ASK's tool reads only. ASK has no observable/alert tool, so it cannot see the
+*observable* half either; both are roadmap, not build.

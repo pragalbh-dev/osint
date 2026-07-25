@@ -37,15 +37,62 @@ function firedNote(tripwires: readonly WatchTripwire[]): string {
   return 'none fired'
 }
 
+/** The third truth (AH-1): ARMED is not the same as WATCHING. A tripwire whose anchors resolve to no
+ *  node in the current view is armed and watching an EMPTY SET — it can never fire, so it inflates the
+ *  armed count while contributing nothing to coverage. "3 armed · none fired" reads as three quiet
+ *  sentries; the honest reading is "3 armed · 1 watching nothing · none fired". */
+export interface WatchAnchorCheck {
+  checked: boolean
+  unresolved: readonly {
+    watching_nothing?: boolean
+    watched_node_count?: number | null
+    severity?: string
+  }[]
+}
+
+/** AH-2 — the rail is a one-line ALARM surface, so only faults belong on it.
+ *
+ *  `pending_coverage` means the anchor names a DECLARED entity that no document has produced yet. That
+ *  is this system's own default boot state — two docs are withheld from the seed on purpose so the
+ *  reviewer can ingest them live — so counting it here would make the rail shout on a perfectly healthy
+ *  first paint and then fall silent the moment the demo alert fires. Exactly backwards. It is still
+ *  reported one click away in the Watch panel, where there is room to say what it means.
+ *
+ *  A problem with NO stated severity still counts as a fault: an underclaim is as dishonest as an
+ *  overclaim, so an unrecognised payload is never quietly downgraded to "fine". */
+function isFault(u: { severity?: string }): boolean {
+  return (u.severity ?? 'dangling') !== 'pending_coverage'
+}
+
+/** How the anchor half reads on its own; `''` when there is nothing to add. */
+function anchorNote(anchors: WatchAnchorCheck | null): string {
+  if (anchors === null) return '' // unknown — not a claim either way
+  if (!anchors.checked) return 'anchor check unavailable'
+  const faults = anchors.unresolved.filter(isFault)
+  const dead = faults.filter((u) => u.watching_nothing).length
+  // "Scope lost" is NOT a milder partial miss — it evaluates the WHOLE graph, so anything it fires is
+  // about the wrong subject. The backend keeps the three modes apart because they have opposite
+  // consequences; the first line an analyst reads must not merge two of them back together.
+  const unscoped = faults.filter((u) => !u.watching_nothing && u.watched_node_count === null).length
+  const degraded = faults.length - dead - unscoped
+  const parts: string[] = []
+  if (dead > 0) parts.push(`${dead} watching nothing`)
+  if (unscoped > 0) parts.push(`${unscoped} scope lost`)
+  if (degraded > 0) parts.push(`${degraded} anchor unresolved`)
+  return parts.join(' · ')
+}
+
 /**
  * @param armed      the armed catalogue, or `null` if it could not be read (never treat as 0)
  * @param tripwires  observables with at least one firing on the current view, or `null` in demo mode
  * @param demoCount  the frozen demo tripwire count, used only when there is no live feed at all
+ * @param anchors    the live anchor check, or `null` if unknown — never inferred to be clean
  */
 export function watchSummary(
   armed: readonly unknown[] | null,
   tripwires: readonly WatchTripwire[] | null,
   demoCount: number,
+  anchors: WatchAnchorCheck | null = null,
 ): WatchSummary {
   // No live feed at all → demo mode's frozen scenario. Unchanged output: "3" · "armed".
   if (!tripwires) return { count: String(demoCount), note: 'armed' }
@@ -62,5 +109,8 @@ export function watchSummary(
     }
   }
 
-  return { count: String(armed.length), note: `${armed.length} armed · ${fired}` }
+  // Order is deliberate: the count, then why it OVERSTATES coverage, then what has fired. A tripwire
+  // watching nothing is the thing an analyst most needs to see before trusting the silence.
+  const note = [`${armed.length} armed`, anchorNote(anchors), fired].filter(Boolean).join(' · ')
+  return { count: String(armed.length), note }
 }

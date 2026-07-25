@@ -20,6 +20,15 @@ It also makes the **armed** catalogue readable. Until now the only observable kn
 the *fired* alert feed on ``GET /view``, so a cold boot with three armed tripwires and no firings was
 indistinguishable from "nothing is being watched" — an underclaim just as dishonest as an overclaim.
 
+**Anchor validation (AH-1).** Arming a tripwire against an instance id that resolves to nothing used to
+be accepted in silence, and the tripwire then watched nothing in silence — an absence reading as an
+all-clear, which is exactly what this system may not do. Both the read and the write now run the live
+anchor check: ``GET`` carries it under ``diagnostics.anchor_check`` (so the Watch panel can say
+"watching nothing" beside the armed card) and ``POST`` returns it as ``warnings``. It is a **warning,
+not a rejection** — an anchor may legitimately be declared before the entity exists, and the check is
+re-run live on every read, so it clears itself when an ingest creates the node. No restart, no cached
+verdict, and no boot-time-only validation (the hot-config rule).
+
 Every section is readable. ``config/`` holds no secrets by construction (secrets live in ``.env`` and
 are read via ``chanakya.settings``, never through :class:`ConfigBundle`), so there is no section to
 withhold, and withholding one would leave a config editor that cannot edit it.
@@ -27,12 +36,14 @@ withhold, and withholding one would leave a config editor that cannot edit it.
 
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import ValidationError
 
 from chanakya.api.routes.deps import get_state
 from chanakya.api.state import AppState
-from chanakya.observe import arm
+from chanakya.observe import anchor_diagnostics, arm
 from chanakya.schemas import CONFIG_SECTIONS, ConfigRead, ConfigWrite, ConfigWriteResult
 
 router = APIRouter()
@@ -75,15 +86,40 @@ def _arm_new_observables(state: AppState, before_ids: set[str]) -> None:
             state.alerts.append(alert)
 
 
+def _anchor_check(state: AppState) -> dict[str, Any]:
+    """The live anchor check over every armed observable (AH-1) — never a boot-time-only validation.
+
+    Recomputed on each read against the **current** view, so it honours the hot-config rule in both
+    directions: a tripwire armed against an entity that does not exist yet reports as unresolved now and
+    clears itself the moment an ingest creates that node — with no restart, and no cached verdict.
+    ``checked: false`` is returned rather than a clean bill of health when there is no view to check
+    against; an unperformed check is never reported as a pass.
+    """
+    try:
+        view = state.view()
+    except RuntimeError:  # not booted yet — /health guards this, but never claim a pass we didn't run
+        return {"checked": False, "reason": "no rebuilt view yet — anchors cannot be checked", "unresolved": []}
+    return {"checked": True, "unresolved": anchor_diagnostics(state.config.snapshot(), view)}
+
+
 @router.get("/config/{section}", response_model=ConfigRead)
 def get_config(section: str, state: AppState = Depends(get_state)) -> ConfigRead:
-    """The current value of one section, from the live store. The mirror of ``post_config``."""
+    """The current value of one section, from the live store. The mirror of ``post_config``.
+
+    For ``observables`` the response also carries ``diagnostics.anchor_check`` — whether each armed
+    tripwire's anchors actually bind to a node in the current view. Without it the catalogue read says
+    "3 armed" identically whether those three are watching the graph or watching nothing.
+    """
     resolved = _resolve_section(section)
     value = state.config.get_section(resolved)
+    diagnostics: dict[str, Any] = {}
+    if resolved == "observables":
+        diagnostics["anchor_check"] = _anchor_check(state)
     return ConfigRead(
         section=resolved,
         version=state.config.version,
         value=value.model_dump(mode="json"),
+        diagnostics=diagnostics,
     )
 
 
@@ -116,4 +152,16 @@ def post_config(section: str, body: ConfigWrite, state: AppState = Depends(get_s
     if resolved == "observables":
         _arm_new_observables(state, before_ids)
     state.rebuild_and_swap()  # config changes propagate live (thresholds → statuses, etc.)
-    return ConfigWriteResult(section=resolved, version=version)
+
+    # AH-1 — validate the anchors AFTER the rebuild, against the view the tripwire will actually run on.
+    # Non-fatal by design (see ConfigWriteResult): an anchor may precede the entity that satisfies it, so
+    # rejecting would break "arm the tripwire, then ingest". Silence would not — hence the warning.
+    warnings: list[str] = []
+    if resolved == "observables":
+        check = _anchor_check(state)
+        if not check["checked"]:
+            warnings.append(f"observable anchors were not checked: {check['reason']}")
+        warnings.extend(
+            f"{entry['observable_id']}: {entry['warning']}" for entry in check["unresolved"]
+        )
+    return ConfigWriteResult(section=resolved, version=version, warnings=warnings)

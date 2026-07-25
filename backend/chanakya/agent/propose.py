@@ -180,7 +180,11 @@ def propose_observable_from_text(
     draft = ObservableDef(observable_id=_slug(text), watch_instances=watch, trigger=trigger, severity=severity)
     return ObservableProposal(
         draft=draft,
-        explanation=explain(draft),
+        # AH-2 — the analyst's confirm screen is the ONE moment a tripwire's anchors are reviewed before
+        # it is armed, so it must actually run the anchor check rather than report "not performed".
+        # Both arguments are already in scope here; without them this was the single production surface
+        # where the check added by AH-1 was a no-op.
+        explanation=explain(draft, view, config),
         resolved=resolved,
         unresolved=unresolved,
     )
