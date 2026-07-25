@@ -158,9 +158,18 @@ class Entity:
         write a bare ``country``. Omitting it made the China/Pakistan split unenforceable exactly where
         supply-chain identity is decided: two same-named trading organisations, one stated CHINA and one
         stated Pakistan, fused at ``confirmed`` on a coreference link in **both** flag directions, while
-        the identical pair keyed on ``country`` was correctly refused. A namespace that keys on an
-        attribute nobody writes blocks nothing. ``config/resolution.yaml`` already lists it under
+        the identical pair keyed on ``country`` was refused **with the S3 stage flag on**. A namespace that
+        keys on an attribute nobody writes blocks nothing. ``config/resolution.yaml`` already lists it under
         ``normalization_required_attrs``, i.e. config already treats it as namespace-bearing.
+
+        **Scope of the fix — do not read it wider than it is.** Adding the key repairs the FLAG-ON path
+        only. With the stage flag off, *neither* key refuses the pair on the fusion path: the whole
+        cross-namespace refusal sits behind ``if not cfg.earned_identity_on`` in
+        :func:`~chanakya.resolve.cluster.fusion_blocked`, so flag-off has no cross-namespace wall there for
+        ANY namespace key and never had one. That gap is disclosed and deliberate (DECISIONS.md, RK-COREF S3
+        blocker 2), not residue of this key. What this method still does flag-off is feed the *blocking*
+        key, the exact-name bootstrap trigger, ``_name_containment``, ``_identity_pairs`` and
+        ``_coref_pairs`` — it is the Phase-2 fusion refusal specifically that is stage machinery.
         """
         for key in ("country", "origin_country", "operator_branch", "service_branch", "domain"):
             v = self.attrs.get(key)

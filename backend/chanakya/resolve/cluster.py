@@ -565,8 +565,10 @@ def resolve_entities(
         PAF-side instance could be scored and auto-merged. Cross-type was only ever a *skip in candidate
         collection*, so the bootstrap could fuse a component into a variant on an identical name.
 
-        Applied as a hard **precondition on the fusion path** in BOTH phases (R3.1), never as a score
-        contributor — and deliberately not as a *veto*: two things in different namespaces are not a
+        Applied as a hard **precondition on the fusion path** in BOTH phases (R3.1) **whenever the S3 stage
+        flag is on** — its only caller, :func:`fusion_blocked`, returns ``None`` outright with the flag off,
+        so this refusal is stage machinery and *not* a property of the shipped default configuration. Never
+        a score contributor — and deliberately not as a *veto*: two things in different namespaces are not a
         do-not-merge *finding* to draw, they are simply not fusable, and a source or proposer that explicitly
         asserts the identity still reaches the analyst through the existing cross-type escape hatch.
 
