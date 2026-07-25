@@ -273,31 +273,86 @@ def test_the_loader_round_trips_the_shipped_attribute_names_name_for_name() -> N
         for entry in raw.get(section) or []:
             declared[entry["name"]] = [rk.raw_attr_name(a) for a in entry.get("attrs") or []]
 
+    compared = 0
     for td in _all_types(ontology):
         assert rk.attr_names(td) == declared[td.name], (
             f"{td.name}: the loader yields {rk.attr_names(td)} but the file declares {declared[td.name]}"
         )
+        compared += len(declared[td.name])
+
+    # Non-vacuity: an empty-vs-empty comparison would pass while checking nothing. The shipped ontology
+    # declares 81 attribute names across 13 types, so anything near zero means the read broke, not that
+    # the round-trip held.
+    assert compared >= 81, (
+        f"the round-trip compared only {compared} attribute names — the file read or the loader returned "
+        "an empty vocabulary, so this test proved nothing"
+    )
+
+
+def _migration_losses(loaded: dict[str, list[str]]) -> tuple[list[str], dict[str, list[str]]]:
+    """``(dropped type names, {type: attribute names lost})`` measured against the frozen yardstick.
+
+    Factored out so the real check and its negative control below run **identical** logic — a guard whose
+    detection path is only ever exercised on passing input is a guard nobody has tested.
+    """
+    dropped = sorted(set(PRE_MIGRATION_ATTRS) - set(loaded))
+    lost = {
+        type_name: gone
+        for type_name, expected in PRE_MIGRATION_ATTRS.items()
+        if type_name in loaded and (gone := [a for a in expected if a not in loaded[type_name]])
+    }
+    return dropped, lost
+
+
+def test_the_frozen_pre_migration_yardstick_is_intact() -> None:
+    """The yardstick must not be quietly trimmed to make the migration look lossless.
+
+    ``PRE_MIGRATION_ATTRS`` was captured from ``config/ontology.yaml`` at ``design/resolution-redesign``
+    @ ``d7e443c`` — **before** the structured migration ran — and independently of the implementer's own
+    before/after diff. Pinning its size is what stops a future edit from deleting a row of the yardstick
+    instead of fixing the migration.
+    """
+    assert len(PRE_MIGRATION_ATTRS) == 13
+    assert sum(len(v) for v in PRE_MIGRATION_ATTRS.values()) == 81
+    for type_name, names in PRE_MIGRATION_ATTRS.items():
+        assert names, f"{type_name} has an empty attribute list in the yardstick"
+        assert len(set(names)) == len(names), f"{type_name} repeats an attribute in the yardstick"
 
 
 def test_the_structured_migration_loses_no_declared_attribute() -> None:
     """The content half of the migration net: the pre-migration vocabulary must survive in full.
 
     The risk has moved from "does the loader accept both forms?" to "did the migration silently lose or
-    rename an attribute?" — a dropped attribute is a silently narrower ontology, and a renamed one
-    detaches every claim already carrying the old key. Additions are fine; losses are not.
+    rename an attribute?" — a dropped attribute is a silently narrower ontology, and a renamed one detaches
+    every claim already carrying the old key. Additions are fine; losses are not.
     """
     _, ontology = _repo_ontology()
     loaded = {td.name: rk.attr_names(td) for td in _all_types(ontology)}
 
-    missing_types = sorted(set(PRE_MIGRATION_ATTRS) - set(loaded))
-    assert not missing_types, f"the migration dropped whole type(s): {missing_types}"
+    dropped, lost = _migration_losses(loaded)
 
-    lost: dict[str, list[str]] = {}
-    for type_name, expected in PRE_MIGRATION_ATTRS.items():
-        gone = [a for a in expected if a not in loaded[type_name]]
-        if gone:
-            lost[type_name] = gone
+    assert not dropped, f"the migration dropped whole type(s): {dropped}"
     assert not lost, (
         f"the structured migration lost or renamed declared attribute(s): {lost} — the ontology is now "
         "silently narrower than before the migration"
     )
+
+
+def test_the_migration_loss_check_detects_a_planted_loss() -> None:
+    """The negative control that makes the guard above non-vacuous (§5a: a gate that cannot fail lies).
+
+    Two plausible botched-migration artefacts, on a synthetic post-migration vocabulary: one attribute
+    dropped outright, one **renamed** (the sneakier case — the count still looks right).
+    """
+    intact = {name: list(names) for name, names in PRE_MIGRATION_ATTRS.items()}
+    assert _migration_losses(intact) == ([], {}), "the loss check fires on a lossless migration"
+
+    lossy = {name: list(names) for name, names in PRE_MIGRATION_ATTRS.items()}
+    lossy["variant"].remove("range_km")                                  # dropped
+    lossy["unit"][lossy["unit"].index("designator")] = "unit_designator"  # renamed
+    del lossy["known_gap"]                                               # whole type gone
+
+    dropped, lost = _migration_losses(lossy)
+
+    assert dropped == ["known_gap"]
+    assert lost == {"variant": ["range_km"], "unit": ["designator"]}
