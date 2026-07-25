@@ -546,6 +546,34 @@ earned_identity:
   # value is a refusal on stated grounds, never a silent pass in either direction.
   normalization_required_attrs: [service_branch, operator_branch, origin_country, country]
 
+  # ── D-13.20 — the COMPOSITE unique identifier (ruling M3: this had no declaration site at all) ─────
+  # `hard_id_fields` was DEAD config: zero occurrences, so `_shared_unique_id` was permanently False and the
+  # top rung of the discriminator ladder — "a shared unique id lifts every cap" — was unreachable.
+  #
+  # THE LOAD-BEARING CALL: a shared DESIGNATION is NOT a unique identifier. Designations are reused across
+  # armies and across time — "3rd Battalion" names a different unit in two services and a different unit in
+  # two decades — so one shared designation string may NEVER confirm a formation merge. The mechanism is that
+  # each row is a COMPOSITE AND-KEY: every attribute in the tuple must be stated on both sides AND agree.
+  # `(service_branch, designator)` is an identifier; a bare `designator` is not.
+  #
+  # This is stronger than declaring the designator a "non-perishable discriminator", because it makes the
+  # operator requirement STRUCTURAL in the identifier declaration rather than dependent on a separate
+  # namespace check — and that namespace check was measured broken in the Phase-2 fixpoint (D4). It also
+  # preserves the asymmetry the codebase already embodies for bills of lading, which must NOT be "fixed":
+  # differing identifiers VETO, shared ones do NOT confirm unless the whole AND-key agrees.
+  #
+  # Component values are compared through the C7 normaliser, so 'PAF' and 'Pakistan Air Force' are one branch
+  # rather than two. Read only with the flag on (declaring it bare would move the flag-off graph).
+  hard_id_fields:
+    unique:
+      # A formation is identified by its designation WITHIN its service, never by the designation alone.
+      unit: [[service_branch, designator], [service_branch, designator, parent_unit]]
+      # A presence IS its operator + design + site + window (the `constitutive` block below says the same
+      # thing on the attribute axis); all four together identify it, and any one of them alone does not.
+      presence: [[operator_branch, design, site, observed_window]]
+      # A customs event is identified by the document reference its own manifest carries.
+      contract_import_event: [[bill_of_lading_ref], [contract_ref]]
+
   # ── C6 — the two NEW time roles, declared here because they change behaviour ──────────────────────
   # Merged over the base `attribute_roles` block above, per type and per attribute, ONLY with the flag on.
   # This is the rung spine/13 §6 lever 2 needs and has never had:

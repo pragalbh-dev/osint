@@ -281,6 +281,13 @@ def _candidate_pairs(
                 v = ent.attrs.get(attr)
                 if v is not None:
                     add(("hid", attr, str(v)), eid)
+        # D-13.20's composite AND-keys block on the whole tuple of values, so two records sharing a
+        # designation but not a branch never land in one block — the same asymmetry the decision rests on,
+        # applied to recall as well as to the verdict. A key with any component unstated blocks on nothing.
+        for key in cfg.unique_id_keys(ent.etype):
+            values = [ent.attrs.get(attr) for attr in key]
+            if all(v is not None for v in values):
+                add(("hidk", key, tuple(str(v) for v in values)), eid)
 
     # Relational blocking: same-type entities that share a graph neighbour are candidates — the
     # "different names, same neighbourhood" merge the fixpoint exists to catch (precision comes later).

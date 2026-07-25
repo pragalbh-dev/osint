@@ -50,9 +50,22 @@ DISTINCT_PREDICATES = {"distinct-from", "distinct_from", "not-same-as"}
 # is strictly more information than a bare ``same-as``, which is why one category of it may bootstrap
 # (see ``ResolveConfig.coref_authoritative_evidence``) instead of merely raising.
 COREF_PREDICATE = "coref-same-as"
+#: The CONTRASTIVE lane (D-13.19): a same-document *stated* contrast. Its own lane, deliberately not the
+#: stated ``distinct-from`` rail — that one is hard, transitive and ungraded, and every ORBAT list contains
+#: an enumeration, so widening it would let one planted document shatter a well-corroborated cluster. Here
+#: the same evidence is a **band ceiling**, which withholds one new fusion and can retract nothing.
+COREF_CONTRAST_PREDICATE = "coref-distinct-from"
 #: Tier-3 keys the producer stamps on each coreference claim.
 COREF_EVIDENCE_ATTR = "_coref_evidence"
 COREF_QUOTE_ATTR = "source_quote"
+#: The set of VERBATIM licensing spans (ruling M2 — evidence is a set of spans, not one contiguous span).
+COREF_QUOTES_ATTR = "_coref_quotes"
+#: The referent atom the link belongs to — the grouping grain the rebuild may DECLINE (D-13.18).
+COREF_REFERENT_ATTR = "_coref_referent"
+#: The per-LINK verdict of D-13.17's deterministic gate, and its own words (C5).
+COREF_GATE_ATTR = "_coref_gate"
+COREF_GATE_DETAIL_ATTR = "_coref_gate_detail"
+COREF_GATE_PASS = "PASS"
 
 
 def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
@@ -282,10 +295,26 @@ def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     share is one entity by construction. Reused verbatim by the Phase-1 bootstrap trigger
     (``cluster.resolve_entities``) and by :func:`has_durable_identity_support`; one definition so the two can
     never diverge on what "shared hard id" means.
+
+    **Composite AND-keys (D-13.20).** ``(service_branch, designator)`` identifies a unit; a bare
+    ``designator`` does not, because designations are reused across armies and across time. So a composite
+    key matches only when **every** attribute in it is stated on both sides *and* agrees — one missing or
+    differing component is no match, and absence is never agreement. Values are compared through the
+    time-aware, C7-normalised detector, so 'PAF' and 'Pakistan Air Force' are one branch rather than two.
     """
-    for attr in cfg.hard_id_fields("unique").get(a.etype, []):
+    for attr in cfg.hard_id_fields("unique").get(a.etype, []):  # legacy single-attribute rows
         va, vb = a.attrs.get(attr), b.attrs.get(attr)
         if va is not None and va == vb:
+            return True
+    if a.etype != b.etype:
+        return False  # a composite key is per-type; a cross-type pair has no shared identifier
+    for key in cfg.unique_id_keys(a.etype):
+        if all(
+            a.attrs.get(attr) is not None
+            and b.attrs.get(attr) is not None
+            and not attribute_is_conflict(a, b, attr, cfg)
+            for attr in key
+        ):
             return True
     return False
 

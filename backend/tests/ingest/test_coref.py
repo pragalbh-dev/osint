@@ -77,7 +77,7 @@ _FILL: dict[str, Any] = {
 
 def _cluster(*, members: list[int], evidence: str = coref.EXPLICIT_EQUIVALENCE,
              quote: str = "China Precision Machinery Import-Export Corporation (CPMIEC)") -> dict[str, Any]:
-    return {"clusters": [{"member_ids": members, "evidence": evidence, "licensing_quote": quote}]}
+    return {"clusters": [{"member_ids": members, "evidence": evidence, "licensing_quotes": [quote]}]}
 
 
 def _extract(config: ConfigBundle, *responses: dict[str, Any]) -> list[ClaimRecord]:
@@ -223,7 +223,7 @@ def _mentions() -> list[coref.Mention]:
 
 def _proposal(members: list[int]) -> dict[str, Any]:
     return {"clusters": [{"member_ids": members, "evidence": coref.EXPLICIT_EQUIVALENCE,
-                          "licensing_quote": "(CPMIEC)"}]}
+                          "licensing_quotes": ["(CPMIEC)"]}]}
 
 
 def test_never_merges_across_entity_types() -> None:
@@ -245,8 +245,8 @@ def test_stated_distinction_is_a_hard_veto() -> None:
 def test_overlapping_clusters_keep_only_the_first() -> None:
     """The partition stays closed: a mention lands in exactly one cluster, conservatively the first."""
     raw = {"clusters": [
-        {"member_ids": [1, 2], "evidence": coref.EXPLICIT_EQUIVALENCE, "licensing_quote": "(CPMIEC)"},
-        {"member_ids": [2, 4], "evidence": coref.EXPLICIT_EQUIVALENCE, "licensing_quote": "(CPMIEC)"},
+        {"member_ids": [1, 2], "evidence": coref.EXPLICIT_EQUIVALENCE, "licensing_quotes": ["(CPMIEC)"]},
+        {"member_ids": [2, 4], "evidence": coref.EXPLICIT_EQUIVALENCE, "licensing_quotes": ["(CPMIEC)"]},
     ]}
     accepted = coref.valid_clusters(raw, _mentions(), _TEXT, [])
     assert len(accepted) == 1

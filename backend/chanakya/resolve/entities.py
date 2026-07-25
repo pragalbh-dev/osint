@@ -174,6 +174,10 @@ class Edge:
     # unit is there" and must never wall a merge on its own. Pure data; no decision is taken here.
     earliest_iso: str | None = None  # event_time LOWER bound
     kind: str = ""  # the claim's kind: "observation" (stated) | "inference" (derived) | …
+    # The DOCUMENTS this triple was stated in. C9 needs it on the edge, not only on the entity: an
+    # authoritative coreference bind may instantiate only over entity ids attested in the *contributing*
+    # document, and the contributing document is a property of the coref link itself.
+    doc_ids: frozenset[str] = frozenset()
     # The source that asserted this triple. Load-bearing for identity (D-2.5/D-P3.4): a ``same-as`` is an
     # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
     # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
@@ -251,6 +255,7 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                     attributes=c.attributes,
                     earliest_iso=lo,
                     kind=c.kind,
+                    doc_ids=frozenset(ref.file for ref in c.doc_refs() if ref.file),
                 )
             )
 

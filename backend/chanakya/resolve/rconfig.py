@@ -109,6 +109,13 @@ class EarnedIdentity:
     bind_min_grade: str | None = None
     #: Seed equivalence-marker vocabulary for the ``EXPLICIT_EQUIVALENCE`` gate, verb forms included.
     equivalence_markers: tuple[str, ...] = ()
+    #: The MARK-vs-WORD threshold for the gate's fourth conjunct (ruling M1) — read from the **existing**
+    #: top-level ``containment_min_descriptor_len``, never re-declared. One threshold for one idea (gate G6):
+    #: *"HT-233" + "engagement" (a WORD) is the same radar described more fully; "HQ-9" + "P" (a MARK) is a
+    #: different missile.* Without this conjunct a sentence that *distinguishes* two variants —
+    #: ``"<Design> (<Design>/X)"`` — passes every other conjunct, because the parenthetical marker really is
+    #: present and no token-list vocabulary can tell the two apart.
+    min_descriptor_len: int | None = None
 
     # ── D-13.10 / D-13.20: the caps, as band names ────────────────────────────────────────────────
     #: Ceiling for a pair carried by the NAME sub-signal alone, at **every** layer.
@@ -149,8 +156,12 @@ class EarnedIdentity:
     @classmethod
     def from_resolution(cls, resolution: ResolutionConfig) -> EarnedIdentity:
         block = getattr(resolution, _EARNED_IDENTITY, None)
+        # Ruling M1 reuses the shipped containment knob rather than declaring a second threshold for the
+        # same idea, so it is read from the TOP level even when the stage block is absent.
+        raw_desc = getattr(resolution, "containment_min_descriptor_len", None)
+        min_desc = int(raw_desc) if raw_desc is not None else None
         if not isinstance(block, dict):
-            return cls()
+            return cls(min_descriptor_len=min_desc)
 
         def _strs(key: str) -> tuple[str, ...]:
             raw = block.get(key)
@@ -186,6 +197,7 @@ class EarnedIdentity:
             authoritative_categories=_strs("authoritative_categories"),
             bind_min_grade=str(grade).strip().upper() if grade else None,
             equivalence_markers=_strs("equivalence_markers"),
+            min_descriptor_len=min_desc,
             name_ceiling=_str("name_ceiling"),
             colocation_ceiling=_str("colocation_ceiling"),
             contrast_ceiling=_str("contrast_ceiling"),
@@ -614,8 +626,47 @@ class ResolveConfig:
         return list(self._r.blocking_keys)
 
     def hard_id_fields(self, kind: str) -> dict[str, list[str]]:
-        """``kind`` ∈ {unique, categorical} → {entity_type: [attr names]} (default empty)."""
-        return dict(self._extra("hard_id_fields", {}).get(kind, {}))
+        """``kind`` ∈ {unique, categorical} → {entity_type: [attr names]} (default empty).
+
+        **Only bare-string rows** are returned. A row that is itself a list is a *composite AND-key* and is
+        served by :meth:`unique_id_keys` instead — the two shapes coexist in one declaration because they
+        answer the same question ("what identifies this type?") at different arities, and a flat consumer
+        handed a list would compare an unhashable value and silently never match.
+        """
+        return {
+            etype: [a for a in attrs if isinstance(a, str)]
+            for etype, attrs in self._extra("hard_id_fields", {}).get(kind, {}).items()
+        }
+
+    def unique_id_keys(self, entity_type: str) -> list[tuple[str, ...]]:
+        """The **composite AND-keys** that uniquely identify this type (D-13.20), or ``[]`` with the flag off.
+
+        **The load-bearing call: a shared designation is NOT a unique identifier.** Designations are reused
+        across armies and across time — "3rd Battalion" names a different unit in two services and a
+        different unit in two decades — so one shared designation string may never confirm a formation merge.
+        The mechanism is that ``hard_id_fields.unique`` holds a list of **composite AND-keys**:
+        ``(service_branch, designator)`` is an identifier, a bare ``designator`` is not.
+
+        That is stronger than declaring the designator a "non-perishable discriminator", because it makes the
+        operator requirement **structural in the identifier declaration** rather than dependent on a separate
+        namespace check — and that namespace check was measured broken in the Phase-2 fixpoint (D4). It also
+        preserves the asymmetry the codebase already embodies for bills of lading, which must not be "fixed":
+        **differing identifiers veto; shared ones do not confirm** unless the whole AND-key agrees.
+
+        A bare-string row is read as a 1-tuple, so the legacy flat shape keeps its old meaning; the shipped
+        config declares only composites. Gated on the stage flag because ``hard_id_fields`` is empty today,
+        so declaring it at all would otherwise move the flag-off graph (the spike measured
+        ``_shared_unique_id`` as permanently False for exactly this reason).
+        """
+        if not self._earned.enabled:
+            return []
+        rows = self._extra("hard_id_fields", {}).get("unique", {}).get(entity_type, [])
+        out: list[tuple[str, ...]] = []
+        for row in rows if isinstance(rows, (list, tuple)) else []:
+            key = (str(row),) if isinstance(row, str) else tuple(str(a) for a in row)
+            if key and key not in out:
+                out.append(key)
+        return out
 
     @property
     def orphan_block_threshold_k(self) -> int | None:
