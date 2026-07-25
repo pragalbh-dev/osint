@@ -71,6 +71,11 @@ COREF_REFERENT_ATTR = "_coref_referent"
 COREF_GATE_ATTR = "_coref_gate"
 COREF_GATE_DETAIL_ATTR = "_coref_gate_detail"
 COREF_GATE_PASS = "PASS"
+#: The coreference lanes, excluded from the relational neighbourhood. Both are assertions about identity
+#: rather than facts about the world; scoring them as neighbourhood double-counts the signal under
+#: adjudication. Scoped to these two predicates on purpose — ``same-as`` keeps its historic treatment, so
+#: nothing that existed before this stage moves.
+COREF_LANES = frozenset({COREF_PREDICATE, COREF_CONTRAST_PREDICATE})
 
 
 def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
@@ -476,6 +481,16 @@ def _neighbours(
     nbrs: dict[tuple[str, str, str], set[str]] = {}
     for e in graph.incident(eid):
         if e.edge_instance in exclude:
+            continue
+        if e.predicate in COREF_LANES:
+            # A coreference claim is a statement ABOUT IDENTITY, not a relationship in the world, so it must
+            # never become neighbourhood evidence. It is emitted as a STAR from one anchor, so leaving it in
+            # made every pair of a cluster's members "share a neighbour" — the anchor — and the relational
+            # term then read that as independent corroboration of an identity the same cluster had just
+            # proposed. Coreference laundering itself into relational support, and measured: a three-member
+            # cluster whose third link the gate REFUSED still merged, because the two members it did license
+            # gave the refused pair a shared neighbour it had not earned. That is the "one bad link licenses
+            # the rest" half of C5 arriving through the scorer instead of through the bind.
             continue
         if e.subject == eid:
             nbrs.setdefault((e.predicate, "out", canonical(e.object)), set()).add(e.object)

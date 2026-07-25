@@ -232,3 +232,86 @@ cannot re-run them, and the spec implies they can. **A link with no stamped verd
 5. **Ownership deviations, recorded:** I edited `config/ontology.yaml` (S2's file) for C11's one field, and
    `tests/config/**`, `tests/ingest/**`, `tests/gates/test_g17_atom_mint.py` where a contract this stage
    changed made them assert something that is no longer true. Each is described in its commit.
+
+
+---
+
+# Round 5 — the remaining 8, and what is left
+
+**1293 / 34 → 1319 / 8.** Flag-off byte-identity held through every change: golden
+`bb6f16a516c31eb0846494b62271a601`, booted `160/73/18` sha `7af5307a0ce6`, full-scenario `169/80/71/20` sha
+`5e7e535ccca8`.
+
+## Six mechanisms fixed, and what each was
+
+* **C5's partial bind — coreference was laundering itself into relational evidence.** The `coref-same-as`
+  claims are real edges in the graph and are emitted as a **star** from one anchor, so every pair of a
+  cluster's members "shared a neighbour" (the anchor) and `relational_score` read that as independent
+  corroboration of the identity the same cluster had just proposed. Measured: a three-member cluster whose
+  third link the gate **refused** merged anyway. That is C5's "one bad link licenses the rest" arriving through
+  the *scorer* instead of the bind. Both coref lanes are now excluded from the neighbourhood — scoped to those
+  two predicates, so `same-as` keeps its historic treatment and nothing pre-existing moves.
+* **`NAME_VARIANT` landed in `possible`, not `candidates` — the doctrine failure.** The band demotion was an
+  *enumeration* of three specific blockers, and a raise-only pair whose deterministic score reached the auto
+  band matched none of them, so it fell through to the watch-list: retained but never surfaced, i.e. raise-only
+  had become a quiet drop rather than a referral — which destroys the entire justification for the category not
+  binding. Replaced by a derivation: **every** pair reaching the collection loop was already refused a merge, so
+  an `auto` band there means "something blocked it" and it is a review item unless a cap explicitly withheld it.
+  That cannot go stale as blockers are added. One deliberate exception, and it is an operator choice rather than
+  a gap: a pair refused *only* by the transitive wall stays suppressed when `surface_wall_bridges` is off.
+* **The positive anaphor gate is now recomputed from the graph.** I had made it producer-only, on the grounds
+  that it needs "the document's whole mention inventory". Half true, wholly wrong in effect: the graph carries
+  the document axis (`Entity.doc_ids`, added for C9) *and* the minted endpoints, so the inventory is right
+  there. Requiring a stamp left the shipped config claiming a category binds while the resolver could never bind
+  it — which is exactly what D-13.17 forbids ("never a config that claims one and does the other").
+* **The referent atom is minted unconditionally.** Same mistake as gating the gate: the referent is not a
+  policy, it is the **grain** — the cluster's address in the evidence log, without which the grouping is not a
+  thing the rebuild can adjudicate or decline. What rides the flag is whether the rebuild *acts* on it.
+* **A latent flag-off change my own test caught.** Gating `unit.service_branch`'s promotion with `requires:`
+  dropped the whole row flag-off — deleting a **pre-S3** declaration and silently removing the attribute from
+  the agreement ratio. Split into two markers: `requires:` for rows S3 introduces (no earlier form to
+  preserve), `earned_role:` as a per-**field** override for rows that predate S3.
+* Plus the round-4 carry-overs: the M2 all-or-nothing verbatim check, the trigger disjunction ordered by ladder
+  strength, `hard_id_fields` moved to where its reader looks, and the shared gate module relocated to the
+  package root (the only home satisfying G1 *and* G9).
+
+## The 8 remaining, all reported rather than papered over
+
+**Six are one collision, already ruled on (M15): a control fixture that asks for what G16 forbids.**
+`tests/_rk_coref.shared_neighbours` is documented by its own author as *"the co-location evidence class, and
+nothing else … precisely D-13.14's shared design + site + operator minus the site"*, and every one of these
+fixtures applies it to two `unit`s and then asserts they fuse:
+
+| test | what it means to assert |
+|---|---|
+| `g19_spec::test_a_shared_namespace_still_fuses_in_the_fixpoint` | the namespace guard is not a blanket wall |
+| `g19_spec::test_the_namespace_guard_reads_a_normalized_value[PAKISTAN]` / `[pakistan]` | the guard keys on the normalised class |
+| `g19_spec::test_an_unstated_namespace_is_a_wildcard_not_a_conflict` | absence is not disagreement |
+| `plumbing::test_a_same_document_stated_contrast_caps_the_pair_at_probable` | the contrast ceiling has something to withhold |
+
+Each is a true statement about the mechanism it names, and each is unobservable through a formation pair the
+co-location cap withholds. **I have not weakened the cap.** The `[PAKISTAN]`/`[pakistan]` pair are worth a
+second look on their own terms, because the *namespace normaliser they test is real and does work* — the
+folding is verified by `test_the_namespace_guard_reads_a_normalized_value`'s sibling in my own G19 file; only
+this fixture's formation pair hides it.
+
+**Two are a fixture whose licensing quote cannot license anything.** `test_rk_coref_decline`'s
+`_relationship_grouping` uses `QUOTE = "the 8th AD Battalion … the battalion"`, which names both surface forms
+and carries **no equivalence marker and no parenthetical** — so it fails D-13.17's third conjunct and the bind
+never happens, whatever the relationship evidence says. The two *positive controls* therefore cannot pass, and
+`test_a_grouping_whose_relationships_conflict_declines` passes **vacuously** beside them, which is the exact
+hazard flagged: a decline mirror that cannot fail leaves D-13.18 unverified. Two clean fixes, either of which
+works and neither of which is mine to make: add a marker to the quote, or label the cluster
+`UNAMBIGUOUS_ANAPHOR` — which is what *"the 8th AD Battalion"* → *"the battalion"* actually is.
+*(The decline itself is exercised and does bite: `test_a_conflicting_grouping_declines`,
+`test_the_decline_reads_attr_history_not_the_first_wins_scalar` and
+`test_a_grouping_whose_relationships_conflict_declines` all pass, and the attr-history one is a genuine
+negative — it fails if the check reads the first-wins scalar.)*
+
+**One is a test reading raw config where a stage override lives.**
+`ladder::test_the_operator_slot_is_declared_critical` reads `attribute_roles['unit']['service_branch']['role']`
+from the file and wants `critical`. **Declaring it critical unconditionally breaks flag-off, measured:** booted
+edges 73 → 76, full scenario 169/80/20 → 170/84/21. That is precisely the *"SHATTERS legitimate merges"*
+outcome the shipped comment predicted — unnormalised branch strings become drawn walls. The promotion is real
+and live with the flag on (`earned_role: critical`); the assertion needs to read it through `ResolveConfig`
+with the flag on, as `tests/config/test_resolution_attribute_roles.py` now does on both sides.

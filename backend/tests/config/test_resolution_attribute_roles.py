@@ -52,9 +52,12 @@ def test_unit_service_branch_is_promoted_to_critical_by_earned_identity() -> Non
     """
     off = _cfg()
     assert "service_branch" not in off.critical_role_attrs("unit"), (
-        "the promotion is live with the stage flag off — a row marked `requires: earned_identity` must not be "
-        "consumed until that flag is on, or flag-off behaviour is not flag-off"
+        "the promotion is live with the stage flag off — flag-off behaviour would not be flag-off"
     )
+    # The row PREDATES S3, so flag-off it must read exactly as it always did — still declared, still
+    # supporting, still durable. An `earned_role` override is used precisely so the row is not dropped:
+    # dropping it would remove the attribute from the agreement ratio and move flag-off scoring.
+    assert "service_branch" in off.supporting_role_attrs("unit")
     assert off.attribute_perishable("unit", "service_branch") is False
 
     on = ResolveConfig.from_bundle(_bundle(earned=True))

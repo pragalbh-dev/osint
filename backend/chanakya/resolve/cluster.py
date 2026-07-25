@@ -822,12 +822,6 @@ def resolve_entities(
         band = _band(
             bd, cfg, has_raise=has_raise or raised_wall or capped_perishable or capped_prob, auto_merge=floor
         )
-        # A below-floor critical conflict, a perishable-only would-be confirm, or an S3 cap is blocked from
-        # merge upstream, so a high deterministic score would otherwise band it "auto" and drop it here —
-        # force it to the review queue. All are the analyst's call: never silently walled/capped, never
-        # silently merged.
-        if (raised_wall or capped_perishable or capped_prob) and band == "auto":
-            band = "hitl"
         # D9 (Stage 3A-ii) — the BRIDGE-ACROSS-A-WALL alarm. This pair cleared ``vetoed`` above (not
         # directly walled), but its union would fuse two clusters a hard wall holds apart (``bridged_wall``)
         # AND it scores as a genuine would-be merge — band ``auto``/``hitl``, real corroboration to both
@@ -850,6 +844,24 @@ def resolve_entities(
             and not (has_raise or raised_wall or is_bridge or capped_perishable or capped_prob)
             and _name_alone(bd)
         ) or (capped_poss and not (has_raise or raised_wall or is_bridge))
+        # EVERY pair reaching this loop was refused a merge upstream — Phase 1 and Phase 2 already ran and did
+        # not union it — so an "auto" band here never means "merge it", it means "something blocked it". Unless
+        # a cap has explicitly withheld it from the queue, that makes it a REVIEW ITEM, and it must not fall
+        # through to the watch-list.
+        #
+        # This replaces an enumeration of three specific blockers (a below-floor critical conflict, a
+        # perishable-only confirm, an S3 probable-cap), and the enumeration is what produced the bug: a
+        # ``NAME_VARIANT`` cluster — raise-only *permanently*, whose whole justification is that the analyst
+        # receives it WITH the licensing quote — scored into the auto band, matched none of the three, and
+        # landed in ``possible``. Retained but never surfaced, i.e. raise-only had become a quiet drop rather
+        # than a referral. Deriving the demotion from "was it capped?" cannot go stale as blockers are added.
+        # …with one exception, and it is a deliberate operator choice rather than a gap: a pair refused ONLY
+        # by the transitive wall is a D9 *bridge*, and an operator may switch that alarm off
+        # (``surface_wall_bridges: false``) to revert to the pre-D9 silent non-merge. Suppressed means
+        # suppressed — promoting it here would re-surface the alarm the operator turned off.
+        suppressed_bridge = not cfg.surface_wall_bridges and violates_veto_transitively(a, b)
+        if band == "auto" and not capped and not suppressed_bridge:
+            band = "hitl"
         pfloor = cfg.possible_floor
         if band == "hitl" and not capped:
             res.candidates.append((a, b))

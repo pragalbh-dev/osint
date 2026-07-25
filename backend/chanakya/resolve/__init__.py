@@ -662,6 +662,13 @@ def _critical_raise_reason(attrs: tuple[str, ...], floor: str | None) -> str:
 
 # ── D-13.8 / G18: the relationship-conflict WALL (NEW code — the judge had no relationship rail) ─
 
+#: The type stamped on a mention nothing in the document declared — a bare relation endpoint. It COUNTS as
+#: type-compatible in the anaphor gate, which is the clause that makes an under-reach fail the gate.
+_UNKNOWN_ETYPE = "unknown"
+#: "Exactly one type-compatible antecedent" — the cardinality the positive gate demands, named so the test
+#: reads as the rule rather than as an integer (gate G6 bans numeric literals in scoring code).
+_ONE_ANTECEDENT = 1
+
 #: The predicate whose claim was *stated by a source* rather than derived by the rebuild or a proposer.
 #: A derived basing is not a source saying "this unit is there", so it may never wall a merge on its own.
 _STATED_KIND = "observation"
@@ -980,6 +987,65 @@ def _link_forms(e: Edge, graph: EntityGraph) -> tuple[str, str]:
     return (sub.name if sub else e.subject), (obj.name if obj else e.object)
 
 
+def _anaphor_gate_from_graph(e: Edge, graph: EntityGraph) -> tuple[bool, str]:
+    """The POSITIVE anaphor gate, recomputed from the graph — so the category is bindable from a bundle.
+
+    I first made this producer-only, on the grounds that the gate needs "the document's whole mention
+    inventory". That was half true and wholly wrong in effect: the graph carries a *document axis*
+    (``Entity.doc_ids``, added for C9) and it carries the minted endpoints too, so the inventory the gate needs
+    is right here. Requiring a stamp instead left the shipped config claiming a category binds while the
+    resolver could never bind it — and D-13.17's conditional is precisely that *"the gate IS the decision:
+    either the positive gate is built and the category binds, or the category is raise-only — never a config
+    that claims one and does the other."*
+
+    Positive, so every clause demands something be PRESENT (the original absence test failed **open** under
+    extractor under-reach, which made its failure mode anti-correlated with safety):
+
+    1. the antecedent is **named**;
+    2. the antecedent is **declared** — it carries claims of its own, so something in the document asserted it
+       rather than it arriving as a bare endpoint;
+    3. the antecedent is **ontology-typed**;
+    4. **exactly one** type-compatible mention is in scope, with an ``unknown``-typed endpoint **counting as
+       compatible**. That last clause is what makes the test bite in the right direction: a second undeclared
+       endpoint is exactly what an under-reach would hide, so it must FAIL the gate rather than pass it.
+
+    Scope is the contributing document, plus entities carrying no document at all (a minted endpoint, a
+    registry seed) — the same rule C9 uses, and for the same reason: a mention with no document cannot
+    contradict the document scope, and excluding it would hide the undeclared endpoints clause 4 exists to
+    count.
+    """
+    antecedent, anaphor = graph.entities.get(e.subject), graph.entities.get(e.object)
+    if antecedent is None or anaphor is None:
+        return False, "one end of the link is not an instantiated entity"
+    if not antecedent.name.strip():
+        return False, "the antecedent has no surface form (an anaphor needs a NAMED antecedent)"
+    if not antecedent.claim_ids:
+        return False, (
+            "the antecedent is undeclared — no entity claim asserts it, so nothing states what the anaphor "
+            "is being resolved TO"
+        )
+    if antecedent.etype == _UNKNOWN_ETYPE:
+        return False, "the antecedent is not ontology-typed (an untyped antecedent cannot be type-unique)"
+    docs = set(e.doc_ids)
+    compatible = sorted(
+        eid for eid, ent in graph.entities.items()
+        if eid != anaphor.eid
+        and (not ent.doc_ids or not docs or (ent.doc_ids & docs))
+        and ent.etype in (antecedent.etype, _UNKNOWN_ETYPE)
+    )
+    if len(compatible) != _ONE_ANTECEDENT:
+        return False, (
+            f"the anaphor has {len(compatible)} type-compatible antecedents in scope, not exactly one — an "
+            f"'unknown'-typed endpoint counts as compatible on purpose, because a second undeclared mention "
+            f"is precisely what an extractor under-reach would hide"
+        )
+    if compatible[0] != antecedent.eid:
+        return False, "the single type-compatible antecedent is not the one this link binds to"
+    return True, (
+        f"exactly one type-compatible antecedent ('{antecedent.etype}'), named and declared by its own claims"
+    )
+
+
 def _link_gate_verdict(
     e: Edge, evidence: str, graph: EntityGraph, cfg: ResolveConfig
 ) -> tuple[bool, str]:
@@ -1018,13 +1084,14 @@ def _link_gate_verdict(
             documents=len(e.doc_ids) or 1,
         )
     if evidence == coref_gate.UNAMBIGUOUS_ANAPHOR:
-        if str(stamped or "") == COREF_GATE_PASS:
-            return True, "the positive anaphor gate passed at ingest, over the document's mention inventory"
-        return False, (
-            "the positive anaphor gate cannot be recomputed here (it needs the document's whole mention "
-            "inventory) and the link carries no verdict from ingest, so the category reverts to raise-only — "
-            "D-13.17's own conditional"
-        )
+        if coref_gate.differs_only_by_a_mark(
+            *_link_forms(e, graph), cfg.earned_identity.min_descriptor_len
+        ):
+            return False, (
+                "the two forms differ by a MARK, not a word — a mark distinguishes a variant rather than "
+                "naming the same thing, so no anaphoric reading licenses the bind (M1)"
+            )
+        return _anaphor_gate_from_graph(e, graph)
     return False, (
         f"'{evidence}' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses "
         f"banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another "
@@ -1133,7 +1200,12 @@ def _history_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> str | None:
     key_components = sorted({attr for key in cfg.unique_id_keys(a.etype) for attr in key})
     checked = cfg.critical_role_attrs(a.etype) + cfg.constitutive_attrs(a.etype) + key_components
     seen: set[str] = set()
-    for attr in [x for x in checked if not (x in seen or seen.add(x))]:
+    ordered: list[str] = []
+    for attr in checked:  # de-duplicated, declaration order preserved (deterministic — gate G2)
+        if attr not in seen:
+            seen.add(attr)
+            ordered.append(attr)
+    for attr in ordered:
         values: set[str] = set()
         unreadable = False
         for ac in a.attr_history.get(attr, []) + b.attr_history.get(attr, []):
@@ -1191,8 +1263,8 @@ def _coref_pairs(
         attrs = e.attributes or {}
         referent = str(attrs.get(COREF_REFERENT_ATTR) or "")
         cluster = str(attrs.get(COREF_CLUSTER_ATTR) or "")
-        docs = "|".join(sorted(e.doc_ids))
-        grain = referent or (f"cluster:{docs}:{cluster}" if cluster else f"link:{id(e)}")
+        doc_key = "|".join(sorted(e.doc_ids))
+        grain = referent or (f"cluster:{doc_key}:{cluster}" if cluster else f"link:{id(e)}")
         by_referent.setdefault(grain, []).append(e)
 
     for referent, links in sorted(by_referent.items(), key=lambda kv: kv[0]):

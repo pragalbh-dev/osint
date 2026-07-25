@@ -70,6 +70,11 @@ _TIME_ROLE_KEY = "time_role"
 #: anywhere other than the types that need it is inert config with a longer name. Dies with the flag at S4.
 _REQUIRES_KEY = "requires"
 _REQUIRES_EARNED = "earned_identity"
+#: A per-FIELD stage override on an ``attribute_roles`` entry: ``earned_role`` replaces ``role`` while the flag
+#: is on. Used where the row **predates** S3 and must keep its earlier declaration flag-off — gating such a row
+#: wholesale would delete a pre-S3 declaration and silently move flag-off scoring, because a dropped row leaves
+#: the agreement ratio. ``requires:`` is for rows that are wholly new and have no earlier form to preserve.
+_EARNED_ROLE_KEY = "earned_role"
 
 #: Identity *bands*, by name. A ceiling is declared as a band NAME and never as a float: analyst B's
 #: arithmetic (rk-spike-DECISIONS §b) showed any ×coefficient can drop a pair **two** bands — out of the
@@ -755,18 +760,26 @@ class ResolveConfig:
         *agreement* and its *difference* mean over time — read by :meth:`attribute_time_role`. An
         attribute not listed here is **neutral** — no identity effect.
 
-        A row carrying ``requires: earned_identity`` is consumed **only while that flag is on**. That
+        Two stage markers, and the difference between them matters. A row carrying
+        ``requires: earned_identity`` is consumed **only while that flag is on** — for rows S3 introduces, which
+        have no earlier form. A row carrying ``earned_role:`` keeps its declared ``role`` flag-off and takes the
+        override flag-on — for rows that **predate** S3, where dropping the row would delete a pre-S3
+        declaration and move flag-off scoring by removing it from the agreement ratio. That
         marker is what lets C6's declarations live in this one block rather than in a parallel overlay: a new
         ``identifying`` or ``constitutive`` row *is* a behavioural change (it enters the agreement ratio and
         the durable-support test), so it cannot be consumed unconditionally without moving the flag-off graph
         — but hiding it elsewhere is exactly the inertness ruling M3 was written to prevent.
         """
         rows = dict(self._extra("attribute_roles", {}).get(entity_type, {}))
-        if self._earned.enabled:
-            return rows
+        if not self._earned.enabled:
+            return {
+                attr: spec for attr, spec in rows.items()
+                if not (isinstance(spec, dict) and spec.get(_REQUIRES_KEY) == _REQUIRES_EARNED)
+            }
         return {
-            attr: spec for attr, spec in rows.items()
-            if not (isinstance(spec, dict) and spec.get(_REQUIRES_KEY) == _REQUIRES_EARNED)
+            attr: ({**spec, "role": spec[_EARNED_ROLE_KEY]}
+                   if isinstance(spec, dict) and spec.get(_EARNED_ROLE_KEY) else spec)
+            for attr, spec in rows.items()
         }
 
     def _role_attrs(self, entity_type: str, role: str) -> list[str]:

@@ -588,8 +588,7 @@ def coref_claims(accepted: list[tuple[list[Mention], str, list[str]]], *, claims
                  loaded: LoadedDoc, source_id: str, model_id: str,
                  report_time: DateValue | None, ingest_time: DateValue | None,
                  mentions: list[Mention] | None = None, markers: tuple[str, ...] = (),
-                 min_descriptor_len: int | None = None,
-                 mint_referents: bool = False) -> list[ClaimRecord]:
+                 min_descriptor_len: int | None = None) -> list[ClaimRecord]:
     """Turn accepted clusters into ``coref-same-as`` claims — a star from the cluster's anchor.
 
     ``kind`` follows what the claim can actually cite, because an ``inference`` **must** carry premises:
@@ -623,7 +622,11 @@ def coref_claims(accepted: list[tuple[list[Mention], str, list[str]]], *, claims
         # THE REFERENT ATOM (A1): one per document-local cluster, minted here and only here. It is a
         # *grouping signal* the rebuild consults and may DECLINE — never the address of a node — which is
         # why it rides the attribute bag and the members' entity claims rather than replacing any id.
-        referent = make_referent_id(doc_token, cluster_id) if mint_referents else None
+        # Minted UNCONDITIONALLY. I first gated this on the stage flag, which was the same mistake as gating
+        # the gate: the referent atom is not a policy, it is the **grain** — the cluster's address in the
+        # evidence log, without which the grouping is not a thing the rebuild can adjudicate or decline. What
+        # rides the flag is whether the rebuild ACTS on the grouping, which is gated where it belongs.
+        referent = make_referent_id(doc_token, cluster_id)
         for member in members:
             if member is anchor:
                 continue
@@ -637,18 +640,17 @@ def coref_claims(accepted: list[tuple[list[Mention], str, list[str]]], *, claims
                 QUOTE_ATTR: quotes[0],
                 QUOTES_ATTR: list(quotes),
             }
-            if referent is not None:
-                attributes[REFERENT_ATTR] = referent
-                # C5: the gate is per LINK. Both members' forms and the per-link verdict are stamped so the
-                # resolver can re-derive what it is able to (the quote checks) and audit what it cannot (the
-                # anaphor gate needs the whole mention inventory, which exists only here).
-                attributes[FORMS_ATTR] = [anchor.name, member.name]
-                passed, why = link_gate(
-                    evidence, quotes, anchor, member, inventory_all or members, markers,
-                    min_descriptor_len,
-                )
-                attributes[GATE_ATTR] = GATE_PASS if passed else GATE_FAIL
-                attributes[GATE_DETAIL_ATTR] = why
+            attributes[REFERENT_ATTR] = referent
+            # C5: the gate is per LINK. Both members' forms are stamped so the resolver can RECOMPUTE the
+            # equivalence conjuncts rather than trust a verdict (a gate only the producer can recompute is a
+            # second self-report), and the producer's own verdict is stamped beside them as the audit trail
+            # for the one conjunct that needs the document text.
+            attributes[FORMS_ATTR] = [anchor.name, member.name]
+            passed, why = link_gate(
+                evidence, quotes, anchor, member, inventory_all or members, markers, min_descriptor_len,
+            )
+            attributes[GATE_ATTR] = GATE_PASS if passed else GATE_FAIL
+            attributes[GATE_DETAIL_ATTR] = why
             if anchor.claim_id:
                 attributes[edge_direction.SUBJECT_MENTION_ATTR] = anchor.claim_id
             if member.claim_id:
@@ -889,17 +891,16 @@ def propose_coreference(claims: list[ClaimRecord], *, loaded: LoadedDoc, source_
         accepted, claims=claims, loaded=loaded, source_id=source_id, model_id=client.model_id,
         report_time=report_time, ingest_time=ingest_time, mentions=mentions,
         markers=earned.equivalence_markers, min_descriptor_len=earned.min_descriptor_len,
-        mint_referents=earned.enabled,
     ) if accepted else []
     if contrasts:
         out += contrast_claims(
             contrasts, claims=claims, loaded=loaded, source_id=source_id, model_id=client.model_id,
             report_time=report_time, ingest_time=ingest_time,
         )
-    if earned.enabled and accepted:
-        # The referent atoms are stamped on pass 1's own entity claims IN PLACE of nothing — the returned
-        # list is written back by the caller, which is what promotes the cluster from "n−1 star links" to a
-        # real GROUPING the rebuild can decline as a whole (D-13.18).
+    if accepted:
+        # The same atom is stamped on pass 1's own entity claims, so the grouping is recoverable from the
+        # members and not only from the n−1 star links — which is what lets the rebuild adjudicate (and
+        # DECLINE) the grouping as a whole rather than pair by pair (D-13.18).
         _stamped[:] = stamp_referents(claims, accepted, _sanitize_doc_token(source_id))
     return out
 

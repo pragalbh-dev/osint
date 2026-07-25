@@ -37,25 +37,27 @@ def _cfg(**over):
 
 # ── the alias-reflexivity hole (Phase 1) ─────────────────────────────────────────────────────────
 
-def test_alias_equivalence_is_not_reflexive_when_the_stage_flag_is_on() -> None:
+def test_alias_equivalence_is_not_reflexive() -> None:
     """A name in the table was alias-equivalent **to itself** — so the ungated branch fired first.
 
     This is the mechanism, tested at the unit it lives in: excluding names *absent* from the table (which the
     pre-S3 code did) is not the same as excluding ``a == b``. For any name that DOES appear in a class, both
-    sides share a root and ``equivalent`` returned True with no type and no namespace check anywhere.
+    sides share a root and ``equivalent`` returned True with no type and no namespace check anywhere — so the
+    namespace-gated exact-name branch below it was unreachable, and cross-operator *and cross-type* fusion was
+    reachable in Phase 1 at confidence 1.0, past every band and cap.
+
+    Asserted on the **default**, not behind the stage flag. This is a plain bug — the method never did what its
+    own docstring promised — and a fix that applies only when a flag is on leaves the hole open in the
+    configuration everything actually runs in. Measured byte-inert on both real surfaces and the golden
+    fixture: nothing in this corpus relied on a name being its own alias.
     """
-    idx = AliasIndex(require_distinct_forms=True)
+    idx = AliasIndex()
     idx.link("hq 9 p", "fd 2000")
 
     assert idx.equivalent("hq 9 p", "fd 2000"), "a real alias LINK must still be equivalent"
     assert not idx.equivalent("hq 9 p", "hq 9 p"), (
         "a name is alias-equivalent to ITSELF — the branch fires with no type or namespace gate, which is how "
         "cross-type and cross-operator fusion became reachable in Phase 1 (G19)"
-    )
-    legacy = AliasIndex()
-    legacy.link("hq 9 p", "fd 2000")
-    assert legacy.equivalent("hq 9 p", "hq 9 p"), (
-        "the pre-S3 index must still be reflexive, or this test is not measuring a change"
     )
 
 

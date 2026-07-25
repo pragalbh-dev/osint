@@ -398,9 +398,13 @@ attribute_roles:
     # PROMOTED TO CRITICAL in S3, which is what C7 was a prerequisite for. It was `supporting` — i.e. inert —
     # only because the corpus states it unnormalised ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an
     # exact-match wall on those "SHATTERS legitimate merges". `value_normalization` removes that objection, so
-    # a genuinely different service branch is now a genuinely different unit. Marked, because promoting it
-    # changes what walls.
-    service_branch:  {role: critical, time_role: durable, requires: earned_identity}
+    # a genuinely different service branch is now a genuinely different unit.
+    #
+    # `earned_role` is a per-FIELD override applied only with the stage flag on, rather than `requires:` on the
+    # whole row. That distinction is load-bearing: this row EXISTED before S3, so gating the row would delete
+    # a pre-S3 declaration flag-off and silently move flag-off scoring (it drops out of the agreement ratio).
+    # `requires:` is for rows that are wholly new and have no earlier form to preserve.
+    service_branch:  {role: supporting, earned_role: critical, time_role: durable}
     designator:      {role: supporting, time_role: durable}
     echelon:         {role: supporting, time_role: durable}
     alert_posture:   {role: supporting, time_role: perishable}   # a stated readiness/alert status — expected
