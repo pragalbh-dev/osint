@@ -126,17 +126,53 @@ def test_matcher_leniency_is_introspectable():
 
 
 def test_matcher_leniency_is_configurable_and_actually_bites():
-    """A `rule` argument the matcher ignores is worse than none — it advertises control it lacks."""
+    """A `rule` argument the matcher ignores is worse than none — it advertises control it lacks.
+
+    **Thresholds re-calibrated at integration (.50/.99, was .80/.99), and the reason is a finding.** The
+    shipped matcher scores this exact pair at **0.5455**, so the original pair sat *below both* thresholds
+    and could never straddle — the gate was red for a mis-calibrated fixture, not an inert rule. The claim
+    pair is deliberately unchanged; only the brackets moved, so the property still proves itself on the
+    author's own example.
+
+    Why 0.5455, and why it matters beyond this test: ``normalize_surface`` rewrites ``-_/`` to a SPACE
+    (right for predicates — ``supplies-component`` ≡ ``supplies component``), which turns "HT-233" into
+    two tokens while "HT233" stays one; ``token_sort_ratio`` then compares "ht 233" against "ht233" and
+    penalises the split hard. This corpus's most important surfaces are exactly that shape — HQ-9/P,
+    HT-233, FD-2000, HQ-9BE — so under the shipped default a legitimate de-hyphenated variant is scored a
+    NON-match. That depresses recall for every candidate equally and adds run-to-run variance.
+
+    It is pinned below rather than fixed here: choosing the kernel/normaliser is a measurement-policy call
+    that changes every number the bake-off produces, and the implementer explicitly referred it to whoever
+    owns the labeled gold. Tuning it here — from one synthetic pair, by someone who has now read the gold
+    — is the exact failure the matcher's own docstring warns against.
+    """
     gold = [claim("HQ-9/P echo", "supplies-component", "HT-233", "d01", (10, 60))]
     pred = [claim("HQ-9/P echo", "supplies-component", "HT233", "d01", (10, 60))]  # near-miss surface
-    lenient = do_match(gold, pred, rule=dict(DEFAULT_RULE, surface_threshold=0.80))
+    lenient = do_match(gold, pred, rule=dict(DEFAULT_RULE, surface_threshold=0.50))
     strict = do_match(gold, pred, rule=dict(DEFAULT_RULE, surface_threshold=0.99))
     assert lenient.recall > strict.recall, why(
-        f"MATCHER-RULE-INERT: 'HT233' vs 'HT-233' scored recall={lenient.recall} at threshold .80 and "
+        f"MATCHER-RULE-INERT: 'HT233' vs 'HT-233' scored recall={lenient.recall} at threshold .50 and "
         f"{strict.recall} at .99 — the configured leniency changed nothing. Either the rule argument is "
         "ignored (the harness advertises a control it does not have) or the match is exact-only and the "
         "'fuzzy surface alignment' plan §8 asks for does not exist, which hides every real difference in "
         "surface handling between the candidates."
+    )
+
+
+def test_hyphenation_variants_are_scored_a_nonmatch_by_the_shipped_default():
+    """Pins the finding above as an asserted fact, so it cannot regress quietly in either direction.
+
+    This is NOT an endorsement — a de-hyphenated designator *is* the same claim to any analyst, and the
+    shipped default calls it a miss. The assertion exists so that whoever re-tunes the match policy sees
+    this go red and makes the change deliberately, rather than discovering afterwards that every recall
+    number in the bake-off moved.
+    """
+    gold = [claim("HQ-9/P foxtrot", "supplies-component", "HT-233", "d01", (10, 60))]
+    pred = [claim("HQ-9/P foxtrot", "supplies-component", "HT233", "d01", (10, 60))]
+    assert do_match(gold, pred).recall == 0.0, (
+        "The shipped match policy now ACCEPTS a de-hyphenated designator variant. That is very likely an "
+        "improvement, but it moves every recall/F1 number this bake-off produces, so it must be a "
+        "deliberate re-tuning against a labeled sample — re-baseline the scorecard, then update this test."
     )
 
 

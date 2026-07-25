@@ -48,9 +48,17 @@ DOCS = {
     "d01": "Rahwali garrison: an HQ-9/P battery with its HT-233 engagement radar was photographed on 3 May.",
 }
 
-# The span is real and slices back — but it says nothing about Sargodha or about any S-400.
-SUPPORTED = claim("HQ-9/P", "supplies-component", "HT-233", "d01", (0, 96))
-FABRICATED = claim("S-400", "based-at", "Sargodha", "d01", (0, 96))
+# The span is real, IN BOUNDS, and slices back — but it says nothing about Sargodha or any S-400.
+#
+# The end offset is len(DOCS["d01"]), not one past it. The original fixture asked for (0, 96) against a
+# 95-character document, and the shipped harness counts an out-of-bounds citation as unfaithful — which
+# is correct, and is kept: a span that does not exist in the document is provenance that does not
+# resolve, and one-click traceability to an exact source is what makes this system's output admissible
+# at all. Python's forgiving slice is a language accident, not a licence. So the FIXTURE was wrong, not
+# the check; correcting it here preserves the anti-vacuity property this test was written to hold.
+_SPAN = (0, len(DOCS["d01"]))
+SUPPORTED = claim("HQ-9/P", "supplies-component", "HT-233", "d01", _SPAN)
+FABRICATED = claim("S-400", "based-at", "Sargodha", "d01", _SPAN)
 
 
 def _rate(res) -> float:

@@ -125,9 +125,24 @@ class BakeoffConfig(_Strict):
     weights: dict[str, float]
     match_policy: MatchPolicy
     candidates: list[Candidate]
+    #: Metrics that MUST be measured before any winner may be named. Distinct from a weight: a weighted
+    #: metric that cannot be scored is excluded from the composite and named; a *required* one blocks the
+    #: verdict outright. Plan §8's "definitive pass" criteria live here, so a Wave-0 run cannot render a
+    #: finished-looking scorecard while the two top-weighted criteria are still unmeasurable.
+    required_metrics: list[str] = []
 
     def weight_for(self, metric: str) -> float:
         return self.weights.get(metric, 0.0)
+
+    @property
+    def non_negotiable_metrics(self) -> tuple[str, ...]:
+        """The metrics that may not be traded against score, named by the floors block.
+
+        Reuses ``gates.non_negotiable_floors``' KEYS rather than introducing a second list: the floors
+        stay ``null`` (nobody has justified an absolute threshold), but naming a metric there already
+        declares it non-negotiable, and that declaration is enough to forbid trading it away.
+        """
+        return tuple(self.gates.non_negotiable_floors or ())
 
     def candidate(self, candidate_id: str) -> Candidate:
         for cand in self.candidates:

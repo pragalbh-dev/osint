@@ -53,6 +53,8 @@ VerdictKind = Literal[
     "WINNER",
     "NO_MEASURED_DIFFERENCE",
     "INSUFFICIENT_REPLICATION",
+    "INSUFFICIENT_CRITERIA",
+    "NON_NEGOTIABLE_REGRESSION",
     "SOLE_ELIGIBLE_CANDIDATE",
     "NO_ELIGIBLE_CANDIDATE",
     "NO_COMPARABLE_METRICS",
@@ -207,6 +209,22 @@ def compare_metric(metric: str, series: Mapping[str, MetricSeries | None], margi
 COMPOSITE = "composite"
 
 
+def _oriented(series: MetricSeries, i: int) -> float:
+    """Run *i*'s value, flipped so that **larger is always better** before it enters the composite.
+
+    The composite is ranked ``higher_is_better``, so a ``lower_is_better`` member has to be inverted on the
+    way in. Without this a rate-valued "how often did it do the bad thing" metric contributes *positively*:
+    with fabrication weighted at 4.5, a model fabricating 40% of the time scored a composite of 0.56
+    against a clean model's 0.32 — the harness would have actively selected for the one behaviour this
+    project calls disqualifying, and every per-metric line would still have read correctly.
+
+    Only 0..1 rates reach the composite (``composite_series`` enforces the unit), so ``1 - v`` is the
+    meaningful inversion rather than a negation.
+    """
+    v = series.values[i]
+    return (1.0 - v) if series.direction == "lower_is_better" else v
+
+
 def composite_series(
     scores: Sequence[CandidateScore], config: BakeoffConfig
 ) -> tuple[dict[str, MetricSeries], dict[str, float], dict[str, str]]:
@@ -242,6 +260,13 @@ def composite_series(
         if unrankable:
             excluded[name] = "not rankable for " + "; ".join(unrankable)
             continue
+        directions = {s.direction for s in per_candidate if s}
+        if len(directions) > 1:
+            excluded[name] = (
+                f"candidates disagree on this metric's direction {sorted(directions)} — refusing to "
+                "composite a metric whose polarity is ambiguous"
+            )
+            continue
         used[name] = weight
 
     out: dict[str, MetricSeries] = {}
@@ -256,7 +281,7 @@ def composite_series(
             continue
         n_runs = min(len(score.series[m].values) for m in used)
         values = tuple(
-            sum(config.weight_for(m) * score.series[m].values[i] for m in used) / total_weight
+            sum(config.weight_for(m) * _oriented(score.series[m], i) for m in used) / total_weight
             for i in range(n_runs)
         )
         out[score.candidate_id] = MetricSeries(
@@ -319,6 +344,33 @@ def decide(scores: Sequence[CandidateScore], config: BakeoffConfig) -> tuple[Ver
             disqualified=disqualified,
         ), None
 
+    # RULING (integration triage): a metric the config declares REQUIRED blocks the verdict; a merely
+    # weighted one is excluded and named. Plan §8 splits the bake-off into a Wave-0 screen and a
+    # definitive pass precisely because the two top-weighted criteria cannot be measured yet — so a
+    # Wave-0 winner asserts the missing half could not have mattered, which is what has not been shown.
+    # This is the project's own "insufficient evidence to assess" rule turned on its own instrument.
+    # It lifts automatically: measure the required metrics and the block disappears.
+    unmeasured_required = {
+        name: "; ".join(sorted({
+            f"{s.candidate_id}: {s.series[name].not_rankable_because}" if name in s.series
+            else f"{s.candidate_id}: metric absent"
+            for s in eligible
+            if name not in s.series or not s.series[name].rankable
+        }))
+        for name in config.required_metrics
+    }
+    unmeasured_required = {k: v for k, v in unmeasured_required.items() if v}
+    if unmeasured_required:
+        detail = "; ".join(f"{k} ({v})" for k, v in sorted(unmeasured_required.items()))
+        return Verdict(
+            "INSUFFICIENT_CRITERIA",
+            "Ranking refused: required criteria are UNMEASURED, not zero — "
+            f"{detail}. Naming a winner now would assert that the unmeasured criteria could not have "
+            "changed the outcome. Re-run once they can be measured; nothing else about this scorecard "
+            "changes.",
+            disqualified=disqualified,
+        ), None
+
     if len(eligible) == 1:
         only = eligible[0]
         return Verdict(
@@ -341,6 +393,39 @@ def decide(scores: Sequence[CandidateScore], config: BakeoffConfig) -> tuple[Ver
     comparison = compare_metric(COMPOSITE, dict(comp_series), config.margin)
     top = comparison.top_tier
     if len(top) == 1:
+        # RULING (integration triage): a non-negotiable is not tradeable. Before the composite may name a
+        # winner, that winner must not be MATERIALLY worse than any rival on a declared non-negotiable
+        # metric. Inside the composite these are just heavy weights, and any weight is a price a
+        # good-enough model can pay — so a model 10 F1 points ahead could buy its way past a worse
+        # fabrication rate. That model would re-extract and re-freeze the graded oracle, writing
+        # ungrounded claims into the evidence layer wearing valid citations, which nothing downstream
+        # catches. The check needs no invented threshold: it reuses the same margin rule, so only a
+        # difference already established as real (outside run-to-run noise) can veto.
+        by_id = {s.candidate_id: s for s in eligible}
+        winner = by_id[top[0]]
+        vetoes: list[str] = []
+        for metric in config.non_negotiable_metrics:
+            for rival in eligible:
+                if rival.candidate_id == winner.candidate_id:
+                    continue
+                result = compare_pair(metric, rival.candidate_id, rival.series.get(metric),
+                                      winner.candidate_id, winner.series.get(metric), config.margin)
+                if result.verdict == "A_BETTER":
+                    vetoes.append(
+                        f"{rival.candidate_id} is materially better than {winner.candidate_id} on "
+                        f"{metric} ({result.note})"
+                    )
+        if vetoes:
+            return Verdict(
+                "NON_NEGOTIABLE_REGRESSION",
+                f"No winner: {top[0]} leads the weighted composite but is materially worse on a "
+                "non-negotiable criterion — " + "; ".join(vetoes) + ". Citation faithfulness and the "
+                "extract-only-stated discipline are not score lines to be averaged against recall; a "
+                "non-negotiable that can be outweighed is a price. Resolve this as a human judgement, "
+                "not by arithmetic.",
+                disqualified=disqualified, composite_weights=weights,
+                composite_exclusions=exclusions,
+            ), comparison
         return Verdict(
             "WINNER", f"{top[0]} wins on the weighted composite by a margin exceeding run-to-run noise.",
             winner=top[0], disqualified=disqualified, composite_weights=weights,

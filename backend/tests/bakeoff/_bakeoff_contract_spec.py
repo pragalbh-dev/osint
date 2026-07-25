@@ -89,7 +89,21 @@ _SURFACES: dict[str, tuple[str, ...]] = {
 
 
 def _discover(surface: str) -> Any | None:
-    """Return the shipped callable for ``surface``, or ``None`` if the harness is not built yet."""
+    """Return the shipped callable for ``surface``, or ``None`` if the harness is not built yet.
+
+    Tries the explicit binding layer first. ``_impl_binding`` implements this contract *over* the real
+    ``eval.extraction`` types; name-and-signature guessing is only the fallback for a harness that has
+    not been bound yet. Discovery was written impl-blind and, at integration, half-matched — which is why
+    the binding is now explicit rather than inferred (see :mod:`tests.bakeoff._impl_binding`).
+    """
+    try:
+        binding = importlib.import_module("tests.bakeoff._impl_binding")
+    except Exception:
+        binding = None
+    if binding is not None:
+        fn = getattr(binding, surface, None)
+        if callable(fn):
+            return fn
     for mod_name in _MODULES:
         try:
             mod = importlib.import_module(mod_name)
@@ -102,20 +116,28 @@ def _discover(surface: str) -> Any | None:
     return None
 
 
-#: True when no shipped harness was found and the gates are checking the NAIVE stand-in.
-#: Reported in every failure message so a red gate is never mistaken for a missing import.
-USING_STAND_IN = all(_discover(s) is None for s in _SURFACES)
+#: Per-surface resolution. This MUST be per-surface, not a single ``all()`` over the four: at integration
+#: two surfaces resolved and two silently fell back to the NAIVE stand-in, while a global flag reported
+#: "checked against the shipped harness" on *every* failure — so twenty-odd reds named the shipped
+#: implementation as the thing that failed when it had never been called. A red carrying a false
+#: attribution is the same defect as a green carrying a false claim.
+_RESOLVED: dict[str, Any | None] = {s: _discover(s) for s in _SURFACES}
 
-_WHY = (
-    "no shipped harness found under eval.extraction — this property was checked against the NAIVE "
-    "stand-in in tests/bakeoff/_bakeoff_contract_spec.py, which violates it by construction"
-    if USING_STAND_IN
-    else "checked against the shipped eval.extraction harness"
-)
+#: True only when NO surface resolved — i.e. every gate is checking the stand-in.
+USING_STAND_IN = all(fn is None for fn in _RESOLVED.values())
+
+
+def _origin(fn: Any | None) -> str:
+    if fn is None:
+        return "NAIVE stand-in (no shipped harness found)"
+    return f"{getattr(fn, '__module__', '?')}.{getattr(fn, '__qualname__', fn)}"
+
+
+_WHY = "; ".join(f"{s} → {_origin(fn)}" for s, fn in sorted(_RESOLVED.items()))
 
 
 def why(msg: str) -> str:
-    """Attach the resolution provenance to a property-failure message."""
+    """Attach the *per-surface* resolution provenance to a property-failure message."""
     return f"{msg}\n[harness resolution: {_WHY}]"
 
 

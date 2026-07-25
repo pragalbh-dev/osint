@@ -72,6 +72,18 @@ SUB_ORACLE_SCHEMA = "rk-bakeoff-sub-oracle/1."
 _FORMS = {"triple", "entity", "event"}
 _POLARITIES = {"positive", "negative"}
 
+#: Strings a labeled slice may use to mean "the source does not state this". Treated exactly as ``null``.
+#: A gold file that writes the absence out as a word instead of a null must not be read as *stating* the
+#: word — see the discriminator block in :func:`_parse_claim` for what that inversion costs.
+NOT_STATED_SENTINELS = frozenset({"unknown", "not stated", "not-stated", "n/a", "na", "none", "null", ""})
+
+
+def _is_stated(value: Any) -> bool:
+    """Did the source actually state this discriminator? ``null``/absent/sentinel ⇒ no."""
+    if value is None:
+        return False
+    return str(value).strip().casefold() not in NOT_STATED_SENTINELS
+
 
 def _require_version(raw: dict[str, Any], prefix: str, path: Path) -> None:
     version = str(raw.get("schema_version", ""))
@@ -141,10 +153,17 @@ def _parse_gold_claim(raw: dict[str, Any], path: Path) -> SurfaceClaim:
             f"{path}: gold claim {gold_id!r} names discriminator slot(s) {unknown} outside A7's four: "
             f"{list(DISCRIMINATOR_SLOTS)}"
         )
-    # Absent key and explicit null mean the same thing — the source does not state it — and both are
-    # gradable: a model that fills them is fabricating, not recalling.
+    # Absent key, explicit null, and a "not stated" SENTINEL string all mean the same thing — the source
+    # does not state it — and all are gradable: a model that fills them is fabricating, not recalling.
+    #
+    # The sentinel matters. The labeled slice writes "unknown" as a string rather than null (349 of its
+    # 500 discriminator slots), and reading those as STATED values inverts both A7 metrics at once:
+    # `discriminator_capture`'s denominator swells from 151 to 500, so even a perfect model scores ~0.30;
+    # and `discriminator_fabrication_avoidance` loses its entire denominator and reports unavailable.
+    # Worse, a model that literally emits the word "unknown" would then outscore one that correctly left
+    # the slot empty — rewarding exactly the fabrication the metric exists to catch.
     discriminators: dict[str, str | None] = {
-        slot: (str(disc_raw[slot]) if disc_raw.get(slot) is not None else None)
+        slot: (str(disc_raw[slot]) if _is_stated(disc_raw.get(slot)) else None)
         for slot in DISCRIMINATOR_SLOTS
     }
 

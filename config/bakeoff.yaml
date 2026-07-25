@@ -71,6 +71,20 @@ weights:
   determinism: 2.0
   kind_tagging: 0.5             # low — it self-corrects (D-13.5)
 
+# ── Required criteria: no winner may be named while any of these is UNMEASURED ─────────────────────
+# A weight and a requirement are different things. A weighted metric that cannot be scored is excluded
+# from the composite and named in the exclusions; a REQUIRED one blocks the verdict outright
+# (INSUFFICIENT_CRITERIA). Plan §8 splits this bake-off into a Wave-0 screen and a "definitive pass
+# after RK-ATOMS / RK-COREF", because the two TOP-weighted criteria cannot be measured until those land.
+# Listing them here is what stops a Wave-0 run from rendering a finished-looking scorecard that has
+# measured only the low-weight half — nobody re-runs a bake-off that already has a verdict.
+#
+# The block lifts by itself: measure them and the verdict proceeds. Removing a name from this list is a
+# decision to rank without it, and should be made deliberately rather than to make a red run go green.
+required_metrics:
+  - coref_binding           # AWAITING S3 (RK-COREF): no extraction-side coref channel exists yet
+  - discriminator_capture   # needs A7 discriminators graded against the labeled slice
+
 # ── The claim-match policy: what counts as the same claim ──────────────────────────────────────────
 # This is the measurement. Read it before reading any number the scorecard prints.
 match_policy:
