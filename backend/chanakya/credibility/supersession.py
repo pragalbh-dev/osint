@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from chanakya.schemas import AssertionInput, ConfigBundle, EdgeView
+from chanakya.schemas import AssertionInput, ConfigBundle, EdgeView, NodeView
 
 from .status import SUPERSEDED, assign_status
 
@@ -59,6 +59,12 @@ _MIN_BAND = "min_band"  # names a key in credibility.thresholds — never a bare
 _MIN_LOOKS = "min_independent_looks"
 _BLOCKING = "blocking_gate_flags"
 _ALLOWED_STATUS = "newer_status_allow"
+# R1.4 — the EARNED-IDENTITY gate on the promotion (see :func:`_identity_failures`).
+_REQUIRE_EARNED = "require_earned_identity"
+_MIN_IDENTITY_CONF = "min_identity_confidence"
+_RESOLVED_FROM = "resolved_from"       # the accepted-merge audit trail view/pipeline stamps on a node
+_MERGE_CONFIDENCE = "merge_confidence"
+_PROVISIONAL = "provisional"           # a build-materialized instance: identity not earned, by definition
 
 
 @dataclass
@@ -108,6 +114,61 @@ def _floor_failures(newer: EdgeView, floor: dict[str, object], config: ConfigBun
         failures.extend(f"newer-deception-gate:{f}" for f in hit)
 
     return failures
+
+
+def _identity_failures(
+    older: EdgeView,
+    newer: EdgeView,
+    nodes: dict[str, NodeView] | None,
+    floor: dict[str, object],
+    config: ConfigBundle,
+) -> list[str]:
+    """R1.4 — every reason this promotion is not the machine's to make (empty ⇒ it may proceed).
+
+    **The chain this closes.** Two co-located batteries with no designations look nearly identical to the
+    identity judge, so a formation merge is the path of least resistance. ``based-at`` is functional and
+    keyed on the unit, so the moment they fuse their two distinct sites become *one unit's before and
+    after*. This pass then clears the credibility floor on the newer of the two, sets the supersede link,
+    **pops the pair out of the analyst's queue** — "adjudicated by the machine" — and, because the targets
+    differ, **draws a relocation edge**. One identity error therefore becomes a positively-asserted movement
+    assessment the analyst is never asked about: the non-negotiable breached without any component lying.
+
+    Machine promotion is legitimate only over an identity the system actually **earned**. So the gate is
+    scoped exactly where the harm is — a promotion that would **draw** a relocation across *differing*
+    targets — and it holds when the subject is:
+
+    * a **provisional** instance (build-materialized: there is no earned identity to rest on at all); or
+    * a node resting on a merge recorded **below** ``min_identity_confidence``.
+
+    A never-merged, single-claim subject is *not* caught: no identity decision was taken, so there is none
+    to distrust — gating that would stop every honest relocation and teach the analyst to ignore the queue.
+    Holding is not a refusal: the pair keeps ``candidate_supersede`` and goes to the analyst, which
+    D-P4.4 already makes the default outcome. The co-location-specific half of this (making such a merge
+    fail to *fuse* in the first place) is the identity layer's job — this is the downstream backstop that
+    makes the failure survivable rather than fabricating on top of it.
+    """
+    if not bool(floor.get(_REQUIRE_EARNED)):
+        return []
+    if newer.target == older.target:
+        return []  # a same-target refresh asserts no movement; there is nothing to fabricate
+    node = (nodes or {}).get(newer.source)
+    if node is None:
+        return []
+    if node.attrs.get(_PROVISIONAL):
+        return ["subject-identity-provisional"]
+    cut = floor.get(_MIN_IDENTITY_CONF)
+    if not isinstance(cut, (int, float)):
+        return []
+    weak: list[str] = []
+    for entry in node.attrs.get(_RESOLVED_FROM, []) or []:
+        if not isinstance(entry, dict):
+            continue
+        conf = entry.get(_MERGE_CONFIDENCE)
+        if isinstance(conf, (int, float)) and conf < float(cut):
+            weak.append(str(entry.get("merged_ref", "?")))
+    if weak:
+        return [f"subject-identity-sub-confirmed:{ref}" for ref in sorted(weak)]
+    return []
 
 
 def _restate(older: EdgeView, config: ConfigBundle) -> None:
@@ -162,12 +223,18 @@ def _drawn_edge(older: EdgeView, newer: EdgeView) -> EdgeView:
     )
 
 
-def promote_supersessions(edges: list[EdgeView], config: ConfigBundle) -> SupersedeOutcome:
+def promote_supersessions(
+    edges: list[EdgeView], config: ConfigBundle, nodes: dict[str, NodeView] | None = None
+) -> SupersedeOutcome:
     """Promote each ordered candidate pair that clears the floor; leave the rest for HITL.
 
     Idempotent and order-independent: it reads the candidate attrs ``view/supersede.py`` wrote and the
     assessment the status machine just attached, so replaying the same logs + config yields the same
     edges byte-for-byte (gate G2).
+
+    ``nodes`` supplies the subject's identity provenance for the **earned-identity** gate (R1.4). Optional
+    and default-``None`` so every existing caller is unchanged; absent (or with the gate unconfigured) the
+    behaviour is exactly the pre-S2 one.
     """
     outcome = SupersedeOutcome()
     floor = _floor(config)
@@ -180,7 +247,14 @@ def promote_supersessions(edges: list[EdgeView], config: ConfigBundle) -> Supers
             continue
         # No floor configured ⇒ retire nothing. A safety gate whose config is missing must fail closed;
         # the pair simply stays in the analyst's queue where supersede.py left it.
-        failures = ["supersede-floor-not-configured"] if floor is None else _floor_failures(newer, floor, config)
+        if floor is None:
+            failures = ["supersede-floor-not-configured"]
+        else:
+            failures = _floor_failures(newer, floor, config)
+            # R1.4 — the newer assertion clearing the CREDIBILITY floor is not enough: promoting also
+            # removes the pair from the analyst's queue and draws a relocation, which is only the machine's
+            # call over an identity it earned.
+            failures = failures + _identity_failures(older, newer, nodes, floor, config)
         if failures:
             older.attrs[GATE] = GATE_HELD
             newer.attrs[GATE] = GATE_HELD

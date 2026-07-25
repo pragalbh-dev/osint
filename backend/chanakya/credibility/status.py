@@ -48,7 +48,13 @@ _CONTRADICTION = "contradiction"
 _AGING = "aging"  # at least one supporting look older than 1 half-life → blocks confirmed
 _STALE = "stale"  # the freshest supporting look older than 1 half-life → demote confirmed→stale
 _GATED_UNKNOWN = "gated-attr-unknown"  # a gated attr (foreign_control/readiness) is UNKNOWN
-_CAP_FLAGS = frozenset({_ADVERSARY_DENIAL, _DECOY_RISK})
+#: A rebuild-materialized derived attribution (``view/basing.py``). It cites its two premise claim-atoms
+#: DIRECTLY, so left ungated it would pool their two independent sources into two independent looks and read
+#: as better corroborated than the sighting it rests on — the inversion D-13.13 forbids, since derivation is
+#: the *weaker* of the formation's two provenance paths. The old minted-inference form got this ceiling for
+#: free (an inference shares an independence group with its premises); citing them directly needs it said.
+_DERIVED_INFERENCE = "derived-inference"
+_CAP_FLAGS = frozenset({_ADVERSARY_DENIAL, _DECOY_RISK, _DERIVED_INFERENCE})
 
 #: Gate flag set by :mod:`chanakya.credibility.supersession` once a *newer* assertion on the same edge
 #: instance has cleared the supersession floor. Public because the post-status pass stamps it and then

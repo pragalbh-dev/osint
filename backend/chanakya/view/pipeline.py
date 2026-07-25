@@ -29,9 +29,10 @@ from chanakya.credibility import (
     promote_supersessions,
     score_claims,
 )
+from chanakya.credibility.supersession import GATE, PENDING_NEWER, PENDING_OLDER
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
-from chanakya.ontology import EdgeLaneIndex, NodeTypeIndex
+from chanakya.ontology import EdgeLaneIndex, LayerRouting, NodeTypeIndex
 from chanakya.resolve import (
     COREF_PREDICATE,
     IDENTITY_PREDICATES,
@@ -58,6 +59,7 @@ from chanakya.schemas import (
     Partition,
     PlacesConfig,
     SourceRegistryEntry,
+    Triple,
     canonical_iso_bounds,
     pair_key,
     report_bounded_validity,
@@ -65,7 +67,19 @@ from chanakya.schemas import (
 from chanakya.sufficiency import check
 from chanakya.timeref import effective_as_of, is_available_by
 
+from . import basing as derived_basing
 from .export import sorted_view
+from .layers import (
+    STATED_TAG,
+    SUPERSEDE_SUPPRESSED,
+    RoutingOutcome,
+    apply_design_citations,
+    instance_key_tag_value,
+    route_triple,
+    split_straddlers,
+    unmapped_tag_gap,
+    withheld_edge_gap,
+)
 from .supersede import build_instance_edges
 
 # ── log normalisation ────────────────────────────────────────────────────────────────────────
@@ -301,10 +315,23 @@ def _assemble(
     lane: EdgeLaneIndex | None = None,
     node_types: NodeTypeIndex | None = None,
     display_names: dict[str, str] | None = None,
+    routing: LayerRouting | None = None,
+    outcome: RoutingOutcome | None = None,
 ) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
     edge_groups: dict[str, list[ClaimRecord]] = defaultdict(list)
+    # Layer routing (A2/A3/A4) is OFF unless the ontology says otherwise, and when off every branch below
+    # falls through to the pre-S2 path — which is what makes the flag-off view byte-identical (gate G2).
+    # `outcome` is an OUT-parameter rather than a fourth return value on purpose: the 3-tuple signature is
+    # what every existing caller (and every independently-authored test) already binds.
+    routing = routing or LayerRouting()
+    outcome = outcome if outcome is not None else RoutingOutcome()
+    # Relationship claims are buffered rather than grouped inline: the `instance_key_tag` sub-bucket is read
+    # off a NODE attribute (a site's `site_type`), so every entity claim has to have landed before any edge
+    # can be keyed. Grouping order is preserved (buffer order == replay order) and the view is sorted at the
+    # end regardless, so nothing observable moves (gate G2).
+    triples: list[ClaimRecord] = []
     # A merge reconnects edges: a triple's raw subject/object (supersede.py reads these directly) is
     # remapped to the merged entity's canonical id. Empty map ⇒ identity ⇒ view unchanged (gate G2).
     canon = entity_canonical or {}
@@ -386,41 +413,98 @@ def _assemble(
             # licensing quote. Drawing it too would re-introduce exactly the twin-node picture above.
             if payload.predicate in IDENTITY_PREDICATES or payload.predicate == COREF_PREDICATE:
                 continue
-            # Remap endpoints through the merge map so build_instance_edges (which reads the raw
-            # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
-            subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
-            if (subj, obj) != (payload.subject, payload.object):
-                c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
-            # Group corroborating claims by the edge's RESOLVED identity — recomputed here from the
-            # *canonical* endpoints, NOT read from `rr.edge_instance`. That stored ref was minted by
-            # `base_ref` from the claim's PRE-resolution surface strings, so the moment resolution merges an
-            # endpoint the ref still names the old designator while the EdgeView `id` (built by
-            # `build_instance_edges` from `subj`/`obj`) names the canonical one. The two then disagree, one
-            # logical edge fragments across several ei-buckets carrying the same `id`, and the later re-key
-            # on `el.id` overwrites all but the last bucket — silently stranding the corroborating claims on
-            # unscored rows (residual #16). Rebuilding the key through the SAME `lane` builder RESOLVE uses
-            # reproduces `rr.edge_instance` byte-for-byte whenever nothing merged (canonical ≡ raw), so
-            # unmerged graphs are unchanged (gate G2); merged endpoints now pool onto one edge. A functional
-            # edge (`based-at`) still keys on the subject alone on both paths (EVAL RCA §2.1 / D-P4.4).
-            # Absent a lane (a caller with no ontology in hand) fall back to the stored ref, then the default.
-            if lane is not None:
-                ei = lane.edge_instance_key(subj, payload.predicate, obj)
-            elif rr and rr.edge_instance:
-                ei = rr.edge_instance
-            else:
-                ei = f"edge:{subj}:{payload.predicate}:{obj}"
-            edge_groups[ei].append(c)
+            triples.append(c)
+
+    # ── the straddle split (A2/D-13.5) ────────────────────────────────────────────────────────────
+    # Runs after every entity claim has folded, so a node's full attribute set is visible: the trigger is a
+    # property of the whole node, not of whichever claim happened to arrive first. Before the edges are
+    # keyed, so a split node's edges attach to the right half.
+    if routing.enabled and node_types is not None:
+        split_straddlers(nodes, node_types, routing, outcome)
+
+    ep_types = endpoint_node_types or {}
+    for c in triples:
+        payload = cast(Triple, c.payload)
+        # Remap endpoints through the merge map so build_instance_edges (which reads the raw
+        # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
+        subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
+        if routing.enabled and lane is not None and node_types is not None:
+            # A4/D-13.6 — endpoint identity is resolved HERE, in the derived layer, never baked into the
+            # immutable claim: an instance-layer edge materializes the instance it implies, a holding edge
+            # mints nothing, and an edge whose ontology demands a STATED endpoint is withheld rather than
+            # pointed at one the build had to invent (D12).
+            routed = route_triple(
+                c, subj, payload.predicate, obj,
+                nodes=nodes, endpoint_types=ep_types, lane=lane,
+                node_types=node_types, layers=routing, outcome=outcome,
+            )
+            if routed is None:
+                continue
+            subj, obj = routed
+        if (subj, obj) != (payload.subject, payload.object):
+            c = c.model_copy(update={"payload": payload.model_copy(update={"subject": subj, "object": obj})})
+        # Group corroborating claims by the edge's RESOLVED identity — recomputed here from the
+        # *canonical* endpoints, NOT read from `rr.edge_instance`. That stored ref was minted by
+        # `base_ref` from the claim's PRE-resolution surface strings, so the moment resolution merges an
+        # endpoint the ref still names the old designator while the EdgeView `id` (built by
+        # `build_instance_edges` from `subj`/`obj`) names the canonical one. The two then disagree, one
+        # logical edge fragments across several ei-buckets carrying the same `id`, and the later re-key
+        # on `el.id` overwrites all but the last bucket — silently stranding the corroborating claims on
+        # unscored rows (residual #16). Rebuilding the key through the SAME `lane` builder RESOLVE uses
+        # reproduces `rr.edge_instance` byte-for-byte whenever nothing merged (canonical ≡ raw), so
+        # unmerged graphs are unchanged (gate G2); merged endpoints now pool onto one edge. A functional
+        # edge (`based-at`) still keys on the subject alone on both paths (EVAL RCA §2.1 / D-P4.4).
+        # Absent a lane (a caller with no ontology in hand) fall back to the stored ref, then the default.
+        rr = c.resolved_ref
+        if lane is not None:
+            # R1.3/C1/L1 — the site_type sub-bucket. `tag` is None with routing off, so the key is
+            # byte-unchanged; an unmappable stated value takes the third state (shared fail-safe bucket,
+            # no supersede nomination, named gap) rather than being de-conflicted or waved through.
+            tag: str | None = None
+            if routing.enabled:
+                tag, raw, mapped = instance_key_tag_value(
+                    payload.predicate, subj, obj, lane, nodes, routing
+                )
+                if tag is not None and not mapped:
+                    outcome.unmapped_instances.setdefault(
+                        lane.edge_instance_key(subj, payload.predicate, obj, tag), raw or ""
+                    )
+            ei = lane.edge_instance_key(subj, payload.predicate, obj, tag)
+        elif rr and rr.edge_instance:
+            ei = rr.edge_instance
+        else:
+            ei = f"edge:{subj}:{payload.predicate}:{obj}"
+        edge_groups[ei].append(c)
 
     edges: list[EdgeView] = []
     for ei, cs in edge_groups.items():
-        edges.extend(build_instance_edges(ei, cs))
+        built = build_instance_edges(ei, cs)
+        if ei in outcome.unmapped_instances:
+            raw = outcome.unmapped_instances[ei]
+            for e in built:
+                if raw:
+                    e.attrs[STATED_TAG] = raw  # the unresolved class stays visible on every such edge
+            # The third state bites only where there is something to fuse. One target on an instance means
+            # no supersede was ever nominated and no de-confliction was ever at stake, so suppressing it
+            # would be a no-op and its gap would be pure noise — a "cannot assess a relocation" notice
+            # against every single basing in the graph, which is how a gap register stops being read. With
+            # two or more targets the unmappable class IS load-bearing: withdraw the nomination (an
+            # unresolved site class must not manufacture a relocation) and owe the analyst the named gap.
+            # Suppressing without the gap would be exactly the silent kill this mechanism exists to prevent.
+            if len(built) > 1:
+                for e in built:
+                    _suppress_supersede(e, raw)
+                outcome.gaps.append(unmapped_tag_gap(ei, built[0].type, "site_type", raw or None))
+        edges.extend(built)
+    edges.extend(outcome.link_edges)
+    for _claim_id, predicate, endpoint, end in outcome.withheld:
+        outcome.gaps.append(withheld_edge_gap(predicate, endpoint, end))
 
     # Never leave an edge dangling: materialise a referenced-but-undeclared node, citing the edge's
     # claims as its (weak) provenance so gate G4 (every node carries ≥1 claim_id) still holds. RESOLVE
     # types such an endpoint from the edge's own domain/range where the ontology allows it (RES-1), so
     # this materialises a real typed node; ``unknown`` now means only "the ontology could not type it",
     # which is an honest gap rather than the id-namespace artefact it used to be.
-    ep_types = endpoint_node_types or {}
     for e in edges:
         for endpoint in (e.source, e.target):
             if endpoint not in nodes:
@@ -432,12 +516,29 @@ def _assemble(
                     claim_ids=list(e.claim_ids),
                 )
 
+    if routing.enabled:
+        apply_design_citations(nodes, outcome)
+
     # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
     for node in nodes.values():
         for series in node.attr_history.values():
             series.sort(key=_series_sort_key)
 
     return nodes, edges, events
+
+
+def _suppress_supersede(edge: EdgeView, raw: str) -> None:
+    """Withdraw a supersede nomination and record why (the third state's "no fusion" — ruling L1/C7).
+
+    Nomination attrs only: the edges stay drawn, stay scored and stay clickable. What is removed is the
+    machine's *claim to have ordered them*, which is the thing an unmappable site class does not license.
+    """
+    edge.attrs[SUPERSEDE_SUPPRESSED] = "instance-key-tag-unmappable"
+    if raw:
+        edge.attrs[STATED_TAG] = raw
+    edge.attrs.pop(PENDING_NEWER, None)
+    edge.attrs.pop(PENDING_OLDER, None)
+    edge.attrs.pop(GATE, None)
 
 
 def _node_location(attrs: dict[str, Any]) -> Location | None:
@@ -657,7 +758,31 @@ def _prepare_active_claims(
     if config.credibility.as_of:
         active = [c for c in active if is_available_by(c, config.credibility.as_of)]
     active = canonicalize_claims(active, config)
+    active = _drop_superseded_derivations(active, config)
     return active, decisions
+
+
+def _drop_superseded_derivations(claims: list[ClaimRecord], config: ConfigBundle) -> list[ClaimRecord]:
+    """Ignore frozen ``inference`` claims whose derivation ``rebuild()`` now performs itself (A4/D-13.6).
+
+    The offline basing pass used to **mint** its conclusion into the append-only log. That pass is deleted,
+    and with layer routing on the same edge is materialized in the derived layer every rebuild — so those
+    frozen claims are not evidence, they are stale *output* of a mechanism that no longer exists. Reading
+    them as evidence would double-count the derivation and let a conclusion outlive its premises.
+
+    This is a **derived-layer read**, not a retraction: the claims stay in the log, still replayable, still
+    inspectable, exactly as ``as_of`` rewinding and HITL exclusion leave their inputs alone. Which
+    ``derived_layer`` values are superseded is declared in config, and with routing **off** the list is
+    never consulted — which is why the flag-off view still contains those edges, byte-identically.
+    """
+    routing = LayerRouting.from_ontology(config.ontology)
+    if not (routing.enabled and routing.superseded_derived_layers):
+        return claims
+    retired = set(routing.superseded_derived_layers)
+    return [
+        c for c in claims
+        if not (c.kind == "inference" and (c.attributes or {}).get("derived_layer") in retired)
+    ]
 
 
 def partition_with_types(
@@ -686,19 +811,38 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     resolved = _apply_partition(active, partition)
 
     # 2. assemble nodes/edges/events (+ supersede/contradict — real F0); the merge map reconnects a
-    #    merged-away entity's edges to its canonical node (no-op when nothing merged).
+    #    merged-away entity's edges to its canonical node (no-op when nothing merged). With layer routing
+    #    on, this is also where a straddling mention splits and an instance-layer edge materializes the
+    #    instance it implies (A2/A4) — endpoint identity is resolved in the derived layer, per rebuild.
+    lane = EdgeLaneIndex(config.ontology)
+    node_types = NodeTypeIndex(config.ontology)
+    routing = LayerRouting.from_ontology(config.ontology)
+    routing_outcome = RoutingOutcome()
     nodes, edges, events = _assemble(
         resolved,
         partition.entity_canonical,
         partition.endpoint_node_types,
-        EdgeLaneIndex(config.ontology),
-        NodeTypeIndex(config.ontology),
+        lane,
+        node_types,
         {e.entity_id: e.display_name for e in config.entities.entities if e.display_name},
+        routing,
+        routing_outcome,
     )
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     _stamp_place_refs(nodes, partition, config.places)  # RES-3: curated-anchor binding + its evidence
     claims_by_id = {c.claim_id: c for c in resolved}
     sources = config.sources.as_map()
+
+    # 2b. the DERIVED basing edge (A4/D-13.6/G17) — `<unit, based-at, site>` materialized here, citing its
+    #     two premise claim-atoms, with no mint and no append. It runs before scoring so the derived edge is
+    #     priced by the same machinery as every other edge (and capped by its gate flag, never confirmed).
+    derivation = derived_basing.BasingDerivation()
+    if routing.enabled:
+        derivation = derived_basing.derive(
+            nodes, edges, claims_by_id, config, lane, node_types, routing
+        )
+        edges.extend(derivation.edges)
+    derived_edge_ids = {e.id for e in derivation.edges}
 
     # 3. credibility (per-claim) — decisions carry analyst integrity flags (origin-wide, incl. future claims)
     credibility = score_claims(resolved, sources, config, decisions)
@@ -738,6 +882,13 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         gate_flags.extend(gated_attr_flags(el, config))
         if contradiction:
             gate_flags.append("contradiction")
+        # A derived attribution cites its two premises DIRECTLY, which — left alone — would make it look
+        # better corroborated than the sighting it rests on (two independent premise sources pool to two
+        # independent looks). The old minted form got its ceiling for free, because an inference shared an
+        # independence group with its premises. This flag restores it explicitly: derivation is the weaker
+        # of the formation's two provenance paths and must not reach *confirmed* (D-13.13).
+        if eid in derived_edge_ids:
+            gate_flags.append(derived_basing.DERIVED_INFERENCE)
         a = AssertionInput(
             element_id=eid,
             element_kind=kind,
@@ -792,15 +943,35 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
     #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
     #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
-    supersede_outcome = promote_supersessions(edges, config)
+    # `nodes` is handed over only with routing on, so the earned-identity gate (R1.4) rides the same single
+    # flag as everything else this stage changes — flag-off promotion behaviour is untouched by construction
+    # rather than by argument. (A safety fix behind a flag is only acceptable because the whole stage is:
+    # the flag is the stage's cutover, not a way of keeping the fix off.)
+    supersede_outcome = promote_supersessions(edges, config, nodes if routing.enabled else None)
     edges.extend(supersede_outcome.drawn_edges)
     # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it
     # raised while it was still being assessed as a live fact. The gap would tell an analyst to go
     # collect on a position the graph has just established the subject has LEFT — the opposite of the
     # honest-refusal contract, which is about what we cannot assess, not about what has been overtaken.
+    #
+    # R1.4 / C2 — but the deletion is no longer SILENT. Turning an honest `insufficient` into `stale` is
+    # correct only when the retirement itself was earned; if an identity error put the pair on one instance,
+    # this line is where the last trace of the doubt disappeared. So the retired edge now records which gap
+    # it absorbed. The promotion gate in `promote_supersessions` is the other half: a retirement that would
+    # DRAW a relocation over an identity the system did not earn is held for the analyst, and then nothing
+    # is retired and no gap is dropped at all.
     retired = set(supersede_outcome.retired_element_ids)
     if retired:
+        absorbed = {g.related_ref: g.id for g in known_gaps if g.related_ref in retired}
+        for edge in edges:
+            if edge.id in absorbed:
+                edge.attrs["retired_known_gap"] = absorbed[edge.id]
         known_gaps = [g for g in known_gaps if g.related_ref not in retired]
+    # The routing's + derivation's own named gaps: an unrouted straddle, a suppressed supersede, a withheld
+    # relation, a truncated formation attribution. Appended AFTER the retirement filter — these are not
+    # assertions that could be retired, they are statements about what the build could not conclude.
+    known_gaps.extend(routing_outcome.gaps)
+    known_gaps.extend(derivation.gaps)
 
     view = GraphView(
         nodes=list(nodes.values()),
