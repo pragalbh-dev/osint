@@ -43,8 +43,10 @@ from .claim import (
 )
 from .config_models import (
     CONFIG_SECTIONS,
+    AttrDef,
     ConfigBundle,
     CredibilityConfig,
+    DiscriminatorClass,
     EntitiesConfig,
     EntityEntry,
     EvidenceTemplate,
@@ -123,6 +125,7 @@ __all__ = [
     # config
     "ConfigBundle", "CONFIG_SECTIONS", "OntologyConfig", "SourcesConfig", "CredibilityConfig",
     "ResolutionConfig", "TemplatesConfig", "SubjectsConfig", "ObservablesConfig", "TypeDef",
+    "AttrDef", "DiscriminatorClass",
     "EvidenceTemplate", "SubjectLens", "ObservableDef", "PlacesConfig", "PlaceEntry",
     "EntitiesConfig", "EntityEntry",
     # api
