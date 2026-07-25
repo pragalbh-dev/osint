@@ -833,6 +833,16 @@ ledger); spine/13 §12 (migration/regen). DECISIONS: the graded-regen entry this
     `contract_import_event` to `trading_org` — while the schema *does* offer `imported-by → unit`, which that
     document never states. A schema that makes the sourced relation inexpressible and the unsourced one easy
     **pressures extraction toward fabrication**.
+  - **NEW, user-ratified 2026-07-25 — the sub-oracle must not confirm on a single source.** Twelve
+    `confirmed` entries in `tmp/spike-rk/gold/sub-oracle.json` rest on **one** source document each, which
+    violates the system's own rule (`config/credibility.yaml:101` `min_independent_groups: 2` — *"≥2
+    independent looks required to reach `confirmed`"*). This matters more than an ordinary data nit: the
+    sub-oracle is the **yardstick** the bake-off and slice-recall score against, so a yardstick that confirms
+    on one source is more confident than the system it grades, biased in the direction that flatters us.
+    **Fix: cap every single-source entry at `probable`** (or, where a shared unique identifier inside one
+    primary record is genuinely thought to justify a bypass, record that as an explicit `DECISIONS.md` entry
+    with its rationale rather than letting it sit implicit). Also drop the one alias entry graded `confirmed`
+    on a single hedged grade-C source while citing a row that implies the opposite. **Owner: DATA.**
   - **Answer-key items flagged, deliberately not fixed** (frozen-data rule): the ground truth contains no
     `trading_org` and none of the customs declarations — the concrete reason slice recall must score against
     the **per-slice sub-oracle**, never the full oracle (§8 item 2) — and the flagship `distinct-from` is
