@@ -286,3 +286,40 @@ the plan: a **`DECISIONS.md` entry recording user approval**, EVAL coordination,
 so pre- and post-re-key grading stay comparable. Two known consequences to carry into it: the **32 scripted-client
 tests need a second queued response**, and re-extraction is **confirmed non-deterministic** — so freeze once and
 version, or KEYLESS≡LIVE breaks.
+
+---
+
+## M14 CORRECTED — the bake-off sits BETWEEN S3 and the re-record, and my sequence omitted it
+
+**The model comparison is not part of S4 and never was.** Plan §2/§8 place **RK-BAKEOFF** in two phases, and both
+must finish **before RK-DATA's full regen — because the chosen model is what performs the regen.** My M14
+sequence ("S3 green → freeze → re-record → S4") **left it out**. Corrected:
+
+> **S3 green → freeze the A7 coref contract → RK-BAKEOFF (definitive pass) → keyed re-record with the WINNER →
+> S4 on real clusters → RK-MATERIALITY / the rest of RK-DATA.**
+
+**Why it must precede the re-record, not follow it.** The re-record *is* the regen: it produces the frozen
+bundles the whole system boots from. Re-recording first and choosing the extractor afterwards would mean either
+throwing the bundles away or keeping bundles from a model we did not select — and since re-extraction is
+**confirmed non-deterministic**, "just re-run it with the winner" is a second full regen, not a cheap redo.
+
+**Why it is unblocked now (and not earlier).** §8 says the bake-off's two **top-weighted** criteria are
+substrate-*dependent*: **discriminator capture** needs A7's structured fields (**S1 — done**) and
+**coref-binding accuracy** needs the promoted coref tier (**S3 — closing**). So the definitive pass could not
+have run before now. The **Wave-0 substrate-independent screen** was scheduled to run early and **did not** —
+that is a scheduling debt, not a blocker, and it folds into the definitive pass rather than being run separately
+now (its criteria are a subset).
+
+**What it needs, which already exists:** the **claim-gold slice** and the **per-slice sub-oracle** the spike's
+data hand built (`tmp/spike-rk/gold/`) — deliberately scored against the *slice* sub-oracle, never the full
+answer key, so the result is not dominated by which documents are in the slice. **One repair first:** the
+sub-oracle currently grades twelve entries `confirmed` on a single source, which makes the yardstick more
+confident than the system it scores (`tmp/conv/FOR-DATA-C-sub-oracle-single-source-confirm.md`). **Fix that
+before the bake-off consumes it**, or every candidate is measured against a flattering ruler.
+
+**And the honest posture stands** (§8): the gating preconditions are **pass/fail, not weighted** — the winner must
+keep the **VLM imagery path** whole, must be **live-runnable in the shipped image** *and* be the producer that
+freezes the seed bundles (so KEYLESS≡LIVE holds **by construction**), and must be a **pinned** model id, never a
+floating `-latest` alias. If only the incumbent can actually be exercised, the outcome is **"the incumbent
+stays"** — a legitimate result, but **not** a three-way measurement, and the scorecard must say so rather than
+imply a comparison that never ran.
