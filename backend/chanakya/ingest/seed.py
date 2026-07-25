@@ -35,7 +35,7 @@ from __future__ import annotations
 import json
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Protocol
 
 from chanakya import settings
 from chanakya.ingest import adapters, dedup, extract, imagery, loaders
@@ -175,22 +175,19 @@ def _report_time_for(entry: SourceRegistryEntry) -> DateValue | None:
 def _merge_chunks(chunks: list[list[ClaimRecord]]) -> list[ClaimRecord]:
     """Namespace + flatten several extraction calls' claims before dedup/id-assignment.
 
-    Provisional claim ids are unique only *within* one extraction call (``extract_document`` / one
+    Provisional atom ids are unique only *within* one extraction call (``extract_document`` / one
     ``read_image_document`` read); a source whose text lane runs alongside one or more co-loaded images
     makes several such calls, each minting its own provisional ids that can collide once concatenated.
-    Mirrors the identical namespacing the live lane applies in ``lane._extract_doc_claims`` (chunk-prefix
-    each call's ids, then rewrite that call's own cross-claim references — inference ``premises``,
-    retraction ``targets``, endpoint mention refs — in lockstep via the one shared
-    :func:`~chanakya.ingest.dedup.remap_claim_refs`) — the seed path must reshape multi-call output exactly
+    Calls the *same* :func:`~chanakya.ingest.dedup.namespace_chunk_ids` the live lane calls in
+    ``lane._extract_doc_claims`` (chunk-prefix each call's claim ids **and** its provisional referent
+    atoms, then rewrite that call's own cross-claim references — inference ``premises``, retraction
+    ``targets``, endpoint mention refs — in lockstep): the seed path must reshape multi-call output exactly
     like the live path does, or the two would diverge on a source with co-loaded imagery (breaking
-    KEYLESS ≡ LIVE).
+    KEYLESS ≡ LIVE). Sharing the one function is what makes that structural rather than a convention.
     """
     claims: list[ClaimRecord] = []
     for k, chunk in enumerate(chunks):
-        remap = {c.claim_id: f"chunk{k}-{c.claim_id}" for c in chunk}
-        for c in chunk:
-            update: dict[str, Any] = {"claim_id": remap[c.claim_id], **dedup.remap_claim_refs(c, remap)}
-            claims.append(c.model_copy(update=update))
+        claims.extend(dedup.namespace_chunk_ids(chunk, f"chunk{k}"))
     return claims
 
 

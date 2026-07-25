@@ -116,7 +116,69 @@ Format = Literal[
 # ``additionalProperties: false`` and NO ``required`` list — a permissive tool schema (never Anthropic
 # strict-mode / never a forced field). The schema exists only to describe the tool; the transforms read
 # the model's filled dict *by key*, tolerantly, so a noisy LLM value never crashes extraction.
+#
+# A7 (plan §4): every mention that yields an **entity** carries a ``context`` block of the four structured
+# discriminators (:class:`MentionContext`) — the identity context the resolver needs, on one uniformly-named
+# lane instead of a different type-specific field per node type. Entity-yielding mentions only, because a
+# discriminator exists to tell two candidate *nodes* apart: a relationship / event mention names two or more
+# things and already carries its own date and place, and ``SourceMention`` is excluded because a source's
+# identity is its registry ``source_id``, never a discriminated name. Because the transforms read by key,
+# nothing consumes ``context`` until RK-COREF (S3) — adding it changes no behaviour.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
+
+class MentionContext(BaseModel):
+    """**A7's four structured discriminators** for one named mention — operator, geography, designation, time.
+
+    The context that tells two same-named things apart: *whose* it is, *where* it is, what it is *called*,
+    and *when* the statement was true. Today the extractor can only state these through whichever
+    type-specific attribute happens to exist (``service_branch`` on a unit, ``location_text`` on a site,
+    nothing at all on a component), so the resolver would have to pattern-match a different field name per
+    node type to find them — an untyped bag wearing typed clothes. One shared, uniformly-named lane is what
+    lets the identity judge read a discriminator *structurally* (spine/13 §10, plan §4 A7); the slots are
+    declared against :class:`chanakya.schemas.AttrDef`'s ``discriminator`` on the ontology side.
+
+    **Every field is optional and absence means ``unknown``.** A required discriminator would force the
+    model to invent an operator or a location the source never stated — a fabricated assessment, which is
+    the one disqualifying failure (master non-negotiable). Values are the source's own words, copied, never
+    normalised or inferred here (normalisation is RESOLVE's; the extractor stays extract-raw).
+
+    Populated by the model from S1; **read by nothing yet** — RK-COREF (S3) is where discriminators enter
+    the identity judgement, so S1 deliberately changes no behaviour by adding them.
+    """
+
+    operator: str | None = Field(
+        default=None,
+        description=(
+            "WHO operates / owns / controls this thing, in the source's own words ('the PAF', 'PLA Air "
+            "Force', 'Army Air Defence', 'a Chinese state exporter'). Fill ONLY when the source states it "
+            "for THIS item; leave empty otherwise. Never infer an operator from nationality or context."
+        ),
+    )
+    geography: str | None = Field(
+        default=None,
+        description=(
+            "WHERE this thing is, as the source states it — a place name, coordinates, an installation, or "
+            "a relative fix ('12 km NE of Rahwali'). Copy the surface form verbatim. Leave empty when the "
+            "source gives no location for THIS item; never supply one from general knowledge."
+        ),
+    )
+    designation: str | None = Field(
+        default=None,
+        description=(
+            "The formal designator / number / reference the source gives THIS item — a unit number "
+            "('8 AD Bn'), a model designation ('HT-233'), a contract or bill reference. Leave empty when "
+            "the source names the thing only in prose; never construct a designator."
+        ),
+    )
+    time: str | None = Field(
+        default=None,
+        description=(
+            "WHEN the source says this description of the item was true (a deployment date, an observation "
+            "date, 'as of March 2024'), NOT the publication date. Copy the source's own wording. Leave "
+            "empty when the source states no such time; never guess one."
+        ),
+    )
+
 
 class OrgMention(BaseModel):
     """A named organization the source states (a manufacturer, exporter, consignee, shipper…)."""
@@ -125,6 +187,7 @@ class OrgMention(BaseModel):
     role: str | None = None  # e.g. "manufacturer" | "export-agent" | "consignee" | "shipper"
     aka: str | None = None  # a STATED alias / "formerly" / "see also" for THIS org → a same-as claim
     origin_country: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None  # verbatim text this item is based on (provenance anchor)
 
 
@@ -144,6 +207,7 @@ class UnitMention(BaseModel):
             "a fixed attribute — leave empty when the source says nothing about readiness; never infer it."
         ),
     )
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
@@ -168,6 +232,7 @@ class VariantMention(BaseModel):
             "operator from context."
         ),
     )
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
@@ -180,6 +245,7 @@ class ComponentMention(BaseModel):
     radar_band: str | None = None
     quantity_text: str | None = None
     count_state: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
@@ -191,6 +257,7 @@ class SiteMention(BaseModel):
     location_text: str | None = None  # any surface form — coords / toponym / "<dist> <bearing> of X"
     signature_geometry: str | None = None
     occupancy_state: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
@@ -335,6 +402,7 @@ class StockpileMention(BaseModel):
     stocked_round: str | None = None
     magazine_depth: str | None = None
     resupply_lead_time: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
@@ -344,6 +412,7 @@ class TechDataMention(BaseModel):
     name: str | None = None
     holds: str | None = None  # TDP | firmware | crypto-keys | calibration-ref (as the source states it)
     foreign_control: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
