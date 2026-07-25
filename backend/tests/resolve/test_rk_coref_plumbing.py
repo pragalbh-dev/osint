@@ -181,10 +181,24 @@ def test_the_contrast_lane_is_declared_and_is_not_the_stated_distinct_from_rail(
 
 
 def _contrast_fixture(*, contrast: bool, same_doc: bool = True) -> list:
+    """Two mentions that would merge on their own evidence, so the ceiling has something to withhold.
+
+    ``parent_unit`` is here because shared neighbours alone are *co-location* evidence, and D-13.14 caps a
+    formation merge on that at ``probable`` — which would pin the CONTROL at exactly the band the contrast
+    is supposed to impose, making the test vacuous whether or not the ceiling exists (its own guard caught
+    this). A shared parent formation is one of the two declared ``formation_discriminators``: it individuates
+    a battery beyond where it happens to be standing, which is precisely what the co-location cap asks for.
+
+    Chosen over ``(service_branch, designator)`` deliberately. That tuple is a COMPLETE
+    ``hard_id_fields.unique.unit`` AND-key and would confirm the pair on the identifier rail — routing the
+    control around the cap instead of clearing it, and making the fixture stop exercising the band machinery
+    the ceiling has to operate on. ``parent_unit`` appears only inside the three-part key, so alone it
+    completes nothing.
+    """
     doc_b = "d1" if same_doc else "d2"
     claims = [
-        rc.ent("u1", "unit", "Alpha Battery", doc="d1"),
-        rc.ent("u2", "unit", "Alpha Battery", doc=doc_b, sid="mid"),
+        rc.ent("u1", "unit", "Alpha Battery", attrs={"parent_unit": "X Corps"}, doc="d1"),
+        rc.ent("u2", "unit", "Alpha Battery", attrs={"parent_unit": "X Corps"}, doc=doc_b, sid="mid"),
         *rc.shared_neighbours("u1", "u2", doc_a="d1", doc_b=doc_b, sid_b="mid"),
     ]
     if contrast:
