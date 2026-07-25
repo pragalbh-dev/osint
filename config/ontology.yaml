@@ -394,6 +394,14 @@ edge_types:
   # resolution — NOT extractor-emitted (same-as/distinct-from route through the MERGE channel, not triples)
   - {name: same-as,              freshness_class: n/a, symmetric: true}
   - {name: distinct-from,        freshness_class: n/a, symmetric: true}
+  # `coref-distinct-from` (D-13.19) — the CONTRASTIVE half of in-document coreference, on a lane of its own.
+  # Deliberately NOT the stated `distinct-from` rail above: that one is a hard, TRANSITIVE, UNGRADED veto for
+  # an explicit "not related", and *every order of battle contains an enumeration*, so widening it to "the
+  # document listed these separately" would let one planted list shatter a well-corroborated cluster. On this
+  # lane the same evidence is a BAND CEILING (resolution.yaml `contrast_band_ceiling`): it withholds one new
+  # fusion, reaches the analyst with its licensing span, and can retract nothing. NOT extractor-emitted
+  # through `relations` — it comes from extraction pass 2, like `coref-same-as`.
+  - {name: coref-distinct-from,  freshness_class: n/a, symmetric: true}
   # in-document coreference (INGEST extraction pass 2, ingest/coref.py) — NOT extractor-emitted. On a lane
   # of its own, deliberately NOT `same-as`: resolve.scoring reads same-as/aka/... as one weighted term of
   # merge_score, so writing it there would dilute a context-licensed extractor decision into a partial score

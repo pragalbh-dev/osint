@@ -56,10 +56,15 @@ COREF_PREDICATE = "coref-same-as"
 #: the same evidence is a **band ceiling**, which withholds one new fusion and can retract nothing.
 COREF_CONTRAST_PREDICATE = "coref-distinct-from"
 #: Tier-3 keys the producer stamps on each coreference claim.
+#: The document-local cluster id — the GRAIN a grouping is adjudicated at, whether or not a referent atom
+#: was minted for it.
+COREF_CLUSTER_ATTR = "_coref_cluster"
 COREF_EVIDENCE_ATTR = "_coref_evidence"
 COREF_QUOTE_ATTR = "source_quote"
 #: The set of VERBATIM licensing spans (ruling M2 — evidence is a set of spans, not one contiguous span).
 COREF_QUOTES_ATTR = "_coref_quotes"
+#: The two members' verbatim surface forms, ``[anchor, member]`` — what the gate is recomputed against.
+COREF_FORMS_ATTR = "_coref_forms"
 #: The referent atom the link belongs to — the grouping grain the rebuild may DECLINE (D-13.18).
 COREF_REFERENT_ATTR = "_coref_referent"
 #: The per-LINK verdict of D-13.17's deterministic gate, and its own words (C5).
@@ -500,17 +505,22 @@ def attribute_signals(
     what makes this safe to compute unconditionally.
     """
     penalty = _conflict_penalty(a, b, cfg)
+    # D-13.20's declared sub-signal weights. Both ship at 1.0 (the neutral element), so the shipped config
+    # reproduces ``max(name, discriminator)`` exactly — what they buy is that the split does not bury a
+    # coefficient in the source (gate G6), and that an operator can lower the authority of a bare name
+    # against a stated discriminator, which is the ladder's bottom rung made adjustable.
+    w_name, w_disc = cfg.earned_identity.name_weight, cfg.earned_identity.discriminator_weight
     if alias_idx is not None and alias_idx.equivalent(
         normalize(a.name, cfg.transliteration), normalize(b.name, cfg.transliteration)
     ):
         # An alias LINK is a curated (or analyst-accepted) statement of equivalence, not a string
         # coincidence — it reports as a full-strength NAME signal and, unlike a bare name match, it is not
         # what the name cap withholds (see ``cluster._name_trigger``).
-        return 1.0, 0.0
+        return _clamp(w_name), 0.0
     name = name_similarity(a.name, b.name, cfg.transliteration)
     present, agreeing = _discriminator_agreement(a, b, cfg, durable_only)
     discriminator = (agreeing / present) if present else 0.0
-    return _clamp(name * penalty), _clamp(discriminator * penalty)
+    return _clamp(w_name * name * penalty), _clamp(w_disc * discriminator * penalty)
 
 
 def attribute_score(

@@ -49,7 +49,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from chanakya import edge_direction
+from chanakya import coref_gate, edge_direction
 from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.loaders import LoadedDoc
 from chanakya.schemas import ClaimRecord, ConfigBundle, make_claim_id
@@ -68,15 +68,14 @@ COREF_PREDICATE = "coref-same-as"
 CLUSTER_ATTR = "_coref_cluster"
 #: The categorical evidence kind that licensed the grouping (never a numeric confidence).
 EVIDENCE_ATTR = "_coref_evidence"
-#: A human-readable rendering of the licensing evidence. Reuses the existing provenance key every other
-#: claim uses, and stays a STRING so every existing reader keeps working.
+#: A single VERBATIM span (the first), for a one-line drawer label. Reuses the existing provenance key every
+#: other claim uses, and stays a STRING so every existing reader keeps working. It is never a join of the set:
+#: a concatenation is a string the document does not contain (M13).
 QUOTE_ATTR = "source_quote"
 #: The licensing evidence itself: the **set of verbatim spans** (ruling M2), each occurring verbatim in the
 #: document. This is what a reader — and the resolver's own re-derivation of D-13.17's gate — reads, because
 #: the joined display string is not verbatim anything.
 QUOTES_ATTR = "_coref_quotes"
-#: Separator for the display rendering. Prose, not a threshold (gate G6).
-_QUOTE_JOIN = " … "
 #: The **referent atom** this link belongs to (``ref:<doc>-<cluster>``, ``schemas.ids.make_referent_id``).
 #: One per document-local cluster, minted here (S3) and carried on every member's entity claim as well as on
 #: each coref link, so the rebuild can recover the *grouping* — which it may DECLINE (D-13.18) — rather than
@@ -327,67 +326,56 @@ def _quote_supported(quote: str, text: str) -> bool:
 
 
 def supported_spans(raw: Any, text: str) -> list[str]:
-    """Every licensing span that occurs **verbatim** in this document, in the order given (ruling M2).
+    """The licensing spans, **ordered**, iff EVERY ONE occurs verbatim in this document — else ``[]``.
 
-    Accepts a list of spans or a bare string. Each span is checked independently, so one paraphrased span
-    does not discard the spans that are genuine — under-reach here is cheap and recoverable, an invented span
-    is not. Order-preserving and deduplicated (deterministic).
+    Ruling M2 made the licensing evidence a *set* of spans (a document that states an equivalence across two
+    fields **has stated it**, and no single span can contain both forms). Ruling M13 settles the grain that
+    follows: **licensing evidence is per cluster; the verbatim check is per span.**
+
+    **All-or-nothing, and that is the safety property.** My first cut checked each span independently and kept
+    the ones that passed, on the reasoning that one paraphrase should not discard genuine spans. That is wrong,
+    and the independent suite caught it: *"a span set containing a sentence the document never contains was
+    accepted — the verbatim check is what makes the evidence re-derivable."* **M2 relaxed contiguity, not
+    verifiability.** A model that invents one span has not earned trust about the others, and a partly-invented
+    licence is an invented licence — which is the disqualifying class, not a recall trade.
+
+    Two failure modes are deliberately excluded by construction:
+
+    * **a sequence validated by a single check** would be strictly worse than the one quote it replaced;
+    * **a concatenated join** would let a fabricated seam pass while every individual part looked present —
+      the worst outcome available, because it would *look* verified. So no caller ever validates a join, and
+      the display rendering is a real span rather than a stitched one.
+
+    Accepts a list (M13's shape) or a bare string (one span is a set of one). Order-preserving; duplicates
+    collapse. Empty input ⇒ ``[]`` ⇒ no cluster.
     """
     values: list[str] = []
     if isinstance(raw, str):
         values = [raw]
     elif isinstance(raw, (list, tuple)):
         values = [v for v in raw if isinstance(v, str)]
+    if not values:
+        return []
     out: list[str] = []
     for span in values:
-        if _quote_supported(span, text) and span.strip() not in out:
+        if not _quote_supported(span, text):
+            return []  # ONE unverifiable span invalidates the whole licence (M2/M13)
+        if span.strip() not in out:
             out.append(span.strip())
     return out
 
 
-def _value_tokens(text: str) -> list[str]:
-    """Alphanumeric tokens of a surface form, casefolded — a designator's parts, punctuation dropped.
+def cluster_spans(entry: dict[str, Any], text: str) -> list[str]:
+    """Read a cluster's licensing evidence from either carrier, then verbatim-check every span (M13).
 
-    Local rather than borrowed from ``resolve.normalize`` on purpose: ``ingest`` must not depend on the
-    resolver's package for a three-line string split, and the mark-vs-word test below only needs "what are
-    the pieces of this name". ``HQ-9/P`` → ``['hq', '9', 'p']``.
+    ``licensing_quotes`` is the sequence M13 rules for; ``licensing_quote`` is read too because the ruling
+    fixes the *grain*, not the field name, and a producer or fixture may legitimately supply either. Both go
+    through the same per-span predicate, so there is no shape that gets a weaker check.
     """
-    kept = "".join(c.casefold() if c.isalnum() else " " for c in text)
-    return kept.split()
-
-
-def differs_only_by_a_mark(a: str, b: str, min_descriptor_len: int | None) -> bool:
-    """Is the longer of two surface forms the shorter plus a **MARK** rather than a WORD? (Ruling M1.)
-
-    **The hole this closes.** A fixture can pass every other conjunct of the structural gate — the span
-    occurs verbatim, it contains both surface forms, and it contains a parenthetical marker — while the
-    equivalence is **wrong**. The shape is a mark-vs-name collision: ``"<Design> (<Design>/X)"`` reads
-    exactly like an alias declaration ("Full Name (SHORT)") but in fact *distinguishes two variants*. Nothing
-    downstream reliably saves it: the grade floor cannot (a good source writes exactly that sentence), and
-    the D-13.18 decline only fires if the two members happen to carry a conflicting critical discriminator —
-    two marks of one design often conflict on nothing at all. And a marker vocabulary built as a token list
-    can never catch it, because the marker really is present.
-
-    **The test already exists in config and encodes precisely this distinction** — the containment
-    bootstrap's ``containment_min_descriptor_len``: *"HT-233" + "engagement" (a WORD) is the same radar
-    described more fully; "HQ-9" + "P" (a MARK) is a different missile.* Reused here rather than duplicated,
-    so there is one threshold for one idea (gate G6).
-
-    Returns True — meaning **the equivalence is not licensed** — when the shorter form is a head-anchored
-    prefix of the longer and the first token the longer one adds is not a word of at least the configured
-    length. Unset knob ⇒ the test cannot run, and it fails **closed**: an ungated conjunct on the strongest
-    fusion path in the system would be worse than a missing feature.
-    """
-    ta, tb = _value_tokens(a), _value_tokens(b)
-    if not ta or not tb or ta == tb:
-        return False  # identical or empty forms are not a containment relation at all
-    short, long_ = (ta, tb) if len(ta) < len(tb) else (tb, ta)
-    if len(short) >= len(long_) or long_[: len(short)] != short:
-        return False  # not a head-anchored extension ⇒ two genuinely different names, not a mark
-    if min_descriptor_len is None:
-        return True  # fail CLOSED: unable to test the one thing that separates an alias from a variant
-    head = long_[len(short)]
-    return not (head.isalpha() and len(head) >= min_descriptor_len)
+    raw = entry.get("licensing_quotes")
+    if raw is None:
+        raw = entry.get("licensing_quote")
+    return supported_spans(raw, text)
 
 
 def _type_compatible(members: list[Mention]) -> bool:
@@ -433,9 +421,9 @@ def valid_clusters(raw: Any, mentions: list[Mention], text: str,
         evidence = entry.get("evidence")
         if not isinstance(evidence, str) or evidence not in categories:
             continue
-        # M2: a SET of verbatim spans from this one document. Each is checked independently, so one
-        # paraphrased span never discards the spans that are genuine; zero verbatim spans ⇒ no cluster.
-        quotes = supported_spans(entry.get("licensing_quotes"), text)
+        # M2/M13: the ordered span SET, with EVERY member verbatim-checked. One unverifiable span rejects
+        # the whole cluster — a partly-invented licence is an invented licence.
+        quotes = cluster_spans(entry, text)
         if not quotes:
             continue
         ids = entry.get("member_ids")
@@ -471,68 +459,15 @@ def valid_clusters(raw: Any, mentions: list[Mention], text: str,
 # is strictly better than either.
 
 
-def _paren_wraps(quote: str, form: str) -> bool:
-    """Is ``form`` wrapped in a parenthetical inside ``quote``? — "Full Name (SHORT)", the commonest marker."""
-    folded = _normalized(quote).casefold()
-    inner = _normalized(form).casefold()
-    return any(f"{open_}{inner}{close}" in folded for open_, close in (("(", ")"), ("[", "]"), ("（", "）")))
-
-
-def explicit_equivalence_gate(
-    quotes: list[str], anchor: Mention, member: Mention, markers: tuple[str, ...],
-    min_descriptor_len: int | None = None,
-) -> tuple[bool, str]:
-    """D-13.17's ``EXPLICIT_EQUIVALENCE`` gate — ``(passed, why)``, checkable by any reader.
-
-    **Four** conjuncts, all structural, all re-derivable from what rides the claim:
-
-    1. every licensing span occurs verbatim in the document (enforced upstream by :func:`supported_spans`,
-       so it is a precondition here rather than a re-check);
-    2. the spans **together** contain both members' surface forms. Ruling M2: the evidence is a *set* of
-       spans from one document, not one contiguous span — the corpus contains equivalences documents really
-       do assert whose two forms sit tens of lines apart or in different fields of one record, and a
-       one-span rule would make the system withhold on those. Multiple spans make the evidence *findable*,
-       never *stronger*;
-    3. some span carries a **configured equivalence marker** — a term from the declared vocabulary, or a
-       parenthetical wrapping one of the two forms. This is what stops the gate collapsing into "the two
-       names appear near each other", which is co-occurrence and not equivalence;
-    4. **the longer form does not differ from the shorter by only a MARK** (ruling M1,
-       :func:`differs_only_by_a_mark`). Conjuncts 1–3 are all satisfiable by a sentence that *distinguishes*
-       two variants — ``"<Design> (<Design>/X)"`` reads exactly like an alias declaration — and a marker
-       vocabulary built as a token list can never catch that, because the marker genuinely is there.
-
-    Note the deliberate asymmetry with ``NAME_VARIANT``: that category has no gate and is **permanently**
-    raise-only, because an authoritative ``NAME_VARIANT`` *is* the exact-normalised-name auto-merge lane
-    D-13.1 exists to delete — rebuilt on another predicate and immune to the very cap that replaced it.
-    """
-    folded = [_normalized(q).casefold() for q in quotes]
-    forms = [_normalized(anchor.name).casefold(), _normalized(member.name).casefold()]
-    if not all(forms) or any(not any(f in span for span in folded) for f in forms):
-        return False, (
-            "the licensing spans do not, between them, contain both members' surface forms — a bind whose "
-            "own evidence does not name both sides is not re-derivable by any reader"
-        )
-    marker = next((m for m in markers if any(_normalized(m).casefold() in s for s in folded)), None)
-    if marker is None and not any(_paren_wraps(q, m.name) for q in quotes for m in (anchor, member)):
-        return False, (
-            "the licensing spans name both forms but carry no declared equivalence marker and no "
-            "parenthetical wrapping either form — co-occurrence is not a stated equivalence"
-        )
-    if differs_only_by_a_mark(anchor.name, member.name, min_descriptor_len):
-        return False, (
-            f"the longer form extends the shorter by a MARK, not a word — '{anchor.name}' vs "
-            f"'{member.name}'. A parenthetical mark reads exactly like an alias declaration "
-            f"('Full Name (SHORT)') while in fact distinguishing two variants, and no marker vocabulary can "
-            f"tell the two apart because the marker really is present. A name extended by a WORD is the same "
-            f"thing described more fully; a name extended by a mark or a number is a different model, so the "
-            f"equivalence is not licensed however the sentence is phrased (M1)"
-        )
-    how = f"equivalence marker '{marker}'" if marker else "a parenthetical wrapping one form"
-    span_note = f" across {len(quotes)} verbatim spans" if len(quotes) > 1 else ""
-    return True, (
-        f"the licensing evidence contains both surface forms{span_note} and {how}, and the two forms differ "
-        f"by more than a mark"
-    )
+#: The re-derivable conjuncts live in ``chanakya.resolve.coref_gate`` and are imported — never re-typed.
+#: The consumer has to compute exactly the same predicate to decide a bind (a gate whose verdict only the
+#: producer can recompute is a second self-report, not a structural check), and two copies would drift.
+#: The dependency direction is safe: ``ingest`` may import ``resolve``; ``resolve`` may never import
+#: ``ingest`` (``rebuild()`` imports ``resolve``, and ``ingest`` reaches the LLM client — gate G1).
+explicit_equivalence_gate = coref_gate.explicit_equivalence
+differs_only_by_a_mark = coref_gate.differs_only_by_a_mark
+_paren_wraps = coref_gate.paren_wraps
+_value_tokens = coref_gate.value_tokens
 
 
 def unambiguous_anaphor_gate(
@@ -596,16 +531,36 @@ def link_gate(
     evidence: str, quotes: list[str], anchor: Mention, member: Mention,
     mentions: list[Mention], markers: tuple[str, ...], min_descriptor_len: int | None = None,
 ) -> tuple[bool, str]:
-    """Route one anchor→member link to its category's gate. An ungated category always fails (raise-only)."""
+    """Route one anchor→member link to its category's gate — ``(passed, why)``.
+
+    **M12, and it is the reason a fallible test is admissible here at all: a failing conjunct DEMOTES the link
+    to raise-only; it never vetoes.** The mark-vs-word conjunct is a heuristic and it false-fires in *both*
+    directions — a short word looks like a mark (``TX-5 air defence``: "air" is three characters), and a long
+    mark looks like a word (``HQ-9 Export`` is a different variant, but "Export" passes any length test). Since
+    the only consequence of a false fire is that the pair reaches the analyst **with its licensing spans
+    attached**, the failure direction is benign by construction: it costs one glance, never a lost merge.
+
+    **These conjuncts are explicitly incomplete and are not presented as proof of the model's claim.** They are
+    a cheap filter *over* it. A long mark will pass, and no additional pattern rule is added to compensate —
+    that would only make a fallible test *look* authoritative while staying fallible. The residue is the
+    analyst queue's job, which is precisely why surfacing the licensing quote matters more than another
+    heuristic would.
+
+    An ungated category always fails, i.e. is always raise-only.
+    """
     if evidence == EXPLICIT_EQUIVALENCE:
-        return explicit_equivalence_gate(quotes, anchor, member, markers, min_descriptor_len)
+        return coref_gate.explicit_equivalence(
+            quotes, anchor.name, member.name, markers, min_descriptor_len
+        )
     if evidence == UNAMBIGUOUS_ANAPHOR:
-        # M1 binds here too: an anaphor whose antecedent differs from it only by a mark is the same
-        # collision arriving through the other category, and the positive gate alone cannot see it.
-        if differs_only_by_a_mark(anchor.name, member.name, min_descriptor_len):
+        # M1/M12 bind here too: an anaphor whose antecedent differs from it only by a mark is the same
+        # collision arriving through the other category, and the positive gate alone cannot see it. Demotion,
+        # not veto — same benign failure direction.
+        if coref_gate.differs_only_by_a_mark(anchor.name, member.name, min_descriptor_len):
             return False, (
                 f"'{member.name}' extends '{anchor.name}' by a mark, not a word — a mark distinguishes a "
-                f"variant rather than naming the same thing, so no anaphoric reading licenses the bind (M1)"
+                f"variant rather than naming the same thing, so no anaphoric reading licenses the bind (M1). "
+                f"This is a filter, not a verdict: if the reading is right, the pair is one click away"
             )
         return unambiguous_anaphor_gate(anchor, member, mentions)
     return False, (
@@ -676,9 +631,10 @@ def coref_claims(accepted: list[tuple[list[Mention], str, list[str]]], *, claims
             attributes: dict[str, Any] = {
                 CLUSTER_ATTR: cluster_id,
                 EVIDENCE_ATTR: evidence,
-                # A human-readable rendering for the drawer; ``QUOTES_ATTR`` carries the spans VERBATIM,
-                # which is what a reader (and the resolver) re-derives the bind from.
-                QUOTE_ATTR: _QUOTE_JOIN.join(quotes),
+                # The FIRST verbatim span, for a one-line drawer label. Deliberately not a join of the set:
+                # a concatenation is a string the document does not contain, so anything that validated it
+                # would pass a seam nobody wrote (M13). ``QUOTES_ATTR`` carries the whole ordered set.
+                QUOTE_ATTR: quotes[0],
                 QUOTES_ATTR: list(quotes),
             }
             if referent is not None:
@@ -700,6 +656,11 @@ def coref_claims(accepted: list[tuple[list[Mention], str, list[str]]], *, claims
             premises = [cid for cid in (anchor.claim_id, member.claim_id) if cid]
             out.append(ClaimRecord(
                 claim_id=make_claim_id(doc_token, _coref_locator(ref), index=index),
+                # The cluster's referent atom, on the field S1 froze for it. A relationship claim normally has
+                # no single referent (it names two mentions), but a coreference LINK is the one relationship
+                # whose two mentions belong to one grouping by construction — so the field is unambiguous
+                # here, and it is what lets the rebuild recover the grouping from the links alone.
+                referent_id=referent,
                 source_id=source_id,
                 doc_ref=ref,
                 kind="inference" if premises else "observation",
@@ -832,9 +793,17 @@ def contrast_claims(contrasts: list[tuple[Mention, Mention, str]], *, claims: li
 
 
 def _coref_locator(ref: Any) -> str:
-    """The claim-id locator stem for a coref edge — the licensing span's position, else a stable stem."""
+    """The claim-id locator stem for a coref edge — the licensing span's position, else a stable stem.
+
+    M2 made the provenance a **list** of DocRefs (one per verbatim span) and ``_locator`` reads a single ref,
+    so the first span supplies the stem: ids stay stable and readable, and the whole set is still cited on the
+    claim itself.
+    """
     # Local import: keeps this module off ``extract``'s import graph, so neither direction cycles.
     from chanakya.ingest.extract import _locator
+
+    if isinstance(ref, (list, tuple)):
+        ref = ref[0] if ref else None
 
     stem = _locator(ref)
     return stem if stem != "x" else "coref"

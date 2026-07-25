@@ -381,6 +381,12 @@ def layer_accessors() -> dict[str, Any]:
 FLAG_TOKENS: tuple[str, ...] = (
     "layer", "straddle", "presence", "materiali", "instance_routing", "two_layer", "rk_layer",
     "rk2", "s2", "citizen", "split_straddl",
+    # RK-COREF (S3). THE STANDING RULE, learned the expensive way: **when a stage adds a flag, its tokens
+    # land in the same commit.** Without these the discovery mechanism worked perfectly and found S2's flag
+    # instead, so every behavioural S3 test silently ran against the flag-OFF graph and failed for the wrong
+    # reason — 32 failures that said nothing about the implementation. Same coupling class as a hand-copied
+    # config knob: the fixture and the config drifted, and only the fixture knew.
+    "earned", "identity", "s3", "rk_coref", "coref",
 )
 
 #: Keys that carry the token but are demonstrably NOT the S2 flag (they predate it).

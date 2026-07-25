@@ -30,7 +30,7 @@ EARNED = {
     "presence_types": ["presence"],
     "colocation_predicates": ["based-at", "observed-at", "instance-of", "operated-by", "equips",
                               "inducted-into"],
-    "formation_discriminators": ["designator", "echelon", "parent_unit", "equipment_fingerprint"],
+    "formation_discriminators": ["equipment_fingerprint", "parent_unit"],
 }
 
 
@@ -42,8 +42,8 @@ EARNED = {
 ROLES = {
     "unit": {
         "service_branch": {"role": "supporting", "time_role": "durable"},
-        "designator": {"role": "supporting", "time_role": "durable"},
-        "echelon": {"role": "supporting", "time_role": "durable"},
+        "parent_unit": {"role": "supporting", "time_role": "durable"},
+        "equipment_fingerprint": {"role": "supporting", "time_role": "durable"},
     }
 }
 
@@ -138,7 +138,7 @@ def test_an_agreeing_unit_level_discriminator_lifts_the_cap() -> None:
     a cap, not a ban: a discriminator that is about the *formation* rather than about where it is standing
     clears it.
     """
-    claims = _two_colocated_formations(designator="8", echelon="battalion")
+    claims = _two_colocated_formations(parent_unit="1 AD Command", equipment_fingerprint="4x TEL")
     part = resolve(claims, _cfg())
     fused = [(a, b) for a, b in part.same_as if {a, b} <= {"u1", "u2"}]
 

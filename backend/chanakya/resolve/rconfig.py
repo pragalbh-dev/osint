@@ -63,6 +63,13 @@ TIME_ROLES_CONFIRMING = (TIME_DURABLE, TIME_CONSTITUTIVE, TIME_IDENTIFYING)
 #: stage that introduces it (plan §5a-bis), and a silently-tolerated old form biases every later author.
 _LEGACY_PERISHABLE_KEY = "perishable"
 _TIME_ROLE_KEY = "time_role"
+#: Per-ROW stage gate on an ``attribute_roles`` entry: ``requires: earned_identity`` ⇒ the row is consumed
+#: only while that flag is on. It is the stage flag at row granularity, and it exists so C6's two new
+#: ``time_role`` values can live in the ONE ``attribute_roles`` block a reader and an auditor inspect, rather
+#: than in a parallel overlay nobody would find — ruling M3's whole point being that a vocabulary declared
+#: anywhere other than the types that need it is inert config with a longer name. Dies with the flag at S4.
+_REQUIRES_KEY = "requires"
+_REQUIRES_EARNED = "earned_identity"
 
 #: Identity *bands*, by name. A ceiling is declared as a band NAME and never as a float: analyst B's
 #: arithmetic (rk-spike-DECISIONS §b) showed any ×coefficient can drop a pair **two** bands — out of the
@@ -109,6 +116,14 @@ class EarnedIdentity:
     bind_min_grade: str | None = None
     #: Seed equivalence-marker vocabulary for the ``EXPLICIT_EQUIVALENCE`` gate, verb forms included.
     equivalence_markers: tuple[str, ...] = ()
+    #: Relative weights of the two ``attribute`` sub-signals (D-13.20's split), read from the TOP-LEVEL
+    #: ``merge_weights`` beside the four scored terms. They scale each sub-signal before the two are fused at
+    #: a ``max``; they are **not** summed into the total, which keeps ``attribute``'s whole share intact. Both
+    #: ship at the neutral element ``1.0``, so the shipped values reproduce ``max(name, discriminator)``
+    #: exactly — but the numbers are in config, so splitting the signal cannot bury a coefficient in the
+    #: source (gate G6).
+    name_weight: float = 1.0
+    discriminator_weight: float = 1.0
     #: The MARK-vs-WORD threshold for the gate's fourth conjunct (ruling M1) — read from the **existing**
     #: top-level ``containment_min_descriptor_len``, never re-declared. One threshold for one idea (gate G6):
     #: *"HT-233" + "engagement" (a WORD) is the same radar described more fully; "HQ-9" + "P" (a MARK) is a
@@ -192,15 +207,30 @@ class EarnedIdentity:
             if isinstance(overlay_raw, dict) else {}
         )
         grade = block.get("bind_min_grade")
+        weights = getattr(resolution, "merge_weights", None) or {}
+
+        def _w(key: str) -> float:
+            v = weights.get(key)
+            return float(v) if v is not None else 1.0
+
         return cls(
             enabled=bool(block.get("enabled", False)),
             authoritative_categories=_strs("authoritative_categories"),
             bind_min_grade=str(grade).strip().upper() if grade else None,
             equivalence_markers=_strs("equivalence_markers"),
+            name_weight=_w(NAME),
+            discriminator_weight=_w(DISCRIMINATOR),
             min_descriptor_len=min_desc,
-            name_ceiling=_str("name_ceiling"),
-            colocation_ceiling=_str("colocation_ceiling"),
-            contrast_ceiling=_str("contrast_ceiling"),
+            # Read from the top level (beside ``name_alone_caps_at_possible`` and ``possible_floor``, the
+            # policy dials they belong with), falling back to the stage block so an operator who scoped them
+            # there still gets them.
+            name_ceiling=str(getattr(resolution, "name_ceiling", "") or _str("name_ceiling")),
+            colocation_ceiling=str(
+                getattr(resolution, "colocation_ceiling", "") or _str("colocation_ceiling")
+            ),
+            contrast_ceiling=str(
+                getattr(resolution, "contrast_band_ceiling", "") or _str("contrast_ceiling")
+            ),
             formation_types=_strs("formation_types"),
             presence_types=_strs("presence_types"),
             colocation_predicates=_strs("colocation_predicates"),
@@ -586,14 +616,19 @@ class ResolveConfig:
 
         A category listed here still clears every other rail — the ``distinct-from`` veto, type and
         namespace agreement, and the hard-attribute-contradiction check (``scoring.has_hard_conflict``) —
-        and, with the S3 flag on, **its own per-link deterministic gate plus a source-grade floor**
-        (D-13.17). The two lists are read in that order: this legacy key is the operator's own opt-in and
-        keeps working on its own; :attr:`EarnedIdentity.authoritative_categories` is the S3 policy and is
-        read only while the flag is on, so flipping the producer alone still changes nothing.
+        and **its own per-link deterministic gate plus a source-grade floor** (D-13.17).
+
+        The switch is **FLIPPED** in the shipped file: this is the documented consumer half, and leaving it
+        empty while hiding the real list in the stage block would be the same inertness ruling M3 condemns.
+
+        What restrains it is therefore not the list and not the stage flag — it is the **gate**. A listed
+        category authorises the *question*; the per-link structural conjuncts and the source-grade floor
+        decide the answer, and both apply **unconditionally**, because a bind is either licensed by evidence
+        or it is not — that is a property of the pair, not of which stage is enabled. (The stage flag governs
+        the caps, the walls and the decline: the things that change what an *already-licensed* signal is
+        allowed to do.)
         """
         legacy = {str(c) for c in self._extra("coref_authoritative_evidence", [])}
-        if not self._earned.enabled:
-            return legacy
         return legacy | set(self._earned.authoritative_categories)
 
     # ── open-world name triggers (P3.3: containment / acronym expansion) ──────────────────────
@@ -720,18 +755,19 @@ class ResolveConfig:
         *agreement* and its *difference* mean over time — read by :meth:`attribute_time_role`. An
         attribute not listed here is **neutral** — no identity effect.
 
-        With the S3 flag ON the ``earned_identity.attribute_roles`` **overlay** is merged over the base
-        block, per type and per attribute. The overlay exists so the base block stays exactly what the
-        flag-off view scores on: a new ``identifying`` declaration is a behavioural change (it enters the
-        agreement ratio and the durable-support test), so it cannot live in the unconditional block.
+        A row carrying ``requires: earned_identity`` is consumed **only while that flag is on**. That
+        marker is what lets C6's declarations live in this one block rather than in a parallel overlay: a new
+        ``identifying`` or ``constitutive`` row *is* a behavioural change (it enters the agreement ratio and
+        the durable-support test), so it cannot be consumed unconditionally without moving the flag-off graph
+        — but hiding it elsewhere is exactly the inertness ruling M3 was written to prevent.
         """
-        base = dict(self._extra("attribute_roles", {}).get(entity_type, {}))
-        if not self._earned.enabled:
-            return base
-        overlay = self._earned.attribute_roles_overlay.get(entity_type, {})
-        for attr, spec in overlay.items():
-            base[attr] = {**base.get(attr, {}), **spec} if isinstance(spec, dict) else spec
-        return base
+        rows = dict(self._extra("attribute_roles", {}).get(entity_type, {}))
+        if self._earned.enabled:
+            return rows
+        return {
+            attr: spec for attr, spec in rows.items()
+            if not (isinstance(spec, dict) and spec.get(_REQUIRES_KEY) == _REQUIRES_EARNED)
+        }
 
     def _role_attrs(self, entity_type: str, role: str) -> list[str]:
         """Attributes of ``entity_type`` declared with ``role``, sorted (deterministic — gate G2)."""

@@ -17,7 +17,7 @@ which an audit found was written and read nowhere, making every justification of
 
 from __future__ import annotations
 
-from chanakya.resolve import resolve
+from chanakya.resolve import ResolveConfig, resolve
 from tests.resolve._helpers import coref, entity, mk_config, triple
 
 MARKER_QUOTE = 'China Precision Machinery Import-Export Corporation, also known as CPMIEC, shipped it.'
@@ -330,14 +330,26 @@ def test_absence_of_a_contrast_is_neutral_never_a_prior_for_merging() -> None:
 
 # ── flag-off ──────────────────────────────────────────────────────────────────────────────────────
 
-def test_with_the_stage_flag_off_no_gate_and_no_grade_floor_apply() -> None:
-    """Flag off ⇒ the legacy behaviour exactly: the operator's own list, ungated and ungraded."""
+def test_the_gate_and_the_grade_floor_are_not_flag_gated() -> None:
+    """A bind is licensed by **evidence**, never by which stage is switched on.
+
+    This assertion was inverted when I wrote it: it asserted that with the stage flag off a failing gate and a
+    below-floor source could still bind, on the reasoning that flag-off must reproduce pre-S3 behaviour
+    exactly. That reasoning was wrong, and the independent suite is what exposed it — the deciding input was an
+    artifact only the *producer* could write, so a holder of a config bundle could not turn the policy on at
+    all, and D-13.17's "structural check any reader can re-derive" was not being re-derived by anyone.
+
+    The correct boundary: **the gate and the floor are properties of the pair** and always apply; the stage
+    flag governs the caps, the walls and the decline — the things that change what an already-licensed signal
+    is allowed to do. So an ungated or under-graded link never binds, flag or no flag.
+    """
     off = mk_config(coref_authoritative_evidence=["EXPLICIT_EQUIVALENCE"],
                     source_reliability_grades={"src-low": "E"},
                     name_alone_caps_at_possible=True)
+    assert ResolveConfig.from_bundle(off).earned_identity_on is False
     part = resolve(_pair(gate="FAIL", source="src-low"), off)
 
-    assert _merged(part), (
-        "with the flag OFF a failing gate or a below-floor source blocked a bind — S3's flag-off behaviour "
-        "must be byte-identical to S2's"
+    assert not _merged(part), (
+        "a link whose gate failed bound because the stage flag was off — 'is this licensed?' must never "
+        "depend on which stage is enabled, or the licence is not a licence"
     )

@@ -161,11 +161,17 @@ def test_the_same_pair_in_ONE_namespace_still_fuses() -> None:
 
 # ── flag-off: the holes are still open, which is what makes the flag boundary real ────────────────
 
-def test_with_the_stage_flag_off_the_pre_s3_behaviour_is_preserved() -> None:
-    """Flag off ⇒ byte-identical. Asserted here rather than assumed, on the sharpest pair in the file.
+def test_the_alias_reflexivity_fix_is_not_flag_gated() -> None:
+    """The reflexivity hole is a **bug**, so its fix ships in the default — not behind the stage flag.
 
-    Not an endorsement of the old behaviour — it is the dual-run property: if this test failed, the flag
-    boundary would be leaking and the flag-off corpus baseline could no longer be trusted.
+    I first gated it, on the reasoning that flag-off must reproduce pre-S3 behaviour exactly. The independent
+    suite rejected that, and it is right: ``AliasIndex.equivalent`` never did what its own docstring promised,
+    and a fix that applies only when a stage flag is on leaves the hole open in the configuration everything
+    actually runs in. Measured byte-inert on both real surfaces and the golden fixture — nothing in this
+    corpus relied on a name being its own alias — so there was never a byte-identity cost to pay.
+
+    The *caps* stay flag-gated, because they change what an earned signal may do. A method doing what it says
+    is not a policy.
     """
     claims = [
         entity("c1", "component", "HT-233"),
@@ -173,9 +179,8 @@ def test_with_the_stage_flag_off_the_pre_s3_behaviour_is_preserved() -> None:
     ]
     off = mk_config(alias_table={"HT-233": ["H-200"]}, name_alone_caps_at_possible=True)
     assert ResolveConfig.from_bundle(off).earned_identity_on is False
-    part = resolve(claims, off)
 
-    assert part.same_as, (
-        "with the flag OFF the cross-type Phase-1 fusion must still happen — otherwise S3 changed flag-off "
-        "behaviour and the byte-identity guarantee is void"
+    assert not resolve(claims, off).same_as, (
+        "with the stage flag off a cross-TYPE pair still fused through the reflexive alias branch — the bug "
+        "fix must hold in the shipped default, or G19's Phase-1 half is closed only where it is least needed"
     )

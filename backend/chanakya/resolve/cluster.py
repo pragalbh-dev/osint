@@ -530,20 +530,29 @@ def resolve_entities(
         """
         ea, eb = graph.entities[a], graph.entities[b]
         na, nb = normalize(ea.name, trans), normalize(eb.name, trans)
+        pair = frozenset((a, b))
+        # ORDERED BY LADDER STRENGTH, and the order is load-bearing — not cosmetic. The disjunction returns
+        # the FIRST match, and the caps then read the trigger to decide whether the pair is "nothing but a
+        # name". Checked name-first (as it originally was), a pair the document *authoritatively co-refers*
+        # was reported as a name-containment match whenever a name rule happened to fire too — so the name
+        # cap withheld a merge that coreference had earned, and the whole auto-bind policy went silently
+        # inert. (Measured: "Alpha Precision Machinery" / "APM" is an acronym expansion AND an explicit
+        # equivalence; the acronym rule won the race and the bind never happened.) A pair licensed by a
+        # stronger rung must be reported at that rung, so the strongest is tested first.
         if _shared_unique_id(ea, eb, cfg):
             return TRIGGER_UNIQUE_ID
+        # The document itself stated this equivalence in a quotable span, and the pair cleared the
+        # veto/type/namespace/contradiction/grade gates upstream — evidence no string comparison can reach.
+        if pair in authoritative:
+            return TRIGGER_COREF
+        if pair in place_identity:
+            return TRIGGER_PLACE
         if alias_idx.equivalent(na, nb):
             return TRIGGER_ALIAS
         if bool(na) and na == nb and ea.namespace(nsn) == eb.namespace(nsn):
             return TRIGGER_EXACT_NAME
         if _name_containment(ea, eb, cfg, toks, nsn):
             return TRIGGER_CONTAINMENT
-        # The document itself stated this equivalence in a quotable span, and the pair cleared the
-        # veto/type/namespace/contradiction/grade gates upstream — evidence no string comparison can reach.
-        if frozenset((a, b)) in authoritative:
-            return TRIGGER_COREF
-        if frozenset((a, b)) in place_identity:
-            return TRIGGER_PLACE
         return None
 
     def cross_namespace_or_type(a: str, b: str) -> tuple[str, str] | None:
@@ -604,6 +613,8 @@ def resolve_entities(
         shared = shared_neighbour_predicates(graph, a, b, uf.find, co_instances(graph, a, b))
         if not shared or not shared.issubset(set(earned.colocation_predicates)):
             return None  # some shared link is NOT a co-location link ⇒ real relational evidence
+        if _shared_unique_id(ea, eb, cfg):
+            return None  # the ladder's TOP rung — a shared COMPLETE composite AND-key lifts every cap
         if agreeing_discriminators(ea, eb, earned.formation_discriminators, cfg):
             return None  # a unit-level discriminator agrees ⇒ more than co-location ⇒ the cap lifts
         return tuple(sorted(shared))

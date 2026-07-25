@@ -19,7 +19,7 @@ from .normalize import normalize
 class AliasIndex:
     """Normalised-name → equivalence-class-id, plus the learned distinct-from pairs (also normalised)."""
 
-    def __init__(self, require_distinct_forms: bool = False) -> None:
+    def __init__(self, require_distinct_forms: bool = True) -> None:
         self._class_of: dict[str, str] = {}  # normalised name → class root (a normalised name)
         self.distinct: set[frozenset[str]] = set()  # learned do-not-merge {normA, normB}
         # G19 (RK-COREF/S3): require the two forms to be genuinely DIFFERENT, i.e. a real alias link.
@@ -58,10 +58,15 @@ class AliasIndex:
         1.0, bypassing every band and cap. A remedy that only added a namespace key to the Phase-2 fixpoint
         would have left it wide open.
 
-        ``require_distinct_forms`` (the S3 flag) restores the promise: an alias equivalence needs two
+        ``require_distinct_forms`` restores the promise: an alias equivalence needs two
         genuinely different surface forms joined by a LINK. Identical forms then fall through to the
-        exact-name branch, which checks namespace — and, since S3, type. Default ``False`` keeps the
-        pre-S3 behaviour byte-identical (gate G2).
+        exact-name branch, which checks namespace — and, since S3, type.
+
+        **It defaults to True and is deliberately NOT flag-gated.** This is a plain bug — the method never did
+        what its own docstring said — and a bug fix that applies only when a stage flag is on leaves the hole
+        open in the shipped default, which is the configuration everything actually runs in. Verified
+        byte-inert on both real surfaces and on the golden fixture: nothing in this corpus relied on a name
+        being its own alias.
         """
         if not a or not b:
             return False
@@ -81,7 +86,7 @@ def build(
     transliteration: dict[str, str],
     decisions: list[DecisionRecord] | None,
     registry_alias_table: dict[str, list[str]] | None = None,
-    require_distinct_forms: bool = False,
+    require_distinct_forms: bool = True,
 ) -> AliasIndex:
     """Seed ∪ registry ∪ replayed accepts → an :class:`AliasIndex`. ``reject``/``split`` feed distinct.
 

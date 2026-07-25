@@ -21,6 +21,16 @@ merge_weights:
   relational: 0.40
   temporal_consistency: 0.05
   source_asserted: 0.15
+  # D-13.20's SPLIT of `attribute` into its two independent lines of evidence. These are NOT summed into the
+  # total — `attribute` keeps its whole 0.40 share — they SCALE each sub-signal before the two are fused at a
+  # `max`, so the split cannot bury a coefficient in the source (gate G6) and an operator can retune the
+  # relative authority of a name against a stated discriminator without touching code.
+  #   attribute = max(name_weight * name, discriminator_weight * discriminator)
+  # Both ship at the neutral element 1.0, so `attribute` is exactly `max(name, discriminator)` as measured.
+  # Lower `name` to make a bare name coincidence count for less than a stated attribute agreement — which is
+  # the whole content of the ladder's bottom rung, now expressible.
+  name: 1.0
+  discriminator: 1.0
 
 bands:                    # score ≥ auto_merge -> auto; [hitl_low, auto_merge) -> HITL; < hitl_low -> keep separate
   auto_merge: 0.85
@@ -153,6 +163,30 @@ identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analys
 # the calibration ledger), not a reason to default it off — the demo data bends to the target, not vice versa.
 name_alone_caps_at_possible: true
 
+# ── the three identity CEILINGS (S3). Band NAMES, never floats. ───────────────────────────────────
+# A ceiling is declared as a band name because any x-coefficient carries a hazard whose safe value depends on
+# thresholds that move: with auto_merge 0.85 / hitl_low 0.45, a x0.5 penalty takes a 0.85 pair to 0.425 —
+# below hitl_low, i.e. TWO bands, silently dropping the pair out of the analyst's queue altogether. A band
+# name is threshold-independent and states the intent directly: "not automatically", never "not at all".
+# All three are read only while `earned_identity.enabled` is on.
+#
+# NAME caps at `possible` at every layer, and — the part the review found missing — the cap binds the PHASE-1
+# BOOTSTRAP too, not only the Phase-2 collection loop. Name is a verdict in Phase 1 at every type, so a cap
+# living only in Phase 2 is a cap on the path nobody takes. "One more trivially-available signal clears it"
+# is what makes this a cap and not a ban.
+name_ceiling: possible
+# CO-LOCATION caps a FORMATION merge (D-13.14/G16). Shared design + site + operator is a presence-level fact;
+# confirming a formation needs a unit-level discriminator. Anti-fabrication machinery, not OOB hygiene:
+# `based-at` is functional and unit-keyed, so a formation over-merge makes two sites one unit's before/after,
+# the supersede path then DRAWS a relocation nobody reported, removes the analyst, and deletes the retired
+# edge's Known Gap.
+colocation_ceiling: probable
+# A same-document STATED CONTRAST caps the pair (D-13.19). Ungraded on purpose: a ceiling withholds one NEW
+# fusion, cannot retract an existing merge, and a cluster can still form transitively through its other
+# pairs — so the harm a grade gate would defend against (a planted enumeration shattering a corroborated
+# cluster) does not arise. ABSENCE of contrast is NEUTRAL, never a prior *for* merging.
+contrast_band_ceiling: probable
+
 # In-document coreference (INGEST extraction pass 2, ingest/coref.py): which evidence categories may
 # BOOTSTRAP (auto-merge) rather than merely raise. This is the one signal allowed past the raise-only rule
 # above, because it is qualitatively different: the extractor read THIS document's own discourse and must
@@ -166,18 +200,25 @@ name_alone_caps_at_possible: true
 # Still gated by every other rail: a distinct-from veto drops the pair outright, and a type / namespace /
 # hard-attribute contradiction demotes it to the queue instead of merging.
 #
-# STILL SHIPPED EMPTY — but the reason has changed, and one of the two original reasons was OVERRULED.
-#   1. Independent switches — SOUND, and it survives. This key is the LEGACY operator opt-in and stays empty;
-#      S3's policy lives in `earned_identity.authoritative_categories` and is read only while that stage flag
-#      is on, so flipping the producer (credibility.yaml -> coreference, now ON) still changes no topology by
-#      itself. Two switches, one deliberate motion.
-#   2. "Preserve the d10 'HT-233 (H-200)' orphan-alias demo beat" — OVERRULED. That is demo preservation, and
-#      working-principle #1 forbids curbing a target-correct capability to protect corpus data. What replaces
-#      it is better than the beat it was protecting: the shape "HT-233 (H-200)" extends the shorter form by a
-#      MARK, not a word, so ruling M1's fourth conjunct refuses the bind ON ITS MERITS and hands the analyst
-#      the exact sentence with the reason. The beat is now earned rather than protected — and the mechanism
-#      that earns it is the one that also catches a genuinely mislabelled equivalence.
-coref_authoritative_evidence: []
+# FLIPPED IN RK-COREF (S3). Both of the original reasons for shipping this empty are now discharged:
+#   1. "Independent switches — the producer is dormant; if this were pre-set, enabling the producer would
+#      silently switch auto-merging on in the same motion." SOUND, and honoured: both switches are now
+#      subordinate to the one stage flag (`earned_identity.enabled` below), so nothing here changes any
+#      topology until that flag is on. Two switches, one deliberate motion.
+#   2. "Preserving an orphan-alias demo beat an analyst is meant to earn." OVERRULED — that is demo
+#      preservation, and working-principle #1 forbids curbing a target-correct capability to protect corpus
+#      data. It is not restated here, because naming the beat is how a forbidden input survives as folklore.
+#      What replaces it is stronger than what it protected: a parenthetical that extends a designator by a
+#      MARK rather than a word fails the structural gate ON ITS MERITS (ruling M1) and reaches the analyst
+#      with the licensing span attached. The beat is earned, not preserved — and the same conjunct catches a
+#      genuinely mislabelled equivalence, which the old arrangement never could.
+#
+# A listed category still clears EVERY other rail before it may bind: the distinct-from veto, type and
+# namespace agreement, the hard-attribute contradiction check, its own per-link deterministic gate
+# (recomputed by the resolver, never trusted from a stamp), and a source-grade floor. NAME_VARIANT is
+# deliberately absent and stays raise-only permanently: because an authoritative bind bypasses banding, a
+# licensed NAME_VARIANT *is* the exact-normalised-name auto-merge lane D-13.1 exists to delete.
+coref_authoritative_evidence: [EXPLICIT_EQUIVALENCE, UNAMBIGUOUS_ANAPHOR]
 
 # Open-world name triggers (P3.3): the tail the alias table + entity registry have NEVER seen — a document
 # naming the same thing more verbosely, or by its initials. Both are high-precision BOOTSTRAP rules, so
@@ -337,26 +378,66 @@ place_bind_on_curated_toponym: true
 # it split the three SINO-GALAXY trading-org spellings and would false-wall 'PAF' from 'PAF air defense
 # units'. So they are SUPPORTING here (identity-relevant, never a wall); promoting them to critical needs
 # value normalisation first (a later stage). This is the honest limit of an exact-match wall on this data.
+# EVERY entry declares a `time_role` — an omitted one is a silent `durable`, which is how a perishable
+# attribute quietly becomes durable identity support and the D-13.9(a) cap evaporates.
+#
+# `requires: earned_identity` marks a row that is CONSUMED ONLY while `earned_identity.enabled` is on. It is
+# the stage flag applied at row granularity, and it exists so C6's two new values live HERE — in the one block
+# a reader and an auditor inspect — rather than in a parallel overlay nobody would find. (M3's whole point is
+# that a vocabulary declared somewhere other than the types that need it is inert config with a longer name.)
+# Unmarked rows are pre-S3 and are consumed unconditionally. Every marker dies with the flag at S4.
 attribute_roles:
   variant:
-    operator_branch: {role: critical}                 # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
-                                                       # cannot be one entity — a stated branch difference is a wall.
-                                                       # Currently inert: no variant states operator_branch.
-    family:          {role: supporting, time_role: durable}   # a durable spec — a disagreement lowers confidence.
+    operator_branch: {role: critical, time_role: durable}   # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
+                                                            # cannot be one entity — a stated branch difference
+                                                            # is a wall. Durable: a design's operator lineage
+                                                            # does not change; a different one is another line.
+    family:          {role: supporting, time_role: durable}
     range_class:     {role: supporting, time_role: durable}
   unit:
-    service_branch:  {role: supporting, time_role: durable}   # a D5 wall in principle, but the corpus states it
-                                                             # unnormalised (Air Force / PAF / Pakistan Air Force) —
-                                                             # see the normalisation finding above. Kept soft for now.
-    alert_posture:   {role: supporting, time_role: perishable}    # a stated readiness/alert status — expected to
-                                                             # CHANGE over time (never a durable identity trait),
-                                                             # so agreement is soft-supporting and it is flagged
-                                                             # perishable for the time-aware conflict axis (D8/3B):
-                                                             # a clean update over time is not a contradiction.
+    # PROMOTED TO CRITICAL in S3, which is what C7 was a prerequisite for. It was `supporting` — i.e. inert —
+    # only because the corpus states it unnormalised ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an
+    # exact-match wall on those "SHATTERS legitimate merges". `value_normalization` removes that objection, so
+    # a genuinely different service branch is now a genuinely different unit. Marked, because promoting it
+    # changes what walls.
+    service_branch:  {role: critical, time_role: durable, requires: earned_identity}
+    designator:      {role: supporting, time_role: durable}
+    echelon:         {role: supporting, time_role: durable}
+    alert_posture:   {role: supporting, time_role: perishable}   # a stated readiness/alert status — expected
+                                                                 # to CHANGE over time, never a durable trait,
+                                                                 # so a clean update is not a contradiction.
+    # A FORMATION MOVES: its geography is perishable, so geography alone can never confirm a unit. This is one
+    # half of C6's per-(type, attribute) point — the same attribute, the opposite consequence, on a different
+    # citizen (compare `presence.coordinates` below).
+    home_garrison:   {role: supporting, time_role: perishable}
+    coordinates:     {role: supporting, time_role: perishable, requires: earned_identity}
+  presence:
+    # A PRESENCE *IS* operator + design + site + window. Those attributes cannot change without it being a
+    # DIFFERENT presence, so they are `constitutive`: their agreement CONFIRMS (which is what lets the presence
+    # citizen confirm at all — rk-20's closure), and their difference is a DISTINCTNESS signal rather than a
+    # stale reading. Without these rows C6 is inert and spine/13 §6 lever 2 has no rung to stand on.
+    #
+    # `supporting` rather than `critical` deliberately: a constitutive DIFFERENCE already blocks fusion and
+    # raises, while a `critical` wall would compare raw coordinates with `==` and hard-wall two reports of one
+    # presence over a rounding difference. Genuine geographic impossibility is walled by `geo_conflict_max_km`,
+    # which has a tolerance; this rail supplies the positive half.
+    coordinates:     {role: supporting, time_role: constitutive, requires: earned_identity}
+    operator_branch: {role: supporting, time_role: constitutive, requires: earned_identity}
+    service_branch:  {role: supporting, time_role: constitutive, requires: earned_identity}
+    design:          {role: supporting, time_role: constitutive, requires: earned_identity}
+    site:            {role: supporting, time_role: constitutive, requires: earned_identity}
+    observed_window: {role: supporting, time_role: constitutive, requires: earned_identity}
+    count:           {role: neutral,   time_role: perishable,    requires: earned_identity}
+  basing_site:
+    # A PLACE IS ITS COORDINATES — `identifying`, the rung that lets a place confirm. Same attribute as
+    # `presence.coordinates` and `unit.coordinates` above, three different identity consequences, which is
+    # exactly the per-(type, attribute) keying C6 exists to express.
+    coordinates:     {role: supporting, time_role: identifying, requires: earned_identity}
+  area_of_operations:
+    # An AREA answers "roughly where", so its coordinates identify the area itself but never what is inside it.
+    coordinates:     {role: supporting, time_role: identifying, requires: earned_identity}
   trading_org:
-    origin_country:  {role: supporting, time_role: durable}   # likewise: 'CHINA' vs 'China' would false-wall the
-                                                             # SINO-GALAXY spellings. NOT a namespace field, so it
-                                                             # would be a genuinely new wall once values are normalised.
+    origin_country:  {role: supporting, time_role: durable}
   component:
     radar_band:      {role: supporting, time_role: durable}
     component_class: {role: supporting, time_role: durable}
@@ -383,6 +464,34 @@ attribute_roles:
 # variant STATES operator_branch (the one wired critical attr), so it walls zero pairs today — declared
 # for the discipline, exercised by the unit tests.
 critical_veto_min_grade: C
+
+# ── D-13.20 — the COMPOSITE unique identifier (ruling M3: this had no declaration site at all) ─────
+# `hard_id_fields` was DEAD config: zero occurrences, so `_shared_unique_id` was permanently False and the
+# top rung of the discriminator ladder — "a shared unique id lifts every cap" — was unreachable.
+#
+# THE LOAD-BEARING CALL: a shared DESIGNATION is NOT a unique identifier. Designations are reused across
+# armies and across time — "3rd Battalion" names a different unit in two services and a different unit in
+# two decades — so one shared designation string may NEVER confirm a formation merge. The mechanism is that
+# each row is a COMPOSITE AND-KEY: every attribute in the tuple must be stated on both sides AND agree.
+# `(service_branch, designator)` is an identifier; a bare `designator` is not.
+#
+# This is stronger than declaring the designator a "non-perishable discriminator", because it makes the
+# operator requirement STRUCTURAL in the identifier declaration rather than dependent on a separate
+# namespace check — and that namespace check was measured broken in the Phase-2 fixpoint (D4). It also
+# preserves the asymmetry the codebase already embodies for bills of lading, which must NOT be "fixed":
+# differing identifiers VETO, shared ones do NOT confirm unless the whole AND-key agrees.
+#
+# Component values are compared through the C7 normaliser, so 'PAF' and 'Pakistan Air Force' are one branch
+# rather than two. Read only with the flag on (declaring it bare would move the flag-off graph).
+hard_id_fields:
+  unique:
+    # A formation is identified by its designation WITHIN its service, never by the designation alone.
+    unit: [[service_branch, designator], [service_branch, designator, parent_unit]]
+    # A presence IS its operator + design + site + window (the `constitutive` block below says the same
+    # thing on the attribute axis); all four together identify it, and any one of them alone does not.
+    presence: [[operator_branch, design, site, observed_window]]
+    # A customs event is identified by the document reference its own manifest carries.
+    contract_import_event: [[bill_of_lading_ref], [contract_ref]]
 
 # Non-place keep-separate traps (the geographic Karachi-Port vs Port-Qasim pair lives in places.yaml's
 # own distinct_from field — intentionally NOT duplicated here).
@@ -494,9 +603,15 @@ earned_identity:
   # Predicates whose SHARED endpoint is co-location evidence, not identity evidence: two batteries at one
   # airfield operating one design under one branch share all of these BY CONSTRUCTION.
   colocation_predicates: [based-at, observed-at, instance-of, operated-by, equips, inducted-into]
-  # The unit-level discriminators that CAN confirm a formation over and above co-location. A shared
-  # DESIGNATION is deliberately NOT enough on its own — see hard_id_fields.unique below.
-  formation_discriminators: [designator, echelon, parent_unit, equipment_fingerprint, home_garrison]
+  # The unit-level discriminators that CAN lift the co-location cap. `designator` and `echelon` are
+  # deliberately ABSENT, and that is D-13.20's load-bearing call rather than an oversight: designations are
+  # REUSED across armies and across time, so "both are the 8th" is not evidence that two batteries are one
+  # battery — and an echelon ("battalion") is more generic still. `home_garrison` is absent too, because a
+  # formation's geography is perishable: where a unit sleeps cannot individuate it.
+  # What remains is what genuinely individuates a formation beyond where it is standing. The other way to
+  # lift the cap is the ladder's top rung — a shared COMPLETE composite AND-key from `hard_id_fields.unique`,
+  # which is exactly `(service_branch, designator)`: the designation *plus* the operator that scopes it.
+  formation_discriminators: [equipment_fingerprint, parent_unit]
 
   # ── D-13.8 / G18 — the relationship-conflict wall ─────────────────────────────────────────────────
   # A STATED conflict on one of these predicates at OVERLAPPING times is a HARD WALL, not a relational
@@ -546,56 +661,3 @@ earned_identity:
   # value is a refusal on stated grounds, never a silent pass in either direction.
   normalization_required_attrs: [service_branch, operator_branch, origin_country, country]
 
-  # ── D-13.20 — the COMPOSITE unique identifier (ruling M3: this had no declaration site at all) ─────
-  # `hard_id_fields` was DEAD config: zero occurrences, so `_shared_unique_id` was permanently False and the
-  # top rung of the discriminator ladder — "a shared unique id lifts every cap" — was unreachable.
-  #
-  # THE LOAD-BEARING CALL: a shared DESIGNATION is NOT a unique identifier. Designations are reused across
-  # armies and across time — "3rd Battalion" names a different unit in two services and a different unit in
-  # two decades — so one shared designation string may NEVER confirm a formation merge. The mechanism is that
-  # each row is a COMPOSITE AND-KEY: every attribute in the tuple must be stated on both sides AND agree.
-  # `(service_branch, designator)` is an identifier; a bare `designator` is not.
-  #
-  # This is stronger than declaring the designator a "non-perishable discriminator", because it makes the
-  # operator requirement STRUCTURAL in the identifier declaration rather than dependent on a separate
-  # namespace check — and that namespace check was measured broken in the Phase-2 fixpoint (D4). It also
-  # preserves the asymmetry the codebase already embodies for bills of lading, which must NOT be "fixed":
-  # differing identifiers VETO, shared ones do NOT confirm unless the whole AND-key agrees.
-  #
-  # Component values are compared through the C7 normaliser, so 'PAF' and 'Pakistan Air Force' are one branch
-  # rather than two. Read only with the flag on (declaring it bare would move the flag-off graph).
-  hard_id_fields:
-    unique:
-      # A formation is identified by its designation WITHIN its service, never by the designation alone.
-      unit: [[service_branch, designator], [service_branch, designator, parent_unit]]
-      # A presence IS its operator + design + site + window (the `constitutive` block below says the same
-      # thing on the attribute axis); all four together identify it, and any one of them alone does not.
-      presence: [[operator_branch, design, site, observed_window]]
-      # A customs event is identified by the document reference its own manifest carries.
-      contract_import_event: [[bill_of_lading_ref], [contract_ref]]
-
-  # ── C6 — the two NEW time roles, declared here because they change behaviour ──────────────────────
-  # Merged over the base `attribute_roles` block above, per type and per attribute, ONLY with the flag on.
-  # This is the rung spine/13 §6 lever 2 needs and has never had:
-  #   * a PRESENCE *is* operator + design + site + window, so those are `constitutive` — they cannot change
-  #     without it being a different presence, which is simultaneously (a) what lets two co-located reports
-  #     collapse into ONE presence (agreement on a constitutive attribute can confirm) and (b) what keeps
-  #     a differing one apart (a difference is DISTINCTNESS, not staleness).
-  #   * a PLACE is its coordinates, so `coordinates` is `identifying` on the location-primary types.
-  #   * a FORMATION's geography is `perishable` — a unit moves. Same attribute, opposite role, different
-  #     type: that per-(type, attribute) keying is the half of C6 that was never the problem.
-  attribute_roles:
-    presence:
-      operator_branch: {role: critical, time_role: constitutive}
-      service_branch:  {role: critical, time_role: constitutive}
-      site:            {role: critical, time_role: constitutive}
-      design:          {role: critical, time_role: constitutive}
-      observed_window: {role: supporting, time_role: constitutive}
-      count:           {role: neutral,   time_role: perishable}
-    basing_site:
-      coordinates:     {role: supporting, time_role: identifying}
-    unit:
-      # A unit MOVES: its geography is perishable, and perishable-only evidence cannot confirm it.
-      home_garrison:   {role: supporting, time_role: perishable}
-      designator:      {role: supporting, time_role: durable}
-      echelon:         {role: supporting, time_role: durable}

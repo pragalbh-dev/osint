@@ -62,6 +62,12 @@ def mk_config(
     earned_identity: dict[str, Any] | None = None,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
+    # The gate FAILS CLOSED on an empty marker vocabulary — an unconfigured conjunct must never license the
+    # strongest fusion path in the system. So a fixture that opts into authoritative coreference has to
+    # declare what licenses one, exactly as the shipped config does. Only the vocabulary is supplied here;
+    # the stage flag is not, so a legacy opt-in still gets legacy behaviour everywhere else.
+    if coref_authoritative_evidence and earned_identity is None:
+        earned_identity = {"equivalence_markers": ["also known as", "aka", "formerly"]}
     bands = dict(BANDS)
     if possible_floor is not None:
         bands["possible_floor"] = possible_floor
@@ -154,7 +160,11 @@ def coref(
     obj: str,
     *,
     evidence: str = "EXPLICIT_EQUIVALENCE",
-    quote: str = "Full Name (SHORT)",
+    #: ``None`` ⇒ a well-formed licensing span built from the two surface forms. D-13.17's gate is
+    #: recomputed by the resolver from the span + the two forms, so a fixture that wants a bind must offer a
+    #: span that genuinely licenses one; the old placeholder named neither side and licenses nothing. Pass an
+    #: explicit string to exercise a FAILING gate.
+    quote: str | None = None,
     source: str = "src-t",
     cluster: str = "c1",
     referent: str | None = None,
@@ -169,6 +179,7 @@ def coref(
     Written on its own predicate, carrying the categorical evidence kind and the verbatim licensing span
     in the tier-3 bag — that bag is what ``resolve._coref_pairs`` reads to decide bootstrap vs raise-only.
     """
+    quote = quote if quote is not None else f"{subject}, also known as {obj}, per the register"
     return ClaimRecord(
         claim_id=_cid("cr"),
         source_id=source,

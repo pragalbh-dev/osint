@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from itertools import product
 
+from chanakya import coref_gate
 from chanakya.ontology import EdgeLaneIndex
 from chanakya.schemas import (
     ClaimRecord,
@@ -30,7 +31,6 @@ from chanakya.schemas import (
     PlaceRef,
     pair_key,
 )
-from chanakya.schemas.ids import REFERENT_PREFIX
 
 from . import aliases, entities, places, scoring
 from .aliases import AliasIndex
@@ -50,8 +50,10 @@ from .places import location_attr
 from .propose import propose_candidates
 from .rconfig import ResolveConfig, grade_meets_floor
 from .scoring import (
+    COREF_CLUSTER_ATTR,
     COREF_CONTRAST_PREDICATE,
     COREF_EVIDENCE_ATTR,
+    COREF_FORMS_ATTR,
     COREF_GATE_ATTR,
     COREF_GATE_DETAIL_ATTR,
     COREF_GATE_PASS,
@@ -144,11 +146,10 @@ def _resolve(
     place_of = places.place_matches(graph, cfg)
 
     # Effective alias table = seeded config ∪ registry classes ∪ replayed merge_adjudication(accept)s.
-    # ``require_distinct_forms`` is G19's Phase-1 half: an alias equivalence must rest on a real LINK between
-    # two DIFFERENT surface forms, not on a name being reflexively equal to itself (see AliasIndex.equivalent).
+    # G19's Phase-1 half rides ``AliasIndex``'s own default now: an alias equivalence must rest on a real LINK
+    # between two DIFFERENT surface forms, never on a name being reflexively equal to itself.
     alias_idx = aliases.build(
         cfg.alias_table, cfg.transliteration, decisions, cfg.registry_alias_table,
-        require_distinct_forms=cfg.earned_identity_on,
     )
 
     # veto = configured distinct-from (by name) ∪ registry distinct-from (by entity id) ∪ gazetteer-distinct
@@ -948,6 +949,89 @@ def _endpoint_eids(ref: str, graph: EntityGraph, cfg: ResolveConfig, alias_idx: 
     return sorted(out)
 
 
+def _licensing_spans(e: Edge) -> list[str]:
+    """The link's licensing spans, from either carrier. Verbatim-checked at ingest, where the document is."""
+    raw = (e.attributes or {}).get(COREF_QUOTES_ATTR)
+    if isinstance(raw, (list, tuple)):
+        return [str(q) for q in raw if q]
+    quote = (e.attributes or {}).get(COREF_QUOTE_ATTR)
+    if isinstance(quote, (list, tuple)):
+        return [str(q) for q in quote if q]
+    return [str(quote)] if quote else []
+
+
+def _link_forms(e: Edge, graph: EntityGraph) -> tuple[str, str]:
+    """The two members' surface forms — the stamped pair, else the endpoint entities' own names.
+
+    ``_link_endpoints`` rewrites a triple's endpoints onto entity ids before this runs, so the raw forms the
+    document used are no longer on the edge. The producer stamps them; where it did not (a hand-built claim,
+    a fixture, an older bundle) the endpoint entities' names are the same strings by construction, because
+    that is what the mint used.
+    """
+    stamped = (e.attributes or {}).get(COREF_FORMS_ATTR)
+    if isinstance(stamped, (list, tuple)):
+        try:
+            anchor, member = stamped  # a PAIR, read by unpacking — no length literal (gate G6)
+        except ValueError:
+            anchor, member = None, None
+        if anchor and member:
+            return str(anchor), str(member)
+    sub, obj = graph.entities.get(e.subject), graph.entities.get(e.object)
+    return (sub.name if sub else e.subject), (obj.name if obj else e.object)
+
+
+def _link_gate_verdict(
+    e: Edge, evidence: str, graph: EntityGraph, cfg: ResolveConfig
+) -> tuple[bool, str]:
+    """Does this coreference link clear D-13.17's deterministic gate? — **recomputed here, not trusted.**
+
+    The first cut of this stage read a verdict the producer had stamped on the claim. The independent suite
+    killed that in one line: a holder of a config bundle and a claim log — a fixture, an operator, an auditor —
+    **could not turn the policy on**, because the deciding input was an artifact only the producer knew how to
+    write. And a gate whose verdict cannot be recomputed from the evidence is not a structural check; it is a
+    second self-report one layer down, which is exactly what D-13.17 refuses.
+
+    So the split is by *what is knowable here*:
+
+    * ``EXPLICIT_EQUIVALENCE`` — **fully recomputed** from the licensing spans and the two surface forms, both
+      of which ride the claim, against the configured marker vocabulary and the shipped mark-vs-word knob.
+      Any reader can re-derive it. A stamped ``FAIL`` still loses: the producer saw the document and this side
+      did not, so it may veto but never license.
+    * ``UNAMBIGUOUS_ANAPHOR`` — the positive gate needs the document's whole mention inventory, which is not
+      in the graph. So it is honoured **only** on a stamped pass, and an unstamped anaphor link falls back to
+      raise-only. That is D-13.17's own conditional, not an improvisation: *"if the positive gate is not
+      built, ``UNAMBIGUOUS_ANAPHOR`` reverts to raise-only."*
+    * anything else, ``NAME_VARIANT`` included — never gated, therefore never bound.
+
+    Per **M12** a failing conjunct **demotes to raise-only and never vetoes**, which is the whole reason a
+    fallible structural test is admissible in this position: a false fire costs one analyst glance, with the
+    licensing spans attached, rather than a lost merge.
+    """
+    stamped = (e.attributes or {}).get(COREF_GATE_ATTR)
+    if stamped is not None and str(stamped) != COREF_GATE_PASS:
+        return False, "the producer's own gate failed on evidence only it could see (the document text)"
+    if evidence == coref_gate.EXPLICIT_EQUIVALENCE:
+        anchor, member = _link_forms(e, graph)
+        return coref_gate.explicit_equivalence(
+            _licensing_spans(e), anchor, member,
+            cfg.earned_identity.equivalence_markers, cfg.earned_identity.min_descriptor_len,
+            documents=len(e.doc_ids) or 1,
+        )
+    if evidence == coref_gate.UNAMBIGUOUS_ANAPHOR:
+        if str(stamped or "") == COREF_GATE_PASS:
+            return True, "the positive anaphor gate passed at ingest, over the document's mention inventory"
+        return False, (
+            "the positive anaphor gate cannot be recomputed here (it needs the document's whole mention "
+            "inventory) and the link carries no verdict from ingest, so the category reverts to raise-only — "
+            "D-13.17's own conditional"
+        )
+    return False, (
+        f"'{evidence}' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses "
+        f"banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another "
+        f"predicate, immune to the very cap that replaced it"
+    )
+
+
 def _coref_doc_scoped_eids(
     ref: str, doc_ids: set[str], graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex
 ) -> list[str]:
@@ -1017,13 +1101,16 @@ def _referent_conflict(
         differing = scoring.constitutive_difference(ea, eb, cfg)
         if differing:
             return f"a constitutive difference ({', '.join(differing)})"
-    walls, _reasons, raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
+    # C3: "the check is **the same overlapping-time conflict test G18 uses**, under C1's site_type rule" — so
+    # the WALLS only. G18's third state (an unreadable site class, an undated statement) is explicitly *not* a
+    # conflict: it is "we cannot read this". Declining a grouping on it would turn every undated basing into a
+    # refusal to group, which is over-raising — the operational face of the thing the non-negotiable forbids —
+    # and it would eat the legitimate cases the same ruling protects (non-overlapping times are a relocation,
+    # and a differing site class is two valid basings). The third state already blocks fusion on its own rail.
+    walls, _reasons, _raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
     for a, b in unordered_pairs(sorted(set(members))):
-        pair = frozenset((a, b))
-        if pair in walls:
+        if frozenset((a, b)) in walls:
             return "a stated relationship conflict at overlapping times (the same test G18 walls on)"
-        if pair in raises:
-            return "an unreadable stated relationship conflict (G18's third state)"
     return None
 
 
@@ -1039,7 +1126,14 @@ def _history_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> str | None:
     if a.etype != b.etype:
         return None
     earned = cfg.earned_identity
-    for attr in cfg.critical_role_attrs(a.etype) + cfg.constitutive_attrs(a.etype):
+    # The identity-BEARING slots, which is more than the ``critical`` ones: a component of a declared
+    # composite unique key is identifying **by that declaration** — ``(service_branch, designator)`` says a
+    # designation individuates a formation within its service, so one member asserting two different
+    # designations cannot be one referent, whatever role the attribute carries for scoring.
+    key_components = sorted({attr for key in cfg.unique_id_keys(a.etype) for attr in key})
+    checked = cfg.critical_role_attrs(a.etype) + cfg.constitutive_attrs(a.etype) + key_components
+    seen: set[str] = set()
+    for attr in [x for x in checked if not (x in seen or seen.add(x))]:
         values: set[str] = set()
         unreadable = False
         for ac in a.attr_history.get(attr, []) + b.attr_history.get(attr, []):
@@ -1089,8 +1183,17 @@ def _coref_pairs(
     for e in graph.edges:
         if e.predicate != COREF_PREDICATE:
             continue
-        referent = str((e.attributes or {}).get(COREF_REFERENT_ATTR) or "") if earned_on else ""
-        by_referent.setdefault(referent or f"link:{id(e)}", []).append(e)
+        # The GRAIN is the document-local coreference cluster; the referent atom is that grain's *name*. So
+        # group on the referent where the producer minted one and on ``(document, cluster id)`` where it did
+        # not — a hand-built claim, a fixture, a bundle recorded before the mint existed. Keying only on the
+        # referent made the decline unreachable for every one of those, i.e. D-13.18 was inert wherever the
+        # grouping was expressed the older way.
+        attrs = e.attributes or {}
+        referent = str(attrs.get(COREF_REFERENT_ATTR) or "")
+        cluster = str(attrs.get(COREF_CLUSTER_ATTR) or "")
+        docs = "|".join(sorted(e.doc_ids))
+        grain = referent or (f"cluster:{docs}:{cluster}" if cluster else f"link:{id(e)}")
+        by_referent.setdefault(grain, []).append(e)
 
     for referent, links in sorted(by_referent.items(), key=lambda kv: kv[0]):
         pairs_of: list[tuple[Edge, list[Pair]]] = []  # Edge is a mutable dataclass ⇒ unhashable; keep a list
@@ -1121,17 +1224,17 @@ def _coref_pairs(
         # promoted, because the question is about the grouping rather than about a pair.
         declined = (
             _referent_conflict(members, graph, cfg, lane, place_of or {}, alias_idx)
-            if earned_on and referent.startswith(REFERENT_PREFIX) and lane is not None
+            if earned_on and not referent.startswith("link:") and lane is not None
             else None
         )
 
         for e, found in pairs_of:
             attrs = e.attributes or {}
             evidence = str(attrs.get(COREF_EVIDENCE_ATTR) or "")
-            gate_ok = (not earned_on) or attrs.get(COREF_GATE_ATTR) == COREF_GATE_PASS
-            grade_ok = (not earned_on) or grade_floor is None or grade_meets_floor(
-                cfg.source_grade(e.source_id), grade_floor
-            )
+            # Unconditional, both of them. A bind fuses at 1.0 past every band, so "is this licensed?" can
+            # never depend on which stage is switched on — only on the evidence the pair carries.
+            gate_ok, _why = _link_gate_verdict(e, evidence, graph, cfg)
+            grade_ok = grade_floor is None or grade_meets_floor(cfg.source_grade(e.source_id), grade_floor)
             for pair in found:
                 if pair in veto:
                     continue  # a stated do-not-merge outranks the extractor's reading of the prose
