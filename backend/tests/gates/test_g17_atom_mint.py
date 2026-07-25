@@ -76,6 +76,16 @@ def test_the_id_constructors_are_rng_and_clock_free() -> None:
 
 # ── minted only at ingest ────────────────────────────────────────────────────────────────────────
 
+#: The module that DEFINES the id constructors is exempt from the "called only from ingest" rule, because a
+#: constructor composing a sibling constructor is **not a mint** — it builds a string and appends nothing.
+#: (Orchestrator ruling, 2026-07-25, after this gate flagged it: ``make_referent_id`` composes
+#: ``make_claim_id`` so the two schemes share one normalisation rule and cannot drift — good design, not a
+#: G17 violation.) The exemption is **earned, not assumed**: ``test_the_exempt_id_module_cannot_mint`` proves
+#: the module has no store access, so it is *incapable* of writing an atom. Narrow to the defining module —
+#: never widen it to the whole package.
+_MINT_DEFINING_MODULE = "schemas/ids.py"
+
+
 def test_the_claim_atom_mint_is_called_only_from_the_ingest_package() -> None:
     """G17's S1 clause: atoms are minted **only at ingest**."""
     sites = rk.call_sites(_CLAIM_MINT, root=PKG_ROOT)
@@ -84,10 +94,29 @@ def test_the_claim_atom_mint_is_called_only_from_the_ingest_package() -> None:
         f"the scanner found no call to {_CLAIM_MINT} anywhere in chanakya/ — the scan is broken, and a "
         "broken scan would pass this gate vacuously (§5a: a gate that cannot fail is a gate that lies)"
     )
-    outside = [s for s in sites if not s.startswith(f"{_MINT_PACKAGE}/")]
+    outside = [
+        s for s in sites
+        if not s.startswith(f"{_MINT_PACKAGE}/") and not s.startswith(_MINT_DEFINING_MODULE)
+    ]
     assert not outside, (
         f"{_CLAIM_MINT} is called outside chanakya/{_MINT_PACKAGE}/: {outside} — atoms are minted only at "
         "ingest (G17)"
+    )
+
+
+def test_the_exempt_id_module_cannot_mint() -> None:
+    """The exemption above is legitimate only while the id module is incapable of *writing* an atom.
+
+    A mint is a call **plus** an append to the evidence log; the constructor module does the first and must
+    never be able to do the second. Asserted on *capability* (no store import), not on behaviour, so the
+    exemption cannot quietly become a hole: give ``schemas/ids.py`` store access and this fails.
+    """
+    modules = imported_modules(_IDS_MODULE)
+    store_ish = sorted(m for m in modules if "store" in m or "sqlite" in m)
+
+    assert not store_ish, (
+        f"chanakya/{_MINT_DEFINING_MODULE} imports {store_ish} — it is exempt from the mint-site rule only "
+        "because it cannot append an atom; with store access that exemption becomes a G17 hole"
     )
 
 
