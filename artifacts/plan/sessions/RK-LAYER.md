@@ -38,7 +38,12 @@ S1's headline was *zero behavioural change*. **S2's is not.** This stage changes
 
 1. **Layer tags (A2).** A `layer` (design | instance) on every node-type **and** every attribute entry in
    `config/ontology.yaml` — S1 migrated the file to structured entries, so this **adds one key per entry**,
-   nothing is restructured (81 attribute entries, 13 node types). Add the layer accessor in `ontology.py`
+   nothing is restructured. Legal values are `design | instance | meta` (**L3**). **Do NOT pin a frozen
+   type/attribute count** (corrected 2026-07-25): this stage is *supposed* to grow the surface — **L2** adds an
+   instance-layer *presence* type and **L4** a numeric equipment-count attribute — so a pinned count is a
+   tripwire pointed at ourselves. The durable, count-independent assertion is: **every node type and every
+   attribute entry is classified with a legal value, and no entry claims two layers** (D-13.3's split rule).
+   *(Reference only, measured after S2's additions: 15 node types, 90 attribute entries.)* Add the layer accessor in `ontology.py`
    beside `refines`/`identity`. Keep the seam: the ontology entry carries what is **ontological** (`layer`,
    D-13.3's dual-attribute split); identity semantics (`role`, `perishable`) stay in `config/resolution.yaml`.
    **Per C6: `perishable` is per *(type, attribute)*** — geography is perishable for a *formation*,
@@ -57,6 +62,10 @@ S1's headline was *zero behavioural change*. **S2's is not.** This stage changes
    claim-atoms** (the `observed-at` claim + the `inducted-into` claim) for one-click provenance — with **no
    mint and no append inside rebuild**. Consequently the `__basing.json` derived bundles **cease to exist**;
    the seed loader glob and the `pending.py` references that ride them drop with the pass.
+   **Flag-gate the glob** (ruled 2026-07-25, reconciling both hands): flag **off** ⇒ the glob stays, so
+   flag-off byte-identity holds; flag **on** ⇒ the glob is **skipped**, so a frozen bundle cannot replay an
+   inference the rebuild now derives (the same attribution would arrive twice and the frozen copy would never
+   age or re-derive). The bundles themselves still die with RK-DATA.
 5. **Ontology additions this stage owns** (S2 owns `config/ontology.yaml`; no later stage does):
    - **`operated-by`** — G18 names it and **the predicate does not exist**. Add it, or G18 tests half of itself.
    - **D12's `contract_import_event` ↔ `trading_org` edge** — the customs spine (event ↔ consignee ↔ shipper) is
