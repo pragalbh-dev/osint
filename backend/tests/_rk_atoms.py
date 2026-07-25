@@ -185,11 +185,28 @@ def dimensions_covered(model: type[BaseModel]) -> dict[str, list[str]]:
 
 # ── structured TypeDef.attrs (A7's config half) ─────────────────────────────────────────────────
 
+def raw_attr_name(entry: Any) -> str:
+    """The attribute name declared by a **raw YAML** ``attrs`` entry (a mapping, or a legacy bare string).
+
+    Deliberately tolerant of both shapes: this reads the *file*, not the model, and is used by the
+    round-trip test that compares the loaded model against what the file declares. Whether the bare form
+    is *legal* is asserted separately (ruling of 2026-07-25 — one form only); a name extractor must not
+    double as the form validator, or the round-trip test would fail for the wrong reason.
+    """
+    if isinstance(entry, str):
+        return entry
+    if isinstance(entry, dict):
+        return str(entry.get("name", entry))
+    return str(getattr(entry, "name", entry))
+
+
 def attr_names(typedef: Any) -> list[str]:
-    """The attribute *names* a ``TypeDef`` declares, from either the bare-string or structured form.
+    """The attribute *names* a ``TypeDef`` declares, read off its structured entries.
 
     Prefers an accessor the implementation may expose; otherwise reads each entry's name. A structured
-    entry with no recoverable name is a failure: nothing downstream could read the vocabulary.
+    entry with no recoverable name is a failure: nothing downstream could read the vocabulary. The
+    bare-string branch survives only so a *legacy* input still yields a readable name — whether the bare
+    form is legal at all is asserted by ``test_a_bare_string_attr_entry_is_rejected``, never here.
     """
     for accessor in ("attr_names", "attribute_names", "attrs_names", "attribute_vocabulary"):
         fn = getattr(typedef, accessor, None)

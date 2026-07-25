@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import Field, SerializerFunctionWrapHandler, model_serializer, model_validator
+from pydantic import Field
 
 from .base import ConfigModel
 from .claim import SourceRegistryEntry
@@ -42,23 +42,25 @@ class AttrDef(ConfigModel):
     """One declared attribute of a node/edge/event type (A7's structured-attrs representation).
 
     ``TypeDef.attrs`` was a bare ``list[str]`` — a name and nothing else, so there was nowhere to say what
-    *kind* of fact an attribute states. Both YAML forms are accepted, so **no config file has to change**::
+    *kind* of fact an attribute states. It is now a list of **mappings, and only mappings**::
 
-        attrs: [echelon, designator]                                      # bare — still valid
-        attrs: [echelon, {name: designator, discriminator: designation}]  # structured
+        attrs:
+          - {name: echelon}
+          - {name: designator, discriminator: designation}
 
-    A bare string is coerced to ``AttrDef(name=...)`` by :meth:`_accept_bare_name`, and an entry that
-    declares *only* a name serialises **back** to a bare string (:meth:`_dump_bare_name`), so the round trip
-    through ``GET|POST /config/ontology`` stays byte-identical until something is actually declared. The
-    collapse tests which fields the source **set**, not which fields exist, so it keeps working when S2
-    adds a field (with or without a default).
+    **There is deliberately no bare-string compatibility.** ``config/ontology.yaml`` was migrated to this
+    form in one pass, and a bare string in ``attrs`` is now a loud validation error rather than a silent
+    coercion. A dual-form loader would bias every later implementer toward the old shape, and a "temporary"
+    tolerance is exactly how the config would never have migrated at all — the data bends to the design, not
+    the reverse (working-principles #1). One form, one place to change.
 
     **The seam.** This entry carries what is *ontological* — what kind of thing the attribute is. Identity
     *semantics* (an attribute's ``role`` — identity / critical / supporting — and its per-``(type,
     attribute)`` ``perishable`` flag, C6) stay in ``config/resolution.yaml``'s ``attribute_roles``, read via
     ``chanakya.resolve.rconfig``. Mixing the two is how the two files start duplicating each other. On the
     ontological side of that line exactly one field is still to come: **RK-LAYER (S2) adds ``layer``
-    (design | instance) here for A2** — one added field, nothing reshaped (plan §3 item 6).
+    (design | instance) here for A2** — one added key on each entry, nothing reshaped (plan §3 item 6),
+    which is why the migrated YAML puts one attribute per line.
     """
 
     name: str
@@ -66,19 +68,6 @@ class AttrDef(ConfigModel):
     #: undeclared for every attribute today: absence reads *unknown*, never "not a discriminator", so a
     #: gap in the declaration can never masquerade as a positive statement about the attribute.
     discriminator: DiscriminatorClass | None = None
-
-    @model_validator(mode="before")
-    @classmethod
-    def _accept_bare_name(cls, value: Any) -> Any:
-        """Coerce the legacy bare-string form (``attrs: [role]``) into ``{name: role}``."""
-        return {"name": value} if isinstance(value, str) else value
-
-    @model_serializer(mode="wrap")
-    def _dump_bare_name(self, handler: SerializerFunctionWrapHandler) -> Any:
-        """Emit a name-only entry as a bare string, so an undeclared ontology serialises unchanged."""
-        if self.__pydantic_fields_set__ <= {"name"}:
-            return self.name
-        return handler(self)
 
 
 class TypeDef(ConfigModel):
@@ -94,9 +83,8 @@ class TypeDef(ConfigModel):
 
     name: str
     freshness_class: str | None = None  # → a half-life key in credibility.yaml
-    #: The type's declared attributes, as :class:`AttrDef` entries (A7). Accepts the legacy bare-string
-    #: form item-by-item, so every existing ``config/ontology.yaml`` line loads unchanged; use
-    #: :meth:`attr_names` where only the names are wanted.
+    #: The type's declared attributes, as :class:`AttrDef` **mappings** (A7) — a bare string is rejected,
+    #: not coerced. Use :meth:`attr_names` where only the names are wanted.
     attrs: list[AttrDef] = []
     # edge-only (ignored on node/event types) — D-A:
     from_type: str | list[str] | None = Field(default=None, alias="from")  # domain: subject node type(s)

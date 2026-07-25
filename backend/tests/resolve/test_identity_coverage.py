@@ -24,9 +24,9 @@ from __future__ import annotations
 
 import pytest
 
-from chanakya.view.coverage import IdentityCoverage, identity_coverage
 from chanakya.resolve.rconfig import ResolveConfig
 from chanakya.schemas import Partition, ResolutionConfig
+from chanakya.view.coverage import IdentityCoverage, identity_coverage
 from tests.resolve._helpers import mk_config
 
 
