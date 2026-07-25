@@ -1523,3 +1523,43 @@ and `make check`) · mypy back to the base 289 · 1222 backend + 196 frontend te
 **Still true, still disclosed:** the lens half reaches no UI surface (see AH-1's disclosure) — it is honest
 in `GET /view?subject=` and in ASK's tool reads only. ASK has no observable/alert tool, so it cannot see the
 *observable* half either; both are roadmap, not build.
+
+### DEFAULT-ON — the identity re-key stops being a staged flag, and the loopholes the flags were hiding (2026-07-25)
+
+Three stages of the identity re-key had landed **behind flags that shipped OFF**
+(`ontology.yaml → layer_routing.enabled`, `resolution.yaml → earned_identity.enabled`, and the coreference
+producer riding the second). The shipped build therefore ran without the machinery, and two of the dormant
+mechanisms were the ones that close a **fabrication path**: a sub-confirmed or provisional identity promoted a
+supersession anyway, the analyst's candidate was popped off the queue as "machine-adjudicated", the retired
+assertion was restated `stale` (which in this system's own vocabulary asserts it *was* once confirmed), and a
+differing target drew a relocation edge nobody reported. A safety mechanism you can switch off is a safety
+mechanism the shipped build does not have.
+
+| Decision | Why | → |
+|---|---|---|
+| **Both stage flags are DELETED, not defaulted true** — and with them the `--earned-identity=on` pytest switch, the flag-discovery test harness (`FLAG_TOKENS` / `enable_layer_routing` / `flag_report`), the two `test_s*_flag_off_equivalence.py` gates, and the row-level `requires:` / `earned_role:` markers in `attribute_roles` | A flag that still exists is still a second behaviour to maintain, and the two flag-off equivalence gates asserted *backward compatibility* — the thing the deletion gives up on purpose. Standing user directive: no dual path, no compatibility mode | Tunables (thresholds, caps, ceilings, vocabularies, floors) stay in config by rule. A row carrying a retired stage marker, and an `earned_identity.enabled` / `.attribute_roles` key, are now **loud load errors** rather than silently ignored — so the arrangement cannot come back |
+| **`supersede_floor.require_earned_identity` is deleted too** | A boolean with no number to tune is not a policy dial, it is a switch for turning a prohibition off | Both R1.4 prohibitions are unconditional; the four consequences are pinned by `test_both_prohibitions_fire_unconditionally_and_the_gap_register_never_repeats_itself` |
+| **A cross-type / cross-namespace refusal now raises a NAMED GAP per endpoint** | The cross-type wall un-fused a pair and routed *neither* half anywhere — no edge, no queue item, no gap — which is indistinguishable from two mentions that never resembled each other. Refusing to assert is half the non-negotiable; the analyst receiving it is the other half | Gated on "the evidence otherwise FUSED this pair", so T3b-A's noise argument survives: a low-scoring cross-type coincidence still earns nothing |
+| **A type disagreement between two sources is SURFACED, not resolved** (Part 3 fork) | Fusing asserts a type neither source states; fragmenting silently hides the disagreement. A type conflict is an evidentiary contradiction — the class this system exists to surface | The pair stays two nodes, reaches the queue *with* "not fusable: cross-type (…)" when a source asserted the identity, and both endpoints carry a gap naming the adjudication needed. The corpus's HT-233 (typed `component` in one document, `variant` in another) is now two nodes: `xfail(strict)` + data-refresh ledger, **not** a weakened wall |
+| **T3b-A narrowed: a cross-type pair may reach the queue when an ASSERTION put it there** | `_identity_pairs` silently dropped every cross-type source-asserted `same-as`, while the LLM-proposal channel beside it kept them — so the escape hatch the collection loop documents was fictional for the source channel. A source stating that a component and a variant are one thing is an extraction error, a typing error, or deception; all three are findings | The pair can never fuse (the wall is unconditional in both phases), so what the assertion buys is a queue place with grounds and a named gap |
+| **A ceiling's VALUE means what it says**, and a value outside the band vocabulary is refused at load | The three ceilings were read as a truthiness test: `confirmed` behaved exactly like `probable`, and only DELETING the key lifted a cap. Config that reads as a decision the code never took is worse than a missing feature | Both halves, deliberately: honouring `confirmed` is only safe once a typo (`possibly`, `off`) cannot quietly take the withholding path |
+| **A withheld pair keeps its REASON** — written for both tiers, surviving `finalise`, retained irrespective of `possible_floor`, listed in `GET /coverage` as `withheld[]`, and rendered on the drawn candidate `same-as` edge | `candidate_reasons` was written only on the `hitl` branch and then filtered to the candidate queue, so a pair capped at `possible` kept its score and lost its grounds — the common case for `area_of_operations`, whose only honest signal is its name. And no surface rendered the reason at all: the queue asked "are these the same?" with no way to see why the machine would not answer | "Retained but never surfaced" is a quiet drop with a confidence attached |
+| **A coreference refusal states the ground it actually used** | The rationale fell back to the fixed string "the category is raise-only by policy" whenever the producer had stamped no detail, while the resolver had just computed the real ground and discarded it — then invited the analyst to accept the merge "if you read it the same way", on a ground that was not the one used | `_raise_ground` recomputes `may_bind`'s four tests in order. The licensing quote is now appended **beside** any cap's reason rather than `setdefault`-dropped by it |
+| **`trading_org.origin_country` is promoted to `critical`** | It was held back on the stated ground that "promoting needs value normalisation first" — and its normalisation rows (CHINA/PRC/CN → China) were already shipped, so the reason had expired. Two same-named trading organisations in two countries is the costliest over-merge an operator-scoped supply-chain map has | Three rails keep it safe: the C7 normaliser (a spelling is never a conflict), `critical_veto_min_grade` (an untrustworthy conflict RAISES instead of walling), and C7's third state |
+| **`resolve/places.augment` is deleted** | Its only caller was the flag-off branch; place identity is decided pre-fixpoint now (RK-COREF item 11) | Dead conditional branches removed rather than left unreachable |
+
+**Expected-red, all corpus-data staleness, all `xfail(strict)` with the regeneration named in the marker** —
+no fixture, corpus file or answer key was edited (working principle #3): the flagship relocation beat (2 tests)
+and the withheld-seed relocation (2 tests) are HELD because `unit_hq9b`'s four derived basings state
+`site_type` as *centre* / *deployment site* / *airfield* / *prepared revetment complex / airfield site* and
+`layer_routing.site_type_aliases` is empty, so ruling L1's third state withdraws every supersede nomination on
+that subject and names a gap — which its own corpus gate
+(`test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown`) asserts as correct. Populating that
+alias map is a DATA judgement about the kind-of-place axis (ruling L1 step 4), not a threshold an implementer
+may guess, so it is filed rather than guessed. Ledger:
+`tmp/conv/DEFAULTON-calibration-and-data-refresh.md`.
+
+**Disclosure for the design note.** The hero relocation beat does not fire on the frozen corpus until the
+site-class alias map is authored. That is the anti-fabrication machinery working as designed — the system
+refuses to call a change of site a *movement* when it cannot read what kind of place either end is — but it
+means the demo's marquee alert is currently a **held** pair with a named gap rather than a fired tripwire.
