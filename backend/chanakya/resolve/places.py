@@ -353,8 +353,46 @@ def augment(
     so it is not re-emitted here. Raw pairs only; ``finalise`` builds the flat canonical map. No-op when
     the gazetteer is empty (F0's golden config) → golden unchanged (gate G2).
     """
+    auto, hitl = place_merge_pairs(graph, cfg, alias_idx, veto, place_of)
+    for a, b in sorted(auto):
+        key = pair_key(a, b)
+        result.same_as.append((a, b))  # two mentions of one place (Rahwali DMS ≡ relative form)
+        result.merge_confidence[key] = 1.0
+        result.merge_breakdown[key] = {"place": 1.0, "total": 1.0}
+    for a, b in sorted(hitl):
+        key = pair_key(a, b)
+        result.candidates.append((a, b))
+        result.merge_confidence[key] = cfg.hitl_low
+        result.merge_breakdown[key] = {"place": cfg.hitl_low, "total": cfg.hitl_low}
+
+
+def place_merge_pairs(
+    graph: EntityGraph,
+    cfg: ResolveConfig,
+    alias_idx: AliasIndex,
+    veto: set[frozenset[str]],
+    place_of: dict[str, PlaceMatch] | None = None,
+) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+    """The place-identity decisions as ``(auto, hitl)`` pair lists — the same rules, without emitting.
+
+    Factored out so the decisions can be taken **before** ``resolve_entities`` instead of only after it
+    (RK-COREF item 11 / the ordering bug plan §5b names). :func:`augment` consumes this, so there is exactly
+    one definition of "which place mentions are one place"; what changes is only *when* a caller may ask.
+
+    **Why the ordering is load-bearing.** ``places.augment`` ran *after* ``resolve_entities``, so a place
+    merge was invisible to ``relational_score``: two units based at differently-named-but-identical sites
+    did **not** share a neighbour key, because the two site mentions had not been unified when the fixpoint
+    computed the neighbourhood. spine/13 §6 lever 2 names places as the clean anchor the instance layer
+    crystallizes onto — mechanically they were not one. Together with **F9** (only *completed* merges carry
+    relational weight) that made lever 2 weaker than the design assumes in two independent ways; feeding the
+    ``auto`` pairs into the bootstrap closes one of them, and it is also the mechanism by which the name cap
+    becomes survivable: a unit pair that agrees on nothing but its name can now *earn* a shared neighbour
+    from the gazetteer rather than being refused for lack of one.
+    """
+    auto: list[tuple[str, str]] = []
+    hitl: list[tuple[str, str]] = []
     if not cfg.places.places or not cfg.scorable:
-        return
+        return auto, hitl
 
     if place_of is None:
         place_of = place_matches(graph, cfg)
@@ -382,19 +420,15 @@ def augment(
 
     for a, b in unordered_pairs(sorted(place_of)):
         ma, mb = place_of[a], place_of[b]
-        key = pair_key(a, b)
         if ma.place_id != mb.place_id or graph.entities[a].etype != graph.entities[b].etype or barred(a, b):
             continue  # different places / different types / vetoed apart → not a place merge
         if not constitutes_identity(ma.place_id):
             continue  # a shared AREA is co-location, not identity (T5) — resolve it, never fuse on it
         if ma.band == "auto" and mb.band == "auto":
-            result.same_as.append((a, b))  # two mentions of one place (Rahwali DMS ≡ relative form)
-            result.merge_confidence[key] = 1.0
-            result.merge_breakdown[key] = {"place": 1.0, "total": 1.0}
+            auto.append((a, b))
         elif "hitl" in (ma.band, mb.band):
-            result.candidates.append((a, b))
-            result.merge_confidence[key] = cfg.hitl_low
-            result.merge_breakdown[key] = {"place": cfg.hitl_low, "total": cfg.hitl_low}
+            hitl.append((a, b))
+    return auto, hitl
 
 
 def _distinct_place_pairs(cfg: ResolveConfig) -> set[frozenset[str]]:

@@ -14,10 +14,10 @@
 // derives 'fired' / the analyst's disposition from the feed. Nothing here hardcodes it.
 import { useWorkbench } from '@/store/workbench'
 import { useTripwires } from '@/api/viewmodel'
-import { useArmedObservables } from '@/api/hooks'
+import { useAnchorCheck, useArmedObservables } from '@/api/hooks'
 import { TRIPWIRES, WATCH_INTRO } from '@/demo/scenario'
 import type { LiveFiring, LiveTripwire } from '@/api/adapters'
-import type { ObservableDef } from '@/api/types'
+import { isAnchorFault, type ObservableAnchorProblem, type ObservableDef } from '@/api/types'
 import { AlertEvidence } from './AlertEvidence'
 
 const LIVE_INTRO =
@@ -90,34 +90,91 @@ function armedTitle(id: string): string {
   return words.charAt(0).toUpperCase() + words.slice(1)
 }
 
-/** An armed-but-quiet observable from the live catalogue: a definition, not a firing — so it
- *  carries what it watches, never evidence (there is none until it fires). */
-function ArmedObservableCard({ def }: { def: ObservableDef }) {
-  const on = typeof def.trigger?.on === 'string' ? String(def.trigger.on) : null
+/** The unresolved-anchor complaint, rendered ON the tripwire it is about (AH-1).
+ *
+ *  This is the whole point of the fix: a tripwire that is watching nothing must SAY it is watching
+ *  nothing, on the card an analyst is already looking at — not in a dict nobody reads. It borrows the
+ *  refusal language used everywhere else in this system, because it is the same statement: an absence
+ *  here is a coverage failure, never an all-clear. The backend supplies the sentence; nothing is
+ *  composed here, so what the API says and what the analyst reads cannot drift. */
+function AnchorProblem({ problem }: { problem: ObservableAnchorProblem }) {
+  // AH-2 — an anchor naming a DECLARED entity that no document has produced yet is not a fault, and
+  // must not be dressed as one. It is still shown (the analyst should know part of the subject is
+  // uncovered) but in the panel's neutral register: the loud treatment is reserved for anchors that
+  // are genuinely broken, so that when it does appear it still means something.
+  const fault = isAnchorFault(problem)
+  const label = !fault
+    ? 'AWAITING COVERAGE'
+    : problem.watching_nothing
+      ? 'WATCHING NOTHING'
+      : problem.watched_node_count === null
+        ? 'SCOPE LOST — NOW UNSCOPED'
+        : 'ANCHOR UNRESOLVED'
   return (
-    <div className="rounded border border-hairline px-[14px] py-[13px]">
+    <div
+      className={`mt-[9px] rounded border border-dashed px-[11px] py-[9px] ${
+        fault ? 'border-live' : 'border-hairline-strong'
+      }`}
+    >
+      <div
+        className={`mb-[4px] font-mono text-[10px] tracking-[0.06em] ${
+          fault ? 'text-live' : 'text-text-faint'
+        }`}
+      >
+        {label}
+      </div>
+      <div className="text-[12px] leading-[1.5] text-text-dim">{problem.warning}</div>
+      <div className="mt-[6px] font-mono text-[10.5px] text-text-faint">
+        {fault ? 'unresolved' : 'awaiting coverage'} · {problem.unresolved_anchors.join(', ')}
+      </div>
+    </div>
+  )
+}
+
+/** An armed-but-quiet observable from the live catalogue: a definition, not a firing — so it
+ *  carries what it watches, never evidence (there is none until it fires). The badge reads "armed"
+ *  only when its anchors actually bind; a tripwire watching an empty set is not armed in any sense
+ *  an analyst would recognise, and saying "armed" beside it would be the lie this panel exists to
+ *  avoid. */
+function ArmedObservableCard({ def, problem }: { def: ObservableDef; problem?: ObservableAnchorProblem }) {
+  const on = typeof def.trigger?.on === 'string' ? String(def.trigger.on) : null
+  const dead = problem?.watching_nothing === true
+  return (
+    <div
+      className={`rounded border px-[14px] py-[13px] ${
+        problem && isAnchorFault(problem) ? 'border-live' : 'border-hairline'
+      }`}
+    >
       <div className="mb-[7px] flex items-center justify-between gap-3">
         <span className="text-[13px] text-text">{armedTitle(def.observable_id)}</span>
-        <StateBadge label="armed" open={false} />
+        <StateBadge label={dead ? 'watching nothing' : 'armed'} open={dead} />
       </div>
       <div className="font-mono text-[10.5px] text-text-faint">
         {[`indicator · ${def.observable_id}`, on ? `watches · ${on}` : null, def.severity ? `severity · ${def.severity}` : null]
           .filter(Boolean)
           .join('  ·  ')}
       </div>
+      {problem && <AnchorProblem problem={problem} />}
     </div>
   )
 }
 
-function LiveTripwireCard({ tripwire }: { tripwire: LiveTripwire }) {
+function LiveTripwireCard({ tripwire, problem }: { tripwire: LiveTripwire; problem?: ObservableAnchorProblem }) {
   const open = tripwire.state === 'fired'
   return (
-    <div className="rounded border border-hairline px-[14px] py-[13px]">
+    <div
+      className={`rounded border px-[14px] py-[13px] ${
+        problem && isAnchorFault(problem) ? 'border-live' : 'border-hairline'
+      }`}
+    >
       <div className="mb-[7px] flex items-center justify-between gap-3">
         <span className="text-[13px] text-text">{tripwire.name}</span>
         <StateBadge label={tripwire.stateLabel} open={open} />
       </div>
       <div className="mb-[2px] font-mono text-[10.5px] text-text-faint">indicator · {tripwire.observableId}</div>
+      {/* A tripwire can have fired historically and be blind NOW — the past firing must not read as
+          proof that it is still watching. */}
+      {problem && <AnchorProblem problem={problem} />}
       {tripwire.firings.map((firing) => (
         <Firing key={firing.key} firing={firing} />
       ))}
@@ -130,8 +187,11 @@ export function WatchView() {
   const mode = useWorkbench((s) => s.mode)
   const tripwires = useTripwires() // null = no live feed to read → the frozen demo rows
   const armed = useArmedObservables() // null = demo mode, in flight, or the catalogue could not be read
+  const anchors = useAnchorCheck() // null = unknown; never treated as "all anchors fine"
   const firedIds = new Set((tripwires ?? []).map((t) => t.observableId))
   const armedQuiet = (armed ?? []).filter((d) => !firedIds.has(d.observable_id))
+  const problems = new Map((anchors?.unresolved ?? []).map((p) => [p.observable_id, p]))
+  const deadCount = (anchors?.unresolved ?? []).filter((p) => p.watching_nothing).length
 
   return (
     <div>
@@ -143,9 +203,27 @@ export function WatchView() {
         {tripwires ? LIVE_INTRO : WATCH_INTRO}
       </div>
 
+      {/* AH-1 — say it before the list, not only per-card: a panel that opens with "no tripwire has
+          fired" while a tripwire is watching nothing has told the analyst the opposite of the truth. */}
+      {anchors?.checked === false && (
+        <div className="mb-[14px] rounded border border-dashed border-hairline-strong px-[13px] py-[11px] text-[12px] leading-[1.55] text-text-faint">
+          Whether these tripwires resolve to real nodes could not be checked{anchors.reason ? ` — ${anchors.reason}` : ''}. Treat the silence below as unverified, not as an all-clear.
+        </div>
+      )}
+      {deadCount > 0 && (
+        <div className="mb-[14px] rounded border border-live px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-text">
+          {deadCount === 1 ? '1 tripwire is' : `${deadCount} tripwires are`} watching nothing — the
+          declared anchors resolve to no node in the current view, so{' '}
+          {deadCount === 1 ? 'it cannot' : 'they cannot'} fire. Silence from{' '}
+          {deadCount === 1 ? 'it' : 'them'} is not an all-clear.
+        </div>
+      )}
+
       <div className="flex flex-col gap-[10px]">
         {tripwires
-          ? tripwires.map((t) => <LiveTripwireCard key={t.observableId} tripwire={t} />)
+          ? tripwires.map((t) => (
+              <LiveTripwireCard key={t.observableId} tripwire={t} problem={problems.get(t.observableId)} />
+            ))
           : TRIPWIRES.map((t) => (
               <div key={t.name} className="rounded border border-hairline px-[14px] py-[13px]">
                 <div className="mb-[7px] flex items-center justify-between">
@@ -161,6 +239,13 @@ export function WatchView() {
       {tripwires && tripwires.length === 0 && (
         <div className="rounded border border-dashed border-hairline-strong px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-text-dim">
           No tripwire has fired on the current view.
+          {deadCount > 0 && (
+            <>
+              {' '}
+              That is not an all-clear: {deadCount === 1 ? 'one of them is' : `${deadCount} of them are`}{' '}
+              watching nothing (see below).
+            </>
+          )}
         </div>
       )}
 
@@ -174,7 +259,7 @@ export function WatchView() {
           </div>
           <div className="flex flex-col gap-[10px]">
             {armedQuiet.map((d) => (
-              <ArmedObservableCard key={d.observable_id} def={d} />
+              <ArmedObservableCard key={d.observable_id} def={d} problem={problems.get(d.observable_id)} />
             ))}
           </div>
         </>

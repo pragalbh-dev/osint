@@ -120,14 +120,30 @@ def test_the_exempt_id_module_cannot_mint() -> None:
     )
 
 
-def test_the_referent_mint_is_dormant_in_s1() -> None:
-    """§7 item 2: "add ``make_referent_id`` … **but do not invoke it** — referents are minted in S3"."""
-    rk.make_referent_id_fn()  # the constructor must exist before dormancy means anything
+def test_the_referent_is_minted_only_at_ingest() -> None:
+    """S1 landed ``make_referent_id`` **dormant**; RK-COREF (S3) invokes it — and only inside ``ingest``.
+
+    The assertion this test used to carry was *dormancy* ("invoked nowhere"), and that was right for exactly
+    one stage: A1 says referents are minted in S3, because coreference is off in S1 so there is no cluster
+    grain to mint against. S3 **is** that stage, so keeping the dormancy assertion would turn it into a
+    tripwire pointed at the thing the plan asked for.
+
+    What survives — and is the durable half — is **G17's own invariant**: atoms are minted at ingest and
+    never inside ``rebuild()``. So the test flips from "no call sites" to "every call site is under
+    ``chanakya/ingest/``". That still bites after S3, and it would still catch a referent minted from the view
+    layer, where it would make the evidence log a function of the derived graph.
+    """
+    rk.make_referent_id_fn()
     sites = rk.call_sites(_REFERENT_MINT, root=PKG_ROOT)
 
-    assert not sites, (
-        f"{_REFERENT_MINT} is invoked at {sites} — S1 lands the constructor dormant; minting referents is "
-        "S3's, and minting one now would freeze a grouping at the wrong grain (G17)"
+    assert sites, (
+        f"{_REFERENT_MINT} is invoked nowhere — RK-COREF (S3) is the stage that mints the referent atom at "
+        "the doc-local coreference cluster (A1); a dormant constructor now means the mint grain never landed"
+    )
+    offenders = [s for s in sites if not str(s).replace("\\", "/").startswith("ingest/")]
+    assert not offenders, (
+        f"{_REFERENT_MINT} is invoked outside chanakya/ingest/ at {offenders} — atoms are minted at INGEST "
+        "and never under rebuild(), or the evidence layer becomes a function of the derived view (G17)"
     )
 
 

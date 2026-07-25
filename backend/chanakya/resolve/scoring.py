@@ -20,7 +20,16 @@ from .aliases import AliasIndex
 from .entities import AttrClaim, Entity, EntityGraph
 from .geo import separation_km
 from .normalize import name_similarity, normalize
-from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
+from .rconfig import (
+    ATTRIBUTE,
+    DISCRIMINATOR,
+    NAME,
+    RELATIONAL,
+    SIGNALS,
+    SOURCE_ASSERTED,
+    TEMPORAL,
+    ResolveConfig,
+)
 from .succession import ORDERED, classify_succession
 
 # Predicates by which a *source* directly asserts an identity (feeds source_asserted — an identity
@@ -41,9 +50,32 @@ DISTINCT_PREDICATES = {"distinct-from", "distinct_from", "not-same-as"}
 # is strictly more information than a bare ``same-as``, which is why one category of it may bootstrap
 # (see ``ResolveConfig.coref_authoritative_evidence``) instead of merely raising.
 COREF_PREDICATE = "coref-same-as"
+#: The CONTRASTIVE lane (D-13.19): a same-document *stated* contrast. Its own lane, deliberately not the
+#: stated ``distinct-from`` rail — that one is hard, transitive and ungraded, and every ORBAT list contains
+#: an enumeration, so widening it would let one planted document shatter a well-corroborated cluster. Here
+#: the same evidence is a **band ceiling**, which withholds one new fusion and can retract nothing.
+COREF_CONTRAST_PREDICATE = "coref-distinct-from"
 #: Tier-3 keys the producer stamps on each coreference claim.
+#: The document-local cluster id — the GRAIN a grouping is adjudicated at, whether or not a referent atom
+#: was minted for it.
+COREF_CLUSTER_ATTR = "_coref_cluster"
 COREF_EVIDENCE_ATTR = "_coref_evidence"
 COREF_QUOTE_ATTR = "source_quote"
+#: The set of VERBATIM licensing spans (ruling M2 — evidence is a set of spans, not one contiguous span).
+COREF_QUOTES_ATTR = "_coref_quotes"
+#: The two members' verbatim surface forms, ``[anchor, member]`` — what the gate is recomputed against.
+COREF_FORMS_ATTR = "_coref_forms"
+#: The referent atom the link belongs to — the grouping grain the rebuild may DECLINE (D-13.18).
+COREF_REFERENT_ATTR = "_coref_referent"
+#: The per-LINK verdict of D-13.17's deterministic gate, and its own words (C5).
+COREF_GATE_ATTR = "_coref_gate"
+COREF_GATE_DETAIL_ATTR = "_coref_gate_detail"
+COREF_GATE_PASS = "PASS"
+#: The coreference lanes, excluded from the relational neighbourhood. Both are assertions about identity
+#: rather than facts about the world; scoring them as neighbourhood double-counts the signal under
+#: adjudication. Scoped to these two predicates on purpose — ``same-as`` keeps its historic treatment, so
+#: nothing that existed before this stage moves.
+COREF_LANES = frozenset({COREF_PREDICATE, COREF_CONTRAST_PREDICATE})
 
 
 def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
@@ -99,11 +131,73 @@ def attribute_is_conflict(a: Entity, b: Entity, attr: str, cfg: ResolveConfig) -
     va, vb = a.attrs.get(attr), b.attrs.get(attr)
     if va is None or vb is None or va == vb:
         return False  # absence ≠ conflict; same value ≠ conflict
+    # C7 (RK-COREF/S3): compare NORMALISED values. The shipped config states the problem outright — sources
+    # write 'Air Force' / 'PAF' / 'Pakistan Air Force' for one branch and 'CHINA' / 'China' for one country,
+    # and an exact-match wall on those "SHATTERS legitimate merges", which is why both slots were demoted to
+    # the inert ``supporting`` role. Folding into the declared equivalence class first is what lets them be
+    # walls again. Two values that normalise to one class are NOT a conflict.
+    if cfg.earned_identity_on:
+        ca, mapped_a = cfg.earned_identity.normalise_value(attr, va)
+        cb, mapped_b = cfg.earned_identity.normalise_value(attr, vb)
+        if mapped_a and mapped_b and ca == cb:
+            return False  # 'PAF' ≡ 'Pakistan Air Force' — a spelling, not a disagreement
+        if attr in cfg.earned_identity.normalization_required_attrs and not (mapped_a and mapped_b):
+            # THE THIRD STATE. An unnormalizable stated value on a slot we intend to wall on is neither a
+            # conflict nor an agreement: we cannot read it. Reporting "no conflict" here is only the first
+            # third — the caller must also refuse the FUSION and raise a named gap
+            # (``resolve._unnormalized_discriminator_blocks``). A gap that does not bind the fusion path is
+            # decoration, and the rk-14 probe is exactly that bug: the prototype named the missing operator
+            # gap and then asserted the assessment anyway, drawing a cross-army relocation.
+            return False
     if cfg.attribute_perishable(a.etype, attr) is True:
         series = a.attr_history.get(attr, []) + b.attr_history.get(attr, [])
         if classify_succession(series).status == ORDERED:
             return False  # a clean perishable update over time is not an identity conflict
     return True
+
+
+def unnormalizable_critical_values(a: Entity, b: Entity, cfg: ResolveConfig) -> tuple[str, ...]:
+    """Wall-eligible slots on which some side STATES a value that does not normalise (C7's third state).
+
+    "Normalization is a prerequisite for walling on **any** slot, and an unnormalizable stated value yields
+    a third state — ``unnormalized`` ⇒ no wall AND no fusion; raise a named gap."
+
+    Both halves matter and they pull opposite ways: a false wall must not shatter a legitimate merge (the
+    prototype was right about that), and the pair must not be allowed to *confirm* instead (that is where it
+    was wrong). So this returns the slots that are unreadable, and the caller owes the pair a **block** plus
+    a reason. Only fires where both sides state the attribute — a slot nobody states is *unknown*, and
+    absence has never been disagreement here. Empty tuple ⇒ nothing to refuse (flag off ⇒ always empty).
+    """
+    if not cfg.earned_identity_on or a.etype != b.etype:
+        return ()
+    out: list[str] = []
+    for attr in cfg.earned_identity.normalization_required_attrs:
+        va, vb = a.attrs.get(attr), b.attrs.get(attr)
+        if va is None or vb is None:
+            continue
+        _, mapped_a = cfg.earned_identity.normalise_value(attr, va)
+        _, mapped_b = cfg.earned_identity.normalise_value(attr, vb)
+        if not (mapped_a and mapped_b):
+            out.append(attr)
+    return tuple(out)
+
+
+def constitutive_difference(a: Entity, b: Entity, cfg: ResolveConfig) -> tuple[str, ...]:
+    """Slots declared ``constitutive`` on which the two sides STATE different (normalised) values (C6).
+
+    A constitutive attribute is part of *what this instance is* — a presence **is** operator + design +
+    site + window — so it cannot change without the thing being a **different** instance. A difference is
+    therefore a **distinctness** signal in its own right, whatever the attribute's ``role`` says, and it is
+    never read as staleness. This is the negative half of the rung C6 adds; the positive half (agreement on
+    a constitutive attribute can *confirm*) rides :meth:`ResolveConfig.attribute_confirms_identity`.
+
+    Same-type only, absence is never disagreement, values normalised first (C7). Flag off ⇒ always empty.
+    """
+    if not cfg.earned_identity_on or a.etype != b.etype:
+        return ()
+    return tuple(
+        attr for attr in cfg.constitutive_attrs(a.etype) if attribute_is_conflict(a, b, attr, cfg)
+    )
 
 
 def _stated_values_conflict(a: Entity, b: Entity, attrs: list[str], cfg: ResolveConfig) -> bool:
@@ -211,10 +305,26 @@ def _shared_unique_id(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     share is one entity by construction. Reused verbatim by the Phase-1 bootstrap trigger
     (``cluster.resolve_entities``) and by :func:`has_durable_identity_support`; one definition so the two can
     never diverge on what "shared hard id" means.
+
+    **Composite AND-keys (D-13.20).** ``(service_branch, designator)`` identifies a unit; a bare
+    ``designator`` does not, because designations are reused across armies and across time. So a composite
+    key matches only when **every** attribute in it is stated on both sides *and* agrees — one missing or
+    differing component is no match, and absence is never agreement. Values are compared through the
+    time-aware, C7-normalised detector, so 'PAF' and 'Pakistan Air Force' are one branch rather than two.
     """
-    for attr in cfg.hard_id_fields("unique").get(a.etype, []):
+    for attr in cfg.hard_id_fields("unique").get(a.etype, []):  # legacy single-attribute rows
         va, vb = a.attrs.get(attr), b.attrs.get(attr)
         if va is not None and va == vb:
+            return True
+    if a.etype != b.etype:
+        return False  # a composite key is per-type; a cross-type pair has no shared identifier
+    for key in cfg.unique_id_keys(a.etype):
+        if all(
+            a.attrs.get(attr) is not None
+            and b.attrs.get(attr) is not None
+            and not attribute_is_conflict(a, b, attr, cfg)
+            for attr in key
+        ):
             return True
     return False
 
@@ -268,7 +378,12 @@ def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bo
         return False  # role attrs + perishability are per-type; a cross-type pair has no durable attr agreement
     for attr in _identity_relevant_attrs(a.etype, cfg):
         va = a.attrs.get(attr)
-        if va is not None and va == b.attrs.get(attr) and cfg.attribute_perishable(a.etype, attr) is not True:
+        # C6: ``attribute_confirms_identity`` is the four-value read of the same question the boolean
+        # ``perishable is not True`` asked — and byte-identical on the two roles that existed before. What it
+        # adds is the two new rungs: agreement on a ``constitutive`` attribute (a presence *is* its
+        # operator+design+site+window) or an ``identifying`` one (a place *is* its coordinates) is durable
+        # support, which is what lets a presence and a place confirm at all.
+        if va is not None and va == b.attrs.get(attr) and cfg.attribute_confirms_identity(a.etype, attr):
             return True
     # A perishable succession is normally NOT durable (the cap distrusts it) — but a single source that
     # witnessed the old→new change is, so it lifts the cap here rather than at a separate gate (D8).
@@ -367,11 +482,60 @@ def _neighbours(
     for e in graph.incident(eid):
         if e.edge_instance in exclude:
             continue
+        if e.predicate in COREF_LANES:
+            # A coreference claim is a statement ABOUT IDENTITY, not a relationship in the world, so it must
+            # never become neighbourhood evidence. It is emitted as a STAR from one anchor, so leaving it in
+            # made every pair of a cluster's members "share a neighbour" — the anchor — and the relational
+            # term then read that as independent corroboration of an identity the same cluster had just
+            # proposed. Coreference laundering itself into relational support, and measured: a three-member
+            # cluster whose third link the gate REFUSED still merged, because the two members it did license
+            # gave the refused pair a shared neighbour it had not earned. That is the "one bad link licenses
+            # the rest" half of C5 arriving through the scorer instead of through the bind.
+            continue
         if e.subject == eid:
             nbrs.setdefault((e.predicate, "out", canonical(e.object)), set()).add(e.object)
         if e.object == eid:
             nbrs.setdefault((e.predicate, "in", canonical(e.subject)), set()).add(e.subject)
     return nbrs
+
+
+def attribute_signals(
+    a: Entity, b: Entity, cfg: ResolveConfig, alias_idx: AliasIndex | None = None, durable_only: bool = False
+) -> tuple[float, float]:
+    """The two lines of evidence ``attribute_score`` fuses at one ``max`` — ``(name, discriminator)``.
+
+    **Why this split is load-bearing and not cosmetic (D-13.20).** The two were always computed
+    independently and then collapsed into a single number, and D-13.10's rule —
+    *"a name match reaches at most `possible`, and one more trivially-available signal clears it"* — is
+    **unexpressible** while they share one slot. Worse, the pre-split ``_name_alone`` test read
+    ``attribute > 0``, so a pair agreeing on a declared **discriminator** and nothing else was
+    indistinguishable from a bare name coincidence: the cap fired on the wrong pairs in both directions.
+
+    * ``name`` — alias-equivalence (a real curated/learned link ⇒ 1.0) else token-sorted name similarity;
+    * ``discriminator`` — the ``agreeing / present`` ratio over the identity-bearing attributes (the legacy
+      ``identity`` list ∪ the declared critical/supporting roles), or 0.0 when neither side states one.
+
+    Both carry the soft conflict penalty, exactly as the fused score did. ``max(name, discriminator)``
+    is ``attribute_score`` **byte-for-byte** (gate G2) — decomposing a ``max`` moves no score, which is
+    what makes this safe to compute unconditionally.
+    """
+    penalty = _conflict_penalty(a, b, cfg)
+    # D-13.20's declared sub-signal weights. Both ship at 1.0 (the neutral element), so the shipped config
+    # reproduces ``max(name, discriminator)`` exactly — what they buy is that the split does not bury a
+    # coefficient in the source (gate G6), and that an operator can lower the authority of a bare name
+    # against a stated discriminator, which is the ladder's bottom rung made adjustable.
+    w_name, w_disc = cfg.earned_identity.name_weight, cfg.earned_identity.discriminator_weight
+    if alias_idx is not None and alias_idx.equivalent(
+        normalize(a.name, cfg.transliteration), normalize(b.name, cfg.transliteration)
+    ):
+        # An alias LINK is a curated (or analyst-accepted) statement of equivalence, not a string
+        # coincidence — it reports as a full-strength NAME signal and, unlike a bare name match, it is not
+        # what the name cap withholds (see ``cluster._name_trigger``).
+        return _clamp(w_name), 0.0
+    name = name_similarity(a.name, b.name, cfg.transliteration)
+    present, agreeing = _discriminator_agreement(a, b, cfg, durable_only)
+    discriminator = (agreeing / present) if present else 0.0
+    return _clamp(w_name * name * penalty), _clamp(w_disc * discriminator * penalty)
 
 
 def attribute_score(
@@ -391,26 +555,33 @@ def attribute_score(
     pair still confirm on stable evidence alone?" score the perishable-only confirmation cap consults, and it
     is consistent with :func:`has_durable_identity_support` (which likewise treats a perishable same-value
     agreement as non-durable). ``False`` (the default) is the full Part-1 behaviour, byte-unchanged (gate G2).
-    """
-    if alias_idx is not None and alias_idx.equivalent(
-        normalize(a.name, cfg.transliteration), normalize(b.name, cfg.transliteration)
-    ):
-        return 1.0
-    sim = name_similarity(a.name, b.name, cfg.transliteration)
-    rules = cfg.attribute_rules(a.etype) if a.etype == b.etype else {}
 
-    # Identity-relevant attrs AGREEING can carry the pair even when the surface name drifts (Stage 3B-iii).
-    # The agreeing set is the union of the legacy ``identity`` list and the declared identity-bearing roles
-    # (critical ∪ supporting, D6) — every attribute whose agreement is positive identity evidence. An
-    # attribute counts as AGREEING when both sides state the SAME value, OR (for a perishable attribute) when
-    # their combined value-series is a clean ``ordered`` succession — a consistent trajectory over time reads
-    # as consistency, not disagreement. That is exactly the negation of the time-aware
-    # :func:`attribute_is_conflict` on an attribute both sides state, so it is routed through that one
-    # detector rather than a second copy of the succession logic. ``sim`` is raised to
-    # ``agreeing / present`` — the same formula and the same ``max`` the legacy identity path used (no new
-    # weight — gate G6). Byte-inert where only a non-perishable ``identity`` list is declared (``agreeing``
-    # collapses to the old strict ``equal``); it moves scores exactly where a role attr or a perishable
-    # trajectory now counts as agreement, which is the point.
+    Since RK-COREF this is the ``max`` of :func:`attribute_signals`' two components. Decomposing a ``max``
+    changes no value (gate G2); what it buys is that the *caps* can finally tell a name coincidence apart
+    from a discriminator agreement, which D-13.10 requires and a single fused number forbids.
+    """
+    return max(attribute_signals(a, b, cfg, alias_idx, durable_only=durable_only))
+
+
+def _discriminator_agreement(
+    a: Entity, b: Entity, cfg: ResolveConfig, durable_only: bool = False
+) -> tuple[int, int]:
+    """``(present, agreeing)`` over the identity-bearing attributes both sides state (Stage 3B-iii).
+
+    The agreeing set is the union of the legacy ``identity`` list and the declared identity-bearing roles
+    (critical ∪ supporting, D6) — every attribute whose agreement is positive identity evidence. An
+    attribute counts as AGREEING when both sides state the SAME value, OR (for a perishable attribute) when
+    their combined value-series is a clean ``ordered`` succession — a consistent trajectory over time reads
+    as consistency, not disagreement. That is exactly the negation of the time-aware
+    :func:`attribute_is_conflict` on an attribute both sides state, so it is routed through that one
+    detector rather than a second copy of the succession logic.
+
+    ``durable_only``: a PERISHABLE attribute is a transient state, so its agreement — in EITHER form, a same
+    value ("both active now") or a clean ordered succession — is not durable identity evidence. Drop it
+    entirely (neutral), so it neither raises nor lowers the durable-only score. Every other time role
+    (``durable`` / ``constitutive`` / ``identifying``) and an undeclared attribute are unaffected.
+    """
+    rules = cfg.attribute_rules(a.etype) if a.etype == b.etype else {}
     id_attrs: list[str] = list(rules.get("identity", []))
     if a.etype == b.etype:
         id_attrs += cfg.critical_role_attrs(a.etype) + cfg.supporting_role_attrs(a.etype)
@@ -423,24 +594,23 @@ def attribute_score(
         seen_id.add(k)
         if a.attrs.get(k) is None or b.attrs.get(k) is None:
             continue  # not stated on both sides ⇒ not part of the agreement ratio (absence ≠ evidence)
-        # ``durable_only``: a PERISHABLE attribute is a transient state, so its agreement — in EITHER form,
-        # a same value ("both active now") or a clean ordered succession — is not durable identity evidence.
-        # Drop it entirely (neutral), so it neither raises nor lowers the durable-only score. A non-perishable
-        # attribute (undeclared or explicitly durable) is unaffected: same-value agreement still counts, a
-        # genuine change still counts against it.
         if durable_only and cfg.attribute_perishable(a.etype, k) is True:
             continue
         present += 1
         if not attribute_is_conflict(a, b, k, cfg):
             agreeing += 1
-    if present:
-        sim = max(sim, agreeing / present)
+    return present, agreeing
 
-    # A disagreement on a SOFT identity attribute pulls the score down (the false-merge guard). Two
-    # sources feed it, deduplicated: the legacy overloaded ``attribute_rules.conflict`` list (unchanged),
-    # and the declared-**supporting** roles (D6) — for which a stated disagreement is soft negative
-    # evidence, never a wall (that is the critical role's job). Gated on ``conflict_penalty`` being
-    # configured, so it stays inert wherever the penalty is unset (no code literal, gate G6).
+
+def _conflict_penalty(a: Entity, b: Entity, cfg: ResolveConfig) -> float:
+    """The SOFT-conflict multiplier applied to both attribute sub-signals (the false-merge guard).
+
+    Two sources feed it, deduplicated: the legacy overloaded ``attribute_rules.conflict`` list (unchanged),
+    and the declared-**supporting** roles (D6) — for which a stated disagreement is soft negative evidence,
+    never a wall (that is the critical role's job). Gated on ``conflict_penalty`` being configured, so it
+    stays inert wherever the penalty is unset (``1.0``, the identity element — no code literal, gate G6).
+    """
+    rules = cfg.attribute_rules(a.etype) if a.etype == b.etype else {}
     penalty = 1.0
     cpen = cfg.attribute_scoring("conflict_penalty")
     if cpen is not None:
@@ -459,8 +629,7 @@ def attribute_score(
         for field_name, spec in rules.get("numeric_conflict", {}).items():
             if _numeric_conflict(a.attrs.get(field_name), b.attrs.get(field_name), spec.get("rel_tol")):
                 penalty *= npen
-
-    return _clamp(sim * penalty)
+    return penalty
 
 
 def _numeric_conflict(va: object, vb: object, rel_tol: object) -> bool:
@@ -540,6 +709,37 @@ def relational_score(
     if support_k is None or support_k <= 1:
         return overlap
     return overlap * min(1.0, len(shared) / support_k)
+
+
+def shared_neighbour_predicates(
+    graph: EntityGraph, a: str, b: str, canonical: Canonical, exclude: set[str]
+) -> set[str]:
+    """The predicates on which ``a`` and ``b`` share a resolved neighbour (D-13.14 / G16's input).
+
+    The co-location cap needs to know *what kind* of neighbourhood two candidates share, which the single
+    Jaccard number cannot say. Two batteries at one airfield, running one design, under one branch share
+    every one of those links **by construction** — that is a fact about where equipment is dispersed, not a
+    reason to think the two formations are one formation. Reads the same :func:`_neighbours` keys
+    ``relational_score`` scores over, so the cap and the score can never disagree about what is shared.
+    """
+    na = _neighbours(graph, a, canonical, exclude)
+    nb = _neighbours(graph, b, canonical, exclude)
+    return {predicate for predicate, _direction, _other in set(na) & set(nb)}
+
+
+def agreeing_discriminators(a: Entity, b: Entity, attrs: tuple[str, ...], cfg: ResolveConfig) -> tuple[str, ...]:
+    """Which of ``attrs`` both sides STATE and agree on (after C7 normalisation) — the cap's escape hatch.
+
+    "Confirming a formation needs a unit-level discriminator": co-location alone caps at ``probable``, and
+    exactly one thing lifts the cap — a discriminator that is *about the formation* rather than about where
+    it is standing. Absence is never agreement, so a slot neither side states does not lift anything.
+    """
+    return tuple(
+        attr for attr in attrs
+        if a.attrs.get(attr) is not None
+        and b.attrs.get(attr) is not None
+        and not attribute_is_conflict(a, b, attr, cfg)
+    )
 
 
 def temporal_score(reloc: bool) -> float:
@@ -628,14 +828,25 @@ def merge_score(
         if _relational_counts(a, b, cfg)
         else 0.0
     )
+    name, discriminator = attribute_signals(a, b, cfg, alias_idx, durable_only=durable_only)
     parts = {
-        ATTRIBUTE: attribute_score(a, b, cfg, alias_idx, durable_only=durable_only),
+        ATTRIBUTE: max(name, discriminator),
         RELATIONAL: relational,
         TEMPORAL: temporal_score(reloc),
         SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid, cfg.identity_source_weight),
     }
-    total = sum(cfg.weight(sig) * parts[sig] for sig in parts)
-    return {**parts, "total": _clamp(total)}
+    total = sum(cfg.weight(sig) * parts[sig] for sig in SIGNALS)
+    out = {**parts, "total": _clamp(total)}
+    if cfg.earned_identity_on:
+        # D-13.20's split, recorded beside the fused term rather than instead of it: ``attribute`` keeps its
+        # whole weight and its whole value, so the total is untouched, and the caps get the two numbers they
+        # need. Added only with the flag on so ``merge_breakdown`` (which the view serialises verbatim on a
+        # candidate edge and a merge's ``resolved_from``) stays byte-identical with the flag off. ``SIGNALS``
+        # is deliberately NOT extended — ``identity_ledger`` iterates it, and a sub-signal is a decomposition
+        # of one line of evidence, not a second independent one, so counting it twice would over-claim.
+        out[NAME] = name
+        out[DISCRIMINATOR] = discriminator
+    return out
 
 
 def _clamp(x: float) -> float:

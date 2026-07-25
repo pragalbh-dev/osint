@@ -66,6 +66,14 @@ class CoveragePolicy(Record):
     critical_veto_min_grade: str | None = None
     surface_wall_bridges: bool = True
     coverage_gap_ratio: float | None = None
+    # RK-COREF (S3). Residual fragmentation IS a coverage gap — that is the design's own position ("it
+    # reflects genuine evidential uncertainty") — but only if the reader can see WHICH refusals produced it.
+    # Three of S3's mechanisms deliberately withhold a merge, so a tail read without them looks like a
+    # collection problem when part of it is a stated policy. Absent ⇒ the flag is off and no cap applied.
+    earned_identity: bool = False
+    name_ceiling: str | None = None
+    colocation_ceiling: str | None = None
+    contrast_ceiling: str | None = None
 
 
 class IdentityCoverage(Record):
@@ -178,4 +186,8 @@ def _policy(cfg: ResolveConfig | None, effective_ratio: float | None) -> Coverag
         critical_veto_min_grade=cfg.critical_veto_min_grade,
         surface_wall_bridges=cfg.surface_wall_bridges,
         coverage_gap_ratio=effective_ratio,
+        earned_identity=cfg.earned_identity_on,
+        name_ceiling=cfg.earned_identity.name_ceiling or None,
+        colocation_ceiling=cfg.earned_identity.colocation_ceiling or None,
+        contrast_ceiling=cfg.earned_identity.contrast_ceiling or None,
     )

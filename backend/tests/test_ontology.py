@@ -23,14 +23,18 @@ EXTRACTOR_ENUM = {
     # fabrication, so this edge is extractor-emittable on purpose: the fix is only half done if the
     # extractor still cannot say the thing the document actually says.
     "customs-party",
+    # C11 (RK-COREF/S3): `operated-by` gains a PRODUCER. S2 declared the predicate but left it
+    # non-extractor, so nothing could emit a *stated* operator relation and G18's `operated-by` arm could
+    # only ever fire on a fixture — a declared predicate with no producer makes the gate lie, going green
+    # while half the behaviour it names is unreachable.
+    "operated-by",
 }
 NON_EXTRACTOR = {
     "same-as", "distinct-from", "substitutable-by", "evidenced-by",
     "corroborates", "contradicts", "supersedes", "derived-from", "sustained-by",
     # Layer-binding edges (A2/A4): the BUILD draws these from the layer routing at rebuild — no source
-    # asserts "this presence is an instance of that design". `operated-by` is declared so G18's
-    # relationship-conflict wall has a real predicate; it has no producer yet.
-    "instance-of", "operated-by",
+    # asserts "this presence is an instance of that design".
+    "instance-of",
 }
 
 

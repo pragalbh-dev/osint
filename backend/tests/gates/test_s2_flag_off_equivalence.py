@@ -31,6 +31,16 @@ from chanakya.view import rebuild, view_to_json
 from tests import _rk_layer as rk
 from tests.fixtures import loaders
 from tests.gates.test_s1_zero_behavioural_change import PRE_S1_EXPECTED_VIEW_MD5
+from tests.gates.test_s3_flag_off_equivalence import _pinned as _s3_off
+
+# ── the LATER stage's flag is pinned off here too ────────────────────────────────────────────────
+#
+# This file measures **S2's** flag-off view, so every later stage flag must be held down while it does.
+# Left ambient, the numbers below silently become "S2 off, S3 on" whenever the suite runs with
+# ``--earned-identity=on``, and the S2 baseline stops meaning what its name says. Not hypothetical: with
+# the S3 flag on the full-scenario node, edge and gap counts all move, so an unpinned S3 flag turns this
+# gate red for a reason that has nothing to do with S2. Pinning is also what makes a flag-ON run useful —
+# what it reports is then real S3 signal, not a stale S2 assertion misfiring.
 
 
 def test_flag_off_rebuild_of_the_golden_logs_still_matches_the_recorded_view() -> None:
@@ -43,7 +53,7 @@ def test_flag_off_rebuild_of_the_golden_logs_still_matches_the_recorded_view() -
     """
     view = rebuild(
         loaders.golden_evidence_log(), loaders.golden_decision_log(),
-        loaders.golden_config_store().snapshot(),
+        _s3_off(loaders.golden_config_store().snapshot()),
     )
     recorded = loaders.expected_view_json()
 
@@ -96,7 +106,8 @@ def test_flag_off_leaves_the_real_corpus_graph_unchanged(metric: str) -> None:
     if not harness.bundles_dir().is_dir():
         pytest.skip(f"no frozen claim bundles at {harness.bundles_dir()}")
 
-    view = harness.build_view(harness.load_scenario())
+    inp = harness.load_scenario()
+    view = rebuild(inp.evidence, [], _s3_off(inp.config_store.snapshot()))
     got = view.meta.get(metric)
 
     assert got == CORPUS_BASELINE[metric], (

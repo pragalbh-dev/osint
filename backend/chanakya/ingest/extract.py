@@ -1826,7 +1826,15 @@ def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
     # keyless bundle-recording path (``seed._extract_source``) — so offline can never drift from live.
     from chanakya.ingest import coref  # local: keeps the pass off the module import graph
 
-    return claims + coref.propose_coreference(
+    extra = coref.propose_coreference(
         claims, loaded=loaded, source_id=source_id, config=config, client=client,
         report_time=report_time, ingest_time=ingest_time,
     )
+    # RK-COREF (S3): the pass now also MINTS the referent atom — one per accepted document-local cluster —
+    # and stamps it on each clustered member's own entity claim, so pass 1's claims come back *revised*
+    # rather than untouched. Still additive to the content of any claim (one previously-``None`` field is
+    # filled) and a no-op wherever no cluster was accepted, so a document with no coreference is
+    # byte-identical. This is what promotes the cluster from n−1 star links to a GROUPING the rebuild can
+    # decline as a whole (D-13.18) — and it is why the referent joins ``dedup._claim_signature``: two
+    # mentions with different referents must not fold together.
+    return coref.revised_pass1(claims) + extra

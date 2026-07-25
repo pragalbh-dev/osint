@@ -33,7 +33,7 @@ the section below + `DECISIONS.md`._
 | RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
 | RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | **merged** (design branch) | — | RK-SPIKE | 114a0f6 |
 | RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | **integrated** (#63) | — | RK-ATOMS | 0cfc069 |
-| RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | not-started | — | RK-LAYER | — |
+| RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | **merged** (#63, 2026-07-25) — behind `resolution.earned_identity.enabled`, shipping `false` | — | RK-LAYER | 68a129b |
 | RK-NAMECUT | S4 — cut the name-key + re-anchor decisions/config + golden regen | 4 | not-started | — | RK-COREF | — |
 | RK-MATERIALITY | Two-layer operator-scoped chokepoints | 4 | not-started | — | RK-COREF | — |
 | RK-DATA | Corpus / answer-key / golden regeneration + coverage additions | 2–4 | not-started | — | contract-freeze per stage | — |
@@ -563,9 +563,18 @@ gaps: no `absent`-gap assertion anywhere (an over-raiser passes the whole suite)
 untested.
 
 **Gate fixtures.** All new gate fixtures **must be abstract** — the data pass established that across the whole
-corpus there is essentially **one numbered formation, one stated basing and zero serials**, so the corpus
-cannot exercise G16/G18/G19 at all. That inertness is a legitimate consequence of sparse data with the
-mechanism at full strength, **not** a reason to weaken the ladder.
+corpus there is essentially **one numbered formation and zero serials**, and that basing is too thin and too
+concentrated to exercise a wall, so the corpus cannot exercise G16/G18/G19 at all. That inertness is a
+legitimate consequence of sparse data with the mechanism at full strength, **not** a reason to weaken the
+ladder.
+
+> **Count corrected (2026-07-25).** This paragraph used to say "**one stated basing**". Re-measured on the
+> frozen corpus: there are **five `based-at` claims over three distinct subjects** — three on `unit_hq9b`
+> (one to `site_rawalpindi`, two to `site_rahwali`, i.e. the relocation pair), one on a PAF/Army AD Command
+> HQ-9BE battery, and one on the Beijing Institute of Radio Measurement. The **conclusion is unchanged** —
+> G18's relationship wall still has nothing to fire on, because a wall needs two *conflicting* stated
+> relationships on one subject and no `operated-by` data exists — but "one stated basing" is the kind of
+> number a reviewer re-derives, and they would have found it wrong.
 
 **Three-hands separation, evidenced.** Three worktrees on three branches with disjoint inputs: the implementer
 (`spike/rk-impl`) never read `corpus/**`, the answer key, or the cases; the test author (`spike/rk-test`) wrote

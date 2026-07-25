@@ -1472,3 +1472,97 @@ exist. Every candidate would therefore emit an identical empty clustering, so sc
 schema, not the model. This is a *stronger* statement than "no yardstick", because it names the fix: coref
 becomes measurable the moment extraction offers a mention-cluster field (RK-COREF/S3), and the gold is
 already sitting there waiting.
+
+### RK-COREF (S3) adversarial review — five blocking defects closed (2026-07-25)
+
+A review of the S3 stage found five blockers. All five were reproduced by measurement before being fixed and
+re-measured after. The flag-off baselines are unmoved throughout: golden md5
+`bb6f16a516c31eb0846494b62271a601`, full-scenario 169/80/71/20, booted 160/73/66/18/450.
+
+| Decision | Why | → |
+|---|---|---|
+| **The coreference bind AUTHORISATION is gated on the stage flag, and the shipped top-level `coref_authoritative_evidence` goes back to `[]`** — S3's opt-in lives only in `earned_identity.authoritative_categories`, which is read only while the flag is on | The flag gated every S3 *restraint* (co-location cap, name cap, contrast ceiling, relationship wall, referent decline, C9 doc-scoping) and gated none of the *authorisation*, so a shipped flag-OFF deployment ran S3's permission with none of S3's limits — **strictly less safe than flag-on**. Measured flag-off: two co-located formations fused at `confirmed` (flag-on: `probable`, capped), a pair the document explicitly CONTRASTS fused at `confirmed` (flag-on: `probable`), and a bind licensed by d1 spread onto a profile built only from d2 | **Reverses** the earlier position that "what restrains a bind is neither the list nor the flag, only the gate": the *gate* legitimately stays flag-independent (it is a property of the pair), but *which categories an operator has authorised* is a stage decision and now rides the flag. The pre-S3 top-level knob is still honoured whatever the flag says — an operator who wrote it meant it. **Four false-inertness claims corrected** (yaml block header, rconfig module comment, `EarnedIdentity` docstring, field docstring); a claim of inertness that is not enforced is worse than no claim |
+| **`Entity.namespace()` reads `origin_country`, and the un-normalised branch folds case + punctuation** — **fixed FLAG-ON only; flag-off still fuses the pair, deliberately** | `origin_country` is **the only country attribute the corpus states** (on manufacturers and trading organisations); `country` is stated nowhere. Measured: two same-named coref-linked trading orgs, one CHINA and one Pakistan, fused at `confirmed`, while the identical pair keyed on `country` was refused — **that refusal was a flag-ON observation**, and the row previously read as though the `country` control held in both directions. G19's fixtures all spelled it `country`, which is why the gate was green while the harm it names happened | **Flag-ON is genuinely fixed**: the pair now refuses to fuse, matching the `country` control. **Flag-OFF that same pair still fuses at `confirmed`** — but so does the identical pair keyed on `country`, and so did both at pre-fix HEAD `52080a4`. This is **not `origin_country` residue**: the entire Phase-2 cross-namespace refusal sits behind `if not cfg.earned_identity_on: return None` (`resolve/cluster.py:635`), so **flag-off has no cross-namespace wall on that path for ANY namespace key, and never had one** — the gap is structural and pre-existing, not introduced or missed here. **Accepted deliberately**, on three grounds: (1) flag-off **is** the currently shipped system, so accepting it changes nothing that runs today; (2) ungating the refusal would move the very flag-off baseline the S3 equivalence gate exists to protect — a materially larger call belonging to the **cutover**, not to a blocker fix; (3) the stage-flag discipline is that S3 machinery rides the S3 flag, and the namespace wall **is** S3 machinery. Separately, adding the key alone split the corpus's own SINO-GALAXY pair ('CHINA' vs 'China') into two nodes (169 → 170), because C7's value normaliser is flag-gated. So the raw branch folds through the same `fold_value` the normaliser uses: **case is never a namespace difference, with the flag or without it** — the *folding* genuinely is unconditional, the *wall* is not. Folding is byte-inert on the corpus on its own. G19's Phase-2 refusal and its must-fuse control are parametrized over both keys |
+| **The three identity ceilings are declared once, in the stage block** — `contrast_band_ceiling` (top level) retired in favour of `contrast_ceiling` | They were declared twice under two spellings and the reader consulted the top-level copy first, so **editing the stage block was a silent no-op** — in the block whose own header promises to hold every threshold, cap and floor the stage adds. Setting all three to `confirmed` there produced possible/probable/probable | Guarded structurally, not by name: no key inside the stage block may also be declared at the top level (two deliberate shared reads named and excepted) |
+| **An S3 flag-off equivalence gate exists and PINS the flag rather than inheriting it** | `tests/gates/` held only `test_s1_*` and `test_s2_*`, and the S2 gate contains no reference to `earned_identity` — under the ordinary run it *looked* like an S3 gate while asserting nothing about S3. Nothing in CI could have caught the blocker above | A gate that reads ambient config asserts "whatever is configured behaves as configured" — true of every system, interesting about none. Two ambient-leakage fixtures pinned as well, taking a flag-ON run from 6 failures to 2, and both remaining failures are **real S3 signal** (the stage moving the corpus graph, which for S2/S3 is the expected direction) rather than stale assertions misfiring |
+| **G18's spec file stands on its own wall; the "differing designation veto" test is renamed to what it actually asserts** | Mutation-measured: delete the wall and the file went 11 passed / 1 failed; delete G16's co-location cap too and it went 5 passed / 7 failed — six tests were satisfied by the *cap*, not the wall. And **no differing-designation veto exists**: `designator` ships `{role: supporting}`, so a differing designator merely halves the discriminator sub-signal | Fixed the way ruling M15 fixed G19 — an agreeing `parent_unit` lifts G16's cap through the cap's own documented escape hatch, leaving the wall as the only possible refusal (wall mutation now fails 7 of 12; cap mutation fails nothing). **Disclosed, not fixed:** implementing the ladder's top rung means promoting `designator` to `critical`, which walls on exact value comparison — the objection that kept `service_branch` inert until `value_normalization` existed, and there is no equivalence class for '8' / '8th' / '8 AD Bn' |
+
+**Design-note disclosure (required):** the discriminator ladder's top rung — *differing designation vetoes* —
+is **specified but not implemented**. A differing designator is a soft penalty; what withholds a co-located
+formation merge is the co-location cap, which caps at `probable` and hands the pair to the analyst. That is a
+weaker guarantee than the ladder claims, and the honest statement is that the analyst decides.
+
+**Design-note disclosure (required):** the **namespace identity wall is inert in the configuration that
+ships.** The whole cross-namespace fusion refusal — including the `origin_country` key added above — is S3
+machinery behind the stage flag, which defaults **off**. So in the shipped default, two same-named
+organisations differing only in their stated country of origin can still fuse into one node; with the flag on
+they refuse. The wall is a property of the *stage*, not of today's running system, and the honest statement is
+that this class of protection arrives at the S3 cutover, not before it.
+
+**Two verification caveats (non-blocking, recorded so they are not re-derived as surprises):**
+
+1. **The S3 flag-off equivalence gate's net is one assertion wide.** It catches the blocker-1 class of leak
+   (S3 authorisation running without S3 restraint) on exactly **one** assertion — the config-surface one.
+   Under that same mutation the real-corpus **node / edge / gap counts do not move**, so the graph-level
+   assertions contribute no detection there. The gate is real, but its coverage of that class is a single
+   surface, not the corpus numbers beside it.
+2. **`colocation_ceiling: confirmed` behaves identically to `probable` — "set it to `confirmed` to lift the
+   cap" is false.** The cap is applied on a **truthiness** test (`if earned.colocation_ceiling:`,
+   `resolve/cluster.py:642`), so any non-empty value still caps; and `record_cap` routes everything that is
+   not `possible` into the same `capped_probable` bucket, so `confirmed` is a no-op relabel of `probable`.
+   Only an **empty** value lifts the cap. These are pre-existing cap semantics, not something S3 changed —
+   logged because the natural reading of the knob is the wrong one.
+
+### AH-1 — an unresolved anchor must be loud on both surfaces (2026-07-25)
+
+A tripwire anchored on a node id that no longer resolves watched **nothing** and said **nothing**: measured
+on the real corpus, the flagship `obs-basing-relocation` fires 1 alert; re-point its `watch_instances` at an
+id no node carries and it fires 0, with no exception, no log line and no surface change. Latent today
+because the shipped anchors resolve — **live** the moment RK-NAMECUT re-keys node ids. Full probe + numbers
+in the branch's session notes; fix on `fix/anchor-resolution-honesty`.
+
+| Decision | Why | → |
+|---|---|---|
+| **Scope semantics are PRESERVED; only the diagnosis is new.** An observable whose anchors all miss still returns its (non-matching) `watch_instances` set, never `None` | `None` means *unscoped* to `evaluator._in_scope` — **match everything**. Deleting the literal seed at `observable.py:242` would convert a silent-no-alerts bug into a silent-**ALL**-alerts bug: every `based-at` change in the graph firing a unit-relocation tripwire, attributed to a subject it is no longer scoped to | **rejects** "empty scope = disarm" and "empty scope = unscoped" alike. The failure is made **loud**, not different. Pinned by `test_all_anchors_missing_keeps_the_non_matching_scope_not_unscoped` |
+| **The raw-config-string seed is removed from the *success* path** — a watch instance contributes the id it actually **resolved to** | The seed was a **masking bug**: `resolve_scope` returned a set containing `unit_hq9b` while the real node was excluded, so anyone debugging saw the expected id sitting in scope. A raw string that is not a view node id can never match `_watched` (always a real node id), so it was inert — inert but misleading | Behaviour-identical by construction (a raw string that *is* a node id resolves literally and arrives via the BFS anyway); verified against the 169/80/71/20 baseline and the flagship's 1 alert |
+| **Three failure modes are named separately, because they have opposite consequences**: *watching nothing* (narrowed to an empty set) · *unscoped* (silently widened to the whole graph) · *partial* (one good anchor laundering a bad one) | "watching 0 nodes" and "now evaluating every element in the graph" are not the same warning, and a partially-scoped tripwire is the shape that hides longest in the field | The sentence is composed **once**, in `observable._scope_warning`, and every surface renders it verbatim — so the API and the SPA cannot drift on what the fault means |
+| **In-app anchor validation is a WARNING carried on the response, not a 422** | An anchor may legitimately be armed *before* the entity exists — "arm the tripwire, then ingest the document that creates the node" is a real workflow, and a hard rejection breaks it. Silence, by contrast, breaks nothing except the analyst's trust | Live check, re-run on every read against the current view (hot-config: no restart, no cached verdict, no boot-time-only validation). It clears itself the moment coverage creates the entity — pinned by `test_the_check_is_live_not_boot_time` |
+| **The lens's `meta.anchors_missing` (present since AR-2, consumed by nothing) is routed into a first-class Known Gap** | A grep across `frontend/` and `backend/chanakya/api/` found zero consumers outside `lens.py` and its tests, so an analyst got a quietly smaller graph. A Known Gap is the object this system already uses for "what we do not know": it rides on `GET /view`, the retrieval tools read it, and it sits off the confidence scale rather than as a low score | Emitted **only** when an anchor misses, so a healthy lens is byte-identical. `next_coverage_due` stays `None` — this is a scoping failure with no source cadence behind it, and inventing a date would be the fabrication the gap exists to prevent; it names the fix instead |
+
+**Disclosure for the design note.** The SPA never requests `GET /view?subject=` (`useLiveSync()` is called with
+no subject), so there is no lens surface in the UI for the Known Gap to render on today; it is honest in the
+API and in ASK's tool reads, not on screen. The *observable* half of the same fault **is** on screen — the
+Watch panel and the rail's "Watching" row — because that is the path the flagship demo actually walks.
+
+### AH-2 — "awaiting coverage" is not "broken": the honesty fix must not cry wolf (2026-07-25)
+
+Integration triage of AH-1 against the **shipped default boot state**, not a fixture. `config/sources.yaml`
+withholds `d18`/`d19` from the seed *on purpose* so a reviewer can ingest them live and watch the flagship
+tripwire fire — which means `site_rahwali` legitimately has no node at first paint. Measured on a real
+`create_app()` boot, AH-1 therefore reported **three** anchor warnings reading "…is NOT being watched, and
+silence about it is not an all-clear", turned all three Watch cards live-bordered and made the rail read
+"3 armed · 3 anchor unresolved · none fired" — on a healthy system, one ingest away from firing correctly.
+The alarm was loudest while nothing was wrong and fell silent the moment the demo alert fired.
+
+That is not a cosmetic problem. A monitoring surface that cries wolf while healthy teaches its analyst to
+ignore it, which is the same failure as silence arrived at from the other side — and it landed on the hero
+demo path at first paint.
+
+| Decision | Why | → |
+|---|---|---|
+| **A missing anchor is split into `pending_coverage` vs `dangling`**, and only `dangling` is a fault | The discriminator was already free: `resolve/anchor.py` consults `config.entities.as_map()` as its rung-2 registry. An anchor that **is** a declared entity with no view node is a *coverage* statement; one that is neither node id, nor registry entry, nor alias is a *broken reference* — the actual RK-NAMECUT threat model | "Correct the anchor id" is now attached only to ids there is something to correct about. `site_rahwali` at boot reports as a coverage gap that "binds itself when a document creates it. No edit is needed" |
+| **Severity, not the length of `missing`, drives loudness** — `ScopeResolution.severity` ∈ ok / pending_coverage / dangling / watching_nothing / unscoped | The three AH-1 modes were kept apart in the *wording* but every surface still rendered every entry identically loud | The rail counts faults only (boot caption is byte-identical to before); the Watch panel renders `pending_coverage` in its neutral register as "AWAITING COVERAGE". An **unknown/absent** severity still counts as a fault — an underclaim is as dishonest as an overclaim |
+| **The warning names the config object that actually declared the anchor** | Two of the three shipped observables declare **no** `watch_instances` and inherit every anchor from the lens, yet each was told "this tripwire… correct the anchor id" — sending the analyst to `config/observables.yaml`, where there is no anchor to correct. One lens typo produced N identical misdirected warnings | `declared_in` maps each anchor to `watch_instances` or `subject:<lens id>`, and the sentence points at `config/subjects.yaml` when that is the file to edit |
+| **`arm-only` observables are excluded from `anchor_diagnostics`** | Both `_fire` and `arm` return on `ARM_ONLY` *before* calling `resolve_scope`, so the scope is provably never consulted. Blaming an anchor for a silence that `explain()` already attributes, correctly and separately, to arm-only mode is a false alarm about an unused value | Not hidden: `explain()` still reports that observable's anchors in full |
+| **Two silent-unscoping holes AH-1 left are now diagnosed** — a `subject:` naming no lens, and a lens declaring `anchors: []` | Both yield "match everything" with no error (`anchors: []` has no `min_length`; a dangling subject id 404s everywhere else in the codebase but is accepted here). The tripwire evaluates the whole graph while claiming a subject | **Scope is untouched** in both cases — same `None`, same behaviour — exactly as AH-1 decided. Only the silence is removed. A tripwire with no subject *and* no `watch_instances` stays silent: that config asked for a global tripwire |
+| **`propose_observable_from_text` now passes its view/config to `explain()`** | The analyst's confirm screen is the one moment a tripwire's anchors are reviewed before arming, and it was the single production surface where AH-1's check reported "not performed" | Both arguments were already in scope; one-line change |
+
+**Verified after the fix:** 169 nodes / 80 edges / 71 events / 20 gaps · flagship `obs-basing-relocation`
+still fires exactly 1 alert (`unit_hq9b`, `site_rawalpindi → site_rahwali`) · its scope is still
+`{site_rahwali, unit_hq9b, unit_paad}` with `severity: ok` · `anchor_diagnostics` is `[]` on the full view ·
+S1 golden byte-identity gate passes · `ruff check` clean (AH-1 had left 2 `I001` errors failing `make lint`
+and `make check`) · mypy back to the base 289 · 1222 backend + 196 frontend tests, `tsc --noEmit` clean.
+
+**Still true, still disclosed:** the lens half reaches no UI surface (see AH-1's disclosure) — it is honest
+in `GET /view?subject=` and in ASK's tool reads only. ASK has no observable/alert tool, so it cannot see the
+*observable* half either; both are roadmap, not build.
