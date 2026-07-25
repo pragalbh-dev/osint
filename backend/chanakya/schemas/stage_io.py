@@ -71,6 +71,12 @@ class Partition(Record):
     # status label for any identity link (confirmed / probable / possible) is :meth:`identity_status`.
     possible: list[tuple[str, str]] = []  # retained sub-HITL identity links (watch-list) — NOT drawn
     distinct_from: list[tuple[str, str]] = []  # explicit do-not-merge (FD-2000 ≠ FT-2000) — hard veto before banding
+    # pair_key(a, b) → why a hard WALL holds this pair apart, in words an analyst can act on (G18, S3).
+    # A curated ``distinct_from`` needs no explanation — an analyst wrote it. A wall the system *derived*
+    # does: a stated relationship conflict at overlapping times is a finding, and a finding with no stated
+    # grounds is indistinguishable from a missing edge. Empty for every curated/structural veto ⇒ the drawn
+    # edge keeps its existing generic reason and the view JSON is byte-unchanged (gate G2).
+    wall_reasons: dict[str, str] = {}
     merge_confidence: dict[str, float] = {}  # pair_key(a, b) → identity confidence (same_as + candidates)
     merge_breakdown: dict[str, dict[str, float]] = {}  # pair_key(a, b) → {attribute, relational, temporal_consistency, source_asserted, total}
     # The claims *behind* the ``source_asserted`` term — who actually wrote "these two are the same".

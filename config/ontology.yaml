@@ -376,10 +376,17 @@ edge_types:
   # `operated-by` (D7/G18) — the STATED operator relation. It exists so G18's relationship-conflict wall has
   # a real predicate to fire on instead of testing half of itself. NOT functional: two different operators on
   # one instance is a wall (they are different units), never a supersede — a change of operator is not a
-  # relocation, so the default (from,to) instance key stands. NO PRODUCER YET: nothing emits an `operator`
-  # mention (the extraction schema carries the operator as a discriminator ATTRIBUTE), so this is
-  # ontology-only until the extraction contract is extended — see the RK-LAYER notes.
-  - {name: operated-by,          from: [unit, presence],      to: operator,                freshness_class: semi-durable}                   # formation/presence -> operator
+  # relocation, so the default (from,to) instance key stands.
+  # PRODUCER ADDED IN RK-COREF/S3 (closure C11). S2 declared the predicate but left it non-extractor, so
+  # NOTHING could emit a *stated* `operated-by`: G18's `based-at` half worked and its `operated-by` half could
+  # only ever fire on a fixture. A declared predicate with no producer makes the gate LIE — it goes green
+  # while half the behaviour it names is unreachable, which is exactly the failure plan §5a exists to stop.
+  # `extractor: true` puts it in the enum the model may assert through the `relations` slot, alongside the
+  # operator carried as a discriminator ATTRIBUTE (the two are complements: the attribute says which branch a
+  # profile belongs to, the relation says who operates this instance, and only the relation can conflict at
+  # overlapping times). Endpoint pair (unit|presence -> operator) is unique among extractor edges, so
+  # re-laning is unaffected.
+  - {name: operated-by,          from: [unit, presence],      to: operator,                freshness_class: semi-durable, extractor: true}   # formation/presence -> operator
   # derived / rollup — NOT extractor-emitted (synthesized by SCORE/MONITOR/RESOLVE)
   - {name: sustained-by,         from: unit,                  freshness_class: n/a}                          # object polymorphic: interceptor_stockpile | techdata_authority — rollup only (edge_direction: from-only)
   - {name: supersedes,           freshness_class: n/a, symmetric: true}                                      # derived (site relocation); never reoriented
@@ -387,6 +394,14 @@ edge_types:
   # resolution — NOT extractor-emitted (same-as/distinct-from route through the MERGE channel, not triples)
   - {name: same-as,              freshness_class: n/a, symmetric: true}
   - {name: distinct-from,        freshness_class: n/a, symmetric: true}
+  # `coref-distinct-from` (D-13.19) — the CONTRASTIVE half of in-document coreference, on a lane of its own.
+  # Deliberately NOT the stated `distinct-from` rail above: that one is a hard, TRANSITIVE, UNGRADED veto for
+  # an explicit "not related", and *every order of battle contains an enumeration*, so widening it to "the
+  # document listed these separately" would let one planted list shatter a well-corroborated cluster. On this
+  # lane the same evidence is a BAND CEILING (resolution.yaml `earned_identity.contrast_ceiling`): it withholds one new
+  # fusion, reaches the analyst with its licensing span, and can retract nothing. NOT extractor-emitted
+  # through `relations` — it comes from extraction pass 2, like `coref-same-as`.
+  - {name: coref-distinct-from,  freshness_class: n/a, symmetric: true}
   # in-document coreference (INGEST extraction pass 2, ingest/coref.py) — NOT extractor-emitted. On a lane
   # of its own, deliberately NOT `same-as`: resolve.scoring reads same-as/aka/... as one weighted term of
   # merge_score, so writing it there would dilute a context-licensed extractor decision into a partial score

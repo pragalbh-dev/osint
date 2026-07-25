@@ -5,6 +5,14 @@ Everything described here is committed on **`design/resolution-redesign` = PR #6
 and #63 is an *accumulation branch*, not a landing target — the standing agreement is that everything entering
 it gets reviewed, and it lands only when the whole chain is done.
 
+> **Correction (2026-07-25, later the same day).** When this was written the sentence above was **not true of
+> S3**: RK-COREF lived on `s3/rk-impl` in a separate worktree and had never been merged here, so a reader who
+> trusted "everything described here is committed on `design/resolution-redesign`" would have looked for S3 on
+> this branch and not found it. **S3 has since merged** (`s3/rk-impl` → this branch, along with
+> `fix/anchor-resolution-honesty`), so the sentence is accurate again. Kept as a correction rather than a
+> silent edit because the same drift is the thing to watch: this file describes work that may still be sitting
+> on a stage branch, and "described here" has never automatically meant "merged here".
+
 ---
 
 ## 1. Where the work stands
@@ -14,7 +22,7 @@ it gets reviewed, and it lands only when the whole chain is done.
 | **RK-SPIKE** (S0) | close the design opens; prototype characterize-and-cluster; build the claim-gold slice | **done** |
 | **RK-ATOMS** (S1) | claim atom as the stable address; dormant referent field; atom-aware dedup; A7 discriminator schema | **done** (integrated) |
 | **RK-LAYER** (S2) | layer typing; straddle split; presence/formation citizens; basing as a rebuild-derived edge | **done** (integrated, `0cfc069`) |
-| **RK-COREF** (S3) | coref-cluster minting; per-layer policy; the caps; the relationship + namespace walls | **1324 passed / 4 failed** — 4 are test-side, see §3 |
+| **RK-COREF** (S3) | coref-cluster minting; per-layer policy; the caps; the relationship + namespace walls | **done, merged 2026-07-25** — `s3/rk-impl` is in this branch; suite green, flag ships off |
 | **RK-BAKEOFF** | three-way extractor comparison | **not started** — next, see §4 |
 | **RK-DATA** | keyed re-record + corpus/oracle regen | **not started** — after the bake-off |
 | **RK-NAMECUT** (S4) | cut the name-key; re-anchor decisions to atoms | **not started** — after the re-record |
@@ -170,8 +178,10 @@ fabrication.** The customs spine (event ↔ consignee ↔ shipper) was unreprese
 unit no such document mentions was easy.
 
 **What is honestly inert** (§5a-bis: *inert because the data is sparse, mechanism at full strength* ≠ *hidden to
-protect a fixture*): across all 52 documents there is essentially **one numbered formation, one stated basing, and
-zero serials**, and **zero coreference annotations**. So most of the discriminator ladder cannot fire, and
+protect a fixture*): across all 52 documents there is essentially **one numbered formation and zero serials**,
+**five `based-at` claims over three subjects** (corrected 2026-07-25 — this said "one stated basing", which was
+wrong; the conclusion is unchanged, since the only multi-basing subject carries a dated succession rather than
+the conflict G18 needs), and **zero coreference annotations**. So most of the discriminator ladder cannot fire, and
 **G16 / G18 / G19 are all fixture-only**. That is why abstract fixtures were mandatory — and why fragmentation
 metrics only become meaningful **after RK-DATA's re-record**, not at S3.
 

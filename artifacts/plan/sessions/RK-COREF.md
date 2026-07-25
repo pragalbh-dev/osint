@@ -107,6 +107,12 @@ the corpus regen (**RK-DATA**) · **F9**'s graded sub-confirmed relational weigh
 **G19** (both phases, incl. the alias branch) · plus existing **G7**. **All fixtures must be abstract** — the
 corpus holds essentially one numbered formation, one stated basing and zero serials, so it cannot exercise them.
 
+> **Count corrected (2026-07-25):** the corpus holds **five `based-at` claims over three subjects**, not "one
+> stated basing". The numbered-formation and zero-serials halves stand, and the requirement (abstract fixtures,
+> because the corpus cannot exercise these gates) is unchanged — the sole multi-basing subject carries a dated
+> succession, not the conflict G18 needs. This sentence is quoted verbatim in `tests/_rk_coref.py` and
+> `tests/gates/test_g16_colocation_cap_spec.py`, both of which now carry the same correction.
+
 ## Owned paths
 `ingest/coref.py` · `resolve/{__init__,cluster,rconfig,aliases,scoring,entities}.py` · **`config/resolution.yaml`** ·
 `config/credibility.yaml` (coref producer block) · A7 mention schemas (`ingest/extract.py`) ·

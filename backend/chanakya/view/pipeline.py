@@ -261,13 +261,18 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
             )
     for a, b in sorted(partition.distinct_from):
         if a in node_ids and b in node_ids:
+            # G18: a wall the system DERIVED carries its own grounds. A curated do-not-merge needs none — an
+            # analyst wrote it — but a stated-relationship conflict at overlapping times is a *finding*, and
+            # a finding with no readable grounds is indistinguishable from a missing edge. No wall reason ⇒
+            # the generic label, byte-unchanged (gate G2).
+            reason = partition.wall_reasons.get(pair_key(a, b)) or "explicit do-not-merge (hard veto)"
             out.append(
                 EdgeView(
                     id=f"distinct-from:{pair_key(a, b)}",
                     type="distinct-from",
                     source=a,
                     target=b,
-                    attrs={"reason": "explicit do-not-merge (hard veto)"},
+                    attrs={"reason": reason},
                 )
             )
     return out

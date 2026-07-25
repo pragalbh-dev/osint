@@ -12,12 +12,26 @@ by rewriting a claim's own ``resolved_ref``.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
 from chanakya.ontology import EdgeLaneIndex, build_edge_instance_key
 from chanakya.schemas import ClaimRecord, DateValue, ResolvedRef, canonical_iso_bounds
+
+
+def fold_value(value: object) -> str:
+    """Casefold + collapse punctuation/whitespace — the one folding rule for a stated attribute value.
+
+    Lives here rather than in ``rconfig`` because :meth:`Entity.namespace` needs it with **no config in
+    hand**: the C7 normaliser is flag-gated, so an un-normalised namespace key must still fold, or the
+    same country spelled 'CHINA' in one document and 'China' in the next becomes two namespaces and
+    fabricates a distinction the sources never drew. ``ResolveConfig``'s normaliser folds through this
+    same function, so the flag cannot change what counts as the same spelling.
+    """
+    text = "" if value is None else str(value)
+    kept = [c.casefold() if c.isalnum() else " " for c in text]
+    return " ".join("".join(kept).split())
 
 
 def unordered_pairs[T](seq: list[T]) -> Iterator[tuple[T, T]]:
@@ -110,24 +124,73 @@ class Entity:
     # claim-asserted value for an attribute is retained here, time-ordered, even one ``attrs[k]`` (first-
     # claim-wins) drops. Empty for entities carrying no claim of their own (registry seeds, T3b mints).
     attr_history: dict[str, list[AttrClaim]] = field(default_factory=dict)
+    # ADDITIVE (RK-COREF/S3, decision (b) + C9). The **documents** whose claims built this profile, read
+    # from each claim's ``doc_ref`` — the one boundary where the reference was previously dropped.
+    #
+    # Three consumers need it and none of them can derive it:
+    #   * **C9** — an authoritative coreference bind may instantiate ONLY over entity ids attested in the
+    #     contributing document. D-13.17 gates the bind on a document-scoped precondition, but the bind
+    #     instantiates through ``_matching_eids``' GLOBAL name/alias expansion, so without this the
+    #     precondition does not bound the effect;
+    #   * the **contrast channel** (D-13.19) — a doc-local stated contrast must not leak onto cross-doc
+    #     pairs through that same global expansion;
+    #   * **coverage** — the intra-document fragmentation tail is a different report from the cross-doc one.
+    #
+    # Deliberately NOT derived by parsing the claim-atom id prefix (``make_claim_id`` does encode the
+    # document, but that makes a load-bearing identity decision depend on an id *format* — precisely the
+    # coupling the re-key exists to remove), and deliberately NOT ``source_ids``: a ``source_id`` is the
+    # **publisher**, so two documents from one outlet would read as same-doc, which is exactly the input
+    # that triggers the too-strong failure mode. Pure data — no decision is taken here.
+    doc_ids: set[str] = field(default_factory=set)
 
-    def namespace(self) -> str | None:
-        """The 'country / domain namespace' blocking dimension, read from stated attrs (None ⇒ wildcard)."""
-        for key in ("country", "operator_branch", "service_branch", "domain"):
+    def namespace(self, normalise: NamespaceNormaliser | None = None) -> str | None:
+        """The 'country / domain namespace' blocking dimension, read from stated attrs (None ⇒ wildcard).
+
+        ``normalise`` (C7, RK-COREF/S3) folds the stated value into its declared equivalence class
+        **before** it becomes a namespace key. It has to happen here and not only at conflict time: the
+        namespace is derived from raw attrs, so normalising later would leave 'PAF' and 'Pakistan Air
+        Force' in two different namespaces — i.e. the wall would be fixed and the *blocking* still split.
+        Absent ⇒ the folded stated value (see :func:`fold_value`) — case and punctuation are never a
+        namespace difference, with the flag or without it.
+
+        ``origin_country`` is in the list because it is **the country attribute this corpus actually
+        states** — sources write it on manufacturers and trading organisations, and essentially never
+        write a bare ``country``. Omitting it made the China/Pakistan split unenforceable exactly where
+        supply-chain identity is decided: two same-named trading organisations, one stated CHINA and one
+        stated Pakistan, fused at ``confirmed`` on a coreference link in **both** flag directions, while
+        the identical pair keyed on ``country`` was refused **with the S3 stage flag on**. A namespace that
+        keys on an attribute nobody writes blocks nothing. ``config/resolution.yaml`` already lists it under
+        ``normalization_required_attrs``, i.e. config already treats it as namespace-bearing.
+
+        **Scope of the fix — do not read it wider than it is.** Adding the key repairs the FLAG-ON path
+        only. With the stage flag off, *neither* key refuses the pair on the fusion path: the whole
+        cross-namespace refusal sits behind ``if not cfg.earned_identity_on`` in
+        :func:`~chanakya.resolve.cluster.fusion_blocked`, so flag-off has no cross-namespace wall there for
+        ANY namespace key and never had one. That gap is disclosed and deliberate (DECISIONS.md, RK-COREF S3
+        blocker 2), not residue of this key. What this method still does flag-off is feed the *blocking*
+        key, the exact-name bootstrap trigger, ``_name_containment``, ``_identity_pairs`` and
+        ``_coref_pairs`` — it is the Phase-2 fusion refusal specifically that is stage machinery.
+        """
+        for key in ("country", "origin_country", "operator_branch", "service_branch", "domain"):
             v = self.attrs.get(key)
             if v:
-                return str(v)
+                return fold_value(v) if normalise is None else normalise(key, v)
         return None
 
 
-def namespace_compatible(a: Entity, b: Entity) -> bool:
+#: ``(attr, value) -> canonical namespace key`` — C7's normaliser, supplied by the caller that holds the
+#: config. A callable rather than a config handle so ``entities`` stays free of ``rconfig`` (import order).
+NamespaceNormaliser = Callable[[str, Any], str]
+
+
+def namespace_compatible(a: Entity, b: Entity, normalise: NamespaceNormaliser | None = None) -> bool:
     """Same declared namespace, or at least one side unstated.
 
     Weaker than the exact-name bootstrap's ``==`` on purpose: an unstated namespace is a **wildcard**,
     not a conflict (most minted endpoint mentions carry no attrs at all), so a missing attribute never
     fabricates a difference. Two *stated* and different namespaces (China vs Pakistan) still block.
     """
-    na, nb = a.namespace(), b.namespace()
+    na, nb = a.namespace(normalise), b.namespace(normalise)
     return na is None or nb is None or na == nb
 
 
@@ -138,6 +201,16 @@ class Edge:
     object: str
     edge_instance: str | None
     latest_iso: str | None  # event_time upper bound (for relocation/temporal reasoning)
+    # ADDITIVE (RK-COREF/S3, G18). The wall asks whether two STATED relationships hold at **overlapping
+    # times**, which needs the interval, not just its upper bound — and whether the relationship was
+    # *stated* at all, because a rebuild-derived or proposer-inferred basing is not a source saying "this
+    # unit is there" and must never wall a merge on its own. Pure data; no decision is taken here.
+    earliest_iso: str | None = None  # event_time LOWER bound
+    kind: str = ""  # the claim's kind: "observation" (stated) | "inference" (derived) | …
+    # The DOCUMENTS this triple was stated in. C9 needs it on the edge, not only on the entity: an
+    # authoritative coreference bind may instantiate only over entity ids attested in the *contributing*
+    # document, and the contributing document is a property of the coref link itself.
+    doc_ids: frozenset[str] = frozenset()
     # The source that asserted this triple. Load-bearing for identity (D-2.5/D-P3.4): a ``same-as`` is an
     # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
     # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
@@ -185,6 +258,8 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
             if c.claim_id not in ent.claim_ids:
                 ent.claim_ids.append(c.claim_id)
             ent.source_ids.add(c.source_id)
+            # S3 decision (b)/C9: the DOCUMENT axis, captured at the one boundary where it was dropped.
+            ent.doc_ids.update(ref.file for ref in c.doc_refs() if ref.file)
             for k, v in p.attrs.items():
                 ent.attrs.setdefault(k, v)  # scalar contract UNCHANGED: first claim wins (replay order)
                 # ADDITIVE (Stage 3-prep): retain EVERY asserted value + its time axes, role-agnostic — a
@@ -200,16 +275,20 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
                 )
         elif p.form == "triple":
             rr = base_ref(c, lane)
+            lo, hi = canonical_iso_bounds(c.event_time)
             edges.append(
                 Edge(
                     subject=p.subject,
                     predicate=p.predicate,
                     object=p.object,
                     edge_instance=rr.edge_instance,
-                    latest_iso=canonical_iso_bounds(c.event_time)[1],
+                    latest_iso=hi,
                     source_id=c.source_id,
                     claim_id=c.claim_id,
                     attributes=c.attributes,
+                    earliest_iso=lo,
+                    kind=c.kind,
+                    doc_ids=frozenset(ref.file for ref in c.doc_refs() if ref.file),
                 )
             )
 

@@ -9,7 +9,7 @@ import { useWorkbench, type DocId } from '@/store/workbench'
 import { INGEST_DOCS, QUEUE_ITEMS, TRIPWIRES } from '@/demo/scenario'
 import { groupReviewQueue, viewToReviewQueue, type LiveReviewGroup } from '@/api/adapters'
 import { useTripwires } from '@/api/viewmodel'
-import { useArmedObservables } from '@/api/hooks'
+import { useAnchorCheck, useArmedObservables } from '@/api/hooks'
 import { watchSummary } from './watchSummary'
 import { LiveIngest } from './LiveIngest'
 
@@ -180,11 +180,15 @@ export function Rail() {
   // and the FIRED feed (/view.alerts). Deriving both from the feed is what used to render
   // "Watching 0 — none fired" on a cold boot of a system watching three things. If the catalogue
   // can't be read we say so instead of printing 0 — see watchSummary(). Demo output is unchanged.
+  // Third source (AH-1): the live ANCHOR CHECK. Armed is not the same as watching — a tripwire whose
+  // anchors resolve to no node watches an empty set and can never fire, so counting it as coverage is
+  // the same class of lie as inferring the armed count from the fired feed.
   const tripwires = useTripwires()
   const armed = useArmedObservables()
+  const anchors = useAnchorCheck()
   const watch = useMemo(
-    () => watchSummary(armed, tripwires, TRIPWIRES.length),
-    [armed, tripwires],
+    () => watchSummary(armed, tripwires, TRIPWIRES.length, anchors),
+    [armed, tripwires, anchors],
   )
 
   // Drag payload backup — some browsers restrict dataTransfer.getData on dragover,
