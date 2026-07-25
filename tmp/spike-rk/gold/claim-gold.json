@@ -3435,5 +3435,31 @@
       "evidence_mode": "stated",
       "notes": "A database record retrieved from a cache — two timestamps, neither of which is a publication date."
     }
+  ],
+  "mention_verbatim_note": "**Mention strings in `documents[].coref_clusters[].mentions` are ANNOTATED, not always verbatim.** All 120 mentions occur verbatim in their document EXCEPT 13 (all in `d20_supersede_spoof`'s four clusters and `d17b-AMBIG-1`) which carry a trailing annotator locator in parentheses — \"(Post 3)\", \"(Post 4, a retweet of Post 1)\", \"(this report's AOI)\". The locator is which post the mention came from, which the flat text cannot otherwise express; it is annotation, not document text. Any scorer doing exact-match against document spans MUST strip a trailing parenthetical before comparing. Verified 2026-07-25: with that one normalization, 120/120 mentions and 120/120 licensing quotes are verbatim. `doc_ref_span` on the 125 claim rows needs no such normalization — 125/125 are verbatim as written, at the stated line.",
+  "cluster_count_note": "**Two different cluster counts exist and must not be conflated.** `counts.coref_clusters: 32` is the size of the CURATED registry in `documents[].coref_clusters` — the multi-mention chains with a licensing category, licensing quote and mention list; that registry is the coref gold a bake-off would score against. Separately, the `coref_cluster` tag on claim rows takes 48 distinct values: the 32 registry clusters plus 16 ad-hoc tags minted for rows that sit outside a curated chain (`*-C*-gap`, `*-C*-source`, extra `*-AMBIG-*` tags, `-` for none). Those 16 are row bookkeeping, NOT scoreable coref clusters, and mostly have a single member. One registry cluster (`d17b-C2-baseline`, 4 mentions) is legitimately used by no claim row — it is a coref chain over prose that states no ontology-domain claim. Documented 2026-07-25; no labels changed.",
+  "audit_log": [
+    {
+      "date": "2026-07-25",
+      "by": "DATA hand (RK-BAKEOFF)",
+      "scope": "Independent audit of the gold slice for the same defect class found in the sub-oracle.",
+      "verified_clean": [
+        "125/125 `doc_ref_span` values occur verbatim in their cited document (Unicode-normalized: curly quotes, en/em dashes, NBSP, whitespace).",
+        "125/125 `doc_ref_line` values point at the line the span starts on.",
+        "0 rows cite a document outside the 7-document slice.",
+        "0 duplicate `row_id`s; 0 duplicate (doc, subject, predicate, object) tuples.",
+        "0 direct label contradictions: no surface pair carries both `same-as` and `distinct-from`.",
+        "Declared counts reproduce exactly: 7 documents, 125 rows, 11 not-a-claim, 6 anti-coref, 19 unmodelled, 27 negative-polarity.",
+        "`polarity` and `evidence_mode` are coherent: every `negative-observation` row is negative-polarity."
+      ],
+      "documented_not_changed": [
+        "13 of 120 curated coref mentions carry an annotator locator suffix and are not byte-verbatim — see `mention_verbatim_note`.",
+        "Row-level `coref_cluster` tags (48 distinct) are a superset of the curated registry (32) — see `cluster_count_note`."
+      ],
+      "judgement_calls_reported_not_fixed": [
+        "`cs01-r07` labels `manufactures CPMIEC -> HQ-9/P` as `stated`, and it IS stated cleanly by cs01 — but it is FALSE on the wider corpus (d22/d23 make CPMIEC the export agent). The gold correctly labels what the document says; a scorer must not read a claim-gold row as a truth claim about the world.",
+        "8 rows carry `evidence_mode: stated` while their quoted span contains a hedge word. In each case the hedge attaches to a DIFFERENT proposition than the one labeled (e.g. `d19-r11`'s hedge is on the designator rendering, not on the sighting). Reviewed individually; no relabel made."
+      ]
+    }
   ]
 }

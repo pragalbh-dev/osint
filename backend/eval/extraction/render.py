@@ -121,6 +121,28 @@ def render_markdown(
     add("```")
     out.extend(config.match_policy.describe())
     add("```")
+
+    # ── what precision does NOT yet exclude ───────────────────────────────────────────────────────
+    # The gold types its negative rows into four classes and declares only ONE of them (not_a_claim)
+    # a genuine false positive. The other three — unmodelled, anti_coref, and non-identity claims over
+    # an ambiguous pair — are declared *neutral*, and they are neutral only once a harness calls
+    # eval.gold.adapter.precision_exclusions. Nothing calls it yet, so precision here is
+    # matched/extracted over everything a candidate emitted. Stated rather than silently absorbed:
+    # the penalty is not uniform across candidates — it grows with how much of the document a model
+    # reads — so an unwired exclusion actively favours the terser extractor, which is the opposite of
+    # what this bake-off is trying to select for.
+    add("\n## 5. What `surface_precision` does not yet exclude\n")
+    add("Precision above is **matched / everything emitted**. The labeled slice types its negative rows "
+        "into four classes and declares only `not_a_claim` a true false positive; `unmodelled`, "
+        "`anti_coref` and non-identity claims over an `ambiguous` pair are declared **neutral** — a "
+        "candidate reading an off-ontology sentence correctly is not wrong. Those exclusions are "
+        "computed by `eval.gold.adapter.precision_exclusions`, and **no harness call is wired to it**, "
+        "so a candidate is currently charged precision for reading the document correctly.\n")
+    add("Read the precision and `surface_f1` lines as **lower bounds**, and read them comparatively "
+        "with care: the penalty scales with how much of each document a model reads, so it does not "
+        "cancel between candidates — it favours the terser one. `trap_avoidance` "
+        "(the `not_a_claim` fabrication line) is likewise computed by the gold side and not yet "
+        "reported here.\n")
     return "\n".join(out) + "\n"
 
 

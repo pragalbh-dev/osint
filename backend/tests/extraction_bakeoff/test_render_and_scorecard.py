@@ -163,6 +163,25 @@ def test_the_match_policy_is_printed_under_the_numbers_it_produced() -> None:
     assert "token_sort_ratio" in md
 
 
+def test_the_scorecard_discloses_that_precision_exclusions_are_unwired() -> None:
+    """Precision is matched/extracted, and three of the gold's four negative classes are declared
+    neutral only once ``precision_exclusions`` is called. Nothing calls it, so a candidate is charged
+    for reading the document correctly — measured at 0.2935 unearned precision loss on this slice for a
+    candidate that emits all 27 neutral-class spans. The penalty grows with how much a model reads, so
+    it does not cancel between candidates. A scorecard omitting this reports a lower bound as a score.
+    """
+    scores, verdict, comparisons, cfg, composite = _two_candidate_render(
+        (0.9, 0.91, 0.92), (0.4, 0.41, 0.42))
+    md = render_markdown(scores, verdict, comparisons, cfg, composite)
+    assert "does not yet exclude" in md
+    assert "precision_exclusions" in md
+    assert "no harness call is wired to it" in md
+    assert "lower bounds" in md
+    assert "favours the terser one" in md
+    # and it must sit under the numbers it qualifies, never above them
+    assert md.index("Measured criteria") < md.index("does not yet exclude")
+
+
 def test_every_score_cell_carries_its_spread() -> None:
     scores, verdict, comparisons, cfg, composite = _two_candidate_render(
         (0.9, 0.91, 0.92), (0.4, 0.41, 0.42))
