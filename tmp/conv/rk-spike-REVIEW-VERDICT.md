@@ -224,3 +224,46 @@ three blind hands never get asked" remains partly open — the two questions it 
 existing test already contradicts a defect claim, and whether S1 has everything it needs. Item 2 above is the
 answer to the second: **it does not.** Also still unverified: source-independence (D6/C8), the licensing quote
 end-to-end, the sourced `count`, design-layer arithmetic, and that the production knobs are wired.
+
+---
+
+## C6 re-specified, and C11 added — the two S3 blockers, closed 2026-07-25
+
+S2's implementer reported C6 unimplementable as written and `operated-by` producerless. Both verified. S3 owns
+`config/resolution.yaml` and the A7 extraction schema, so these must be settled **before** S3 starts.
+
+### C6 (re-specified) — `perishable` becomes a named **time-role**, not a boolean
+
+**The defect.** C6 says geography is *perishable* for a **formation**, **constitutive** for a **presence**, and
+**identifying** for a **place**. That is **three** states; the shipped field is a boolean
+(`config/resolution.yaml:330-346`, `perishable: true|false`, read by `rconfig.attribute_perishable` and
+documented there as "SCHEMA ONLY … not yet consumed"). A boolean cannot carry three, so the closure as written
+could not be built. *(The per-`(type, attribute)` half was never the problem — `attribute_roles.<type>.<attr>`
+is already keyed that way.)*
+
+**Closure: replace the boolean with a declared `time_role`**, four values, each earning its own behaviour:
+
+| value | meaning | identity consequence |
+|---|---|---|
+| `durable` | a stable spec (was `perishable: false`) | agreement supports identity normally |
+| `perishable` | expected to change over time (was `perishable: true`) | **perishable-only evidence cannot confirm** — the D-13.9(a) cap |
+| `constitutive` | the attribute **is part of what this instance is** (a presence *is* operator+design+site+window) | it cannot "change" without being a *different* instance ⇒ a difference is a **distinctness** signal, not staleness |
+| `identifying` | the attribute identifies the entity (a place's coordinates) | strong identity evidence; **satisfies the non-perishable requirement for a confirm** |
+
+**No backward compatibility** (standing directive — no migration shim outlives its stage): S3 migrates the
+existing declarations and a bare `perishable:` key becomes a **loud validation error**, exactly as S1 did for
+`attrs`. `constitutive` is what lets a **presence** confirm at all (its geography is definitional, not
+perishable), and `identifying` is what lets a **place** confirm — which together are the missing rung C6 was
+created to supply, and without which spine/13 §6 lever 2 cannot exist.
+
+### C11 (new) — `operated-by` must get a producer, or G18 half-lies
+
+**The defect.** S2 declared the predicate (G18 names it) but left it **non-extractor**, so **nothing can emit a
+*stated* `operated-by`**. G18's `based-at` half works; its `operated-by` half can only ever fire on fixtures.
+
+**Closure: S3 adds `operated-by` to the extractor contract.** S3 already amends the A7 mention schemas for the
+coref half, so this is one field in a file it owns, not new capability. The alternative — leave it
+fixture-only — is rejected because **a declared predicate with no producer makes the gate lie**: G18 would go
+green while half the behaviour it names is unreachable, which is precisely the failure §5a was written to stop.
+If S3 finds the extraction change genuinely out of scope, the fallback is **not** silence: G18 must then declare
+in the gate itself that its `operated-by` arm is fixture-only, and it goes in the design-note disclosures.
