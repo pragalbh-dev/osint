@@ -414,15 +414,43 @@ export interface ConfigWrite {
 export interface ConfigWriteResult {
   section: string
   version: number
+  /** Non-fatal, analyst-facing problems with what was just written — today, observables whose
+   *  anchors resolve to no node in the live view (AH-1). A warning, not a rejection: an anchor may
+   *  legitimately be armed before the entity that satisfies it exists. */
+  warnings?: string[]
+}
+
+/** One armed observable whose declared anchors do NOT all bind to a node in the current view.
+ *  `watching_nothing` is the disqualifying case — the tripwire cannot fire at all, so its silence
+ *  is not an all-clear. `watched_node_count === null` is the opposite failure: it fell back to
+ *  UNSCOPED and now evaluates the whole graph instead of the subject it declared. */
+export interface ObservableAnchorProblem {
+  observable_id: string
+  unresolved_anchors: string[]
+  resolved_anchors?: Record<string, string>
+  watched_node_count: number | null
+  watching_nothing: boolean
+  warning: string
+}
+
+/** GET /config/observables → `diagnostics.anchor_check`. `checked: false` means the check could not
+ *  be run (no view yet) — which must never be rendered as a clean bill of health. */
+export interface AnchorCheck {
+  checked: boolean
+  reason?: string
+  unresolved: ObservableAnchorProblem[]
 }
 
 /** GET /config/{section} — the read half of the hot-config seam. `value` is the stored section
  *  verbatim, so it round-trips straight back into a ConfigWrite. Serving the ARMED observable
- *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed. */
+ *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed.
+ *  `diagnostics` is DERIVED state about that value (never part of the round-trip) — for observables
+ *  it carries the live anchor check, so "3 armed" can't quietly mean "3 armed, 1 watching nothing". */
 export interface ConfigRead {
   section: string
   version: number
   value: Record<string, unknown>
+  diagnostics?: { anchor_check?: AnchorCheck }
 }
 
 /** The `observables` section, as GET /config/observables returns it. */

@@ -37,15 +37,38 @@ function firedNote(tripwires: readonly WatchTripwire[]): string {
   return 'none fired'
 }
 
+/** The third truth (AH-1): ARMED is not the same as WATCHING. A tripwire whose anchors resolve to no
+ *  node in the current view is armed and watching an EMPTY SET — it can never fire, so it inflates the
+ *  armed count while contributing nothing to coverage. "3 armed · none fired" reads as three quiet
+ *  sentries; the honest reading is "3 armed · 1 watching nothing · none fired". */
+export interface WatchAnchorCheck {
+  checked: boolean
+  unresolved: readonly { watching_nothing?: boolean }[]
+}
+
+/** How the anchor half reads on its own; `''` when there is nothing to add. */
+function anchorNote(anchors: WatchAnchorCheck | null): string {
+  if (anchors === null) return '' // unknown — not a claim either way
+  if (!anchors.checked) return 'anchor check unavailable'
+  const dead = anchors.unresolved.filter((u) => u.watching_nothing).length
+  const degraded = anchors.unresolved.length - dead
+  const parts: string[] = []
+  if (dead > 0) parts.push(`${dead} watching nothing`)
+  if (degraded > 0) parts.push(`${degraded} anchor unresolved`)
+  return parts.join(' · ')
+}
+
 /**
  * @param armed      the armed catalogue, or `null` if it could not be read (never treat as 0)
  * @param tripwires  observables with at least one firing on the current view, or `null` in demo mode
  * @param demoCount  the frozen demo tripwire count, used only when there is no live feed at all
+ * @param anchors    the live anchor check, or `null` if unknown — never inferred to be clean
  */
 export function watchSummary(
   armed: readonly unknown[] | null,
   tripwires: readonly WatchTripwire[] | null,
   demoCount: number,
+  anchors: WatchAnchorCheck | null = null,
 ): WatchSummary {
   // No live feed at all → demo mode's frozen scenario. Unchanged output: "3" · "armed".
   if (!tripwires) return { count: String(demoCount), note: 'armed' }
@@ -62,5 +85,8 @@ export function watchSummary(
     }
   }
 
-  return { count: String(armed.length), note: `${armed.length} armed · ${fired}` }
+  // Order is deliberate: the count, then why it OVERSTATES coverage, then what has fired. A tripwire
+  // watching nothing is the thing an analyst most needs to see before trusting the silence.
+  const note = [`${armed.length} armed`, anchorNote(anchors), fired].filter(Boolean).join(' · ')
+  return { count: String(armed.length), note }
 }

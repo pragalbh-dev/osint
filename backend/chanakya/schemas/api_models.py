@@ -194,8 +194,22 @@ class ConfigWrite(Record):
 
 
 class ConfigWriteResult(Record):
+    """The result of a hot-config write — plus anything the write is *not* rejecting but must flag.
+
+    ``warnings`` carries non-fatal, analyst-facing problems detected against the **live** view right
+    after the write. Today's one producer is the observable anchor check (AH-1): an observable whose
+    ``watch_instances`` / lens anchors resolve to no node in the current view is watching nothing, and a
+    user who typo'd an instance id must learn that at write time rather than from months of silence.
+
+    It is deliberately a warning and **not** a 422. An anchor may legitimately be declared *before* the
+    entity exists (hot-config: arm the tripwire, then ingest the document that creates the node) — hard
+    rejection would break that workflow. The same check re-runs on every ``GET``, so the warning cannot
+    be dismissed by ignoring one response.
+    """
+
     section: str
     version: int  # the config store's new version after the write
+    warnings: list[str] = []
 
 
 class ConfigRead(Record):
@@ -207,11 +221,18 @@ class ConfigRead(Record):
 
     ``value`` is the stored pydantic model dumped as-is — no bespoke per-section DTO, so read and write
     speak exactly the same vocabulary by construction.
+
+    ``diagnostics`` is *derived* state about that value — never part of the round-trip, so a GET → edit →
+    POST is unaffected by it. For ``observables`` it carries the anchor check (AH-1): a tripwire whose
+    anchors bind to nothing is watching nothing, and the catalogue read is where the Watch panel learns
+    that. ``{}`` means no check applies to this section; ``{"anchor_check": {"checked": true,
+    "unresolved": []}}`` is the positive statement that every armed tripwire's anchors bind.
     """
 
     section: str  # the resolved (plural) section name, e.g. "observables"
     version: int  # the config store's version at read time — the read-modify-write handle
     value: dict[str, Any]
+    diagnostics: dict[str, Any] = {}
 
 
 # ── GET /health ────────────────────────────────────────────────────────────────────────────────

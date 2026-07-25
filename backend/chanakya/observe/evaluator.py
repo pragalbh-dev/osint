@@ -47,8 +47,10 @@ from .observable import (
     INSTANCE_KEY,
     MATCH,
     CompiledTrigger,
+    ScopeResolution,
     compile_trigger,
     resolve_scope,
+    resolve_scope_detail,
 )
 
 _EMPTY = GraphView()
@@ -347,13 +349,24 @@ def _condition_text(cond: Any) -> str:
     return f"{cond.field} {cond.op or 'changes'}" + ("" if cond.value is None else f" {cond.value!r}")
 
 
-def explain(observable: ObservableDef) -> dict[str, Any]:
+def explain(
+    observable: ObservableDef,
+    view: GraphView | None = None,
+    config: ConfigBundle | None = None,
+) -> dict[str, Any]:
     """Introspect how an observable compiles (mode, scope inputs, arm-only reason) — for the config UI.
 
     Also reports what the compile **did not** use: ``unconsumed_keys`` names every trigger key that was
     dropped (``ConfigModel`` is ``extra="allow"``, so nothing else can catch a typo or an aspirational
     key) and ``unconsumed_warning`` says so in one sentence for the analyst's confirm screen. A silently
     ignored key is how a tripwire ends up meaning something other than what it reads like.
+
+    **Anchor honesty (AH-1).** ``watch_instances`` used to be echoed back verbatim with no statement of
+    whether any of them resolved to a real node — so a tripwire watching nothing explained itself exactly
+    like a healthy one. Pass ``view`` + ``config`` and the same scoping used at fire time runs here:
+    ``unresolved_anchors`` names every anchor that binds to nothing and ``anchor_warning`` says what that
+    means in one sentence. Without a view the check *cannot* be done, and ``anchor_check`` says so rather
+    than implying a clean bill of health — an unperformed check is never reported as a pass.
     """
     ct = compile_trigger(observable.trigger)
     out = {
@@ -381,5 +394,55 @@ def explain(observable: ObservableDef) -> dict[str, Any]:
         out["unconsumed_warning"] = (
             "these trigger keys were not used by the compiled tripwire and have no effect: "
             + ", ".join(ct.unconsumed)
+        )
+    out.update(_anchor_explanation(observable, view, config))
+    return out
+
+
+def _anchor_explanation(
+    observable: ObservableDef, view: GraphView | None, config: ConfigBundle | None
+) -> dict[str, Any]:
+    """The anchor half of ``explain`` — what resolved, what did not, and what that means (AH-1)."""
+    if view is None or config is None:
+        return {
+            "anchor_check": "not performed — no view supplied, so whether these anchors resolve is unknown",
+            "unresolved_anchors": None,
+        }
+    detail = resolve_scope_detail(observable, view, config)
+    out: dict[str, Any] = {
+        "anchor_check": "ok" if not detail.missing else "unresolved anchors",
+        "anchors_requested": list(detail.requested),
+        "anchors_resolved": detail.resolved_map,
+        "anchor_resolution": dict(detail.resolution_via or {}),
+        "unresolved_anchors": list(detail.missing),
+        "watched_node_count": detail.watched_node_count,  # None = unscoped (watches everything)
+        "watching_nothing": detail.watching_nothing,
+    }
+    if detail.warning:
+        out["anchor_warning"] = detail.warning
+    return out
+
+
+def anchor_diagnostics(config: ConfigBundle, view: GraphView) -> list[dict[str, Any]]:
+    """Every armed observable whose declared anchors do **not** all resolve against ``view`` (AH-1).
+
+    The list is the API/SPA-facing form of :class:`ScopeResolution`: one entry per *broken* observable,
+    so an empty list is the positive statement "every armed tripwire's anchors bind to a real node".
+    Deterministic (config order); no clock/RNG — safe to call on any read path.
+    """
+    out: list[dict[str, Any]] = []
+    for obs in config.observables.observables:
+        detail: ScopeResolution = resolve_scope_detail(obs, view, config)
+        if not detail.missing:
+            continue
+        out.append(
+            {
+                "observable_id": obs.observable_id,
+                "unresolved_anchors": list(detail.missing),
+                "resolved_anchors": detail.resolved_map,
+                "watched_node_count": detail.watched_node_count,
+                "watching_nothing": detail.watching_nothing,
+                "warning": detail.warning,
+            }
         )
     return out
