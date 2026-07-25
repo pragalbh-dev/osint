@@ -59,6 +59,7 @@ def mk_config(
     auto_merge_by_type: dict[str, float] | None = None,
     possible_floor: float | None = None,
     name_alone_caps_at_possible: bool = False,
+    earned_identity: dict[str, Any] | None = None,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
     bands = dict(BANDS)
@@ -93,6 +94,7 @@ def mk_config(
         containment_min_short_tokens=containment_min_short_tokens,
         acronym_min_len=acronym_min_len,
         critical_veto_min_grade=critical_veto_min_grade,
+        earned_identity=earned_identity or {},
     )
     places_cfg = PlacesConfig(places=places or [], proximity_radius_m=proximity_radius_m or {})
     # ``source_grades``: {source_id: source_class} + a one-factor rubric, so R(source) == the number below
@@ -155,6 +157,12 @@ def coref(
     quote: str = "Full Name (SHORT)",
     source: str = "src-t",
     cluster: str = "c1",
+    referent: str | None = None,
+    gate: str | None = None,
+    forms: tuple[str, str] | None = None,
+    quotes: list[str] | None = None,
+    detail: str = "fixture",
+    doc: str = "d.txt",
 ) -> ClaimRecord:
     """An in-document coreference claim as INGEST's extraction pass 2 emits it (``ingest/coref.py``).
 
@@ -164,11 +172,22 @@ def coref(
     return ClaimRecord(
         claim_id=_cid("cr"),
         source_id=source,
-        doc_ref=DocRef(file="d.txt", span=(0, 1)),
+        doc_ref=DocRef(file=doc, span=(0, 1)),
         kind="observation",
         asserts="relationship",
         payload=Triple(subject=subject, predicate="coref-same-as", object=obj),
-        attributes={"_coref_cluster": cluster, "_coref_evidence": evidence, "source_quote": quote},
+        attributes={
+            "_coref_cluster": cluster,
+            "_coref_evidence": evidence,
+            "source_quote": quote,
+            # RK-COREF (S3): the grouping grain, the per-link gate verdict and the VERBATIM span set. A link
+            # with no ``_coref_gate`` can never bind once the stage flag is on — the gate is a required
+            # precondition, so an absent verdict fails closed.
+            **({"_coref_referent": referent} if referent else {}),
+            **({"_coref_gate": gate, "_coref_gate_detail": detail} if gate else {}),
+            **({"_coref_forms": list(forms)} if forms else {}),
+            "_coref_quotes": list(quotes) if quotes is not None else [quote],
+        },
     )
 
 
