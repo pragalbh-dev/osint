@@ -9,6 +9,7 @@ the identity elements of sum/product — ever appear as literals, which G6 expli
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from typing import Any
 
 from chanakya.credibility.scoring import reliability
@@ -28,6 +29,14 @@ TEMPORAL = "temporal_consistency"
 SOURCE_ASSERTED = "source_asserted"
 SIGNALS = (ATTRIBUTE, RELATIONAL, TEMPORAL, SOURCE_ASSERTED)
 
+#: The two lines of evidence ``attribute`` fuses at a single ``max`` (D-13.20's split). They are
+#: **diagnostic sub-signals**, never weighted terms: ``attribute`` keeps its whole ``merge_weights`` share,
+#: so decomposing it moves no score. They exist because "a name match reaches at most *possible*, and one
+#: more trivially-available signal clears it" (D-13.10) is *unexpressible* while the two live in one number.
+NAME = "name"
+DISCRIMINATOR = "discriminator"
+SUB_SIGNALS = (NAME, DISCRIMINATOR)
+
 # Attribute-role names (D5/D6) — an attribute's declared bearing on IDENTITY, per entity type. Strings,
 # not numbers, so gate G6 (no magic numbers in ``resolve/``) is untouched. The default for any undeclared
 # attribute is NEUTRAL (no identity effect) — the safe, extendable default.
@@ -35,11 +44,229 @@ ROLE_CRITICAL = "critical"      # a STATED disagreement is a hard veto (feeds th
 ROLE_SUPPORTING = "supporting"  # agreement raises the score; a stated disagreement is a SOFT penalty
 ROLE_NEUTRAL = "neutral"        # no identity effect (and the default for an undeclared attribute)
 
+# ── C6 (re-specified): an attribute's TIME ROLE — four values, not a boolean ─────────────────────
+#
+# The shipped field was ``perishable: true|false`` and C6 needs **three** states beyond durable, so the
+# closure as first written could not be built (RK-LAYER follow-up 2). These four are the declared
+# vocabulary; each earns its own identity consequence, and an attribute may declare exactly one.
+TIME_DURABLE = "durable"            # a stable spec: agreement supports identity normally
+TIME_PERISHABLE = "perishable"      # expected to change: perishable-only evidence cannot confirm (D-13.9a)
+TIME_CONSTITUTIVE = "constitutive"  # part of WHAT this instance IS ⇒ a difference is DISTINCTNESS, not staleness
+TIME_IDENTIFYING = "identifying"    # the attribute identifies the entity ⇒ satisfies the confirm requirement
+TIME_ROLES = (TIME_DURABLE, TIME_PERISHABLE, TIME_CONSTITUTIVE, TIME_IDENTIFYING)
+#: The roles whose *agreement* is durable identity evidence — i.e. everything that is not transient.
+#: ``constitutive`` is what lets a **presence** confirm (its geography is definitional, not perishable) and
+#: ``identifying`` is what lets a **place** confirm; together they are the rung spine/13 §6 lever 2 needs.
+TIME_ROLES_CONFIRMING = (TIME_DURABLE, TIME_CONSTITUTIVE, TIME_IDENTIFYING)
+
+#: The legacy boolean key. Its presence is a **loud validation error** — no migration shim outlives the
+#: stage that introduces it (plan §5a-bis), and a silently-tolerated old form biases every later author.
+_LEGACY_PERISHABLE_KEY = "perishable"
+_TIME_ROLE_KEY = "time_role"
+
+#: Identity *bands*, by name. A ceiling is declared as a band NAME and never as a float: analyst B's
+#: arithmetic (rk-spike-DECISIONS §b) showed any ×coefficient can drop a pair **two** bands — out of the
+#: analyst's queue entirely — and its safe value depends on thresholds that will move. A band name is
+#: threshold-independent and states the intent directly ("not automatically", never "not at all").
+BAND_CONFIRMED = "confirmed"
+BAND_PROBABLE = "probable"
+BAND_POSSIBLE = "possible"
+BANDS_BY_STRENGTH = (BAND_CONFIRMED, BAND_PROBABLE, BAND_POSSIBLE)
+
+
+class AttributeRoleError(ValueError):
+    """A declared ``attribute_roles`` entry uses the retired boolean ``perishable`` key, or a bad role."""
+
+
+# ── the RK-COREF (S3) stage flag and its knobs ───────────────────────────────────────────────────
+#
+# Read from ``config/resolution.yaml``'s top-level ``earned_identity`` block (``ResolutionConfig`` is
+# ``extra="allow"``, the same precedent ``llm_candidate_gen`` sets). **One flag**, mirroring S2's
+# ``layer_routing.enabled``, because the pieces are one change to *what earns identity* and half of them
+# would be incoherent: promoting coreference to a required tier without the decline mechanism, or binding
+# the caps to the bootstrap without the per-layer profile, each makes the system worse than either end
+# state. Flag OFF ⇒ every mechanism below is inert and the graph is byte-identical to S2's flag-off view.
+#
+# Every threshold, cap, floor, category list and vocabulary here is **config**, never a code literal
+# (gate G6). Absent block ⇒ :attr:`enabled` False ⇒ inert.
+
+_EARNED_IDENTITY = "earned_identity"
+
+
+@dataclass(frozen=True)
+class EarnedIdentity:
+    """``config/resolution.yaml → earned_identity``, compiled. Absent ⇒ :attr:`enabled` False ⇒ inert."""
+
+    enabled: bool = False
+
+    # ── D-13.17: which coreference categories may BOOTSTRAP, and behind what floor ────────────────
+    #: Categories allowed to bootstrap **once their per-link deterministic gate passes** (C5). Read only
+    #: when :attr:`enabled`; ``NAME_VARIANT`` is deliberately absent — see the config comment.
+    authoritative_categories: tuple[str, ...] = ()
+    #: STANAG floor the *asserting document's* source must clear for a bind to be authoritative. Not
+    #: optional: an authoritative bind fuses at 1.0 and bypasses banding, so it acts **harder** than the
+    #: assertion it most resembles (a stated ``same-as``, which is grade-floored *and* raise-only).
+    bind_min_grade: str | None = None
+    #: Seed equivalence-marker vocabulary for the ``EXPLICIT_EQUIVALENCE`` gate, verb forms included.
+    equivalence_markers: tuple[str, ...] = ()
+
+    # ── D-13.10 / D-13.20: the caps, as band names ────────────────────────────────────────────────
+    #: Ceiling for a pair carried by the NAME sub-signal alone, at **every** layer.
+    name_ceiling: str = ""
+    #: Ceiling for a formation pair whose only agreement is co-location (D-13.14 / G16).
+    colocation_ceiling: str = ""
+    #: Ceiling for a same-document **stated-contrast** pair (D-13.19). Ungraded by design: a band ceiling
+    #: cannot *shatter* an existing cluster, which is the harm a grade gate would have defended against.
+    contrast_ceiling: str = ""
+
+    # ── D-13.14 / G16: the co-location cap ────────────────────────────────────────────────────────
+    formation_types: tuple[str, ...] = ()
+    presence_types: tuple[str, ...] = ()
+    #: Predicates whose shared endpoint is *co-location* evidence rather than identity evidence.
+    colocation_predicates: tuple[str, ...] = ()
+    #: Per-type unit-level discriminators that CAN confirm a formation (over and above co-location).
+    formation_discriminators: tuple[str, ...] = ()
+
+    # ── D-13.8 / G18: the relationship-conflict wall ──────────────────────────────────────────────
+    #: Predicates a **stated** conflict on which hard-walls a merge.
+    wall_predicates: tuple[str, ...] = ()
+    #: The attribute carrying the site class the ``based-at`` half of the wall is scoped within (C1).
+    wall_scope_attr: str = ""
+
+    # ── C7: value normalization is a prerequisite for walling on ANY slot ─────────────────────────
+    #: ``attr → {canonical value: [stated variants]}``. Applied before conflict detection **and** before
+    #: namespace derivation (normalising only at conflict time would leave namespaces split).
+    value_normalization: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], ...] = ()
+    #: Attributes for which an unnormalizable stated value takes the **third state** — no wall AND no
+    #: fusion, plus a named gap. A gap that does not bind the fusion path is decoration (rk-14 probe).
+    normalization_required_attrs: tuple[str, ...] = ()
+
+    # ── C6: the per-(type, attribute) overlay that only exists with the flag on ───────────────────
+    #: Extra ``attribute_roles`` rows merged over the base block when :attr:`enabled`. Kept separate so
+    #: the *base* block stays exactly what the flag-off view scores on — the flag boundary in one place.
+    attribute_roles_overlay: dict[str, dict[str, Any]] = field(default_factory=dict)
+
+    @classmethod
+    def from_resolution(cls, resolution: ResolutionConfig) -> EarnedIdentity:
+        block = getattr(resolution, _EARNED_IDENTITY, None)
+        if not isinstance(block, dict):
+            return cls()
+
+        def _strs(key: str) -> tuple[str, ...]:
+            raw = block.get(key)
+            return tuple(str(x) for x in raw) if isinstance(raw, (list, tuple)) else ()
+
+        def _str(key: str) -> str:
+            v = block.get(key)
+            return str(v) if v else ""
+
+        norm_raw = block.get("value_normalization")
+        normalization: tuple[tuple[str, tuple[tuple[str, tuple[str, ...]], ...]], ...] = ()
+        if isinstance(norm_raw, dict):
+            normalization = tuple(
+                (
+                    str(attr),
+                    tuple(
+                        (str(canonical), tuple(str(v) for v in variants))
+                        for canonical, variants in sorted(classes.items())
+                        if isinstance(variants, (list, tuple))
+                    ),
+                )
+                for attr, classes in sorted(norm_raw.items())
+                if isinstance(classes, dict)
+            )
+        overlay_raw = block.get("attribute_roles")
+        overlay = (
+            {str(t): dict(rows) for t, rows in overlay_raw.items() if isinstance(rows, dict)}
+            if isinstance(overlay_raw, dict) else {}
+        )
+        grade = block.get("bind_min_grade")
+        return cls(
+            enabled=bool(block.get("enabled", False)),
+            authoritative_categories=_strs("authoritative_categories"),
+            bind_min_grade=str(grade).strip().upper() if grade else None,
+            equivalence_markers=_strs("equivalence_markers"),
+            name_ceiling=_str("name_ceiling"),
+            colocation_ceiling=_str("colocation_ceiling"),
+            contrast_ceiling=_str("contrast_ceiling"),
+            formation_types=_strs("formation_types"),
+            presence_types=_strs("presence_types"),
+            colocation_predicates=_strs("colocation_predicates"),
+            formation_discriminators=_strs("formation_discriminators"),
+            wall_predicates=_strs("wall_predicates"),
+            wall_scope_attr=_str("wall_scope_attr"),
+            value_normalization=normalization,
+            normalization_required_attrs=_strs("normalization_required_attrs"),
+            attribute_roles_overlay=overlay,
+        )
+
+    def normalise_value(self, attr: str, value: object) -> tuple[str, bool]:
+        """A stated attribute value → ``(canonical, mapped)`` — C7's normalisation prerequisite.
+
+        Casefolds and collapses punctuation/whitespace on both sides, so only genuine synonyms need an
+        entry ('PAF' ≡ 'Pakistan Air Force', not 'CHINA' ≡ 'China'). ``mapped=True`` ⇒ the value is a
+        known member of a declared equivalence class and may be compared — walled on, fused on, or used
+        as a namespace key.
+
+        ``mapped=False`` is the **third state** and the caller owes all three parts of it:
+        **no wall** · **no fusion** · **a named gap**. Returning the folded form as the bucket gives the
+        caller a stable comparison key for the *unknown* case without ever letting it de-conflict.
+        An attribute with no declared classes at all is *not* normalization-required, so it reports
+        ``mapped=True`` on its folded form — this is a wall prerequisite, not a whitelist of legal values.
+        """
+        folded = _fold_value(value)
+        classes = dict(self.value_normalization).get(attr)
+        if not classes:
+            return folded, True  # nothing declared for this slot ⇒ no normalisation prerequisite
+        for canonical, variants in classes:
+            if folded == _fold_value(canonical) or any(folded == _fold_value(v) for v in variants):
+                return _fold_value(canonical), True
+        return folded, False
+
+
+def _fold_value(value: object) -> str:
+    """Casefold + collapse punctuation/whitespace, so only genuine synonyms need a config entry."""
+    text = "" if value is None else str(value)
+    kept = [c.casefold() if c.isalnum() else " " for c in text]
+    return " ".join("".join(kept).split())
+
 # STANAG-2022 source-reliability grades are an ORDINAL letter scale, A (most reliable) → F (least). The
 # scale's letters are a domain constant, not a tunable — "at or above floor X" is therefore just the
 # lexicographic test ``grade <= floor`` on a single uppercase letter (no numeric mapping, no scoring
 # literal — gate G6 untouched; the floor value itself is read from config).
 _GRADE_LETTERS = "ABCDEF"
+
+
+def _validate_attribute_roles(roles: Any) -> None:
+    """Reject a retired ``perishable:`` key or an unknown ``time_role`` — loudly, at construction (C6).
+
+    "No migration shim outlives the stage that introduces it" (plan §5a-bis). A dual-form loader biases
+    every later author toward the old shape, and a tolerated boolean cannot express ``constitutive`` or
+    ``identifying`` — so the boolean is *gone*, and a config still carrying it must fail at load rather
+    than quietly read as "no time role declared".
+    """
+    if not isinstance(roles, dict):
+        return
+    for entity_type, attrs in sorted(roles.items()):
+        if not isinstance(attrs, dict):
+            continue
+        for attr, spec in sorted(attrs.items()):
+            if not isinstance(spec, dict):
+                continue
+            if _LEGACY_PERISHABLE_KEY in spec:
+                raise AttributeRoleError(
+                    f"attribute_roles.{entity_type}.{attr} declares the retired boolean "
+                    f"'{_LEGACY_PERISHABLE_KEY}:' — C6 replaced it with '{_TIME_ROLE_KEY}:' taking one of "
+                    f"{list(TIME_ROLES)}. A boolean cannot carry three states, and no migration shim "
+                    f"outlives its stage: rewrite 'perishable: true' as 'time_role: perishable' and "
+                    f"'perishable: false' as 'time_role: durable'."
+                )
+            role = spec.get(_TIME_ROLE_KEY)
+            if role is not None and role not in TIME_ROLES:
+                raise AttributeRoleError(
+                    f"attribute_roles.{entity_type}.{attr} declares {_TIME_ROLE_KEY}={role!r}, which is "
+                    f"not one of {list(TIME_ROLES)} (C6)."
+                )
 
 
 def grade_meets_floor(grade: str | None, floor: str) -> bool:
@@ -73,6 +300,12 @@ class ResolveConfig:
         self._bundle = bundle
         self._source_index: dict[str, Any] | None = None
         self._node_types: NodeTypeIndex | None = None
+        self._earned: EarnedIdentity = EarnedIdentity.from_resolution(resolution)
+        # C6: validate the declared time roles ONCE, here, rather than at every hot read. A retired
+        # ``perishable:`` key must be a **loud** error at construction (the same loudness S1 gave a bare
+        # ``attrs`` string), not a value silently read as ``None`` deep inside the scorer.
+        _validate_attribute_roles(self._extra("attribute_roles", {}))
+        _validate_attribute_roles(self._earned.attribute_roles_overlay)
 
     @classmethod
     def from_bundle(cls, config: ConfigBundle) -> ResolveConfig:
@@ -84,6 +317,37 @@ class ResolveConfig:
 
     def _place_extra(self, name: str, default: Any) -> Any:
         return getattr(self._p, name, default)
+
+    # ── the RK-COREF (S3) stage flag ──────────────────────────────────────────────────────────
+    @property
+    def earned_identity(self) -> EarnedIdentity:
+        """The S3 knob block. ``.enabled`` False ⇒ every S3 mechanism is inert (flag-off byte-identity)."""
+        return self._earned
+
+    @property
+    def earned_identity_on(self) -> bool:
+        """The one flag test, so the boundary is read from exactly one place."""
+        return self._earned.enabled
+
+    @property
+    def namespace_normaliser(self) -> Any:
+        """C7's value normaliser for the **namespace** key, or ``None`` with the flag off.
+
+        Namespaces are derived from raw stated attrs (``Entity.namespace``), so normalising only at
+        conflict-detection time would fix the wall and leave the *blocking* split — 'PAF' and 'Pakistan Air
+        Force' would still sit in two different namespaces, which is half of D4 left open. Handed to
+        ``Entity.namespace`` / ``namespace_compatible`` as a plain callable so ``resolve.entities`` never has
+        to import this reader.
+        """
+        if not self._earned.enabled:
+            return None
+        earned = self._earned
+
+        def _norm(attr: str, value: Any) -> str:
+            canonical, _mapped = earned.normalise_value(attr, value)
+            return canonical
+
+        return _norm
 
     # ── node-type identity rules (config/ontology.yaml — T3b) ─────────────────────────────────
     @property
@@ -296,9 +560,16 @@ class ResolveConfig:
         only what a document *states* verbatim, or leave it empty to send everything to the analyst queue.
 
         A category listed here still clears every other rail — the ``distinct-from`` veto, type and
-        namespace agreement, and the hard-attribute-contradiction check (``scoring.has_hard_conflict``).
+        namespace agreement, and the hard-attribute-contradiction check (``scoring.has_hard_conflict``) —
+        and, with the S3 flag on, **its own per-link deterministic gate plus a source-grade floor**
+        (D-13.17). The two lists are read in that order: this legacy key is the operator's own opt-in and
+        keeps working on its own; :attr:`EarnedIdentity.authoritative_categories` is the S3 policy and is
+        read only while the flag is on, so flipping the producer alone still changes nothing.
         """
-        return {str(c) for c in self._extra("coref_authoritative_evidence", [])}
+        legacy = {str(c) for c in self._extra("coref_authoritative_evidence", [])}
+        if not self._earned.enabled:
+            return legacy
+        return legacy | set(self._earned.authoritative_categories)
 
     # ── open-world name triggers (P3.3: containment / acronym expansion) ──────────────────────
     @property
@@ -371,24 +642,36 @@ class ResolveConfig:
 
     # ── attribute roles (D5/D6): critical / supporting / neutral, per entity type ───────────────
     def attribute_roles(self, entity_type: str) -> dict[str, Any]:
-        """Raw per-type attribute-role declarations (D6); default ``{}`` (every attribute neutral).
+        """Per-type attribute-role declarations (D6); default ``{}`` (every attribute neutral).
 
         The declarative block an author writes in ``config/resolution.yaml``::
 
             attribute_roles:
               <entity_type>:
-                <attr_name>: {role: critical|supporting|neutral, perishable: true|false}
+                <attr_name>: {role: critical|supporting|neutral,
+                              time_role: durable|perishable|constitutive|identifying}
 
         ``role`` decides identity bearing (compiled by :meth:`critical_role_attrs` /
-        :meth:`supporting_role_attrs`); the optional ``perishable`` flag is SCHEMA ONLY in Stage 1A —
-        read by :meth:`attribute_perishable` but not yet consumed by any behaviour (the update/stale
-        framework, D8, lands later). An attribute not listed here is **neutral** — no identity effect.
+        :meth:`supporting_role_attrs`); ``time_role`` (C6, re-specified) decides what the attribute's
+        *agreement* and its *difference* mean over time — read by :meth:`attribute_time_role`. An
+        attribute not listed here is **neutral** — no identity effect.
+
+        With the S3 flag ON the ``earned_identity.attribute_roles`` **overlay** is merged over the base
+        block, per type and per attribute. The overlay exists so the base block stays exactly what the
+        flag-off view scores on: a new ``identifying`` declaration is a behavioural change (it enters the
+        agreement ratio and the durable-support test), so it cannot live in the unconditional block.
         """
-        return dict(self._extra("attribute_roles", {}).get(entity_type, {}))
+        base = dict(self._extra("attribute_roles", {}).get(entity_type, {}))
+        if not self._earned.enabled:
+            return base
+        overlay = self._earned.attribute_roles_overlay.get(entity_type, {})
+        for attr, spec in overlay.items():
+            base[attr] = {**base.get(attr, {}), **spec} if isinstance(spec, dict) else spec
+        return base
 
     def _role_attrs(self, entity_type: str, role: str) -> list[str]:
         """Attributes of ``entity_type`` declared with ``role``, sorted (deterministic — gate G2)."""
-        roles = self._extra("attribute_roles", {}).get(entity_type, {})
+        roles = self.attribute_roles(entity_type)
         return sorted(a for a, spec in roles.items() if isinstance(spec, dict) and spec.get("role") == role)
 
     def critical_role_attrs(self, entity_type: str) -> list[str]:
@@ -403,16 +686,57 @@ class ResolveConfig:
         """Compiler: attrs whose disagreement is a SOFT penalty in ``attribute_score``, never a wall."""
         return self._role_attrs(entity_type, ROLE_SUPPORTING)
 
-    def attribute_perishable(self, entity_type: str, attr: str) -> bool | None:
-        """Whether a declared attribute is PERISHABLE (durable ⇒ ``False``). SCHEMA ONLY (Stage 1A).
+    def attribute_time_role(self, entity_type: str, attr: str) -> str | None:
+        """The declared ``time_role`` of an attribute (C6) — one of :data:`TIME_ROLES`, or ``None``.
 
-        Read here but not yet consumed: the perishable/durable distinction drives the update-vs-stale
-        framework (D8) in a later stage. ``None`` ⇒ the attribute declares no perishability.
+        ``None`` ⇒ the attribute declares no time role. An undeclared attribute is treated *as if* durable
+        by every consumer (agreement counts, no succession waiver), which is the conservative direction:
+        the waiver is an allowance a declaration has to *earn*.
         """
         spec = self.attribute_roles(entity_type).get(attr)
-        if not isinstance(spec, dict) or "perishable" not in spec:
+        if not isinstance(spec, dict):
             return None
-        return bool(spec["perishable"])
+        value = spec.get(_TIME_ROLE_KEY)
+        return str(value) if value in TIME_ROLES else None
+
+    def attribute_perishable(self, entity_type: str, attr: str) -> bool | None:
+        """Is this attribute's value **transient**? — the boolean projection of :meth:`attribute_time_role`.
+
+        Not a back-compat shim: it is the one question the *time-aware conflict* axis asks ("may a clean
+        ordered succession of differing values be forgiven?"), and exactly one of the four time roles
+        answers yes. ``perishable`` ⇒ ``True``; ``durable`` / ``constitutive`` / ``identifying`` ⇒
+        ``False`` (a constitutive difference is **distinctness**, an identifying one is a different
+        entity — neither is a legitimate update); undeclared ⇒ ``None``.
+        """
+        role = self.attribute_time_role(entity_type, attr)
+        if role is None:
+            return None
+        return role == TIME_PERISHABLE
+
+    def attribute_confirms_identity(self, entity_type: str, attr: str) -> bool:
+        """May *agreement* on this attribute carry a confirm? (C6's positive half.)
+
+        True for ``durable`` / ``constitutive`` / ``identifying`` **and for an undeclared attribute**
+        (matching the pre-S3 ``attribute_perishable(...) is not True`` test byte-for-byte). ``constitutive``
+        is what lets a **presence** confirm at all — its geography is definitional rather than perishable —
+        and ``identifying`` is what lets a **place** confirm. Without those two rungs spine/13 §6 lever 2
+        cannot exist.
+        """
+        role = self.attribute_time_role(entity_type, attr)
+        return role is None or role in TIME_ROLES_CONFIRMING
+
+    def constitutive_attrs(self, entity_type: str) -> list[str]:
+        """Attributes declared ``constitutive`` for this type — a *difference* on one is DISTINCTNESS.
+
+        A constitutive attribute cannot change without the thing being a *different* instance, so a stated
+        difference is anti-identity evidence in its own right, whatever the attribute's ``role`` says.
+        Consumed only with the S3 flag on (:meth:`earned_identity_on`).
+        """
+        roles = self.attribute_roles(entity_type)
+        return sorted(
+            a for a, spec in roles.items()
+            if isinstance(spec, dict) and spec.get(_TIME_ROLE_KEY) == TIME_CONSTITUTIVE
+        )
 
     def geo_conflict_max_km(self, entity_type: str | None) -> float | None:
         """How far apart two entities of this type may *state* they are and still be one entity.

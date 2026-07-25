@@ -110,7 +110,7 @@ def test_agreement_beats_no_mention_beats_disagreement() -> None:
     lowers it below that baseline.
     """
     cfg = _cfg(
-        attribute_roles={"gadget": {"config": {"role": "supporting", "perishable": False}}},
+        attribute_roles={"gadget": {"config": {"role": "supporting", "time_role": "durable"}}},
         attribute_scoring={"conflict_penalty": 0.5},
     )
     a_agree = _gadget("a", "Ranger Alpha", attrs={"config": "cfg-X"})
@@ -145,7 +145,7 @@ def test_perishable_ordered_succession_scores_like_agreement() -> None:
     counted as negative evidence.
     """
     cfg = _cfg(
-        attribute_roles={"gadget": {"config": {"role": "supporting", "perishable": True}}},
+        attribute_roles={"gadget": {"config": {"role": "supporting", "time_role": "perishable"}}},
         attribute_scoring={"conflict_penalty": 0.5},
     )
     a_agree = _gadget("a", "Ranger Alpha", attrs={"config": "cfg-A"},
@@ -200,7 +200,7 @@ def test_durable_support_true_for_shared_hard_id() -> None:
 
 def test_durable_support_true_for_nonperishable_agreement() -> None:
     """(2) Agreement on ≥1 NON-perishable identity-relevant attribute is durable support — True."""
-    cfg = _cfg(attribute_roles={"gadget": {"designator": {"role": "supporting", "perishable": False}}})
+    cfg = _cfg(attribute_roles={"gadget": {"designator": {"role": "supporting", "time_role": "durable"}}})
     a = _gadget("a", "Alpha", attrs={"designator": "X-1"})
     b = _gadget("b", "Beta", attrs={"designator": "X-1"})
 
@@ -216,7 +216,7 @@ def test_durable_support_true_for_nonperishable_agreement() -> None:
 
 def test_durable_support_false_for_perishable_only_agreement() -> None:
     """(2) Agreement ONLY on a PERISHABLE attribute (no hard id, no durable agreement) is NOT durable — False."""
-    cfg = _cfg(attribute_roles={"gadget": {"status": {"role": "supporting", "perishable": True}}})
+    cfg = _cfg(attribute_roles={"gadget": {"status": {"role": "supporting", "time_role": "perishable"}}})
     a = _gadget("a", "Alpha", attrs={"status": "active"})
     b = _gadget("b", "Beta", attrs={"status": "active"})
 
@@ -234,7 +234,7 @@ def test_durable_support_false_for_perishable_ordered_succession() -> None:
     A clean update over time keeps identity *plausible* (it does not disagree), but it is transient
     evidence: it cannot, on its own, license a confirmed merge. So the durable-support gate is False.
     """
-    cfg = _cfg(attribute_roles={"gadget": {"status": {"role": "supporting", "perishable": True}}})
+    cfg = _cfg(attribute_roles={"gadget": {"status": {"role": "supporting", "time_role": "perishable"}}})
     a = _gadget("a", "Alpha", attrs={"status": "active"},
                 history={"status": [_ac("active", "s1", "2019-01-01")]})
     b = _gadget("b", "Beta", attrs={"status": "standby"},
@@ -257,7 +257,7 @@ def test_durable_support_false_without_durable_agreement() -> None:
     """
     cfg = _cfg(attribute_roles={
         "gadget": {
-            "designator": {"role": "supporting", "perishable": False},
+            "designator": {"role": "supporting", "time_role": "durable"},
             "colour": {"role": "neutral"},
         }
     })
@@ -319,11 +319,11 @@ def test_perishable_only_would_confirm_caps_to_probable() -> None:
     name_only_claims = [entity("g_a", "gadget", name_a), entity("g_b", "gadget", name_b)]  # no status
 
     cfg_durable = mk_config(
-        attribute_roles={"gadget": {"status": {"role": "supporting", "perishable": False}}},
+        attribute_roles={"gadget": {"status": {"role": "supporting", "time_role": "durable"}}},
         auto_merge_by_type={"gadget": floor},
     )
     cfg_perishable = mk_config(
-        attribute_roles={"gadget": {"status": {"role": "supporting", "perishable": True}}},
+        attribute_roles={"gadget": {"status": {"role": "supporting", "time_role": "perishable"}}},
         auto_merge_by_type={"gadget": floor},
     )
 
@@ -367,7 +367,7 @@ def test_name_bootstrap_still_confirms_not_capped() -> None:
         entity("g_a", "gadget", "Falcon Prime", status="active"),
         entity("g_b", "gadget", "Falcon Prime", status="active"),  # identical name ⇒ bootstrap
     ]
-    cfg = mk_config(attribute_roles={"gadget": {"status": {"role": "supporting", "perishable": True}}})
+    cfg = mk_config(attribute_roles={"gadget": {"status": {"role": "supporting", "time_role": "perishable"}}})
 
     # fixture preconditions: identical names (the bootstrap), and the only attribute is perishable
     assert claims[0].payload.name == claims[1].payload.name

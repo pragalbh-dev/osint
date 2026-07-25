@@ -180,8 +180,8 @@ def test_reader_compiles_roles_and_reads_perishable_schema() -> None:
         "gadget": {
             "serial": {"role": "critical"},
             "country": {"role": "critical"},
-            "colour": {"role": "supporting", "perishable": False},
-            "status": {"role": "supporting", "perishable": True},
+            "colour": {"role": "supporting", "time_role": "durable"},
+            "status": {"role": "supporting", "time_role": "perishable"},
             "nickname": {"role": "neutral"},
         }
     }))

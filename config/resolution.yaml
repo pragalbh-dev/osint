@@ -306,8 +306,23 @@ place_bind_on_curated_toponym: true
 #   * supporting — agreement raises identity confidence; a stated disagreement is a SOFT penalty
 #                  (× attribute_scoring.conflict_penalty), never fatal. Inert here until conflict_penalty
 #                  is configured (it is not), so these declarations are documentation + a later-stage seam.
-#   * perishable — OPTIONAL, SCHEMA ONLY in this stage: durable (false) vs a value expected to change over
-#                  time (true). Read but NOT yet consumed — the update-vs-stale framework (D8) lands later.
+#   * time_role  — OPTIONAL, and CONSUMED (C6, re-specified 2026-07-25). Four values, each earning its own
+#                  identity consequence. The boolean `perishable:` it replaces is RETIRED and is now a LOUD
+#                  validation error (no migration shim outlives its stage) — a boolean could not carry three
+#                  states, which is exactly why C6 as first written could not be built:
+#                    durable       — a stable spec. Agreement supports identity normally.
+#                    perishable    — expected to change. Perishable-only evidence CANNOT confirm (D-13.9a),
+#                                    and a clean ordered succession of differing values is forgiven.
+#                    constitutive  — the attribute IS part of what this instance is (a presence *is*
+#                                    operator+design+site+window). It cannot change without being a
+#                                    DIFFERENT instance, so a difference is a DISTINCTNESS signal, never
+#                                    staleness — and agreement can confirm. This is what lets a presence
+#                                    confirm at all.
+#                    identifying   — the attribute identifies the entity (a place's coordinates). Strong
+#                                    identity evidence; satisfies the non-perishable requirement to confirm.
+#                  Without `constitutive` and `identifying`, spine/13 §6 lever 2 has no rung to stand on.
+#                  Rows using the two NEW values live in `earned_identity.attribute_roles` (bottom of this
+#                  file), not here: declaring them unconditionally would move the flag-off graph.
 # Conservative starter taxonomy (err toward NOT walling). Exactly ONE critical is wired — variant
 # .operator_branch, the D5 marquee wall — and it was verified ADDITIVE-AND-INERT on the frozen corpus:
 # no variant STATES operator_branch (the China/Pakistan traps are already held apart by
@@ -327,26 +342,26 @@ attribute_roles:
     operator_branch: {role: critical}                 # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
                                                        # cannot be one entity — a stated branch difference is a wall.
                                                        # Currently inert: no variant states operator_branch.
-    family:          {role: supporting, perishable: false}   # a durable spec — a disagreement lowers confidence.
-    range_class:     {role: supporting, perishable: false}
+    family:          {role: supporting, time_role: durable}   # a durable spec — a disagreement lowers confidence.
+    range_class:     {role: supporting, time_role: durable}
   unit:
-    service_branch:  {role: supporting, perishable: false}   # a D5 wall in principle, but the corpus states it
+    service_branch:  {role: supporting, time_role: durable}   # a D5 wall in principle, but the corpus states it
                                                              # unnormalised (Air Force / PAF / Pakistan Air Force) —
                                                              # see the normalisation finding above. Kept soft for now.
-    alert_posture:   {role: supporting, perishable: true}    # a stated readiness/alert status — expected to
+    alert_posture:   {role: supporting, time_role: perishable}    # a stated readiness/alert status — expected to
                                                              # CHANGE over time (never a durable identity trait),
                                                              # so agreement is soft-supporting and it is flagged
                                                              # perishable for the time-aware conflict axis (D8/3B):
                                                              # a clean update over time is not a contradiction.
   trading_org:
-    origin_country:  {role: supporting, perishable: false}   # likewise: 'CHINA' vs 'China' would false-wall the
+    origin_country:  {role: supporting, time_role: durable}   # likewise: 'CHINA' vs 'China' would false-wall the
                                                              # SINO-GALAXY spellings. NOT a namespace field, so it
                                                              # would be a genuinely new wall once values are normalised.
   component:
-    radar_band:      {role: supporting, perishable: false}
-    component_class: {role: supporting, perishable: false}
+    radar_band:      {role: supporting, time_role: durable}
+    component_class: {role: supporting, time_role: durable}
   manufacturer:
-    tier:            {role: supporting, perishable: false}
+    tier:            {role: supporting, time_role: durable}
 
 # ── credibility floor on the critical-attribute veto (D5 take-care a, Stage 3A) ──────────────────
 # A source-credibility floor on the critical→veto wall above. A stated critical-attribute disagreement
@@ -375,3 +390,184 @@ distinct_from:
   "HQ-9/P":
     - "FT-2000"            # anti-radiation variant — false-merge trap (HITL band)
     - "HQ-9BE"             # flagship distinct-from: ~125 km Army vs ~260 km PAF
+
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+# EARNED IDENTITY — the RK-COREF (S3) stage block. ONE FLAG, mirroring S2's `layer_routing.enabled`.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+#
+# S1 gave claims a stable address; S2 split design from instance; S3 makes identity EARNED. The pieces
+# below are one change to *what earns identity* and half of them would be incoherent — promoting
+# coreference to a required tier without the decline mechanism, or binding the caps to the bootstrap
+# without the per-layer profile, each leaves the system worse than either end state. So: one flag.
+#
+# `enabled: false` ⇒ every mechanism here is inert and the graph is byte-identical to S2's flag-off view.
+# Every threshold, cap, floor, category list and vocabulary this stage adds lives HERE, never as a code
+# literal (gate G6). Ceilings are declared as BAND NAMES, never floats: analyst B's arithmetic showed any
+# ×coefficient can drop a pair TWO bands — out of the analyst's queue entirely — and its safe value
+# depends on thresholds that will move. A band name is threshold-independent.
+earned_identity:
+  enabled: false
+
+  # ── D-13.17 — which coreference categories may BOOTSTRAP (an uncapped, unbanded fusion at 1.0) ────
+  # An "authoritative" coref pair is a Phase-1 bootstrap trigger: it merges at hardcoded confidence 1.0
+  # and BYPASSES BANDING, so no cap restrains it. Two consequences fix the policy:
+  #   1. a category may only be authoritative behind a DETERMINISTIC, code-verified precondition — a
+  #      model's self-report is not evidence, but a self-report plus a structural check any reader can
+  #      re-derive is (see `equivalence_markers`, and the positive anaphor gate in ingest/coref.py);
+  #   2. it must ALSO clear a source-grade floor, because a bind currently acts HARDER than the assertion
+  #      it most resembles: a source-stated `same-as` is grade-floored AND structurally raise-only, while
+  #      a coref bind fuses at 1.0 with no grade check anywhere. That inversion is the sharpest gap in the
+  #      substrate; `stated != trusted` (spine/13 §5).
+  # NAME_VARIANT is ABSENT, permanently, and for a mechanical reason rather than caution: because an
+  # authoritative pair bypasses banding, "authoritative NAME_VARIANT" *is* the exact-normalised-name
+  # auto-merge lane D-13.1 exists to delete — rebuilt on a different predicate and immune to the very
+  # name cap (below) that replaces it. It stays raise-only, which is a `probable` HITL candidate with the
+  # licensing quote attached and the merge one click away, not a nameless orphan.
+  authoritative_categories: [EXPLICIT_EQUIVALENCE, UNAMBIGUOUS_ANAPHOR]
+
+  # STANAG floor for the asserting DOCUMENT's source. `C` admits the working analytic tier (curated
+  # register B, trade-media / customs-tender C) and refuses the D/E social-repost / spoof / adversary
+  # tier — deliberately the SAME letter as `critical_veto_min_grade` above, because the question is the
+  # same one ("is this source trustworthy enough to move identity on its own?") and two different answers
+  # to one question is a bug waiting to happen. Absent ⇒ no floor (and the bind is then only as strong as
+  # its structural gate, which is why this is not optional in the shipped config).
+  bind_min_grade: C
+
+  # The EXPLICIT_EQUIVALENCE gate's marker vocabulary, verb forms included (C5). The gate is: the quote
+  # occurs verbatim in the document (already enforced at ingest) AND contains BOTH members' surface forms
+  # AND contains one of these markers, or wraps one form in a parenthetical. Declared as config so an
+  # analyst can extend it for a new register/language without a code change.
+  equivalence_markers:
+    - "aka"
+    - "a.k.a"
+    - "also known as"
+    - "also called"
+    - "also designated"
+    - "otherwise known as"
+    - "referred to as"
+    - "known locally as"
+    - "formerly"
+    - "formerly known as"
+    - "renamed"
+    - "redesignated"
+    - "designated"
+    - "export designation"
+    - "export designated"
+    - "marketed as"
+    - "sold as"
+    - "or simply"
+    - "hereafter"
+    - "i.e."
+    - "namely"
+    - "alias"
+    - "abbreviated"
+    - "short for"
+    - "which is"
+    - "that is"
+
+  # ── the three CAPS, as band names (D-13.10 / D-13.14 / D-13.19) ───────────────────────────────────
+  # NAME caps at `possible` at EVERY layer, and — the part §4 of the review found missing — the cap binds
+  # the PHASE-1 BOOTSTRAP too, not only the Phase-2 collection loop. Name is a verdict in Phase 1 at every
+  # type: the widest name-only fusion path bypasses the bands entirely, so a cap that lives only in Phase 2
+  # is a cap on the path nobody takes. "One more trivially-available signal clears it" is what makes this a
+  # cap and not a ban.
+  name_ceiling: possible
+  # CO-LOCATION caps a FORMATION merge at `probable` (D-13.14 / G16). Shared design + site + operator is a
+  # presence-level fact; confirming a *formation* needs a unit-level discriminator. This is anti-fabrication
+  # machinery, not OOB hygiene: `based-at` is functional and unit-keyed, so a formation over-merge makes two
+  # sites one unit's before/after, the supersede path then DRAWS a relocation, removes the analyst, and
+  # deletes the retired edge's Known Gap. One identity error becomes a fabricated movement assessment with
+  # the human taken out of the loop.
+  colocation_ceiling: probable
+  # A same-document STATED-CONTRAST pair caps at `probable` — it reaches the analyst with its licensing
+  # quote and can never auto-merge. Ungraded on purpose: a band ceiling cannot *shatter* an existing
+  # cluster (it withholds one new fusion; the cluster can still form transitively through other pairs), so
+  # the harm a grade gate would have defended against does not exist here. ABSENCE of contrast is NEUTRAL —
+  # never a prior *for* merging either.
+  contrast_ceiling: probable
+
+  # ── D-13.14 / G16 — what the co-location cap is scoped to ─────────────────────────────────────────
+  # The two citizens S2 created. A presence-level merge in a co-location case is EXPECTED and must not be
+  # capped; a formation-level one must be.
+  formation_types: [unit]
+  presence_types: [presence]
+  # Predicates whose SHARED endpoint is co-location evidence, not identity evidence: two batteries at one
+  # airfield operating one design under one branch share all of these BY CONSTRUCTION.
+  colocation_predicates: [based-at, observed-at, instance-of, operated-by, equips, inducted-into]
+  # The unit-level discriminators that CAN confirm a formation over and above co-location. A shared
+  # DESIGNATION is deliberately NOT enough on its own — see hard_id_fields.unique below.
+  formation_discriminators: [designator, echelon, parent_unit, equipment_fingerprint, home_garrison]
+
+  # ── D-13.8 / G18 — the relationship-conflict wall ─────────────────────────────────────────────────
+  # A STATED conflict on one of these predicates at OVERLAPPING times is a HARD WALL, not a relational
+  # score: two units at different sites at overlapping times are different units. The wall joins the
+  # `veto` set — hard AND transitive, re-applied in `finalise`, drawn as a do-not-merge edge and carrying
+  # an analyst-visible reason. Built the geo-veto way it would be non-transitive AND invisible while G18
+  # still passed, which is the failure §5a was written to stop.
+  wall_predicates: [based-at, operated-by]
+  # C1 (as amended by S2): the `based-at` half fires WITHIN ONE site class. A differing class is NOT a
+  # conflict — a unit at its garrison and concurrently at a forward site is one unit with two basings. The
+  # rule is per-(subject, predicate) over EVERY basing of that subject, applied AFTER derivation: a
+  # per-edge tag silently killed the flagship relocation because separation IS de-confliction, so a
+  # PARTIAL tag is worse than none. Any unmapped class on any of a subject's basings ⇒ the whole subject
+  # falls back to ONE bucket (no de-confliction) and the wall RAISES instead of walling, with a named gap.
+  wall_scope_attr: site_type
+
+  # ── C7 — value normalization is a prerequisite for walling on ANY slot ────────────────────────────
+  # The shipped config already states the problem by name: sources write `service_branch` as 'Air Force' /
+  # 'PAF' / 'Pakistan Air Force' and `origin_country` as 'CHINA' vs 'China', and because a critical veto
+  # compares values EXACTLY, walling them "SHATTERS legitimate merges". So both were demoted to
+  # `supporting` — and `supporting` is inert. Normalisation is what lets them be walls again. Applied
+  # BEFORE conflict detection AND BEFORE namespace derivation (normalising only at conflict time would
+  # leave the namespaces split, which is the broken half of D4).
+  # Matching is casefolded and punctuation-collapsed on both sides, so only GENUINE synonyms need a row.
+  value_normalization:
+    service_branch:
+      "Pakistan Air Force": ["PAF", "Air Force", "P.A.F.", "PAF Air Defence", "PAF air defense units"]
+      "Pakistan Army": ["Army", "PA", "Pakistan Army Air Defence", "PAAD", "Army Air Defence"]
+      "Pakistan Navy": ["Navy", "PN"]
+      "People's Liberation Army Air Force": ["PLAAF", "PLA Air Force"]
+      "People's Liberation Army": ["PLA", "PLAGF", "PLA Ground Force"]
+    operator_branch:
+      "Pakistan Air Force": ["PAF", "Air Force", "P.A.F."]
+      "Pakistan Army": ["Army", "PA", "PAAD", "Pakistan Army Air Defence"]
+      "People's Liberation Army Air Force": ["PLAAF", "PLA Air Force"]
+      "People's Liberation Army": ["PLA", "PLAGF"]
+    origin_country:
+      "China": ["CHINA", "PRC", "People's Republic of China", "CN"]
+      "Pakistan": ["PAKISTAN", "PK", "Islamic Republic of Pakistan"]
+    country:
+      "China": ["CHINA", "PRC", "People's Republic of China", "CN"]
+      "Pakistan": ["PAKISTAN", "PK", "Islamic Republic of Pakistan"]
+  # The slots for which an UNNORMALIZABLE stated value takes the third state: NO WALL and NO FUSION, plus
+  # a named gap. All three or none — a gap that does not bind the fusion path is decoration (that is the
+  # rk-14 probe bug: the prototype named the missing operator gap and then asserted the assessment anyway,
+  # drawing a cross-army relocation). A slot listed here is one we intend to WALL on, so an unreadable
+  # value is a refusal on stated grounds, never a silent pass in either direction.
+  normalization_required_attrs: [service_branch, operator_branch, origin_country, country]
+
+  # ── C6 — the two NEW time roles, declared here because they change behaviour ──────────────────────
+  # Merged over the base `attribute_roles` block above, per type and per attribute, ONLY with the flag on.
+  # This is the rung spine/13 §6 lever 2 needs and has never had:
+  #   * a PRESENCE *is* operator + design + site + window, so those are `constitutive` — they cannot change
+  #     without it being a different presence, which is simultaneously (a) what lets two co-located reports
+  #     collapse into ONE presence (agreement on a constitutive attribute can confirm) and (b) what keeps
+  #     a differing one apart (a difference is DISTINCTNESS, not staleness).
+  #   * a PLACE is its coordinates, so `coordinates` is `identifying` on the location-primary types.
+  #   * a FORMATION's geography is `perishable` — a unit moves. Same attribute, opposite role, different
+  #     type: that per-(type, attribute) keying is the half of C6 that was never the problem.
+  attribute_roles:
+    presence:
+      operator_branch: {role: critical, time_role: constitutive}
+      service_branch:  {role: critical, time_role: constitutive}
+      site:            {role: critical, time_role: constitutive}
+      design:          {role: critical, time_role: constitutive}
+      observed_window: {role: supporting, time_role: constitutive}
+      count:           {role: neutral,   time_role: perishable}
+    basing_site:
+      coordinates:     {role: supporting, time_role: identifying}
+    unit:
+      # A unit MOVES: its geography is perishable, and perishable-only evidence cannot confirm it.
+      home_garrison:   {role: supporting, time_role: perishable}
+      designator:      {role: supporting, time_role: durable}
+      echelon:         {role: supporting, time_role: durable}

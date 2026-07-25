@@ -55,9 +55,9 @@ ATTR = "config"  # deliberately NOT a namespace field (namespace() reads country
 # Perishable declarations. The role value is incidental to ``attribute_is_conflict`` itself (it is
 # role-agnostic — the role only decides wall-vs-penalty at the higher level); ``perishable`` is the flag
 # the time-aware exception reads.
-PERISHABLE_CRITICAL = {"gadget": {ATTR: {"role": "critical", "perishable": True}}}
-PERISHABLE_SUPPORTING = {"gadget": {ATTR: {"role": "supporting", "perishable": True}}}
-NONPERISHABLE_CRITICAL = {"gadget": {ATTR: {"role": "critical", "perishable": False}}}
+PERISHABLE_CRITICAL = {"gadget": {ATTR: {"role": "critical", "time_role": "perishable"}}}
+PERISHABLE_SUPPORTING = {"gadget": {ATTR: {"role": "supporting", "time_role": "perishable"}}}
+NONPERISHABLE_CRITICAL = {"gadget": {ATTR: {"role": "critical", "time_role": "durable"}}}
 UNDECLARED_PERISHABLE = {"gadget": {ATTR: {"role": "critical"}}}  # role set, perishable omitted ⇒ None
 
 

@@ -126,7 +126,12 @@ def _resolve(
     place_of = places.place_matches(graph, cfg)
 
     # Effective alias table = seeded config ∪ registry classes ∪ replayed merge_adjudication(accept)s.
-    alias_idx = aliases.build(cfg.alias_table, cfg.transliteration, decisions, cfg.registry_alias_table)
+    # ``require_distinct_forms`` is G19's Phase-1 half: an alias equivalence must rest on a real LINK between
+    # two DIFFERENT surface forms, not on a name being reflexively equal to itself (see AliasIndex.equivalent).
+    alias_idx = aliases.build(
+        cfg.alias_table, cfg.transliteration, decisions, cfg.registry_alias_table,
+        require_distinct_forms=cfg.earned_identity_on,
+    )
 
     # veto = configured distinct-from (by name) ∪ registry distinct-from (by entity id) ∪ gazetteer-distinct
     # place pairs (Karachi-Port ≠ Port-Qasim) ∪ source-asserted distinct-from claims — computed up front so

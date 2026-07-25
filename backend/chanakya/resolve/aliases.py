@@ -19,9 +19,12 @@ from .normalize import normalize
 class AliasIndex:
     """Normalised-name → equivalence-class-id, plus the learned distinct-from pairs (also normalised)."""
 
-    def __init__(self) -> None:
+    def __init__(self, require_distinct_forms: bool = False) -> None:
         self._class_of: dict[str, str] = {}  # normalised name → class root (a normalised name)
         self.distinct: set[frozenset[str]] = set()  # learned do-not-merge {normA, normB}
+        # G19 (RK-COREF/S3): require the two forms to be genuinely DIFFERENT, i.e. a real alias link.
+        # See :meth:`equivalent` — this is the fix for a hole the docstring already promised was closed.
+        self._require_distinct_forms = require_distinct_forms
 
     def _root(self, key: str) -> str:
         root = key
@@ -44,9 +47,26 @@ class AliasIndex:
         Deliberately NOT ``a == b``: identical surface strings are handled by the exact-name bootstrap
         rule (which also checks the namespace), and an empty/unknown name is never alias-equivalent to
         anything — otherwise two blank or same-named-but-different-country entities would silently fuse.
+
+        **The gap that docstring did not actually close (G19, found by the RK-SPIKE review).** Excluding
+        names *absent* from the table is not the same as excluding ``a == b``: for any name that DOES appear
+        in some alias class, ``equivalent(n, n)`` is trivially true because both sides share a root. So two
+        entities whose names normalise to one table entry — a ``component`` and a ``variant`` sharing a
+        designator, or a PLA-side and a PAF-side profile of one design — matched this branch, which is
+        checked **before** the namespace-gated exact-name branch and is itself gated on neither type nor
+        namespace. That made cross-operator *and cross-type* fusion reachable in **Phase 1**, at confidence
+        1.0, bypassing every band and cap. A remedy that only added a namespace key to the Phase-2 fixpoint
+        would have left it wide open.
+
+        ``require_distinct_forms`` (the S3 flag) restores the promise: an alias equivalence needs two
+        genuinely different surface forms joined by a LINK. Identical forms then fall through to the
+        exact-name branch, which checks namespace — and, since S3, type. Default ``False`` keeps the
+        pre-S3 behaviour byte-identical (gate G2).
         """
         if not a or not b:
             return False
+        if self._require_distinct_forms and a == b:
+            return False  # same form ⇒ not an alias LINK; the exact-name branch (type/namespace-gated) owns it
         if a not in self._class_of or b not in self._class_of:
             return False
         return self._root(a) == self._root(b)
@@ -61,6 +81,7 @@ def build(
     transliteration: dict[str, str],
     decisions: list[DecisionRecord] | None,
     registry_alias_table: dict[str, list[str]] | None = None,
+    require_distinct_forms: bool = False,
 ) -> AliasIndex:
     """Seed ∪ registry ∪ replayed accepts → an :class:`AliasIndex`. ``reject``/``split`` feed distinct.
 
@@ -70,7 +91,7 @@ def build(
     one class). That is what lets a registry entry attract every one of its known surface forms at
     confidence 1.0 through the existing alias bootstrap — no new merge path. Absent ⇒ unchanged (gate G2).
     """
-    idx = AliasIndex()
+    idx = AliasIndex(require_distinct_forms=require_distinct_forms)
 
     def norm(s: str) -> str:
         return normalize(s, transliteration)

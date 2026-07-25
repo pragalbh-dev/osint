@@ -78,9 +78,9 @@ def _gadget(eid: str, name: str, history: list[AttrClaim]) -> Entity:
     return Entity(eid=eid, etype="gadget", name=name, attrs=attrs, attr_history=hist)
 
 
-def _cfg(*, role: str = "supporting", perishable: bool = True) -> ResolveConfig:
+def _cfg(*, role: str = "supporting", time_role: str = "perishable") -> ResolveConfig:
     return ResolveConfig.from_bundle(
-        mk_config(attribute_roles={"gadget": {ATTR: {"role": role, "perishable": perishable}}})
+        mk_config(attribute_roles={"gadget": {ATTR: {"role": role, "time_role": time_role}}})
     )
 
 
@@ -113,7 +113,7 @@ def test_transition_witness_true_for_single_source_ordered_succession() -> None:
     """(1) One source asserted an OLDER value and (later) a DIFFERENT newer value, forming a clean ordered
     succession across the two sides ⇒ that source WITNESSED the transition ⇒ True.
     """
-    cfg = _cfg(role="supporting", perishable=True)
+    cfg = _cfg(role="supporting", time_role="perishable")
     a = _gadget("a", "Alpha", [_ac(OLD, "a1", source="src-W", iso="2019-01-01")])
     b = _gadget("b", "Beta", [_ac(NEW, "b1", source="src-W", iso="2023-01-01")])
 
@@ -133,7 +133,7 @@ def test_transition_witness_false_when_two_sources_split_the_transition() -> Non
     The combined series is still a clean ORDERED succession (identical shape to the witnessed case); the
     ONLY difference is that no one source authored both values. So there is no witness ⇒ False.
     """
-    cfg = _cfg(role="supporting", perishable=True)
+    cfg = _cfg(role="supporting", time_role="perishable")
     a = _gadget("a", "Alpha", [_ac(OLD, "a1", source="src-1", iso="2019-01-01")])
     b = _gadget("b", "Beta", [_ac(NEW, "b1", source="src-2", iso="2023-01-01")])
 
@@ -152,7 +152,7 @@ def test_transition_witness_false_when_series_is_a_contradiction() -> None:
     This isolates the ``ordered`` precondition: the value-witness clause alone would pass, so the False
     verdict must be the succession-shape gate doing its job.
     """
-    cfg = _cfg(role="supporting", perishable=True)
+    cfg = _cfg(role="supporting", time_role="perishable")
     a = _gadget("a", "Alpha", [_ac(OLD, "a1", source="src-W", iso="2022-06-01")])
     b = _gadget("b", "Beta", [_ac(NEW, "b1", source="src-W", iso="2022-06-01")])  # same date ⇒ contradiction
 
@@ -169,7 +169,7 @@ def test_transition_witness_false_when_no_distinct_value_change() -> None:
     Both sides state the identical value at distinct times: one distinct value ⇒ the succession is
     ``single`` (an agreement, not a succession), so there is nothing for a witness to have witnessed.
     """
-    cfg = _cfg(role="supporting", perishable=True)
+    cfg = _cfg(role="supporting", time_role="perishable")
     a = _gadget("a", "Alpha", [_ac(OLD, "a1", source="src-W", iso="2019-01-01")])
     b = _gadget("b", "Beta", [_ac(OLD, "b1", source="src-W", iso="2023-01-01")])  # SAME value
 
@@ -185,7 +185,7 @@ def test_transition_witness_false_for_neutral_attribute() -> None:
     on it is NOT a witness ⇒ False.
     """
     cfg = ResolveConfig.from_bundle(
-        mk_config(attribute_roles={"gadget": {ATTR: {"role": "neutral", "perishable": True}}})
+        mk_config(attribute_roles={"gadget": {ATTR: {"role": "neutral", "time_role": "perishable"}}})
     )
     a = _gadget("a", "Alpha", [_ac(OLD, "a1", source="src-W", iso="2019-01-01")])
     b = _gadget("b", "Beta", [_ac(NEW, "b1", source="src-W", iso="2023-01-01")])
@@ -210,7 +210,7 @@ def test_durable_support_true_for_witnessed_transition_false_for_unwitnessed() -
     values split across two sources) is NOT durable — the 3B-iii-A behaviour, preserved. The two sub-cases
     differ ONLY in whether one source authored both values, so the witness is the sole cause of the flip.
     """
-    cfg = _cfg(role="supporting", perishable=True)
+    cfg = _cfg(role="supporting", time_role="perishable")
     assert cfg.hard_id_fields("unique") == {}  # shared precondition: no other durable channel
 
     # WITNESSED — one source (src-W) authored both values ⇒ durable
@@ -280,7 +280,7 @@ def test_witnessed_transition_confirms_while_unwitnessed_caps_to_probable() -> N
     old_iso, new_iso = "2019-01-01", "2023-01-01"
 
     cfg = mk_config(
-        attribute_roles={"gadget": {ATTR: {"role": "supporting", "perishable": True}}},
+        attribute_roles={"gadget": {ATTR: {"role": "supporting", "time_role": "perishable"}}},
         auto_merge_by_type={"gadget": floor},
     )
     rc = ResolveConfig.from_bundle(cfg)
