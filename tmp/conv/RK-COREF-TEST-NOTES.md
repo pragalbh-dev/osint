@@ -16,9 +16,9 @@ never read.
 | `backend/tests/resolve/test_rk_coref_plumbing.py` | 13 | both switches · the referent mint · the quote · the contrast lane · earned merges |
 | `backend/tests/gates/test_g16_colocation_cap.py` | 9 | **G16** — C2's three absences |
 | `backend/tests/gates/test_g18_relationship_wall.py` | 13 | **G18** — C1 amended, the channel, C11 |
-| `backend/tests/gates/test_g19_cross_namespace_non_fusion.py` | 10 | **G19** — both phases + the alias-reflexivity hole |
+| `backend/tests/gates/test_g19_cross_namespace_non_fusion.py` | 11 | **G19** — both phases + the alias-reflexivity hole |
 
-**107 new tests: 73 fail against current code, 34 pass.** Suite total `1219 passed, 73 failed, 6 skipped,
+**108 new tests: 74 fail against current code, 34 pass.** Suite total `1219 passed, 74 failed, 6 skipped,
 2 xfailed` — the pre-existing suite is untouched (baseline in this worktree measured **1185 passed, 6 skipped,
 2 xfailed**; note the brief's 1184/7 differs by one skip↔pass, before any of my files existed).
 
@@ -178,10 +178,11 @@ guard — each one names, in its own failure message, the over-correction it exi
 |✗|`the_alias_branch_cannot_fuse_across_namespaces_in_phase_one`|Phase-1 cross-operator|"never across operators within the instance layer"|
 |✗|`the_alias_branch_cannot_fuse_across_types_in_phase_one`|Phase-1 cross-**type**|§4: "making cross-operator **and cross-type** fusion reachable in **Phase 1**"|
 |✓|`an_exact_name_match_inside_one_namespace_still_bootstraps`|the ordinary bootstrap survives|the mirror|
-|✗|`the_phase_two_fixpoint_cannot_fuse_across_namespaces`|Phase-2 fixpoint|D4: "**never the Phase-2 fuzzy fixpoint** … relational blocking emits pairs with **no namespace key**"|
-|✓|`an_unstated_namespace_is_a_wildcard_not_a_conflict`|absence ≠ disagreement|"an unstated namespace is a **wildcard**, not a conflict"|
-|✓|`a_shared_namespace_still_fuses_in_the_fixpoint`|not a blanket wall|the mirror|
-|✓✓|`the_namespace_guard_reads_a_normalized_value[PAKISTAN/pakistan]`|normalized namespace|"normalizing only at conflict time would leave namespaces split"|
+|✗|`the_phase_two_fixpoint_cannot_fuse_across_namespaces`|Phase-2 fixpoint, **design-layer** pair (M15)|D4: "**never the Phase-2 fuzzy fixpoint** … relational blocking emits pairs with **no namespace key**"|
+|✓|`an_unstated_namespace_is_a_wildcard_not_a_conflict`|absence ≠ disagreement (design-layer control)|"an unstated namespace is a **wildcard**, not a conflict"|
+|✓|`a_shared_namespace_still_fuses_in_the_fixpoint`|not a blanket wall (design-layer control)|the mirror|
+|✗|`the_instance_layer_cannot_fuse_across_namespaces_either`|the instance-layer clause, over a pair G16 **permits** (shared composite id)|spine/13 §3: "never across operators **within the instance layer**"; M15: "a unit-level discriminator and therefore *legitimately* confirms under G16"|
+|✓✓|`the_namespace_guard_reads_a_normalized_value[PAKISTAN/pakistan]`|normalized namespace (design-layer control)|"normalizing only at conflict time would leave namespaces split"|
 
 ---
 
@@ -246,6 +247,33 @@ the test rather than guess at it.
 18. **M4 is honoured, not asserted**: G16/G18/G19 carry a docstring note that they are fixture-only on this
     corpus by measurement, so nobody later "fixes" them with a corpus-dependent assertion.
 
+## Standing rule for S4 (ruling M15) — a control must not be restrained by another gate
+
+**What happened here.** G19's must-fuse controls were built from `shared_neighbours` over two `unit`s — which
+my own toolkit docstring calls "the co-location evidence class and nothing else". That is precisely what G16
+forbids from confirming a formation merge, so **the two gates contended**: G19's control could not pass while
+G16's cap held. The implementer kept the cap and escalated rather than weakening it, which was right —
+"weakening G16 to make G19's control go green is the F8 trap wearing G16's clothing."
+
+**Fixed by changing the fixture, never a cap.** The Phase-2 controls are now a **design-layer** pair (two
+`variant`s sharing a manufacturer and a component): G16 governs the *instance* layer, so co-location has no
+claim on them, and the design layer is also the permissive profile — which makes it the sharper place to
+assert the boundary ("even where fusion is easy, it must not cross an operator"). The instance-layer clause
+keeps its own case, built on M15's second option: a pair sharing a composite `(service_branch, designator)`
+identifier, which G16 *legitimately* confirms, so the namespace boundary is the only thing left that can
+refuse it. It asserts its own premise (`hard_id_fields.unique` declared) first, so it cannot pass vacuously
+while the composite key is still missing.
+
+**The rule to carry into S4:** *a gate's control must be built from an evidence class no **other** gate
+restrains.* Otherwise two gates contend and the pressure lands on whichever cap is easier to loosen — which is
+how a safety property gets traded away to make a suite green. Before writing a must-fuse mirror, ask which
+other gate governs the evidence class it is built from; if any does, pick another class. Checked here against
+G16 (instance-layer co-location), G18 (stated placement/operator conflicts), D-13.10's name cap, C7's critical
+walls, the geo veto and the shipped `distinct_from` traps.
+
+**This is the second time an input choice routed a mirror into the wrong branch** — S2's unstated site classes
+was the first — so it belongs in the method, not in a changelog.
+
 ## Two interlocks worth knowing before you start
 
 * **Fixing G19 without C7's normalization breaks a mirror.** `a_normalizable_branch_variant_does_not_wall`
@@ -257,7 +285,7 @@ the test rather than guess at it.
   declaration moves and `attribute_perishable` still reads the old key. That is the S2 hand-copied-knob
   failure, reproduced as a tripwire.
 
-## Verbatim failure signatures (73), current code
+## Verbatim failure signatures (74), current code
 
 ```
   tests/resolve/test_rk_coref_autobind.py:65: AssertionError: a grade-E source's in-document alias FUSED two manufacturers at confidence 1.0. An authoritative bind bypasses banding, so the grade floor is the only thing restraining it — and a stated `same-as` from the same source would be grade-floored AND raise-only. That inversion is what D-13.17's grade gate closes. Partition: same_as=[('m2', 'm1')]
@@ -297,14 +325,6 @@ the test rather than guess at it.
   tests/resolve/test_rk_coref_ladder.py:311: AssertionError: unit.service_branch is declared {'role': 'supporting', 'perishable': False}. Once normalization exists, a different service branch is a different entity — that promotion is the whole reason C7 makes normalization a prerequisite.
   tests/resolve/test_rk_coref_ladder.py:323: AssertionError: a PAF unit and a Pakistan Army unit sharing designator '8' were fused — the reuse of designations across armies is precisely why the composite key exists. same_as=[('b', 'a')]
   tests/resolve/test_rk_coref_ladder.py:369: AssertionError: the pair FUSED while its critical discriminator 'P.A.F. (Northern)' could not be normalized — the gap annotated the answer instead of binding it. This is the rk-14-probe critical bug verbatim: name the gap, then assert the assessment anyway. same_as=[('b', 'a')]
-  tests/resolve/test_rk_coref_time_role.py:41: AssertionError: these attribute_roles entries declare no legal time_role: {'component.component_class': None, 'component.radar_band': None, 'manufacturer.tier': None, 'trading_org.origin_country': None, 'unit.alert_posture': None, 'unit.service_branch': None, 'variant.family': None, 'variant.operator_branch': None, 'variant.range_class': None}. C6's four values are ('durable', 'perishable', 'constitutive', 'identifying'); a boolean cannot carry three states, which is why the closure was re-specified.
-  tests/resolve/test_rk_coref_time_role.py:53: AssertionError: these entries still carry a bare `perishable:` key: ['component.component_class', 'component.radar_band', 'manufacturer.tier', 'trading_org.origin_country', 'unit.alert_posture', 'unit.service_branch', 'variant.family', 'variant.range_class']. The standing directive is that no migration shim outlives the stage that introduces it — 'a dual-form loader biases every later implementer toward the old shape'.
-  tests/resolve/test_rk_coref_time_role.py:78: AssertionError: a config declaring the old boolean `perishable:` was accepted in silence. It then behaves as an *undeclared* time role — i.e. as `durable` — so a perishable attribute silently becomes durable identity support and the D-13.9(a) cap evaporates. That is worse than a crash.
-  tests/resolve/test_rk_coref_time_role.py:94: AssertionError: no shipped declaration uses ['constitutive', 'identifying'] (roles in use: []). Renaming `perishable: true|false` to `time_role: perishable|durable` carries two of the four states and leaves the anchor/design layer unable to confirm anything — rk-20 and rk-17 both.
-  tests/resolve/test_rk_coref_time_role.py:122: AssertionError: no attribute of the presence citizen ['contract_import_event', 'presence', 'interceptor_stockpile'] is declared `constitutive` (attribute_roles covers ['component', 'manufacturer', 'trading_org', 'unit', 'variant']). A presence *is* operator+design+site+window, so without this the presence layer can never confirm and every report of one battery becomes another presence.
-  tests/resolve/test_rk_coref_time_role.py:146: AssertionError: no geography attribute is declared in attribute_roles at all, so geography has no time role on any citizen. Declared attributes: ['alert_posture', 'component_class', 'family', 'operator_branch', 'origin_country', 'radar_band', 'range_class', 'service_branch', 'tier']
-  tests/resolve/test_rk_coref_time_role.py:194: AssertionError: two presences of the same design, at the same coordinate, under the same operator, in the same window did not collapse (status=probable, breakdown={'attribute': 0.6853193773483629, 'relational': 1.0, 'temporal_consistency': 1.0, 'source_asserted': 0.0, 'total': 0.7241277509393452}). Constitutive geography is what lets a presence confirm at all; without it the presence layer fragments per report and the OOB count inflates.
-  tests/resolve/test_rk_coref_time_role.py:286: AssertionError: the units' relational signal is 0.0 even though both are based at what the resolver itself decided is ONE place. The place merge lands after the entity fixpoint, so the shared anchor is invisible exactly where lever 2 claims to work.
   tests/resolve/test_rk_coref_plumbing.py:40: AssertionError: config/credibility.yaml declares no `coreference` block, so ingest/coref.py returns [] and Tier 0 produces nothing. Scope 1 promotes the pass from optional to REQUIRED — that is this switch.
   tests/resolve/test_rk_coref_plumbing.py:56: AssertionError: config/resolution.yaml still ships `coref_authoritative_evidence: []`, so every cluster is raise-only and D-13.17's policy is inert. 'Two independent gates must both flip.'
   tests/resolve/test_rk_coref_plumbing.py:77: AssertionError: the switch is still off and the comment still justifies it with the d10 'HT-233 (H-200)' demo beat. The policy is decided on general principle; 'the data pass owes a re-carried beat'.
@@ -315,6 +335,14 @@ the test rather than guess at it.
   tests/resolve/test_rk_coref_plumbing.py:208: AssertionError: a document that syntactically distinguishes its two mentions still auto-merged them. same_as=[('u2', 'u1')]
   tests/resolve/test_rk_coref_plumbing.py:228: AssertionError: config/resolution.yaml declares no contrast knob (searched every resolution key for 'contrast'; keys are ['acronym_min_len', 'alias_table', 'attribute_roles', 'auto_merge_by_type', 'bands', 'blocking_keys', 'containment_min_descriptor_len', 'containment_min_short_tokens', 'coref_authoritative_evidence', 'coverage_gap_ratio', 'critical_veto_min_grade', 'distinct_from', 'entity_geo_conflict_max_km', 'high_alias_risk_types', 'identity_raise_min_weight', 'identity_source_weight_default', 'llm_candidate_gen', 'merge_weights', 'name_alone_caps_at_possible', 'orphan_block_threshold_k', 'place_allowed_precision_classes', 'place_bind_on_curated_toponym', 'place_entity_types', 'place_identity_precision_classes', 'place_min_geocode_confidence', 'place_proximity_hitl_multiplier', 'place_proximity_radius_m', 'relational_support_k', 'toponym_descriptive_markers', 'transliteration'])
   tests/resolve/test_rk_coref_plumbing.py:300: AssertionError: no stored breakdown names a `name` signal, so 'this merge rests on the name alone' is not even expressible and this invariant cannot be checked. Signals seen: ['attribute', 'relational', 'source_asserted', 'temporal_consistency', 'total']
+  tests/resolve/test_rk_coref_time_role.py:41: AssertionError: these attribute_roles entries declare no legal time_role: {'component.component_class': None, 'component.radar_band': None, 'manufacturer.tier': None, 'trading_org.origin_country': None, 'unit.alert_posture': None, 'unit.service_branch': None, 'variant.family': None, 'variant.operator_branch': None, 'variant.range_class': None}. C6's four values are ('durable', 'perishable', 'constitutive', 'identifying'); a boolean cannot carry three states, which is why the closure was re-specified.
+  tests/resolve/test_rk_coref_time_role.py:53: AssertionError: these entries still carry a bare `perishable:` key: ['component.component_class', 'component.radar_band', 'manufacturer.tier', 'trading_org.origin_country', 'unit.alert_posture', 'unit.service_branch', 'variant.family', 'variant.range_class']. The standing directive is that no migration shim outlives the stage that introduces it — 'a dual-form loader biases every later implementer toward the old shape'.
+  tests/resolve/test_rk_coref_time_role.py:78: AssertionError: a config declaring the old boolean `perishable:` was accepted in silence. It then behaves as an *undeclared* time role — i.e. as `durable` — so a perishable attribute silently becomes durable identity support and the D-13.9(a) cap evaporates. That is worse than a crash.
+  tests/resolve/test_rk_coref_time_role.py:94: AssertionError: no shipped declaration uses ['constitutive', 'identifying'] (roles in use: []). Renaming `perishable: true|false` to `time_role: perishable|durable` carries two of the four states and leaves the anchor/design layer unable to confirm anything — rk-20 and rk-17 both.
+  tests/resolve/test_rk_coref_time_role.py:122: AssertionError: no attribute of the presence citizen ['contract_import_event', 'presence', 'interceptor_stockpile'] is declared `constitutive` (attribute_roles covers ['component', 'manufacturer', 'trading_org', 'unit', 'variant']). A presence *is* operator+design+site+window, so without this the presence layer can never confirm and every report of one battery becomes another presence.
+  tests/resolve/test_rk_coref_time_role.py:146: AssertionError: no geography attribute is declared in attribute_roles at all, so geography has no time role on any citizen. Declared attributes: ['alert_posture', 'component_class', 'family', 'operator_branch', 'origin_country', 'radar_band', 'range_class', 'service_branch', 'tier']
+  tests/resolve/test_rk_coref_time_role.py:194: AssertionError: two presences of the same design, at the same coordinate, under the same operator, in the same window did not collapse (status=probable, breakdown={'attribute': 0.6853193773483629, 'relational': 1.0, 'temporal_consistency': 1.0, 'source_asserted': 0.0, 'total': 0.7241277509393452}). Constitutive geography is what lets a presence confirm at all; without it the presence layer fragments per report and the OOB count inflates.
+  tests/resolve/test_rk_coref_time_role.py:286: AssertionError: the units' relational signal is 0.0 even though both are based at what the resolver itself decided is ONE place. The place merge lands after the entity fixpoint, so the shared anchor is invisible exactly where lever 2 claims to work.
   tests/gates/test_g16_colocation_cap.py:129: AssertionError: two formation mentions sharing a base, a design and an operator — and nothing unit-level — were CONFIRMED as one unit. That is an order-of-battle undercount by construction: every battery at a base shares exactly this evidence. same_as=[('unit_b', 'unit_a')] breakdown={'attribute': 1.0, 'relational': 1.0, 'temporal_consistency': 1.0, 'source_asserted': 0.0, 'total': 0.8500000000000001}
   tests/gates/test_g16_colocation_cap.py:143: AssertionError: the co-located pair reads 'confirmed': it was either fused or dropped entirely, and the analyst is never asked whether these two mentions are one battery. 'Residual surfaced as a coverage item' requires the link to exist and stay sub-confirmed. candidates=[] possible=[]
   tests/gates/test_g16_colocation_cap.py:195: AssertionError: the presence-level pair did not merge on identical site + design + operator + window. C6 makes that geography *constitutive* for a presence, and C2 says the presence merge is expected — so a cap that swallowed it has over-corrected. status=probable
@@ -329,8 +357,9 @@ the test rather than guess at it.
   tests/gates/test_g18_relationship_wall.py:260: AssertionError: `operated-by` is declared {'name': 'operated-by', 'from': ['unit', 'presence'], 'to': 'operator', 'freshness_class': 'semi-durable'} — non-extractor, so no source can ever state one and G18's operator arm is fixture-only forever. If that is the accepted outcome it must be stated in the gate and disclosed, never discovered later.
   tests/gates/test_g18_relationship_wall.py:273: AssertionError: two mentions stated under two different operators at the same time were fused. Operator is the namespace of an order-of-battle map: 'never across operators within the instance layer'. same_as=[('unit_b', 'unit_a')]
   tests/gates/test_g18_relationship_wall.py:292: AssertionError: 'operated-by' is not extractor-emittable, so this arm of G18 can only ever fire on hand-written fixtures. That is C11's 'the gate half-lies' condition; declare it and disclose it.
-  tests/gates/test_g19_cross_namespace_non_fusion.py:74: AssertionError: AliasIndex.equivalent('hq 9 p', 'hq 9 p') is True: any name inside an alias class is alias-equivalent to ITSELF, so two identically-named entities take the alias branch and never reach the exact-name branch that checks type and namespace. That is a Phase-1 bootstrap merge at confidence 1.0 across an operator boundary.
-  tests/gates/test_g19_cross_namespace_non_fusion.py:108: AssertionError: two 'HQ-9/P' mentions in DIFFERENT stated namespaces (China / Pakistan) fused in the Phase-1 bootstrap. The exact-name branch is namespace-gated; the alias branch is not, and a name inside the alias table reaches the alias branch first. same_as=[('b', 'a')]
-  tests/gates/test_g19_cross_namespace_non_fusion.py:121: AssertionError: a `variant` and a `unit` both named 'HQ-9/P' were fused into one node. A weapon design and a military formation are not the same entity under any evidence — T3b-A's own words: asking whether an air-defence sector is an air-defence centre 'is not triage, it is noise'. same_as=[('b', 'a')]
-  tests/gates/test_g19_cross_namespace_non_fusion.py:163: AssertionError: a PLA-side and a PAF-side formation were auto-merged by the fuzzy fixpoint on a shared neighbourhood. This is 'the single most dangerous over-merge class for an operator-scoped OOB map' — it silently moves an adversary's battery into the wrong army. same_as=[('b', 'a')] breakdown={'attribute': 1.0, 'relational': 1.0, 'temporal_consistency': 1.0, 'source_asserted': 0.0, 'total': 0.8500000000000001}
+  tests/gates/test_g19_cross_namespace_non_fusion.py:100: AssertionError: AliasIndex.equivalent('hq 9 p', 'hq 9 p') is True: any name inside an alias class is alias-equivalent to ITSELF, so two identically-named entities take the alias branch and never reach the exact-name branch that checks type and namespace. That is a Phase-1 bootstrap merge at confidence 1.0 across an operator boundary.
+  tests/gates/test_g19_cross_namespace_non_fusion.py:134: AssertionError: two 'HQ-9/P' mentions in DIFFERENT stated namespaces (China / Pakistan) fused in the Phase-1 bootstrap. The exact-name branch is namespace-gated; the alias branch is not, and a name inside the alias table reaches the alias branch first. same_as=[('b', 'a')]
+  tests/gates/test_g19_cross_namespace_non_fusion.py:147: AssertionError: a `variant` and a `unit` both named 'HQ-9/P' were fused into one node. A weapon design and a military formation are not the same entity under any evidence — T3b-A's own words: asking whether an air-defence sector is an air-defence centre 'is not triage, it is noise'. same_as=[('b', 'a')]
+  tests/gates/test_g19_cross_namespace_non_fusion.py:194: AssertionError: a PLA-side and a Pakistan-side design were auto-merged by the fuzzy fixpoint on a shared manufacturer and component. This is 'the single most dangerous over-merge class for an operator-scoped OOB map' — spine/13 §3: identity is never resolved across operators. same_as=[('b', 'a')] breakdown={'attribute': 1.0, 'relational': 1.0, 'temporal_consistency': 1.0, 'source_asserted': 0.0, 'total': 0.8500000000000001}
+  tests/gates/test_g19_cross_namespace_non_fusion.py:241: AssertionError: `hard_id_fields.unique` is undeclared, so the composite identifier cannot fire and this pair has no legitimate route to fusion — the assertion below would pass for the wrong reason (see the ladder suite's composite-declaration test)
 ```

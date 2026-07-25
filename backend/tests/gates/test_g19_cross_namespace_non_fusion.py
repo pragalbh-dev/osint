@@ -47,13 +47,39 @@ ALIASED_NAME = next(iter(rc.resolution_keys()["alias_table"]))
 CHINA, PAKISTAN = "China", "Pakistan"
 
 
+#: A design-layer name that is NOT in the alias table, so a same-name pair reaches the exact-name /
+#: fixpoint path rather than the alias branch.
+PLAIN_NAME = "Type Nine SAM"
+
+
 def _two(etype_a: str, etype_b: str, name: str, ns_a: str | None, ns_b: str | None,
-         *, scaffold: bool = False) -> list:
+         *, scaffold: bool = False, attrs: dict | None = None) -> list:
     claims = [
-        rc.ent("a", etype_a, name, attrs={"country": ns_a} if ns_a else {}, doc="d1"),
-        rc.ent("b", etype_b, name, attrs={"country": ns_b} if ns_b else {}, doc="d2", sid="mid"),
+        rc.ent("a", etype_a, name, attrs=(attrs or {}) | ({"country": ns_a} if ns_a else {}), doc="d1"),
+        rc.ent("b", etype_b, name, attrs=(attrs or {}) | ({"country": ns_b} if ns_b else {}),
+               doc="d2", sid="mid"),
     ]
-    return claims + (rc.shared_neighbours("a", "b") if scaffold else [])
+    return claims + (_design_scaffold("a", "b") if scaffold else [])
+
+
+def _design_scaffold(a: str, b: str) -> list:
+    """Two shared **design-layer** neighbours for a pair of variants — a maximal relational score.
+
+    **Ruling M15.** The earlier version of this scaffold shared a design and an operator between two
+    ``unit``s, which is "the co-location evidence class and nothing else" — and G16 forbids exactly that from
+    confirming a formation merge, so G19's must-fuse control and G16's cap contended. "A gate must never be
+    relaxed to satisfy another gate's fixture." G16 governs the **instance** layer, so a design-layer pair
+    (sharing a manufacturer and a component) fuses for a reason no other gate restrains, which leaves the
+    namespace/type gating as the only thing under test here.
+    """
+    return [
+        rc.ent("mfr", "manufacturer", "Northern Machinery Works", doc="d1"),
+        rc.ent("comp", "component", "TR-40 tracking radar", doc="d1"),
+        rc.rel(f"r-man-{a}", "mfr", "manufactures", a, doc="d1", iso="2020-01-01"),
+        rc.rel(f"r-man-{b}", "mfr", "manufactures", b, doc="d2", iso="2020-02-01", sid="mid"),
+        rc.rel(f"r-eq-{a}", "comp", "equips", a, doc="d1", iso="2020-01-01"),
+        rc.rel(f"r-eq-{b}", "comp", "equips", b, doc="d2", iso="2020-02-01", sid="mid"),
+    ]
 
 
 # ── the alias-index contract itself ──────────────────────────────────────────────────────────────
@@ -149,21 +175,26 @@ def test_an_exact_name_match_inside_one_namespace_still_bootstraps() -> None:
 
 
 # ── Phase 2: the fuzzy fixpoint, which no namespace key ever guarded ─────────────────────────────
+#
+# Every pair below is **design-layer** (ruling M15): G16 governs the instance layer, so co-location has no
+# claim on these, and the namespace/type gating is the only thing that can decide them. The design layer is
+# also the *permissive* profile ("design collapses readily"), which makes it the sharper place to assert the
+# boundary: even where fusion is easy, it must not cross an operator.
 
 def test_the_phase_two_fixpoint_cannot_fuse_across_namespaces() -> None:
     """D4: "``namespace_compatible`` … **never the Phase-2 fuzzy fixpoint** — and relational blocking emits
     pairs with **no namespace key**", so the pair is both generated and scored across the boundary.
 
-    Reached here by a maximal relational score rather than by a bootstrap trigger, so it exercises the
-    *other* code path: a remedy that gates only Phase 1 fails this, and one that gates only Phase 2 fails
-    the two tests above.
+    Reached by a maximal relational score with no bootstrap trigger available (the name is not in the alias
+    table and the exact-name branch is namespace-gated), so it exercises the *other* code path: a remedy that
+    gates only Phase 1 fails this, and one that gates only Phase 2 fails the two alias tests above.
     """
-    part = rc.part_of(_two("unit", "unit", "Alpha Battery", CHINA, PAKISTAN, scaffold=True), rc.bundle())
+    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, CHINA, PAKISTAN, scaffold=True), rc.bundle())
 
     assert not rc.fused(part, "a", "b"), (
-        "a PLA-side and a PAF-side formation were auto-merged by the fuzzy fixpoint on a shared "
-        "neighbourhood. This is 'the single most dangerous over-merge class for an operator-scoped OOB map' "
-        f"— it silently moves an adversary's battery into the wrong army. "
+        "a PLA-side and a Pakistan-side design were auto-merged by the fuzzy fixpoint on a shared "
+        "manufacturer and component. This is 'the single most dangerous over-merge class for an "
+        "operator-scoped OOB map' — spine/13 §3: identity is never resolved across operators. "
         f"same_as={part.same_as} breakdown={rc.signals(part, 'a', 'b')}"
     )
 
@@ -177,7 +208,7 @@ def test_an_unstated_namespace_is_a_wildcard_not_a_conflict() -> None:
     Most of the graph is minted endpoints with no attrs; requiring both sides to *state* a matching
     namespace would stop the resolver merging almost anything.
     """
-    part = rc.part_of(_two("unit", "unit", "Alpha Battery", PAKISTAN, None, scaffold=True), rc.bundle())
+    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, PAKISTAN, None, scaffold=True), rc.bundle())
 
     assert rc.fused(part, "a", "b"), (
         "a pair with one stated namespace and one unstated was refused. Absence is not disagreement — the "
@@ -188,11 +219,40 @@ def test_an_unstated_namespace_is_a_wildcard_not_a_conflict() -> None:
 
 def test_a_shared_namespace_still_fuses_in_the_fixpoint() -> None:
     """The other half of the same mirror: within one namespace the fixpoint must still do its work."""
-    part = rc.part_of(_two("unit", "unit", "Alpha Battery", PAKISTAN, PAKISTAN, scaffold=True), rc.bundle())
+    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, PAKISTAN, PAKISTAN, scaffold=True), rc.bundle())
 
     assert rc.fused(part, "a", "b"), (
-        "two same-namespace formations sharing a full neighbourhood no longer fuse — the namespace guard "
-        f"has become a wall on every pair. status={rc.status(part, 'a', 'b')}"
+        "two same-namespace designs sharing a full neighbourhood no longer fuse — the namespace guard has "
+        f"become a wall on every pair. status={rc.status(part, 'a', 'b')}"
+    )
+
+
+# ── the instance layer, without contending with G16's cap ────────────────────────────────────────
+
+def test_the_instance_layer_cannot_fuse_across_namespaces_either() -> None:
+    """spine/13 §3's clause is about the instance layer — "never across operators **within the instance
+    layer**" — so it needs its own case; but the pair must be one G16 *permits*.
+
+    Ruling M15's second option: two formations sharing a **composite ``(service_branch, designator)``**
+    identifier, which "is a unit-level discriminator and therefore *legitimately* confirms under G16". So the
+    only thing left that can refuse it is the namespace boundary — no cap is being leaned on, and neither
+    gate has to bend.
+    """
+    assert rc.hard_id_unique(), (
+        "`hard_id_fields.unique` is undeclared, so the composite identifier cannot fire and this pair has no "
+        "legitimate route to fusion — the assertion below would pass for the wrong reason (see the ladder "
+        "suite's composite-declaration test)"
+    )
+    part = rc.part_of(
+        _two("unit", "unit", "8th AD Battalion", CHINA, PAKISTAN,
+             attrs={"service_branch": "PAF", "designator": "8"}),
+        rc.bundle(),
+    )
+
+    assert not rc.fused(part, "a", "b"), (
+        "two formations were fused across an operator boundary on a shared composite identifier. The "
+        "composite key 'lifts all caps' *within* a namespace — it does not license identity across armies, "
+        f"which is exactly the reuse-across-armies problem D-13.20 exists for. same_as={part.same_as}"
     )
 
 
@@ -208,7 +268,7 @@ def test_the_namespace_guard_reads_a_normalized_value(value_b: str) -> None:
     un-normalized namespace guard splits one operator into several and *creates* fragmentation while
     claiming to prevent over-merge.
     """
-    part = rc.part_of(_two("unit", "unit", "Alpha Battery", PAKISTAN, value_b, scaffold=True), rc.bundle())
+    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, PAKISTAN, value_b, scaffold=True), rc.bundle())
 
     assert rc.fused(part, "a", "b"), (
         f"{PAKISTAN!r} and {value_b!r} were treated as different namespaces, so one operator became two. "
