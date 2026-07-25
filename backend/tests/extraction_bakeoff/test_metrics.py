@@ -225,6 +225,33 @@ def test_mentions_that_align_to_no_gold_claim_are_reported_not_graded() -> None:
     assert discriminator_metrics(tally)["discriminator_capture"].status == "unavailable"
 
 
+def test_an_empty_discriminator_denominator_blames_the_candidate_not_the_slice() -> None:
+    """A candidate whose mentions align to nothing must not be reported as an unlabeled GOLD.
+
+    Both are "not measured", but they send an operator to different files: one is a model that read the
+    document badly, the other is a hole in the answer key. On the real slice 95 discriminator slots are
+    labeled, so "the gold labels none" would be flatly false — and it is the same wrong-file failure the
+    coref channel's cause reporting already exists to avoid.
+    """
+    payload = {"manufacturers": [{"name": "Some Other Entity", "context": {"operator": "x"}}]}
+    tally = tally_discriminators([payload], [GOLD_ENTITY], POLICY)
+    assert tally.aligned == 0
+    reason = discriminator_metrics(tally)["discriminator_capture"].reason or ""
+    assert "no model mention aligned" in reason
+    assert "NOT about the slice" in reason
+
+
+def test_a_genuinely_unlabeled_slice_still_says_so() -> None:
+    """The other half: when a mention DID align and the gold labels nothing, blame the slice."""
+    unlabeled = entity("g9", "North Ridge Foundry")   # no discriminators stated
+    payload = {"manufacturers": [{"name": "North Ridge Foundry"}]}
+    tally = tally_discriminators([payload], [unlabeled], POLICY)
+    assert tally.aligned == 1
+    reason = discriminator_metrics(tally)["discriminator_capture"].reason or ""
+    assert "the gold slice labels no stated discriminators" in reason
+    assert "aligned entity claim" in reason
+
+
 def test_the_mention_walk_finds_nested_mentions_in_any_format() -> None:
     payload = {"tender": {"oem": {"name": "North Ridge Foundry",
                                   "context": {"operator": "the Regional Water Board"}}}}
@@ -239,6 +266,32 @@ def test_coref_binding_reports_no_clustering_not_a_number() -> None:
     metric = coref_binding(match_claims(gold, got, POLICY))
     assert metric.status == "unavailable" and metric.value is None
     assert metric.reason == NO_CLUSTERING
+
+
+def test_coref_binding_that_aligned_nothing_blames_the_candidate_not_the_gold() -> None:
+    """The top-weighted criterion must not report a labeled slice as unlabeled.
+
+    A candidate whose claims align with no gold claim reaches no cluster label, and the honest reason is
+    that nothing aligned. Reporting "the gold carries no coref_cluster labels" points the operator at the
+    answer file to fix an extraction problem — and on the real slice, where 51 of 65 claims are labeled,
+    it is false.
+    """
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A")]
+    got = [entity("c1", "Something Else Entirely", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY))
+    assert metric.status == "unavailable" and metric.value is None
+    assert "no extracted claim aligned" in (metric.reason or "")
+    assert "NOT about the slice" in (metric.reason or "")
+    assert "1 gold claim(s) do carry coref_cluster labels" in (metric.reason or "")
+
+
+def test_coref_binding_on_an_alignment_with_no_labels_blames_the_alignment() -> None:
+    """The other half: claims aligned, but none of the aligned gold carries a label."""
+    gold = [entity("g1", "North Ridge Foundry")]          # no coref_cluster
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY))
+    assert metric.status == "unavailable"
+    assert "none of the 1 aligned gold claim(s) carry coref_cluster labels" in (metric.reason or "")
 
 
 def test_coref_binding_computes_bcubed_once_referents_exist() -> None:

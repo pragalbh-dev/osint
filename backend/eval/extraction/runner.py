@@ -175,6 +175,7 @@ def score_run(
         claims=tuple(surfaces),
         image_calls_ok=sum(1 for c in image_calls if c.ok),
         image_calls_total=len(image_calls),
+        calls_total=len(recorder.calls),
     )
 
 

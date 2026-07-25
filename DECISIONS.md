@@ -1540,6 +1540,37 @@ this a deliberate re-tuning rather than a silent drift — and is **re-armed poi
 behaviour**, now asserting *both* directions so neither can move quietly:
 `test_a_dehyphenated_designator_matches_and_a_sibling_designator_does_not`.
 
+### RK-BAKEOFF integration — the driver, and two defects the driver exposed (2026-07-25)
+
+Both hands merged (`bakeoff/rk-data` into `bakeoff/rk-impl`; two conflicts, both pure import-line unions in
+`matcher.py`/`metrics.py`, resolved as unions). Three test functions disappear relative to the merge base and
+**all three are deliberate replacements**, verified individually rather than assumed: the data hand re-armed
+its hyphenation tripwire, and the impl hand retired the "a null floor means no gate at all" and "the
+scorecard discloses the exclusions are unwired" tests because it changed both of those behaviours. Suite
+**1790 passed / 7 skipped / 2 xfailed**. Zero API calls.
+
+**The three deciding checks were re-run independently** (own script, real loaders, real matcher, shipped
+policy — not either hand's tests): a perfect model scores recall **1.0000**; a fabricator is penalised
+(precision 1.0000 → **0.8553**, 0 of 11 traps credited as matches, 0 exclusions granted, trap line 0.0000)
+and steals no recall; and the new third check passes — a **verbose-but-honest** model (positives + all 27
+neutral spans) now scores precision **1.0000** where the raw denominator would have given 0.7065. The
+inversion is gone: unwired, the instrument preferred the fabricator (0.8553) to the honest reader (0.7065).
+
+| Decision | Call | Reasoning |
+|---|---|---|
+| **The driver derives its slice from the gold, never from a list typed into a CLI** | New `run` subcommand + `eval/extraction/driver.py`. The document set is the adapted gold's own `docs`/`doc_paths`; each document's source type and co-located frames come from the **pipeline's source registry**; a labeled document missing from either raises rather than being skipped | A document quietly added or dropped changes what a recall number means and is invisible on the scorecard. Deriving the slice from the answer file makes the two impossible to disagree. Source type is not guessable: it selects the extraction tool, so guessing it would measure the guess |
+| **The real corpus image is not bolted on** | `d17b_withheld_gap` is registered with `d17b_withheld_gap.png` as a co-located frame (ING-8), so the imagery lane fires on the real frame the same way the seed recorder loads it. The driver refuses to run at all if the slice yields no frame | Without an image call the imagery gate reads UNKNOWN and disqualifies every candidate — a wasted budget. Refusing up front is the same discipline as the coref precondition |
+| **The spend is stated as a floor and a ceiling, then reconciled against the actual** | `SpendPlan` prints candidates/docs/passes/runs and a call range before anything is spent; `RunScore.calls_total` (new) lets the driver close the loop with what was really spent, and it warns if the actual falls outside the projection | One of the three call classes is genuinely conditional — pass 2 does not dispatch on a document that yielded fewer than two mentions — so a single confident estimate would be wrong in one direction and would teach an operator to ignore the line. Measured on the dry run: **13 calls/run**, i.e. pass 2 fired on 5 of 7 documents |
+| **A candidate already failing a dry gate is not paid for** | `driver.blocked_before_spending` reuses `gates.dry_gates` — the same function `preflight` prints — and the driver skips those candidates by default, naming them and why; `--include-blocked` buys their diagnostic numbers anyway | A gate is pass/fail to win, so calls spent on a gate-failing candidate cannot change the outcome. On the shipped config `openai-gpt-5-6-sol` fails `keyless_equals_live`, so this is **a third of the budget**. Reusing preflight's own function is what stops the driver from skipping a candidate preflight called fine. UNKNOWN counts as blocked, exactly as it does everywhere else |
+| **DEFECT FOUND AND FIXED: three "unmeasured" reasons blamed the gold for the candidate's failure** | `coref_binding` and both discriminator metrics reported "the gold slice carries no coref_cluster labels" / "labels no stated discriminators" whenever their denominator was empty. But the denominator is empty *either* because the slice is unlabeled *or* because *nothing aligned* — and on this slice **51 of 65 claims carry cluster labels and 95 discriminator slots are labeled**, so the message was simply false. `DiscriminatorTally.aligned` (new) lets the two causes be told apart, and each now names the real one | This is the wrong-file failure the coref channel's own cause reporting already exists to avoid: it sends an operator to the answer key to fix an extraction problem. In a measuring instrument a misattributed cause is worse than a blank, because it looks like a finding. Found only by running the driver — no test covered it |
+| **The dry run's `INSUFFICIENT_CRITERIA` is the client's limit, not the instrument's** | Verified separately that **both required metrics are measurable on this slice**: with a well-behaved oracle `coref_binding` reads 1.0000 over 51 graded pairs and `discriminator_capture` 1.0000 over 47 captures; a model that binds nothing reads UNMEASURED (never 0), and one that over-clusters scores a real, poor 0.1166 | The dry client is corpus-blind on purpose, so its claims do not align and the two required metrics cannot be reached — which would otherwise leave "will a real run reach a verdict at all?" unanswered before spending $10–25. It will |
+
+**Cost of a real run, corrected.** Prior estimate ~225 calls assumed three candidates. With the
+gate-blocked candidate skipped it is **2 candidates × 5 runs × 8–15 calls = 80–150 calls**, and the measured
+call pattern (13/run) puts the likely figure at **~130**, rising toward 150 as a stronger model triggers
+pass 2 on all 7 documents. With `--include-blocked` it is 120–225, measured 195. Roughly **$5–15**,
+dominated by Opus 5.
+
 ### RK-COREF (S3) adversarial review — five blocking defects closed (2026-07-25)
 
 A review of the S3 stage found five blockers. All five were reproduced by measurement before being fixed and

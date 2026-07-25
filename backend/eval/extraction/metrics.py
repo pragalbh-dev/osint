@@ -433,6 +433,11 @@ class DiscriminatorTally:
     fabricated: int = 0          # source does NOT state it, model filled it anyway
     correct_abstention: int = 0  # source does NOT state it, model left it empty
     ungradable_mentions: int = 0  # model mentions that aligned to no gold entity claim
+    #: Gold entity claims a model mention aligned to. Carried so an empty denominator can name its real
+    #: cause: "nothing aligned" is a fact about this candidate, "the gold labels no discriminators" is a
+    #: fact about the slice, and reporting the second when the first is true sends an operator to the
+    #: wrong file to fix a model's problem.
+    aligned: int = 0
 
     @property
     def stated_total(self) -> int:
@@ -497,7 +502,25 @@ def tally_discriminators(
     return DiscriminatorTally(
         captured=captured, wrong=wrong, missed=missed, fabricated=fabricated,
         correct_abstention=abstained, ungradable_mentions=len(mentions) - len(used_mention),
+        aligned=len(aligned),
     )
+
+
+def _no_discriminator_denominator(tally: DiscriminatorTally, what: str) -> str:
+    """Why a discriminator denominator is empty — the candidate's doing, or the slice's.
+
+    Both are "not measured", but they send an operator to different places, so they may not share one
+    string. If no model mention aligned to a gold entity claim at all, the slice's labels were never
+    reached and saying "the gold labels none" is simply false.
+    """
+    if tally.aligned == 0:
+        return (
+            f"no model mention aligned to a gold entity claim, so no {what} discriminator was ever "
+            f"reached — this is a fact about this candidate's extraction, NOT about the slice's labels "
+            f"({tally.ungradable_mentions} mention(s) aligned to nothing)"
+        )
+    return (f"the gold slice labels no {what} discriminators on the {tally.aligned} aligned entity "
+            f"claim(s), so this cannot be measured")
 
 
 def discriminator_metrics(tally: DiscriminatorTally) -> dict[str, MetricValue]:
@@ -505,17 +528,17 @@ def discriminator_metrics(tally: DiscriminatorTally) -> dict[str, MetricValue]:
     detail = {
         "captured": tally.captured, "wrong": tally.wrong, "missed": tally.missed,
         "fabricated": tally.fabricated, "correct_abstention": tally.correct_abstention,
-        "ungradable_mentions": tally.ungradable_mentions,
+        "ungradable_mentions": tally.ungradable_mentions, "aligned": tally.aligned,
     }
     return {
         "discriminator_capture": _rate(
             tally.captured, tally.stated_total, "discriminator_capture",
-            "the gold slice labels no stated discriminators, so capture cannot be measured",
+            _no_discriminator_denominator(tally, "stated"),
             detail=detail,
         ),
         "discriminator_fabrication_avoidance": _rate(
             tally.correct_abstention, tally.absent_total, "discriminator_fabrication_avoidance",
-            "the gold slice labels no ABSENT discriminators, so abstention cannot be measured",
+            _no_discriminator_denominator(tally, "ABSENT"),
             detail=detail,
         ),
     }
@@ -540,9 +563,24 @@ def coref_binding(match: MatchResult) -> MetricValue:
     """
     graded = [p for p in match.pairs if p.gold.coref_cluster is not None]
     if not graded:
+        # Two very different causes, and they may not share one string. "The gold carries no labels" is a
+        # fact about the slice that no candidate can fix; "nothing aligned" is a fact about THIS
+        # candidate's extraction. Reporting the first when the second is true points an operator at the
+        # answer file to fix a model's problem — the same wrong-file failure the coref channel's own
+        # cause reporting exists to avoid.
+        labeled = sum(1 for g in match.missed_gold if g.coref_cluster is not None)
+        labeled += sum(1 for p in match.pairs if p.gold.coref_cluster is not None)
+        if not match.pairs:
+            return MetricValue.unavailable(
+                "coref_binding",
+                f"no extracted claim aligned with any gold claim, so no clustering was reached — a fact "
+                f"about this candidate's extraction, NOT about the slice ({labeled} gold claim(s) do "
+                f"carry coref_cluster labels)",
+            )
         return MetricValue.unavailable(
             "coref_binding",
-            "the gold slice carries no coref_cluster labels, so binding cannot be scored",
+            f"none of the {len(match.pairs)} aligned gold claim(s) carry coref_cluster labels, so "
+            f"binding cannot be scored on this alignment",
         )
     if not any(p.extracted.referent_id for p in graded):
         return MetricValue.unavailable("coref_binding", NO_CLUSTERING)

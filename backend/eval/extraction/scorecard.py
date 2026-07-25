@@ -47,6 +47,11 @@ class RunScore:
     claims: tuple[SurfaceClaim, ...] = ()
     image_calls_ok: int = 0
     image_calls_total: int = 0
+    #: Every billable call this run made — both lanes, both passes. Recorded so the driver can report the
+    #: spend it ACTUALLY incurred, not just the range it projected: extraction pass 2 is conditional on
+    #: what pass 1 found, so the projection is a floor and a ceiling and only a completed run knows where
+    #: between them the truth fell.
+    calls_total: int = 0
     notes: list[str] = field(default_factory=list)
 
     def metric(self, name: str) -> MetricValue | None:
