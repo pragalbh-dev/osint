@@ -54,3 +54,38 @@ gate's control must use an evidence class **no other gate restrains** · **M16**
 Repair the sub-oracle's **twelve single-source `confirmed`** entries
 (`tmp/conv/FOR-DATA-C-sub-oracle-single-source-confirm.md`) — otherwise all three candidates are measured
 against a yardstick more confident than the system it grades.
+
+---
+
+## UPDATE — S3 integration now at **1324 passed / 4 failed** (2026-07-25, final this session)
+
+The M15 fixture fix cleared **exactly the 4** the implementer predicted, which corroborates its diagnosis of the
+rest. **All 4 remaining are test-side** (fixture or config-reading), none is an implementation defect:
+
+1–2. **`test_a_non_conflicting_relationship_pair_still_binds`** (both params). The fixture's quote names both
+   surface forms but carries **no equivalence marker**, so it fails D-13.17's third conjunct and **the bind never
+   happens** — making both positive controls unreachable. Fix either way: add a marker, or relabel it
+   `UNAMBIGUOUS_ANAPHOR`, which is what *"the 8th AD Battalion" → "the battalion"* actually is.
+   **⚠ And the hazard beside them:** `test_a_grouping_whose_relationships_conflict_declines` passes **vacuously**
+   next to these. The decline is the mechanism that makes an over-bind reversible, so a vacuous pass there leaves
+   **D-13.18's whole promise unverified.** Fix the fixture *and* re-confirm that test can fail.
+3. **`test_the_operator_slot_is_declared_critical`** reads raw config where a **stage override** lives; it should
+   read through `ResolveConfig`. Measured cost of promoting it in the file instead: booted edges 73→76, full
+   169/80/20→170/84/21 — i.e. **exactly the "SHATTERS legitimate merges" outcome the shipped comment predicted**,
+   because unnormalised branch strings become drawn walls. The promotion *is* live with the flag on.
+4. **`test_a_same_document_stated_contrast_caps_the_pair_at_probable`** — the contrast cap's control.
+
+### The best find of the stage — circular corroboration through the scorer
+`coref-same-as` claims are **real edges emitted as a star from one anchor**, so every pair of a cluster's members
+"shared a neighbour" (the anchor) and `relational_score` read that as **independent corroboration of the identity
+the same cluster had just proposed.** A three-member cluster whose third link the gate **refused** merged anyway.
+That is *"one bad link licenses the rest"* arriving through the **scorer**, not the bind — a self-licensing loop no
+gate could have caught. Both coref lanes now leave the neighbourhood, scoped to those two predicates so `same-as`
+is untouched.
+
+### Also fixed, and worth carrying as a pattern
+The `NAME_VARIANT`-lands-in-`possible` doctrine failure was caused by an **enumeration**: the band demotion listed
+three specific blockers, and a raise-only pair scoring into the auto band matched none of them, so it fell through
+to the watch-list — retained, never surfaced. Replaced with a **derivation** (every pair reaching the collection
+loop was already refused a merge, so an `auto` band there means something blocked it ⇒ review item unless a cap
+explicitly withheld it). **An enumeration of blockers goes stale as blockers are added; a derivation does not.**
