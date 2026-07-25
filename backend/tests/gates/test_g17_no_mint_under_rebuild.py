@@ -65,7 +65,7 @@ def test_the_derived_basing_branch_executes_under_rebuild() -> None:
     assert rk.edges_of(view, BASING), (
         "the premise pair derived no `based-at` edge, so the no-mint clauses below are vacuous — the "
         "fixture exists precisely so 'the derived-basing branch actually executes under rebuild()' "
-        f"(§5 G17). {rk.flag_report()}"
+        "(§5 G17)."
     )
 
 

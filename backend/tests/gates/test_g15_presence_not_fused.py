@@ -44,7 +44,6 @@ from chanakya.schemas.values import ExactDate
 from chanakya.view.pipeline import rebuild
 
 _ROUTING = {
-    "enabled": True,
     "presence_type": "presence",
     "design_link_edge": "instance-of",
     "provisional_prefix": "presence",
@@ -55,7 +54,7 @@ _ROUTING = {
 }
 
 
-def _ontology(routing_enabled: bool = True) -> OntologyConfig:
+def _ontology() -> OntologyConfig:
     return OntologyConfig.model_validate(
         {
             "node_types": [
@@ -108,7 +107,7 @@ def _ontology(routing_enabled: bool = True) -> OntologyConfig:
                     "freshness_class": "durable",
                 },
             ],
-            "layer_routing": {**_ROUTING, "enabled": routing_enabled},
+            "layer_routing": dict(_ROUTING),
         }
     )
 

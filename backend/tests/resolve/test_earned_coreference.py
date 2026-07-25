@@ -17,14 +17,13 @@ which an audit found was written and read nowhere, making every justification of
 
 from __future__ import annotations
 
-from chanakya.resolve import ResolveConfig, resolve
+from chanakya.resolve import resolve
 from tests.resolve._helpers import coref, entity, mk_config, triple
 
 MARKER_QUOTE = 'China Precision Machinery Import-Export Corporation, also known as CPMIEC, shipped it.'
 MARK_QUOTE = 'the HQ-9 (HQ-9/P) was delivered'
 
 EARNED = {
-    "enabled": True,
     "name_ceiling": "possible",
     "authoritative_categories": ["EXPLICIT_EQUIVALENCE", "UNAMBIGUOUS_ANAPHOR"],
     "bind_min_grade": "C",
@@ -242,6 +241,53 @@ def test_a_raised_link_carries_its_verbatim_spans_and_the_gate_s_own_words() -> 
     assert "grade" in reason, "the analyst is not told how good the asserting source is"
 
 
+def test_the_refusal_states_the_REAL_ground_not_a_fixed_policy_sentence() -> None:
+    """A refusal that misattributes itself is a provenance over-claim about the system's own decision.
+
+    The rationale used to fall back to the fixed string "the category is raise-only by policy" whenever the
+    producer had stamped no gate detail — while the resolver had just computed the actual ground (a missing
+    equivalence marker, a cross-type impossibility, a source-grade floor) and discarded it. It then invited the
+    analyst to accept the merge "if you read it the same way", on a ground that was not the one used. Here the
+    category IS authorised and the gate fails on its own merits with no producer stamp to lean on, so the
+    computed reason is the only honest thing to print.
+    """
+    # No marker in the licensing span ⇒ the EXPLICIT_EQUIVALENCE gate fails on recomputation, and `gate=None`
+    # means the producer stamped nothing for the reason to borrow.
+    part = resolve(_pair(gate=None, quote="CPMIEC delivered the radars"), _cfg())
+    reason = part.candidate_reasons.get("m_long|m_short", "")
+
+    assert reason, "the link was refused and the analyst was told nothing"
+    assert "raise-only by policy" not in reason, (
+        f"the refusal still attributes itself to a policy it did not apply: {reason!r}"
+    )
+    assert "surface forms" in reason or "marker" in reason, (
+        f"the refusal does not state the computed gate ground (what the span failed to do): {reason!r}"
+    )
+
+
+def test_an_unauthorised_category_says_SO_rather_than_blaming_the_gate() -> None:
+    """The first conjunct of ``may_bind``: if the category is not authorised, that is the ground.
+
+    ``NAME_VARIANT`` is permanently raise-only *by authorisation*, and saying so is different from saying its
+    structural gate failed — the analyst's next move differs (change the deployment's policy vs find better
+    evidence).
+    """
+    part = resolve(_pair(evidence="NAME_VARIANT"), _cfg())
+    reason = part.candidate_reasons.get("m_long|m_short", "")
+
+    assert "not authorised" in reason, f"the real ground (an unauthorised category) is not stated: {reason!r}"
+
+
+def test_a_below_floor_source_is_named_as_the_ground_when_it_is_the_ground() -> None:
+    """The last conjunct: a licensed, gated link whose *source* is too weak says which of the two it was."""
+    part = resolve(_pair(source="src-low"), _cfg())
+    reason = part.candidate_reasons.get("m_long|m_short", "")
+
+    assert "below the" in reason and "floor" in reason, (
+        f"a grade-floor refusal does not name the grade as the ground: {reason!r}"
+    )
+
+
 # ── C9: document-scoped in EFFECT, not only in licence ────────────────────────────────────────────
 
 def test_a_bind_cannot_reach_an_entity_the_contributing_document_never_attested() -> None:
@@ -328,28 +374,27 @@ def test_absence_of_a_contrast_is_neutral_never_a_prior_for_merging() -> None:
     )
 
 
-# ── flag-off ──────────────────────────────────────────────────────────────────────────────────────
+# ── the licence is a property of the pair ─────────────────────────────────────────────────────────
 
-def test_the_gate_and_the_grade_floor_are_not_flag_gated() -> None:
-    """A bind is licensed by **evidence**, never by which stage is switched on.
+def test_the_gate_and_the_grade_floor_are_properties_of_the_pair() -> None:
+    """A bind is licensed by **evidence**, and by nothing else.
 
-    This assertion was inverted when I wrote it: it asserted that with the stage flag off a failing gate and a
-    below-floor source could still bind, on the reasoning that flag-off must reproduce pre-S3 behaviour
-    exactly. That reasoning was wrong, and the independent suite is what exposed it — the deciding input was an
-    artifact only the *producer* could write, so a holder of a config bundle could not turn the policy on at
-    all, and D-13.17's "structural check any reader can re-derive" was not being re-derived by anyone.
+    This assertion was inverted when first written: it asserted that with the stage flag off a failing gate
+    and a below-floor source could still bind, on the reasoning that flag-off must reproduce the pre-stage
+    behaviour exactly. That reasoning was wrong, and the independent suite is what exposed it — the deciding
+    input was an artifact only the *producer* could write, so a holder of a config bundle could not turn the
+    policy on at all, and D-13.17's "structural check any reader can re-derive" was not being re-derived by
+    anyone. The flag is now deleted outright, so the question the test asked cannot be asked; what remains is
+    the property that was always the point: an ungated or under-graded link never binds.
 
-    The correct boundary: **the gate and the floor are properties of the pair** and always apply; the stage
-    flag governs the caps, the walls and the decline — the things that change what an already-licensed signal
-    is allowed to do. So an ungated or under-graded link never binds, flag or no flag.
+    Declared with a minimal bundle — no caps, no walls, only the authorisation — so nothing *else* can be
+    what withheld the merge. If the gate and the floor were not doing the work, this pair would fuse.
     """
-    off = mk_config(coref_authoritative_evidence=["EXPLICIT_EQUIVALENCE"],
-                    source_reliability_grades={"src-low": "E"},
-                    name_alone_caps_at_possible=True)
-    assert ResolveConfig.from_bundle(off).earned_identity_on is False
-    part = resolve(_pair(gate="FAIL", source="src-low"), off)
+    cfg = mk_config(coref_authoritative_evidence=["EXPLICIT_EQUIVALENCE"],
+                    source_reliability_grades={"src-low": "E"})
+    part = resolve(_pair(gate="FAIL", source="src-low"), cfg)
 
     assert not _merged(part), (
-        "a link whose gate failed bound because the stage flag was off — 'is this licensed?' must never "
-        "depend on which stage is enabled, or the licence is not a licence"
+        "a link whose gate failed and whose source is below the floor bound anyway — 'is this licensed?' is "
+        "answered by the evidence on the pair, or the licence is not a licence"
     )

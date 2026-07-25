@@ -205,7 +205,7 @@ def test_a_relocation_is_not_machine_adjudicated_over_a_sub_confirmed_identity()
     assert not _drawn(view), (
         "a node→node relocation was DRAWN while the subject's own identity was still an open question for "
         f"the analyst ({[e.id for e in _candidate_identity_edges(view, UNIT, RIVAL)]}) — R1.4: machine "
-        f"promotion is legitimate only over an identity the system actually earned. {rk.flag_report()}"
+        f"promotion is legitimate only over an identity the system actually earned."
     )
     assert older.superseded_by is None and newer.supersedes is None, (
         "the older position was retired on an identity we did not earn — an identity error becomes a "
@@ -359,7 +359,7 @@ def test_two_concurrent_basings_at_different_site_classes_are_not_a_relocation()
 
     assert not _drawn(view), (
         f"a relocation was drawn between two basings of different declared site classes "
-        f"({garrison!r} → {forward!r}) — C1: 'a differing site_type is NOT a conflict'. {rk.flag_report()}"
+        f"({garrison!r} → {forward!r}) — C1: 'a differing site_type is NOT a conflict'."
     )
     assert older.superseded_by is None and newer.supersedes is None, (
         "the garrison basing was retired by the forward deployment — both are live, and retiring one "
@@ -398,7 +398,7 @@ def test_an_unmappable_site_type_lands_in_the_third_state() -> None:
     )
     assert not _drawn(view), (
         "a relocation was drawn from two site_type values the config cannot classify — L1's third state is "
-        f"'no de-confliction, no fusion': the analyst decides. {rk.flag_report()}"
+        "'no de-confliction, no fusion': the analyst decides."
     )
     assert older.superseded_by is None, (
         "the older position was retired on an unclassifiable site_type — 'no fusion' (L1 rule 3)"
@@ -436,7 +436,7 @@ def test_an_absent_site_type_lands_in_the_same_third_state_as_an_unmappable_one(
     assert not _drawn(view), (
         "a relocation was drawn between two sites whose class is unknown (no site_type stated at all) — "
         "absence is the same condition as an unmappable value, so L1's third state applies: no "
-        f"de-confliction, no fusion, plus a named gap. {rk.flag_report()}"
+        "de-confliction, no fusion, plus a named gap."
     )
     assert older.superseded_by is None and newer.supersedes is None, (
         "the older position was retired although neither site's class is known — 'no fusion' (L1 rule 3)"
@@ -480,7 +480,7 @@ def test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown() ->
     from chanakya.view import rebuild
 
     scenario = harness.load_scenario()
-    config = rk.enable_layer_routing(scenario.config_store.snapshot())
+    config = scenario.config_store.snapshot()  # the shipped config IS the behavioural config now
     view = rebuild(scenario.evidence, [], config)
 
     nodes = {n.id: n for n in view.nodes}
@@ -501,7 +501,7 @@ def test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown() ->
         assert drawn, (
             f"both flagship sites resolve to the same declared class ({known[0]!r}) — that is a genuine "
             "relocation and it must still be drawn; C1 de-conflicts differing classes, it does not disable "
-            f"supersession. Stated: {stated}. {rk.flag_report()}"
+            f"supersession. Stated: {stated}."
         )
         return
 
@@ -509,7 +509,7 @@ def test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown() ->
         f"a relocation was drawn between the flagship sites while their classes are {classes} "
         f"(stated: {stated}) — INTENDED behaviour is L1's third state: held for the analyst with a named "
         "gap. If this fails because a mapping now sends both strings to one class, check that the mapping is "
-        f"about the *kind of place* axis and not the other three concepts L1 separates. {rk.flag_report()}"
+        f"about the *kind of place* axis and not the other three concepts L1 separates."
     )
     basings = [e for e in view.edges if e.type == BASING and e.target in FLAGSHIP_SITES]
     held = [e for e in basings if e.attrs.get(CANDIDATE) or e.attrs.get(GATE) != GATE_PROMOTED]

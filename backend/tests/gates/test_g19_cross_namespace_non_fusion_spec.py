@@ -58,15 +58,13 @@ PLAIN_NAME = "Type Nine SAM"
 #: attribute at all. ``origin_country`` is the one sources actually write (on manufacturers and trading
 #: organisations), and it was missing from ``Entity.namespace``'s key list. So G19 was green while the harm
 #: it names was happening on the live attribute: two same-named trading organisations, one stated CHINA and
-#: one stated Pakistan, fused at ``confirmed`` in **both** flag directions, where the identical pair keyed
-#: on ``country`` was refused **with the stage flag on**. A gate that keys on an attribute nothing states
-#: certifies a guard nothing reaches.
+#: one stated Pakistan, fused at ``confirmed``, where the identical pair keyed on ``country`` was refused. A
+#: gate that keys on an attribute nothing states certifies a guard nothing reaches.
 #:
-#: **What these cases certify, and what they do not.** Every fixture here runs **flag-ON**. The refusal they
-#: pin does not exist flag-OFF for *either* key — ``fusion_blocked`` early-returns on
-#: ``cfg.earned_identity_on``, so the shipped default has no cross-namespace wall on the fusion path at all.
-#: That is a disclosed, deliberate gap owned by the S3 cutover (DECISIONS.md, RK-COREF S3 blocker 2), not
-#: something adding ``origin_country`` closed. Measured both ways, both keys: flag-off fuses, flag-on refuses.
+#: The refusal these cases pin is now the SHIPPED behaviour for both keys. It used to exist only with the S3
+#: stage flag on — ``fusion_blocked`` early-returned on it — so the shipped default had no cross-namespace
+#: wall on the fusion path for any key at all. That flag is deleted; ungating this refusal was the point of
+#: the change (DECISIONS.md → DEFAULT-ON).
 NS_KEYS = ("country", "origin_country")
 
 

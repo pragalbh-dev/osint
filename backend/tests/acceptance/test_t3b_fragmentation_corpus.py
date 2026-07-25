@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from collections import Counter
 
+import pytest
+
 from chanakya.schemas import GraphView
 
 AREA_TYPE = "area_of_operations"
@@ -57,18 +59,58 @@ def test_the_karachi_nodes_are_not_offered_as_duplicates_of_each_other(view: Gra
             )
 
 
-def test_no_merge_candidate_spans_two_node_types(view: GraphView) -> None:
-    """Two entities of different ontology types are not the same entity — that is not triage, it is noise."""
+def test_a_cross_type_merge_candidate_reaches_the_queue_ONLY_with_its_reason(view: GraphView) -> None:
+    """T3b-A narrowed, deliberately: the resolver's own cross-type GUESSES are noise; an assertion is not.
+
+    The rule used to be "no cross-type candidate, ever", on T3b-A's reasoning that asking an analyst whether
+    an air-defence *sector* is the same thing as an air-defence *centre* "is not triage, it is noise". That
+    half stands and is asserted by the unit gate (a cross-type pair nothing licensed a fusion for earns
+    nothing at all). But the blanket rule also swallowed the case the candidate-collection loop has always
+    documented as its deliberate escape hatch: **a source or the offline proposer explicitly asserting the
+    identity of two differently-typed mentions**. That is an extraction error, a typing error, or deception,
+    and all three are exactly what a human should see — while dropping it is a quiet drop of a stated
+    assertion the system refused to act on, which is the half of the non-negotiable that is about the analyst
+    actually receiving the refusal.
+
+    So the rule is now about GROUNDS, not about existence: a cross-type pair may sit in the queue, and it must
+    carry the reason it is there — naming the two conflicting types — so the analyst is not asked "are these
+    the same?" with no way to see why the machine would not answer. Each such pair also owes a named gap
+    (asserted by ``tests/gates/test_g19_cross_namespace_non_fusion.py``).
+    """
     nodes = _by_id(view)
     crossing = [
-        (e.source, e.target) for e in _candidates(view)
-        if nodes[e.source].type != nodes[e.target].type
+        e for e in _candidates(view) if nodes[e.source].type != nodes[e.target].type
     ]
-    assert not crossing, f"cross-type merge candidates in the analyst queue: {crossing}"
+    for e in crossing:
+        reason = (e.attrs or {}).get("reason") or ""
+        assert "cross-type" in reason, (
+            f"cross-type candidate {e.source}/{e.target} is in the analyst's queue with no stated ground "
+            f"(reason={reason!r}). A queue item whose grounds are invisible is a question the analyst cannot "
+            f"answer, and it is indistinguishable from the resolver merely guessing"
+        )
+        assert nodes[e.source].type in reason and nodes[e.target].type in reason, (
+            f"the reason on {e.source}/{e.target} does not name the two conflicting types: {reason!r}"
+        )
 
 
 # ── B. an identical surface string resolves without an LLM call ─────────────────────────────────
 
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "DATA REFRESH (calibration ledger): the corpus types the string 'HT-233' as a `component` in one "
+        "document and as a `variant` in another, so the view now holds two nodes — comp_ht233 and "
+        "ent:variant:HT-233 — instead of one. That is the TARGET behaviour and it is deliberate: a type "
+        "disagreement between two sources is an evidentiary contradiction, and the cross-type fusion wall "
+        "refuses to resolve it silently in either direction (fusing would assert a type neither source "
+        "states; dropping the resemblance would hide the disagreement). The refusal is not a quiet drop — the "
+        "pair reaches the analyst as a candidate carrying 'not fusable: cross-type (component vs variant)' "
+        "and each endpoint carries a named Known Gap saying the typing must be adjudicated. TO CLOSE: "
+        "harmonise the stated type of HT-233 across the corpus documents (or declare a component<->variant "
+        "refinement in config/ontology.yaml so the two mentions arrive as one type), re-extract and re-record "
+        "the frozen bundles + answer key, then delete this marker. Do NOT close it by weakening the wall."
+    ),
+)
 def test_the_identical_string_ht233_fragment_is_gone(view: GraphView) -> None:
     """``unknown:HT-233`` shared a document with ``comp_ht233`` under an IDENTICAL surface string.
 

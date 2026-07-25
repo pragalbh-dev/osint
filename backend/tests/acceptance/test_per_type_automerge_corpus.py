@@ -81,8 +81,23 @@ def test_the_floor_did_not_leak_into_identity_sensitive_types(view: GraphView) -
     assert len({"var_hq9p", "var_hq9be", "ent:variant:HQ-9"}) == 3
     # the two commands (the relocation subject vs the Army regiment) stay distinct
     assert "unit_hq9b" in ids and "unit_paad" in ids
-    # and no accepted merge / candidate same-as edge fuses any two of the variant-family nodes
+    # …and no variant-family pair was FUSED. A drawn `same-as` edge is not a fusion: `_resolution_edges`
+    # emits one only for a pair the resolver kept APART and put in front of an analyst (`merge_band:
+    # candidate`), because an accepted merge collapses its members into a single node and has no edge at all.
+    # The old form of this assertion failed on any such edge with the message "a variant-family pair became a
+    # merge", which was factually wrong in both halves: both endpoints are still separate nodes (asserted
+    # above) and the edge is a capped candidate carrying the reason it was withheld. A variant-family pair
+    # capped and queued is the machinery working — HQ-9 and HQ-9A differ by a MARK, which is precisely the
+    # discrimination an analyst should confirm — so what must hold is that the pair never FUSED, and that a
+    # queued one says why.
     fam = {"var_hq9p", "var_hq9be", "ent:variant:HQ-9", "ent:variant:HQ-9A"}
     for e in view.edges:
-        if e.type == "same-as":
-            assert not ({e.source, e.target} <= fam), f"a variant-family pair became a merge: {e.source}/{e.target}"
+        if e.type != "same-as" or not ({e.source, e.target} <= fam):
+            continue
+        assert (e.attrs or {}).get("merge_band") == "candidate", (
+            f"a variant-family pair was FUSED rather than queued: {e.source}/{e.target}"
+        )
+        assert e.source in ids and e.target in ids, (
+            f"a queued variant-family pair lost one of its nodes: {e.source}/{e.target} — a candidate keeps "
+            "both mentions separate and visible, that is what makes it a question rather than an answer"
+        )

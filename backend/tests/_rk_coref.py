@@ -100,7 +100,6 @@ _EARNED_BLOCK = "earned_identity"
 def bundle(
     *,
     resolution: ResolutionConfig | str | None = SHIPPED,
-    flag_on: bool = True,
     sources: SourcesConfig | None = None,
     **credibility: Any,
 ) -> ConfigBundle:
@@ -125,7 +124,7 @@ def bundle(
         places=shipped.places,
         resolution=shipped.resolution if resolution == SHIPPED else (resolution or ResolutionConfig()),
     )
-    return rk.enable_layer_routing(out) if flag_on else out
+    return out
 
 
 def with_resolution(base: ConfigBundle, **overrides: Any) -> ConfigBundle:
@@ -433,23 +432,17 @@ def time_role_of(entry: dict[str, Any]) -> Any:
 
 
 def coref_authoritative(cfg: ConfigBundle | None = None) -> list[str]:
-    """Which coref categories the shipped config authorises **with the stage flag on**.
+    """Which coref categories the shipped config authorises.
 
-    Read through the flag-resolved accessor rather than off the raw top-level key, because that is where
-    the switch now lives. S3's opt-in sits in the stage block (``earned_identity.authoritative_categories``)
-    and rides the stage flag, exactly like every restraint the stage adds; the pre-S3 top-level key stays
-    ``[]`` so a flag-off deployment authorises nothing. Reading the raw key would report the switch as OFF
-    while it is on, and reading the ambient (flag-off) accessor would do the same — so the flag is forced
-    on here and the question asked is the one the spec asks: *is the consumer switch flipped?*
+    Read through the typed accessor rather than off the raw top-level key, because the opt-in sits in the
+    stage block (``earned_identity.authoritative_categories``) while the pre-existing top-level key stays
+    ``[]``; the accessor is the union, which is what the resolver reads.
     """
-    base = cfg or rk.shipped_bundle()
-    block = {**(getattr(base.resolution, _EARNED_BLOCK, None) or {}), "enabled": True}
-    return sorted(ResolveConfig.from_bundle(with_resolution(base, earned_identity=block))
-                  .coref_authoritative_evidence)
+    return sorted(ResolveConfig.from_bundle(cfg or rk.shipped_bundle()).coref_authoritative_evidence)
 
 
 def earned_identity_block(cfg: ConfigBundle | None = None) -> dict[str, Any]:
-    """``resolution.earned_identity`` as declared — the stage's own knobs, flag included.
+    """``resolution.earned_identity`` as declared — the identity tunables.
 
     A separate accessor from :func:`resolution_keys` because the block is where every S3 threshold, cap,
     floor and vocabulary lives; a config assertion that searches only the top level cannot see them, and

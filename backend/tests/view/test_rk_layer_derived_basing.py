@@ -72,7 +72,7 @@ def test_rebuild_materializes_the_derived_basing_edge() -> None:
         "rebuild() materialized no `based-at` edge from the derivation triangle (equipment observed at a "
         "located site + an `inducted-into` link to a named unit) — D-13.6 makes this a rebuild-time derived "
         f"binding, not an offline pre-freeze. Edges built: "
-        f"{[(e.type, e.source, e.target) for e in view.edges]}. {rk.flag_report()}"
+        f"{[(e.type, e.source, e.target) for e in view.edges]}."
     )
     assert [(e.source, e.target) for e in derived] == [(UNIT, SITE)], (
         f"the derived basing binds {[(e.source, e.target) for e in derived]} — spine/13 §5.3 binds the "
@@ -87,7 +87,7 @@ def test_the_derived_basing_cites_both_premise_claim_atoms() -> None:
     that has no claim of its own to hide behind."""
     view = rk.build_view(_cfg(), _triangle())
     derived = _derived_basings(view)
-    assert derived, f"no derived basing to check provenance on. {rk.flag_report()}"
+    assert derived, "no derived basing to check provenance on."
 
     cited = _provenance(derived[0])
     missing = {OBS, IND} - cited
@@ -111,7 +111,7 @@ def test_the_derived_basing_is_weaker_than_a_stated_one() -> None:
     ])
     derived = _derived_basings(derived_view)
     stated = _derived_basings(stated_view)
-    assert derived, f"no derived basing to compare. {rk.flag_report()}"
+    assert derived, "no derived basing to compare."
     assert stated, "fixture broken: the stated basing produced no edge"
 
     d_conf = derived[0].confidence.assertion_confidence if derived[0].confidence else None
@@ -143,7 +143,7 @@ def test_the_derivation_appends_nothing_to_the_evidence_log() -> None:
     )
     assert _derived_basings(view), (
         "no derived basing was materialized, so this test proves nothing about minting — the fixture must "
-        f"exercise the derived branch to be non-vacuous (§5a). {rk.flag_report()}"
+        "exercise the derived branch to be non-vacuous (§5a)."
     )
 
 
@@ -156,7 +156,7 @@ def test_two_rebuilds_of_the_derived_basing_are_byte_identical() -> None:
 
     assert first == second, "two rebuilds of the derived-basing fixture disagree — G2"
     assert _derived_basings(rk.build_view(_cfg(), claims)), (
-        f"the fixture derives nothing, so the byte-identity above is vacuous. {rk.flag_report()}"
+        "the fixture derives nothing, so the byte-identity above is vacuous."
     )
 
 
@@ -226,21 +226,21 @@ def _seed(root, config) -> _Collector:
     return sink
 
 
-def test_the_derived_basing_bundle_is_skipped_with_the_flag_on(tmp_path) -> None:
-    """§7 RK-LAYER 4 as **ruled 2026-07-25** (reconciling both hands): "**Flag-gate the glob** … flag **on** ⇒
-    the glob is **skipped**, so a frozen bundle cannot replay an inference the rebuild now derives (the same
-    attribution would arrive twice and the frozen copy would never age or re-derive). The bundles themselves
-    still die with RK-DATA."
+def test_the_derived_basing_bundle_is_skipped(tmp_path) -> None:
+    """A frozen bundle may not replay an inference the rebuild now derives itself.
 
-    Asserted on the loader's **behaviour**, not on the absence of a module constant: the constant is an
-    implementation detail, while "does a frozen derived attribution still enter the log?" is the property —
-    and the behavioural form survives RK-DATA finally deleting the bundles, because this fixture writes its
-    own. (The earlier version of this test asserted the constant was gone *unconditionally*, which would have
-    demanded the very flag-off byte-identity break the implementer was right to refuse.)
+    Otherwise the same attribution arrives twice and the frozen copy never ages or re-derives. Asserted on the
+    loader's **behaviour**, not on the absence of a module constant: the constant is an implementation detail,
+    while "does a frozen derived attribution still enter the log?" is the property — and the behavioural form
+    survives the bundles themselves finally being deleted, because this fixture writes its own.
+
+    Which suffixes are skipped is config (``layer_routing.superseded_derived_bundle_suffixes``); it used to be
+    additionally gated on the routing flag, so the shipped deployment both derived the edge and replayed the
+    frozen copy of it.
     """
     _write_bundles(tmp_path)
 
-    loaded = _seed(tmp_path, rk.fixture_config(flag_on=True))
+    loaded = _seed(tmp_path, rk.fixture_config())
 
     assert "c-obs" in loaded.claim_ids, (
         f"the ordinary bundle was not seeded at all ({loaded.claim_ids}) — the fixture is broken, not the code"
@@ -248,23 +248,29 @@ def test_the_derived_basing_bundle_is_skipped_with_the_flag_on(tmp_path) -> None
     assert "c-frozen-basing" not in loaded.claim_ids, (
         f"with the flag ON the frozen {_FROZEN_BASING_BUNDLE} was still seeded ({loaded.claim_ids}) — the "
         "rebuild now derives that attribution itself, so seeding the frozen copy makes the same attribution "
-        f"arrive twice and the frozen one never ages or re-derives. {rk.flag_report()}"
+        f"arrive twice and the frozen one never ages or re-derives."
     )
 
 
-def test_the_derived_basing_bundle_still_loads_with_the_flag_off(tmp_path) -> None:
-    """The other half of the same ruling: "flag **off** ⇒ the glob stays, so flag-off byte-identity holds".
+def test_an_undeclared_suffix_is_still_loaded(tmp_path) -> None:
+    """The mirror that stops the skip over-reaching: only the DECLARED suffixes are skipped.
 
-    The mirror matters as much as the skip: dropping the glob unconditionally *is* the flag-off byte-identity
-    break, so this is the assertion that stops the fix over-reaching.
+    This replaces a flag-off assertion ("with the flag off the frozen bundle still loads"), which asserted
+    backward compatibility. The property worth keeping is narrowness: strip the declaration and the bundle is
+    seeded again, so the skip is bounded by the config list and not by a filename habit in code.
     """
     _write_bundles(tmp_path)
+    config = rk.fixture_config()
+    ontology = config.ontology.model_dump(by_alias=True)
+    ontology["layer_routing"]["superseded_derived_bundle_suffixes"] = []
+    from chanakya.schemas import OntologyConfig
 
-    loaded = _seed(tmp_path, rk.fixture_config(flag_on=False))
+    loaded = _seed(tmp_path, config.model_copy(
+        update={"ontology": OntologyConfig.model_validate(ontology)}))
 
     assert "c-frozen-basing" in loaded.claim_ids, (
-        f"with the flag OFF the frozen {_FROZEN_BASING_BUNDLE} was skipped ({loaded.claim_ids}) — the bundles "
-        "die with RK-DATA, not here; skipping them now breaks S2's own safety property"
+        f"with no suffix declared the frozen {_FROZEN_BASING_BUNDLE} was skipped anyway ({loaded.claim_ids}) — "
+        "the skip is reading something other than its config declaration"
     )
 
 

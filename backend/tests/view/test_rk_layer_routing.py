@@ -77,7 +77,7 @@ def test_a_sighting_materializes_a_provisional_presence_not_the_shared_design_no
     assert DESIGN_ID not in subjects, (
         f"the {SIGHTING} sighting still binds to the shared design node {DESIGN_ID!r} "
         f"(subjects: {subjects}) — A4: 'An instance-layer edge materializes the instance it implies'; "
-        f"spine/13 §5.3: the build 'does NOT point it at the shared design node'. {rk.flag_report()}"
+        f"spine/13 §5.3: the build 'does NOT point it at the shared design node'."
     )
     presence = next(n for n in view.nodes if n.id == subjects[0])
     assert _reads_as_instance(presence), (
@@ -95,8 +95,8 @@ def test_the_materialized_presence_is_not_the_formation_citizen() -> None:
     view = rk.build_view(_cfg(), _sighting_only())
     subjects = [s for s in _instance_endpoints(view, SIGHTING) if s != DESIGN_ID]
     assert subjects, (
-        f"no presence was materialized for the sighting — A4 materializes the instance an instance-layer "
-        f"edge implies. {rk.flag_report()}"
+        "no presence was materialized for the sighting — A4 materializes the instance an instance-layer "
+        "edge implies."
     )
 
     presence = next(n for n in view.nodes if n.id == subjects[0])
@@ -251,7 +251,7 @@ def test_a_straddling_mention_splits_into_two_linked_nodes() -> None:
         f"the straddling mention ({design_type} carrying design-layer {design_attr!r} AND instance-layer "
         f"{instance_attr!r}) produced {len(view.nodes)} node(s): "
         f"{[(n.id, n.type, dict(n.attrs)) for n in view.nodes]} — D-13.5 splits it into linked design + "
-        f"instance nodes. {rk.flag_report()}"
+        f"instance nodes."
     )
     design_nodes = [n for n in view.nodes if not _reads_as_instance(n)]
     instance_nodes = [n for n in view.nodes if _reads_as_instance(n)]
@@ -321,7 +321,7 @@ def test_three_reports_of_one_sighting_do_not_become_three_launchers() -> None:
     presence_ids = {s for s in _instance_endpoints(view, SIGHTING) if s != DESIGN_ID}
     assert presence_ids, (
         "no presence was materialized, so the count rule cannot be exercised — A4 materializes the instance "
-        f"an instance-layer edge implies. {rk.flag_report()}"
+        "an instance-layer edge implies."
     )
 
     for node in (n for n in view.nodes if n.id in presence_ids):
@@ -349,8 +349,8 @@ def test_a_stated_count_is_carried_as_a_sourced_attribute_of_the_presence() -> N
 
     presence_ids = {s for s in _instance_endpoints(view, SIGHTING) if s != DESIGN_ID}
     assert presence_ids, (
-        f"no presence was materialized, so a count cannot be an attribute *of the presence*. "
-        f"{rk.flag_report()}"
+        "no presence was materialized, so a count cannot be an attribute *of the presence*. "
+        ""
     )
     reachable = {
         n.id: _count_values(n) for n in view.nodes if n.id in presence_ids and _count_values(n)
