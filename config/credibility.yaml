@@ -219,14 +219,23 @@ basing_proposer:
 # group licensed by a verbatim quote. Emits `coref-same-as` claims only; it never merges anything itself — the
 # merge is derived at rebuild, so a split stays native.
 #
-# DORMANT BY DEFAULT — deliberately left commented out. Enabling it costs a SECOND extraction call per document
-# and re-records every frozen bundle, while nothing consumes the clusters yet: RESOLVE does not honour
-# `coref-same-as` until the reconciliation lands (it is not in resolve.scoring's identity predicates, so it is
-# inert to merge scoring by design). Turn it on together with that honor policy, not before. With no extraction
-# key it emits nothing rather than guessing, in any case.
+# REQUIRED FROM RK-COREF (S3) — the producer is ON. It was deliberately commented out until "the honor policy"
+# landed, on the stated condition "turn it on together with that honor policy, not before". S3 IS that policy:
+# the doc-local cluster is now the mint grain (it is where the referent atom is minted), the per-link
+# deterministic gates and the source-grade floor decide what may bind, and D-13.18 lets the rebuild DECLINE a
+# grouping outright. So both switches flip in one deliberate motion, which is what the two-switch design was
+# for — flipping this one alone still changes no topology, because the CONSUMER
+# (resolution.yaml -> earned_identity) is what authorises a bind.
 #
-# coreference:
-#   # Which evidence kinds may be emitted. Drop UNAMBIGUOUS_ANAPHOR to run conservative (stated equivalences and
-#   # name variants only) — anaphora is the highest-reach, highest-risk category. Order is not significance.
-#   categories: [EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR]
-#   max_mentions: 120             # cost guard: a document offering more mentions is skipped whole, never truncated
+# Cost is real and stated: a SECOND extraction call per document, and every frozen bundle must be re-recorded
+# to carry coreference at all (there are zero coref annotations in the current bundles — ruling M4 — which is
+# why S3's gates are exercised on abstract fixtures). With no extraction key it emits nothing rather than
+# guessing, so the keyless boot is unaffected either way.
+coreference:
+  # Which evidence kinds may be emitted. Drop UNAMBIGUOUS_ANAPHOR to run conservative (stated equivalences and
+  # name variants only) — anaphora is the highest-reach, highest-risk category. Order is not significance.
+  # NOTE this is the PRODUCER list (what may be proposed at all); which of them may auto-BIND is a separate,
+  # stricter decision in resolution.yaml -> earned_identity.authoritative_categories, behind a per-link
+  # structural gate and a source-grade floor. Proposing is cheap; binding is not.
+  categories: [EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR]
+  max_mentions: 120             # cost guard: a document offering more mentions is skipped whole, never truncated

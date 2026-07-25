@@ -840,7 +840,23 @@ def _coref_locator(ref: Any) -> str:
 # ── config + the public pass ────────────────────────────────────────────────────────────────────────
 
 def _coref_cfg(config: ConfigBundle) -> dict[str, Any]:
-    """The pass's knobs from ``credibility.yaml → coreference`` (hot-config). ``{}`` ⇒ dormant."""
+    """The pass's knobs from ``credibility.yaml → coreference`` (hot-config). ``{}`` ⇒ dormant.
+
+    **Both switches, one motion — and the S3 stage flag is what turns the motion.** The producer block is now
+    declared and populated (it was commented out on the stated condition "turn it on together with that honor
+    policy, not before", and S3 *is* that policy), but the pass stays dormant until
+    ``resolution.earned_identity.enabled`` is on. Two reasons, and the second is the practical one:
+
+    * it keeps the flag boundary in exactly **one** place, so flag-off is byte-identical on the *ingest* path
+      too — a re-extract with the flag off records the same bundles, which is what makes the frozen corpus a
+      stable baseline to dual-run against;
+    * the pass costs a **second extraction call per document**. That is a real, stated cost, and it should
+      not switch on as a side effect of reading a different config file.
+    """
+    from chanakya.resolve.rconfig import EarnedIdentity
+
+    if not EarnedIdentity.from_resolution(config.resolution).enabled:
+        return {}
     return dict(getattr(config.credibility, "coreference", None) or {})
 
 

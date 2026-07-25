@@ -4,7 +4,7 @@ Offline + deterministic (gate G10): a :class:`ScriptedExtractionClient` replays 
 the pass-2 cluster proposal over a synthetic document whose text we control, so the licensing-quote check
 is exercised against real text. The beats asserted here:
 
-* **dormant by default** — the shipped config carries no ``coreference`` block, so extraction makes exactly
+* **dormant by default** — the RK-COREF stage flag ships off, so extraction makes exactly
   ONE call and emits nothing new (this is what makes the slice a no-op until RESOLVE is reconciled).
 * **its own lane** — a cluster is written on ``coref-same-as``, NEVER ``same-as``. That separation is the
   whole point: ``resolve.scoring`` weighs ``same-as`` as one term of ``merge_score``, so writing there would
@@ -46,19 +46,27 @@ def _offline_geocoder(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture(scope="module")
 def config() -> ConfigBundle:
-    """The real shipped config — ``coreference`` is deliberately absent from it (dormant)."""
+    """The real shipped config — the pass is dormant on it (the RK-COREF stage flag ships off)."""
     return ConfigStore.seed_from(settings.config_dir()).snapshot()
 
 
 def _enabled(config: ConfigBundle, **knobs: Any) -> ConfigBundle:
-    """The same config with the pass switched on — the one block a deployment adds to opt in.
+    """The same config with the pass switched on — **both** switches, in one motion.
 
-    An *empty* block reads as dormant (the ``attribution_proposer`` precedent), so the default here spells
-    the categories out, exactly as the commented-out block in ``config/credibility.yaml`` does.
+    Since RK-COREF (S3) the producer block in ``config/credibility.yaml`` is declared and populated, and the
+    pass is gated on the stage flag ``resolution.earned_identity.enabled`` instead. That is deliberate: it
+    keeps the flag boundary in one place (so a flag-off re-extract records byte-identical bundles) and it
+    stops a second extraction call per document switching on as a side effect of reading another config file.
+    So a test that wants the pass live has to flip both, exactly as an operator does.
+
+    An *empty* categories list still reads as dormant (the ``attribution_proposer`` precedent), so the default
+    here spells the categories out, exactly as the shipped block does.
     """
     knobs.setdefault("categories", list(coref.EVIDENCE_CATEGORIES))
     credibility = config.credibility.model_copy(update={"coreference": knobs})
-    return config.model_copy(update={"credibility": credibility})
+    block = {**(getattr(config.resolution, "earned_identity", None) or {}), "enabled": True}
+    resolution = config.resolution.model_copy(update={"earned_identity": block})
+    return config.model_copy(update={"credibility": credibility, "resolution": resolution})
 
 
 def _doc() -> loaders.LoadedDoc:
@@ -95,7 +103,7 @@ def _coref_edges(claims: list[ClaimRecord]) -> list[ClaimRecord]:
 # ── dormancy: the slice changes nothing until a deployment opts in ─────────────────────────────
 
 def test_dormant_by_default_makes_no_second_call(config: ConfigBundle) -> None:
-    """The shipped config has no ``coreference`` block ⇒ exactly ONE extraction call, no coref claims.
+    """The shipped config leaves the stage flag off ⇒ exactly ONE extraction call, no coref claims.
 
     A scripted client raises when over-drawn, so a single queued response *is* the assertion that pass 2
     never fired.
@@ -137,11 +145,29 @@ def test_coref_edge_cites_the_licensing_span_and_its_members(config: ConfigBundl
     assert len(edge.premises) == 2 and set(edge.premises) <= entity_ids
 
 
-def test_pass_one_claims_are_untouched(config: ConfigBundle) -> None:
-    """Additive by construction: enabling pass 2 only ever *adds* claims — it never mutates pass 1's."""
+def test_pass_one_claims_gain_only_the_referent_atom(config: ConfigBundle) -> None:
+    """Pass 2 adds claims and **fills exactly one previously-``None`` field** on pass 1's — nothing else.
+
+    This assertion used to be "pass 1's claims are untouched", which held while the referent atom was dormant.
+    RK-COREF (S3) mints it, and *the mint has to land on the members' own entity claims*: a referent carried
+    only on the n−1 star links is a pile of pairs, not a **grouping**, and D-13.18's decline is a decision
+    about the grouping as a whole. So the contract is now the narrower and more useful one — every other field
+    of every pass-1 claim is byte-identical, and the referent is set only where a cluster was accepted.
+    """
     base = _extract(config, _FILL)
     with_coref = _extract(_enabled(config), _FILL, _cluster(members=[1, 2]))
-    assert with_coref[:len(base)] == base
+    revised = with_coref[:len(base)]
+
+    assert [c.model_dump(exclude={"referent_id"}) for c in revised] == [
+        c.model_dump(exclude={"referent_id"}) for c in base
+    ], "pass 2 changed something other than the referent atom on a pass-1 claim"
+    assert all(c.referent_id is None for c in base), "the baseline must have no referent to compare against"
+    stamped = [c for c in revised if c.referent_id is not None]
+    assert stamped, "the clustered members' entity claims must carry the minted referent atom"
+    assert {c.referent_id for c in stamped} == {"ref:d01-c1"}, "one referent per document-local cluster"
+    assert all(c.payload.form == "entity" for c in stamped), (
+        "the referent grain is per-MENTION: a relationship claim names two mentions and has no single referent"
+    )
 
 
 def test_rescues_an_undeclared_descriptive_mention(config: ConfigBundle) -> None:
