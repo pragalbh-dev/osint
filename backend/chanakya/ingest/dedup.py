@@ -120,13 +120,17 @@ def _claim_signature(claim: ClaimRecord) -> str:
     excluded — they are document-level constants, so they can never separate two claims of one doc —
     and ``claim_id``/``resolved_ref``/``extraction`` are excluded so a restatement still collapses.
 
-    **The referent atom separates, when it is stated** (A1; see :func:`dedup_within_doc` for the full
-    reasoning). Two same-content mentions that within-document coreference put in *different* clusters are
-    not a restatement of one assertion — they are two assertions that happen to share a surface string —
-    so they must not fold into one atom. The key is emitted **only when a referent is set**, so while the
-    field is dormant (S1) every signature string is byte-identical to its pre-S1 value and the pass cannot
-    have shifted a single grouping or ordering tiebreak. Absence stays *unknown*, never a value: an unset
-    referent and a set one are also kept apart, because "we don't know" is not evidence of sameness.
+    **The referent atom separates** (A1; see :func:`dedup_within_doc` for the reasoning). Two same-content
+    mentions that within-document coreference put in *different* clusters are not a restatement of one
+    assertion — they are two assertions that happen to share a surface string — so they must not fold into
+    one atom. Absence is *unknown*, never a value: an unset referent and a set one are kept apart too,
+    because "we don't know" is not evidence of sameness.
+
+    While the field is dormant (S1) the key is a constant ``null``, which cannot change a grouping (equal
+    keys stay equal) and cannot change the sort tiebreak either: inserting the same key/value at the same
+    ``sort_keys`` position in two dicts leaves the first point of divergence between their JSON exactly
+    where it was. Checked, not assumed — a randomised sweep over signature-shaped dicts found zero order
+    flips, and the byte-identical golden view corroborates it.
     """
     sig: dict[str, Any] = {
         "doc": _doc_key(claim),
@@ -136,10 +140,9 @@ def _claim_signature(claim: ClaimRecord) -> str:
         "payload": _payload_core(claim.payload),
         "event_time": claim.event_time.model_dump(mode="json") if claim.event_time is not None else None,
         "premises": list(claim.premises),
+        "referent": claim.referent_id,
         "targets": claim.targets,
     }
-    if claim.referent_id is not None:
-        sig["referent"] = claim.referent_id
     return json.dumps(sig, sort_keys=True, ensure_ascii=False, default=str)
 
 
@@ -254,8 +257,10 @@ def _folded_referent(members: list[ClaimRecord]) -> str | None:
     **Two mentions with different referents never fold**, because :func:`_claim_signature` includes the
     referent, so every group reaching here is referent-homogeneous and this returns that single value.
     The disagreement branch is therefore unreachable by construction — and it **raises** rather than
-    picking one or blanking the field, so if the signature is ever changed to drop the referent the loss
-    is loud instead of a silent identity fusion. (Analyst/coref authority must not degrade to a hint, A6.)
+    picking one or blanking the field, so if the signature is ever changed to drop the referent the loss is
+    loud instead of a silent identity fusion. Picking one would also be *input-order dependent* (see
+    :func:`dedup_within_doc`'s residual-defect note on the representative choice), which is no way to
+    decide identity. (Analyst/coref authority must not degrade to a hint, A6.)
     """
     values = {member.referent_id for member in members}
     if len(values) > 1:
@@ -273,21 +278,37 @@ def dedup_within_doc(claims: list[ClaimRecord]) -> list[ClaimRecord]:
     Claims sharing a :func:`_claim_signature` (same document *and* same stated content) are merged into
     a single representative whose ``doc_ref`` is the sorted, de-duplicated union of the group's spans.
     Claims in different documents, or with any differing stated content (polarity, kind, asserts, the
-    normalised s/p/o, the structured value, premises …), are **never** merged. Inputs are not mutated;
-    the output is ordered deterministically (by earliest span, then signature), so the pass is itself
-    order-independent.
+    normalised s/p/o, the structured value, premises …), are **never** merged. Inputs are not mutated, and
+    both the returned *ordering* (earliest span, then signature) and each group's ``doc_ref`` union (sorted,
+    de-duplicated) are independent of input order.
 
-    **The fold is referent-aware (A1).** This pass is where a claim atom's identity is fixed, and the
-    evidence log is append-only: a claim atom, once folded, can never be split again. So the two possible
-    errors are not symmetric — an over-fold permanently destroys a distinction the source made and takes
-    the analyst out of the loop, while an under-fold is fully recoverable, because the *rebuild* can still
-    group two claim atoms into one node (and, being a derived grouping, can be challenged and undone).
-    That asymmetry — the same one behind D-13.18's "the rebuild may decline a grouping" — decides it: the
-    referent enters the signature, so two mentions coreference judged to be **different** referents stay
-    two atoms with one span each, and the folded group's shared referent is carried onto the
+    **The fold is referent-aware (A1) — a differing referent blocks the fold.** A referent is the source's
+    own grouping of its own mentions, so two same-content mentions with *different* referents were read as
+    two different things; folding them and keeping one referent would assert that those two referents are
+    one, and that is a **grouping decision**, which belongs to the rebuild and never to ingest (D-13.18).
+    Dedup mechanically de-duplicates identical mentions; it must not decide identity. The asymmetry of the
+    two errors points the same way: the evidence log is append-only and a claim atom never splits, so an
+    over-fold destroys a distinction permanently and removes the analyst, while an under-fold is fully
+    recoverable — the rebuild can still group two claim atoms into one node, and being a derived grouping
+    that can be challenged and undone. So the referent enters :func:`_claim_signature`, the
+    conflicting-fold case cannot arise, and the group's single shared referent is carried onto the
     representative **explicitly** (:func:`_folded_referent`) rather than surviving incidentally as a field
-    the representative happened to hold. It also matches the direction this pass already errs in — the
-    signature is deliberately a *superset* key so it keeps claims apart rather than dropping an assertion.
+    the representative happened to hold.
+
+    **Two residual defects, both pre-existing and out of RK-ATOMS' scope** — recorded here for whichever
+    stage next owns this module, because a silent hole is worse than a named one:
+
+    * *The representative choice leaks input order.* ``min(members, key=_earliest_docref_key)`` returns the
+      **first** minimal element, so when two members tie on that key, every field the signature deliberately
+      excludes — ``claim_id``, ``resolved_ref``, ``extraction``, ``report_time``/``ingest_time`` — is decided
+      by arrival order. Phase 1 of the live lane is a concurrent fan-out, so that order is not guaranteed.
+      Harmless today (the excluded fields are constant per document, and ``assign_claim_ids`` restamps
+      ``claim_id`` immediately afterwards) but it is real nondeterminism sitting under the identity
+      substrate, and it wants a total tiebreak — not a fix to attempt inside a byte-identical stage.
+    * *A fold can orphan an inbound claim-id reference.* Folding b into a drops b's id, but
+      :func:`assign_claim_ids` runs **after** and builds its remap only from the survivors, so another
+      claim's ``premises`` / ``targets`` / endpoint mention ref pointing at b is left dangling rather than
+      redirected to a. The fold needs to contribute a b→a entry to that remap.
     """
     groups: dict[str, list[ClaimRecord]] = defaultdict(list)
     for claim in claims:
