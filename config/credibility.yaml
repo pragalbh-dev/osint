@@ -80,17 +80,17 @@ supersede_floor:
   # that error is then laundered into a positively-asserted movement the analyst is never asked about: the
   # non-negotiable breached with no component lying. So machine promotion is only legitimate over an
   # identity the system EARNED. Scoped to promotions that would DRAW a relocation (differing targets) — a
-  # same-target refresh asserts no movement — and it holds when the subject is a build-materialized
-  # provisional instance, or rests on a merge recorded below the floor below. A never-merged subject is NOT
-  # held: no identity decision was taken, so there is none to distrust, and holding those would stop every
-  # honest relocation and teach the analyst to ignore the queue. Held ⇒ `candidate_supersede` stays and the
-  # analyst decides, which D-P4.4 already makes the DEFAULT outcome.
+  # same-target refresh asserts no movement — and it holds when the subject's identity is still an OPEN
+  # QUESTION: a build-materialized provisional instance, or an endpoint of an open `candidate` merge (a
+  # same-as the resolver put in front of the analyst and nobody has adjudicated).
+  # WHAT THIS IS NOT: the node's assessed status. The legitimate flagship relocation sits at `probable`, so
+  # reading the confidence label would suppress the very beat this is meant to leave working. The test is in
+  # the MERGE-BAND vocabulary — is the identity decision open? — not on the confidence scale. A never-merged
+  # subject, and one whose merges are all settled, both pass: no identity decision is pending, so there is
+  # none to distrust, and holding those would stop every honest relocation and teach the analyst to ignore
+  # the queue. Held ⇒ `candidate_supersede` stays and the analyst decides, which D-P4.4 already makes the
+  # DEFAULT outcome. A boolean, not a threshold: there is no number to tune here (G6 by construction).
   require_earned_identity: true
-  # The bar for "earned". It MIRRORS `resolution.yaml: auto_merge` rather than reading it: the question here
-  # is a credibility-side one (may the machine act alone?) whose answer happens to be "at the strength the
-  # resolver requires to fuse without asking". Written out so the coupling is visible and either side can
-  # move without silently moving the other. Absent ⇒ only the provisional-subject check runs.
-  min_identity_confidence: 0.85
 
 # ── the assertable band (ASK; spine/09) ──────────────────────────────────────────────────────────
 # Which assessed statuses are strong enough for an ANSWER to *rest on* a link — i.e. to walk it as the

@@ -43,7 +43,6 @@ from chanakya.ontology import EdgeLaneIndex, LayerRouting, NodeTypeIndex
 from chanakya.schemas import ClaimRecord, ConfigBundle, DateValue, EdgeView, KnownGap, NodeView
 from chanakya.schemas.values import canonical_iso_bounds
 
-from . import layers as layer_routing
 from .supersede import order_instance_edges
 
 _SITE_TYPE = "basing_site"
@@ -139,24 +138,29 @@ def _best_dated(
     return best
 
 
-def _inherited_time(premises: list[ClaimRecord]) -> DateValue | None:
-    """The premises' latest valid time, carried across **whole** — the derived fact's own valid time.
+def _inherited_time(observation: ClaimRecord) -> DateValue | None:
+    """The **grounding observation's** valid time, carried across whole — the derived fact's own valid time.
 
-    The winning premise's date value is copied *as it stands* (shape, granularity and boundary source
-    intact) rather than flattened: a derived fact must not read as more precisely dated than the
-    observation it rests on. A vague "2025" stays vague, which is what lets the supersede rule tell "later"
-    from "unorderable" instead of silently ranking a year label above a day-precise date.
+    The date value is copied *as it stands* (shape, granularity and boundary source intact) rather than
+    flattened: a derived fact must not read as more precisely dated than the observation it rests on. A
+    vague "2025" stays vague, which is what lets the supersede rule tell "later" from "unorderable" instead
+    of silently ranking a year label above a day-precise date.
+
+    **It is the observation's time, not the later of the two premises' — a defect fixed here.** The old
+    offline pass took the maximum over *both* premises. But the same ``inducted-into`` claim backs every
+    attribution for a given unit, and :func:`_best_dated` always picks that edge's *newest* backing claim, so
+    the maximum meant **every basing of that unit inherited one and the same induction date** — and two
+    basings with identical dates are unorderable, so they read as a *contradiction* ("the unit is in two
+    places at once") instead of a relocation. Measured on the real corpus: a 2021 sighting at the old site
+    inherited a 2025 induction date and its genuine 2025 successor became a contradiction rather than a
+    supersede. The frozen bundles masked it, having been recorded against a sparser earlier view.
+
+    The observation is what dates an occupancy; the induction merely licenses attributing it to a unit. That
+    is also what this module has always *said* — "the ``event_time`` is inherited from the grounding
+    observation … which is why the observation had to be dated first" — so this restores the stated contract
+    rather than choosing a new one.
     """
-    best: DateValue | None = None
-    best_key: tuple[str, str] | None = None
-    for c in premises:
-        hi = _upper(c.event_time)
-        if hi is None or c.event_time is None:
-            continue
-        key = (hi, c.claim_id)
-        if best_key is None or key > best_key:
-            best, best_key = c.event_time, key
-    return best
+    return observation.event_time
 
 
 def _is_locatable(node: NodeView) -> bool:
@@ -260,7 +264,7 @@ def _derived_edge(
         target=site_id,
         edge_instance=edge_instance,
         claim_ids=sorted({obs.claim_id, formation.claim_id}),
-        time_interval=_inherited_time([obs, formation]),
+        time_interval=_inherited_time(obs),
         attrs=attrs,
     )
 
@@ -360,54 +364,31 @@ def derive(
         if dropped:
             out.gaps.append(_truncation_gap(site_id, kept, dropped, cap))
         for unit_id, backing, ftype in formations[:cap]:
-            bucket, raw, mapped = (None, None, True)
-            if routing.enabled:
-                bucket, raw, mapped = layer_routing.instance_key_tag_value(
-                    derived_edge_type, unit_id, site_id, lane, nodes, routing
-                )
-            ei = lane.edge_instance_key(unit_id, derived_edge_type, site_id, bucket)
+            # The `site_type` sub-bucket is NOT applied here — see `layers.retag_instances`. It is a
+            # per-SUBJECT decision spanning this subject's stated basings too, so it can only be made once
+            # every basing exists. Until then a derived edge keys exactly as a claim-backed one does.
+            ei = lane.edge_instance_key(unit_id, derived_edge_type, site_id)
             drawn = _derived_edge(
                 unit_id, site_id, equipment_id, obs, backing, edge.type, ftype, derived_edge_type, ei
             )
-            if not mapped and raw:
-                # Record the unresolved class on every such edge; the *suppression* is applied below, and
-                # only where the instance holds more than one target — see the grouping step.
-                drawn.attrs[layer_routing.STATED_TAG] = raw
-            by_instance.setdefault(ei, []).append((drawn, mapped))
+            by_instance.setdefault(ei, []).append(drawn)
             out.edges.append(drawn)
 
     # Two derived basings on one instance are a candidate relocation, and they must go through the SAME
     # ordering the claim-backed edges do — otherwise the derived layer would be the one place a state change
     # is invisible. Suppressed instances (an unmappable site class) are built but never ordered: the third
     # state's "no fusion", already paired with its named gap.
-    for ei, group in sorted(by_instance.items()):
-        if len(group) < 2:
-            continue  # one target on an instance: nothing to order, and nothing to suppress
-        members = [e for e, _ in group]
-        if not all(mapped for _, mapped in group):
-            # The third state, where it bites: an unresolved site class on an instance that DOES hold two
-            # targets. No fusion (the pair is never ordered, so it can never nominate a relocation) and a
-            # named gap, so the suppression is a visible refusal rather than a silent non-event.
-            for e in members:
-                e.attrs[layer_routing.SUPERSEDE_SUPPRESSED] = "instance-key-tag-unmappable"
-            out.gaps.append(
-                layer_routing.unmapped_tag_gap(
-                    ei,
-                    derived_edge_type,
-                    str(lane.instance_key_tag(derived_edge_type) or "instance_key_tag"),
-                    next(
-                        (str(e.attrs[layer_routing.STATED_TAG])
-                         for e in members if layer_routing.STATED_TAG in e.attrs),
-                        None,
-                    ),
-                )
-            )
-            continue
-        order_instance_edges(members, {e.id: _bounds(e.time_interval) for e in members})
+    for _ei, group in sorted(by_instance.items()):
+        if len(group) > 1:
+            order_instance_edges(group, {e.id: edge_bounds(e) for e in group})
     return out
 
 
-def _bounds(value: DateValue | None) -> tuple[str, str] | None:
-    """A derived edge's inherited validity as a fully-bounded interval, or ``None`` (⇒ unorderable)."""
-    lo, hi = canonical_iso_bounds(value)
+def edge_bounds(edge: EdgeView) -> tuple[str, str] | None:
+    """A derived edge's inherited validity as a fully-bounded interval, or ``None`` (⇒ unorderable).
+
+    Shared with ``layers.retag_instances``, which has to re-run the ordering inside each re-bucketed
+    instance and must read validity the same way this module wrote it.
+    """
+    lo, hi = canonical_iso_bounds(edge.time_interval)
     return (lo, hi) if lo is not None and hi is not None else None

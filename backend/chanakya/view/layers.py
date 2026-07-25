@@ -38,10 +38,11 @@ mint grain and must not read this as already-correct.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
+from chanakya.credibility.supersession import CANDIDATE, GATE, PENDING_NEWER, PENDING_OLDER
 from chanakya.ontology import EdgeLaneIndex, LayerRouting, Materialization, NodeTypeIndex
 from chanakya.schemas import ClaimRecord, EdgeView, KnownGap, NodeView
 
@@ -78,9 +79,7 @@ class RoutingOutcome:
     design_citations: dict[str, set[str]] = field(default_factory=dict)
     #: extra derived-layer edges to add to the view (the ``instance-of`` links).
     link_edges: list[EdgeView] = field(default_factory=list)
-    #: edge instances whose ``instance_key_tag`` would not map ⇒ ineligible to nominate a supersede.
-    unmapped_instances: dict[str, str] = field(default_factory=dict)
-    #: withheld edges: ``(edge_instance, predicate, endpoint_id, end)`` — a ``requires_stated`` violation.
+    #: withheld edges: ``(claim_id, predicate, endpoint_id, end)`` — a ``requires_stated`` violation.
     withheld: list[tuple[str, str, str, str]] = field(default_factory=list)
     #: named gaps the routing owes the analyst.
     gaps: list[KnownGap] = field(default_factory=list)
@@ -93,35 +92,114 @@ def routing_config(ontology: Any) -> LayerRouting:
 
 # ── 1 + 3: per-triple routing (called from the assembler's relationship branch) ────────────────────
 
-def instance_key_tag_value(
+def _tag_of(
     predicate: str,
     subject: str,
     obj: str,
+    attr: str,
     lane: EdgeLaneIndex,
     nodes: dict[str, NodeView],
     layers: LayerRouting,
-) -> tuple[str | None, str | None, bool]:
-    """``(bucket, raw_stated_value, mapped)`` for an edge's declared ``instance_key_tag`` (R1.3/C1/L1).
+) -> tuple[str, str | None, bool]:
+    """``(bucket, raw_stated_value, mapped)`` for one edge's ``instance_key_tag`` (R1.3/C1, C7 via L1).
 
     The tag attribute is read off the endpoint the **functional key drops** — for ``based-at`` that is the
-    site, whose ``site_type`` says what *kind* of place this basing is. ``(None, None, True)`` when the edge
-    declares no tag, so the caller's key is byte-unchanged.
-
-    ``mapped=False`` is the third state: the bucket returned is the shared ``absent_bucket`` (no
-    de-confliction), and the caller still owes the other two parts — no supersede nomination, and a named
-    gap. Both are wired in :func:`route_triple` / :func:`unmapped_tag_gap`.
+    site, whose ``site_type`` says what *kind* of place this basing is. That is the endpoint whose identity
+    the functional key deliberately forgets, and therefore the one whose *class* has to come back in as a
+    sub-bucket. ``mapped=False`` covers **both** an absent value and a stated-but-unmappable one: for keying
+    they are the same condition — we do not know the class.
     """
-    attr = lane.instance_key_tag(predicate)
-    if attr is None:
-        return None, None, True
     ends = lane.instance_key(predicate)
-    # The tag lives on the endpoint the key drops — that is the endpoint whose identity the functional key
-    # deliberately forgets, and therefore the one whose *class* has to come back in as a sub-bucket.
     holder = obj if _TO_END not in ends else subject
     node = nodes.get(holder)
     raw = (node.attrs.get(attr) if node is not None else None)
     bucket, mapped = layers.normalise_tag(raw)
     return bucket, (raw if isinstance(raw, str) else None), mapped
+
+
+def retag_instances(
+    edges: list[EdgeView],
+    nodes: dict[str, NodeView],
+    lane: EdgeLaneIndex,
+    layers: LayerRouting,
+    order: Callable[[list[EdgeView], dict[str, tuple[str, str] | None]], object],
+    intervals: Callable[[EdgeView], tuple[str, str] | None],
+) -> list[KnownGap]:
+    """Apply the ``instance_key_tag`` sub-bucket **per subject**, or take the third state (R1.3/C1/L1/C7).
+
+    **Why this is a post-pass over the finished edge list, and why it must be per subject.** The tag
+    de-conflicts one subject's basings by *kind of place*: a unit at its garrison and concurrently at a
+    forward site is two valid basings, not a relocation. That is only sound when every one of that subject's
+    basings has a **known** class. If even one does not, then tagging the rest *separates* the unknown one
+    from them — and separation is de-confliction, the one thing C7's third state forbids, because it makes a
+    real relocation quietly stop firing while the code still looks deterministic. (Measured, not
+    hypothetical: the flagship relocation's two ends are described on different axes — one names a revetment
+    complex, the other an airfield — so a per-edge tag put them in different buckets and the supersede
+    silently never fired, with nothing anywhere to say so.)
+
+    So the decision is per ``(subject, predicate)`` and covers **every** basing of that subject — stated and
+    rebuild-derived alike, which is why it runs after the derivation rather than during keying:
+
+    * **all classes known** ⇒ split into per-class instances and re-run the ordering inside each. Two
+      concurrent basings at different kinds of site stop being a manufactured before/after.
+    * **any class unknown** (absent *or* stated-but-unmappable — for keying, the same condition) ⇒ **no
+      de-confliction**: the whole group keeps one untagged instance, so nothing is separated. **No fusion**:
+      the nomination is withdrawn, so an unresolved class can never manufacture a relocation. **A named
+      gap**, so the withheld supersede is a visible refusal rather than a non-event. Never one without the
+      other two.
+
+    A group with a single member is a special case of "nothing to fuse": its class is applied if known, and
+    if unknown it simply keeps the untagged key with no suppression and no gap — a "cannot assess a
+    relocation" notice against every lone basing in the graph is how a gap register stops being read.
+    """
+    gaps: list[KnownGap] = []
+    groups: dict[tuple[str, str, str], list[EdgeView]] = {}
+    for edge in edges:
+        attr = lane.instance_key_tag(edge.type)
+        if attr is not None:
+            groups.setdefault((edge.source, edge.type, attr), []).append(edge)
+
+    for (subject, predicate, attr), group in sorted(groups.items()):
+        resolved = [
+            (edge, *_tag_of(predicate, edge.source, edge.target, attr, lane, nodes, layers))
+            for edge in group
+        ]
+        for edge, _bucket, raw, mapped in resolved:
+            if raw and not mapped:
+                edge.attrs[STATED_TAG] = raw  # keep the unresolved class visible on the edge itself
+        if all(mapped for _e, _b, _r, mapped in resolved):
+            by_bucket: dict[str, list[EdgeView]] = {}
+            for edge, bucket, _raw, _mapped in resolved:
+                edge.edge_instance = lane.edge_instance_key(subject, predicate, edge.target, bucket)
+                by_bucket.setdefault(bucket, []).append(edge)
+            if len(by_bucket) > 1:
+                # The classes genuinely separated this subject's basings, so the ordering the untagged key
+                # produced spanned instances that are not comparable. Clear it and re-order within each.
+                for edge in group:
+                    clear_supersede_nomination(edge)
+                for bucket_edges in by_bucket.values():
+                    order(bucket_edges, {e.id: intervals(e) for e in bucket_edges})
+            continue
+        if len(group) > 1:
+            for edge in group:
+                clear_supersede_nomination(edge)
+                edge.attrs[SUPERSEDE_SUPPRESSED] = "instance-key-tag-unmappable"
+            raw = next((r for _e, _b, r, m in resolved if r and not m), None)
+            gaps.append(unmapped_tag_gap(group[0].edge_instance or subject, predicate, attr, raw))
+    return gaps
+
+
+def clear_supersede_nomination(edge: EdgeView) -> None:
+    """Withdraw a supersede nomination, leaving the edge itself drawn, scored and clickable.
+
+    Nomination attrs only: what is removed is the machine's *claim to have ordered this pair*, which is the
+    thing an unresolved (or newly re-bucketed) site class does not license. Imported by ``view/pipeline``
+    rather than duplicated, so the vocabulary has one owner.
+    """
+    edge.attrs.pop(CANDIDATE, None)
+    edge.attrs.pop(PENDING_NEWER, None)
+    edge.attrs.pop(PENDING_OLDER, None)
+    edge.attrs.pop(GATE, None)
 
 
 def _presence_id(layers: LayerRouting, instance_end: str, other_end: str) -> str:

@@ -61,9 +61,6 @@ _BLOCKING = "blocking_gate_flags"
 _ALLOWED_STATUS = "newer_status_allow"
 # R1.4 — the EARNED-IDENTITY gate on the promotion (see :func:`_identity_failures`).
 _REQUIRE_EARNED = "require_earned_identity"
-_MIN_IDENTITY_CONF = "min_identity_confidence"
-_RESOLVED_FROM = "resolved_from"       # the accepted-merge audit trail view/pipeline stamps on a node
-_MERGE_CONFIDENCE = "merge_confidence"
 _PROVISIONAL = "provisional"           # a build-materialized instance: identity not earned, by definition
 
 
@@ -120,8 +117,8 @@ def _identity_failures(
     older: EdgeView,
     newer: EdgeView,
     nodes: dict[str, NodeView] | None,
+    unsettled_identities: set[str],
     floor: dict[str, object],
-    config: ConfigBundle,
 ) -> list[str]:
     """R1.4 — every reason this promotion is not the machine's to make (empty ⇒ it may proceed).
 
@@ -135,39 +132,33 @@ def _identity_failures(
 
     Machine promotion is legitimate only over an identity the system actually **earned**. So the gate is
     scoped exactly where the harm is — a promotion that would **draw** a relocation across *differing*
-    targets — and it holds when the subject is:
+    targets — and it holds when the subject's identity is still an **open question**:
 
     * a **provisional** instance (build-materialized: there is no earned identity to rest on at all); or
-    * a node resting on a merge recorded **below** ``min_identity_confidence``.
+    * a node that is an endpoint of an **open `candidate` merge** — a same-as the resolver put in front of
+      the analyst and nobody has adjudicated.
 
-    A never-merged, single-claim subject is *not* caught: no identity decision was taken, so there is none
-    to distrust — gating that would stop every honest relocation and teach the analyst to ignore the queue.
-    Holding is not a refusal: the pair keeps ``candidate_supersede`` and goes to the analyst, which
-    D-P4.4 already makes the default outcome. The co-location-specific half of this (making such a merge
-    fail to *fuse* in the first place) is the identity layer's job — this is the downstream backstop that
-    makes the failure survivable rather than fabricating on top of it.
+    **What "sub-confirmed" is NOT.** It is *not* the node's assessed status. The legitimate flagship
+    relocation sits at *probable*, so reading the confidence label would suppress the very beat this is
+    meant to leave working. The question is about the *identity decision*, in the merge-band vocabulary: is
+    it still open? A never-merged subject and a subject whose merges are all settled both pass — no identity
+    decision is pending, so there is none to distrust, and holding those would stop every honest relocation
+    and teach the analyst to ignore the queue.
+
+    Holding is not a refusal: the pair keeps ``candidate_supersede`` and goes to the analyst, which D-P4.4
+    already makes the default outcome. The co-location-specific half of this (making such a merge fail to
+    *fuse* in the first place) is the identity layer's job — this is the downstream backstop that makes the
+    failure survivable rather than fabricating on top of it.
     """
     if not bool(floor.get(_REQUIRE_EARNED)):
         return []
     if newer.target == older.target:
         return []  # a same-target refresh asserts no movement; there is nothing to fabricate
     node = (nodes or {}).get(newer.source)
-    if node is None:
-        return []
-    if node.attrs.get(_PROVISIONAL):
+    if node is not None and node.attrs.get(_PROVISIONAL):
         return ["subject-identity-provisional"]
-    cut = floor.get(_MIN_IDENTITY_CONF)
-    if not isinstance(cut, (int, float)):
-        return []
-    weak: list[str] = []
-    for entry in node.attrs.get(_RESOLVED_FROM, []) or []:
-        if not isinstance(entry, dict):
-            continue
-        conf = entry.get(_MERGE_CONFIDENCE)
-        if isinstance(conf, (int, float)) and conf < float(cut):
-            weak.append(str(entry.get("merged_ref", "?")))
-    if weak:
-        return [f"subject-identity-sub-confirmed:{ref}" for ref in sorted(weak)]
+    if newer.source in unsettled_identities:
+        return ["subject-identity-open-candidate-merge"]
     return []
 
 
@@ -224,7 +215,10 @@ def _drawn_edge(older: EdgeView, newer: EdgeView) -> EdgeView:
 
 
 def promote_supersessions(
-    edges: list[EdgeView], config: ConfigBundle, nodes: dict[str, NodeView] | None = None
+    edges: list[EdgeView],
+    config: ConfigBundle,
+    nodes: dict[str, NodeView] | None = None,
+    unsettled_identities: set[str] | None = None,
 ) -> SupersedeOutcome:
     """Promote each ordered candidate pair that clears the floor; leave the rest for HITL.
 
@@ -232,9 +226,10 @@ def promote_supersessions(
     assessment the status machine just attached, so replaying the same logs + config yields the same
     edges byte-for-byte (gate G2).
 
-    ``nodes`` supplies the subject's identity provenance for the **earned-identity** gate (R1.4). Optional
-    and default-``None`` so every existing caller is unchanged; absent (or with the gate unconfigured) the
-    behaviour is exactly the pre-S2 one.
+    ``nodes`` and ``unsettled_identities`` supply the **earned-identity** gate's two inputs (R1.4): whether
+    the subject is a build-materialized provisional instance, and whether its identity is still an open
+    ``candidate`` merge. Both optional and default-``None`` so every existing caller is unchanged; absent
+    (or with the gate unconfigured) the behaviour is exactly the pre-S2 one.
     """
     outcome = SupersedeOutcome()
     floor = _floor(config)
@@ -254,7 +249,9 @@ def promote_supersessions(
             # R1.4 — the newer assertion clearing the CREDIBILITY floor is not enough: promoting also
             # removes the pair from the analyst's queue and draws a relocation, which is only the machine's
             # call over an identity it earned.
-            failures = failures + _identity_failures(older, newer, nodes, floor, config)
+            failures = failures + _identity_failures(
+                older, newer, nodes, unsettled_identities or set(), floor
+            )
         if failures:
             older.attrs[GATE] = GATE_HELD
             newer.attrs[GATE] = GATE_HELD

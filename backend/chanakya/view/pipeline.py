@@ -29,7 +29,6 @@ from chanakya.credibility import (
     promote_supersessions,
     score_claims,
 )
-from chanakya.credibility.supersession import GATE, PENDING_NEWER, PENDING_OLDER
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.materiality import precompute
 from chanakya.ontology import EdgeLaneIndex, LayerRouting, NodeTypeIndex
@@ -70,17 +69,14 @@ from chanakya.timeref import effective_as_of, is_available_by
 from . import basing as derived_basing
 from .export import sorted_view
 from .layers import (
-    STATED_TAG,
-    SUPERSEDE_SUPPRESSED,
     RoutingOutcome,
     apply_design_citations,
-    instance_key_tag_value,
+    retag_instances,
     route_triple,
     split_straddlers,
-    unmapped_tag_gap,
     withheld_edge_gap,
 )
-from .supersede import build_instance_edges
+from .supersede import build_instance_edges, order_instance_edges
 
 # ── log normalisation ────────────────────────────────────────────────────────────────────────
 
@@ -455,21 +451,16 @@ def _assemble(
         # unmerged graphs are unchanged (gate G2); merged endpoints now pool onto one edge. A functional
         # edge (`based-at`) still keys on the subject alone on both paths (EVAL RCA §2.1 / D-P4.4).
         # Absent a lane (a caller with no ontology in hand) fall back to the stored ref, then the default.
+        # NOTE the `instance_key_tag` sub-bucket (R1.3/C1) is deliberately NOT applied here. It de-conflicts
+        # one subject's basings by kind of place, which is only sound when EVERY basing of that subject has a
+        # known class — otherwise tagging the known ones separates the unknown one from them, and separation
+        # is de-confliction, the thing C7's third state forbids. That decision therefore needs the whole
+        # subject in view, including the rebuild-derived basings that do not exist yet, so it is a post-pass
+        # (`layers.retag_instances`, called from `rebuild()` after the derivation). Until then every edge
+        # keys exactly as it does with routing off.
         rr = c.resolved_ref
         if lane is not None:
-            # R1.3/C1/L1 — the site_type sub-bucket. `tag` is None with routing off, so the key is
-            # byte-unchanged; an unmappable stated value takes the third state (shared fail-safe bucket,
-            # no supersede nomination, named gap) rather than being de-conflicted or waved through.
-            tag: str | None = None
-            if routing.enabled:
-                tag, raw, mapped = instance_key_tag_value(
-                    payload.predicate, subj, obj, lane, nodes, routing
-                )
-                if tag is not None and not mapped:
-                    outcome.unmapped_instances.setdefault(
-                        lane.edge_instance_key(subj, payload.predicate, obj, tag), raw or ""
-                    )
-            ei = lane.edge_instance_key(subj, payload.predicate, obj, tag)
+            ei = lane.edge_instance_key(subj, payload.predicate, obj)
         elif rr and rr.edge_instance:
             ei = rr.edge_instance
         else:
@@ -478,24 +469,7 @@ def _assemble(
 
     edges: list[EdgeView] = []
     for ei, cs in edge_groups.items():
-        built = build_instance_edges(ei, cs)
-        if ei in outcome.unmapped_instances:
-            raw = outcome.unmapped_instances[ei]
-            for e in built:
-                if raw:
-                    e.attrs[STATED_TAG] = raw  # the unresolved class stays visible on every such edge
-            # The third state bites only where there is something to fuse. One target on an instance means
-            # no supersede was ever nominated and no de-confliction was ever at stake, so suppressing it
-            # would be a no-op and its gap would be pure noise — a "cannot assess a relocation" notice
-            # against every single basing in the graph, which is how a gap register stops being read. With
-            # two or more targets the unmappable class IS load-bearing: withdraw the nomination (an
-            # unresolved site class must not manufacture a relocation) and owe the analyst the named gap.
-            # Suppressing without the gap would be exactly the silent kill this mechanism exists to prevent.
-            if len(built) > 1:
-                for e in built:
-                    _suppress_supersede(e, raw)
-                outcome.gaps.append(unmapped_tag_gap(ei, built[0].type, "site_type", raw or None))
-        edges.extend(built)
+        edges.extend(build_instance_edges(ei, cs))
     edges.extend(outcome.link_edges)
     for _claim_id, predicate, endpoint, end in outcome.withheld:
         outcome.gaps.append(withheld_edge_gap(predicate, endpoint, end))
@@ -525,20 +499,6 @@ def _assemble(
             series.sort(key=_series_sort_key)
 
     return nodes, edges, events
-
-
-def _suppress_supersede(edge: EdgeView, raw: str) -> None:
-    """Withdraw a supersede nomination and record why (the third state's "no fusion" — ruling L1/C7).
-
-    Nomination attrs only: the edges stay drawn, stay scored and stay clickable. What is removed is the
-    machine's *claim to have ordered them*, which is the thing an unmappable site class does not license.
-    """
-    edge.attrs[SUPERSEDE_SUPPRESSED] = "instance-key-tag-unmappable"
-    if raw:
-        edge.attrs[STATED_TAG] = raw
-    edge.attrs.pop(PENDING_NEWER, None)
-    edge.attrs.pop(PENDING_OLDER, None)
-    edge.attrs.pop(GATE, None)
 
 
 def _node_location(attrs: dict[str, Any]) -> Location | None:
@@ -842,6 +802,14 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
             nodes, edges, claims_by_id, config, lane, node_types, routing
         )
         edges.extend(derivation.edges)
+        # 2c. NOW that every basing of every subject exists — stated and derived — apply the `site_type`
+        #     sub-bucket, or take the third state (R1.3/C1/L1/C7). This is the only point at which the
+        #     per-subject decision can be made correctly.
+        derivation.gaps.extend(
+            retag_instances(
+                edges, nodes, lane, routing, order_instance_edges, derived_basing.edge_bounds
+            )
+        )
     derived_edge_ids = {e.id for e in derivation.edges}
 
     # 3. credibility (per-claim) — decisions carry analyst integrity flags (origin-wide, incl. future claims)
@@ -943,11 +911,21 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
     #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
     #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
-    # `nodes` is handed over only with routing on, so the earned-identity gate (R1.4) rides the same single
-    # flag as everything else this stage changes — flag-off promotion behaviour is untouched by construction
-    # rather than by argument. (A safety fix behind a flag is only acceptable because the whole stage is:
-    # the flag is the stage's cutover, not a way of keeping the fix off.)
-    supersede_outcome = promote_supersessions(edges, config, nodes if routing.enabled else None)
+    # The earned-identity gate's inputs (R1.4) are handed over only with routing on, so the fix rides the
+    # same single flag as everything else this stage changes — flag-off promotion behaviour is untouched by
+    # construction rather than by argument. (A safety fix behind a flag is only acceptable because the whole
+    # stage is: the flag is the stage's cutover, not a way of keeping the fix off.)
+    #
+    # "Unsettled" is the OPEN CANDIDATE MERGE — every endpoint of a same-as the resolver put in front of the
+    # analyst and nobody has adjudicated. Deliberately not the node's assessed status: the legitimate
+    # flagship relocation sits at *probable*, so reading the confidence label would suppress the beat this
+    # is meant to leave working. The question is whether the IDENTITY DECISION is still open.
+    unsettled = (
+        {eid for pair in partition.candidates for eid in pair} if routing.enabled else set()
+    )
+    supersede_outcome = promote_supersessions(
+        edges, config, nodes if routing.enabled else None, unsettled
+    )
     edges.extend(supersede_outcome.drawn_edges)
     # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it
     # raised while it was still being assessed as a live fact. The gap would tell an analyst to go
