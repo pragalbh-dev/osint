@@ -200,25 +200,32 @@ contrast_band_ceiling: probable
 # Still gated by every other rail: a distinct-from veto drops the pair outright, and a type / namespace /
 # hard-attribute contradiction demotes it to the queue instead of merging.
 #
-# FLIPPED IN RK-COREF (S3). Both of the original reasons for shipping this empty are now discharged:
-#   1. "Independent switches — the producer is dormant; if this were pre-set, enabling the producer would
-#      silently switch auto-merging on in the same motion." SOUND, and honoured: both switches are now
-#      subordinate to the one stage flag (`earned_identity.enabled` below), so nothing here changes any
-#      topology until that flag is on. Two switches, one deliberate motion.
-#   2. "Preserving an orphan-alias demo beat an analyst is meant to earn." OVERRULED — that is demo
-#      preservation, and working-principle #1 forbids curbing a target-correct capability to protect corpus
-#      data. It is not restated here, because naming the beat is how a forbidden input survives as folklore.
-#      What replaces it is stronger than what it protected: a parenthetical that extends a designator by a
-#      MARK rather than a word fails the structural gate ON ITS MERITS (ruling M1) and reaches the analyst
-#      with the licensing span attached. The beat is earned, not preserved — and the same conjunct catches a
-#      genuinely mislabelled equivalence, which the old arrangement never could.
+# FLIPPED IN RK-COREF (S3) — but flipped in the STAGE BLOCK, not here. The list S3 opts in lives at
+# `earned_identity.authoritative_categories` below and is read only while `earned_identity.enabled` is on.
+# This top-level key is the pre-S3 operator knob and stays EMPTY, which is what makes the stage flag a real
+# interlock rather than a claim about one.
 #
-# A listed category still clears EVERY other rail before it may bind: the distinct-from veto, type and
-# namespace agreement, the hard-attribute contradiction check, its own per-link deterministic gate
-# (recomputed by the resolver, never trusted from a stamp), and a source-grade floor. NAME_VARIANT is
-# deliberately absent and stays raise-only permanently: because an authoritative bind bypasses banding, a
-# licensed NAME_VARIANT *is* the exact-normalised-name auto-merge lane D-13.1 exists to delete.
-coref_authoritative_evidence: [EXPLICIT_EQUIVALENCE, UNAMBIGUOUS_ANAPHOR]
+# The distinction was measured, not stylistic. Every restraint S3 adds — the co-location cap, the name cap,
+# the stated-contrast ceiling, the relationship wall, the referent decline, the document-scoping of a bind —
+# is gated on that flag. Listing the categories HERE authorises the bootstrap unconditionally, so a shipped
+# flag-OFF deployment got the authorisation with none of the restraints: two co-located batteries fused at
+# `confirmed` on one coref link (flag-on: `probable`, capped), a pair the document explicitly CONTRASTS
+# fused at `confirmed` (flag-on: `probable`), and a bind licensed by one document spread onto a profile
+# built from another. Flag-off was strictly LESS safe than flag-on. Authorisation now flips with restraint.
+#
+# The second original reason for the empty list — "preserving an orphan-alias demo beat an analyst is meant
+# to earn" — remains OVERRULED, independently of where the list lives: that is demo preservation, and
+# working-principle #1 forbids curbing a target-correct capability to protect corpus data. What replaces it
+# is stronger: a parenthetical that extends a designator by a MARK rather than a word fails the structural
+# gate ON ITS MERITS (ruling M1) and reaches the analyst with the licensing span attached.
+#
+# A category listed by EITHER route still clears every other rail before it may bind: the distinct-from
+# veto, type and namespace agreement, the hard-attribute contradiction check, its own per-link deterministic
+# gate (recomputed by the resolver, never trusted from a stamp), and a source-grade floor. Those are
+# properties of the pair and stay flag-independent. NAME_VARIANT is deliberately absent from both lists and
+# stays raise-only permanently: because an authoritative bind bypasses banding, a licensed NAME_VARIANT *is*
+# the exact-normalised-name auto-merge lane D-13.1 exists to delete.
+coref_authoritative_evidence: []
 
 # Open-world name triggers (P3.3): the tail the alias table + entity registry have NEVER seen — a document
 # naming the same thing more verbosely, or by its initials. Both are high-precision BOOTSTRAP rules, so
@@ -522,10 +529,19 @@ distinct_from:
 # without the per-layer profile, each leaves the system worse than either end state. So: one flag.
 #
 # `enabled: false` ⇒ every mechanism here is inert and the graph is byte-identical to S2's flag-off view.
+# That claim is only worth writing because it is now ENFORCED IN BOTH DIRECTIONS. It was not: the review
+# measured `authoritative_categories` reaching the resolver through an ungated union while every restraint
+# in this block early-returned on the flag, so flag-off ran the S3 AUTHORISATION with none of the S3
+# RESTRAINTS — strictly less safe than flag-on. Authorisation and restraint now flip together, and
+# `tests/gates/test_s3_flag_off_equivalence.py` pins the flag off explicitly (rather than inheriting it
+# from ambient config) and asserts the flag-off baselines, so the next such leak fails CI.
+#
 # Every threshold, cap, floor, category list and vocabulary this stage adds lives HERE, never as a code
-# literal (gate G6). Ceilings are declared as BAND NAMES, never floats: analyst B's arithmetic showed any
-# ×coefficient can drop a pair TWO bands — out of the analyst's queue entirely — and its safe value
-# depends on thresholds that will move. A band name is threshold-independent.
+# literal (gate G6) and never in a second copy at the top level: the three ceilings used to be declared
+# twice under two spellings, with the top-level copy winning, which made editing this block a silent
+# no-op. They are declared once, here. Ceilings are declared as BAND NAMES, never floats: analyst B's
+# arithmetic showed any ×coefficient can drop a pair TWO bands — out of the analyst's queue entirely — and
+# its safe value depends on thresholds that will move. A band name is threshold-independent.
 earned_identity:
   enabled: false
 

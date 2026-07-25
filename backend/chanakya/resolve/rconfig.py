@@ -99,6 +99,15 @@ class AttributeRoleError(ValueError):
 # the caps to the bootstrap without the per-layer profile, each makes the system worse than either end
 # state. Flag OFF ⇒ every mechanism below is inert and the graph is byte-identical to S2's flag-off view.
 #
+# **Inertness means the AUTHORISATIONS too, not only the restraints.** The review measured the one place
+# that broke it: :attr:`ResolveConfig.coref_authoritative_evidence` unioned the stage's
+# ``authoritative_categories`` into the resolver with no flag test, while the co-location cap, the name
+# cap, the contrast ceiling, the relationship wall, the referent decline and the doc-scoping of a bind all
+# early-returned when the flag was off. Flag-off therefore ran S3's *permission* with none of S3's
+# *limits* — the one arrangement strictly worse than either end state. Any future knob that grants a
+# capability belongs behind the same flag test as the knob that bounds it; a stage flag that gates only
+# the restraints is an anti-safety device.
+#
 # Every threshold, cap, floor, category list and vocabulary here is **config**, never a code literal
 # (gate G6). Absent block ⇒ :attr:`enabled` False ⇒ inert.
 
@@ -107,13 +116,28 @@ _EARNED_IDENTITY = "earned_identity"
 
 @dataclass(frozen=True)
 class EarnedIdentity:
-    """``config/resolution.yaml → earned_identity``, compiled. Absent ⇒ :attr:`enabled` False ⇒ inert."""
+    """``config/resolution.yaml → earned_identity``, compiled. Absent ⇒ :attr:`enabled` False ⇒ inert.
+
+    "Inert" is a claim about **every** field below, the permissive ones included. Each consumer must test
+    :attr:`enabled` before reading — the one field that did not (:attr:`authoritative_categories`) made the
+    flag-off deployment less safe than the flag-on one, because it granted S3's bootstrap authority while
+    every S3 cap and wall stayed switched off. Compiling a field here is not what makes it inert; the
+    consumer's flag test is.
+    """
 
     enabled: bool = False
 
     # ── D-13.17: which coreference categories may BOOTSTRAP, and behind what floor ────────────────
-    #: Categories allowed to bootstrap **once their per-link deterministic gate passes** (C5). Read only
-    #: when :attr:`enabled`; ``NAME_VARIANT`` is deliberately absent — see the config comment.
+    #: Categories allowed to bootstrap **once their per-link deterministic gate passes** (C5).
+    #: ``NAME_VARIANT`` is deliberately absent — see the config comment.
+    #:
+    #: Read **only when** :attr:`enabled`, and that gating is load-bearing rather than tidy: this is the
+    #: only knob in the block that *grants* rather than *bounds*, so an ungated read hands flag-off runs
+    #: the authorisation without the co-location cap, the contrast ceiling or the document-scoping that
+    #: exist to bound it. Measured on the shipped bundle before the gate went in: two co-located
+    #: formations and an explicitly-contrasted pair each fused at ``confirmed`` flag-off, where the
+    #: flag-on run held both at ``probable``. The pre-S3 top-level ``coref_authoritative_evidence`` knob is
+    #: separate and stays flag-independent — an operator who wrote it meant it; it ships ``[]``.
     authoritative_categories: tuple[str, ...] = ()
     #: STANAG floor the *asserting document's* source must clear for a bind to be authoritative. Not
     #: optional: an authoritative bind fuses at 1.0 and bypasses banding, so it acts **harder** than the
@@ -613,27 +637,30 @@ class ResolveConfig:
     def coref_authoritative_evidence(self) -> set[str]:
         """Which in-document coreference evidence categories may **bootstrap** (auto-merge).
 
-        Empty by default — so every coreference cluster is merely raise-only until an operator opts a
-        category in, and shipping the producer alone cannot change anyone's node topology. Naming the
-        categories in config rather than in code keeps "how much authority does the extractor's
-        in-document reading carry" an operator decision: run with ``[EXPLICIT_EQUIVALENCE]`` to auto-merge
-        only what a document *states* verbatim, or leave it empty to send everything to the analyst queue.
+        Two lists feed this, and they answer to different switches:
 
-        A category listed here still clears every other rail — the ``distinct-from`` veto, type and
-        namespace agreement, and the hard-attribute-contradiction check (``scoring.has_hard_conflict``) —
-        and **its own per-link deterministic gate plus a source-grade floor** (D-13.17).
+        * the **legacy top-level** ``coref_authoritative_evidence`` — the pre-S3 operator knob, honoured
+          whatever the stage flag says, because an operator who wrote it meant it. It ships ``[]``.
+        * ``earned_identity.authoritative_categories`` — the **stage's** opt-in, read **only while the
+          stage flag is on**, exactly like every restraint S3 introduces.
 
-        The switch is **FLIPPED** in the shipped file: this is the documented consumer half, and leaving it
-        empty while hiding the real list in the stage block would be the same inertness ruling M3 condemns.
+        That gating is the load-bearing part, and it was measured missing. S3 authorises two categories;
+        S3's caps, walls, decline and doc-scoping all early-return with the flag off. Union the two lists
+        unconditionally and the shipped **flag-off** deployment gets the authorisation without a single one
+        of the restraints — strictly *less* safe than flag-on. Measured on the shipped bundle: two
+        co-located formations fused at ``confirmed`` (flag-on: ``probable``, capped), a pair the document
+        explicitly contrasts fused at ``confirmed`` (flag-on: ``probable``), and a bind licensed by one
+        document spread onto a profile built from another. Authorisation and restraint now flip together.
 
-        What restrains it is therefore not the list and not the stage flag — it is the **gate**. A listed
-        category authorises the *question*; the per-link structural conjuncts and the source-grade floor
-        decide the answer, and both apply **unconditionally**, because a bind is either licensed by evidence
-        or it is not — that is a property of the pair, not of which stage is enabled. (The stage flag governs
-        the caps, the walls and the decline: the things that change what an *already-licensed* signal is
-        allowed to do.)
+        A category listed by either route still clears every other rail — the ``distinct-from`` veto, type
+        and namespace agreement, the hard-attribute-contradiction check (``scoring.has_hard_conflict``) —
+        and **its own per-link deterministic gate plus a source-grade floor** (D-13.17). Those are properties
+        of the *pair* and stay flag-independent: a bind is licensed by evidence or it is not. What the stage
+        flag decides is the prior question — whether the operator has authorised the category at all.
         """
         legacy = {str(c) for c in self._extra("coref_authoritative_evidence", [])}
+        if not self.earned_identity_on:
+            return legacy
         return legacy | set(self._earned.authoritative_categories)
 
     # ── open-world name triggers (P3.3: containment / acronym expansion) ──────────────────────
