@@ -39,6 +39,25 @@ DESCRIPTOR = "air defence battery"
 #: asserting on a class the ontology no longer declares.
 SAME_CLASS = rk.same_class_pair()
 
+#: **A gate's control must use an evidence class no other gate restrains** — the standing rule ruling M15
+#: already applied to G19, applied here after this file was measured failing it.
+#:
+#: The measurement: stub ``_relationship_walls`` to return nothing — i.e. **delete the wall this file is
+#: about** — and the file went 11 passed / 1 failed. Delete G16's co-location cap as well and it went
+#: 5 passed / 7 failed. So six of the twelve tests were being satisfied by the *cap*, not by the wall, and
+#: ``visible_rationale`` was reading the cap's reason string rather than ``distinct_from`` membership.
+#: A gate that stays green while its own mechanism is deleted certifies nothing.
+#:
+#: The cause was structural: two same-named formations sharing a design and an operator and nothing else is
+#: **exactly** G16's co-location evidence class, so G16 was always going to refuse the pair first. The fix
+#: is the one the cap itself documents — "a unit-level discriminator agrees ⇒ more than co-location ⇒ the
+#: cap lifts". Both mentions state an agreeing ``parent_unit``, read from the shipped
+#: ``formation_discriminators``, so the pair has a legitimate route to fusion that G16 permits and the wall
+#: is the only thing left that can refuse it. Nothing is relaxed and neither gate bends: G16 governs
+#: co-location, and this file now stands on its own mechanism.
+DISCRIMINATOR_ATTR = "parent_unit"
+DISCRIMINATOR_VALUE = "12 Air Defence Brigade"
+
 
 def _vocabulary_pair() -> tuple[str, str]:
     """Two DIFFERENT **config-declared** site classes — a garrison and a forward site, in C1's language.
@@ -69,9 +88,12 @@ def _stated_conflict(
     """
     class_a, class_b = classes or SAME_CLASS
     target = "operator" if predicate == "operated-by" else "basing_site"
+    # The agreeing unit-level discriminator (see DISCRIMINATOR_ATTR) lifts G16's co-location cap, so the
+    # only mechanism that can refuse this pair is the wall under test.
+    unit_attrs = {DISCRIMINATOR_ATTR: DISCRIMINATOR_VALUE}
     claims = [
-        rc.ent("unit_a", "unit", DESCRIPTOR, doc="d1"),
-        rc.ent("unit_b", "unit", DESCRIPTOR, doc="d2", sid="mid"),
+        rc.ent("unit_a", "unit", DESCRIPTOR, attrs=dict(unit_attrs), doc="d1"),
+        rc.ent("unit_b", "unit", DESCRIPTOR, attrs=dict(unit_attrs), doc="d2", sid="mid"),
         *rc.shared_neighbours("unit_a", "unit_b"),
     ]
     if target == "basing_site":

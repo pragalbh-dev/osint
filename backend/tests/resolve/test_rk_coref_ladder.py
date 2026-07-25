@@ -237,10 +237,24 @@ def test_a_shared_composite_key_does_confirm() -> None:
     )
 
 
-def test_a_differing_designation_is_a_hard_and_visible_veto() -> None:
-    """Top of the ladder: "differing designation (veto)". Two differently-numbered battalions of one
-    branch are two units, whatever else they share — and the wall must be the **transitive, visible**
-    channel, not a pairwise consultation (§5a G18: the geo-veto shape "is non-transitive *and* unreported").
+def test_two_differently_numbered_batteries_are_held_by_the_co_location_cap_not_a_designation_veto() -> None:
+    """**RENAMED, because the guard the old name claimed does not exist.**
+
+    This was ``test_a_differing_designation_is_a_hard_and_visible_veto``, asserting the ladder's top rung —
+    "differing designation (veto)". Measured: no such veto fires on this fixture. ``designator`` ships as
+    ``{role: supporting}``, so a differing designation merely **halves the discriminator sub-signal**; what
+    actually holds the pair apart here is **G16's co-location cap**, and deleting that cap alone fuses the
+    8th and the 12th battalion at ``confirmed``. The old name therefore certified a wall that no code
+    implements, on evidence another gate restrains — both halves of the standing rule broken at once.
+
+    The rung is not implemented and that is a **disclosed gap**, not a silent one. Implementing it would
+    mean promoting ``designator`` to ``critical``, which walls on an exact value comparison — and the
+    shipped config already records why that is not safe yet for an un-normalised slot: the same objection
+    that kept ``service_branch`` inert until ``value_normalization`` existed ("SHATTERS legitimate merges").
+    Designations are written '8' / '8th' / '8 AD Bn' in open sources; there is no equivalence class for them.
+
+    So this test asserts what is true and names the mechanism that makes it true. It bites: deleting the
+    co-location cap fails it, which is the honest coupling — the cap is what the fixture actually exercises.
     """
     part = rc.part_of(
         [
@@ -254,13 +268,18 @@ def test_a_differing_designation_is_a_hard_and_visible_veto() -> None:
     )
 
     assert not rc.fused(part, "a", "b"), (
-        "the 8th and the 12th battalion were fused into one unit. A stated differing designation is the "
-        f"strongest wall on the ladder. same_as={part.same_as}"
+        "the 8th and the 12th battalion were fused into one unit. Nothing on this fixture is unit-level "
+        "evidence — two co-located mentions sharing a design and an operator — so G16's co-location cap "
+        f"must withhold the fusion even though no designation veto exists to add to it. same_as={part.same_as}"
+    )
+    assert rc.status(part, "a", "b") == "probable", (
+        f"the pair reads {rc.status(part, 'a', 'b')!r}. The cap's contract is a ceiling, not a deletion: the "
+        "pair is withheld from fusion and GUARANTEED a place in the analyst's queue, because an analyst is "
+        "exactly who should decide whether the 8th and the 12th are one formation."
     )
     assert rc.visible_rationale(part, "a", "b"), (
         "the pair was held apart with nothing an analyst can read — no `distinct_from` membership and no "
-        "candidate reason. A wall consulted only inside `vetoed()` is 'hard, pairwise and invisible': the "
-        "D9 bridge alarm, `finalise` and the surfaced distinct-from edge all ignore it."
+        "candidate reason. A restraint nobody can see is indistinguishable from a missing edge."
     )
 
 
