@@ -52,11 +52,23 @@ CHINA, PAKISTAN = "China", "Pakistan"
 PLAIN_NAME = "Type Nine SAM"
 
 
+#: The two attributes that can carry a country namespace, and the gate must cover **both**.
+#:
+#: Every fixture in this file used to spell it ``country`` — and no document in the corpus states that
+#: attribute at all. ``origin_country`` is the one sources actually write (on manufacturers and trading
+#: organisations), and it was missing from ``Entity.namespace``'s key list. So G19 was green while the harm
+#: it names was happening on the live attribute: two same-named trading organisations, one stated CHINA and
+#: one stated Pakistan, fused at ``confirmed`` in **both** flag directions, where the identical pair keyed
+#: on ``country`` was correctly refused. A gate that keys on an attribute nothing states certifies a guard
+#: nothing reaches.
+NS_KEYS = ("country", "origin_country")
+
+
 def _two(etype_a: str, etype_b: str, name: str, ns_a: str | None, ns_b: str | None,
-         *, scaffold: bool = False, attrs: dict | None = None) -> list:
+         *, scaffold: bool = False, attrs: dict | None = None, ns_key: str = "country") -> list:
     claims = [
-        rc.ent("a", etype_a, name, attrs=(attrs or {}) | ({"country": ns_a} if ns_a else {}), doc="d1"),
-        rc.ent("b", etype_b, name, attrs=(attrs or {}) | ({"country": ns_b} if ns_b else {}),
+        rc.ent("a", etype_a, name, attrs=(attrs or {}) | ({ns_key: ns_a} if ns_a else {}), doc="d1"),
+        rc.ent("b", etype_b, name, attrs=(attrs or {}) | ({ns_key: ns_b} if ns_b else {}),
                doc="d2", sid="mid"),
     ]
     return claims + (_design_scaffold("a", "b") if scaffold else [])
@@ -181,15 +193,22 @@ def test_an_exact_name_match_inside_one_namespace_still_bootstraps() -> None:
 # also the *permissive* profile ("design collapses readily"), which makes it the sharper place to assert the
 # boundary: even where fusion is easy, it must not cross an operator.
 
-def test_the_phase_two_fixpoint_cannot_fuse_across_namespaces() -> None:
+@pytest.mark.parametrize("ns_key", NS_KEYS)
+def test_the_phase_two_fixpoint_cannot_fuse_across_namespaces(ns_key: str) -> None:
     """D4: "``namespace_compatible`` … **never the Phase-2 fuzzy fixpoint** — and relational blocking emits
     pairs with **no namespace key**", so the pair is both generated and scored across the boundary.
 
     Reached by a maximal relational score with no bootstrap trigger available (the name is not in the alias
     table and the exact-name branch is namespace-gated), so it exercises the *other* code path: a remedy that
     gates only Phase 1 fails this, and one that gates only Phase 2 fails the two alias tests above.
+
+    Parametrized over :data:`NS_KEYS` because the guard is only as wide as its key list, and the list was
+    measured one attribute short: the ``origin_country`` half failed here until ``Entity.namespace`` learned
+    the attribute the corpus actually states.
     """
-    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, CHINA, PAKISTAN, scaffold=True), rc.bundle())
+    part = rc.part_of(
+        _two("variant", "variant", PLAIN_NAME, CHINA, PAKISTAN, scaffold=True, ns_key=ns_key), rc.bundle()
+    )
 
     assert not rc.fused(part, "a", "b"), (
         "a PLA-side and a Pakistan-side design were auto-merged by the fuzzy fixpoint on a shared "
@@ -217,9 +236,17 @@ def test_an_unstated_namespace_is_a_wildcard_not_a_conflict() -> None:
     )
 
 
-def test_a_shared_namespace_still_fuses_in_the_fixpoint() -> None:
-    """The other half of the same mirror: within one namespace the fixpoint must still do its work."""
-    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, PAKISTAN, PAKISTAN, scaffold=True), rc.bundle())
+@pytest.mark.parametrize("ns_key", NS_KEYS)
+def test_a_shared_namespace_still_fuses_in_the_fixpoint(ns_key: str) -> None:
+    """The other half of the same mirror: within one namespace the fixpoint must still do its work.
+
+    Parametrized alongside the refusal so widening the key list cannot buy the refusal at the price of a
+    blanket wall — the new key has to refuse across the boundary *and* still fuse within it.
+    """
+    part = rc.part_of(
+        _two("variant", "variant", PLAIN_NAME, PAKISTAN, PAKISTAN, scaffold=True, ns_key=ns_key),
+        rc.bundle(),
+    )
 
     assert rc.fused(part, "a", "b"), (
         "two same-namespace designs sharing a full neighbourhood no longer fuse — the namespace guard has "
@@ -267,8 +294,17 @@ def test_the_namespace_guard_reads_a_normalized_value(value_b: str) -> None:
     The shipped config records the live instance of this — "``origin_country`` as 'CHINA' vs 'China'" — so an
     un-normalized namespace guard splits one operator into several and *creates* fragmentation while
     claiming to prevent over-merge.
+
+    Keyed on ``origin_country`` because that is the slot the shipped config names, and because the split is
+    real there: adding the attribute to the namespace key list without folding case turned the corpus's own
+    'SINO-GALAXY … CHINA' / 'SINO-GALAXY … China' pair into two trading organisations (169 → 170 nodes).
+    Case is never a namespace difference, with the stage flag or without it.
     """
-    part = rc.part_of(_two("variant", "variant", PLAIN_NAME, PAKISTAN, value_b, scaffold=True), rc.bundle())
+    part = rc.part_of(
+        _two("variant", "variant", PLAIN_NAME, PAKISTAN, value_b, scaffold=True,
+             ns_key="origin_country"),
+        rc.bundle(),
+    )
 
     assert rc.fused(part, "a", "b"), (
         f"{PAKISTAN!r} and {value_b!r} were treated as different namespaces, so one operator became two. "

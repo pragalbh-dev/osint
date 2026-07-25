@@ -14,6 +14,7 @@ from typing import Any
 
 from chanakya.credibility.scoring import reliability
 from chanakya.ontology import LayerRouting, NodeTypeIndex
+from chanakya.resolve.entities import fold_value
 from chanakya.schemas import (
     ConfigBundle,
     EntitiesConfig,
@@ -295,11 +296,10 @@ class EarnedIdentity:
         return folded, False
 
 
-def _fold_value(value: object) -> str:
-    """Casefold + collapse punctuation/whitespace, so only genuine synonyms need a config entry."""
-    text = "" if value is None else str(value)
-    kept = [c.casefold() if c.isalnum() else " " for c in text]
-    return " ".join("".join(kept).split())
+#: Casefold + collapse punctuation/whitespace, so only genuine synonyms need a config entry. Defined in
+#: ``resolve.entities`` because ``Entity.namespace`` folds with no config in hand (the normaliser is
+#: flag-gated) — one function, so the flag cannot change what counts as the same spelling.
+_fold_value = fold_value
 
 # STANAG-2022 source-reliability grades are an ORDINAL letter scale, A (most reliable) → F (least). The
 # scale's letters are a domain constant, not a tunable — "at or above floor X" is therefore just the

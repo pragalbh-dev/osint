@@ -20,6 +20,20 @@ from chanakya.ontology import EdgeLaneIndex, build_edge_instance_key
 from chanakya.schemas import ClaimRecord, DateValue, ResolvedRef, canonical_iso_bounds
 
 
+def fold_value(value: object) -> str:
+    """Casefold + collapse punctuation/whitespace — the one folding rule for a stated attribute value.
+
+    Lives here rather than in ``rconfig`` because :meth:`Entity.namespace` needs it with **no config in
+    hand**: the C7 normaliser is flag-gated, so an un-normalised namespace key must still fold, or the
+    same country spelled 'CHINA' in one document and 'China' in the next becomes two namespaces and
+    fabricates a distinction the sources never drew. ``ResolveConfig``'s normaliser folds through this
+    same function, so the flag cannot change what counts as the same spelling.
+    """
+    text = "" if value is None else str(value)
+    kept = [c.casefold() if c.isalnum() else " " for c in text]
+    return " ".join("".join(kept).split())
+
+
 def unordered_pairs[T](seq: list[T]) -> Iterator[tuple[T, T]]:
     """All i<j pairs of a sequence (a literal-free ``combinations(seq, 2)`` — keeps gate G6 happy)."""
     for i in range(len(seq)):
@@ -136,12 +150,22 @@ class Entity:
         **before** it becomes a namespace key. It has to happen here and not only at conflict time: the
         namespace is derived from raw attrs, so normalising later would leave 'PAF' and 'Pakistan Air
         Force' in two different namespaces — i.e. the wall would be fixed and the *blocking* still split.
-        Absent ⇒ the raw stated value, byte-unchanged (gate G2).
+        Absent ⇒ the folded stated value (see :func:`fold_value`) — case and punctuation are never a
+        namespace difference, with the flag or without it.
+
+        ``origin_country`` is in the list because it is **the country attribute this corpus actually
+        states** — sources write it on manufacturers and trading organisations, and essentially never
+        write a bare ``country``. Omitting it made the China/Pakistan split unenforceable exactly where
+        supply-chain identity is decided: two same-named trading organisations, one stated CHINA and one
+        stated Pakistan, fused at ``confirmed`` on a coreference link in **both** flag directions, while
+        the identical pair keyed on ``country`` was correctly refused. A namespace that keys on an
+        attribute nobody writes blocks nothing. ``config/resolution.yaml`` already lists it under
+        ``normalization_required_attrs``, i.e. config already treats it as namespace-bearing.
         """
-        for key in ("country", "operator_branch", "service_branch", "domain"):
+        for key in ("country", "origin_country", "operator_branch", "service_branch", "domain"):
             v = self.attrs.get(key)
             if v:
-                return str(v) if normalise is None else normalise(key, v)
+                return fold_value(v) if normalise is None else normalise(key, v)
         return None
 
 
