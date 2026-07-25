@@ -128,30 +128,23 @@ def test_matcher_leniency_is_introspectable():
 def test_matcher_leniency_is_configurable_and_actually_bites():
     """A `rule` argument the matcher ignores is worse than none — it advertises control it lacks.
 
-    **Thresholds re-calibrated at integration (.50/.99, was .80/.99), and the reason is a finding.** The
-    shipped matcher scores this exact pair at **0.5455**, so the original pair sat *below both* thresholds
-    and could never straddle — the gate was red for a mis-calibrated fixture, not an inert rule. The claim
-    pair is deliberately unchanged; only the brackets moved, so the property still proves itself on the
-    author's own example.
+    **Fixture re-pointed 2026-07-25, and the reason is the finding this file used to pin.** The original
+    fixture straddled on 'HT-233' vs 'HT233', which the then-shipped kernel scored 0.5455 — a non-match for
+    a designator variant any analyst calls the same thing. The gold owner has since decided the identifier
+    rule against the labeled sample (``config/bakeoff.yaml`` → ``identifier_policy``), so that pair scores
+    1.0000 and can no longer straddle anything.
 
-    Why 0.5455, and why it matters beyond this test: ``normalize_surface`` rewrites ``-_/`` to a SPACE
-    (right for predicates — ``supplies-component`` ≡ ``supplies component``), which turns "HT-233" into
-    two tokens while "HT233" stays one; ``token_sort_ratio`` then compares "ht 233" against "ht233" and
-    penalises the split hard. This corpus's most important surfaces are exactly that shape — HQ-9/P,
-    HT-233, FD-2000, HQ-9BE — so under the shipped default a legitimate de-hyphenated variant is scored a
-    NON-match. That depresses recall for every candidate equally and adds run-to-run variance.
-
-    It is pinned below rather than fixed here: choosing the kernel/normaliser is a measurement-policy call
-    that changes every number the bake-off produces, and the implementer explicitly referred it to whoever
-    owns the labeled gold. Tuning it here — from one synthetic pair, by someone who has now read the gold
-    — is the exact failure the matcher's own docstring warns against.
+    The property under test is unchanged, and it was never about hyphens: a configured surface threshold
+    must change the alignment. It is now proved on the added-qualifier case the config's own note names —
+    "Type-7 Coupler" vs "Type-7 Coupler assembly", 0.7568 — which stays genuinely fuzzy under every
+    identifier setting and is therefore a stable home for this gate.
     """
-    gold = [claim("HQ-9/P echo", "supplies-component", "HT-233", "d01", (10, 60))]
-    pred = [claim("HQ-9/P echo", "supplies-component", "HT233", "d01", (10, 60))]  # near-miss surface
+    gold = [claim("Type-7 Coupler echo", "supplies-component", "Type-7 Coupler", "d01", (10, 60))]
+    pred = [claim("Type-7 Coupler echo", "supplies-component", "Type-7 Coupler assembly", "d01", (10, 60))]
     lenient = do_match(gold, pred, rule=dict(DEFAULT_RULE, surface_threshold=0.50))
     strict = do_match(gold, pred, rule=dict(DEFAULT_RULE, surface_threshold=0.99))
     assert lenient.recall > strict.recall, why(
-        f"MATCHER-RULE-INERT: 'HT233' vs 'HT-233' scored recall={lenient.recall} at threshold .50 and "
+        f"MATCHER-RULE-INERT: an added qualifier scored recall={lenient.recall} at threshold .50 and "
         f"{strict.recall} at .99 — the configured leniency changed nothing. Either the rule argument is "
         "ignored (the harness advertises a control it does not have) or the match is exact-only and the "
         "'fuzzy surface alignment' plan §8 asks for does not exist, which hides every real difference in "
@@ -159,20 +152,47 @@ def test_matcher_leniency_is_configurable_and_actually_bites():
     )
 
 
-def test_hyphenation_variants_are_scored_a_nonmatch_by_the_shipped_default():
-    """Pins the finding above as an asserted fact, so it cannot regress quietly in either direction.
+def test_a_dehyphenated_designator_matches_and_a_sibling_designator_does_not():
+    """The identifier rule, pinned in BOTH directions so neither can drift quietly.
 
-    This is NOT an endorsement — a de-hyphenated designator *is* the same claim to any analyst, and the
-    shipped default calls it a miss. The assertion exists so that whoever re-tunes the match policy sees
-    this go red and makes the change deliberately, rather than discovering afterwards that every recall
-    number in the bake-off moved.
+    This replaces the earlier assertion that a de-hyphenated designator scored a NON-match. That assertion
+    was a tripwire — "whoever re-tunes the match policy must see this go red and make the change
+    deliberately" — and it did its job: the gold owner made the call on 2026-07-25 against the labeled
+    slice. The tripwire is re-armed here, pointing at the decided behaviour.
+
+    Measured over the gold's own 247 distinct surfaces (full numbers, and the two costs, in
+    ``config/bakeoff.yaml`` → ``identifier_policy``):
+
+    * legitimate de-hyphenated designator variants below the role floor: **16 of 61 → 0 of 61**;
+    * genuinely-different designator pairs conflated at the role floor: **40 of 684 → 0 of 684**. The prose
+      kernel already merged HQ-9A into HQ-9B (0.80), HQ-9B into HQ-9BE (0.91) and two different GD numbers
+      (0.95) — no edit-distance floor separates one changed character in a six-character designator, so
+      designator disagreement is a veto rather than a score.
+
+    Both halves are asserted because they trade against each other. Loosen the veto to recover an alias and
+    you start merging sibling variants — the over-merge this project exists to prevent. Revert the glue and
+    you re-impose a systematic recall loss on every candidate at once.
     """
     gold = [claim("HQ-9/P foxtrot", "supplies-component", "HT-233", "d01", (10, 60))]
-    pred = [claim("HQ-9/P foxtrot", "supplies-component", "HT233", "d01", (10, 60))]
-    assert do_match(gold, pred).recall == 0.0, (
-        "The shipped match policy now ACCEPTS a de-hyphenated designator variant. That is very likely an "
-        "improvement, but it moves every recall/F1 number this bake-off produces, so it must be a "
-        "deliberate re-tuning against a labeled sample — re-baseline the scorecard, then update this test."
+    same = [claim("HQ-9/P foxtrot", "supplies-component", "HT233", "d01", (10, 60))]
+    assert do_match(gold, same).recall == 1.0, (
+        "MATCHER-SPLITS-DESIGNATORS: 'HT233' scored a non-match for 'HT-233'. That is the pre-2026-07-25 "
+        "behaviour — hyphens rewritten to spaces split an identifier into tokens, and this corpus's key "
+        "surfaces are all that shape (HQ-9/P, HQ-9BE, HT-233, FD-2000, S-400), so 16 of 61 legitimate "
+        "variants in the labeled gold read as misses. Reverting depresses recall for every candidate at "
+        "once and adds variance to a comparison already fighting non-determinism."
+    )
+    sibling = [claim("HQ-9/P foxtrot", "supplies-component", "HT-233A", "d01", (10, 60))]
+    assert do_match(gold, sibling).recall == 0.0, (
+        "MATCHER-MERGES-SIBLING-DESIGNATORS: 'HT-233A' was accepted as 'HT-233' (fuzzy score 0.91). A "
+        "suffixed designator is a different variant — HQ-9B vs HQ-9BE, FT-2000 vs FT-2000A, S-400 vs "
+        "S-300 — and conflating them is exactly the over-merge this project exists to prevent."
+    )
+    other_variant = [claim("HQ-9BE foxtrot", "supplies-component", "HT-233", "d01", (10, 60))]
+    assert do_match(gold, other_variant).recall == 0.0, (
+        "MATCHER-MERGES-SIBLING-DESIGNATORS (subject role): 'HQ-9BE' was accepted as 'HQ-9/P'. Those are "
+        "two variants with two different operators, and the labeled sub-oracle carries an explicit "
+        "distinct-from between them."
     )
 
 

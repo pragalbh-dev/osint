@@ -22,13 +22,26 @@ Admissibility (any failure makes the pair impossible, not merely low-scoring):
 4. ``entity_type_policy``    — the same three modes over an entity claim's ontology type.
 5. Both sides must carry the **same role set** (subject+object / name / participant:0…n). An event with
    three participants is not the same claim as one with two.
-6. ``span_policy == "require"`` — when both sides carry a char span in the same file, their IoU must
+6. ``identifier_agreement == "nested_or_equal"`` — **a designator disagreement is a veto.** For each role,
+   take the identifier-shaped tokens of both surfaces (tokens mixing letters and digits, after the
+   designator normalisation below: ``HQ-9B`` → ``{hq9b}``, ``the system`` → ``{}``). The pair is
+   inadmissible unless one side's set is contained in the other's. Designation is a *discriminator* in this
+   domain, and no edit-distance floor can carry it: measured on the labeled gold, ``HQ-9B``/``HQ-9BE``
+   scores 0.91 and two different GD numbers score 0.95, so without this rule the kernel silently merges
+   sibling variants and distinct import events — the over-merge the whole project exists to prevent. An
+   empty identifier set is contained in everything, so ordinary prose is untouched.
+7. ``span_policy == "require"`` — when both sides carry a char span in the same file, their IoU must
    reach ``span_iou_floor``.
 
 Pair score:
 
-* per-role similarity = ``rapidfuzz`` ``similarity`` fn over :func:`~eval.extraction.surface.normalize_surface`
-  of the two role strings, scaled to 0..1;
+* per-role similarity = ``rapidfuzz`` ``similarity`` fn over the normalised role strings, scaled to 0..1;
+  under ``identifier_policy == "designator_aware"`` the role is scored **twice** — once under
+  :func:`~eval.extraction.surface.normalize_surface` (punctuation is a word boundary: right for prose) and
+  once under :func:`~eval.extraction.surface.normalize_designator` (punctuation inside a letters-and-digits
+  token is typographic: right for ``HQ-9/P`` ≡ ``HQ9P``) — and the better of the two is taken. Taking the
+  max means the rule can only *add* matches, never remove one that already worked; the tightening comes
+  from the identifier veto above, not from the kernel;
 * **every** role must reach ``role_min_similarity`` — a claim that nails the subject and invents the
   object is a *different claim*, not a 50%-correct one, and a blended average would hide exactly the
   failure mode this project cares about;
@@ -51,12 +64,19 @@ and it is reported as such by :attr:`MatchResult.degenerate`).
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from rapidfuzz import fuzz
 
 from .policy import MatchPolicy
-from .surface import SurfaceClaim, normalize_predicate, normalize_surface
+from .surface import (
+    SurfaceClaim,
+    identifier_tokens,
+    normalize_designator,
+    normalize_predicate,
+    normalize_surface,
+)
 
 _SIMILARITY_FNS = {
     "token_set_ratio": fuzz.token_set_ratio,
@@ -66,14 +86,49 @@ _SIMILARITY_FNS = {
 }
 
 
+def normalizations(policy: MatchPolicy) -> tuple[Callable[[str | None], str], ...]:
+    """The readings of a surface this policy scores. One per rung, best score wins.
+
+    ``prose`` scores only the punctuation-is-a-word-boundary reading; ``designator_aware`` also scores the
+    identifier-glued one. Exposed rather than inlined because the grounding proxies in
+    :mod:`~eval.extraction.metrics` must ask the *same* question of a document ("does this surface appear
+    here?") — a matcher that accepts ``HT233`` for ``HT-233`` while the faithfulness check calls it absent
+    would report a faithful model as fabricating, on the metric the project treats as non-negotiable.
+    """
+    if policy.identifier_policy == "designator_aware":
+        return (normalize_surface, normalize_designator)
+    return (normalize_surface,)
+
+
 def similarity(a: str | None, b: str | None, policy: MatchPolicy) -> float:
-    """Normalised surface similarity in 0..1 under the policy's chosen ``rapidfuzz`` function."""
-    left, right = normalize_surface(a), normalize_surface(b)
-    if not left and not right:
-        return 1.0
-    if not left or not right:
-        return 0.0
-    return float(_SIMILARITY_FNS[policy.similarity](left, right)) / 100.0
+    """Normalised surface similarity in 0..1 under the policy's chosen ``rapidfuzz`` function.
+
+    Scored once per reading in :func:`normalizations`; the best rung wins, so ``designator_aware`` can only
+    raise a score. The tightening that pays for that leniency is :func:`identifiers_agree`.
+    """
+    fn = _SIMILARITY_FNS[policy.similarity]
+    best = 0.0
+    for norm in normalizations(policy):
+        left, right = norm(a), norm(b)
+        if not left and not right:
+            return 1.0
+        if not left or not right:
+            continue
+        best = max(best, float(fn(left, right)) / 100.0)
+    return best
+
+
+def identifiers_agree(a: str | None, b: str | None, policy: MatchPolicy) -> bool:
+    """Do these two surfaces name the same designators? (``nested_or_equal``; see the ALIGNMENT RULE §6.)
+
+    Nested rather than equal, because a surface may legitimately carry a designator its counterpart omits —
+    ``the FT-2000`` against ``the FT-2000 (sometimes rendered FT-2000A)``. It is **not** prefix-tolerant:
+    ``{hq9}`` is not contained in ``{hq9p}``, so ``HQ-9`` and ``HQ-9/P`` stay different things.
+    """
+    if policy.identifier_agreement == "ignore":
+        return True
+    left, right = identifier_tokens(a), identifier_tokens(b)
+    return left <= right or right <= left
 
 
 def _predicates_compatible(gold: SurfaceClaim, pred: SurfaceClaim, policy: MatchPolicy) -> bool:
@@ -159,6 +214,9 @@ def _admissible(gold: SurfaceClaim, pred: SurfaceClaim, policy: MatchPolicy) -> 
         return "entity_type"
     if set(gold.roles) != set(pred.roles):
         return "role_set"
+    for role, g_text in gold.roles.items():
+        if not identifiers_agree(g_text, pred.roles.get(role), policy):
+            return "identifier"
     if policy.span_policy == "require":
         iou = best_span_iou(gold, pred)
         if iou is not None and iou < policy.span_iou_floor:
@@ -245,6 +303,8 @@ __all__ = [
     "MatchResult",
     "MatchedPair",
     "best_span_iou",
+    "identifiers_agree",
     "match_claims",
+    "normalizations",
     "similarity",
 ]

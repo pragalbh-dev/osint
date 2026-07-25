@@ -91,6 +91,32 @@ def test_an_out_of_bounds_span_is_a_failure_not_an_excuse() -> None:
     assert metric.detail["span_out_of_bounds"]
 
 
+def test_a_faithful_but_dehyphenated_designator_is_not_reported_as_fabrication() -> None:
+    """The identifier rule has to reach the grounding lane, and this is where it matters most.
+
+    ``citation_faithfulness`` and ``extract_only_stated`` are the two metrics this bake-off declares
+    non-negotiable. Under the prose reading, a model that wrote ``Type7`` where the document says ``Type-7``
+    was scored as citing text that does not contain its claim — a FALSE fabrication finding against a model
+    that quoted the page correctly. Measured on the real slice documents at the declared 0.85 floor, the
+    prose reading scored five such surfaces 0.75–0.83 (absent) where the designator reading scores 1.00.
+    """
+    span = (0, DOC.index("Station") + len("Station"))
+    got = [triple("c1", "North Ridge Foundry", "Type7", span=span)]
+    assert citation_faithfulness(got, TEXTS, POLICY).value == pytest.approx(1.0)
+    prose = POLICY.model_copy(update={"identifier_policy": "prose"})
+    assert citation_faithfulness(got, TEXTS, prose).value == pytest.approx(0.0)
+
+
+def test_the_identifier_rule_cannot_launder_a_fabrication() -> None:
+    """Gluing removes punctuation *inside* a letters-and-digits token, so an invented surface only becomes
+    groundable if the document already states the same string in another rendering — which is what
+    "grounded" means. An invented designator stays ungrounded on both lanes."""
+    span = (0, DOC.index("Station") + len("Station"))
+    got = [triple("c1", "North Ridge Foundry", "XT455", span=span)]
+    assert citation_faithfulness(got, TEXTS, POLICY).value == pytest.approx(0.0)
+    assert extract_only_stated(got, TEXTS, POLICY).value == pytest.approx(0.0)
+
+
 def test_an_unsourced_claim_counts_against_faithfulness() -> None:
     got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler", file="")]
     metric = citation_faithfulness(got, TEXTS, POLICY)

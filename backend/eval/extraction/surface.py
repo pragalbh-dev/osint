@@ -25,6 +25,29 @@ _WS = re.compile(r"\s+")
 _SEP = re.compile(r"[-_/]+")
 _PUNCT = re.compile(r"[^\w\s]+", re.UNICODE)
 
+#: A run of alphanumerics joined by ``- _ / .`` — the shape a designator, a GD number, a B/L number and a
+#: hyphenated English compound all share. Which of those it is, is decided by :func:`_is_identifier`.
+_JOINED_RUN = re.compile(r"[^\W_]+(?:[-_/.][^\W_]+)+", re.UNICODE)
+
+
+def _is_identifier(token: str) -> bool:
+    """Is this token **identifier-shaped**, i.e. does it mix letters and digits?
+
+    That single test is the whole definition, and it is the reason the designator rule can be applied
+    without touching prose. ``hq9p``, ``ht233``, ``fd2000``, ``s400``, ``kpqahc2020118834``,
+    ``ymluw189234567`` mix; ``alnoor``, ``firecontrol``, ``rawalpindiarea`` are all letters; ``2024``,
+    ``202411``, ``118834`` are all digits. So a hyphenated English compound stays split (``fire-control``
+    ≡ ``fire control``, which the predicate rule depends on), a date stays split (``2024-11`` is not one
+    identifier), and only the alphanumeric designators this corpus is built out of are glued.
+    """
+    return any(c.isalpha() for c in token) and any(c.isdigit() for c in token)
+
+
+def _glue_identifier_run(match: re.Match[str]) -> str:
+    run = match.group(0)
+    flat = re.sub(r"[-_/.]", "", run)
+    return flat if _is_identifier(flat) else run
+
 
 def normalize_surface(text: str | None) -> str:
     """Casefold, unify separators to spaces, drop punctuation, collapse whitespace.
@@ -32,6 +55,10 @@ def normalize_surface(text: str | None) -> str:
     Deliberately blunt: it removes only differences no reader would call a different claim. It does not
     stem, lemmatise, expand abbreviations or consult an alias table — an alias-aware normaliser would
     quietly hand the extractor credit for resolution work it did not do.
+
+    This is the **prose** reading of a surface: ``-_/`` become spaces, which is right for a predicate
+    (``supplies-component`` ≡ ``supplies component``) and wrong for a designator (it splits ``HT-233``
+    into two tokens while ``HT233`` stays one). See :func:`normalize_designator`.
     """
     if not text:
         return ""
@@ -39,6 +66,37 @@ def normalize_surface(text: str | None) -> str:
     lowered = _SEP.sub(" ", lowered)
     lowered = _PUNCT.sub(" ", lowered)
     return _WS.sub(" ", lowered).strip()
+
+
+def normalize_designator(text: str | None) -> str:
+    """:func:`normalize_surface`, except that punctuation **inside an identifier is typographic**.
+
+    One rule, stated in words a reviewer can check: *where ``- _ / .`` joins parts of a token that mixes
+    letters and digits, the punctuation is a rendering choice and is deleted; everywhere else it is a word
+    boundary and becomes a space.* So ``HQ-9/P`` → ``hq9p`` and ``HT-233`` → ``ht233`` (identifiers),
+    while ``AL-NOOR CARGO`` → ``al noor cargo`` and ``fire-control/engagement`` → ``fire control
+    engagement`` (prose) are untouched, and ``2024-11`` → ``2024 11`` (a date, not an identifier).
+
+    This exists because the bake-off's corpus is made of exactly this shape — HQ-9/P, HQ-9BE, HT-233,
+    FD-2000, S-400, GD ``KPQA-HC-2020-118834``, B/L ``YMLUW189234567``. Measured against the labeled gold,
+    the prose reading scored 16 of 61 legitimately de-hyphenated designator variants below the role floor
+    (a legitimate variant read as a miss); this reading scores 0 of 61 below it.
+    """
+    if not text:
+        return ""
+    return normalize_surface(_JOINED_RUN.sub(_glue_identifier_run, str(text)))
+
+
+def identifier_tokens(text: str | None) -> frozenset[str]:
+    """The identifier-shaped tokens of a surface — its **designators**, as a set.
+
+    Used by the matcher's identifier-agreement rule: designation is a discriminator in this domain, so two
+    surfaces whose designator sets are neither equal nor nested are different things whatever their edit
+    distance says. ``HQ-9B`` → ``{hq9b}``, ``HQ-9BE`` → ``{hq9be}``, ``the HQ-9B system`` → ``{hq9b}``,
+    ``the system`` → ``{}``. Bare numbers are deliberately **not** identifiers (a count and a date must not
+    veto anything), which is why :func:`_is_identifier` requires letters *and* digits.
+    """
+    return frozenset(t for t in normalize_designator(text).split() if _is_identifier(t))
 
 
 def normalize_predicate(text: str | None) -> str:
@@ -158,6 +216,8 @@ __all__ = [
     "SpanRef",
     "SurfaceClaim",
     "from_claim_record",
+    "identifier_tokens",
+    "normalize_designator",
     "normalize_predicate",
     "normalize_surface",
 ]

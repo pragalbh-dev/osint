@@ -7,8 +7,8 @@ alignment is one-to-one and deterministic, and that each knob in the policy actu
 
 from __future__ import annotations
 
-from eval.extraction.matcher import match_claims, similarity
-from eval.extraction.surface import normalize_surface
+from eval.extraction.matcher import identifiers_agree, match_claims, similarity
+from eval.extraction.surface import identifier_tokens, normalize_designator, normalize_surface
 
 from .fixtures import POLICY, entity, triple
 
@@ -16,6 +16,59 @@ from .fixtures import POLICY, entity, triple
 def test_normalisation_ignores_case_separators_and_punctuation() -> None:
     assert normalize_surface("North-Ridge  Foundry, Ltd.") == "north ridge foundry ltd"
     assert normalize_surface(None) == ""
+
+
+# ── the identifier rule (decided 2026-07-25 against the labeled gold; see config/bakeoff.yaml) ─────
+
+def test_designator_normalisation_glues_identifiers_and_leaves_prose_split() -> None:
+    """Punctuation inside a letters-and-digits token is typographic; everywhere else it is a boundary."""
+    assert normalize_designator("XT-455/B") == "xt455b"
+    assert normalize_designator("HARBOURLINE-4A9 assembly") == "harbourline4a9 assembly"
+    assert normalize_designator("North-Ridge Foundry") == "north ridge foundry"   # prose: untouched
+    assert normalize_designator("supplies-component") == "supplies component"     # predicates: untouched
+    assert normalize_designator("2024-11") == "2024 11"                           # a date is not an id
+    assert normalize_designator(None) == ""
+    assert identifier_tokens("the XT-455 coupler") == frozenset({"xt455"})
+    assert identifier_tokens("the coupler") == frozenset()
+
+
+def test_a_dehyphenated_designator_is_the_same_claim() -> None:
+    gold = [triple("g1", "North Ridge Foundry", "XT-455")]
+    got = [triple("c1", "North Ridge Foundry", "XT455")]
+    assert len(match_claims(gold, got, POLICY).pairs) == 1
+    prose = POLICY.model_copy(update={"identifier_policy": "prose"})
+    assert match_claims(gold, got, prose).pairs == ()
+
+
+def test_a_sibling_designator_is_vetoed_however_close_the_surfaces_are() -> None:
+    """The tightening half. A fuzzy floor cannot separate XT-455 from XT-455A — a veto can."""
+    gold = [triple("g1", "North Ridge Foundry", "XT-455 Coupler")]
+    got = [triple("c1", "North Ridge Foundry", "XT-455A Coupler")]
+    result = match_claims(gold, got, POLICY)
+    assert result.pairs == ()
+    assert result.rejections.get("identifier") == 1
+    # …and it really is the veto doing it, not the floor: the surfaces score well above it.
+    assert similarity("XT-455 Coupler", "XT-455A Coupler", POLICY) > POLICY.role_min_similarity
+    lenient = POLICY.model_copy(update={"identifier_agreement": "ignore"})
+    assert len(match_claims(gold, got, lenient).pairs) == 1
+
+
+def test_the_veto_is_nested_and_not_prefix_tolerant() -> None:
+    """Nested, so a surface may carry a designator its counterpart omits — the real case in the labeled
+    gold is ``the FT-2000`` against ``the FT-2000 (sometimes rendered FT-2000A)``. NOT prefix-tolerant, so a
+    family designator is not silently its own variant."""
+    assert identifiers_agree("the XT-455", "the XT-455, rendered XT-455B", POLICY)
+    assert identifiers_agree("the XT-455 coupler", "the coupler", POLICY)   # prose side has no designator
+    assert not identifiers_agree("XT-455", "XT-455B", POLICY)
+    assert not identifiers_agree("XT-4", "XT-455", POLICY)
+
+
+def test_the_designator_reading_can_only_raise_a_score() -> None:
+    """Max-of-two-readings, not a replacement: nothing that matched under prose stops matching."""
+    prose = POLICY.model_copy(update={"identifier_policy": "prose"})
+    for a, b in (("XT-455", "XT455"), ("the XT-455", "XT-455"), ("A Foundry", "A Foundry Ltd"),
+                 ("Type-7 Coupler", "Type-7 Coupler assembly"), ("C Works", "Invented Works")):
+        assert similarity(a, b, POLICY) >= similarity(a, b, prose)
 
 
 def test_exact_claim_matches_and_scores_one() -> None:
