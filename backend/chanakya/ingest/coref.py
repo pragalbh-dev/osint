@@ -773,7 +773,10 @@ def valid_contrasts(
         quote = entry.get("licensing_quote")
         if not isinstance(quote, str) or not _quote_supported(quote, text):
             continue
-        left, right = by_id.get(entry.get("left_id")), by_id.get(entry.get("right_id"))
+        left_id, right_id = entry.get("left_id"), entry.get("right_id")
+        if not isinstance(left_id, int) or not isinstance(right_id, int):
+            continue  # a non-integer mention id is not a mention — never guessed at
+        left, right = by_id.get(left_id), by_id.get(right_id)
         if left is None or right is None or left.local_id == right.local_id:
             continue
         key = frozenset((left.local_id, right.local_id))
