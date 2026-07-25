@@ -26,7 +26,6 @@ suppression with no gap is the silent kill this whole mechanism exists to preven
 from __future__ import annotations
 
 from chanakya.credibility.supersession import (
-    ADJUDICATION_HELD,
     CANDIDATE,
     GATE,
     PENDING_NEWER,
@@ -299,17 +298,20 @@ def test_the_vocabulary_is_config_declared_not_a_code_literal() -> None:
 
 # ── R1.4, in BOTH directions — the mirror the first implementation lacked ───────────────────────────
 #
-# The first version of R1.4's guard returned a *hold*, which quietly disabled the legitimate relocation
-# beat. Every test I had written rewarded caution, so nothing caught it; an independently-authored mirror
-# did. These are the mirror I should have written: each prohibition is paired with the thing that must
-# still work, so timidity fails as loudly as over-promotion.
+# My first guard returned a *hold* on too broad a trigger and disabled the legitimate relocation beat; my
+# second kept the trigger but weakened the consequence, which left the machine asserting a movement over an
+# identity it had not earned; and I tied (b) to (a)'s trigger, which the shipped meaning of `stale` rules
+# out. Every one of those was caught by an independently-authored mirror, never by my own tests — because
+# every test I could see rewarded caution. So each prohibition below is paired with the thing that must
+# still work, and each pairing is the assertion that would have caught the version before it.
+
 
 def _promotable() -> ConfigBundle:
     """Config whose supersede floor a single well-graded look can actually clear.
 
-    The floor is a real gate and an abstract fixture cannot satisfy it by accident, so the promotion-side
-    tests would pass vacuously (nothing promoted, nothing to check) unless it is reachable. Lowered here
-    *for the fixture only* — the shipped floor is untouched.
+    The floor is a real gate and an abstract fixture cannot satisfy it by accident, so every promotion-side
+    test would pass vacuously (nothing promoted, nothing to check) unless it is reachable. Lowered here *for
+    the fixture only* — the shipped floor is untouched.
     """
     config = _config()
     return config.model_copy(
@@ -331,7 +333,11 @@ def _promotable() -> ConfigBundle:
 
 
 def test_an_earned_relocation_is_still_promoted_retired_and_drawn() -> None:
-    """R1.4 must NOT disable supersession. The subject here rests on no open identity question at all."""
+    """R1.4 must NOT disable supersession. The subject here rests on no open identity question at all.
+
+    The mirror for the over-broad guard: an implementation that held every promotion would satisfy the
+    unearned-path test below and fail here, which is the whole point of asserting both.
+    """
     view = rebuild(_relocation("garrison", "garrison"), [], _promotable())
     basings = {e.target: e for e in view.edges if e.type == "based-at"}
     assert basings[_OLD].superseded_by == basings[_NEW].id, "the earned relocation must be promoted"
@@ -340,15 +346,24 @@ def test_an_earned_relocation_is_still_promoted_retired_and_drawn() -> None:
     assert drawn and (drawn[0].source, drawn[0].target) == (_NEW, _OLD), "and drawn, so it is clickable"
     # …and the machine really did adjudicate it: the pair is off the analyst's desk.
     assert CANDIDATE not in basings[_OLD].attrs and CANDIDATE not in basings[_NEW].attrs
-    assert not any(ADJUDICATION_HELD in e.attrs for e in basings.values())
+    assert basings[_OLD].attrs.get(GATE) == "promoted"
+
+
+def test_the_earned_trigger_is_measured_not_hoped_for() -> None:
+    """The guard's safety rests on its **trigger**, so pin what the trigger is not.
+
+    A never-merged, non-provisional subject is never unearned — which is the property that lets the real
+    flagship promote (its subject is in no open candidate merge and is not provisional).
+    """
+    older = EdgeView(id="e:old", type="based-at", source=_UNIT, target=_OLD)
+    newer = EdgeView(id="e:new", type="based-at", source=_UNIT, target=_NEW)
+    settled = {_UNIT: NodeView(id=_UNIT, type="unit")}
+    floor: dict[str, object] = {"require_earned_identity": True}
+    assert identity_is_unearned(older, newer, settled, set(), floor) is None
 
 
 def test_a_well_evidenced_retirement_still_reads_stale() -> None:
-    """R1.4(b) protects an honest ``insufficient``; it does not stop a retirement from being *stale*.
-
-    The counterpart to the test below. Both must hold, and an implementation that made *every* retirement
-    keep its label would satisfy the other one while quietly disabling retirement.
-    """
+    """R1.4(b) protects an honest ``insufficient``; it does not stop an *assessable* retirement being stale."""
     view = rebuild(_relocation("garrison", "garrison"), [], _promotable())
     older = next(e for e in view.edges if e.type == "based-at" and e.target == _OLD)
     assert older.sufficiency is not None and older.sufficiency.satisfied, (
@@ -358,21 +373,21 @@ def test_a_well_evidenced_retirement_still_reads_stale() -> None:
     assert not any(g.related_ref == older.id for g in view.known_gaps)
 
 
-def test_an_honest_insufficient_over_an_unearned_identity_keeps_its_label_and_gap() -> None:
-    """R1.4(b), the prohibition itself: an ``insufficient`` is a refusal, not a weak assessment.
+def test_an_honest_insufficient_keeps_its_label_and_its_known_gap_when_retired() -> None:
+    """R1.4(b) — and it is **unconditional**, not tied to whether the identity was earned.
 
-    Calling it ``stale`` would say "we knew this and it has been overtaken" about something we never knew,
-    and deleting its Known Gap would remove the only record that we still cannot assess it. The supersede
-    link is still written — the newer fact stands — so nothing is hidden; only the honest refusal is intact.
+    ``credibility/status.py`` defines ``stale`` as *"demote confirmed→stale"* — so in this system's own terms
+    it means "this WAS confirmed and has since aged out". Writing it over an ``insufficient`` asserts
+    something false: that the position was once established. **An assertion that was never established cannot
+    go stale; there is nothing to age.** That is an over-claim about provenance.
 
-    **Conditioned on the identity**, and the test says so by supplying a provisional subject. D-13.14 names
-    the gap deletion as a consequence *of the over-merge*, not as a general wrong. Unconditioned, this rule
-    stops a legitimate relocation's retired end from ever reading ``stale`` — measured on the real corpus —
-    which disables the beat rather than protecting anything. The test below pins that other direction.
+    It costs the beat nothing, which is what I got wrong first: retirement is carried by ``superseded_by``,
+    independent of the label. The older position is retired *because it is superseded*; it is *not confirmed*
+    because nobody confirmed it. Both facts survive — strictly more informative than either label alone.
     """
     older = EdgeView(
         id="e:old", type="based-at", source=_UNIT, target=_OLD, status="insufficient",
-        sufficiency=SufficiencyEval(satisfied=False, missing_slots=["official_announcement"]),
+        sufficiency=SufficiencyEval(satisfied=False, missing_slots=["imagery_confirmation"]),
         attrs={CANDIDATE: True, PENDING_NEWER: "e:new", GATE: "pending"},
     )
     newer = EdgeView(
@@ -382,50 +397,48 @@ def test_an_honest_insufficient_over_an_unearned_identity_keeps_its_label_and_ga
         supporting_claims=[IndependenceGroup(group_id="g1", claim_ids=["c1"], weight=1.0)],
         attrs={CANDIDATE: True, PENDING_OLDER: ["e:old"], GATE: "pending"},
     )
-    subject = {_UNIT: NodeView(id=_UNIT, type="unit", attrs={"provisional": True})}
-    assert protects_an_honest_refusal(older, identity_unearned=True)
-    assert not protects_an_honest_refusal(older, identity_unearned=False), (
-        "an under-evidenced retirement over an EARNED identity is retired normally — the protection is not "
-        "a blanket one (this is the assertion that keeps the real relocation working)"
+    assert protects_an_honest_refusal(older) and not protects_an_honest_refusal(newer)
+    # An EARNED identity (settled, non-provisional subject) — so (b) is doing this on its own.
+    outcome = promote_supersessions(
+        [older, newer], _promotable(), {_UNIT: NodeView(id=_UNIT, type="unit")}, set(),
+        layer_routing=True,
     )
-    assert not protects_an_honest_refusal(newer, identity_unearned=True)
-    outcome = promote_supersessions([older, newer], _promotable(), subject, set())
-    assert older.superseded_by == "e:new", "the supersede link IS written — the newer fact stands"
-    assert older.status == "insufficient", "…but the honest refusal is not overwritten with `stale`"
+    assert older.superseded_by == "e:new", "the retirement IS expressed — `superseded_by` carries it"
+    assert older.status == "insufficient", "…and the honest refusal is not overwritten with `stale`"
     assert outcome.protected_refusals == ["e:old"]
     assert older.id not in outcome.retired_element_ids, (
-        "and because it is not listed as retired, the pipeline leaves its Known Gap in place"
+        "not listed as retired, so the pipeline leaves its Known Gap in place"
     )
 
 
-def test_an_unearned_identity_is_promoted_but_stays_in_the_analysts_queue() -> None:
-    """R1.4(a) — the narrow prohibition: no *machine adjudication*, not "no promotion".
+def test_an_unearned_identity_holds_the_pair_for_the_analyst() -> None:
+    """R1.4(a) — with the identity in question the machine does not adjudicate: the analyst decides.
 
-    The subject is a provisional instance, so there is no earned identity under the movement at all. The
-    relocation still stands (it cleared the credibility floor) and is still drawn — but the pair keeps
-    `candidate_supersede`, with the reason recorded, because with the identity in question the analyst is
-    exactly who should decide.
+    Nothing is retired, nothing is drawn, and the pair keeps ``candidate_supersede`` with the reason
+    recorded — which D-P4.4 already makes the default outcome, not the exception.
     """
     claims = _relocation("garrison", "garrison")
-    # Build the pre-promotion pair shape (the `_config()` floor holds, so the nominations survive), then
-    # stand the subject in as a provisional instance — exactly how the routing marks a materialized one.
-    fresh = rebuild(claims, [], _config())
+    fresh = rebuild(claims, [], _config())  # `_config()`'s floor holds, so the nominations survive
     pair = {e.target: e for e in fresh.edges if e.type == "based-at"}
     for e in pair.values():
         e.attrs.pop(GATE, None)
         e.attrs.pop("supersede_hold_reason", None)
     nodes = {n.id: n for n in fresh.nodes}
-    nodes[_UNIT].attrs["provisional"] = True
-    outcome = promote_supersessions(list(pair.values()), _promotable(), nodes, set())
-    assert pair[_OLD].superseded_by == pair[_NEW].id, "promotion is NOT withheld — only adjudication is"
+    nodes[_UNIT].attrs["provisional"] = True  # how the routing marks a materialized instance
+    outcome = promote_supersessions(
+        list(pair.values()), _promotable(), nodes, set(), layer_routing=True
+    )
     assert outcome.identity_unearned_pairs == [(pair[_OLD].id, pair[_NEW].id)]
-    assert pair[_OLD].attrs.get(CANDIDATE) is True, "the pair must stay in the analyst's queue"
+    assert pair[_OLD].superseded_by is None, "nothing is retired over an identity we did not earn"
+    assert not outcome.drawn_edges, "and no relocation is asserted"
+    assert pair[_OLD].attrs.get(CANDIDATE) is True, "the pair stays in the analyst's queue"
     assert pair[_NEW].attrs.get(CANDIDATE) is True
-    assert pair[_OLD].attrs[ADJUDICATION_HELD] == "subject-identity-provisional"
+    assert pair[_OLD].attrs.get(GATE) != "promoted", "the machine did not adjudicate it"
+    assert "subject-identity-provisional" in pair[_OLD].attrs["supersede_hold_reason"]
 
 
-def test_an_open_candidate_merge_on_the_subject_also_holds_adjudication() -> None:
-    """The second unearned shape: the subject is an endpoint of a same-as nobody has adjudicated."""
+def test_an_open_candidate_merge_on_the_subject_is_the_other_unearned_shape() -> None:
+    """The second trigger: the subject is an endpoint of a same-as nobody has adjudicated."""
     claims = _relocation("garrison", "garrison")
     fresh = rebuild(claims, [], _config())
     pair = {e.target: e for e in fresh.edges if e.type == "based-at"}
@@ -433,30 +446,42 @@ def test_an_open_candidate_merge_on_the_subject_also_holds_adjudication() -> Non
         e.attrs.pop(GATE, None)
         e.attrs.pop("supersede_hold_reason", None)
     outcome = promote_supersessions(
-        list(pair.values()), _promotable(), {n.id: n for n in fresh.nodes}, {_UNIT}
+        list(pair.values()), _promotable(), {n.id: n for n in fresh.nodes}, {_UNIT},
+        layer_routing=True,
     )
     assert outcome.identity_unearned_pairs, "an open candidate merge on the subject is an open question"
-    assert pair[_OLD].attrs[ADJUDICATION_HELD] == "subject-identity-open-candidate-merge"
-    assert pair[_OLD].superseded_by == pair[_NEW].id, "still promoted, still drawn — only not adjudicated"
+    assert "subject-identity-open-candidate-merge" in pair[_OLD].attrs["supersede_hold_reason"]
+    assert pair[_OLD].superseded_by is None
 
 
 def test_a_same_target_refresh_is_never_treated_as_unearned() -> None:
     """The guard is scoped to promotions that would DRAW a relocation. A refresh asserts no movement."""
-    floor = {"require_earned_identity": True}
+    floor: dict[str, object] = {"require_earned_identity": True}
     older = EdgeView(id="e:old", type="based-at", source=_UNIT, target=_NEW)
     newer = EdgeView(id="e:new", type="based-at", source=_UNIT, target=_NEW)
-    assert identity_is_unearned(older, newer, {_UNIT: NodeView(
-        id=_UNIT, type="unit", attrs={"provisional": True})}, {_UNIT}, floor) is None
-
-
-def test_the_guard_is_config_gated_and_the_gap_register_never_repeats_itself() -> None:
-    """Two small properties worth pinning: the switch is real, and a gap is stated once."""
-    floor_off: dict[str, object] = {"require_earned_identity": False}
-    older = EdgeView(id="e:old", type="based-at", source=_UNIT, target=_OLD)
-    newer = EdgeView(id="e:new", type="based-at", source=_UNIT, target=_NEW)
     provisional = {_UNIT: NodeView(id=_UNIT, type="unit", attrs={"provisional": True})}
-    assert identity_is_unearned(older, newer, provisional, {_UNIT}, floor_off) is None
-    assert identity_is_unearned(older, newer, provisional, {_UNIT}, {"require_earned_identity": True})
+    assert identity_is_unearned(older, newer, provisional, {_UNIT}, floor) is None
+
+
+def test_both_prohibitions_ride_the_flag_and_the_gap_register_never_repeats_itself() -> None:
+    """Flag-off promotion behaviour is untouched by construction, and a gap is stated once."""
+    older = EdgeView(
+        id="e:old", type="based-at", source=_UNIT, target=_OLD, status="insufficient",
+        sufficiency=SufficiencyEval(satisfied=False, missing_slots=["imagery_confirmation"]),
+        attrs={CANDIDATE: True, PENDING_NEWER: "e:new", GATE: "pending"},
+    )
+    newer = EdgeView(
+        id="e:new", type="based-at", source=_UNIT, target=_NEW, status="probable",
+        sufficiency=SufficiencyEval(satisfied=True),
+        confidence=ConfidenceBreakdown(assertion_confidence=0.9),
+        supporting_claims=[IndependenceGroup(group_id="g1", claim_ids=["c1"], weight=1.0)],
+        attrs={CANDIDATE: True, PENDING_OLDER: ["e:old"], GATE: "pending"},
+    )
+    provisional = {_UNIT: NodeView(id=_UNIT, type="unit", attrs={"provisional": True})}
+    # Flag OFF: neither prohibition applies — promoted, popped, and restated as it always was.
+    outcome = promote_supersessions([older, newer], _promotable(), provisional, {_UNIT})
+    assert not outcome.identity_unearned_pairs and not outcome.protected_refusals
+    assert outcome.retired_element_ids == ["e:old"] and older.status == "stale"
     # And no view repeats a gap id — several mechanisms can notice the same absence.
     view = rebuild(_relocation("prepared revetment complex", "forward_site"), [], _config())
     ids = [g.id for g in view.known_gaps]

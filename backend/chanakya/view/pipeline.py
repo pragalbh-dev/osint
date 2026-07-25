@@ -913,20 +913,19 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
     #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
     #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
-    # The earned-identity gate's inputs (R1.4) are handed over only with routing on, so the fix rides the
-    # same single flag as everything else this stage changes — flag-off promotion behaviour is untouched by
-    # construction rather than by argument. (A safety fix behind a flag is only acceptable because the whole
-    # stage is: the flag is the stage's cutover, not a way of keeping the fix off.)
+    # R1.4's two prohibitions both ride the stage flag, like everything else S2 changes — flag-off promotion
+    # behaviour is untouched by construction rather than by argument. (A safety fix behind a flag is only
+    # acceptable because the whole stage is: the flag is the stage's cutover, not a way of keeping the fix
+    # off.) The two are independent: (a) asks whether this is one unit, (b) whether we ever established the
+    # origin at all.
     #
     # "Unsettled" is the OPEN CANDIDATE MERGE — every endpoint of a same-as the resolver put in front of the
     # analyst and nobody has adjudicated. Deliberately not the node's assessed status: the legitimate
-    # flagship relocation sits at *probable*, so reading the confidence label would suppress the beat this
-    # is meant to leave working. The question is whether the IDENTITY DECISION is still open.
-    unsettled = (
-        {eid for pair in partition.candidates for eid in pair} if routing.enabled else set()
-    )
+    # flagship relocation sits at *probable*, so reading the confidence label would suppress the beat this is
+    # meant to leave working. The question is whether the IDENTITY DECISION is still open.
+    unsettled = {eid for pair in partition.candidates for eid in pair}
     supersede_outcome = promote_supersessions(
-        edges, config, nodes if routing.enabled else None, unsettled
+        edges, config, nodes, unsettled, layer_routing=routing.enabled
     )
     edges.extend(supersede_outcome.drawn_edges)
     # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it

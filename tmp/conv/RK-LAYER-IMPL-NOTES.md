@@ -295,14 +295,69 @@ now derives — the same attribution twice, once frozen and never ageing. Flag-g
 
 Declared as `layer_routing.superseded_derived_bundle_suffixes` beside the existing
 `superseded_derived_layers`, and read through `LayerRouting.retired_bundle_suffixes()` so the flag boundary
-lives in **one** place rather than at every seed call site. `seed_store_from_bundles` gained a dumb
-`skip_suffixes` argument (it stays config-free); `api/state.py` and `eval/harness.py` supply it from config.
+lives in **one** place rather than at every seed call site. `api/state.py` and `eval/harness.py` supply it.
+
+`seed_store_from_bundles` accepts the retirement **two ways**, and that is deliberate rather than
+indecisive: pass `config=` and it reads the flag itself, or pass `skip_suffixes=` when the caller has already
+resolved the list or wants to state it outright. A loader that can be handed the config is easier to call
+*correctly* than one that makes every call site remember an accessor. Both forms verified to agree in both
+flag states: **492 claims with the flag off (the 3 `__basing.json` bundles seeded), 489 with it on.**
 
 **Both halves are kept, and they are not redundant.** The file-level skip stops the double attribution
 entering the store at boot — measured: the full-scenario claim count drops 492 → 489 with the flag on. The
 `derived_layer` filter inside `rebuild()` is the **backstop** for a store that already holds such claims,
 where the file-level skip never ran: a live `POST /ingest` of a legacy bundle, or any caller that seeds
 without config in hand.
+
+### R1.4 — final shape, after being wrong twice
+
+Three attempts, and each error was caught by an independently-authored mirror rather than by anything I
+wrote. Worth setting down in order, because the *kind* of error changed each time:
+
+1. **Round 1 — a hold on too broad a trigger.** Disabled promotion generally, so the legitimate relocation
+   beat stopped firing.
+2. **Round 2 — kept the trigger, weakened the consequence.** Promote anyway, just do not pop the queue. That
+   was the wrong lever: it left the machine asserting a movement over an identity it had not earned.
+3. **Round 2 — tied (b) to (a)'s trigger.** Overruled on the shipped vocabulary; see below.
+
+**Final:**
+
+* **(a) an unearned identity HOLDS the pair for the analyst** — nothing retired, nothing drawn,
+  `candidate_supersede` kept, reason recorded. This is the original R1.4 text, and D-P4.4 already makes it
+  the *default* outcome rather than the exception.
+  **Its safety is a property of the trigger, and it is measured, not hoped for:** on the real corpus the
+  flagship's subject is in **no** open candidate merge (`partition.candidates` has 24 endpoints; `unit_hq9b`
+  is not among them) and is not provisional — so the guard cannot fire on it. That measurement is what lets
+  the consequence stay strong, and it is pinned by a mirror asserting the earned case still promotes.
+* **(b) an honest `insufficient` keeps its label and its Known Gap — UNCONDITIONALLY.**
+
+**I was wrong about (b), and the thing that settled it was the shipped definition of the label, not a doc.**
+`credibility/status.py` defines `_STALE` as *"demote confirmed→stale"* — so in this system's own terms
+`stale` means **"this WAS confirmed and has since aged out."** Writing it over an `insufficient` asserts
+something false: that the position was once established and has merely gone out of date. *An assertion that
+was never established cannot go stale; there is nothing to age.* That is an over-claim about provenance.
+
+My objection — that protecting it stops a legitimate relocation's origin ever reading `stale` — was answered
+rather than dismissed: **retirement is carried by `superseded_by`, which is independent of the status
+label.** The origin is retired *because it is superseded*; it is *not confirmed* because nobody confirmed it.
+Both facts survive, which is strictly more informative than either label alone. My real constraint was
+flag-off byte-identity, and the flag boundary satisfies that without narrowing the rule — so **both
+prohibitions are unconditional and both ride the flag**, like everything else in S2.
+
+The two guard genuinely different things, which is why neither conditions the other: **(a) guards identity**
+— is this one unit? — while **(b) guards the origin's evidential status** — did we ever establish it was
+there? An earned identity with an unestablished origin is still a relocation whose premise was never
+confirmed.
+
+**Where (b) actually bites, measured honestly.** On the *booted* surface the flagship's origin is
+`insufficient` — but the Rahwali documents are withheld there, so it is never superseded (`superseded_by`
+is None) and there is nothing to protect. On the *full* surface the extra Rahwali-side evidence lifts that
+same edge to assessable, so it correctly restates to `stale`. So (b) is currently **inert on the real
+corpus in both surfaces** — the two conditions never co-occur. That is the honest §5a-bis case
+(inert-because-the-data-is-sparse, not hidden-to-protect-a-fixture); it is exercised by unit mirrors on
+both sides.
+
+### The earlier round-2 write-up, superseded above
 
 ### R1.4 was too broad — re-scoped to exactly two narrow prohibitions
 
