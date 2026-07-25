@@ -44,14 +44,34 @@ constraint and a hard per-role floor the difference from an optimal assignment i
 near-threshold pairs, and the alternative (an optimal-assignment solver) would trade an auditable rule
 for an opaque one. That choice is stated here rather than hidden.
 
-Precision = matched / extracted. Recall = matched / gold. F1 = harmonic mean, defined as 0.0 when either
-side is empty (never 1.0 for "extracted nothing, gold empty" — an empty slice is a measurement failure,
-and it is reported as such by :attr:`MatchResult.degenerate`).
+Recall = matched / gold. F1 = harmonic mean, defined as 0.0 when either side is empty (never 1.0 for
+"extracted nothing, gold empty" — an empty slice is a measurement failure, and it is reported as such by
+:attr:`MatchResult.degenerate`).
+
+PRECISION AND ITS DENOMINATOR
+─────────────────────────────
+Precision is ``matched / precision_denominator``, and the denominator is **not** simply everything the
+model emitted. The labeled slice declares three classes of span (``unmodelled``, ``anti_coref``, and a
+non-identity claim over an ``ambiguous`` pair) at which emitting a claim is *correct reading*, not a false
+positive: the document really does say that, the ontology just cannot express it or the identity must stay
+unbound. Charging those to precision is not a small unfairness — it scales with how much of a document a
+model reads, so it does **not** cancel between candidates and systematically favours the terser
+extractor, on a line weighted 3.0.
+
+So :attr:`MatchResult.precision_exclusions` carries the emitted keys the **gold** declares neutral (see
+:mod:`eval.extraction.negative_gold`, which consumes the gold owner's own hooks and never re-derives the
+semantics). Two invariants are enforced in the constructor rather than trusted:
+
+* an excluded key must be one the matcher left **unpaired** — a matched claim is explained by positive
+  gold and dropping it from the denominator would push precision above 1.0;
+* ``not_a_claim`` spans are never in the set. Those emissions are fabrication and must cost precision;
+  the gold's hook withholds the exclusion from them, and the trap wins whenever a span is both.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from collections.abc import Sequence
+from dataclasses import dataclass, field, replace
 
 from rapidfuzz import fuzz
 
@@ -127,10 +147,44 @@ class MatchResult:
     gold_total: int
     extracted_total: int
     rejections: dict[str, int] = field(default_factory=dict)
+    #: Emitted claim keys the GOLD declares neutral for precision. Set by
+    #: :meth:`with_precision_exclusions`, never by the matcher itself — the matcher knows nothing about
+    #: negative gold, and inventing the semantics here is the drift this split exists to prevent.
+    precision_exclusions: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.precision_exclusions:
+            return
+        excluded = set(self.precision_exclusions)
+        matched = {p.extracted.key for p in self.pairs}
+        overlap = sorted(excluded & matched)
+        if overlap:
+            raise ValueError(
+                f"precision exclusions name claim(s) the matcher PAIRED with positive gold: {overlap}. A "
+                "matched claim is explained by the gold and may never leave the precision denominator — "
+                "dropping it would push precision above 1.0 and credit a model for a span it hit."
+            )
+        unknown = sorted(excluded - {e.key for e in self.unmatched_extracted})
+        if unknown:
+            raise ValueError(
+                f"precision exclusions name claim(s) that are not in this alignment at all: {unknown}. An "
+                "exclusion computed against a different run's claims would shrink this run's denominator "
+                "for free."
+            )
+
+    def with_precision_exclusions(self, keys: Sequence[str]) -> MatchResult:
+        """The same alignment with the gold's neutral-span exclusions applied to the denominator."""
+        return replace(self, precision_exclusions=tuple(dict.fromkeys(keys)))
+
+    @property
+    def precision_denominator(self) -> int:
+        """Everything emitted, less the emissions the gold declares neutral. Never below ``len(pairs)``."""
+        return self.extracted_total - len(set(self.precision_exclusions))
 
     @property
     def precision(self) -> float:
-        return len(self.pairs) / self.extracted_total if self.extracted_total else 0.0
+        denominator = self.precision_denominator
+        return len(self.pairs) / denominator if denominator else 0.0
 
     @property
     def recall(self) -> float:
@@ -144,7 +198,7 @@ class MatchResult:
     @property
     def degenerate(self) -> bool:
         """True when one side is empty — the numbers are then a measurement failure, not a score."""
-        return self.gold_total == 0 or self.extracted_total == 0
+        return self.gold_total == 0 or self.precision_denominator == 0
 
 
 def _admissible(gold: SurfaceClaim, pred: SurfaceClaim, policy: MatchPolicy) -> str | None:

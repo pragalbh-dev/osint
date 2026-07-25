@@ -32,8 +32,11 @@ contract surface       shipped implementation
                        the contract's ``rule['surface_threshold']`` → ``MatchPolicy`` floors.
 ``score_faithfulness`` ``metrics.citation_faithfulness(claims, doc_texts, policy)`` — a
                        ``MetricValue`` → ``.rate`` / ``.unfaithful``.
-``evaluate_gates``     ``gates.evaluate_gates(Candidate, BakeoffConfig, image_calls_*)`` — the
-                       contract's four booleans → a real ``Candidate`` declaration.
+``evaluate_gates``     ``gates.dry_gates(Candidate, BakeoffConfig, imagery=ImageryObservations)`` — the
+                       contract's four booleans → a real ``Candidate`` declaration. ``dry_gates`` is the
+                       faithful binding because the contract hands over a declaration and no measured
+                       numbers: it is the same set of preconditions ``preflight`` judges. The
+                       non-negotiable METRIC gates (``evaluate_gates``' extra) need a run first.
 ``build_scorecard``    ``compare.decide(scores, config)`` — per-metric run lists → ``CandidateScore``
                        via ``build_series``, then the real verdict.
 =====================  ==========================================================================
@@ -254,12 +257,18 @@ def to_candidate(c: Mapping[str, Any]) -> P.Candidate:
 
 
 def evaluate_gates(cand) -> BoundGates:  # noqa: ANN001 - contract shape
-    report = G.evaluate_gates(
+    # `dry_gates`, not `evaluate_gates`: the contract's surface takes a candidate *declaration* and no
+    # measured numbers, which is exactly the set of preconditions `preflight` judges — imagery (on the
+    # observations supplied), KEYLESS==LIVE, the pin, the key. The non-negotiable METRIC gates need a run to
+    # have produced numbers; binding them here with nothing to judge would report UNKNOWN for every contract
+    # candidate and turn every gate red for a reason the contract never asked about.
+    report = G.dry_gates(
         to_candidate(cand), _config(),
         # The contract's candidates declare VLM capability rather than evidencing it, so the binding
         # supplies one successful image call for a declared-capable candidate. A declared-incapable one
         # still FAILs on `multimodal="none"`, which is the property the gate tests.
-        image_calls_ok=1, image_calls_total=1,
+        imagery=G.ImageryObservations(calls_ok=1, calls_total=1,
+                                      sources=("binding: one declared image call",)),
     )
     return BoundGates(
         passed=report.eligible,

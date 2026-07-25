@@ -10,6 +10,17 @@ So gates live in their own type, are evaluated separately, and the comparative v
 candidate that is not ``PASS`` on every gate from winner consideration **before** any score is compared.
 A gate that could not be checked is ``UNKNOWN``, and UNKNOWN also blocks: "we did not verify the VLM path
 survived" is not the same as "it did", and only one of those is allowed to win.
+
+ONE GATE, ONE DECIDER
+─────────────────────
+Every caller — the dry ``preflight`` and the real run alike — reaches the imagery gate through
+:func:`gate_vlm_imagery` with an :class:`ImageryObservations`, and builds that through the single function
+:func:`eval.extraction.vlm_probe.observations_for`. The alternative, which this harness shipped and has
+now fixed, was two callers reading two different sources: preflight judged the gate on the *recorded*
+probe evidence while the run judged it on the calls that run happened to make, so preflight could show
+PASS on all three candidates and the run could then return ``NO_ELIGIBLE_CANDIDATE``. Green light followed
+by silent disqualification is the exact trap this project keeps getting bitten by, and the fix is
+structural: there is no code path that reaches the gate with only half the observations.
 """
 
 from __future__ import annotations
@@ -54,29 +65,71 @@ class GateReport:
         return tuple(g for g in self.gates if g.blocks_winning)
 
 
+# ── the imagery observations: the one input the imagery gate is judged on ──────────────────────────
+
+@dataclass(frozen=True)
+class ImageryObservations:
+    """Every standalone-image call known about one candidate, from every source that saw one.
+
+    Two sources exist and both are first-hand: the recorded ``vlm-probe`` evidence (a real image through
+    the real imagery lane, pinned to the model id it was recorded against) and the standalone-image calls a
+    bake-off run made itself. They are *summed*, not chosen between — a candidate that failed the probe and
+    succeeded in the run has one failure and one success, and the gate should see both.
+
+    ``sources`` exists so the gate's own detail line can say where its evidence came from. A reader who
+    sees PASS is entitled to know whether anything was exercised today or the verdict rests on a record.
+    """
+
+    calls_ok: int = 0
+    calls_total: int = 0
+    sources: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.calls_ok < 0 or self.calls_total < 0 or self.calls_ok > self.calls_total:
+            raise ValueError(
+                f"ImageryObservations({self.calls_ok}/{self.calls_total}) is not a possible observation — "
+                "more successful calls than calls would let a failure be washed out by arithmetic"
+            )
+
+    def plus(self, other: ImageryObservations) -> ImageryObservations:
+        return ImageryObservations(
+            calls_ok=self.calls_ok + other.calls_ok,
+            calls_total=self.calls_total + other.calls_total,
+            sources=self.sources + other.sources,
+        )
+
+    @property
+    def described(self) -> str:
+        return ", ".join(self.sources) if self.sources else "nothing exercised"
+
+
 # ── individual gates ──────────────────────────────────────────────────────────────────────────────
 
-def gate_vlm_imagery(candidate: Candidate, *, image_calls_ok: int, image_calls_total: int) -> GateResult:
+def gate_vlm_imagery(candidate: Candidate, imagery: ImageryObservations) -> GateResult:
     """The locked in-scope VLM imagery path must survive — evidenced, not asserted.
 
-    A declaration of ``multimodal: none`` fails outright. Anything else must be *demonstrated*: the run
-    has to have made at least one standalone-image call that came back. No image call attempted →
-    UNKNOWN, because a gate nobody exercised is not a gate anybody passed.
+    A declaration of ``multimodal: none`` fails outright. Anything else must be *demonstrated*: some
+    standalone-image call, in the recorded probe or in this run, has to have come back. No image call
+    attempted anywhere → UNKNOWN, because a gate nobody exercised is not a gate anybody passed.
+
+    This is the **only** function that turns imagery observations into a gate status, and it takes them as
+    one object so no caller can supply half of them. Preflight and the run therefore cannot disagree.
     """
     if candidate.multimodal == "none":
         return GateResult("vlm_imagery_path", "FAIL",
                           "declared text-only — would drop the locked VLM imagery path (disqualifier)")
-    if image_calls_total == 0:
+    if imagery.calls_total == 0:
         return GateResult("vlm_imagery_path", "UNKNOWN",
-                          f"declared multimodal={candidate.multimodal} but no standalone-image call was "
-                          "exercised in this run — include an image document in the slice")
-    if image_calls_ok < image_calls_total:
+                          f"declared multimodal={candidate.multimodal} but no standalone-image call has "
+                          "been exercised — run `vlm-probe`, or include an image document in the slice "
+                          f"({imagery.described})")
+    if imagery.calls_ok < imagery.calls_total:
         return GateResult("vlm_imagery_path", "FAIL",
-                          f"{image_calls_total - image_calls_ok}/{image_calls_total} standalone-image "
-                          "calls failed")
+                          f"{imagery.calls_total - imagery.calls_ok}/{imagery.calls_total} standalone-image "
+                          f"calls failed ({imagery.described})")
     return GateResult("vlm_imagery_path", "PASS",
-                      f"{image_calls_ok}/{image_calls_total} standalone-image calls returned "
-                      f"(multimodal={candidate.multimodal})")
+                      f"{imagery.calls_ok}/{imagery.calls_total} standalone-image calls returned "
+                      f"(multimodal={candidate.multimodal}; {imagery.described})")
 
 
 def gate_keyless_equals_live(candidate: Candidate, config: BakeoffConfig) -> GateResult:
@@ -141,50 +194,94 @@ def gate_key_present(candidate: Candidate) -> GateResult:
                       "comparison excluding it is not the three-way measurement it might look like")
 
 
-def gate_non_negotiable_floor(metric: MetricValue, floor: float | None) -> GateResult | None:
-    """An optional hard floor on a non-negotiable metric. ``None`` floor → no gate at all.
+def gate_non_negotiable(name: str, metric: MetricValue | None, floor: float | None) -> GateResult:
+    """A metric named in ``gates.non_negotiable_floors`` must be **measured**, and must clear any floor.
 
-    Deliberately unset by default: picking the number is a human judgement about how much fabrication is
-    tolerable, and a scorer that invents that threshold has decided the question it was built to measure.
+    Two distinct disciplines, one gate, because both are ways of trading a non-negotiable away:
+
+    * **Measured.** A declared non-negotiable that nobody scored is ``UNKNOWN``, and UNKNOWN blocks — even
+      with no floor configured. Without this, the relative veto in :func:`eval.extraction.compare.decide`
+      has nothing to compare, so a candidate whose fabrication line simply failed to measure could win on
+      the strength of the lines that did. "We did not check whether it fabricates" is not a pass.
+    * **Above the floor.** ``None`` means no absolute threshold is enforced, and the report says so:
+      picking the number is a human judgement about how much fabrication is tolerable, and a scorer that
+      invents that threshold has decided the question it was built to measure. The *relative* veto still
+      applies, and it needs no invented number because it reuses the margin rule.
     """
-    if floor is None:
-        return None
-    name = f"floor:{metric.name}"
+    gate_name = f"non-negotiable:{name}"
+    if metric is None:
+        return GateResult(gate_name, "UNKNOWN",
+                          f"{name} is declared non-negotiable but was not scored in this run — an "
+                          "unmeasured non-negotiable cannot be traded away by absence")
     if metric.status != "measured":
-        return GateResult(name, "UNKNOWN", f"{metric.name} was not measured ({metric.reason})")
+        return GateResult(gate_name, "UNKNOWN",
+                          f"{name} is declared non-negotiable but was not measured ({metric.reason})")
     assert metric.value is not None
+    if floor is None:
+        return GateResult(gate_name, "PASS",
+                          f"{name}={metric.value:.3f} measured; no absolute floor is configured, so only "
+                          "the relative veto (materially worse than a rival) applies")
     if metric.value < floor:
-        return GateResult(name, "FAIL", f"{metric.name}={metric.value:.3f} is below the floor {floor:.3f}")
-    return GateResult(name, "PASS", f"{metric.name}={metric.value:.3f} clears the floor {floor:.3f}")
+        return GateResult(gate_name, "FAIL", f"{name}={metric.value:.3f} is below the floor {floor:.3f}")
+    return GateResult(gate_name, "PASS", f"{name}={metric.value:.3f} clears the floor {floor:.3f}")
+
+
+def non_negotiable_gate_names(config: BakeoffConfig) -> tuple[str, ...]:
+    """The gate names that can only be judged once a run has produced numbers.
+
+    Named so ``preflight`` can *say* what it deferred instead of either inventing a verdict or quietly
+    omitting a blocking precondition. A reader of a green preflight is entitled to know which gates are
+    still ahead of the candidate.
+    """
+    return tuple(f"non-negotiable:{name}" for name in (config.gates.non_negotiable_floors or {}))
+
+
+def dry_gates(
+    candidate: Candidate,
+    config: BakeoffConfig,
+    *,
+    imagery: ImageryObservations,
+    require_key: bool = True,
+) -> GateReport:
+    """The preconditions judgeable **without a run**: imagery, KEYLESS==LIVE, the pin, the key.
+
+    The imagery gate belongs here even though it is about model behaviour, because it is judged on
+    *recorded* evidence — a real image through the real lane, already paid for — rather than on this run.
+    That is exactly what makes the preflight/run symmetry possible.
+    """
+    gates: list[GateResult] = [
+        gate_vlm_imagery(candidate, imagery),
+        gate_keyless_equals_live(candidate, config),
+        gate_pinned_model_id(candidate, config),
+    ]
+    if require_key:
+        gates.append(gate_key_present(candidate))
+    return GateReport(candidate_id=candidate.id, gates=tuple(gates))
 
 
 def evaluate_gates(
     candidate: Candidate,
     config: BakeoffConfig,
     *,
-    image_calls_ok: int,
-    image_calls_total: int,
+    imagery: ImageryObservations,
     non_negotiable_metrics: dict[str, MetricValue] | None = None,
     require_key: bool = True,
 ) -> GateReport:
-    """All gates for one candidate, in report order (the blocking ones first)."""
-    gates: list[GateResult] = [
-        gate_vlm_imagery(candidate, image_calls_ok=image_calls_ok, image_calls_total=image_calls_total),
-        gate_keyless_equals_live(candidate, config),
-        gate_pinned_model_id(candidate, config),
-    ]
-    if require_key:
-        gates.append(gate_key_present(candidate))
+    """Every gate for one candidate after a run: the dry preconditions plus the non-negotiable metrics.
+
+    ``imagery`` is required and is the *whole* observation set — build it with
+    :func:`eval.extraction.vlm_probe.observations_for` so the recorded evidence is never left behind. That
+    is the single decider Ruling 3 asked for: preflight and the run reach :func:`gate_vlm_imagery` with the
+    same evidence, and the run merely adds the calls it made itself.
+
+    The non-negotiable gates are appended here and **not** in :func:`dry_gates` because they need measured
+    numbers. Their absence in preflight is stated by :func:`non_negotiable_gate_names`, never implied to be
+    a pass: this is the run knowing *more* than preflight, which is the safe direction, unlike the defect
+    Ruling 3 closed where the run knew *less*.
+    """
+    gates = list(dry_gates(candidate, config, imagery=imagery, require_key=require_key).gates)
     for name, floor in (config.gates.non_negotiable_floors or {}).items():
-        metric = (non_negotiable_metrics or {}).get(name)
-        if metric is None:
-            if floor is not None:
-                gates.append(GateResult(f"floor:{name}", "UNKNOWN",
-                                        f"a floor is configured for {name!r} but it was not scored"))
-            continue
-        result = gate_non_negotiable_floor(metric, floor)
-        if result is not None:
-            gates.append(result)
+        gates.append(gate_non_negotiable(name, (non_negotiable_metrics or {}).get(name), floor))
     return GateReport(candidate_id=candidate.id, gates=tuple(gates))
 
 
@@ -192,10 +289,13 @@ __all__ = [
     "GateReport",
     "GateResult",
     "GateStatus",
+    "ImageryObservations",
+    "dry_gates",
     "evaluate_gates",
     "gate_key_present",
     "gate_keyless_equals_live",
-    "gate_non_negotiable_floor",
+    "gate_non_negotiable",
     "gate_pinned_model_id",
     "gate_vlm_imagery",
+    "non_negotiable_gate_names",
 ]

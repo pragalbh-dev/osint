@@ -117,14 +117,20 @@ def test_switching_the_channel_on_is_an_in_memory_flip_that_actually_takes(shipp
 
 
 def test_the_shipped_config_leaves_the_coref_channel_dormant_and_names_the_flag(shipped_config) -> None:
-    """S3 shipped the channel switched OFF. "Dormant" is a different fact from "does not exist" and has to
-    read differently, because only one of them is fixable by an operator."""
+    """S3 shipped the channel switched OFF, and that is the ``gated_off`` cause specifically.
+
+    "Gated off" is a different fact from "does not exist" and from "was never configured", and the three
+    have to read differently because they have three different remedies — only one of which is a flag. This
+    is also the flag-deletion seam: once pass 2 is unconditional this cause stops occurring, and the test
+    should be deleted with it rather than relaxed.
+    """
     channel = coref_channel.inspect(shipped_config)
     assert channel.tool_name == "cluster_coreferences"        # the channel EXISTS
     assert channel.cluster_field == "clusters[].member_ids"
     assert not channel.live and not channel.measurable        # and is switched off
-    assert coref_channel.FLAG in channel.detail
-    assert "DORMANT" in channel.detail
+    assert channel.cause == coref_channel.GATED_OFF
+    assert "the producer IS configured" in channel.detail     # so it is NOT the unconfigured cause
+    assert coref_channel.FLAG in channel.remedy               # the remedy, not the finding, names the flag
 
 
 def test_with_the_flag_on_the_channel_is_live_and_names_its_categories(shipped_config) -> None:

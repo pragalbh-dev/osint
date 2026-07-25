@@ -38,14 +38,15 @@ from chanakya.view import rebuild
 from . import coref_channel
 from . import metrics as M
 from .compare import MetricComparison, Verdict, composite_series, decide, per_metric_comparisons
-from .gates import GateReport, evaluate_gates
+from .gates import GateReport, dry_gates, evaluate_gates
 from .gold import SubOracle, load_claim_gold, load_sub_oracle
 from .matcher import match_claims
+from .negative_gold import NegativeGold, emitted_spans, load_negative_gold
 from .policy import BakeoffConfig, Candidate
 from .recording import RecordingExtractionClient
 from .scorecard import CandidateScore, RunScore, aggregate_runs, unexercised
 from .surface import SurfaceClaim, from_claim_record
-from .vlm_probe import ImageryEvidence, evidence_for, load_evidence
+from .vlm_probe import ImageryEvidence, observations_for, resolve_evidence
 
 #: ``(candidate, run_index) -> client``. Returning ``None`` marks the candidate unexercisable.
 ClientFactory = Callable[[Candidate, int], Any | None]
@@ -134,17 +135,27 @@ def score_run(
     raw_payloads: Sequence[Mapping[str, Any]],
     recorder: RecordingExtractionClient,
     gold: Sequence[SurfaceClaim],
+    negative: NegativeGold,
     oracle: SubOracle,
     doc_texts: Mapping[str, str],
     config: BakeoffConfig,
     view: GraphView,
 ) -> RunScore:
-    """Every metric for one run. Pure given its inputs — no I/O, no clock, no network."""
+    """Every metric for one run. Pure given its inputs — no I/O, no clock, no network.
+
+    The negative gold is consumed **after** the alignment and **before** the surface metrics, because both
+    things it produces depend on the matcher's verdict: an emission that paired with positive gold can
+    neither hit a trap nor earn a precision exclusion. See :mod:`.negative_gold`.
+    """
     surfaces = [from_claim_record(c) for c in claims]
     match = match_claims(list(gold), surfaces, config.match_policy)
+    emitted = emitted_spans(surfaces, match, negative)
+    match = match.with_precision_exclusions(negative.excluded_keys(emitted))
 
     values: dict[str, M.MetricValue] = {}
     values.update(M.surface_metrics(match))
+    values["trap_avoidance"] = M.trap_avoidance(negative, emitted)
+    values["identity_over_read"] = M.identity_over_read(negative, emitted)
     values["citation_faithfulness"] = M.citation_faithfulness(surfaces, doc_texts, config.match_policy)
     values["extract_only_stated"] = M.extract_only_stated(surfaces, doc_texts, config.match_policy)
     values["structured_output_reliability"] = M.structured_output_reliability(recorder.calls)
@@ -174,7 +185,9 @@ def run_candidate(
     client_factory: ClientFactory,
     *,
     gold: Sequence[SurfaceClaim],
+    negative: NegativeGold,
     oracle: SubOracle,
+    evidence: Mapping[str, ImageryEvidence],
     require_key: bool = True,
 ) -> CandidateScore:
     """Run one candidate N times, score each run, and fold them into a :class:`CandidateScore`."""
@@ -185,8 +198,8 @@ def run_candidate(
     for run_index in range(1, config.replication.runs_per_candidate + 1):
         client = client_factory(candidate, run_index)
         if client is None:
-            gates = evaluate_gates(candidate, config, image_calls_ok=0, image_calls_total=0,
-                                   require_key=require_key)
+            imagery, _ = observations_for(candidate, evidence=evidence)
+            gates = evaluate_gates(candidate, config, imagery=imagery, require_key=require_key)
             return unexercised(
                 candidate.id, candidate.label, candidate.model_id, gates,
                 f"no client could be built (key env {candidate.key_env}, client "
@@ -203,20 +216,28 @@ def run_candidate(
         payloads = [c.payload for c in recorder.calls if c.ok and c.payload is not None]
         runs.append(score_run(
             candidate=candidate, run_index=run_index, claims=flat, raw_payloads=payloads,
-            recorder=recorder, gold=gold, oracle=oracle, doc_texts=doc_texts, config=config, view=view,
+            recorder=recorder, gold=gold, negative=negative, oracle=oracle, doc_texts=doc_texts,
+            config=config, view=view,
         ))
         image_ok += runs[-1].image_calls_ok
         image_total += runs[-1].image_calls_total
 
-    gates = _gates_for(candidate, config, runs, image_ok, image_total, require_key)
+    gates = _gates_for(candidate, config, runs, image_ok, image_total, evidence, require_key)
     return aggregate_runs(candidate.id, candidate.label, candidate.model_id, gates, runs,
                           config.replication)
 
 
 def _gates_for(candidate: Candidate, config: BakeoffConfig, runs: Sequence[RunScore],
-               image_ok: int, image_total: int, require_key: bool) -> GateReport:
-    """Gates, with the optional non-negotiable floors judged on the mean over the runs."""
-    floors: dict[str, M.MetricValue] = {}
+               image_ok: int, image_total: int, evidence: Mapping[str, ImageryEvidence],
+               require_key: bool) -> GateReport:
+    """Gates for a run: the non-negotiables judged on the mean over the runs, imagery on ALL the evidence.
+
+    The imagery observations are the recorded probe **plus** this run's own image calls, built by the same
+    :func:`~eval.extraction.vlm_probe.observations_for` ``preflight`` uses. That is why a green preflight can
+    no longer be followed by a silent disqualification: with the same evidence and no image call of its own,
+    a run reaches exactly the status preflight printed.
+    """
+    non_negotiables: dict[str, M.MetricValue] = {}
     for name in (config.gates.non_negotiable_floors or {}):
         vals = [
             r.metrics[name].value for r in runs
@@ -225,11 +246,18 @@ def _gates_for(candidate: Candidate, config: BakeoffConfig, runs: Sequence[RunSc
         ]
         if vals:
             mean = sum(float(v) for v in vals if v is not None) / len(vals)
-            floors[name] = M.MetricValue.measured(name, mean, detail={"runs": len(vals)})
+            non_negotiables[name] = M.MetricValue.measured(name, mean, detail={"runs": len(vals)})
         else:
-            floors[name] = M.MetricValue.unavailable(name, "not measured in any run")
-    return evaluate_gates(candidate, config, image_calls_ok=image_ok, image_calls_total=image_total,
-                          non_negotiable_metrics=floors, require_key=require_key)
+            reasons = sorted({
+                r.metrics[name].reason for r in runs
+                if name in r.metrics and r.metrics[name].status == "unavailable" and r.metrics[name].reason
+            })
+            non_negotiables[name] = M.MetricValue.unavailable(
+                name, "; ".join(reasons) or "not measured in any run")
+    imagery, _ = observations_for(candidate, evidence=evidence, run_calls_ok=image_ok,
+                                 run_calls_total=image_total)
+    return evaluate_gates(candidate, config, imagery=imagery,
+                          non_negotiable_metrics=non_negotiables, require_key=require_key)
 
 
 # ── the whole bake-off ────────────────────────────────────────────────────────────────────────────
@@ -241,6 +269,7 @@ def run_bakeoff(
     *,
     candidates: Sequence[str] | None = None,
     require_key: bool = True,
+    evidence: Mapping[str, ImageryEvidence] | None = None,
 ) -> BakeoffResult:
     """Run every declared candidate N times and produce the comparative verdict.
 
@@ -253,16 +282,25 @@ def run_bakeoff(
     on this run's config, and cluster labels in the labeled slice (see :mod:`.coref_channel`). Either one
     missing raises here, rather than after N extractions per candidate have been paid for and the verdict
     comes back INSUFFICIENT_CRITERIA.
+
+    ``evidence`` resolves through :func:`~eval.extraction.vlm_probe.resolve_evidence`, the same function
+    ``preflight`` uses: ``None`` reads the recorded artefact, an explicit mapping is taken as given. The two
+    entry points therefore judge the imagery gate on the same evidence by construction, which is what stops
+    a green preflight from being followed by ``NO_ELIGIBLE_CANDIDATE``.
     """
     coref_channel.require(inputs.config, config)
     gold = load_claim_gold(inputs.gold_path)
     coref_channel.require_gold_labels(gold, config)
+    # The typed negative gold rides in the same adapted file as the positive claims, so this is the path
+    # the caller already supplied — never a second input an operator has to remember.
+    negative = load_negative_gold(inputs.gold_path)
     oracle = load_sub_oracle(inputs.sub_oracle_path)
+    records = resolve_evidence(evidence)
 
     wanted = set(candidates) if candidates else None
     scores = [
-        run_candidate(cand, inputs, config, client_factory, gold=gold, oracle=oracle,
-                      require_key=require_key)
+        run_candidate(cand, inputs, config, client_factory, gold=gold, negative=negative, oracle=oracle,
+                      evidence=records, require_key=require_key)
         for cand in config.candidates
         if wanted is None or cand.id in wanted
     ]
@@ -286,17 +324,18 @@ def preflight(config: BakeoffConfig, *, require_key: bool = True,
     pinned to the model id it was recorded against. No record, or a record for a model id this candidate
     no longer names, reads UNKNOWN. That is the honest answer *and* a blocking one: a gate nobody ran is
     not a gate anybody passed, and UNKNOWN must never quietly become a pass.
+
+    Judged through exactly the functions the real run uses —
+    :func:`~eval.extraction.vlm_probe.resolve_evidence`, then
+    :func:`~eval.extraction.vlm_probe.observations_for`, then :func:`~eval.extraction.gates.evaluate_gates`.
+    Preflight is simply the run with zero image calls of its own, so a PASS printed here cannot turn into a
+    disqualification later on the same evidence.
     """
-    records = dict(evidence) if evidence is not None else load_evidence()
+    records = resolve_evidence(evidence)
     reports: list[GateReport] = []
     for cand in config.candidates:
-        record = evidence_for(cand, records)
-        reports.append(evaluate_gates(
-            cand, config,
-            image_calls_ok=record.calls_ok if record else 0,
-            image_calls_total=record.calls_total if record else 0,
-            require_key=require_key,
-        ))
+        imagery, _ = observations_for(cand, evidence=records)
+        reports.append(dry_gates(cand, config, imagery=imagery, require_key=require_key))
     return reports
 
 

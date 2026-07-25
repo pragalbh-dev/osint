@@ -34,6 +34,7 @@ import argparse
 import sys
 
 from . import coref_channel, secrets, vlm_probe
+from .gates import non_negotiable_gate_names
 from .policy import BakeoffConfig, load_bakeoff_config
 from .runner import preflight
 
@@ -62,8 +63,11 @@ def _print_coref_channel() -> None:
         print(f"coref channel: could not read the pipeline config ({type(exc).__name__}: {exc})\n")
         return
     channel = coref_channel.inspect(bundle)
-    state = "LIVE" if channel.measurable else "DORMANT"
-    print(f"coref channel: {state} — {channel.detail}\n")
+    state = "LIVE" if channel.measurable else f"UNAVAILABLE [{channel.cause}]"
+    print(f"coref channel: {state} — {channel.detail}")
+    if channel.remedy:
+        print(f"               remedy: {channel.remedy}")
+    print()
 
 
 def _cmd_preflight(args: argparse.Namespace) -> int:
@@ -88,7 +92,13 @@ def _cmd_preflight(args: argparse.Namespace) -> int:
     if not evidence:
         print("NB: no recorded imagery evidence was found, so the VLM gate reads UNKNOWN for everyone. "
               "Run `vlm-probe` to evidence it. A gate nobody ran is not a gate anybody passed.")
-    print(f"{blocked}/{len(reports)} candidate(s) cannot win as configured.")
+    deferred = non_negotiable_gate_names(config)
+    if deferred:
+        print("NB: these gates need measured numbers and are judged after the run, not here: "
+              + ", ".join(deferred) + ". They are declared non-negotiable, so an unmeasured one blocks a "
+              "winner — a candidate ELIGIBLE above still has them ahead of it.")
+    print(f"{blocked}/{len(reports)} candidate(s) cannot win as configured, on the gates judgeable "
+          "without spending anything.")
     return 0
 
 

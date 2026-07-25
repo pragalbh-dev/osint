@@ -19,6 +19,7 @@ Module map::
     recording.py  the instrumented client wrapper: raw payloads, latency, usage, call reliability
     surface.py    the comparison unit — a claim reduced to what is comparable across extractors
     gold.py       loaders + declared schemas for the labeled claim gold and the per-slice sub-oracle
+    negative_gold.py  the gold's typed NEGATIVE rows: precision exclusions + the fabrication line
     matcher.py    the alignment rule (its leniency IS the measurement) → precision / recall / F1
     metrics.py    every scored line; MetricValue makes "unavailable" un-fakeable as a number
     scorecard.py  per-run scores and their aggregation into series with mean / sd / rankability
@@ -35,11 +36,12 @@ from __future__ import annotations
 
 from .compare import NO_DIFFERENCE_PHRASE, Verdict, compare_metric, decide
 from .coref_channel import CorefChannel, CorefChannelDormant, with_channel_on
-from .gates import GateReport, GateResult, evaluate_gates
+from .gates import GateReport, GateResult, ImageryObservations, dry_gates, evaluate_gates
 from .gold import load_claim_gold, load_sub_oracle
 from .gpt_client import OpenAIExtractionClient
 from .matcher import MatchResult, match_claims
 from .metrics import NO_CLUSTERING, MetricValue
+from .negative_gold import NegativeGold, emitted_spans, load_negative_gold
 from .policy import BakeoffConfig, Candidate, MatchPolicy, load_bakeoff_config
 from .recording import RecordingExtractionClient
 from .render import render_markdown, to_json
@@ -47,7 +49,7 @@ from .runner import BakeoffInputs, BakeoffResult, preflight, run_bakeoff
 from .scorecard import CandidateScore, MetricSeries, RunScore
 from .secrets import key_names_present, load_env_file
 from .surface import SurfaceClaim, from_claim_record
-from .vlm_probe import ImageryEvidence, gate_from_evidence, probe_candidate
+from .vlm_probe import ImageryEvidence, gate_from_evidence, observations_for, probe_candidate
 
 __all__ = [
     "NO_CLUSTERING",
@@ -62,10 +64,12 @@ __all__ = [
     "GateReport",
     "GateResult",
     "ImageryEvidence",
+    "ImageryObservations",
     "MatchPolicy",
     "MatchResult",
     "MetricSeries",
     "MetricValue",
+    "NegativeGold",
     "OpenAIExtractionClient",
     "RecordingExtractionClient",
     "RunScore",
@@ -73,6 +77,8 @@ __all__ = [
     "Verdict",
     "compare_metric",
     "decide",
+    "dry_gates",
+    "emitted_spans",
     "evaluate_gates",
     "from_claim_record",
     "gate_from_evidence",
@@ -80,8 +86,10 @@ __all__ = [
     "load_bakeoff_config",
     "load_env_file",
     "load_claim_gold",
+    "load_negative_gold",
     "load_sub_oracle",
     "match_claims",
+    "observations_for",
     "preflight",
     "probe_candidate",
     "render_markdown",

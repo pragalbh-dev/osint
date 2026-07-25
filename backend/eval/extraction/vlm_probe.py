@@ -31,13 +31,13 @@ candidate, which is the minimum that can evidence the gate at all.
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .gates import GateResult, gate_vlm_imagery
+from .gates import GateResult, ImageryObservations, gate_vlm_imagery
 from .policy import Candidate
 from .recording import RecordingExtractionClient
 
@@ -141,7 +141,7 @@ def save_evidence(records: dict[str, ImageryEvidence], path: Path | str | None =
     return target
 
 
-def evidence_for(candidate: Candidate, records: dict[str, ImageryEvidence]) -> ImageryEvidence | None:
+def evidence_for(candidate: Candidate, records: Mapping[str, ImageryEvidence]) -> ImageryEvidence | None:
     """The record that may be honoured for this candidate, or ``None`` when absent or stale."""
     record = records.get(candidate.id)
     if record is None:
@@ -151,13 +151,61 @@ def evidence_for(candidate: Candidate, records: dict[str, ImageryEvidence]) -> I
     return record
 
 
-def gate_from_evidence(candidate: Candidate,
-                       records: dict[str, ImageryEvidence]) -> tuple[GateResult, ImageryEvidence | None]:
-    """The VLM gate judged on recorded evidence. Reuses the one gate function — no second rule."""
-    record = evidence_for(candidate, records)
-    ok = record.calls_ok if record else 0
-    total = record.calls_total if record else 0
-    return gate_vlm_imagery(candidate, image_calls_ok=ok, image_calls_total=total), record
+def resolve_evidence(
+    evidence: Mapping[str, ImageryEvidence] | None = None, path: Path | str | None = None,
+) -> dict[str, ImageryEvidence]:
+    """The **one** rule for "which recorded evidence are we judging on", shared by every caller.
+
+    ``None`` means "read the recorded artefact" (the default path, or ``path``); an explicit mapping —
+    including an empty one — is taken as given. Both ``preflight`` and ``run_bakeoff`` resolve through
+    here, which is what makes their default behaviour identical rather than merely similar: if one of them
+    read the file and the other silently defaulted to "nothing recorded", the two would disagree by
+    construction, which is the asymmetry Ruling 3 closed.
+    """
+    if evidence is not None:
+        return dict(evidence)
+    return load_evidence(path)
+
+
+def observations_for(
+    candidate: Candidate,
+    *,
+    evidence: Mapping[str, ImageryEvidence] | None = None,
+    evidence_path: Path | str | None = None,
+    run_calls_ok: int = 0,
+    run_calls_total: int = 0,
+) -> tuple[ImageryObservations, ImageryEvidence | None]:
+    """Every standalone-image observation for this candidate → the gate's single input.
+
+    Sums the honourable recorded evidence and this run's own image calls. **Staleness is preserved**: a
+    record whose ``model_id`` or ``probe_version`` no longer matches contributes nothing at all
+    (:func:`evidence_for` returns ``None``), so re-pinning a model or bumping the probe drops its gate back
+    to UNKNOWN rather than inheriting the previous model's pass. A run's own calls are first-hand evidence
+    *for the model actually being run*, so they legitimately stand in for a stale record — that is not
+    inheritance, it is a fresh observation.
+    """
+    record = evidence_for(candidate, resolve_evidence(evidence, evidence_path))
+    observations = ImageryObservations()
+    if record is not None:
+        observations = observations.plus(ImageryObservations(
+            calls_ok=record.calls_ok, calls_total=record.calls_total,
+            sources=(f"recorded probe {record.calls_ok}/{record.calls_total} on {record.image} "
+                     f"@{record.recorded_at}",),
+        ))
+    if run_calls_total or run_calls_ok:
+        observations = observations.plus(ImageryObservations(
+            calls_ok=run_calls_ok, calls_total=run_calls_total,
+            sources=(f"this run {run_calls_ok}/{run_calls_total}",),
+        ))
+    return observations, record
+
+
+def gate_from_evidence(
+    candidate: Candidate, records: Mapping[str, ImageryEvidence],
+) -> tuple[GateResult, ImageryEvidence | None]:
+    """The VLM gate judged on recorded evidence alone. Reuses the one gate function — no second rule."""
+    observations, record = observations_for(candidate, evidence=records)
+    return gate_vlm_imagery(candidate, observations), record
 
 
 # ── running the probe ─────────────────────────────────────────────────────────────────────────────
@@ -230,6 +278,8 @@ __all__ = [
     "evidence_for",
     "gate_from_evidence",
     "load_evidence",
+    "observations_for",
     "probe_candidate",
+    "resolve_evidence",
     "save_evidence",
 ]

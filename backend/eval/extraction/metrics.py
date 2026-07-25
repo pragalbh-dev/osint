@@ -10,7 +10,15 @@ and hiding one.
 
 The metrics, and what each really measures:
 
-* **surface P/R/F1** — the matcher's alignment (see :mod:`matcher`; its leniency is the measurement).
+* **surface P/R/F1** — the matcher's alignment (see :mod:`matcher`; its leniency is the measurement). The
+  precision denominator excludes the spans the gold declares NEUTRAL — see :mod:`negative_gold`; leaving
+  them in charges a candidate for reading the document correctly, and does so in proportion to how much of
+  it the candidate read.
+* **trap avoidance** — the fabrication line at the places the gold knows the answer: did the model stay
+  silent where the document asserts nothing? Declared a *veto* rather than a weight, because a
+  non-negotiable inside a composite is only a heavy weight, and any weight is a price.
+* **identity over-read** — did the model assert ``same-as``/``distinct-from`` over a pair the page
+  explicitly refuses to resolve? A count (N=2), never a rate, never ranked on.
 * **citation faithfulness** — does the claim's cited span exist, sit in bounds, and lexically contain the
   claim's own surfaces? A *proxy* for entailment, and named as one: it asks "is the cited text about
   this?", not "does the cited text entail this". An optional judge seam is provided for the real thing.
@@ -41,9 +49,11 @@ from typing import Any, Literal
 from rapidfuzz import fuzz
 
 from chanakya.schemas import GraphView
+from eval.gold.adapter import EmittedSpan
 
 from .gold import SubOracle
 from .matcher import MatchResult, similarity
+from .negative_gold import NegativeGold
 from .policy import MatchPolicy, Pricing
 from .recording import CallRecord
 from .surface import DISCRIMINATOR_SLOTS, SurfaceClaim, normalize_surface
@@ -56,15 +66,19 @@ Direction = Literal["higher_is_better", "lower_is_better"]
 #:
 #: RK-COREF (S3) has landed, so the *substrate* now exists: extraction pass 2 offers the model a real
 #: mention-cluster field and stamps each accepted cluster's referent atom onto ``ClaimRecord``. What this
-#: string now means is therefore narrower and more interesting than it used to — either the pass was
-#: dormant on this run's config (``eval.extraction.coref_channel`` checks that up front, before any
+#: string now means is therefore narrower and more interesting than it used to — either the channel was
+#: unavailable on this run's config (``eval.extraction.coref_channel`` checks that up front, before any
 #: budget is spent, precisely so this cannot be the explanation), or the pass ran and every candidate
 #: declined to bind anything. Both are "not measured"; neither is a zero, and neither is a model's score.
+#:
+#: Deliberately does NOT name a config flag. The gate on pass 2 is being deleted, and a reason string that
+#: sends an operator to a key that no longer exists is worse than one that names the check which will still
+#: be there — ``coref_channel.inspect`` reports the cause, whatever the cause has become.
 NO_CLUSTERING = (
     "NO CLUSTERING: not one claim carries a referent_id, so there is no system clustering to score. "
-    "Either extraction pass 2 was dormant on this run's config (check "
-    "resolution.earned_identity.enabled — preflight reports it) or every candidate declined to bind any "
-    "mention. Not a failure of any candidate and not a zero — simply not measured."
+    "Either the coreference channel was unavailable on this run's config (eval.extraction.coref_channel "
+    "reports the cause, and preflight prints it) or every candidate declined to bind any mention. Not a "
+    "failure of any candidate and not a zero — simply not measured."
 )
 
 
@@ -116,11 +130,20 @@ def _rate(numerator: int, denominator: int, name: str, reason: str, **kw: Any) -
 # ── surface P / R / F1 ────────────────────────────────────────────────────────────────────────────
 
 def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
-    """Precision / recall / F1 from the alignment. Degenerate slices report unavailable, not 0.0."""
+    """Precision / recall / F1 from the alignment. Degenerate slices report unavailable, not 0.0.
+
+    The precision denominator is whatever :attr:`~eval.extraction.matcher.MatchResult.precision_denominator`
+    says it is, so the gold's neutral-span exclusions are already inside the number and the ``detail``
+    names every key that left the denominator. There is deliberately no second, "raw" precision metric:
+    two precision lines on one scorecard is an invitation to quote whichever one flatters, and the honest
+    one is the one that does not charge a model for reading the document correctly.
+    """
     detail = {
         "matched": len(match.pairs),
         "gold_total": match.gold_total,
         "extracted_total": match.extracted_total,
+        "precision_denominator": match.precision_denominator,
+        "precision_excluded_as_neutral": list(match.precision_exclusions),
         "missed_gold": [g.key for g in match.missed_gold],
         "unmatched_extracted": [e.key for e in match.unmatched_extracted],
         "rejections": dict(match.rejections),
@@ -129,12 +152,15 @@ def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
         reason = "the gold slice is empty — nothing to score against"
         return {n: MetricValue.unavailable(n, reason, detail=detail)
                 for n in ("surface_precision", "surface_recall", "surface_f1")}
-    if match.extracted_total == 0:
-        # Extracting nothing is a real, scoreable outcome: recall 0, F1 0. Precision is genuinely 0/0.
+    if match.precision_denominator == 0:
+        # Extracting nothing — or emitting only spans the gold declares neutral — is a real, scoreable
+        # outcome for recall (0) and F1 (0). Precision is genuinely 0/0.
+        why = ("the run extracted no claims" if match.extracted_total == 0 else
+               f"all {match.extracted_total} emitted claim(s) sit on spans the gold declares NEUTRAL for "
+               "precision")
         return {
             "surface_precision": MetricValue.unavailable(
-                "surface_precision", "the run extracted no claims — precision is 0/0, undefined",
-                detail=detail),
+                "surface_precision", f"{why} — precision is 0/0, undefined", detail=detail),
             "surface_recall": MetricValue.measured("surface_recall", 0.0, detail=detail),
             "surface_f1": MetricValue.measured("surface_f1", 0.0, detail=detail),
         }
@@ -143,6 +169,66 @@ def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
         "surface_recall": MetricValue.measured("surface_recall", match.recall, detail=detail),
         "surface_f1": MetricValue.measured("surface_f1", match.f1, detail=detail),
     }
+
+
+# ── the negative gold: the fabrication line, and the identity over-read ───────────────────────────
+
+def trap_avoidance(negative: NegativeGold, emitted: Sequence[EmittedSpan]) -> MetricValue:
+    """Did the candidate stay silent at the spans that assert nothing? **The fabrication line.**
+
+    This is the project's one non-negotiable expressed as a metric, at the places where the gold knows the
+    answer: a ``not_a_claim`` span is a modal about the future, meta-commentary, a refusal or document
+    noise, and a claim emitted over one has been invented.
+
+    It is deliberately **not** weighted into the composite. Inside a composite a non-negotiable is just a
+    heavy weight, and any weight is a price a good-enough model can pay; it is declared in
+    ``gates.non_negotiable_floors`` instead, which makes it a veto (see :func:`eval.extraction.compare.decide`).
+
+    Two ways this reports ``unavailable`` rather than a flattering 1.0, both of which block a winner
+    because the metric is a declared non-negotiable: the slice declares no traps at all, and the emitted
+    claims share no document with the labeled negative rows (a join failure whose "no hits" is
+    indistinguishable from a clean run).
+    """
+    alignment = negative.alignment(emitted)
+    if not alignment.usable:
+        return MetricValue.unavailable("trap_avoidance", alignment.reason)
+    result = negative.traps(emitted)
+    rate = result.get("rate")
+    detail = {k: v for k, v in result.items() if k != "rate"}
+    detail["shared_files"] = list(alignment.shared_files)
+    if rate is None:
+        return MetricValue.unavailable(
+            "trap_avoidance",
+            "the labeled slice declares no `not_a_claim` traps, so the fabrication line has no substrate "
+            "here — not a candidate's score and not a zero",
+            detail=detail,
+        )
+    return MetricValue.measured("trap_avoidance", float(rate), detail=detail)
+
+
+def identity_over_read(negative: NegativeGold, emitted: Sequence[EmittedSpan]) -> MetricValue:
+    """How many genuinely-unresolved pairs did the candidate assert an identity over? (N=2 — a COUNT.)
+
+    Reported as a ``count``, which is the mechanism that keeps it out of the weighted composite
+    (``composite_series`` admits only 0..1 rates). That is the gold's own reporting rule honoured in the
+    type system rather than in a comment: "N=2 — report the raw count, never a two-decimal rate, and never
+    rank on it."
+    """
+    alignment = negative.alignment(emitted)
+    if not alignment.usable:
+        return MetricValue.unavailable("identity_over_read", alignment.reason,
+                                       unit="count", direction="lower_is_better")
+    result = negative.identity_over_reads(emitted)
+    if not result.get("pairs"):
+        return MetricValue.unavailable(
+            "identity_over_read",
+            "the labeled slice declares no `ambiguous` pairs, so there is no identity over-read to count",
+            unit="count", direction="lower_is_better",
+        )
+    return MetricValue.measured(
+        "identity_over_read", float(result["over_read"]), unit="count", direction="lower_is_better",
+        detail={k: v for k, v in result.items() if k != "rate"},
+    )
 
 
 # ── grounding: citation faithfulness + extract-only-stated ────────────────────────────────────────
@@ -587,9 +673,11 @@ __all__ = [
     "discriminator_metrics",
     "extract_only_stated",
     "graph_recall",
+    "identity_over_read",
     "kind_tagging",
     "latency_metric",
     "structured_output_reliability",
     "surface_metrics",
     "tally_discriminators",
+    "trap_avoidance",
 ]

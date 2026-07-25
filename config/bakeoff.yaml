@@ -45,11 +45,28 @@ gates:
   # `backend/eval` cannot be the producer that freezes the seed bundles, so it cannot restore
   # KEYLESS==LIVE by construction.
   production_client_package: "chanakya.ingest"
-  # Optional hard floors on the two non-negotiable criteria. `null` = not enforced (and the report says
-  # so). Setting a number here is a human judgement call, not something the harness should invent.
+  # The NON-NEGOTIABLE criteria. Naming a metric here does two things, and neither of them is a weight:
+  #
+  #   1. it must be MEASURED. A declared non-negotiable that no run scored reads as gate UNKNOWN, and
+  #      UNKNOWN blocks — otherwise a non-negotiable is traded away simply by failing to measure it.
+  #   2. it may not be traded against score. Before the weighted composite may name a winner, that winner
+  #      must not be MATERIALLY worse than any rival on one of these — "materially" being the same margin
+  #      rule used everywhere else, so no new threshold is invented (see compare.decide).
+  #
+  # The `null` is the optional ABSOLUTE floor, and it stays null: picking that number is a human judgement
+  # about how much fabrication is tolerable, and a scorer that invents it has decided the question it was
+  # built to measure. The relative veto needs no such number.
+  #
+  # `trap_avoidance` is declared HERE and deliberately carries NO weight below. It is the project's one
+  # non-negotiable expressed as a metric — did the candidate assert something the document does not say, at
+  # the places the labeled slice knows the answer — and inside a composite it would be just a heavy weight.
+  # Any weight is a price a good-enough model can pay: a model far enough ahead on F1 could buy past a
+  # worse fabrication record, then re-extract and re-freeze the graded oracle, writing ungrounded claims
+  # into the evidence layer wearing valid citations, which nothing downstream catches.
   non_negotiable_floors:
     citation_faithfulness: null
     extract_only_stated: null
+    trap_avoidance: null
 
 # ── Criterion weights (plan §8: "weighted to what the replumb depends on", highest first) ──────────
 # Only metrics whose unit is a rate (0..1) enter the weighted composite. Cost and latency are REPORTED
@@ -73,6 +90,11 @@ weights:
   graph_recall: 3.0
   determinism: 2.0
   kind_tagging: 0.5             # low — it self-corrects (D-13.5)
+  # NOT LISTED, ON PURPOSE:
+  #   trap_avoidance     — a veto, not a weight. See gates.non_negotiable_floors above.
+  #   identity_over_read — N=2. The gold's own reporting rule is "report the raw count, never a
+  #                        two-decimal rate, and never rank on it", so it is emitted as a `count`, which
+  #                        the composite refuses structurally (only 0..1 rates are composited).
 
 # ── Required criteria: no winner may be named while any of these is UNMEASURED ─────────────────────
 # A weight and a requirement are different things. A weighted metric that cannot be scored is excluded

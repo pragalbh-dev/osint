@@ -111,6 +111,36 @@ def write_claim_gold(path: Path, claims: list[dict[str, Any]]) -> Path:
     return path
 
 
+#: The four typed negative classes, empty — the shape ``load_negative_gold`` requires to be complete. A
+#: partial block raises, because a silently-missing class stops penalising anything.
+EMPTY_NEGATIVE: dict[str, list[dict[str, Any]]] = {
+    "not_a_claim": [], "anti_coref": [], "ambiguous": [], "unmodelled": [],
+}
+
+
+def negative_row(gold_id: str, span: tuple[int, int], *, file: str = "doc1.txt") -> dict[str, Any]:
+    """One negative-gold row in the adapter's output shape (what the harness consumes)."""
+    return {"gold_id": gold_id, "source_id": "doc1", "class": "", "reason": "fixture",
+            "doc_ref": {"file": file, "span": [span[0], span[1]]}}
+
+
+def write_adapted_gold(path: Path, claims: list[dict[str, Any]],
+                       negative: dict[str, list[dict[str, Any]]] | None = None) -> Path:
+    """The **adapted** claim gold: positive claims plus the four typed negative buckets.
+
+    This is the shape ``eval.gold.adapter`` emits and the shape the runner reads for both halves — the
+    positive claims through ``load_claim_gold`` and the typed negatives through ``load_negative_gold`` — so
+    a fixture that carries only ``claims`` is a slice with no fabrication line, not a slice with a clean one.
+    """
+    buckets = {**EMPTY_NEGATIVE, **(negative or {})}
+    path.write_text(json.dumps({
+        "schema_version": "rk-bakeoff-claim-gold/1.0",
+        "claims": claims,
+        "negative_gold": {name: {"rows": rows} for name, rows in buckets.items()},
+    }, indent=2), encoding="utf-8")
+    return path
+
+
 def write_sub_oracle(path: Path, nodes: list[dict[str, Any]], edges: list[dict[str, Any]],
                      docs: list[str] | None = None) -> Path:
     path.write_text(json.dumps({

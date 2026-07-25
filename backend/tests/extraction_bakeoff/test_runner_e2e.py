@@ -18,7 +18,14 @@ from chanakya.ingest import adapters
 from chanakya.ingest.lane import DocInput
 from eval.extraction.runner import BakeoffInputs, preflight, run_bakeoff
 
-from .fixtures import RoutedScriptedClient, bakeoff_config, write_claim_gold, write_sub_oracle
+from .fixtures import (
+    RoutedScriptedClient,
+    bakeoff_config,
+    negative_row,
+    write_adapted_gold,
+    write_claim_gold,
+    write_sub_oracle,
+)
 
 DOC_TEXT = (
     "North Ridge Foundry supplies the Type-7 Coupler to the Eastvale Pumping Station.\n"
@@ -170,6 +177,71 @@ def test_coref_binding_on_a_dormant_channel_is_unmeasured_never_a_zero(inputs) -
         series = score.series["coref_binding"]
         assert series.status == "unavailable" and series.values == ()
         assert any("coref_cluster labels" in r or r == NO_CLUSTERING for r in series.reasons)
+
+
+# ── the negative gold, end to end through the real pipeline ───────────────────────────────────────
+
+@pytest.fixture
+def inputs_with_traps(tmp_path, pipeline_config) -> BakeoffInputs:
+    """The same slice, but the gold declares the opening sentence's span a ``not_a_claim`` TRAP.
+
+    The weak extractor invents a component and cites that sentence for it; the strong one emits only claims
+    that pair with positive gold. A matched claim is exempt, so this separates the two on the fabrication line
+    using the real extraction path rather than a hand-built claim set.
+    """
+    gold = write_adapted_gold(
+        tmp_path / "gold_traps.json",
+        [{"gold_id": "g1", "source_id": "doc1", "form": "entity", "entity_type": "manufacturer",
+          "name": "North Ridge Foundry", "doc_ref": {"file": "doc1.txt", "span": [0, 47]}},
+         {"gold_id": "g2", "source_id": "doc1", "form": "entity", "entity_type": "component",
+          "name": "Type-7 Coupler", "doc_ref": {"file": "doc1.txt", "span": [29, 47]}},
+         {"gold_id": "g3", "source_id": "doc1", "form": "triple", "subject": "North Ridge Foundry",
+          "predicate": "supplies-component", "object": "Type-7 Coupler",
+          "doc_ref": {"file": "doc1.txt", "span": [0, 47]}}],
+        {"not_a_claim": [negative_row("t1", (0, 47))]},
+    )
+    oracle = write_sub_oracle(
+        tmp_path / "oracle_traps.json",
+        [{"id": "n1", "type": "manufacturer", "name": "North Ridge Foundry"}], [])
+    docs = [DocInput(raw=DOC_TEXT, source_id="doc1", source_type="curated-register", file="doc1.txt",
+                     format_hint="prose_claim")]
+    return BakeoffInputs(docs=docs, config=pipeline_config, gold_path=gold, sub_oracle_path=oracle,
+                         out_dir=tmp_path / "bundles_traps", concurrency=2)
+
+
+def test_the_fabrication_line_is_measured_end_to_end_and_separates_the_two(inputs_with_traps) -> None:
+    config = bakeoff_config()
+    result = run_bakeoff(inputs_with_traps, config,
+                         _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}),
+                         require_key=False, evidence={})
+    alpha = next(s for s in result.scores if s.candidate_id == "alpha")
+    beta = next(s for s in result.scores if s.candidate_id == "beta")
+
+    assert alpha.series["trap_avoidance"].mean == pytest.approx(1.0)
+    assert beta.series["trap_avoidance"].mean == pytest.approx(0.0)
+    hit = beta.runs[0].metrics["trap_avoidance"].detail["hits_by_trap"]
+    assert "t1" in hit
+
+
+def test_the_fabrication_line_never_enters_the_weighted_composite(inputs_with_traps) -> None:
+    """It is a veto. A measured trap line that quietly joined the composite would be tradeable again."""
+    config = bakeoff_config()
+    result = run_bakeoff(inputs_with_traps, config,
+                         _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}),
+                         require_key=False, evidence={})
+    assert config.weight_for("trap_avoidance") == 0.0
+    assert "trap_avoidance" not in result.verdict.composite_weights
+
+
+def test_a_slice_with_no_typed_negatives_reports_the_trap_line_unmeasured(inputs) -> None:
+    """The default fixture gold carries no ``negative_gold`` block, and that must read as NOT MEASURED for
+    everyone — never a flattering 1.0 that would look like three clean candidates."""
+    config = bakeoff_config()
+    result = run_bakeoff(inputs, config, _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}),
+                         require_key=False, evidence={})
+    for score in result.scores:
+        series = score.series["trap_avoidance"]
+        assert series.status == "unavailable" and series.values == ()
 
 
 # ── the anti-fabrication path: identical candidates must not be ranked ─────────────────────────────
