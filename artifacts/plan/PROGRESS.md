@@ -31,7 +31,7 @@ the section below + `DECISIONS.md`._
 |----|---------|------|--------|----|--------------------|---------------|
 | RK-SPIKE | S0 — close micro-decisions + prototype characterize-and-cluster + claim-gold slice | 0 | **merged** (design branch) | — | — | 3525427 |
 | RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
-| RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | not-started | — | RK-SPIKE | — |
+| RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | **merged** (design branch) | — | RK-SPIKE | 114a0f6 |
 | RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | not-started | — | RK-ATOMS | — |
 | RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | not-started | — | RK-LAYER | — |
 | RK-NAMECUT | S4 — cut the name-key + re-anchor decisions/config + golden regen | 4 | not-started | — | RK-COREF | — |
@@ -576,3 +576,60 @@ orchestrator's own requirements (→ C1), the implementer found that D-13.20 re-
 close (→ C7/C8), and the adversarial review found **three bugs in the orchestrator's own matcher** — two of
 which made the reported score wrong — plus that **A1/A5 encoded the forbidden id ordering** about to be frozen
 at S1.
+
+## Handoff — RK-ATOMS (S1), 2026-07-25
+
+**Shipped.** The claim atom is named and frozen as the canonical **post-dedup** `claim_id` (no new id minted).
+`make_referent_id`/`is_referent_id` sit beside the claim pair under a disjoint `ref:` prefix, sharing one
+normalisation rule — and `make_referent_id` is **invoked nowhere** (verified: only exports and docstrings).
+`ClaimRecord.referent_id` is optional/`None`. Dedup carries the referent through **both** id-reassignment paths.
+A7 landed on both sides of the seam: a shared mention-context block on the entity-yielding mention schemas, and
+`TypeDef.attrs` restructured to structured entries **accepting both YAML forms**, so no config file changed.
+G17's ingest-only-minting clause is an input-independent static scan with non-vacuity tests both ways.
+
+**Verified at the integration point** (plan §6 step 6): **1094 passed, 7 skipped, 2 xfailed** = the recorded
+baseline (1026/7/1) **plus exactly** the 63 test-hand tests + 5 impl-gate tests + 1 documented xfail ⇒ **no
+pre-existing test moved**. **Zero behavioural change proven on the real corpus, not only the golden fixture** —
+view hash `22d668a3…dac3a9` (160 nodes / 73 edges) identical before and after; golden md5
+`bb6f16a5…71a601` unchanged and never edited.
+
+**Decisions** (principle → choice → alternative rejected). *Identity is earned at rebuild, never assumed at
+ingest (D-13.18)* → **the referent joins `_claim_signature`**, so a differing referent **blocks** the fold and
+the conflicting-fold case is dissolved rather than adjudicated → **rejects** "one referent wins" (verified
+**input-order dependent**: `min()` returns the first minimal element and lane phase 1 is a concurrent fan-out —
+it would inherit nondeterminism into the identity substrate against G2, and silently drop evidence) and
+**rejects** "keep both on one claim" (makes the per-mention grain ambiguous exactly where S4 keys identity).
+Free at S1 because every referent is `None`. **Both hands reached this independently**, and the implementer
+additionally checked it is genuinely inert rather than inferring it from the golden — the golden path never runs
+dedup at all, so a byte-identical view is corroboration, not proof; a randomised sweep found zero order flips.
+*A gate that cannot fail is a gate that lies* → the id-defining module is exempt from the mint-site rule
+(a constructor composing a sibling constructor is not a mint) but the exemption is **earned**: a new test proves
+that module has no store access, and a planted mint elsewhere still fails.
+
+**Deviations.** None on scope. Two residual defects recorded in-code rather than fixed (both out of S1 scope):
+the dedup **representative tie-break** is pre-existing latent nondeterminism (any non-signature field differing
+between tied members leaks input order — the docstring's order-independence claim was corrected in place), and
+**claim-id references orphaned by a fold** (filed as a non-strict `xfail`, not smuggled into this stage).
+
+**Follow-ups for S2/S3 — four spec gaps the implementer found by building it.** (1) **A1's "`ClaimRecord`/
+payloads" has no answer for a relationship claim** — a referent is per-mention but a `Triple` names two ends; the
+field was restricted to entity-form claims with endpoints routed through existing mention refs, and **S3 must
+revisit if it needs per-endpoint referents**. (2) **Sharpest: A7 forbids burying discriminators in the untyped
+`attrs` bag, but there is no typed carrier on `ClaimRecord`** — as scoped, a filled discriminator either dies at
+the transform boundary or lands in the very bag A7 forbids. The reading that makes S1 coherent is that the
+structured *ontology* entry is the typing; that is an **interpretation** and **S3 must decide explicitly**.
+(3) **`TypeDef.attrs` has no production consumer today** — S2 is its first, so do not assume an accessor exists
+to extend. (4) `python3 -m pytest -q` cannot print the baseline it promises (`addopts` already carries `-q`, so
+the flag makes it `-qq` and suppresses the summary) — later stages should record `python3 -m pytest`.
+
+**Gate fixtures.** `tests/gates/test_g17_atom_mint.py` (test hand, 9 tests incl. the earned-exemption proof) and
+`tests/gates/test_g17_atoms_minted_at_ingest.py` (implementer, 5). Both survived the merge — different
+filenames, no silent overwrite; I checked, because a merge that quietly drops one hand's gate would look like a
+pass.
+
+**Three-hands separation, evidenced.** Implementer on `s1/rk-impl` stayed corpus-blind (never read `corpus/**`,
+the answer key, or `tmp/spike-rk/gold/**`) and never opened the test branch; test author on `s1/rk-test` wrote
+all 63 tests from the spec alone, proved **25 of them failed against unmodified code** before finishing, and
+never opened the impl branch or its notes; the orchestrator merged test-into-impl and ran the suite. **The
+separation paid twice:** the test hand found the fold's input-order nondeterminism (which changed the design),
+and its independent G17 gate flagged the constructor composition the implementer's own gate had waved through.
