@@ -1,0 +1,1364 @@
+{
+  "schema_version": "rk-s2-abstract-shapes/1.0",
+  "purpose": "Abstracted structural fixtures for RK-LAYER (S2): layer tags, the straddle split, endpoint materialization, the presence and formation citizens, the count rule, the no-silent-pick clause, site_type de-confliction, the supersede guard, and two ontology expressiveness gaps. Authored by an independent data hand that writes neither the implementation nor the tests.",
+  "constraints": [
+    "All entities are invented. No real designations, place names, manufacturers, document ids or source ids.",
+    "No thresholds, scores or config values. Outcomes are prose; the implementer picks mechanisms and numbers, the test author asserts them independently.",
+    "Every fixture carries both a required outcome and the tempting-but-wrong outcome it must not produce.",
+    "Where a source does not state something, the fixture value is absent or unknown - never a plausible guess."
+  ],
+  "preamble": "**Read this file, not the corpus.** These fixtures exist so that the type/instance split, the presence and\nformation citizens, and basing-as-a-derived-edge can be built and tested against the *structural difficulty*\nof the real problem without anyone seeing the real data - because seeing it biases the implementer toward\ntuning to it, and because for most of these shapes the real data contains nothing to see.\n\nEvery entity here is invented: a fictional regional water-and-power-infrastructure domain, continuous with\nthe vocabulary of the earlier `gold/abstract-shapes.json` set so the two can be read together. There are no\nreal designations, place names, manufacturers, document ids or source ids anywhere in this file.\n\nWhat is preserved from the real problem is what matters for this stage:\n\n- which facts in a mention are **design-level** (shared by every operator) and which are **instance-level**\n  (operator-scoped), and how the two arrive lumped together;\n- which instance **citizen** the evidence earns - a *presence* (equipment observed at a place) or a\n  *formation* (a designation-bearing organizational body), and what makes the difference;\n- how many mentions and how many **publishers** there are, and which reports are derivative of which;\n- which discriminators - operator, geography, designation, time - are **present** vs **absent**, and which\n  are *stated absent* (a much stronger fact than missing);\n- source grades and dates, including the cases where the later source is the weaker one;\n- where a **sourced figure** exists and where a count would have to be invented to produce one.\n\n**No thresholds, scores, band names as values, or config keys appear anywhere in this file, by design.**\nEach fixture states its required *outcome* in prose and, next to it, the **tempting-but-wrong** outcome -\nbecause a fixture that only describes success cannot catch optimism. Choose the mechanism and the numbers on\ngeneral principle; the test author asserts them independently.\n\n**Deviation from the earlier set's schema, deliberately:** fixtures here carry a `documents` **list** rather\nthan a single `text`. Most of this stage's difficulty is inherently multi-document - a derived basing has two\npremises in two documents, a supersede has two reports, a count trap has five - and collapsing them into one\ndocument would destroy the very thing being tested (that several reports are not several launchers, and that\none publisher is not two sources).\n",
+  "cross_fixture_notes": "**Four things only become visible across these fixtures, and they are deliberate.**\n\n1. **F3c and F3d are the same assertion at opposite grades, and F3d post-dates F3c at a different site.** Run\n   together they are the whole of \"stated is not trusted\" plus a live supersede candidate: an anonymous\n   post that, if treated as a stated basing on equal footing, retires a good-grade establishment bulletin.\n   Neither fixture alone shows that.\n2. **F5a's merge temptation is F7a's precondition.** If the two candidate sections in F5a are fused because\n   they share an operator, a design and a site neighbourhood, they acquire one basing instance - and every\n   harm in F7a becomes reachable from a shape that contains no relocation at all. The two shapes are one\n   failure chain, which is why an order-of-battle undercount is not merely hygiene.\n3. **F6a, F6b and F6c must be satisfied by ONE declaration, and they pull in three directions.** F6a needs\n   differing site kinds to de-conflict; F6b needs absence not to; F6c needs the mapping to survive an\n   open-ended free-text vocabulary. Any two of the three are easy to satisfy alone. A rule that reads the\n   stated string literally passes F6a and fails the other two silently.\n4. **F7a forbids what F7b requires.** The distinguishing fact is not the strength of the newer assertion -\n   it is the same in both - but whether the identity of the subject was earned on a designation or assumed\n   from proximity. A gate that keys on assertion credibility rather than on subject identity will get both\n   fixtures wrong in opposite directions and look consistent doing it.\n\n**And one property the whole set shares:** where a discriminator is not stated, it is unknown - never\ninferred from context, never treated as a conflict, and never allowed to license a convenient outcome.\nAbsence must leave a citizen under-individuated and flagged, not de-conflicted, not merged, and not\nback-filled.\n",
+  "counts": {
+    "shapes": 8,
+    "fixtures": 18,
+    "documents": 27,
+    "total_tempting_but_wrong": 71,
+    "total_negative_gold": 33
+  },
+  "fixtures": [
+    {
+      "shape": 1,
+      "shape_id": "F1a-straddle-blatant",
+      "shape_title": "A straddling mention (design facts and instance facts in one mention)",
+      "scope_items": [
+        "2 (straddle split)",
+        "1 (per-attribute layer)"
+      ],
+      "refs": [
+        "spine/13 §5.1-5.2",
+        "A2/A4",
+        "acceptance: a straddling mention splits into linked design + instance nodes"
+      ],
+      "purpose": "One mention carrying both design-level and instance-level facts, emitted by the extractor as a single design-typed node. The split trigger is present four times over.",
+      "why_hard": "Nothing in the sentence is wrong, mis-worded or hedged. The source is a good-grade primary and every fact in it is true. The only defect is that the extractor put operator-scoped facts on a node that every operator shares — so there is no textual signal to catch, only a layer mismatch.",
+      "documents": [
+        {
+          "doc_label": "press-note-A",
+          "source_grade": "B",
+          "source_bias": "operator of the asset (interested party)",
+          "doc_date": "2025-03-12",
+          "doc_kind": "operator works bulletin",
+          "text": "NORTHERN GRID WORKS - WORKS BULLETIN 14/2025\nDated: 12 March 2025\n\nTRANSFER PLANT AT SITE K-4\n\nThe High-Volume Transfer Set TL-40, a Meridian Works Corporation design rated at a nominal\nthroughput of 140 units and carrying four canisters per skid, is now in service with Northern\nGrid Works. Six skids of the type were on the hardstand at Site K-4 when the works party\nvisited on 12 March 2025.\n\nThe set's control cabinet is the RC-118 pattern, common to all TL-40 installations regardless\nof operator."
+        }
+      ],
+      "extractor_emitted": "One node, entity type = the design (TL-40), carrying: nominal throughput, canisters per skid, maker reference, control-cabinet pattern, operator, site reference, count, observation date.",
+      "facts": [
+        {
+          "fact": "nominal throughput 140 units",
+          "routing": "design",
+          "why": "unchanged if another operator fielded the same set"
+        },
+        {
+          "fact": "four canisters per skid",
+          "routing": "design",
+          "why": "a property of the design"
+        },
+        {
+          "fact": "maker is Meridian Works Corporation",
+          "routing": "design",
+          "why": "one maker for the design, whoever fields it"
+        },
+        {
+          "fact": "control cabinet is the RC-118 pattern",
+          "routing": "design",
+          "why": "the source itself states it is common to all installations regardless of operator - the routing test is checkable in-source here"
+        },
+        {
+          "fact": "operator is Northern Grid Works",
+          "routing": "instance",
+          "why": "the fact is exactly an operator scoping"
+        },
+        {
+          "fact": "six skids were on the hardstand at Site K-4",
+          "routing": "instance",
+          "why": "a located, dated, counted individual"
+        },
+        {
+          "fact": "observed on 12 March 2025",
+          "routing": "instance",
+          "why": "a design has no observation date"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED ('Northern Grid Works')",
+        "geography": "STATED as a named site ('Site K-4'), no coordinates",
+        "designation": "ABSENT - no body is named at all",
+        "time": "STATED exactly (2025-03-12)"
+      },
+      "expected_outcome": "The one emitted node must become two linked nodes: the shared design, carrying only the four design facts, and one instance-layer citizen carrying operator, site, count and date. The instance-layer attributes must not remain on the design node, and the design node must stay the same node that any other operator's instance also links to - splitting must not fork the design. Because the source names no body, the instance that is created is a presence, not a formation, and the absence of a designation must be visible as an unfilled slot rather than as silence. Every fact on both nodes must still cite this one document.",
+      "tempting_but_wrong": [
+        "Keep one node and call it 'TL-40 (Northern Grid Works)' - a design node with an operator attribute. The graph then has one node per operator per design, so the shared design fragments and nothing links Northern Grid Works' set to the Water Authority's set of the same design.",
+        "Split, but mint a second DESIGN node for the operator's variant. The straddle is fixed and the shared design is destroyed in the same motion.",
+        "Move everything onto the instance and leave the design node empty, so the maker and throughput now belong to one operator's holding and have to be re-asserted for the next operator.",
+        "Mint a formation because 'six skids ... at Site K-4' reads like an establishment. No body is named."
+      ],
+      "negative_gold": [
+        "The works-party visit is context, not a claim about the plant.",
+        "'in keeping with' style framing carries no fact."
+      ],
+      "corpus_status": "EXERCISABLE in kind. The corpus routinely lumps design and instance facts on one mention (a sighting document states family, designators and a site in one breath). It does not supply a case this clean, and no corpus document states the routing test in its own voice the way this fixture does ('regardless of operator')."
+    },
+    {
+      "shape": 1,
+      "shape_id": "F1b-straddle-subtle-single-attribute",
+      "shape_title": "A straddling mention (design facts and instance facts in one mention)",
+      "scope_items": [
+        "2 (straddle split)",
+        "1 (per-attribute layer)"
+      ],
+      "refs": [
+        "spine/13 §5.1",
+        "D-13.3 dual-attribute split"
+      ],
+      "purpose": "The subtle straddle: a record that is legitimately design-level throughout except for ONE misplaced instance-layer attribute - and no site and no date anywhere.",
+      "why_hard": "Seven of eight lines belong on the design node, so any heuristic that asks 'does this mention look like a design or an instance?' answers 'design' and keeps the operator line. The second difficulty is what the split produces: with no site and no time, there is nothing to make a sited presence out of, so a split that mints one invents a sighting.",
+      "documents": [
+        {
+          "doc_label": "spec-sheet-B",
+          "source_grade": "C",
+          "source_bias": "manufacturer's own product literature",
+          "doc_date": "2024-09",
+          "doc_kind": "manufacturer data sheet",
+          "text": "MERIDIAN WORKS CORPORATION - PRODUCT DATA SHEET\nTL-40 HIGH-VOLUME TRANSFER SET (Rev. 3, September 2024)\n\nFamily:                   Vanguard\nNominal throughput:       140 units\nCanisters per skid:       4\nControl cabinet:          RC-118\nSensor fit:               active telemetry\nExport designation:       V-40\nFleet operator of record: Water Authority"
+        }
+      ],
+      "extractor_emitted": "One design-typed node carrying: family, nominal throughput, canisters per skid, control cabinet, sensor fit, export designation, and 'fleet operator of record'.",
+      "facts": [
+        {
+          "fact": "family Vanguard",
+          "routing": "design",
+          "why": "lineage of the design"
+        },
+        {
+          "fact": "nominal throughput 140 units",
+          "routing": "design",
+          "why": "a spec"
+        },
+        {
+          "fact": "canisters per skid 4",
+          "routing": "design",
+          "why": "a spec"
+        },
+        {
+          "fact": "control cabinet RC-118",
+          "routing": "design",
+          "why": "a fit common to the design"
+        },
+        {
+          "fact": "sensor fit: active telemetry",
+          "routing": "design",
+          "why": "a spec"
+        },
+        {
+          "fact": "export designation V-40",
+          "routing": "design",
+          "why": "a designation of the design"
+        },
+        {
+          "fact": "fleet operator of record: Water Authority",
+          "routing": "instance",
+          "why": "the only operator-scoped line in the record - and the whole split trigger"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED ('Water Authority') - and it is the misplaced attribute",
+        "geography": "ABSENT entirely",
+        "designation": "ABSENT",
+        "time": "STATED only as the document's revision month (2024-09); no observation time exists"
+      },
+      "expected_outcome": "The single misplaced attribute must be detected and routed off the design node - one instance-layer attribute on a design-layer node is the trigger, and it does not become less of a trigger for being outnumbered. What it routes TO is the second half of the shape: the source gives no site and no observation, so the honest destination is an operator-level holding of the design, not a sited presence. If the only available destination is a presence, then the correct output is that the attribute is refused onto the design node and its want of a home is recorded as a gap - never a presence with an unknown site and an unknown time.",
+      "tempting_but_wrong": [
+        "Leave 'operator of record' on the design node because everything else in the record is design-level, so the record 'is' a design record. This is the exact misplacement the per-attribute layer exists to catch, and after it the shared design carries an operator - which is what makes two operators of one design collide.",
+        "Fire the split and materialize a presence with site unknown and time unknown - a sighting that no source reported, at no place, on no date.",
+        "Treat the export designation as instance-level because it is 'export' (i.e. operator-facing). It is a designation of the design; the routing test answers 'design'."
+      ],
+      "negative_gold": [
+        "'Rev. 3' and the revision month are provenance, not facts about the plant.",
+        "The data sheet is the manufacturer's own literature; nothing in it is corroboration of anything else in it."
+      ],
+      "corpus_status": "NOT EXERCISABLE as a clean single-attribute straddle. Corpus mentions straddle heavily but always with several misplaced facts at once, so the 'outnumbered trigger' case has to be authored."
+    },
+    {
+      "shape": 2,
+      "shape_id": "F2a-endpoint-materialization-presence",
+      "shape_title": "Endpoint materialization (and the cross-layer holding that mints nothing)",
+      "scope_items": [
+        "2 (endpoint materialization)",
+        "3 (presence citizen)"
+      ],
+      "refs": [
+        "spine/13 §5.3 worked example",
+        "A4",
+        "acceptance: an observed-at materializes a presence"
+      ],
+      "purpose": "An instance-layer sighting whose mention named only the DESIGN. It must materialize a provisional presence and hang the sighting on that, not on the shared design node.",
+      "why_hard": "The only entity the source names is a design ('the TL-40 type'), so the naive binding - point the sighting's subject at the design node - is also the only binding the text literally licenses. What makes it wrong is not the text but the consequence: the shared design node accumulates every site anyone ever saw the type at, and every operator's sightings then share a neighbourhood, which is the input that makes unrelated instances look like one thing.",
+      "documents": [
+        {
+          "doc_label": "survey-C",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-04-08",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - MARROW BANK PUMPING STATION\nCollected 08 April 2025, single pass, 0.5 m\n\nSix skid-pattern units of the TL-40 type are visible on the north apron, in a fan arrangement.\nOne octagonal cabinet signature consistent with the RC-118 pattern sits on a prepared pad\napproximately 300 m east of the skid group.\n\nNo markings, signage or vehicle numbers are legible at this ground sample distance."
+        }
+      ],
+      "extractor_emitted": "An instance-layer sighting edge from the design ('TL-40') to the site ('Marrow Bank pumping station'), plus a cabinet sighting from the component pattern ('RC-118') to the same site.",
+      "facts": [
+        {
+          "fact": "six skid-pattern units of the TL-40 type on the north apron",
+          "routing": "instance",
+          "why": "a located, dated observation - the presence citizen"
+        },
+        {
+          "fact": "the type is the TL-40",
+          "routing": "design",
+          "why": "names which design the presence is of"
+        },
+        {
+          "fact": "an RC-118-pattern cabinet on a prepared pad ~300 m east",
+          "routing": "instance",
+          "why": "a second located observation, of a component, at the same site"
+        },
+        {
+          "fact": "no markings, signage or vehicle numbers legible",
+          "routing": "instance",
+          "why": "a STATED absence of organizational evidence, scoped to this pass's resolution"
+        }
+      ],
+      "discriminators": {
+        "operator": "ABSENT - the survey names no operator",
+        "geography": "STATED as a named station with an on-site bearing and distance, no coordinates",
+        "designation": "EXPLICITLY DECLARED ABSENT - 'no markings, signage or vehicle numbers are legible'",
+        "time": "STATED exactly (2025-04-08, single pass)"
+      },
+      "expected_outcome": "A provisional presence must be materialized at Marrow Bank; the sighting binds to it; the presence links to the shared design node; and the shared design node itself must acquire no location. The cabinet sighting materializes its own presence at the same site - two presences, because the ontology separates the design of a set from the design of a component, and one pad bearing does not fuse them. With no operator stated, the presence is under-individuated and must say so: a presence whose operator slot is unfilled is the honest output, not a presence attributed to the operator that the rest of the corpus happens to talk about most.",
+      "tempting_but_wrong": [
+        "Attach the sighting directly to the shared design node because that is the only entity the source named. The design then 'is at' a place; every later sighting of the type piles onto the same node; and two operators' sightings acquire a shared neighbour, manufacturing relational evidence that they are the same individual.",
+        "Materialize a FORMATION because 'six skid-pattern units in a fan arrangement' is a section-shaped observation. Nothing organizational is stated, and the source says outright that no markings are legible.",
+        "Fill the absent operator from context (the design's usual operator elsewhere). That is inference presented as observation.",
+        "Fuse the skid presence and the cabinet presence into one 'installation' node because they are 300 m apart at one site. The source gives two separate signatures and one relative bearing, not one object."
+      ],
+      "negative_gold": [
+        "The ground sample distance and pass count are collection metadata, not claims.",
+        "'consistent with the RC-118 pattern' is a hedged identification of a pattern, not an assertion that this is an RC-118."
+      ],
+      "corpus_status": "EXERCISABLE, and the corpus's strongest suit: equipment-at-a-site sightings that name only a design are the dominant shape in the primary scenario. What the corpus does NOT supply is a site whose sighting names only the design AND whose operator is genuinely absent - most corpus sightings state or imply an operator somewhere in the document."
+    },
+    {
+      "shape": 2,
+      "shape_id": "F2b-cross-layer-holding-mints-nothing",
+      "shape_title": "Endpoint materialization (and the cross-layer holding that mints nothing)",
+      "scope_items": [
+        "2 (endpoint materialization - the mirror)"
+      ],
+      "refs": [
+        "spine/13 §5.3 contrast clause",
+        "D12 (imported-by should require a stated unit)"
+      ],
+      "purpose": "The mirror of F2a: a country/operator-level holding, neither endpoint instance-typed. It must mint NOTHING - no presence, no formation, no site.",
+      "why_hard": "It is the same grammatical shape as a sighting - an operator, a design, and a place-like noun phrase - so a materializer keyed on 'an operator and a design appear together' fires on it. And the place-like phrase ('its inland transfer network') is an area of responsibility, which is the single most common thing to be mistaken for a site.",
+      "documents": [
+        {
+          "doc_label": "holding-D",
+          "source_grade": "B",
+          "source_bias": "operator of the asset (annual report)",
+          "doc_date": "2025-01",
+          "doc_kind": "national utility annual plant report",
+          "text": "CALDONIA NATIONAL WATER UTILITY - ANNUAL PLANT REPORT 2024\n\nThe utility fields the TL-40 high-volume transfer set across its inland transfer network.\nFleet-wide throughput and availability figures are reported in Annex 2. No installation-level\ndetail is published."
+        }
+      ],
+      "extractor_emitted": "A holding relation from the operator to the design, plus a candidate site named 'inland transfer network'.",
+      "facts": [
+        {
+          "fact": "the utility fields the TL-40",
+          "routing": "cross-layer holding",
+          "why": "operator to design - neither end is an instance, so nothing is implied about any individual"
+        },
+        {
+          "fact": "'across its inland transfer network'",
+          "routing": "neither",
+          "why": "an area of responsibility, not a place a set sits"
+        },
+        {
+          "fact": "no installation-level detail is published",
+          "routing": "gap",
+          "why": "a stated policy of non-disclosure - the reason this gap will not close from this source"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED (the national utility)",
+        "geography": "ABSENT - only an area of responsibility",
+        "designation": "ABSENT",
+        "time": "STATED as a reporting year (2024)"
+      },
+      "expected_outcome": "A holding edge to the shared design, and nothing else materialized. No presence, because no site and no observation exist; no formation, because no body is named; no site node for the transfer network, because a network of responsibility is not a place. The stated non-publication should surface as a gap that names both the missing slot (installation-level detail) and the reason it will not close here.",
+      "tempting_but_wrong": [
+        "Materialize a presence for 'the inland transfer network' - one un-locatable pseudo-site that then collects every fleet-level claim and can never be confirmed or refuted by imagery.",
+        "Mint a national-level formation ('the utility's transfer force') so the holding has an instance endpoint. That is an organizational individual nobody sourced.",
+        "Read the holding as evidence for whichever presences of the design already exist, and back-fill their operator slots from it. A country fielding a type is not a statement about any particular sighting."
+      ],
+      "negative_gold": [
+        "The Annex 2 cross-reference asserts nothing.",
+        "'Fleet-wide throughput and availability figures' - no figure is given, so no attribute."
+      ],
+      "corpus_status": "EXERCISABLE. The corpus has several genuine holding statements (an operator 'continues to field' a design; an operator 'is believed to operate' a design) and it also has the exact area-of-responsibility trap - places named only as sectors, belts and provinces, which the ontology already had to grow a refinement to keep out of the site lane."
+    },
+    {
+      "shape": 3,
+      "shape_id": "F3a-bare-sighting-presence-only",
+      "shape_title": "Presence vs formation (four sub-cases)",
+      "scope_items": [
+        "3 (presence never forces a formation)",
+        "6 (named gap)"
+      ],
+      "refs": [
+        "spine/13 §3a",
+        "D-13.13/D-13.14",
+        "G15 amended (regression clause)"
+      ],
+      "purpose": "A bare equipment sighting at a site: presence only, never a formation - and the source itself states that the organizational evidence does not exist.",
+      "why_hard": "A count plus a site plus a cabinet reads like an establishment, and the temptation to name the body is strongest exactly where the evidence for it is weakest. The fixture also supplies the second half of the non-negotiable - a next revisit date - so a gap here has both halves available and there is no excuse for an unnamed one.",
+      "documents": [
+        {
+          "doc_label": "survey-E",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-05-03",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - HOLLOWMERE FORWARD STATION\nCollected 03 May 2025, single pass\n\nFour skid units and one control cabinet are visible on the east pad. The perimeter berm and\naccess spur are unchanged from the previous pass.\n\nNo unit markings or signage are visible in any pass of this site to date. Site identity rests\non prior open association rather than on any establishment document. Next scheduled revisit:\n17 May 2025."
+        }
+      ],
+      "extractor_emitted": "An instance-layer sighting from the design to the site, with a count.",
+      "facts": [
+        {
+          "fact": "four skid units and one control cabinet on the east pad",
+          "routing": "instance",
+          "why": "the presence"
+        },
+        {
+          "fact": "no unit markings or signage visible in ANY pass to date",
+          "routing": "gap",
+          "why": "a stated absence across the whole collection history, not just this pass"
+        },
+        {
+          "fact": "site identity rests on prior open association, not on an establishment document",
+          "routing": "gap",
+          "why": "the source disclaiming its own organizational basis"
+        },
+        {
+          "fact": "next scheduled revisit 17 May 2025",
+          "routing": "gap",
+          "why": "the 'when next coverage is due' half of a gap"
+        }
+      ],
+      "discriminators": {
+        "operator": "ABSENT",
+        "geography": "STATED as a named station, no coordinates",
+        "designation": "EXPLICITLY DECLARED ABSENT across the entire pass history",
+        "time": "STATED exactly (2025-05-03)"
+      },
+      "expected_outcome": "One presence at Hollowmere with a sourced count, and no formation of any kind. The absence of organizational evidence must become a named gap - naming the unfilled slot (which body, if any, operates this plant), the reason it is unfilled (no markings in any pass; identity rests on prior association), and the next coverage date the source supplies. A system that produces a presence and says nothing about the missing body has passed the letter of 'no formation' and failed the mission, because the analyst is not told that the order-of-battle question is open.",
+      "tempting_but_wrong": [
+        "Derive a basing for 'the Hollowmere section' or 'the resident detachment' - a body assembled out of the site's own name. This is fabrication with a plausible-sounding subject.",
+        "Promote the presence to a formation because it has a count. A count is a property of equipment; an organization is a different kind of thing.",
+        "Produce the presence silently, with no gap. The source stated the absence explicitly, so failing to carry it is losing evidence the document actually contains.",
+        "Read 'unchanged from the previous pass' as a second, corroborating observation. It is this desk's own comparison against its own earlier pass."
+      ],
+      "negative_gold": [
+        "The berm and access spur being unchanged asserts continuity of the site, not of any body.",
+        "'Site identity rests on prior open association' must not be read as a site-to-design claim."
+      ],
+      "corpus_status": "EXERCISABLE, strongly - this is the corpus's most common shape, and one corpus document states the marking absence across its whole pass history in almost these words. The corpus also supplies a stated non-disclosure policy, so the 'will not close' reason is real data."
+    },
+    {
+      "shape": 3,
+      "shape_id": "F3b-formation-earned-derived-basing-two-premises",
+      "shape_title": "Presence vs formation (four sub-cases)",
+      "scope_items": [
+        "3 (formation earned)",
+        "4 (basing as a rebuild-derived edge)"
+      ],
+      "refs": [
+        "spine/13 §5.3",
+        "D-13.6",
+        "G17 extended (non-vacuous fixture)",
+        "acceptance: a derived based-at cites its two premise claim-atoms and mints nothing"
+      ],
+      "purpose": "A sighting PLUS organizational evidence tying the equipment to a NAMED body: a formation is earned, and a derived basing edge is materialized citing two premise claims. This is also the non-vacuous input G17 needs, because it makes the derived branch actually execute.",
+      "why_hard": "The derivation is sound and still weaker than it looks, and the fixture is built so that weakness is visible: neither document says the equipment SEEN at Hollowmere is the equipment TAKEN ON CHARGE by the 7th Transfer Section. Both name only the design, so the premise chain runs through the design layer. A derivation that presents its conclusion at the confidence of its premises is over-claiming, and a derivation that hides the design-mediated step is unauditable.",
+      "documents": [
+        {
+          "doc_label": "survey-E",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-05-03",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - HOLLOWMERE FORWARD STATION\nCollected 03 May 2025, single pass\n\nFour skid units and one control cabinet are visible on the east pad. The perimeter berm and\naccess spur are unchanged from the previous pass.\n\nNo unit markings or signage are visible in any pass of this site to date. Site identity rests\non prior open association rather than on any establishment document. Next scheduled revisit:\n17 May 2025."
+        },
+        {
+          "doc_label": "bulletin-F",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-04-20",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 09/2025\nDated: 20 April 2025\n\nTL-40 transfer plant has been taken on charge by the 7th Transfer Section.\n\nThe Section's location is not published, in keeping with standing practice on establishment\ndetail."
+        }
+      ],
+      "extractor_emitted": "From the survey: an instance-layer sighting (design at site). From the bulletin: an organizational relation (design taken on charge by a named body). No document emits a basing.",
+      "facts": [
+        {
+          "fact": "four skid units at Hollowmere on 2025-05-03",
+          "routing": "instance",
+          "why": "premise 1 - the sighting"
+        },
+        {
+          "fact": "TL-40 plant taken on charge by the 7th Transfer Section (2025-04-20)",
+          "routing": "instance",
+          "why": "premise 2 - the organizational evidence that earns a formation"
+        },
+        {
+          "fact": "the Section's location is not published",
+          "routing": "gap",
+          "why": "a stated policy withholding exactly the fact the derivation is substituting for"
+        },
+        {
+          "fact": "neither document says the sighted plant IS the plant on charge",
+          "routing": "derivation weakness",
+          "why": "the premise link is design-mediated and must remain visible"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED (Northern Grid Works, in the bulletin)",
+        "geography": "STATED for the sighting only; the bulletin gives no location",
+        "designation": "STATED ('7th Transfer Section') - the only fixture pair where the top rung of the ladder has data",
+        "time": "STATED exactly on both (2025-05-03 sighting, 2025-04-20 bulletin)"
+      },
+      "expected_outcome": "A formation is earned - a named body now exists as an organizational individual - and a derived basing edge is materialized between it and the site. That edge must cite BOTH premises, so one click reaches the sighting and one reaches the bulletin; it must be marked as derived rather than stated; it must carry lower confidence than either premise, and must not be promotable to the status a stated basing can reach; and it must be materialized fresh on each rebuild without any claim being minted or appended. The design-mediated step must be inspectable, and the bulletin's withheld location should surface as the gap the derivation is standing in for. Two rebuilds of the same inputs must produce the same edge.",
+      "tempting_but_wrong": [
+        "Emit the derived basing as though a source stated it - one flat basing assertion at full source credibility. The two premises then disappear and an inference is indistinguishable from an observation.",
+        "Cite only the sighting (or only the bulletin). A single-premise citation is not traceable to the reasoning that produced the edge.",
+        "Mint the derived basing as a claim and append it to the evidence log during the rebuild. That puts a reversible, config-dependent decision into the immutable record, and it is exactly the append G17 forbids.",
+        "Let the derived basing corroborate the sighting. They are not two sources; one is computed from the other.",
+        "Allow the derived edge to reach the same status a stated, independently corroborated basing can reach."
+      ],
+      "negative_gold": [
+        "'in keeping with standing practice' is the reason for a gap, not a fact about the Section.",
+        "The Section's existence is stated; its location is not, and must not be back-filled from the sighting as though stated."
+      ],
+      "corpus_status": "PARTIALLY EXERCISABLE, and this is the corpus's largest hole. The corpus has the two premises as separate shapes (equipment-at-a-site sightings, and one induction into a named-ARM body) but the induction names no numbered body, so the derived basing has no designation to attach to. The designation rung of the discriminator ladder has zero data anywhere in the corpus."
+    },
+    {
+      "shape": 3,
+      "shape_id": "F3c-stated-basing-good-source",
+      "shape_title": "Presence vs formation (four sub-cases)",
+      "scope_items": [
+        "3 (formation citizen, stated path)"
+      ],
+      "refs": [
+        "spine/13 §5.3 'two provenance paths'",
+        "acceptance: a stated based-at binds a formation directly"
+      ],
+      "purpose": "A STATED formation-at-site from a good-grade source: it binds the formation directly, at normal source credibility, with no premise pair and no derivation.",
+      "why_hard": "Not hard to read - hard because it exists nowhere in the frozen corpus, so every code path that handles it is unexercised, and three comments in the running config still assert that no source states basing. A system built only against the corpus will treat this document as an anomaly and either re-lane it into a sighting or route it through the derivation machinery it does not need.",
+      "documents": [
+        {
+          "doc_label": "bulletin-G",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-02-06",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 03/2025\nDated: 06 February 2025\n\nThe 3rd Transport Company is based at Site K-4 (depot), where it has been established since\n2019. The Company's transfer plant is maintained under depot arrangements at the same site."
+        }
+      ],
+      "extractor_emitted": "A basing relation from a named body to a named site, directly.",
+      "facts": [
+        {
+          "fact": "the 3rd Transport Company is based at Site K-4",
+          "routing": "instance",
+          "why": "a stated formation-at-site - the formation citizen, stated rather than derived"
+        },
+        {
+          "fact": "Site K-4 is a depot",
+          "routing": "instance",
+          "why": "the site kind, stated - the discriminator shape 6 turns on"
+        },
+        {
+          "fact": "established since 2019",
+          "routing": "instance",
+          "why": "a start time for the basing, stated"
+        },
+        {
+          "fact": "plant maintained under depot arrangements at the same site",
+          "routing": "instance",
+          "why": "a second, weaker organizational statement about the same pair"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED (Northern Grid Works, the bulletin's own publisher)",
+        "geography": "STATED as a named site WITH a stated site kind",
+        "designation": "STATED ('3rd Transport Company')",
+        "time": "STATED as a start year (2019) plus the bulletin date (2025-02-06)"
+      },
+      "expected_outcome": "The formation binds to the site directly, as a stated observation rather than an inference: no premise pair is required, the derivation machinery must not be involved, and the edge runs through ordinary source credibility so that an independent second source naming the same body at the same site can carry it to the corroborated end of the scale. The stated site kind must be captured, because shape 6 needs it. The publisher is the operator itself, which is a bias to record - an interested party is authoritative about its own establishment and is not a second opinion on it.",
+      "tempting_but_wrong": [
+        "Re-lane the stated basing into an equipment sighting because 'sources do not state basing'. That downgrades a directly stated organizational fact into a weaker one and loses the formation.",
+        "Route it through the derivation and demand two premises, so the strongest available basing evidence in the whole set is capped like an inference.",
+        "Treat the second sentence ('plant maintained under depot arrangements at the same site') as an independent corroboration. It is the same source, the same paragraph, one origin.",
+        "Take the operator's own bulletin as unbiased simply because it is well-graded."
+      ],
+      "negative_gold": [
+        "'under depot arrangements' asserts a maintenance arrangement, not a second basing."
+      ],
+      "corpus_status": "NOT EXERCISABLE AT ALL. Verified independently: across all 52 scenario documents there is exactly one stated formation-at-site basing, and it belongs to an off-subject chaff unit in another country planted as a designator-collision decoy. Every basing in the answer key is annotated 'derived'. This fixture is the only place the acceptance criterion can be tested."
+    },
+    {
+      "shape": 3,
+      "shape_id": "F3d-stated-basing-low-grade",
+      "shape_title": "Presence vs formation (four sub-cases)",
+      "scope_items": [
+        "3 (stated is not trusted)",
+        "7 (supersede over an unearned identity)"
+      ],
+      "refs": [
+        "spine/13 §5.3 'stated != trusted'",
+        "R1.4",
+        "D1"
+      ],
+      "purpose": "The same stated formation-at-site, asserted by a grade-E anonymous account, dated later than F3c and naming a different site. Stated still runs through source grade - and the pair is a candidate relocation from the weakest source available.",
+      "why_hard": "It is textually the strongest kind of statement in the whole set - a named body, a named site, no hedging - and the weakest kind of evidence. A pipeline that treats 'stated' as a licence rather than as a class of claim will bind it exactly as it binds F3c. Worse, because it post-dates F3c and names a different site, the ordinary machinery for a moved body will read the pair as a relocation and, if it promotes, will retire a well-sourced basing on the authority of an anonymous post.",
+      "documents": [
+        {
+          "doc_label": "bulletin-G",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-02-06",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 03/2025\nDated: 06 February 2025\n\nThe 3rd Transport Company is based at Site K-4 (depot), where it has been established since\n2019. The Company's transfer plant is maintained under depot arrangements at the same site."
+        },
+        {
+          "doc_label": "post-H",
+          "source_grade": "E",
+          "source_bias": "anonymous, flagged for deception risk",
+          "doc_date": "2025-05-30",
+          "doc_kind": "forum post",
+          "text": "POST - @corridor_whispers (account created 2025-05, 41 followers)\nDate: 2025-05-30\nText: \"everyone knows the 3rd Transport Coy sits at Hollowmere now. moved months ago. not\nsaying more. trust me\" "
+        }
+      ],
+      "extractor_emitted": "A second basing relation for the same named body, to a different site, at a later date.",
+      "facts": [
+        {
+          "fact": "the 3rd Transport Coy sits at Hollowmere now",
+          "routing": "instance",
+          "why": "a stated basing, from a grade-E anonymous account with no history"
+        },
+        {
+          "fact": "'moved months ago'",
+          "routing": "instance",
+          "why": "an unsourced relocation assertion with no origin and no date"
+        },
+        {
+          "fact": "'not saying more. trust me'",
+          "routing": "credibility",
+          "why": "an explicit refusal to source, which is the decisive credibility fact here"
+        }
+      ],
+      "discriminators": {
+        "operator": "ABSENT from the post",
+        "geography": "STATED as a bare site name, no site kind, no coordinates",
+        "designation": "STATED, in an abbreviated surface ('3rd Transport Coy')",
+        "time": "STATED for the post (2025-05-30); the claimed move is 'months ago', i.e. unusable"
+      },
+      "expected_outcome": "The claim must be recorded, attributed, and must land far short of where F3c's grade-B stated basing lands - the difference between them must come from the source grade and the refusal to source, not from one being 'stated' and the other not, because both are stated. It must not retire, supersede or contradict the well-sourced basing on its own, and it must not be discarded either: the honest output is an unresolved question held for the analyst, carrying the reason. The abbreviated designation surface should reach the same body as F3c's - that much is a reading, not a judgement - but the identity of the body is the only thing this post contributes.",
+      "tempting_but_wrong": [
+        "Wave it through because a source stated it. 'Stated' is a provenance class, not a credibility grade.",
+        "Promote the pair to a relocation because the post is newer and the sites differ. A relocation drawn on a grade-E anonymous post, retiring a grade-B establishment bulletin, is the failure this fixture exists to catch.",
+        "Drop the post as junk. It names a body and a site; it belongs in the record as an attributed claim with its grade and its refusal-to-source visible.",
+        "Read 'moved months ago' as a dated relocation. There is no origin and no date."
+      ],
+      "negative_gold": [
+        "Follower count and account age are provenance metadata, not claims.",
+        "'trust me' asserts nothing about the world."
+      ],
+      "corpus_status": "EXERCISABLE for the credibility half - the corpus has a grade-E relocation spoof and a grade-D social sighting, and the supersede floor was built against them. NOT exercisable for the stated-basing half, because neither spoof names a formation: they name equipment. So the corpus can test 'a low-grade relocation claim must not promote' but not 'a low-grade STATED BASING must not promote'."
+    },
+    {
+      "shape": 4,
+      "shape_id": "F4-count-trap-reports-are-not-launchers",
+      "shape_title": "The count trap (k reports != k launchers)",
+      "scope_items": [
+        "3 (count is a sourced attribute, default unknown)"
+      ],
+      "refs": [
+        "spine/13 §3a",
+        "D-13.13",
+        "D-13.19 (count capture)"
+      ],
+      "purpose": "Five reports of the same equipment at the same site, of which three state no number at all. The naive count equals the number of reports - and it is wrong twice, in two different ways, both of which look plausible.",
+      "why_hard": "Two coincidences are engineered in. Before 21 May there are exactly three count-silent reports, so a report-counting implementation says three - a perfectly plausible number of skids, asserted by nobody. After 2 June there are five reports, and five sits inside the only stated range, so the wrong answer now looks corroborated by the source that actually gave a figure. There is no point at which the naive answer looks absurd.",
+      "documents": [
+        {
+          "doc_label": "survey-J",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-05-04",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - HOLLOWMERE FORWARD STATION\nCollected 04 May 2025\n\nSkid units are present on the east pad. Individual units are not resolvable at this ground\nsample distance; a count is not established by this pass."
+        },
+        {
+          "doc_label": "press-K",
+          "source_grade": "C",
+          "source_bias": "third-party trade press",
+          "doc_date": "2025-05-09",
+          "doc_kind": "trade press item",
+          "text": "Transfer Plant Reported Back at Hollowmere\nStaff correspondent - 9 May 2025\n\nA recent survey is understood to show transfer plant on the pad at Hollowmere. Neither the\noperator nor the surveyor would comment on numbers."
+        },
+        {
+          "doc_label": "post-N",
+          "source_grade": "D",
+          "source_bias": "hobby spotting account",
+          "doc_date": "2025-05-14",
+          "doc_kind": "forum post",
+          "text": "POST - @pad_watch\nDate: 2025-05-14\nText: \"plant is back on the pad at Hollowmere, drove past and saw it myself. no idea how many,\ncouldn't stop.\" "
+        },
+        {
+          "doc_label": "survey-L",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-05-21",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - HOLLOWMERE FORWARD STATION\nCollected 21 May 2025\n\nSix skid-pattern units are visible in a fan arrangement on the east pad."
+        },
+        {
+          "doc_label": "survey-M",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-06-02",
+          "doc_kind": "aerial survey digest",
+          "text": "SURVEY DIGEST - HOLLOWMERE FORWARD STATION\nIssue dated 02 June 2025\n\nPlant strength at the east pad is estimated at four to six skid units plus one cabinet. The\ndesk's confidence in the upper bound is low, given intermittent visibility across passes."
+        }
+      ],
+      "extractor_emitted": "Five instance-layer sightings of the same design at the same site, on five dates, from four distinct publishers. Two carry a figure; three carry none.",
+      "facts": [
+        {
+          "fact": "'a count is not established by this pass' (2025-05-04, grade B)",
+          "routing": "instance",
+          "why": "a report with an explicitly declared absent count"
+        },
+        {
+          "fact": "'neither would comment on numbers' (2025-05-09, grade C)",
+          "routing": "instance",
+          "why": "a second count-silent report, and a stated reason it is silent"
+        },
+        {
+          "fact": "'no idea how many' (2025-05-14, grade D)",
+          "routing": "instance",
+          "why": "a third count-silent report"
+        },
+        {
+          "fact": "'six skid-pattern units are visible' (2025-05-21, grade B)",
+          "routing": "instance",
+          "why": "the first and only point figure - a sourced count"
+        },
+        {
+          "fact": "'estimated at four to six ... confidence in the upper bound is low' (2025-06-02, grade B)",
+          "routing": "instance",
+          "why": "a second, RANGED figure whose own upper bound the source distrusts"
+        }
+      ],
+      "discriminators": {
+        "operator": "ABSENT from all five",
+        "geography": "STATED as one named site and one named pad across all five - they are about the same place",
+        "designation": "ABSENT from all five",
+        "time": "STATED exactly on each, spanning 2025-05-04 to 2025-06-02"
+      },
+      "expected_outcome": "The count must come only from the two reports that state a figure, and each must remain its own dated, sourced claim: an observed point figure on one pass, and a range on a later pass whose upper bound its own author distrusts. Before the first figure arrives the count is unknown, and 'unknown' must be representable and shown as such - an unfilled slot, not a number. The number of reports must never reach the count under any code path. The two figures do not have to be reconciled; they are two dated observations of a thing that can genuinely change, and if they are reconciled at all it must be visibly, with both retained. Note also that five reports here are four publishers, one of which is reporting another's survey - so report multiplicity is not corroboration multiplicity either.",
+      "tempting_but_wrong": [
+        "count = number of merged reports (three, then five). Both values are plausible skid counts and one falls inside the stated range, so the bug is invisible in review and invisible on the surface.",
+        "count = max of the stated figures, or the midpoint of the range. Both invent precision the sources refuse; the range's own author says the upper bound is not to be trusted.",
+        "Take the newest figure and drop the older, so a range with a distrusted bound silently replaces a clean point observation.",
+        "Default the count to one because something was seen. A default that asserts a number where no source gave one is the same failure as the report count, in smaller print.",
+        "Treat the trade-press item as a fifth independent observation. It reports a survey rather than making one."
+      ],
+      "negative_gold": [
+        "'plant on the pad' with no number contributes no count, only a presence.",
+        "The drive-past post contributes no count and no geolocation."
+      ],
+      "corpus_status": "PARTIALLY EXERCISABLE, better than expected. The corpus does carry structured sourced counts with min/max/approx on sighting events, and it has two reports of one site giving different figures, plus a document that states a count is unverifiable this pass. What it does NOT supply is the coincidence: nowhere does the number of reports collide with a plausible equipment count, so the naive implementation is never punished on the corpus. That collision has to be authored, and it is the whole point of this fixture."
+    },
+    {
+      "shape": 5,
+      "shape_id": "F5a-two-candidate-formations-equal-evidence",
+      "shape_title": "The D2 case - two candidate formations for one sighting",
+      "scope_items": [
+        "6 (the D2 clause - no silent formation pick)"
+      ],
+      "refs": [
+        "D2",
+        "R2.1",
+        "G15 amended (the clause that bites)"
+      ],
+      "purpose": "One sighting, two separately named candidate formations, equally evidenced, neither tied to the site. The correct outcome is two attributions, or one plus an explicitly named gap. Never a silent pick.",
+      "why_hard": "There is no merge anywhere in this shape, which is why it is invisible to every gate that watches identity. Nothing is over-merged and nothing is mis-scored; a candidate is simply dropped, and an order-of-battle undercount is the least visible error a system of this kind can make, because the output looks confident and complete. Both bulletins are the same publisher, the same grade and the same form, so there is no defensible tie-break available - which is the point.",
+      "documents": [
+        {
+          "doc_label": "survey-L",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-05-21",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - HOLLOWMERE FORWARD STATION\nCollected 21 May 2025\n\nSix skid-pattern units are visible in a fan arrangement on the east pad."
+        },
+        {
+          "doc_label": "bulletin-Q",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-03-02",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 05/2025\nDated: 02 March 2025\n\nTL-40 transfer plant has been taken on charge by the 7th Transfer Section. No location is\npublished."
+        },
+        {
+          "doc_label": "bulletin-R",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-04-11",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 08/2025\nDated: 11 April 2025\n\nTL-40 transfer plant has been issued to the 12th Transfer Section. No location is published."
+        }
+      ],
+      "extractor_emitted": "One sighting (design at site) and two organizational relations (design to two different named bodies). No document links either body to the site.",
+      "facts": [
+        {
+          "fact": "six skid units at Hollowmere on 2025-05-21",
+          "routing": "instance",
+          "why": "the single sighting"
+        },
+        {
+          "fact": "TL-40 plant taken on charge by the 7th Transfer Section (2025-03-02)",
+          "routing": "instance",
+          "why": "candidate formation 1 - no site stated"
+        },
+        {
+          "fact": "TL-40 plant issued to the 12th Transfer Section (2025-04-11)",
+          "routing": "instance",
+          "why": "candidate formation 2 - no site stated, same publisher, same grade, same form"
+        },
+        {
+          "fact": "nothing states which body's plant was seen at Hollowmere",
+          "routing": "gap",
+          "why": "the missing slot that makes both attributions candidates rather than facts"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED and IDENTICAL for both candidates - so operator cannot separate them",
+        "geography": "STATED for the sighting only; ABSENT for both candidates",
+        "designation": "STATED and DIFFERENT for the two candidates - the only thing that distinguishes them, and it distinguishes them completely",
+        "time": "STATED on all three; the two bulletins are six weeks apart and neither is superseded"
+      },
+      "expected_outcome": "Both candidates must survive the build. Either two attributions are recorded, each flagged as competing with the other and neither treated as settled, or one is recorded and the second is named in a gap that says a second candidate formation exists, identifies it, and says why it was not attributed. A truncation that records nothing is the defect. Whatever is emitted must be traceable back to the discarded or demoted candidate, because the analyst's question here is precisely 'is this one section or two?' - and the two differing designations are, on this evidence, the strongest reason to believe the answer is two.",
+      "tempting_but_wrong": [
+        "Keep the 'best-evidenced' candidate and drop the other with no record. Every other rejection path in this area records a reason; this one is silent, which makes it the one an audit cannot find.",
+        "Merge the two Sections into one formation because they share an operator, a design and a site neighbourhood. They differ on the one discriminator that separates organizations, and merging them also gives them one basing instance - which is how shape 7's harm becomes reachable from here.",
+        "Pick the newer bulletin as 'current' and treat the older as superseded. Nothing says the plant left the 7th Section; two issues can both be true, and an issue-and-transfer would be a third claim nobody made.",
+        "Attribute the sighting to both and present the result as two confirmed basings. Two attributions must be two candidates, not two facts."
+      ],
+      "negative_gold": [
+        "Neither bulletin states a location; the site must not be back-filled onto either body.",
+        "Bulletin sequence numbers are provenance, not evidence of supersession."
+      ],
+      "corpus_status": "NOT EXERCISABLE. Verified: the corpus has no two individuated same-type formations anywhere. Its nearest approaches are a cardinality without individuation ('two operational battalions' - one claim with a quantity, not two referents) and three documents that gesture at extra formations without naming any. This is the shape the gate most needs and the corpus most completely lacks."
+    },
+    {
+      "shape": 5,
+      "shape_id": "F5b-two-candidate-formations-unequal-evidence",
+      "shape_title": "The D2 case - two candidate formations for one sighting",
+      "scope_items": [
+        "6 (the D2 clause - demotion is not deletion)"
+      ],
+      "refs": [
+        "D2",
+        "R2.1"
+      ],
+      "purpose": "The same two-candidate shape, but the second candidate is asserted by a grade-E anonymous account. Grading it down is correct; deleting it is not.",
+      "why_hard": "This variant is where a correct-looking implementation goes wrong, because here there IS a defensible tie-break - the grades differ - and 'pick the better-evidenced one' produces the right attribution by the wrong mechanism. The distinction the fixture tests is between a candidate that was weighed and demoted with its reason visible, and one that vanished. Only the first can be revisited when a better source arrives.",
+      "documents": [
+        {
+          "doc_label": "survey-L",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-05-21",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - HOLLOWMERE FORWARD STATION\nCollected 21 May 2025\n\nSix skid-pattern units are visible in a fan arrangement on the east pad."
+        },
+        {
+          "doc_label": "bulletin-Q",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-03-02",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 05/2025\nDated: 02 March 2025\n\nTL-40 transfer plant has been taken on charge by the 7th Transfer Section. No location is\npublished."
+        },
+        {
+          "doc_label": "post-S",
+          "source_grade": "E",
+          "source_bias": "anonymous, flagged for deception risk",
+          "doc_date": "2025-04-11",
+          "doc_kind": "forum post",
+          "text": "POST - @grid_leaks (no posting history before 2025-04)\nDate: 2025-04-11\nText: \"TL40 plant went to 12 Transfer Section, heard it from someone inside. no docs sorry\" "
+        }
+      ],
+      "extractor_emitted": "One sighting and two organizational relations, one grade B and one grade E, naming different bodies.",
+      "facts": [
+        {
+          "fact": "six skid units at Hollowmere on 2025-05-21",
+          "routing": "instance",
+          "why": "the single sighting"
+        },
+        {
+          "fact": "plant taken on charge by the 7th Transfer Section (grade B)",
+          "routing": "instance",
+          "why": "candidate 1"
+        },
+        {
+          "fact": "'TL40 plant went to 12 Transfer Section, heard it from someone inside. no docs sorry' (grade E)",
+          "routing": "instance",
+          "why": "candidate 2 - same claim shape, weakest possible evidence, explicit refusal to source"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED for candidate 1; ABSENT for candidate 2",
+        "geography": "ABSENT for both candidates",
+        "designation": "STATED and DIFFERENT",
+        "time": "STATED on both; the weak claim is the later one"
+      },
+      "expected_outcome": "The strong candidate carries the attribution and the weak one is demoted rather than deleted: it stays in the record as an attributed claim, with its grade and its refusal to source visible, and it is named in the gap or the competing-candidate list so that a later corroborating source can revive it rather than having to rediscover it. The reason for the demotion must be the source grade, stated as such - not the fact that a cap on candidates happened to keep the first one.",
+      "tempting_but_wrong": [
+        "Delete the weak candidate because it is weak. The right answer arrives with no audit trail, and the implementation is now indistinguishable from the one that silently truncates - it just happens to be sorted correctly today.",
+        "Give the weak claim an attribution of its own with equal standing, on the grounds that no silent pick is allowed. 'Never a silent pick' is not 'never a graded judgement'.",
+        "Let the later date beat the better grade."
+      ],
+      "negative_gold": [
+        "'heard it from someone inside' is an assertion of access, not of fact.",
+        "'no docs sorry' asserts nothing and is a credibility fact."
+      ],
+      "corpus_status": "NOT EXERCISABLE, for the same reason as F5a - no two individuated formations exist. The grade-E-anonymous-source half is well represented in the corpus; the two-candidate half is not present at all."
+    },
+    {
+      "shape": 6,
+      "shape_id": "F6a-site-type-deconfliction-stated",
+      "shape_title": "site_type de-confliction (C1) - stated, absent, and drifting",
+      "scope_items": [
+        "5 (based-at supersede key tagged by site_type)"
+      ],
+      "refs": [
+        "R1.3",
+        "C1",
+        "G18 under C1's rule"
+      ],
+      "purpose": "One named formation, concurrently at a depot and at a forward station, both site kinds stated by the same good-grade source. Two valid basings - no relocation, no contradiction, no wall.",
+      "why_hard": "Every generic signal says relocation: one body, two sites, overlapping times, the later mention newer than the earlier. The only thing that says otherwise is that the two places are different KINDS of place, which is a semantic fact about sites and not a property of the basing pair at all. And the same declaration has to serve two opposite purposes - it must stop this pair being read as a relocation, while still letting two candidate bodies at two depots at overlapping times be read as different bodies.",
+      "documents": [
+        {
+          "doc_label": "bulletin-T",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-04-14",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 07/2025\nDated: 14 April 2025\n\nThe 3rd Transport Company, whose home depot is Site K-4 (depot), has maintained a detachment\nat Hollowmere forward station (forward station) since 14 April. Both the depot establishment\nand the detachment remain current as at the date of this bulletin."
+        }
+      ],
+      "extractor_emitted": "Two basing relations for one named body, to two sites, with overlapping validity, each site carrying a stated kind.",
+      "facts": [
+        {
+          "fact": "3rd Transport Company's home depot is Site K-4 (depot)",
+          "routing": "instance",
+          "why": "basing 1, with a stated site kind"
+        },
+        {
+          "fact": "3rd Transport Company has maintained a detachment at Hollowmere forward station (forward station) since 14 April",
+          "routing": "instance",
+          "why": "basing 2, with a stated and DIFFERENT site kind"
+        },
+        {
+          "fact": "'both ... remain current as at the date of this bulletin'",
+          "routing": "instance",
+          "why": "the source stating concurrency in its own voice - the fixture's licence"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED (the bulletin's publisher)",
+        "geography": "STATED for both sites, each WITH a site kind",
+        "designation": "STATED, one body",
+        "time": "STATED and OVERLAPPING - the source says both are current"
+      },
+      "expected_outcome": "Two live basings for one formation, both retained, with no relocation drawn, no supersession, and no contradiction recorded. The de-confliction must rest on the site kind, so that the same rule still fires the other way for two bodies at two places of the SAME kind at overlapping times. The word 'detachment' should not create a second formation - it is the same body present in two places, which is what a forward detachment is.",
+      "tempting_but_wrong": [
+        "Read it as a relocation from the depot to the forward station, retire the depot basing, and draw a move the source explicitly denies by saying both remain current.",
+        "Wall the two as different bodies, on the reasoning that one body cannot be at two places at overlapping times. That is the over-read the site-kind rule exists to prevent, and it splits a correctly identified formation in half.",
+        "Mint a separate 'detachment' formation so each basing has its own subject. The graph now shows two bodies where the source describes one, and the order of battle is over-counted.",
+        "Record a contradiction and route it to the analyst as a conflict. There is no conflict; there is a concurrency the source states."
+      ],
+      "negative_gold": [
+        "The bulletin number and date are provenance.",
+        "'since 14 April' dates the detachment's start, not the depot basing's end."
+      ],
+      "corpus_status": "NOT EXERCISABLE. No corpus document places one body at two sites concurrently - the ontology comment itself rests the current unit-only keying on that absence, which is precisely the kind of design input this stage is forbidden to accept."
+    },
+    {
+      "shape": 6,
+      "shape_id": "F6b-site-type-absent",
+      "shape_title": "site_type de-confliction (C1) - stated, absent, and drifting",
+      "scope_items": [
+        "5 (state the absent site_type default and fail safe)"
+      ],
+      "refs": [
+        "R1.3",
+        "C1",
+        "plan §7 item 5"
+      ],
+      "purpose": "The same two-site, one-body shape with NO site kind stated anywhere. Absent must not de-conflict.",
+      "why_hard": "The evasion direction here is over-merge, and absence is the cheapest way to reach it: if an unstated site kind reads as its own bucket, then every pair whose sites are undescribed becomes two happy concurrent basings and no relocation ever fires again - including a real one. The failure is silent, global, and looks like tidiness.",
+      "documents": [
+        {
+          "doc_label": "bulletin-U",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-02-06",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 03B/2025\nDated: 06 February 2025\n\nThe 3rd Transport Company is at Site K-4."
+        },
+        {
+          "doc_label": "bulletin-V",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-04-14",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 07B/2025\nDated: 14 April 2025\n\nThe 3rd Transport Company is at Hollowmere."
+        }
+      ],
+      "extractor_emitted": "Two basing relations for one named body, two sites, two dates, no site kind on either.",
+      "facts": [
+        {
+          "fact": "3rd Transport Company is at Site K-4 (2025-02-06)",
+          "routing": "instance",
+          "why": "basing 1, no site kind stated"
+        },
+        {
+          "fact": "3rd Transport Company is at Hollowmere (2025-04-14)",
+          "routing": "instance",
+          "why": "basing 2, no site kind stated"
+        },
+        {
+          "fact": "no source states what kind of place either site is",
+          "routing": "gap",
+          "why": "the missing slot the de-confliction rule needs, and the reason this pair cannot be resolved either way"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED (same publisher for both)",
+        "geography": "STATED as bare site names, NO site kind, no coordinates",
+        "designation": "STATED, one body",
+        "time": "STATED, and it is genuinely ambiguous whether the two intervals overlap - neither states an end"
+      },
+      "expected_outcome": "Absent site kind must read as unknown, and unknown must not license 'two valid basings'. The pair has to land on the safe side: either the pair is treated as one basing instance in question - a relocation-or-two-basings that the analyst is asked about - or the build refuses to key it at all and says so. What it must not do is quietly conclude that the two sites are different kinds of place and therefore compatible. The missing slot must be named, and the fact that neither basing states an end date is part of why the question is open.",
+      "tempting_but_wrong": [
+        "Treat unknown as its own bucket, so absent site kinds always de-conflict. Every relocation in the system silently stops firing, and the more sparsely described the source, the more confident the wrong answer.",
+        "Infer the site kind from the site's NAME ('Site K-4 sounds like a depot'). That is fabricating the discriminator the rule turns on.",
+        "Fall back to the pre-existing behaviour and draw the relocation, on the grounds that unknown means 'nothing to de-conflict on'. Defensible-sounding, but it asserts a move on no evidence of one; the honest outcome is a question, not either answer."
+      ],
+      "negative_gold": [
+        "Neither bulletin says the Company left anywhere."
+      ],
+      "corpus_status": "EXERCISABLE for the absence itself - site kind is missing on a substantial share of corpus site mentions, and one corpus site appears three times in ONE document with the kind present once and absent twice. Not exercisable as a one-body-two-sites pair, for the same reason as F6a."
+    },
+    {
+      "shape": 6,
+      "shape_id": "F6c-site-type-vocabulary-drift",
+      "shape_title": "site_type de-confliction (C1) - stated, absent, and drifting",
+      "scope_items": [
+        "5 (based-at supersede key tagged by site_type)"
+      ],
+      "refs": [
+        "R1.3",
+        "C1",
+        "value normalization (resolution.yaml)"
+      ],
+      "purpose": "Site kind IS stated on every mention - in different words for the same kind of place, by different publishers. A raw-string key puts one site in two buckets and two different kinds of place in what looks like one.",
+      "why_hard": "This is the variant that breaks a working relocation in production rather than in theory. The site kind is free text: the same depot is 'depot' to its operator and a 'logistics and storage establishment' to a register, and the same forward pad is 'forward station' to one and a 'prepared forward pad / field station' to the other. Keying on the stated string is defensible, deterministic, and wrong in both directions at once - it de-conflicts pairs that should not, and it splits one site into two buckets so that a genuine move between two differently-described places quietly stops being a move.",
+      "documents": [
+        {
+          "doc_label": "bulletin-G",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-02-06",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 03/2025\nDated: 06 February 2025\n\nThe 3rd Transport Company is based at Site K-4 (depot), where it has been established since\n2019. The Company's transfer plant is maintained under depot arrangements at the same site."
+        },
+        {
+          "doc_label": "register-W",
+          "source_grade": "B",
+          "source_bias": "third-party curated register",
+          "doc_date": "2025-02-20",
+          "doc_kind": "curated establishment register",
+          "text": "REGIONAL WORKS ESTABLISHMENT REGISTER - extract, 20 February 2025\n\nSite K-4 - logistics and storage establishment. Resident body: 3rd Transport Company."
+        },
+        {
+          "doc_label": "bulletin-T",
+          "source_grade": "B",
+          "source_bias": "operator of the asset",
+          "doc_date": "2025-04-14",
+          "doc_kind": "operator establishment bulletin",
+          "text": "NORTHERN GRID WORKS - ESTABLISHMENT BULLETIN 07/2025\nDated: 14 April 2025\n\nThe 3rd Transport Company, whose home depot is Site K-4 (depot), has maintained a detachment\nat Hollowmere forward station (forward station) since 14 April. Both the depot establishment\nand the detachment remain current as at the date of this bulletin."
+        },
+        {
+          "doc_label": "register-X",
+          "source_grade": "B",
+          "source_bias": "third-party curated register",
+          "doc_date": "2025-04-24",
+          "doc_kind": "curated establishment register",
+          "text": "REGIONAL WORKS ESTABLISHMENT REGISTER - extract, 24 April 2025\n\nHollowmere - prepared forward pad / field station. Detachment present: 3rd Transport Company."
+        }
+      ],
+      "extractor_emitted": "Basing relations for one body across two sites, where each site's kind is stated twice, in two different vocabularies.",
+      "facts": [
+        {
+          "fact": "Site K-4 (depot) - operator's bulletin",
+          "routing": "instance",
+          "why": "site kind, vocabulary 1"
+        },
+        {
+          "fact": "Site K-4 - logistics and storage establishment - register",
+          "routing": "instance",
+          "why": "the SAME site, the same kind of place, a different surface string"
+        },
+        {
+          "fact": "Hollowmere forward station (forward station) - operator's bulletin",
+          "routing": "instance",
+          "why": "site kind, vocabulary 1"
+        },
+        {
+          "fact": "Hollowmere - prepared forward pad / field station - register",
+          "routing": "instance",
+          "why": "the SAME site, the same kind of place, a different surface string"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED",
+        "geography": "STATED, with the site kind present on every mention and spelled differently on every publisher",
+        "designation": "STATED, one body",
+        "time": "STATED across February to April 2025"
+      },
+      "expected_outcome": "De-confliction must survive the vocabulary: the two descriptions of the depot must land in the same bucket as each other, the two descriptions of the forward pad likewise, and the depot and the forward pad must land in different buckets. Where a stated kind cannot be mapped confidently to a known class, the pair must fall to the safe side of shape 6b rather than being de-conflicted on an unrecognised string. Whatever mapping is used has to be editable data rather than a literal in code, because this vocabulary is open-ended and every new publisher adds to it.",
+      "tempting_but_wrong": [
+        "Key on the raw stated string. One site becomes two buckets, so a real relocation between two differently-described places is recorded as two concurrent basings and the move is never surfaced. This is the failure mode that would silently retire a working relocation beat.",
+        "Normalize by string similarity, so 'logistics and storage establishment' and 'prepared forward pad / field station' - which share no meaning - are separated correctly by luck, while 'forward station' and 'field station' are conflated or separated by token overlap rather than by kind.",
+        "Take the operator's vocabulary as canonical because it is the operator. It is one publisher's wording, and the register's is just as stated."
+      ],
+      "negative_gold": [
+        "The register is a curated third party; its agreement about a site's KIND is not corroboration of the body being there."
+      ],
+      "corpus_status": "EXERCISABLE, and already live in the frozen data - this is a verified corpus fact, not a hypothetical. Site kinds in the corpus are free text with no enumeration: the same airfield is described two different ways by two documents, and the two ends of the flagship relocation carry entirely different kind strings. A raw-string key would put them in different buckets. See the findings note; this is the highest-value corpus-grounded item in this set."
+    },
+    {
+      "shape": 7,
+      "shape_id": "F7a-supersede-over-subconfirmed-identity",
+      "shape_title": "The D1 tail - supersede over a sub-confirmed identity, and its earned mirror",
+      "scope_items": [
+        "7 (R1.4 - the supersede must not remove the analyst over an unearned identity)"
+      ],
+      "refs": [
+        "D1",
+        "R1.1",
+        "R1.2",
+        "R1.4",
+        "G16 amended"
+      ],
+      "purpose": "Two anonymous presences that a co-location-friendly scorer wants to fuse, whose fusion turns two site edges into one body's before-and-after, promoting a relocation the analyst is never asked about - and deleting the named gap that said the identity was unresolved.",
+      "why_hard": "No component lies and no source is planted. Two real, well-graded surveys of two real, similar, nearby installations are enough. Every signal that normally means 'same thing' is present - same design, same operator, same region, near-identical descriptions - and the one signal that would separate them, a body designation, is stated absent on both. The harm is not the merge; it is what the merge unlocks downstream, and it arrives as a positively-asserted movement claim with the human removed. The second half is subtler: an honest 'insufficient evidence' attached to the older edge becomes 'stale' when the edge is retired, so the gap that documented the uncertainty is destroyed by the act that depended on it.",
+      "documents": [
+        {
+          "doc_label": "survey-Y1",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-01-18",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - CALDER APRON\nCollected 18 January 2025\n\nA group of TL-40 skid-pattern units and one cabinet are visible on the apron. Operator assessed\nas Northern Grid Works from the access-road markings. No body designation is visible."
+        },
+        {
+          "doc_label": "survey-Y2",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-03-27",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - REDLOW APRON\nCollected 27 March 2025\n\nA group of TL-40 skid-pattern units and one cabinet are visible on the apron, in a fan\narrangement. Operator assessed as Northern Grid Works from the access-road markings. No body\ndesignation is visible. Redlow lies approximately 11 km from the Calder apron."
+        }
+      ],
+      "extractor_emitted": "Two sightings of the same design at two sites, on two dates, from one publisher, with an operator assessed on both and no designation on either. A named gap exists on the earlier site edge recording that the operating body is unresolved and when the next pass is due.",
+      "facts": [
+        {
+          "fact": "TL-40 skid units and a cabinet at the Calder apron (2025-01-18)",
+          "routing": "instance",
+          "why": "presence 1"
+        },
+        {
+          "fact": "TL-40 skid units and a cabinet at the Redlow apron (2025-03-27), ~11 km away",
+          "routing": "instance",
+          "why": "presence 2"
+        },
+        {
+          "fact": "operator assessed as Northern Grid Works on both, from access-road markings",
+          "routing": "instance",
+          "why": "an ASSESSED, not stated, operator - identical on both, so it pushes toward identity while being the weaker kind of evidence"
+        },
+        {
+          "fact": "no body designation visible at either site",
+          "routing": "gap",
+          "why": "the discriminator that would settle it is stated absent on both sides"
+        },
+        {
+          "fact": "a named gap on the earlier edge: operating body unresolved, next coverage due",
+          "routing": "gap",
+          "why": "the honest insufficient-evidence record that must survive whatever happens to the edge"
+        }
+      ],
+      "discriminators": {
+        "operator": "ASSESSED (not stated) and IDENTICAL - pushes toward a merge, on the weakest available basis",
+        "geography": "STATED as two named aprons ~11 km apart - different places, and close enough to look like one deployment area",
+        "designation": "STATED ABSENT on both - so the top rung of the ladder has nothing",
+        "time": "STATED exactly, ten weeks apart, with no overlap and no end dates"
+      },
+      "expected_outcome": "The two presences must not be fused into one formation on this evidence, so no shared basing instance is created and no before-and-after pair exists to promote. If a supersession is nevertheless proposed, it must not be machine-adjudicated: the pair stays with the analyst, no relocation edge is drawn, and the credibility of the newer assertion is not allowed to stand in for the identity of its subject - the floor grades the claim, not the sameness of the two bodies. The older edge's named gap must survive intact; an unresolved identity must not be converted into a stale fact by the act of retiring the edge. The honest output is two presences, an open question about whether they are one body, and both gaps still standing.",
+      "tempting_but_wrong": [
+        "Fuse the two presences because the descriptions are near-identical and the design, operator and region all agree, then promote the resulting before-and-after because the newer survey clears the credibility floor. One identity error becomes a positively asserted movement, and the analyst is told it was adjudicated.",
+        "Draw the relocation because the two targets differ. Differing targets are what makes the claim interesting, not what licenses it.",
+        "Delete the retired edge's Known Gap as no longer applicable. The gap was about the identity, which is exactly what has not been established; deleting it turns an honest 'insufficient evidence' into a confident 'stale'.",
+        "Pop the pair out of the analyst's queue as machine-adjudicated. Machine promotion is only legitimate over an identity the system actually earned, and here it earned nothing.",
+        "Treat the assessed operator as a stated one. It is the surveyor's read of road markings."
+      ],
+      "negative_gold": [
+        "'Operator assessed as' is an assessment, not a stated operator.",
+        "The 11 km figure locates the two aprons relative to each other; it says nothing about whether one body occupies both."
+      ],
+      "corpus_status": "PARTIALLY EXERCISABLE. The corpus has the ingredients - two sites, one design, no designations, a relocation beat, and a supersede floor built against a low-grade spoof - but not the trap, because it contains no two co-located same-type formations to fuse. The chain from identity error to drawn relocation therefore cannot be demonstrated end to end on the frozen corpus, which is why it went unnoticed."
+    },
+    {
+      "shape": 7,
+      "shape_id": "F7b-supersede-legitimately-earned",
+      "shape_title": "The D1 tail - supersede over a sub-confirmed identity, and its earned mirror",
+      "scope_items": [
+        "7 (the mirror - an earned supersede must still work)",
+        "5 (carry forward the relational mitigation)"
+      ],
+      "refs": [
+        "R1.4",
+        "D-13.6",
+        "co_instances / relational mitigation"
+      ],
+      "purpose": "The same two site edges, but the identity is earned on a stated designation at both ends, by good sources, with the same site kind. The supersede should work - and must not manufacture relational evidence that the two sites are one place.",
+      "why_hard": "A gate written only against F7a will forbid the machinery outright, and then a real, well-evidenced relocation - the thing the system is for - stops being detectable. This fixture is the other direction, and it also carries the trap that follows a correct relocation: once one body is linked to both sites, the two sites share a neighbour, so a scorer that reads shared neighbourhood as identity evidence will start proposing that the origin and the destination are the same place. A dated relationship to two different neighbours at two different times is not one relationship.",
+      "documents": [
+        {
+          "doc_label": "survey-Z1",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-01-18",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - CALDER APRON (forward station)\nCollected 18 January 2025\n\nTL-40 skid-pattern units of the 7th Transfer Section are visible on the apron; the Section's\nboard is legible at the gate. Northern Grid Works."
+        },
+        {
+          "doc_label": "survey-Z2",
+          "source_grade": "B",
+          "source_bias": "commercial survey vendor",
+          "doc_date": "2025-03-27",
+          "doc_kind": "aerial survey extract",
+          "text": "AERIAL SURVEY EXTRACT - REDLOW APRON (forward station)\nCollected 27 March 2025\n\nTL-40 skid-pattern units of the 7th Transfer Section are visible on the apron; the Section's\nboard is legible at the gate. Northern Grid Works. The Calder apron was re-imaged on the same\npass and is empty."
+        }
+      ],
+      "extractor_emitted": "Two basings for one NAMED body at two sites of the same kind, on two dates, with the destination pass also re-imaging the origin and finding it empty.",
+      "facts": [
+        {
+          "fact": "7th Transfer Section's skid units at the Calder apron, gate board legible (2025-01-18)",
+          "routing": "instance",
+          "why": "basing 1, identified by a stated designation rather than by co-location"
+        },
+        {
+          "fact": "7th Transfer Section's skid units at the Redlow apron, gate board legible (2025-03-27)",
+          "routing": "instance",
+          "why": "basing 2, same designation, same operator, same site kind"
+        },
+        {
+          "fact": "the Calder apron was re-imaged on the same pass and is empty",
+          "routing": "instance",
+          "why": "a dated negative observation at the origin - the evidence that makes this a move rather than two basings"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED on both, identical",
+        "geography": "STATED as two named aprons, both described as forward stations - the SAME site kind, so shape 6 does not de-conflict them",
+        "designation": "STATED and IDENTICAL on both - the identity is earned here, not assumed",
+        "time": "STATED exactly, with a dated vacancy at the origin on the later pass"
+      },
+      "expected_outcome": "The relocation should be drawn: one body, one basing instance, an earlier edge retired and a later one current, with the origin's dated vacancy supporting the move. Promotion is legitimate here because the identity rests on a stated designation at both ends rather than on the two sightings being near each other. Two things must not follow from it. First, the retired edge's gaps and provenance must remain readable - retiring an edge is not erasing its history. Second, the fact that one body is now attached to both sites must not become evidence that the two sites are the same place, or that either presence at one site is the same individual as a presence at the other: the relationship to the origin and the relationship to the destination are two dated relationships, and a re-keying that collapses them into one shared neighbour link would manufacture exactly that.",
+      "tempting_but_wrong": [
+        "Forbid the promotion because the gate learned from F7a to distrust all supersessions. The system then cannot report the one movement it has genuinely earned.",
+        "Let the two sites merge, or become merge candidates, on the strength of their new shared unit neighbour. The relocation created that neighbour; using it as identity evidence is circular and would collapse the origin and destination of every move the system detects.",
+        "Treat the origin's empty re-image as a contradiction of the earlier sighting. A dated vacancy after a dated presence is a change, not a conflict.",
+        "Drop the origin basing entirely once superseded, so the order of battle loses the body's history."
+      ],
+      "negative_gold": [
+        "The gate board is the licensing evidence for the designation, not a separate claim about the site.",
+        "'same pass' is collection metadata; the origin's vacancy is the claim."
+      ],
+      "corpus_status": "NOT EXERCISABLE as written. The corpus's relocation beat has no designation at either end - there is no numbered body anywhere in it - so a legitimately earned supersede cannot be constructed from it. Its relocation is earned on geography and imagery alone, which is precisely the class this shape is meant to distinguish from."
+    },
+    {
+      "shape": 8,
+      "shape_id": "F8a-customs-spine-inexpressible",
+      "shape_title": "Inexpressible sourced relations (D12's customs spine, and operator)",
+      "scope_items": [
+        "5 (ontology additions: the event-to-trading-org edge; re-examine imported-by)"
+      ],
+      "refs": [
+        "D12",
+        "spine/13 §10",
+        "plan §7 item 5"
+      ],
+      "purpose": "A customs declaration whose actual spine is event - consignee - shipper, so that the ontology gap is demonstrable rather than asserted: the relations the document states have no lane, and the relation it does not state is the one the schema offers.",
+      "why_hard": "The pressure is structural, not a bug in any component. Faced with a document that states a consignee and a shipper and no military unit, an extractor scored on coverage has two ways to produce output and both are wrong: relabel the shipper as a maker so an available edge fits, or invent a recipient so another one does. A schema that makes the sourced relation inexpressible and the unsourced relation easy is not neutral - it pushes toward asserting what nobody said.",
+      "documents": [
+        {
+          "doc_label": "customs-AA",
+          "source_grade": "C",
+          "source_bias": "commercial record",
+          "doc_date": "2020-11",
+          "doc_kind": "inbound customs declaration extract",
+          "text": "REGIONAL PORT AUTHORITY - INBOUND DECLARATION EXTRACT\nTerminal: Brightwater International Freight Terminal\n\nDEC No: NGQA-HC-2020-204471            Filing Date: 04-11-2020\nPoint of Discharge: NORTHGATE HARBOUR BASIN\nWaybill No: CLWW307556104\n\nReceiver:      BRAMWELL ELECTRO TRADING (PVT) LTD - REG 5107443-9\nSender:        HALCYON IMPEX CO, LTD\nSender Ctry:   CALDONIA\nFreight Fwdr:  ASHLAND CARGO SERVICES - Cert No. RG-TT-0774\n\nTariff Code:   9914.61.00\nDescription (as filed): \"SENSOR APPARATUS PARTS / ELECTRONIC ASSEMBLY - SPARE, FOR INDUSTRIAL\n               METERING AID, NOT FOR RESALE, 1 LOT\"\n\nDelivery instructions (broker note, handwritten annotation on file copy):\n  \"receiver to arrange onward clearance - final destination Plant Depot, ~14 km NNE of Kestrel\n  Ridge / Ashcombe Yard area\"\n\nEnd-user certificate on file: NOT ATTACHED TO DEC."
+        }
+      ],
+      "extractor_emitted": "An import event with a declaration reference; a consignee organization; a shipper organization; a forwarder organization; a destination from a handwritten broker note. No unit and no manufacturer appears anywhere in the document.",
+      "facts": [
+        {
+          "fact": "declaration NGQA-HC-2020-204471 filed 04-11-2020",
+          "routing": "instance",
+          "why": "the event, identified by a hard reference"
+        },
+        {
+          "fact": "receiver is Bramwell Electro Trading (Pvt) Ltd, registration 5107443-9",
+          "routing": "instance",
+          "why": "a STATED relation from the event to a trading organization - and there is no edge for it"
+        },
+        {
+          "fact": "sender is Halcyon Impex Co, Ltd, of Caldonia",
+          "routing": "instance",
+          "why": "the second STATED relation from the event to a trading organization - also with no edge"
+        },
+        {
+          "fact": "freight forwarder is Ashland Cargo Services, trusted-trader certificate RG-TT-0774",
+          "routing": "instance",
+          "why": "a third organization in the spine, likewise uncarriable"
+        },
+        {
+          "fact": "declared purpose is civil industrial metering spares, not for resale",
+          "routing": "instance",
+          "why": "a STATED civil purpose; any other reading is derived and must be labelled so"
+        },
+        {
+          "fact": "final destination from a handwritten broker note, given only as a relative bearing from two alternative anchors",
+          "routing": "instance",
+          "why": "a place claim of the weakest available kind, from an annotation"
+        },
+        {
+          "fact": "end-user certificate NOT attached",
+          "routing": "gap",
+          "why": "a stated absence of the document that would settle end use"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED only as the sender's country",
+        "geography": "STATED for the discharge point; RELATIVE-ONLY and doubly-anchored for the destination",
+        "designation": "STATED as hard identifiers for the event and the parties - the one place in this whole set where an identifier can decide identity",
+        "time": "STATED exactly (2020-11-04)"
+      },
+      "expected_outcome": "Both stated relations - event to consignee and event to shipper - must survive the build with their provenance intact, which means the schema has to be able to express them. Neither organization may be retyped as a maker to fit an available lane, and no recipient body may be invented to fit another. If nothing can carry a stated relation, the honest output is an explicitly recorded expressiveness gap naming the relation that could not be represented - never a silent drop and never a coerced edge. The declared civil purpose is what the document states; the handwritten destination is an annotation with two alternative anchors and must not become a confirmed site; and the missing end-user certificate is a gap with a named missing slot.",
+      "tempting_but_wrong": [
+        "Type the shipper as a manufacturer so the available exporter edge fits. This fabricates a design-and-manufacture relation from a document that describes a freight movement, and it does so while looking like careful schema compliance.",
+        "Invent a recipient body - named after the depot in the broker note, or after the operator the rest of the collection talks about - so the recipient edge fits. The document names no unit at all.",
+        "Drop both relations silently because no lane exists. That loses the only supply-chain relation the document actually states, and the loss is invisible.",
+        "Read the goods description's stated civil purpose as cover and record a military end use. That is an inference presented as the document's content, on a document that also states no examination was performed and no end-user certificate is attached.",
+        "Treat the handwritten destination as a site with a position, by averaging its two alternative anchors."
+      ],
+      "negative_gold": [
+        "The tariff code is a filing datum, not a statement about contents.",
+        "The broker's handwritten note is the weakest thing in the record and must not be promoted by being the most specific."
+      ],
+      "corpus_status": "EXERCISABLE, and already true of the frozen corpus: the customs document's spine is exactly this, and it is unrepresentable today. Verified further - the trading-organization node type is named by NO edge type at all, in either direction, so a correctly typed consignee or shipper can only ever exist as an isolated node. The corpus also supplies the identifier-rich half genuinely: this is the one document where a shared hard identifier could decide an identity."
+    },
+    {
+      "shape": 8,
+      "shape_id": "F8b-operator-relation-and-refutation-no-carrier",
+      "shape_title": "Inexpressible sourced relations (D12's customs spine, and operator)",
+      "scope_items": [
+        "5 (ontology additions: operated-by)"
+      ],
+      "refs": [
+        "D7",
+        "D12 (same hazard class)",
+        "G18 names operated-by"
+      ],
+      "purpose": "A stated operator RELATION and a stated REFUTATION of one, neither of which has a carrier while operator exists only as an attribute. The second shape of the same anti-fabrication hazard as F8a.",
+      "why_hard": "Operator is the discriminator directly below designation in the ladder, and sources state it as a relation at least as often as they state it as an attribute. With no relation to carry it, a stated operator has to be flattened into an attribute of whichever node the extractor happened to pick, and a stated NON-operation has nowhere to go at all - so the cleanest refutation in the document, which is what would keep two designs apart, is the fact most likely to be dropped.",
+      "documents": [
+        {
+          "doc_label": "press-BB",
+          "source_grade": "C",
+          "source_bias": "third-party trade press",
+          "doc_date": "2025-02",
+          "doc_kind": "trade press item",
+          "text": "Who Actually Runs the TL-40X?\nStaff correspondent - February 2025\n\nThe Water Authority's Plant Command is believed to operate the TL-40 within its southern\ntransfer belt. There is no confirmed evidence that the Water Authority operates the TL-40X, and\nthe Authority declined to comment on the point."
+        }
+      ],
+      "extractor_emitted": "An operator attribute on one design; nothing at all for the refutation.",
+      "facts": [
+        {
+          "fact": "the Water Authority's Plant Command is believed to operate the TL-40",
+          "routing": "instance",
+          "why": "a stated operator RELATION between an organization and a design, hedged"
+        },
+        {
+          "fact": "'within its southern transfer belt'",
+          "routing": "neither",
+          "why": "an area of responsibility, not a place"
+        },
+        {
+          "fact": "there is no confirmed evidence that the Water Authority operates the TL-40X",
+          "routing": "instance",
+          "why": "a stated NEGATIVE - a refutation with no relation to attach to, and the strongest anti-identity evidence in the document"
+        },
+        {
+          "fact": "the Authority declined to comment",
+          "routing": "gap",
+          "why": "a named reason the gap does not close from this source"
+        }
+      ],
+      "discriminators": {
+        "operator": "STATED as a relation, hedged ('is believed to'), for one design; and stated NEGATIVELY for the other",
+        "geography": "AREA ONLY - a belt, which is a responsibility rather than a place",
+        "designation": "STATED at design level for both; ABSENT at body level",
+        "time": "STATED as a month (2025-02)"
+      },
+      "expected_outcome": "The stated operator relation must be representable as a relation, carrying the source's hedge, so that a conflicting operator statement from another source can meet it head-on as a relationship conflict rather than as two attribute values on nodes that may or may not be the same node. The refutation must also land somewhere - a stated 'this operator does not operate that design' is evidence, and it is the kind of evidence that keeps two similar designs apart. If neither has a carrier, the honest output is a recorded expressiveness gap naming what could not be represented, not a silent drop and not a coerced attribute. The belt must not become a site.",
+      "tempting_but_wrong": [
+        "Flatten the stated relation into an operator attribute on whichever node was convenient, so that two sources stating different operators for one design produce two attribute values on two nodes and never meet as a conflict.",
+        "Drop the refutation because negatives have no lane. The single most useful anti-identity fact in the document disappears, and the two designs are left with nothing keeping them apart except a hedge.",
+        "Record the refutation as a positive claim with inverted polarity on some other edge, so that a later reader sees an operation relation whose sign depends on a field nobody reads.",
+        "Turn 'southern transfer belt' into a site so the operator relation has somewhere geographic to live."
+      ],
+      "negative_gold": [
+        "'is believed to' is a hedge that must survive onto the claim.",
+        "'declined to comment' asserts nothing about operation and is a reason a gap stays open."
+      ],
+      "corpus_status": "EXERCISABLE, and live in the frozen corpus: the operator relation is stated in relation form in at least two documents, the corpus contains a genuine cross-service operator conflict for one design, and it contains the exact refutation shape for the flagship false-merge trap - which today has nowhere to go. Verified: no operator relation exists in the ontology."
+    }
+  ]
+}
