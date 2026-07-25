@@ -17,8 +17,17 @@ consumer yet, so S2 is its first**).
 
 S1's headline was *zero behavioural change*. **S2's is not.** This stage changes what the graph contains, so:
 
-- **Flag OFF ⇒ byte-identical to S1** (real-corpus view hash `22d668a3…dac3a9`, 160 nodes / 73 edges; golden
-  md5 `bb6f16a516c31eb0846494b62271a601`). That is the safety property.
+- **Flag OFF ⇒ byte-identical to S1.** Golden md5 `bb6f16a516c31eb0846494b62271a601`. **Two different
+  real-corpus surfaces exist and BOTH are valid — label which you mean** (resolved 2026-07-25 after the test
+  hand measured a different number than the orchestrator; neither was wrong):
+  | surface | measurement | what it is |
+  |---|---|---|
+  | **booted app** | **160 nodes / 73 edges / 18 gaps / 450 claims**, hash `22d668a3…dac3a9` | what the running system serves — and it **deliberately withholds `d18_rahwali_pass1` + `d19_rahwali_confirm`** from the boot seed, to be ingested live for the demo |
+  | **full scenario via the test harness** | **169 nodes / 80 edges / 71 events / 20 gaps** | every claim, nothing withheld |
+  **Use the full-scenario harness surface for S2's flag-off test.** The reason is load-bearing: the two
+  withheld documents are *exactly the flagship relocation pair*, so a flag-off assertion measured on the
+  **booted** view is **blind to the relocation/supersede surface S2 most changes** (items 5–7). The booted
+  number stays useful as an integration check, not as the gate.
 - **Flag ON ⇒ the graph MUST change.** An unchanged graph with the flag on means the stage did nothing (plan
   §5a-bis). Do not report "byte-identical" as success.
 - **F8 (load-bearing):** S2 lands *before* the coref mint grain (S3), so instances fragment **per-mention**.
