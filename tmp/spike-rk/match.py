@@ -149,19 +149,32 @@ def _contains(hay, needle) -> bool:
     return False
 
 
-def run_assert(case_out: dict, a: dict) -> tuple[str, str]:
+def run_assert(case_out: dict, a: dict, case_in: dict | None = None) -> tuple[str, str]:
     """-> (PASS | FAIL | UNRESOLVED, detail)."""
     op = a.get("op")
     val = a.get("value")
 
     if op == "any_of":
+        # The case author spells the branches `asserts` (README: "any_of holds a list of sub-asserts");
+        # accept `value` too so either spelling works.
+        branches = a.get("asserts") or (val if isinstance(val, list) else None) or []
         details = []
-        for sub in val or []:
-            st, d = run_assert(case_out, sub)
+        for sub in branches:
+            st, d = run_assert(case_out, sub, case_in)
             if st == "PASS":
                 return "PASS", "any_of satisfied"
             details.append(f"{st}:{d}")
+        if not branches:
+            return "FAIL", "any_of carried no branches (matcher could not read them)"
         return "FAIL", "no branch passed [" + " | ".join(details) + "]"
+
+    # The global invariants may also be asserted per-case; dispatch them here.
+    if op in ("atom_conservation", "no_fabricated_discriminator"):
+        if case_in is None:
+            return "UNRESOLVED", f"{op} needs the case input"
+        fn = {"atom_conservation": inv_atom_conservation,
+              "no_fabricated_discriminator": inv_no_fabricated_discriminator}[op]
+        return fn(case_in, case_out)
 
     if op in ("same_instance", "distinct_instance"):
         ra, rb = val
@@ -195,6 +208,11 @@ def run_assert(case_out: dict, a: dict) -> tuple[str, str]:
     if op in ("absent",):
         return ("PASS", "absent") if not resolved or not vals or all(
             v in (None, [], {}, "") for v in vals) else ("FAIL", f"present: {vals!r}")
+    # "Correctly zero" is a real answer, not an unresolved selector: a count assert whose target is 0
+    # (or a <= bound) is satisfied by an empty resolution.
+    if not resolved and op in ("count_equals", "count_lte") and isinstance(val, int):
+        return ("PASS", "empty == 0") if (op == "count_lte" or val == 0) \
+            else ("FAIL", f"count 0 != {val}")
     if not resolved:
         return "UNRESOLVED", f"selector {a.get('path')!r} resolved to nothing"
 
@@ -241,25 +259,65 @@ def inv_atom_conservation(case_in: dict, case_out: dict) -> tuple[str, str]:
 
 
 def inv_no_fabricated_discriminator(case_in: dict, case_out: dict) -> tuple[str, str]:
-    stated: set[str] = set()
+    """Every discriminator value must be stated by a mention in THAT instance's own membership.
+
+    Scoped **per instance**, not pooled across the case: pooling would let a value be transplanted from a
+    neighbouring document onto a thin instance — which is precisely the non-negotiable breach the
+    thin-context case exists to catch, so a pooled invariant would pass the fabrication it guards.
+    Matching is exact on a normalized form, not bidirectional substring, for the same reason.
+    """
+    def norm(s) -> str:
+        return re.sub(r"[^a-z0-9]+", "", str(s).lower())
+
+    mention_of: dict[tuple[str, str], dict] = {}
     for d in case_in.get("documents", []):
         for m in d.get("mentions", []):
-            stated.add(str(m.get("surface", "")).lower())
-            for v in (m.get("attrs") or {}).values():
-                stated.add(str(v).lower())
-        for e in d.get("edges", []):
-            for k in ("event_time",):
-                if e.get(k):
-                    stated.add(str(e[k]).lower())
+            mention_of[(d["doc_id"], m["local_id"])] = m
+    edges_of: dict[str, list] = {d["doc_id"]: d.get("edges", []) for d in case_in.get("documents", [])}
+
     bad = []
     for inst in case_out.get("instances") or []:
+        # This instance's own stated vocabulary: surfaces + attrs of its member mentions, plus the
+        # event_times of edges touching those mentions.
+        own: set[str] = set()
+        members: list[tuple[str, str]] = []
+        for ref, m in mention_of.items():
+            found = resolve_instance(case_out, f"{ref[0]}.{ref[1]}")
+            if found is not None and found.get("instance_id") == inst.get("instance_id"):
+                members.append(ref)
+                own.add(norm(m.get("surface", "")))
+                for v in (m.get("attrs") or {}).values():
+                    own.add(norm(v))
+        for doc, local in members:
+            for e in edges_of.get(doc, []):
+                if local in (e.get("subject_local_id"), e.get("object_local_id")):
+                    if e.get("event_time"):
+                        own.add(norm(e["event_time"]))
+                    other = e.get("object_local_id") if e.get("subject_local_id") == local \
+                        else e.get("subject_local_id")
+                    om = mention_of.get((doc, other))
+                    if om:  # a geography slot legitimately names the edge's other endpoint
+                        own.add(norm(om.get("surface", "")))
+        own.discard("")
         for slot, v in (inst.get("discriminators") or {}).items():
             if v is None or str(v).lower() in ("unknown", ""):
                 continue
-            sv = str(v).lower()
-            if not any(sv in s or s in sv for s in stated if s):
-                bad.append(f"{inst.get('instance_id')}.{slot}={v!r}")
-    return ("PASS", "no fabricated values") if not bad else ("FAIL", f"unstated: {bad}")
+            # Each component of the value must trace to this instance's OWN stated vocabulary. A composite
+            # (D-13.20's `(operator, designation)` AND-key) is derived, not fabricated, when every
+            # component traces. Matching stays containment-based *within the instance's own vocabulary*
+            # because value normalization is a design requirement (R5.2) — a normalizer legitimately turns
+            # a stated "3rd" into "3", so exact equality would flag correct behaviour. The load-bearing
+            # strictness is the **per-instance scoping**: it catches a value transplanted from another
+            # instance or another document, which is the fabrication the thin-context case tests.
+            def traces(x: str) -> bool:
+                nx = norm(x)
+                return bool(nx) and any(nx in s or s in nx for s in own)
+
+            parts = [p for p in re.split(r"\s*[+|/,]\s*", str(v)) if p.strip()]
+            if traces(str(v)) or (len(parts) > 1 and all(traces(p) for p in parts)):
+                continue
+            bad.append(f"{inst.get('instance_id')}.{slot}={v!r}")
+    return ("PASS", "no fabricated values") if not bad else ("FAIL", f"unstated-by-own-members: {bad}")
 
 
 def _canon(case_out: dict) -> str:
@@ -318,7 +376,7 @@ def main() -> int:
 
         hard_ok = True
         for a in exp.get("_assert", []):
-            st, detail = run_assert(out, a)
+            st, detail = run_assert(out, a, cases.get(cid))
             adv = bool(a.get("advisory"))
             tag = "ADV " if adv else ""
             if st == "PASS":

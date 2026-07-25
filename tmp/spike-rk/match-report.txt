@@ -86,7 +86,7 @@
   PASS  distinct_instance ['d01.m1', 'd01.m3']
   PASS  count_gte instances
   PASS  not_equals pair_verdicts[@d01.m1|@d01.m3].verdict
-  UNRESOLVED  atom_conservation  -> selector None resolved to nothing
+  PASS  atom_conservation 
   ADV PASS  count_equals instances
   ADV PASS  present gaps[about=@d01.m1]
   INV-OK    I1-atom-conservation
@@ -109,21 +109,21 @@
   PASS  distinct_instance ['d01.m1', 'd01.m2']
   PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
   PASS  equals pair_verdicts[@d01.m1|@d01.m2].same_doc
-  UNRESOLVED  count_equals derived_edges[kind=relocation,drawn=true] -> selector 'derived_edges[kind=relocation,drawn=true]' resolved to nothing
-  FAIL  any_of  -> no branch passed []
+  PASS  count_equals derived_edges[kind=relocation,drawn=true]
+  PASS  any_of 
   ADV FAIL  equals pair_verdicts[@d01.m1|@d01.m2].ceiling -> got [None], want 'probable'
   ADV UNRESOLVED  equals instances[@d01.m1].discriminators.count -> selector 'instances[@d01.m1].discriminators.count' resolved to nothing
   INV-OK    I1-atom-conservation
   INV-OK    I2-no-fabricated-discriminator
   INV-OK    I3-determinism
-  => FAIL
+  => PASS
 
 === rk-10-colocated-presence-no-contrast-merges
   FAIL  same_instance ['d01.m1', 'd01.m2'] -> not fused (verdicts=['possible'])
   FAIL  equals pair_verdicts[@d01.m1|@d01.m2].verdict -> got ['possible'], want 'confirmed'
   FAIL  equals instances[@d01.m1].citizen -> got ['design'], want 'presence'
-  UNRESOLVED  count_equals instances[citizen=formation] -> selector 'instances[citizen=formation]' resolved to nothing
-  UNRESOLVED  count_equals derived_edges[kind=based-at,drawn=true] -> selector 'derived_edges[kind=based-at,drawn=true]' resolved to nothing
+  PASS  count_equals instances[citizen=formation]
+  PASS  count_equals derived_edges[kind=based-at,drawn=true]
   INV-OK    I1-atom-conservation
   INV-OK    I2-no-fabricated-discriminator
   INV-OK    I3-determinism
@@ -219,7 +219,7 @@
 
 === rk-19-thin-context-insufficient-evidence
   FAIL  equals instances[@d01.m1].citizen -> got ['design'], want 'presence'
-  UNRESOLVED  count_equals derived_edges[kind=based-at,drawn=true] -> selector 'derived_edges[kind=based-at,drawn=true]' resolved to nothing
+  PASS  count_equals derived_edges[kind=based-at,drawn=true]
   PASS  distinct_instance ['d01.m1', 'd02.m1']
   UNRESOLVED  present gaps[about=@d01.m1] -> selector 'gaps[about=@d01.m1]' resolved to nothing
   UNRESOLVED  present gaps[about=@d01.m1].missing -> selector 'gaps[about=@d01.m1].missing' resolved to nothing
@@ -234,7 +234,7 @@
   => FAIL
 
 === rk-20-colocation-no-fabricated-relocation
-  UNRESOLVED  count_equals derived_edges[kind=relocation,drawn=true] -> selector 'derived_edges[kind=relocation,drawn=true]' resolved to nothing
+  PASS  count_equals derived_edges[kind=relocation,drawn=true]
   FAIL  same_instance ['d01.m1', 'd02.m1'] -> not fused (verdicts=['possible'])
   PASS  distinct_instance ['d01.m1', 'd03.m1']
   PASS  distinct_instance ['d01.m3', 'd02.m3']
@@ -271,14 +271,14 @@
 
 === rk-23-two-candidate-formations-no-silent-pick
   PASS  not_silently_dropped d01.m4
-  FAIL  any_of  -> no branch passed []
+  PASS  any_of 
   PASS  distinct_instance ['d01.m3', 'd01.m4']
-  UNRESOLVED  atom_conservation  -> selector None resolved to nothing
+  PASS  atom_conservation 
   ADV PASS  present gaps[about=@d01.m4]
   INV-OK    I1-atom-conservation
   INV-OK    I2-no-fabricated-discriminator
   INV-OK    I3-determinism
-  => FAIL
+  => PASS
 
 === rk-24-reprint-is-not-independent-corroboration
   FAIL  not_equals pair_verdicts[@d01.m1|@d02.m1].verdict -> got ['confirmed'], must differ from 'confirmed'
@@ -291,5 +291,5 @@
   => FAIL
 
 ========================================================================
-CASES: 13/24 pass · hard asserts passed: 90 · advisory not-met: 13
-FAILED: rk-07-referent-declines-on-discriminator-conflict, rk-09-contrast-enumeration-two-sites, rk-10-colocated-presence-no-contrast-merges, rk-14-shared-designation-operator-differs-no-confirm, rk-17-design-name-plus-one-signal-confirms, rk-18-unnormalized-operator-no-false-wall, rk-19-thin-context-insufficient-evidence, rk-20-colocation-no-fabricated-relocation, rk-22-garrison-plus-forward-site-not-relocation, rk-23-two-candidate-formations-no-silent-pick, rk-24-reprint-is-not-independent-corroboration
+CASES: 15/24 pass · hard asserts passed: 99 · advisory not-met: 13
+FAILED: rk-07-referent-declines-on-discriminator-conflict, rk-10-colocated-presence-no-contrast-merges, rk-14-shared-designation-operator-differs-no-confirm, rk-17-design-name-plus-one-signal-confirms, rk-18-unnormalized-operator-no-false-wall, rk-19-thin-context-insufficient-evidence, rk-20-colocation-no-fabricated-relocation, rk-22-garrison-plus-forward-site-not-relocation, rk-24-reprint-is-not-independent-corroboration
