@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import pytest
 
+from chanakya.resolve.rconfig import ResolveConfig
 from tests import _rk_coref as rc
 
 # One designator, two armies — the reuse D-13.20 is about.
@@ -306,11 +307,23 @@ def test_the_operator_slot_is_declared_critical() -> None:
 
     The shipped config records why it was not critical yet — "promoting them to critical needs value
     normalisation first (a later stage)". S3 is that stage.
+
+    Read through the flag-RESOLVED accessor, not the raw yaml row, because the promotion is ``earned_role``-
+    gated: the row PREDATES S3, so flattening it to ``role: critical`` would move the flag-off graph (measured
+    at 169/80/20 -> 170/84/21 — unnormalised branch strings turning into drawn walls, the "shatters legitimate
+    merges" outcome the shipped comment predicts). The substantive requirement is unchanged: under S3 the
+    operator slot must BE critical.
     """
-    entry = dict(rc.resolution_keys().get("attribute_roles", {}).get("unit", {}).get("service_branch") or {})
+    cfg = ResolveConfig.from_bundle(rc.bundle())
+    entry = cfg.attribute_roles("unit").get("service_branch") or {}
     assert entry.get("role") == "critical", (
-        f"unit.service_branch is declared {entry!r}. Once normalization exists, a different service branch "
-        "is a different entity — that promotion is the whole reason C7 makes normalization a prerequisite."
+        f"unit.service_branch resolves to {entry!r} with the stage flag on. Once normalization exists, a "
+        "different service branch is a different entity — that promotion is the whole reason C7 makes "
+        "normalization a prerequisite."
+    )
+    assert "service_branch" in cfg.critical_role_attrs("unit"), (
+        f"the role resolves to 'critical' but the compiler does not carry it: critical_role_attrs('unit') = "
+        f"{cfg.critical_role_attrs('unit')}. A declaration no detector reads is inert config."
     )
 
 

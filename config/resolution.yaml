@@ -370,14 +370,22 @@ place_bind_on_curated_toponym: true
 # config/entities.yaml distinct_from), so it produces zero veto pairs and changes no partition. It is
 # declared anyway because the mechanism must be designed for the discipline, not for the corpus in hand.
 #
-# NORMALISATION FINDING (why unit.service_branch and trading_org.origin_country are NOT critical). Both
+# NORMALISATION FINDING (why unit.service_branch and trading_org.origin_country were NOT critical). Both
 # are natural D5 walls in principle (a different branch / country ⇒ a different entity), but the corpus
 # STATES them unnormalised: service_branch appears as 'Air Force' / 'PAF' / 'Pakistan Air Force' (all one
 # branch) and 'Army' / 'Pakistan Army'; origin_country as 'CHINA' vs 'China'. A critical veto compares
 # values exactly (absence ≠ conflict, but 'CHINA' ≠ 'China'), so walling them SHATTERS legitimate merges —
 # it split the three SINO-GALAXY trading-org spellings and would false-wall 'PAF' from 'PAF air defense
-# units'. So they are SUPPORTING here (identity-relevant, never a wall); promoting them to critical needs
-# value normalisation first (a later stage). This is the honest limit of an exact-match wall on this data.
+# units'. That is the honest limit of an exact-match wall on this data, and `value_normalization` (bottom
+# of this file, S3) is what lifts it.
+#
+# WHAT ACTUALLY SHIPS NOW, because the paragraph above described the pre-S3 state and the rows below have
+# since moved: `unit.service_branch` IS promoted — but only with the stage flag on, via the per-field
+# `earned_role: critical` override on its row (see the note there). Flag-off it stays `supporting`, so the
+# flag-off graph is unmoved; flattening the row to a bare `role: critical` was MEASURED to shift it
+# 169/80/20 -> 170/84/21, i.e. exactly the shattering this finding predicts, because unnormalised branch
+# strings become drawn walls before normalisation is consulted. `trading_org.origin_country` is NOT
+# promoted at S3 and remains `supporting` unconditionally, even though normalisation rows exist for it.
 # EVERY entry declares a `time_role` — an omitted one is a silent `durable`, which is how a perishable
 # attribute quietly becomes durable identity support and the D-13.9(a) cap evaporates.
 #
