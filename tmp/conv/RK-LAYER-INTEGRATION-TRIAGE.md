@@ -107,3 +107,52 @@ catch the over-correction. Timidity is a failure mode, not a safe default.
 - **D12's `(from→to)` uniqueness rule forbids one edge per customs role**, so `party_role` is an edge attribute.
   Accepted, and the reasoning is right: splitting by direction would let a flipped write turn a shipper into a
   consignee — the same fabrication class the edge exists to remove.
+
+---
+
+## Round 2 — 4 failures left, and one is a real design fork I have now settled
+
+After both hands' fixes: **1179 passed, 4 failed**. The two that matter are R1.4(b)'s prohibitions, and the
+hands genuinely disagree:
+
+- **Implementer:** (b) rides (a)'s trigger — the prohibitions apply only over an **unearned** identity, because
+  D-13.14 names the gap deletion as a consequence *of the over-merge*. Its unconditional first cut "broke
+  flag-off byte-identity *and* the flagship together", since the flagship's own retirement is under-evidenced.
+- **Test hand:** the prohibitions are **unconditional** — §7 item 7 / C2 say "no Known-Gap deletion and no
+  `insufficient → stale` on the retired edge", full stop.
+
+### The fact that settles it — `stale` is not a free label, it has a defined meaning
+
+`credibility/status.py:49`: `_STALE = "stale"  # the freshest supporting look older than 1 half-life →
+**demote confirmed→stale**`.
+
+So in this system's own vocabulary **`stale` means "this WAS confirmed and has since aged out."** Overwriting
+`insufficient` with `stale` therefore does not merely look untidy — it **asserts something false in the
+system's own terms**: it claims the assertion was once established and has merely gone out of date. *An
+assertion that was never established cannot go stale; there is nothing to age.* That is an over-claim about
+provenance, which is the disqualifying class.
+
+Measured on the real corpus (flag off, booted): `e:unit_hq9b:based-at:site_rawalpindi` is **`insufficient`**,
+carrying a Known Gap (`what_missing='imagery_confirmation'`, ceiling `confirmable`). So the flagship's older
+position is exactly the case in question — we never established the unit was at Rawalpindi.
+
+### Ruling
+
+1. **Both prohibitions hold unconditionally**, *not* conditioned on identity earned-ness. The test hand is
+   right, and the reason is the vocabulary above rather than a preference. Note the two prohibitions guard
+   **different** things and are therefore independent: (a) guards *identity* — is this one unit? (b) guards the
+   **origin's evidential status** — did we ever establish it was there? An earned identity with an
+   unestablished origin is still a relocation whose premise was never confirmed.
+2. **The implementer's objection is answered, not overruled.** Retirement is expressed by **`superseded_by`**
+   (`schemas/view.py:149`), which is independent of the status label — so the beat does not need
+   `insufficient → stale` to read correctly. Rawalpindi is retired because it is superseded; it is
+   *not confirmed* because nobody confirmed it. Both facts survive, which is the honest outcome.
+3. **Both live behind the flag**, like everything else in S2. Flag **off** ⇒ existing behaviour, so flag-off
+   byte-identity is preserved (this was the implementer's real constraint, and it is satisfied by the flag
+   boundary rather than by narrowing the rule). Flag **on** ⇒ both prohibitions apply.
+
+**Why this was worth the round trip.** The implementer's narrowing was a reasonable reading of D-13.14 and it
+was driven by real corpus evidence, not laziness. What broke the tie was neither doc nor intuition but the
+*shipped definition of the label* — which is why "explore the code, not the docs" is a working principle. The
+remaining two failures (the flag-gated glob, and the queue-pop on the sub-confirmed path) are ordinary
+follow-through on rulings already made.
