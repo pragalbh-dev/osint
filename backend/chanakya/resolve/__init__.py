@@ -179,11 +179,25 @@ def _resolve(
         | coref_raise
     )
 
+    # RK-COREF item 11 — THE ORDERING FIX. Place identity is decided BEFORE the fixpoint and joins the
+    # bootstrap, so a place merge is visible to ``relational_score``: two units based at
+    # differently-named-but-identical sites now genuinely share a neighbour key. Ran afterwards (as it did),
+    # a place merge could never scaffold anything, so spine/13 §6's "clean anchor the instance layer
+    # crystallizes onto" was mechanically not one. This is also what makes the name cap survivable rather
+    # than merely strict — a pair can now EARN the one extra signal the cap asks for.
+    place_authoritative: set[Pair] = set()
+    if cfg.earned_identity_on:
+        place_auto, place_hitl = places.place_merge_pairs(graph, cfg, alias_idx, veto, place_of)
+        place_authoritative = {frozenset(p) for p in place_auto}
+        raise_only |= {frozenset(p) for p in place_hitl}
+
     result = resolve_entities(
-        graph, cfg, alias_idx, veto, raise_only, coref_authoritative, raise_walls=crit_raises
+        graph, cfg, alias_idx, veto, raise_only, coref_authoritative,
+        raise_walls=crit_raises, place_identity=place_authoritative,
     )
     result.candidates.extend(ambiguous)  # an endpoint with >1 irreconcilable match is adjudicated, never guessed
-    places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
+    if not cfg.earned_identity_on:
+        places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
 
     partition = _to_partition(claims, result, mention, minted, place_of, lane, graph)

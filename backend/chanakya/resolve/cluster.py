@@ -195,6 +195,7 @@ TRIGGER_ALIAS = "alias-equivalence"
 TRIGGER_EXACT_NAME = "exact-normalised-name"
 TRIGGER_CONTAINMENT = "name-containment-or-acronym"
 TRIGGER_COREF = "authoritative-coreference"
+TRIGGER_PLACE = "curated-gazetteer-anchor"
 #: The triggers that are *nothing but a name*. D-13.20 puts name at the bottom of the discriminator ladder,
 #: ceiling ``possible``.
 NAME_TRIGGERS = frozenset({TRIGGER_EXACT_NAME, TRIGGER_CONTAINMENT})
@@ -206,7 +207,7 @@ NAME_TRIGGERS = frozenset({TRIGGER_EXACT_NAME, TRIGGER_CONTAINMENT})
 #: clause is D3: the cap used to be consulted **only** in the post-fixpoint collection loop, so the Phase-2
 #: fixpoint that actually unions never saw it, and a near-identical name auto-merged at a lowered per-type
 #: floor without anything else agreeing.
-EARNED_TRIGGERS = frozenset({TRIGGER_UNIQUE_ID, TRIGGER_ALIAS, TRIGGER_COREF})
+EARNED_TRIGGERS = frozenset({TRIGGER_UNIQUE_ID, TRIGGER_ALIAS, TRIGGER_COREF, TRIGGER_PLACE})
 
 
 def _name_cap_reason(trigger: str | None, ceiling: str) -> str:
@@ -417,6 +418,7 @@ def resolve_entities(
     raise_only: set[Pair],
     authoritative: set[Pair] | None = None,
     raise_walls: Mapping[Pair, str] | None = None,
+    place_identity: set[Pair] | None = None,
 ) -> ResolveResult:
     """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
 
@@ -440,6 +442,11 @@ def resolve_entities(
     """
     authoritative = authoritative or set()
     raise_walls = raise_walls or {}
+    # RK-COREF item 11: place identity decided BEFORE the fixpoint (``places.place_merge_pairs``) so a place
+    # merge is visible to ``relational_score``. Its own bootstrap channel rather than folded into
+    # ``authoritative``, because labelling a curated-gazetteer anchor "authoritative coreference" in an
+    # analyst-facing reason would be a lie about where the evidence came from.
+    place_identity = place_identity or set()
     res = ResolveResult()
     if not cfg.scorable:
         return res  # no bands configured ⇒ inert (identity partition) — no code literal needed
@@ -450,7 +457,9 @@ def resolve_entities(
     toks = _token_index(graph, cfg)
     pairs = sorted(
         tuple(sorted(p))
-        for p in _candidate_pairs(graph, cfg, alias_idx, raise_only | authoritative | set(raise_walls), toks)
+        for p in _candidate_pairs(
+            graph, cfg, alias_idx, raise_only | authoritative | place_identity | set(raise_walls), toks
+        )
     )
 
     def vetoed(a: str, b: str) -> bool:
@@ -526,6 +535,8 @@ def resolve_entities(
         # veto/type/namespace/contradiction/grade gates upstream — evidence no string comparison can reach.
         if frozenset((a, b)) in authoritative:
             return TRIGGER_COREF
+        if frozenset((a, b)) in place_identity:
+            return TRIGGER_PLACE
         return None
 
     def cross_namespace_or_type(a: str, b: str) -> tuple[str, str] | None:
