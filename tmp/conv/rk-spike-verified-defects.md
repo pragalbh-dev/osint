@@ -285,7 +285,7 @@ source grade.
 
 ---
 
-## D11 — [DATA, needs adjudication] The flagship "confirmed" may rest on nominal rather than real independence
+## D11 — [DEFECT, by the system's own rule] Independence is keyed on publisher class, not evidential lineage
 
 Raised by the independent data hand while hand-labelling the gold slice. **Recorded here, not resolved** — it
 concerns the frozen corpus and the graded oracle, so it belongs to DATA-C / EVAL, and the spike must not
@@ -315,6 +315,24 @@ of d18* or *independently collected and concurring*. That is an interpretation o
 fact, and it is the crux. **Action: DATA-C / EVAL adjudicate the source text.** If derivative, either the
 independence grouping must treat cite-of-a-prior-report as same-group, or the corpus must carry a genuinely
 independent second look.
+
+**RECLASSIFIED 2026-07-25 — this is not an open question, and I was wrong to frame it as one.** The system
+already states the rule *and* the principle:
+- **The rule:** `min_independent_groups: 2` — *"≥2 independent looks required to reach `confirmed`"*
+  (`config/credibility.yaml:101`). One source cannot confirm. There is nothing to adjudicate about that.
+- **The principle already exists in the config, for inferences:** *"an inference shares an independence group
+  with its premises so it can never self-corroborate to confirmed"* (`config/credibility.yaml:160`). That **is**
+  the evidential-lineage rule — derived-from-X sits in X's group. It is simply not applied to a **source that
+  cites a prior report**, which is the same relationship one level up.
+
+So **C8 extends an existing doctrine rather than inventing one**, and that is the stronger framing: the
+independence axis is real and correct in concept; what is wrong is the *key* it groups on. Grouping by
+`source_id`/`source_type` makes two documents "independent" because they have different publishers — which is
+exactly how a report that reads another report counts as a second look. Under the config's own
+premise-sharing logic they are **one** group, so the flagship confirm is **unsupported by the system's own
+rule**, not "possibly" unsupported. The remaining work is mechanical (re-key grouping on lineage) plus one
+data question for DATA/EVAL: whether the corpus should carry a genuinely independent second look, or the
+flagship should honestly read `probable`.
 
 **Two things it reinforces regardless of the outcome:**
 - **D6** — the same nominal-vs-real independence problem applies to *identity merges*, where (unlike claim
