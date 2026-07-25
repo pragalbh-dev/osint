@@ -52,8 +52,10 @@ the endpoint *claims*). Two homes for one fact would be worse than one documente
   optional `context` block on the **seven entity-yielding** mention schemas: `OrgMention`, `UnitMention`,
   `VariantMention`, `ComponentMention`, `SiteMention`, `StockpileMention`, `TechDataMention`.
 * **`schemas/config_models.py`** — `TypeDef.attrs` moves from `list[str]` to `list[AttrDef]`; `AttrDef` carries
-  `name` + optional `discriminator`. Both YAML forms accepted; a name-only entry serialises back to a bare
-  string. `TypeDef.attr_names()` gives the old view. **`config/ontology.yaml` untouched.**
+  `name` + optional `discriminator`. `TypeDef.attr_names()` gives the old view.
+  *(As first built, this also accepted the bare-string form and serialised a name-only entry back to a bare
+  string, leaving `config/ontology.yaml` untouched. **A follow-up user directive removed that compatibility
+  outright** — see §7, which supersedes both properties.)*
 
 **Why one uniform shared block rather than ~15 new per-type fields.** The discriminators exist so the identity
 judge can read them *structurally*. Scattering them as per-type fields (`service_branch` here,
@@ -74,13 +76,13 @@ attribute's **nature** — the same kind of fact as S2's `layer` (design vs inst
 carries — that stays in `attribute_roles` (per (type, attribute), per C6). Putting `discriminator` in
 `resolution.yaml` would make the resolver config restate the ontology.
 
-**Why the entry serialises back to a bare string.** `GET /config/ontology` returns `value.model_dump(mode="json")`
-straight onto the wire, so a naive restructure would change an observable API response — a behavioural change in
-the stage whose headline invariant is that there is none. Collapsing a name-only entry keeps the GET response,
-and the GET→edit→POST round trip, byte-identical until something is actually declared. The collapse tests which
-fields the source **set**, not which fields exist, so it survives S2 adding a field with any default.
-*(Verified against the real `config/ontology.yaml`: every `attrs` list round-trips to the identical bare-string
-list. No frontend consumer of ontology `attrs` exists — checked `frontend/src/**`.)*
+**~~Why the entry serialises back to a bare string.~~ SUPERSEDED by §7.** The original argument was that
+`GET /config/ontology` returns `value.model_dump(mode="json")` straight onto the wire, so restructuring would
+change an observable API response inside the stage whose invariant is that nothing changes. That is still true
+as a *fact* — the GET response for the ontology section now carries structured entries — but the user directive
+correctly ranks a one-time, single-form migration above wire-shape continuity on a config endpoint with no
+consumer. No frontend consumer of ontology `attrs` exists (checked `frontend/src/**`), so nothing reads the
+changed shape.
 
 ### Increment 4 — gate G17, atoms-minted-only-at-ingest (`7d36185`)
 
@@ -253,13 +255,13 @@ nothing (now gate-asserted).
 | `ingest/extract.py` transforms (read-by-key) | **reuse as-is** | why the addition is inert: nothing reads `context` |
 | `schemas/config_models.py:38,41` `DiscriminatorClass`, `AttrDef` | **new code** | `AttrDef` extends `ConfigModel`, so `extra="allow"` still applies |
 | `schemas/config_models.py:100,113` `TypeDef.attrs`, `attr_names` | **extend** | `attr_names()` mirrors the existing `from_types()`/`to_types()` |
-| `config/ontology.yaml` | **untouched** | both forms accepted, so no config change |
+| `config/ontology.yaml` | **migrated** (§7) | all 13 `attrs` lists → 81 `- {name: X}` entries; name-only, no `layer`/`discriminator` values |
 | `tests/gates/_srcscan.py` | **reuse as-is** | imported `PKG_ROOT` only; not edited (avoids colliding with the test hand) |
 | `tests/gates/test_g17_…py` | **new code** | AST scanning modelled on the existing G6/G9/G10/G11 gates |
 
 ---
 
-## 6. Verification — verbatim
+## 6. Verification — verbatim (as of the original four increments; §7 carries the post-migration run)
 
 `cd backend && python3 -m pytest -q` — note that `pyproject.toml` `addopts` already carries `-q`, so this is
 effectively `-qq` and **pytest suppresses the summary line**; the summary-bearing run follows.
@@ -306,3 +308,115 @@ The golden file was never edited; `tests/view/test_rebuild.py` and `tests/gates/
 the rebuilt view byte-for-byte against it, so both invariants hold at full strength. `ruff check chanakya/
 tests/gates/` reports only the 3 pre-existing findings (2 in `view/coverage.py`, 1 in `test_g2_determinism.py`)
 — none in a file this stage touched.
+
+---
+
+## 7. Follow-up ruling — the bare-string `attrs` compatibility is GONE
+
+**User directive, after the four increments above were merged (`114a0f6`).** Remove the legacy bare-string
+`attrs` tolerance entirely — do not keep it, do not defer it to S2. Rationale, and I think it is the right
+call: a dual-form loader biases every later implementer toward the old shape, and a "temporary" tolerance left
+in place is exactly how `config/ontology.yaml` never migrates and the data never bends to the design
+(working-principles #1). One form only. My original wire-shape-continuity argument (§1, struck through)
+optimised the wrong thing — it protected a config endpoint with no consumer at the cost of leaving two shapes
+alive in the substrate.
+
+Branch rebased onto `design/resolution-redesign` first; the rebase **fast-forwarded**, because S1 had already
+been merged at `114a0f6` — so `s1/rk-impl` and the design tip were identical going in, and this change sits on
+top of the merged S1 plus the test hand's merged tests.
+
+### What was migrated
+
+* **`config/ontology.yaml` — all 13 `attrs:` lists → 81 `- {name: X}` entries**, one attribute per line.
+  Name-only: **no `layer` values** (that is A2/RK-LAYER/S2's job) and no `discriminator` values (nothing has a
+  live query behind it yet, and absence must keep reading `unknown`).
+  * **Why one-per-line flow maps** (`- {name: designator}`) rather than a single long flow list: S2 adds
+    `layer` as a *second key on each entry*, so `- {name: designator, layer: instance}` stays one readable line,
+    whereas `attrs: [{name: a, layer: x}, {name: b, layer: y}, …]` on the 9-attribute `variant` type would be
+    a 200-character line. Block form (`- name: X` / `  layer: Y`) would double to two lines per attribute.
+  * Migration was mechanical and **checked, not eyeballed**: the per-type attribute-name lists are identical
+    before and after; every non-`attrs` key in the file is unchanged; and all inline comments are preserved
+    (diffed the sorted comment set — including `techdata_authority`'s `# holds ∈ TDP | …`, which moved onto the
+    `attrs:` line).
+* **`schemas/config_models.py` — deleted `_accept_bare_name` and `_dump_bare_name`**, plus the three now-unused
+  pydantic imports. A bare string in `attrs` is now a loud `ValidationError`
+  (`Input should be a valid dictionary or instance of AttrDef`), never a silent coercion. Docstrings on
+  `AttrDef` and `TypeDef.attrs` rewritten to state that there is deliberately no compatibility and why.
+* **`config/ontology.yaml` header** — a new block stating the one legal form, that the loader rejects the other,
+  that `layer` is S2's second key on each entry, and that identity *semantics* stay in `resolution.yaml`. The
+  seam is now documented where a config author will actually read it, not only in the schema.
+
+### The sweep — what else depended on the bare form
+
+Grepped every YAML/JSON in the repo for an `attrs` key, and all of `backend/`, `eval/` for anything
+constructing or validating a `TypeDef` / `OntologyConfig`. Result: **nothing in production or in any fixture
+relied on the bare form.** Specifically:
+
+| Candidate | Verdict |
+|---|---|
+| `config/ontology.yaml` | the only real `TypeDef.attrs` data — **migrated** |
+| `backend/tests/fixtures/golden/config/ontology.yaml` | declares **no** `attrs` at all — nothing to migrate |
+| `config/subjects.yaml`, `config/credibility.yaml` (+ their golden-fixture copies) | different fields — `materiality_attrs`, `gated_attrs`, `fingerprint_attrs`. Unaffected |
+| `corpus/**/claims/*.json`, `tests/fixtures/**`, `tmp/**` snapshots | `EntityDescriptor.attrs` / view-node `attrs` — a `dict`, an unrelated field. Unaffected |
+| `config_models.py:265` `EntityEntry.attrs` (`entities.yaml`) | a `dict[str, Any]`. Unaffected |
+| `tests/resolve/test_t3b_fragmentation.py` | constructs `TypeDef`s with **no** `attrs`. Unaffected |
+| `tests/schemas/test_a7_discriminators.py`, `tests/_rk_atoms.py` | the **other hand's** files — see below |
+
+### Ownership deviation — recorded, not silent
+
+`config/ontology.yaml` is nominally **RK-LAYER/S2's single-owner file** (plan §3 item, "single-owner S2/RK-LAYER
+— not contended"). Editing it from S1 is a **deliberate, user-directed exception**. S1→S2 is strictly serial, so
+there is no concurrency risk and no one else is holding the file — but S2 must know that its file arrived
+pre-migrated, and that its remaining job there is to add `layer` to each of the 81 entries, not to restructure
+them. Logged here rather than assumed.
+
+### Three failing tests, on the other hand's branch — deliberately untouched
+
+The compatibility that was removed is asserted by three tests in `tests/schemas/test_a7_discriminators.py`
+(the independent test hand's file, merged at `9f070a6`). The coordinator named one; there are in fact **three**,
+all the same concern, all in that one file:
+
+```
+FAILED tests/schemas/test_a7_discriminators.py::test_typedef_still_accepts_the_old_bare_string_attrs_form
+FAILED tests/schemas/test_a7_discriminators.py::test_attribute_names_read_the_same_from_either_form
+FAILED tests/schemas/test_a7_discriminators.py::test_mixed_bare_and_structured_entries_in_one_type_still_read
+```
+
+Per instruction I did not touch them. Note also that the same file's
+`test_the_real_config_ontology_yaml_still_loads` (~:195) is *documented* as "config/ontology.yaml is untouched in
+S1" — it still **passes**, because the file still loads, but its stated premise is now false and its docstring
+will mislead the next reader. Worth folding into whatever you do with the other three.
+
+### Verification — verbatim
+
+1. **Full suite** (`cd backend && python3 -m pytest` — not `-q`, per the pitfall in §4.4), last line:
+
+```
+3 failed, 1091 passed, 7 skipped, 2 xfailed in 31.79s
+```
+
+The 3 are exactly the bare-form assertions listed above; nothing else regressed. The golden-view and
+determinism gates specifically:
+
+```
+$ python3 -m pytest tests/view/test_rebuild.py tests/gates/test_g2_determinism.py
+8 passed in 0.97s
+```
+
+2. **Golden md5** — unchanged, file never edited:
+
+```
+bb6f16a516c31eb0846494b62271a601  backend/tests/fixtures/golden/expected_view.json
+```
+
+3. **Real-corpus view check** (the one that matters here) — identical to the pre-migration baseline I captured
+before touching anything, so this was a pure shape change and not a change of meaning:
+
+```
+160 73 22d668a348430df091b71aa0ff53650f8b1be0ba9d95ab88b9034368d6dac3a9
+```
+
+`ruff check chanakya/` is back to the 2 pre-existing findings in `view/coverage.py`; `config_models.py` is clean.
+Spot-checked directly that the real ontology still loads with all **81** attributes intact across the three type
+families, that `unit.attr_names()` is unchanged, and that `TypeDef.model_validate({"attrs": ["echelon"]})` now
+raises.

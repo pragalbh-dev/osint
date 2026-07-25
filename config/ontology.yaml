@@ -2,6 +2,18 @@
 # Schema-designed, instances-discovered (DECISIONS). Validates against F0 OntologyConfig
 # {node_types, edge_types, event_types}: list[TypeDef{name, freshness_class?, attrs[]}] (extra="allow").
 #
+# ATTRIBUTE ENTRIES (RK-ATOMS / A7): each `attrs` item is an AttrDef MAPPING — `- {name: role}` — never a
+# bare string. The bare form was migrated away in one pass and the loader now REJECTS it, deliberately:
+# a dual-form loader biases every later implementer toward the old shape, and a "temporary" tolerance is
+# how this file would never have migrated at all. One attribute per line is the shape the next stage
+# extends: A2/RK-LAYER adds a per-attribute `layer` (design | instance) as a second key on each entry
+# (`- {name: designator, layer: instance}`), which is the straddle-split trigger. `discriminator`
+# (operator | geography | designation | time, A7) is the other declarable key; both are OPTIONAL and
+# deliberately absent everywhere below — absence reads `unknown`, never a positive claim about the
+# attribute, and neither is this stage's to populate. Identity SEMANTICS — an attribute's role
+# (identity / critical / supporting) and its per-(type, attribute) perishability — stay in
+# config/resolution.yaml's `attribute_roles`; only what is ONTOLOGICAL belongs here.
+#
 # Ratified data-agent decisions applied (tmp/conv/DATA-C-corpus-and-oracle-observations.md):
 #   - supplies-component reserved for Manufacturer->Component; the Component->Variant hero edge is `equips`.
 #   - sustainment SPLIT into interceptor_stockpile (perishable) + techdata_authority (durable/force-reval).
@@ -46,21 +58,54 @@
 node_types:
   - name: manufacturer
     freshness_class: durable
-    attrs: [role, tier, foreign_control, named_examples, production_rate, export_agent, place_ref]
+    attrs:
+      - {name: role}
+      - {name: tier}
+      - {name: foreign_control}
+      - {name: named_examples}
+      - {name: production_rate}
+      - {name: export_agent}
+      - {name: place_ref}
   - name: trading_org           # ING-3: generic trading / intermediary / freight org (a customs consignee /
     freshness_class: durable    # shipper / export-agent shell) — NOT an OEM. `manufacturer` is reserved for real makers.
-    attrs: [role, origin_country, foreign_control, place_ref]
+    attrs:
+      - {name: role}
+      - {name: origin_country}
+      - {name: foreign_control}
+      - {name: place_ref}
   - name: component
     freshness_class: durable
     # functional_role identifiers: acquisition | battle_management | engagement_fire_control | interceptor
-    attrs: [component_class, functional_role, model_designation, radar_band, host_chassis, observable_fingerprint, foreign_control]
+    attrs:
+      - {name: component_class}
+      - {name: functional_role}
+      - {name: model_designation}
+      - {name: radar_band}
+      - {name: host_chassis}
+      - {name: observable_fingerprint}
+      - {name: foreign_control}
   - name: variant
     freshness_class: durable
     # family retained as an attr (e.g. "HQ-9"); operator_branch replaces the old `branch`.
-    attrs: [family, base_designator, export_designator, aliases, range_class, range_km, operator_branch, associated_rounds, associated_radars]
+    attrs:
+      - {name: family}
+      - {name: base_designator}
+      - {name: export_designator}
+      - {name: aliases}
+      - {name: range_class}
+      - {name: range_km}
+      - {name: operator_branch}
+      - {name: associated_rounds}
+      - {name: associated_radars}
   - name: contract_import_event
     freshness_class: durable
-    attrs: [event_subtype, quantity, count_state, variant_delivered, linked_unit, evidence_date]
+    attrs:
+      - {name: event_subtype}
+      - {name: quantity}
+      - {name: count_state}
+      - {name: variant_delivered}
+      - {name: linked_unit}
+      - {name: evidence_date}
     # HARD-ATTRIBUTE RAIL (T3b-C). A bill-of-lading / contract reference IS the event's identity: the
     # d05 customs manifest carries three DISTINCT bills (KPQA-HC-2020-118834 / -118835 / -119011) that
     # the scorer was proposing as mutual merge candidates on shared-neighbourhood alone. Merging any two
@@ -73,10 +118,23 @@ node_types:
       identifier_patterns: ['[A-Za-z0-9\[\]]+(?:[-/][A-Za-z0-9\[\]]+){2,}']
   - name: unit
     freshness_class: durable
-    attrs: [echelon, designator, service_branch, parent_unit, equipment_fingerprint, count_state, home_garrison]
+    attrs:
+      - {name: echelon}
+      - {name: designator}
+      - {name: service_branch}
+      - {name: parent_unit}
+      - {name: equipment_fingerprint}
+      - {name: count_state}
+      - {name: home_garrison}
   - name: basing_site
     freshness_class: durable       # the site is durable; occupancy perishability lives on the based-at edge
-    attrs: [coordinates, site_type, site_signature_geometry, occupancy_state, occupancy_observed_date, decoy_risk_flag]
+    attrs:
+      - {name: coordinates}
+      - {name: site_type}
+      - {name: site_signature_geometry}
+      - {name: occupancy_state}
+      - {name: occupancy_observed_date}
+      - {name: decoy_risk_flag}
   # AREA OF OPERATIONS (T3b-A) — a REFINEMENT of basing_site, not a rival of it.
   #
   # `based-at` / `observed-at` range over `basing_site`, so the extractor and RESOLVE's endpoint typing
@@ -101,7 +159,11 @@ node_types:
   - name: area_of_operations
     freshness_class: durable
     refines: basing_site
-    attrs: [area_kind, admin_level, coordinates, occupancy_state]
+    attrs:
+      - {name: area_kind}
+      - {name: admin_level}
+      - {name: coordinates}
+      - {name: occupancy_state}
     identity:
       name_head_markers: [sector, belt, zone, corridor, province, region, theatre, theater]
       named_instances: ["Punjab", "Sindh", "Balochistan", "Khyber Pakhtunkhwa", "Gilgit-Baltistan",
@@ -114,20 +176,51 @@ node_types:
 
   - name: interceptor_stockpile    # SPLIT from sustainment — perishable (depth/consumption move fast)
     freshness_class: perishable
-    attrs: [stocked_round, magazine_depth, consumption_rate, days_of_supply, resupply_lead_time, production_sole_source_flag, foreign_control]
+    attrs:
+      - {name: stocked_round}
+      - {name: magazine_depth}
+      - {name: consumption_rate}
+      - {name: days_of_supply}
+      - {name: resupply_lead_time}
+      - {name: production_sole_source_flag}
+      - {name: foreign_control}
   - name: techdata_authority       # SPLIT from sustainment — durable / force-revalidated
     freshness_class: force-revalidated
-    attrs: [holds, foreign_control]  # holds ∈ TDP | firmware | crypto-keys | calibration-ref
+    attrs:  # holds ∈ TDP | firmware | crypto-keys | calibration-ref
+      - {name: holds}
+      - {name: foreign_control}
   - name: source
     freshness_class: n/a
-    attrs: [source_type, primary_origin_id, aggregator_of, bias_vector, coordinated_inauthenticity_flag, adversary_denial_flag, reliability_grade, citation_url]
+    attrs:
+      - {name: source_type}
+      - {name: primary_origin_id}
+      - {name: aggregator_of}
+      - {name: bias_vector}
+      - {name: coordinated_inauthenticity_flag}
+      - {name: adversary_denial_flag}
+      - {name: reliability_grade}
+      - {name: citation_url}
   - name: indicator
     freshness_class: n/a
-    attrs: [indicator_class, lifecycle_stage, observation_date, valid_time, resolved_entity_ref, edge_instance_ref, artifact_integrity, first_seen, caption_vs_image_consistency, evidentiary_strength]
+    attrs:
+      - {name: indicator_class}
+      - {name: lifecycle_stage}
+      - {name: observation_date}
+      - {name: valid_time}
+      - {name: resolved_entity_ref}
+      - {name: edge_instance_ref}
+      - {name: artifact_integrity}
+      - {name: first_seen}
+      - {name: caption_vs_image_consistency}
+      - {name: evidentiary_strength}
   - name: known_gap
     freshness_class: n/a
     # observability_ceiling ∈ confirmable | probable-max | never-observable  (HYPHENATED per frozen view.py)
-    attrs: [observability_ceiling, next_coverage_due, related_ref, missing_slots]
+    attrs:
+      - {name: observability_ceiling}
+      - {name: next_coverage_due}
+      - {name: related_ref}
+      - {name: missing_slots}
 
 # Edge domain/range (D-A, DECISIONS §6 "EVAL"): every `extractor: true` edge is uniquely determined by
 # its (from -> to) node types, so a write-time re-lane (chanakya/ontology.py) puts an asserted fact on
