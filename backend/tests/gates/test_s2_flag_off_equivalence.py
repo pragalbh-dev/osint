@@ -11,13 +11,14 @@ equivalence: plan §5a-bis is explicit that for S2 "an unchanged view means the 
 "**Never gate, default-away, or curb a target-correct capability to keep a fixture green**". A flag-on
 byte-identity test would enshrine exactly the force-fitting the plan forbids.
 
-Two surfaces, because they fail on different mistakes:
+Two test surfaces, because they fail on different mistakes:
 
 * the **golden** fixture (``tests/fixtures/golden``) carries its own tiny ``config/ontology.yaml``, so it is
   blind to the shipped file S2 edits — it catches a change in ``view/pipeline.py`` itself;
-* the **real shipped config + frozen corpus** is the only surface that sees S2's config edits (layer tags, the
-  new predicates, the site_type re-key). A "config-only" change that quietly moves the graph with the flag off
-  is invisible everywhere else.
+* the **real shipped config + frozen corpus**, rebuilt through ``eval.harness`` (the *full-scenario* surface —
+  see ``CORPUS_BASELINE`` for why that one and not the booted app's), is the only surface that sees S2's config
+  edits (layer tags, the new predicates, the site_type re-key). A "config-only" change that quietly moves the
+  graph with the flag off is invisible everywhere else.
 """
 
 from __future__ import annotations
@@ -60,14 +61,21 @@ def test_flag_off_rebuild_of_the_golden_logs_still_matches_the_recorded_view() -
 
 # ── the surface that actually sees S2's config edits ─────────────────────────────────────────────
 
-#: Measured on this worktree at the S2 baseline (``design/resolution-redesign`` @ b492286, after the S1
-#: merge) by rebuilding the frozen ``hq9p_primary`` bundles through ``eval.harness``.
+#: **Two valid real-corpus surfaces exist and this test deliberately pins the second one.** Both reproduce;
+#: they measure different things, so a number only means something with its surface named (session file,
+#: "THE INVARIANT FLIPS", resolved 2026-07-25):
 #:
-#: **These are NOT the numbers the session file states.** The session's "160 nodes / 73 edges, view hash
-#: 22d668a3…dac3a9" does not reproduce here — the same pipeline over the same frozen bundles yields 169/80.
-#: The session figures were recorded earlier and are stale; a test pinned to them would fail on arrival and
-#: teach the reader to distrust the gate. Recorded here as *measured*, with the discrepancy stated out loud
-#: (working-principles: the running code is the fact).
+#:   * **booted app** (``build_default_state().boot()``) — 160 nodes / 73 edges / 18 gaps / 450 claims, hash
+#:     ``22d668a3…dac3a9``: what the running system serves. It **deliberately withholds**
+#:     ``d18_rahwali_pass1`` + ``d19_rahwali_confirm`` from the boot seed, to be ingested live for the demo.
+#:   * **full scenario via ``eval.harness``** — the values below: every claim, nothing withheld.
+#:
+#: The harness surface is this gate for a load-bearing reason: **the two withheld documents are exactly the
+#: flagship relocation pair**, so a flag-off assertion measured on the *booted* view is structurally blind to
+#: the relocation/supersede path S2 changes most (scope items 5–7 — the ``site_type`` re-key, the
+#: ``co_instances`` carry-forward, the R1.4 promotion fix). The booted number stays useful as an integration
+#: check; it cannot be the gate. Measured on this worktree at the S2 baseline
+#: (``design/resolution-redesign``, after the S1 merge); view md5 ``14ccc45c9f702763a1e27b9900bb56db``.
 CORPUS_BASELINE = {"node_count": 169, "edge_count": 80, "event_count": 71, "known_gap_count": 20}
 
 

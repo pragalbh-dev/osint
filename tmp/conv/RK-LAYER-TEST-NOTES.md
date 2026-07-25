@@ -4,12 +4,32 @@
 `plan/sessions/RK-LAYER.md` · `spine/13` §3a/§5 + D-13.3/5/6/13/14 · `tmp/conv/rk-spike-verified-defects.md`
 D1/D2/D12 · `tmp/conv/rk-spike-DECISIONS.md` C1/C2 · `tmp/conv/RK-LAYER-RULINGS.md` L1–L4).
 The implementation branch (`s2/rk-impl`), the impl worktree, `RK-LAYER-IMPL-NOTES.md` and the data branch
-(`s2/rk-data`) were **not** read. Base: `design/resolution-redesign` @ `b492286`.
+(`s2/rk-data`) were **not** read. Base: `design/resolution-redesign` @ `a3d68b4`.
 
 **Suite state.** Baseline before these tests: `1094 passed, 7 skipped, 2 xfailed`.
-After: **`37 failed, 1127 passed, 7 skipped, 2 xfailed`** — 33 new passing (regression guards + mirrors +
-negative controls), **37 new failing** (the S2 behaviour that does not exist yet). No pre-existing test
+After: **`39 failed, 1126 passed, 7 skipped, 2 xfailed`** — 32 new passing (regression guards + mirrors +
+negative controls), **39 new failing** (the S2 behaviour that does not exist yet). No pre-existing test
 changed or broke. `ruff check` clean.
+
+**Four coordinator rulings folded in (2026-07-25), after the first pass:**
+
+1. **The baseline discrepancy is resolved — two valid surfaces exist and neither number was wrong.** The
+   **booted app** (160 / 73 / 18 gaps / 450 claims, hash `22d668a3…dac3a9`) deliberately withholds
+   `d18_rahwali_pass1` + `d19_rahwali_confirm` from the boot seed; the **full-scenario harness** (169 / 80 /
+   71 / 20) sees everything. This suite pins the harness surface **because those two withheld documents are
+   exactly the flagship relocation pair** — the booted surface is structurally blind to the supersede path S2
+   changes most (items 5–7). The constant block in `test_s2_flag_off_equivalence.py` now says that, replacing
+   the earlier (and wrong) "these do not reproduce here", which would have taught readers to distrust a
+   working baseline — the same failure mode as the two docstrings already corrected this session.
+2. **"Sub-confirmed identity" = an open `candidate` merge** — carrier confirmed. Node `status` is expressly
+   *not* it (the legitimate flagship subject sits at `probable`, so gating there would delete the beat). Now
+   recorded in the test's own docstring so nobody re-derives the trap.
+3. **Absent and unmappable `site_type` are one condition** — both land in L1's third state. The absent-value
+   test was strengthened from "no de-confliction" alone to the full third state (no de-confliction · no fusion
+   · a named gap) and consequently **now fails today**, where before it passed.
+4. **The flagship consequence is intended, and is now pinned** — new
+   `test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown`, on the real corpus with the flag
+   on, labelled INTENDED so nobody later "fixes" it by loosening the vocabulary.
 
 **Files added** (tests only; nothing under `chanakya/`, `config/`, `corpus/`, or existing fixtures touched):
 
@@ -127,7 +147,8 @@ they cannot pass vacuously once the derivation lands.
 | `test_a_well_evidenced_retired_position_still_reads_stale` | **the mirror**: an *assessable* retired position still reads `stale` and raises no gap | `credibility/supersession.py` "→ *stale*, not *insufficient* — it is history, not a gap" | **PASSES** (this is what stops the two rows above being satisfied by disabling retirement) |
 | `test_two_concurrent_basings_at_different_site_classes_are_not_a_relocation` | differing declared **classes** ⇒ no drawn relocation, nothing retired, no contradiction, **different** instance keys | **C1 / R1.3** "two concurrent valid basings, not a relocation" | **FAILS**: `config declares no closed 'site_type' vocabulary, so C1's de-confliction has no classes to key on (ruling L1 rule 1)` |
 | `test_an_unmappable_site_type_lands_in_the_third_state` | unmappable strings ⇒ **same** instance key (no de-confliction) **and** no promotion/draw **and** a named gap | **L1 rule 3** "no de-confliction, no fusion, and a **named gap** … must never silently de-conflict … must never silently kill a supersede" | **FAILS**: `a relocation was drawn from two site_type values the config cannot classify — L1's third state is 'no de-confliction, no fusion'` |
-| `test_an_absent_site_type_never_de_conflicts` | absent `site_type` ⇒ the two basings stay in **one** instance bucket | §7 RK-LAYER 5 "**never** ⇒ de-conflicted, since the evasion direction is over-merge" | **PASSES** (fail-safe regression guard — it fails only if the re-key splits on absence) |
+| `test_an_absent_site_type_lands_in_the_same_third_state_as_an_unmappable_one` | absent `site_type` ⇒ one instance bucket **and** no fusion **and** a named gap | §7 RK-LAYER 5's fail-safe reconciled into **L1 rule 3** by the ruling of 2026-07-25: absence and unmappability are the same condition | **FAILS**: `a relocation was drawn between two sites whose class is unknown (no site_type stated at all)` |
+| `test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown` | on the **real corpus with the flag on**: if the two flagship sites' classes are unknown or differ ⇒ no drawn relocation + the pair held; if both resolve to the **same** class ⇒ the relocation must still be drawn | ruled 2026-07-25: "**that consequence is correct and intended** … a held relocation with a named gap is the system saying 'I cannot classify these sites yet' — precisely the non-negotiable behaving"; L1 rule 4 "Until [the mapping] lands, the third state is the correct, honest behaviour" | **FAILS**: `a relocation was drawn between the flagship sites while their classes are {'site_rahwali': None, 'site_rawalpindi': None} (stated: {'site_rahwali': 'airfield', 'site_rawalpindi': 'prepared revetment complex / airfield site'})` |
 | `test_the_two_ends_of_a_relocation_never_become_merge_candidates[True/False]` | the origin and destination of one unit's relocation never fuse and are never offered as duplicate candidates — parametrized over **same** and **differing** site classes | §7 RK-LAYER 5 "A naive `site_type` re-key … would **silently drop** this mitigation, so a confirmed relocation would manufacture relational evidence that origin ≡ destination. **Gate-fixture it.**" | **PASSES both** (regression guard; the differing-class arm is precisely the one a naive re-key breaks, because splitting the instance stops `co_instances` from excluding the shared unit) |
 
 ### `tests/gates/test_g15_presence_not_fused.py`
@@ -170,39 +191,41 @@ they cannot pass vacuously once the derivation lands.
 
 Ordered by how likely each is to cause an implementer/test disagreement.
 
-1. **The stated flag-off baseline does not reproduce.** The session file pins "real-corpus view hash
-   `22d668a3…dac3a9`, **160 nodes / 73 edges**". Rebuilding the frozen `hq9p_primary` bundles through
-   `eval.harness` on this base (`b492286`) yields **169 nodes / 80 edges / 71 events / 20 known gaps**, view
-   md5 `14ccc45c9f702763a1e27b9900bb56db`. The session figures are stale. I pinned the **measured** values and
-   said so in the test; if the orchestrator believes 160/73 is right, the discrepancy needs resolving before
-   anyone reads a flag-off diff.
+1. ~~**The stated flag-off baseline does not reproduce.**~~ **RULED 2026-07-25 — closed, and no longer a
+   silence.** Two valid surfaces exist and both reproduce: the **booted app** (160 / 73, hash
+   `22d668a3…dac3a9`) withholds the two flagship-relocation documents from the boot seed; the **full-scenario
+   harness** (169 / 80 / 71 / 20, md5 `14ccc45c9f702763a1e27b9900bb56db`) sees everything. The harness surface
+   is the gate, precisely because the booted one cannot see the relocation/supersede path S2 changes most. The
+   test's constant block now states both surfaces and why one was chosen.
 2. **The flag has no name.** "Behind a flag, dual-run only" is all the spec says. See §1 for the discovery
-   contract; this is the single highest-risk coupling between the two hands.
-3. **"Sub-confirmed identity" (R1.4) names no carrier.** The obvious candidate — the subject node's `status` —
-   is **`probable` in the legitimate flagship case** (measured: the unit node in the passing supersede fixture
-   is `probable`, and it promotes), so gating on node status would delete the relocation beat. I read
-   "sub-confirmed" in the codebase's own band vocabulary (D8: `candidates` = probable) and built the fixture as
-   *an open `candidate` same-as touching the relocation's subject*. If the implementer keys on something else
-   (a merge-basis reason, a co-location marker), the test still passes as long as its gate fires on that
-   shape — but the *shape* is my reading, not the spec's words.
-4. **Absent vs unmappable `site_type` diverge between two authorities.** `RK-LAYER-RULINGS.md` L1 rule 3 puts
-   only an **unmappable** value in the third state; §7 RK-LAYER 5 gives the absent case a *different*
-   fail-safe ("`unknown` ⇒ same bucket (the wall fires) **or** ⇒ raise"), and the coordinator's message extends
-   the third state to absence as well. Those are not the same outcome: "same bucket + the wall fires" permits
-   promotion; the third state forbids it. I asserted only the half both readings share for the absent case
-   (**no de-confliction**), and the full third state for the unmappable case. **This needs one ruling.**
-5. **The third-state consequence for the flagship is not stated.** L1 records that the corpus relocation's two
-   ends carry `observed-imagery-site` / `stated_destination` — unmappable until DATA supplies the mapping — so
-   with the flag ON and no mapping, the flagship relocation lands in the third state: **held for the analyst
-   with a named gap, not promoted, and no drawn `supersedes` edge**. That is the honest behaviour L1 asks for,
-   but it is a visible change to the hero beat and nothing in the spec says so out loud.
+   contract; this is now the single highest-risk coupling between the two hands. **Still open.**
+3. ~~**"Sub-confirmed identity" (R1.4) names no carrier.**~~ **RULED — my reading confirmed.** It is the
+   merge-band vocabulary: an **open `candidate`** merge is sub-confirmed (D8: `candidates` → probable), and
+   node `status` is expressly *not* the carrier, because the legitimate flagship subject sits at `probable` and
+   gating there would delete the beat. The fixture builds an open `candidate` same-as touching the relocation's
+   subject and asserts its own premise (`merge_band == "candidate"`, both units still separate).
+4. ~~**Absent vs unmappable `site_type` diverge between two authorities.**~~ **RULED — both land in the same
+   third state.** §7 RK-LAYER 5's weaker absent-value fail-safe ("same bucket … or raise") predates L1 and is
+   superseded: absence and unmappability are the same condition for keying purposes — *we do not know the
+   class* — so both yield no de-confliction, no fusion, and a named gap. The absent-value test now asserts the
+   full third state and fails today.
+5. ~~**The third-state consequence for the flagship is not stated.**~~ **RULED — correct and intended, and now
+   pinned.** With the flag on and no `site_type` mapping, the flagship relocation is **held, gap-named, and not
+   drawn**; that is the honest outcome, not a regression, and the test says so in capitals so nobody loosens
+   the vocabulary to make the edge come back. Measured detail worth knowing: the two flagship sites' *node*
+   attrs carry `airfield` and `prepared revetment complex / airfield site` — L1's **over-merge** direction (two
+   strings for arguably one kind of place), not the `observed-imagery-site` / `stated_destination` pair L1
+   quotes, which lives elsewhere in the claim set. The test reads the classes rather than assuming them, so it
+   self-adjusts to whatever DATA maps — and if a mapping sends both to one class it must then produce the drawn
+   edge it claims.
 6. **Where a materialized node records its layer is undefined.** `NodeView` is `extra="forbid"` and
    `schemas/view.py` is not in S2's owned paths, so the tag can only live in `attrs` (or be inferred from the
    node's type). Accepted either way.
 7. **The design↔instance binding edge does not exist.** spine/13 §5.3 links the presence to the design with
    `instance-of`/`fields`; the shipped ontology declares **neither** (`fields` exists only in the golden test
    fixture), and §7 RK-LAYER 5's list of ontology additions does not name one. My test asserts only that
-   *some* edge links the two, not its name.
+   *some* edge links the two, not its name. **Flagged to the implementer by the coordinator** — materializing a
+   presence linked to its design node needs this edge, and no ontology-addition item currently covers it.
 8. **A2 vs L2 pull in opposite directions on edge endpoint layers.** A2 says "Edge endpoint-layers derive from
    the already-declared `from`/`to`", while L2 says `observed-at` keeps its **design** endpoints and the
    presence is materialized in the derived layer. So "which edges materialize" cannot be derived from endpoint

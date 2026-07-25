@@ -213,6 +213,46 @@ def site_type_vocabulary() -> dict[str, list[str]]:
     return out
 
 
+def site_type_mapping() -> dict[str, str]:
+    """Any declared *raw string → class* mapping for ``site_type``, folded for comparison.
+
+    Ruling **L1** rule 4: "**Mapping the 15 existing values is DATA's job**, not S2's — S2 declares the
+    vocabulary and the fail-safe; the data pass supplies the mapping. Until it lands, the third state is the
+    correct, honest behaviour." So the mapping may legitimately be absent; where it exists it is discovered
+    rather than guessed at.
+    """
+    out: dict[str, str] = {}
+
+    def walk(prefix: str, value: Any) -> None:
+        if not isinstance(value, dict):
+            return
+        if "site_type" in prefix.lower() and value and all(isinstance(v, str) for v in value.values()):
+            out.update({str(k).strip().casefold(): str(v) for k, v in value.items()})
+        for key, sub in value.items():
+            walk(f"{prefix}.{key}" if prefix else str(key), sub)
+
+    walk("", shipped_bundle().model_dump())
+    return out
+
+
+def classify_site_type(stated: Any) -> str | None:
+    """The declared class a stated ``site_type`` resolves to, or ``None`` when it cannot be classified.
+
+    Ruling **L1** rule 2: "**The raw stated string is NEVER the key.** Keying happens on the normalized
+    class." A value resolves if it *is* one of the declared vocabulary terms, or if a declared mapping sends
+    it to one. Everything else — including an absent value — is L1's third state: *we do not know the class*.
+    """
+    if not isinstance(stated, str) or not stated.strip():
+        return None
+    folded = stated.strip().casefold()
+    for values in site_type_vocabulary().values():
+        for term in values:
+            if folded == str(term).strip().casefold():
+                return str(term)
+    mapped = site_type_mapping().get(folded)
+    return mapped if isinstance(mapped, str) else None
+
+
 #: Attribute names that already exist and are **not** A3's numeric equipment count (they are state enums).
 _NOT_A_COUNT = frozenset({"count_state"})
 

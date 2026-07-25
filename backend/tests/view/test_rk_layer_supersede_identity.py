@@ -89,6 +89,20 @@ def _basings(view) -> dict[str, object]:
     return {e.target: e for e in rk.edges_of(view, BASING)}
 
 
+def _named_site_class_gaps(view, *edges) -> list:
+    """Gaps that name this relocation or the missing site class — L1 rule 3's "**named gap**".
+
+    Permissive on purpose: nothing in the spec fixes whether the gap hangs off the basing edge, the sites, the
+    unit, or names ``site_type`` in its text. What it may **not** be is absent.
+    """
+    refs = {e.id for e in edges} | {SITE_A, SITE_B, UNIT}
+    return [
+        g for g in view.known_gaps
+        if g.related_ref in refs
+        or "site_type" in (g.what_missing or "") + " ".join(g.missing_slots)
+    ]
+
+
 def _candidate_identity_edges(view, *ids: str) -> list:
     """The resolver's *unadjudicated* identity questions touching ``ids`` (rendered as same-as edges)."""
     wanted = set(ids)
@@ -153,6 +167,11 @@ def test_a_relocation_is_not_machine_adjudicated_over_a_sub_confirmed_identity()
     The harm, from the register: "one identity error ⇒ a drawn, positively-asserted relocation that the
     analyst is never asked about. An adversary does not even need to plant a lie — publishing two real,
     similarly-described co-located units is enough."
+
+    **Carrier, ruled 2026-07-25:** "sub-confirmed" is the **merge-band** vocabulary — an *open ``candidate``
+    merge* is sub-confirmed (D8: "``candidates``→probable … only ``same_as`` fuses"). It is expressly **not**
+    the node's own ``status``: in the legitimate flagship case the subject unit node sits at ``probable`` and
+    still promotes correctly, so gating on node status would delete the relocation beat rather than protect it.
     """
     view = rk.build_view(_cfg(), _relocation(rival=True))
     edges = _basings(view)
@@ -359,12 +378,7 @@ def test_an_unmappable_site_type_lands_in_the_third_state() -> None:
     assert older.superseded_by is None, (
         "the older position was retired on an unclassifiable site_type — 'no fusion' (L1 rule 3)"
     )
-    named = [
-        g for g in view.known_gaps
-        if g.related_ref in {older.id, newer.id, SITE_A, SITE_B, UNIT}
-        or "site_type" in (g.what_missing or "") + " ".join(g.missing_slots)
-    ]
-    assert named, (
+    assert _named_site_class_gaps(view, older, newer), (
         "the unmappable site_type produced no NAMED gap "
         f"(gaps: {[(g.related_ref, g.what_missing, g.missing_slots) for g in view.known_gaps]}) — L1's third "
         "state is 'no de-confliction, no fusion, **and a named gap**'; C7 adds that 'a gap must bind the "
@@ -372,14 +386,17 @@ def test_an_unmappable_site_type_lands_in_the_third_state() -> None:
     )
 
 
-def test_an_absent_site_type_never_de_conflicts(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The fail-safe. §7 RK-LAYER 5: "**State the absent ``site_type`` default explicitly and fail safe:**
-    ``unknown`` ⇒ same bucket (the wall fires) or ⇒ raise — **never** ⇒ de-conflicted, since the evasion
-    direction is over-merge."
+def test_an_absent_site_type_lands_in_the_same_third_state_as_an_unmappable_one() -> None:
+    """The fail-safe, **as ruled 2026-07-25**: absence and unmappability are one condition.
 
-    Absence must behave like L1's unmappable case in the direction that matters — the two basings stay in one
-    bucket — and must not adjudicate *silently*: either the pair is held for the analyst, or the missing
-    ``site_type`` is named as a gap.
+    §7 RK-LAYER 5 gave absence a weaker fail-safe of its own — "**State the absent ``site_type`` default
+    explicitly and fail safe:** ``unknown`` ⇒ same bucket (the wall fires) or ⇒ raise — **never** ⇒
+    de-conflicted, since the evasion direction is over-merge" — written before ruling **L1**. The two were
+    reconciled in L1's favour: *absence and unmappability are the same condition for keying purposes — we do
+    not know the class* — so both land in the third state: **no de-confliction, no fusion, and a named gap**.
+
+    The one-bucket half is the over-merge safety property; the no-fusion half is what stops the machine
+    adjudicating a relocation between two sites whose kind it cannot even name.
     """
     view = rk.build_view(_cfg(), _relocation())
     edges = _basings(view)
@@ -388,6 +405,91 @@ def test_an_absent_site_type_never_de_conflicts(monkeypatch: pytest.MonkeyPatch)
     assert older.edge_instance == newer.edge_instance, (
         f"an absent site_type de-conflicted the supersede instance ({older.edge_instance!r} vs "
         f"{newer.edge_instance!r}) — 'never ⇒ de-conflicted, since the evasion direction is over-merge'"
+    )
+    assert not _drawn(view), (
+        "a relocation was drawn between two sites whose class is unknown (no site_type stated at all) — "
+        "absence is the same condition as an unmappable value, so L1's third state applies: no "
+        f"de-confliction, no fusion, plus a named gap. {rk.flag_report()}"
+    )
+    assert older.superseded_by is None and newer.supersedes is None, (
+        "the older position was retired although neither site's class is known — 'no fusion' (L1 rule 3)"
+    )
+    assert _named_site_class_gaps(view, older, newer), (
+        "an absent site_type produced no NAMED gap "
+        f"(gaps: {[(g.related_ref, g.what_missing, g.missing_slots) for g in view.known_gaps]}) — the third "
+        "state is 'no de-confliction, no fusion, **and a named gap**'"
+    )
+
+
+# ── the real-corpus consequence, pinned as INTENDED (ruled 2026-07-25) ──────────────────────────
+
+#: The flagship relocation's two ends in the frozen corpus (``hq9p_primary``).
+FLAGSHIP_SITES = ("site_rahwali", "site_rawalpindi")
+
+
+def test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown() -> None:
+    """**This outcome is INTENDED — do not "fix" it by loosening the vocabulary.**
+
+    Ruled 2026-07-25: with the flag on and no ``site_type`` mapping yet, the flagship relocation lands in
+    L1's third state — **held, gap-named, no drawn edge** — and *that is the honest outcome, not a
+    regression*. "A held relocation with a named gap is the system saying 'I cannot classify these sites
+    yet' — which is precisely the non-negotiable behaving." L1 rule 4 puts the mapping with DATA: "Until it
+    lands, the third state is the correct, honest behaviour."
+
+    The assertion self-adjusts to whatever DATA lands, because it reads the two sites' *classes* rather than
+    assuming them:
+
+    * neither class known, or the two classes differ  ⇒ **no drawn relocation** (third state / C1);
+    * both resolve to the **same** class              ⇒ the relocation is a genuine one and **must** promote.
+
+    So it cannot be silenced by a mapping that quietly sends every string to one class — that path is
+    asserted too, and it has to produce the drawn edge it claims.
+    """
+    from eval import harness
+
+    if not harness.bundles_dir().is_dir():
+        pytest.skip(f"no frozen claim bundles at {harness.bundles_dir()}")
+
+    from chanakya.view import rebuild
+
+    scenario = harness.load_scenario()
+    config = rk.enable_layer_routing(scenario.config_store.snapshot())
+    view = rebuild(scenario.evidence, [], config)
+
+    nodes = {n.id: n for n in view.nodes}
+    missing = [s for s in FLAGSHIP_SITES if s not in nodes]
+    assert not missing, (
+        f"the frozen corpus no longer carries {missing} — this test pins the flagship relocation, so a "
+        "renamed site means it is measuring nothing (re-anchor it deliberately, do not delete the assertion)"
+    )
+    stated = {s: (nodes[s].attrs or {}).get("site_type") for s in FLAGSHIP_SITES}
+    classes = {s: rk.classify_site_type(v) for s, v in stated.items()}
+    drawn = [
+        e for e in view.edges
+        if e.type == DRAWN and {e.source, e.target} == set(FLAGSHIP_SITES)
+    ]
+
+    known = [c for c in classes.values() if c is not None]
+    if len(known) == 2 and known[0] == known[1]:
+        assert drawn, (
+            f"both flagship sites resolve to the same declared class ({known[0]!r}) — that is a genuine "
+            "relocation and it must still be drawn; C1 de-conflicts differing classes, it does not disable "
+            f"supersession. Stated: {stated}. {rk.flag_report()}"
+        )
+        return
+
+    assert not drawn, (
+        f"a relocation was drawn between the flagship sites while their classes are {classes} "
+        f"(stated: {stated}) — INTENDED behaviour is L1's third state: held for the analyst with a named "
+        "gap. If this fails because a mapping now sends both strings to one class, check that the mapping is "
+        f"about the *kind of place* axis and not the other three concepts L1 separates. {rk.flag_report()}"
+    )
+    basings = [e for e in view.edges if e.type == BASING and e.target in FLAGSHIP_SITES]
+    held = [e for e in basings if e.attrs.get(CANDIDATE) or e.attrs.get(GATE) != GATE_PROMOTED]
+    assert held, (
+        f"the flagship basings were machine-adjudicated although their site classes are {classes} — the "
+        "third state hands the pair to the analyst rather than answering it "
+        f"({[(e.id, e.attrs.get(GATE)) for e in basings]})"
     )
 
 
