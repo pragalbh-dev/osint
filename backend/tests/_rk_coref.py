@@ -443,6 +443,17 @@ def coref_authoritative(cfg: ConfigBundle | None = None) -> list[str]:
                   .coref_authoritative_evidence)
 
 
+def earned_identity_block(cfg: ConfigBundle | None = None) -> dict[str, Any]:
+    """``resolution.earned_identity`` as declared — the stage's own knobs, flag included.
+
+    A separate accessor from :func:`resolution_keys` because the block is where every S3 threshold, cap,
+    floor and vocabulary lives; a config assertion that searches only the top level cannot see them, and
+    that blind spot is how three ceilings ended up declared twice under two names.
+    """
+    block = getattr((cfg or rk.shipped_bundle()).resolution, _EARNED_BLOCK, None)
+    return dict(block) if isinstance(block, dict) else {}
+
+
 def coref_producer_block(cfg: ConfigBundle | None = None) -> dict[str, Any]:
     """``credibility.coreference`` — the *producer* switch (``{}`` ⇒ the pass returns ``[]``)."""
     block = getattr((cfg or rk.shipped_bundle()).credibility, "coreference", None)

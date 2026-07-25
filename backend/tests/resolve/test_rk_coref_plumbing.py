@@ -238,12 +238,20 @@ def test_the_contrast_ceiling_is_configured_as_a_band_name() -> None:
     """(b): "**a band name not a float**" — "A band ceiling is threshold-independent … Any coefficient
     carries this hazard and its safe value depends on thresholds that will move."
     """
-    keys = [k for k in rc.resolution_keys() if "contrast" in k.lower()]
+    # Searched at the top level AND inside the stage block, because that is where the ceiling now lives:
+    # it used to be declared in both, under two names (`contrast_band_ceiling` up top, `contrast_ceiling`
+    # in the block), with the top-level copy winning — so editing the documented one was a silent no-op.
+    # A search that looked in only one place could not tell a moved knob from a deleted one.
+    declared = dict(rc.resolution_keys())
+    declared.pop("earned_identity", None)
+    declared |= {f"earned_identity.{k}": v for k, v in (rc.earned_identity_block() or {}).items()}
+
+    keys = [k for k in declared if "contrast" in k.lower()]
     assert keys, (
-        f"config/resolution.yaml declares no contrast knob (searched every resolution key for 'contrast'; "
-        f"keys are {sorted(rc.resolution_keys())})"
+        f"config/resolution.yaml declares no contrast knob (searched every resolution key and every key of "
+        f"the earned_identity block for 'contrast'; keys are {sorted(declared)})"
     )
-    values = {k: rc.resolution_keys()[k] for k in keys}
+    values = {k: declared[k] for k in keys}
     floats = {k: v for k, v in values.items() if isinstance(v, (int, float)) and not isinstance(v, bool)}
     assert not floats, (
         f"the contrast ceiling is declared numerically: {floats}. It must be a band NAME — with "

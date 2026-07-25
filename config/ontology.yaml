@@ -398,7 +398,7 @@ edge_types:
   # Deliberately NOT the stated `distinct-from` rail above: that one is a hard, TRANSITIVE, UNGRADED veto for
   # an explicit "not related", and *every order of battle contains an enumeration*, so widening it to "the
   # document listed these separately" would let one planted list shatter a well-corroborated cluster. On this
-  # lane the same evidence is a BAND CEILING (resolution.yaml `contrast_band_ceiling`): it withholds one new
+  # lane the same evidence is a BAND CEILING (resolution.yaml `earned_identity.contrast_ceiling`): it withholds one new
   # fusion, reaches the analyst with its licensing span, and can retract nothing. NOT extractor-emitted
   # through `relations` — it comes from extraction pass 2, like `coref-same-as`.
   - {name: coref-distinct-from,  freshness_class: n/a, symmetric: true}

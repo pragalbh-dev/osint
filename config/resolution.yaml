@@ -163,29 +163,14 @@ identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analys
 # the calibration ledger), not a reason to default it off — the demo data bends to the target, not vice versa.
 name_alone_caps_at_possible: true
 
-# ── the three identity CEILINGS (S3). Band NAMES, never floats. ───────────────────────────────────
-# A ceiling is declared as a band name because any x-coefficient carries a hazard whose safe value depends on
-# thresholds that move: with auto_merge 0.85 / hitl_low 0.45, a x0.5 penalty takes a 0.85 pair to 0.425 —
-# below hitl_low, i.e. TWO bands, silently dropping the pair out of the analyst's queue altogether. A band
-# name is threshold-independent and states the intent directly: "not automatically", never "not at all".
-# All three are read only while `earned_identity.enabled` is on.
-#
-# NAME caps at `possible` at every layer, and — the part the review found missing — the cap binds the PHASE-1
-# BOOTSTRAP too, not only the Phase-2 collection loop. Name is a verdict in Phase 1 at every type, so a cap
-# living only in Phase 2 is a cap on the path nobody takes. "One more trivially-available signal clears it"
-# is what makes this a cap and not a ban.
-name_ceiling: possible
-# CO-LOCATION caps a FORMATION merge (D-13.14/G16). Shared design + site + operator is a presence-level fact;
-# confirming a formation needs a unit-level discriminator. Anti-fabrication machinery, not OOB hygiene:
-# `based-at` is functional and unit-keyed, so a formation over-merge makes two sites one unit's before/after,
-# the supersede path then DRAWS a relocation nobody reported, removes the analyst, and deletes the retired
-# edge's Known Gap.
-colocation_ceiling: probable
-# A same-document STATED CONTRAST caps the pair (D-13.19). Ungraded on purpose: a ceiling withholds one NEW
-# fusion, cannot retract an existing merge, and a cluster can still form transitively through its other
-# pairs — so the harm a grade gate would defend against (a planted enumeration shattering a corroborated
-# cluster) does not arise. ABSENCE of contrast is NEUTRAL, never a prior *for* merging.
-contrast_band_ceiling: probable
+# ── the three identity CEILINGS (S3) are NOT declared here ────────────────────────────────────────
+# `name_ceiling`, `colocation_ceiling` and `contrast_ceiling` live in the `earned_identity` block at the
+# bottom of this file, and nowhere else. They used to be declared in BOTH places — with the third one
+# spelled `contrast_band_ceiling` up here and `contrast_ceiling` down there — and the reader consulted this
+# copy first. So editing the stage block, the block whose own header promises to hold every threshold, cap
+# and floor the stage adds, was a silent no-op: setting all three to `confirmed` there changed nothing.
+# Two names for one dial in two places is worse than either, because the copy a reader edits is the copy
+# that does not run. If you are looking for a ceiling, it is in `earned_identity`.
 
 # In-document coreference (INGEST extraction pass 2, ingest/coref.py): which evidence categories may
 # BOOTSTRAP (auto-merge) rather than merely raise. This is the one signal allowed past the raise-only rule

@@ -163,6 +163,15 @@ class EarnedIdentity:
     min_descriptor_len: int | None = None
 
     # ── D-13.10 / D-13.20: the caps, as band names ────────────────────────────────────────────────
+    #
+    # All three are read from the **stage block and nowhere else**. They used to be declared twice — once
+    # here and once at the top level, with ``contrast_ceiling`` spelled ``contrast_band_ceiling`` there —
+    # and the reader consulted the top-level copy first. Setting all three to ``confirmed`` in the stage
+    # block was therefore a measured, silent no-op, in the block whose own header promises to hold every
+    # threshold, cap and floor this stage adds. One name, one place, and
+    # ``tests/config/test_resolution_stage_block_is_the_only_declaration.py`` fails if a shadow copy
+    # reappears.
+    #
     #: Ceiling for a pair carried by the NAME sub-signal alone, at **every** layer.
     name_ceiling: str = ""
     #: Ceiling for a formation pair whose only agreement is co-location (D-13.14 / G16).
@@ -251,16 +260,12 @@ class EarnedIdentity:
             name_weight=_w(NAME),
             discriminator_weight=_w(DISCRIMINATOR),
             min_descriptor_len=min_desc,
-            # Read from the top level (beside ``name_alone_caps_at_possible`` and ``possible_floor``, the
-            # policy dials they belong with), falling back to the stage block so an operator who scoped them
-            # there still gets them.
-            name_ceiling=str(getattr(resolution, "name_ceiling", "") or _str("name_ceiling")),
-            colocation_ceiling=str(
-                getattr(resolution, "colocation_ceiling", "") or _str("colocation_ceiling")
-            ),
-            contrast_ceiling=str(
-                getattr(resolution, "contrast_band_ceiling", "") or _str("contrast_ceiling")
-            ),
+            # The stage block, and only the stage block. The earlier "top level first, stage block as a
+            # fallback" made editing the stage block a silent no-op wherever both were declared — which
+            # was everywhere, because the shipped file declared all three twice.
+            name_ceiling=_str("name_ceiling"),
+            colocation_ceiling=_str("colocation_ceiling"),
+            contrast_ceiling=_str("contrast_ceiling"),
             formation_types=_strs("formation_types"),
             presence_types=_strs("presence_types"),
             colocation_predicates=_strs("colocation_predicates"),
