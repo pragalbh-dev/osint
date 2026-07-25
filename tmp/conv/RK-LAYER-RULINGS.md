@@ -23,10 +23,25 @@ within one `site_type` and a *differing* `site_type` is not a conflict.
 - **Over-merge direction:** two basings at genuinely the same kind of site carrying different strings
   (`airfield` vs `…joint-use facility`) read as *different* ⇒ no conflict ⇒ **the wall does not fire** ⇒ the
   over-merge C1 exists to prevent is allowed.
-- **Silent-failure direction:** the two ends of the flagship relocation carry **unrelated** strings
-  (`observed-imagery-site` vs `stated_destination`). A supersede key built on the raw string gives them
-  **different instance keys**, so they never co-locate ⇒ **the relocation silently stops firing** while the
-  code still looks deterministic.
+- **Silent-failure direction:** the two ends of the flagship relocation carry **different** strings, so a
+  supersede key built on the raw string gives them **different instance keys** — they never co-locate ⇒ **the
+  relocation silently stops firing** while the code still looks deterministic.
+
+  **Correction (2026-07-25), caught by the independent test hand and verified by me.** My first draft named
+  those two strings as `observed-imagery-site` vs `stated_destination`. **That was wrong** — both values exist
+  in the corpus but belong to *other* site nodes. Measured directly: `site_rawalpindi` carries
+  `'prepared revetment complex / airfield site'` and `site_rahwali` carries `'airfield'`. **The conclusion is
+  unchanged and the real evidence is a *sharper* illustration**: these are two descriptions of what is
+  plausibly *one kind of place*, so the flagship sits in **both** failure directions at once — the wall fails
+  to fire (over-merge), *and* a raw-string supersede key loses the relocation (silent failure). Recording the
+  correction rather than quietly swapping the strings, because a reader who checked the original quote would
+  have found it didn't match and might have dismissed the whole finding.
+
+  **Two further measured facts that strengthen the four-concepts claim:** of 21 site nodes in the booted view,
+  **9 carry `observed-imagery-site`** — a *how-we-learned-about-it* value occupying a *kind-of-place* field —
+  and **3 carry no value at all**. And note `site_rahwali` is **absent from the booted view entirely** (its
+  documents are withheld from the boot seed), which independently confirms why the flag-off gate must use the
+  full-scenario surface, not the booted one.
 
 **Ruling: C1 is not wrong, it is incomplete — it inherits C7.** C7 already states the general rule:
 *normalization is a prerequisite for walling on **any** slot, and an unnormalizable stated value yields the
