@@ -17,16 +17,22 @@ from chanakya.settings import config_dir
 
 
 def _bundle(*, earned: bool = False):
-    """The shipped bundle, optionally with the RK-COREF stage flag on (rows may be gated on it)."""
+    """The shipped bundle with the RK-COREF stage flag pinned **explicitly** to ``earned``.
+
+    Both directions are pinned, never inherited. The ``off`` side used to read ambient config, which meant
+    that under a flag-ON run (``pytest --earned-identity=on``, the shadow-config switch) the "flag off"
+    assertions below were measuring a flag-ON bundle — so a flag-on run reported agreement it had not
+    tested, and the one interesting question ("does this row really ride the flag?") went unasked in the
+    only run mode that could answer it.
+    """
     bundle = ConfigStore.seed_from(config_dir()).snapshot()
-    if earned:
-        block = {**(getattr(bundle.resolution, "earned_identity", None) or {}), "enabled": True}
-        resolution = bundle.resolution.model_copy(update={"earned_identity": block})
-        return bundle.model_copy(update={"resolution": resolution})
-    return bundle
+    block = {**(getattr(bundle.resolution, "earned_identity", None) or {}), "enabled": earned}
+    resolution = bundle.resolution.model_copy(update={"earned_identity": block})
+    return bundle.model_copy(update={"resolution": resolution})
 
 
 def _cfg() -> ResolveConfig:
+    """The shipped config with the stage flag pinned OFF."""
     return ResolveConfig.from_bundle(_bundle())
 
 
