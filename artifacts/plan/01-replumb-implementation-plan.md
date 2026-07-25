@@ -274,6 +274,37 @@ evidence for each.
 - **"Rarity-graded name" has no implementation anywhere**, yet D-13.2 and D-13.10 both rest on it. Either S3
   builds it or the design stops claiming it.
 
+### 5a-bis. "Byte-identical" is S1's invariant ONLY — for S2–S4 it is a FAILURE signal
+
+Recorded 2026-07-25 after the user challenged whether S1's unchanged-view result was force-fitting to the
+corpus (working-principles #1). The distinction is real but easy to cargo-cult forward, so it is written down:
+
+- **S1 legitimately changes nothing** because it *builds* nothing behavioural: it names an id that already
+  existed, adds a **dormant** field (referents are minted in **S3** — A1 says so explicitly, because coref is
+  off in S1 so there is no cluster grain to mint against), and adds schema the next stages consume. An
+  unchanged graph is the *evidence the plumbing is inert*, not evidence the corpus was protected. It was
+  verified on the **real corpus** (identical view hash, 160 nodes / 73 edges) precisely because the golden
+  fixture never exercises `dedup` at all — so the golden alone would have been corroboration, not proof.
+- **S2, S3 and S4 change what the graph contains** — layer routing splits straddling mentions, presence and
+  formation become citizens, coref clusters become the mint grain, ids stop deriving from names. **For those
+  stages an unchanged view means the stage did nothing.** Do not carry S1's invariant forward, and do not
+  accept "the golden is byte-identical" as a stage-passing criterion after S1. The plan already says the golden
+  **regenerates** at S4 (§9); the fragmentation metrics are meaningless until S3 (F8) and **must never be
+  "fixed" by loosening thresholds**.
+- **Never gate, default-away, or curb a target-correct capability to keep a fixture green** (#1/#5). A mechanism
+  may legitimately be **byte-inert on the current corpus** — the data pass established that the corpus holds
+  essentially one numbered formation, one stated basing and zero serials, so most of the discriminator ladder
+  *cannot* fire on it — but inert-because-the-data-is-sparse is not the same as hidden-to-protect-a-fixture.
+  The first is honest; the second is forbidden.
+
+**One S1 affordance with an expiry date, flagged rather than left to rot.** S1's `TypeDef.attrs` loader accepts
+**both** the legacy bare-string form and the new structured form, so no config file had to change in S1. That is
+a *migration affordance*, *not* a permanent feature — and if it is left indefinitely it becomes exactly the
+mechanism by which `config/ontology.yaml` never migrates and the data never bends to the design. **S2 must
+populate the structured form for every node-type and attribute-type (A2's `layer` tag), and should then either
+remove the legacy tolerance or record explicitly why it stays.** Track it as an S2 acceptance item, not as a
+nice-to-have.
+
 ### 5b. The spec closures C1–C10 (RK-SPIKE + its adversarial review) — binding
 
 Full statements: **C1–C4** in `../../tmp/conv/rk-spike-DECISIONS.md`; **C5–C10** in
