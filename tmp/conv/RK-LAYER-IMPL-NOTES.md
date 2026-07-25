@@ -11,7 +11,8 @@ general principle and is stated as such; the two site-class values I know about 
 ## 1. The flag — name and where it lives
 
 **`layer_routing.enabled`, a top-level block in `config/ontology.yaml`** (bottom of the file). It ships
-**`false`**.
+**`false`**. *(Confirmed for the test hand — this is the name to align on. `LayerRouting.from_ontology`
+compiles it; an absent block reads disabled.)*
 
 Why there: the block declares what layer routing *is*, and the ontology already carries a non-type-list
 top-level knob block (`materiality:`), so this needs no schema change — `OntologyConfig` is
@@ -278,3 +279,91 @@ The four thresholds/vocabularies I introduced, and the principle behind each:
 | `absent_bucket: unknown` | one shared bucket, because the evasion direction is over-merge and a bucket of its own would let an unstated class buy a second concurrent basing for free |
 | `count_attrs` | the attributes a *source* can state about a presence. Never a count derived from claim arithmetic. |
 | `require_earned_identity: true` | a boolean, not a threshold — there was no number to tune once "sub-confirmed" was ruled to mean an open `candidate` merge |
+
+---
+
+## 9. Integration round 2 — what changed after the independent suite ran
+
+The independently-authored suite found **7 failures**. Two were the session file's stale counts (my surface
+is right: 15 types / 90 entries, all tagged); five were mine or a reconciled disagreement.
+
+### The glob is now flag-gated (the disagreement, resolved with no trade)
+
+Both sides were right: removing `__basing.json` from the seed glob unconditionally **is** the flag-off
+byte-identity break, *and* leaving it unconditional means a frozen bundle replays an inference the rebuild
+now derives — the same attribution twice, once frozen and never ageing. Flag-gating it costs neither.
+
+Declared as `layer_routing.superseded_derived_bundle_suffixes` beside the existing
+`superseded_derived_layers`, and read through `LayerRouting.retired_bundle_suffixes()` so the flag boundary
+lives in **one** place rather than at every seed call site. `seed_store_from_bundles` gained a dumb
+`skip_suffixes` argument (it stays config-free); `api/state.py` and `eval/harness.py` supply it from config.
+
+**Both halves are kept, and they are not redundant.** The file-level skip stops the double attribution
+entering the store at boot — measured: the full-scenario claim count drops 492 → 489 with the flag on. The
+`derived_layer` filter inside `rebuild()` is the **backstop** for a store that already holds such claims,
+where the file-level skip never ran: a live `POST /ingest` of a legacy bundle, or any caller that seeds
+without config in hand.
+
+### R1.4 was too broad — re-scoped to exactly two narrow prohibitions
+
+I had it return a **hold**, which disabled promotion generally. That is the over-correction the mirror
+caught, and the pattern is worth recording rather than filed as a slip: *an implementer closing an
+over-promotion hole reaches for the broadest guard, because every test it can see rewards caution.* Only a
+mirror that asserts the thing which must still work can catch it. Timidity is a failure mode here.
+
+R1.4 now changes **how** a promotion happens, never **whether**:
+
+* **(a) no machine adjudication over an unearned identity.** The pair is promoted, retired and drawn as
+  normal — but it **keeps `candidate_supersede`** and records why, so the analyst still decides. Promotion
+  is not withheld; *adjudication* is. (`identity_is_unearned`, and the `supersede_adjudication_held` attr.)
+* **(b) no honest `insufficient` overwritten with `stale`, and no Known Gap deleted** —
+  `protects_an_honest_refusal`.
+
+**And (b) is conditioned on (a)'s trigger, which I got wrong first and which the real corpus caught.** My
+first cut made (b) unconditional, and it **broke flag-off byte-identity and the flagship relocation
+together**: that retirement is itself under-evidenced, so protecting it stopped it ever reading `stale`.
+D-13.14 settles it — it names the gap deletion as one of *three consequences of the over-merge* ("draws a
+relocation, removes the pair from the analyst's queue, and deletes the retired edge's Known Gap"). The harm
+is an identity error laundering itself into a movement assessment, **not** that retiring an under-evidenced
+position is wrong in general. So both prohibitions share one trigger. An earned retirement — assessable or
+not — restates to `stale` and drops its gap exactly as before.
+
+Config simplified with it: `require_earned_identity` is a boolean and there is no threshold at all.
+
+### Duplicate gaps — a real one, fixed at source and again at the end
+
+`withheld` collected one entry **per withheld claim**, so several claims asserting one unsourced relation
+each earned their own copy of the same gap. Now recorded once per `(predicate, endpoint, end)`. And
+`rebuild()` deduplicates `known_gaps` by id as a backstop, first-occurrence-wins and deterministic —
+several mechanisms can independently notice one absence, and a register that lists a finding twice reads as
+two findings, which is how an analyst learns to skim it. Verified: no repeated gap id in either flag state.
+
+### The mirror tests I should have written first
+
+Six added to `tests/view/test_layer_instance_key.py`, each prohibition paired with the thing that must
+still work: an earned relocation is promoted, retired, drawn **and** popped from the queue · a
+well-evidenced retirement still reads `stale` · an unearned identity is promoted but **stays** in the queue
+(both shapes: a provisional subject and an open candidate merge) · an under-evidenced retirement over an
+*earned* identity is retired normally · a same-target refresh is never treated as unearned · the switch is
+real and the gap register never repeats itself.
+
+### Verification after the round
+
+| | flag off | flag on |
+|---|---|---|
+| booted | 160 / 73 / 18, `22d668a3…` | — |
+| full scenario | 169 / 80 / 71 / 20, `bd24eefc…`, 492 claims | **183 / 95 / 71 / 27**, 489 claims, two rebuilds identical |
+| golden | md5 `bb6f16a5` | — |
+| suite | **1109 passed**, 7 skipped, 2 xfailed | — |
+
+The flag-on node/edge/gap deltas are **unchanged** from §3 — the loader gate closes the double-attribution
+channel at source (3 fewer claims) without moving the graph, because the rebuild backstop was already
+declining those claims.
+
+**And the beat is proven curable, not broken.** With three `site_type_aliases` entries standing in for
+DATA's mapping, flag-on promotes the flagship fully: Rawalpindi `stale`, Rahwali `probable`, the
+`supersedes` edge drawn, `supersede_gate: promoted`, and the pair correctly *popped* from the analyst's
+queue because that identity is earned. In the same run `unit_paad`'s two basings de-conflict into
+`command_centre` and `emplacement` — two concurrently valid basings, correctly **not** a relocation, which
+is R1.3/C1's whole purpose. So the third state is a refusal on a specific, curable ground, and the
+per-subject rule buys the precision it was meant to.

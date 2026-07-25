@@ -83,8 +83,9 @@ class RoutingOutcome:
     design_citations: dict[str, set[str]] = field(default_factory=dict)
     #: extra derived-layer edges to add to the view (the ``instance-of`` links).
     link_edges: list[EdgeView] = field(default_factory=list)
-    #: withheld edges: ``(claim_id, predicate, endpoint_id, end)`` — a ``requires_stated`` violation.
-    withheld: list[tuple[str, str, str, str]] = field(default_factory=list)
+    #: withheld relations: ``(predicate, endpoint_id, end)`` — a ``requires_stated`` violation. Deduped, so
+    #: several claims asserting one unsourced relation earn one gap rather than one each.
+    withheld: list[tuple[str, str, str]] = field(default_factory=list)
     #: named gaps the routing owes the analyst.
     gaps: list[KnownGap] = field(default_factory=list)
 
@@ -246,7 +247,12 @@ def route_triple(
     for end in lane.requires_stated_endpoints(predicate):
         endpoint = subject if end == _FROM_END else obj
         if endpoint not in nodes and endpoint in endpoint_types:
-            outcome.withheld.append((claim.claim_id, predicate, endpoint, end))
+            # Recorded once per (predicate, endpoint, end), not once per withheld claim: several claims can
+            # assert the same unsourced relation, and the *gap* they earn is one statement about one missing
+            # thing. Raising it per claim would put the same finding in the register three times.
+            entry = (predicate, endpoint, end)
+            if entry not in outcome.withheld:
+                outcome.withheld.append(entry)
             return None
 
     mat = lane.materializes(predicate)

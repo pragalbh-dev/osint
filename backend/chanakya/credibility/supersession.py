@@ -50,6 +50,9 @@ GATE_PENDING = "pending"
 GATE_PROMOTED = "promoted"
 GATE_HELD = "held"
 HOLD_REASON = "supersede_hold_reason"  # on both edges of a held pair — why the analyst is being asked
+#: On both edges of a pair that WAS promoted over an identity still in question (R1.4a): the movement is
+#: asserted, but the pair stays in the analyst's queue and this records why it was not machine-adjudicated.
+ADJUDICATION_HELD = "supersede_adjudication_held"
 DERIVED_VIA = "derived_via"  # on the drawn edge: which mechanism minted it
 _DRAWN_EDGE_TYPE = "supersedes"  # declared in config/ontology.yaml (freshness_class n/a, symmetric)
 _DRAWN_VIA = "supersede"
@@ -71,6 +74,12 @@ class SupersedeOutcome:
     drawn_edges: list[EdgeView] = field(default_factory=list)
     retired_element_ids: list[str] = field(default_factory=list)  # older edges now *stale*
     held_pairs: list[tuple[str, str]] = field(default_factory=list)  # (older, newer) still for HITL
+    #: R1.4(a) — promoted, but NOT taken off the analyst's desk: the identity under the movement is still an
+    #: open question, so the pair keeps `candidate_supersede` and the analyst still decides.
+    identity_unearned_pairs: list[tuple[str, str]] = field(default_factory=list)
+    #: R1.4(b) — retired assertions whose honest `insufficient` was NOT overwritten with `stale`. The
+    #: pipeline reads this to leave their Known Gaps in place.
+    protected_refusals: list[str] = field(default_factory=list)
 
 
 def _floor(config: ConfigBundle) -> dict[str, object] | None:
@@ -113,16 +122,16 @@ def _floor_failures(newer: EdgeView, floor: dict[str, object], config: ConfigBun
     return failures
 
 
-def _identity_failures(
+def identity_is_unearned(
     older: EdgeView,
     newer: EdgeView,
     nodes: dict[str, NodeView] | None,
     unsettled_identities: set[str],
     floor: dict[str, object],
-) -> list[str]:
-    """R1.4 — every reason this promotion is not the machine's to make (empty ⇒ it may proceed).
+) -> str | None:
+    """R1.4 — is this promotion's *subject identity* still an open question? A reason string, or ``None``.
 
-    **The chain this closes.** Two co-located batteries with no designations look nearly identical to the
+    **The chain this addresses.** Two co-located batteries with no designations look nearly identical to the
     identity judge, so a formation merge is the path of least resistance. ``based-at`` is functional and
     keyed on the unit, so the moment they fuse their two distinct sites become *one unit's before and
     after*. This pass then clears the credibility floor on the newer of the two, sets the supersede link,
@@ -130,36 +139,65 @@ def _identity_failures(
     differ, **draws a relocation edge**. One identity error therefore becomes a positively-asserted movement
     assessment the analyst is never asked about: the non-negotiable breached without any component lying.
 
-    Machine promotion is legitimate only over an identity the system actually **earned**. So the gate is
-    scoped exactly where the harm is — a promotion that would **draw** a relocation across *differing*
-    targets — and it holds when the subject's identity is still an **open question**:
+    **What this DOES, and — the correction that matters — what it does not.** It does exactly one thing: it
+    keeps the pair **in the analyst's queue**. It does **not** block the promotion, and it must not, because
+    R1.4 restrains machine *adjudication* over an unearned identity, not supersession itself. An earlier
+    version of this function returned a *hold*, and that quietly disabled the legitimate relocation beat —
+    caught only by an independently-authored mirror test asserting the thing that must still work. Worth
+    recording as a pattern rather than a slip: an implementer closing an over-promotion hole will reach for
+    the broadest guard, because every test it can see rewards caution. **Timidity is a failure mode here,
+    not a safe default.**
+
+    Scoped to promotions that would **draw** a relocation across *differing* targets — a same-target refresh
+    asserts no movement, so there is nothing to fabricate — and it fires when the subject is:
 
     * a **provisional** instance (build-materialized: there is no earned identity to rest on at all); or
-    * a node that is an endpoint of an **open `candidate` merge** — a same-as the resolver put in front of
-      the analyst and nobody has adjudicated.
+    * an endpoint of an **open `candidate` merge** — a same-as the resolver put in front of the analyst and
+      nobody has adjudicated.
 
-    **What "sub-confirmed" is NOT.** It is *not* the node's assessed status. The legitimate flagship
-    relocation sits at *probable*, so reading the confidence label would suppress the very beat this is
-    meant to leave working. The question is about the *identity decision*, in the merge-band vocabulary: is
-    it still open? A never-merged subject and a subject whose merges are all settled both pass — no identity
-    decision is pending, so there is none to distrust, and holding those would stop every honest relocation
-    and teach the analyst to ignore the queue.
+    **What "sub-confirmed" is NOT.** Not the node's assessed *status*. The legitimate flagship relocation
+    sits at *probable*, so reading the confidence label would suppress the very beat this leaves working. The
+    question is about the identity **decision**, in the merge-band vocabulary: is it still open? A
+    never-merged subject, and one whose merges are all settled, both pass.
 
-    Holding is not a refusal: the pair keeps ``candidate_supersede`` and goes to the analyst, which D-P4.4
-    already makes the default outcome. The co-location-specific half of this (making such a merge fail to
-    *fuse* in the first place) is the identity layer's job — this is the downstream backstop that makes the
-    failure survivable rather than fabricating on top of it.
+    The co-location-specific half of this (making such a merge fail to *fuse* in the first place) is the
+    identity layer's job; this is the downstream backstop that keeps a human in the loop if it does.
     """
     if not bool(floor.get(_REQUIRE_EARNED)):
-        return []
+        return None
     if newer.target == older.target:
-        return []  # a same-target refresh asserts no movement; there is nothing to fabricate
+        return None  # a same-target refresh asserts no movement; there is nothing to fabricate
     node = (nodes or {}).get(newer.source)
     if node is not None and node.attrs.get(_PROVISIONAL):
-        return ["subject-identity-provisional"]
+        return "subject-identity-provisional"
     if newer.source in unsettled_identities:
-        return ["subject-identity-open-candidate-merge"]
-    return []
+        return "subject-identity-open-candidate-merge"
+    return None
+
+
+def protects_an_honest_refusal(older: EdgeView, identity_unearned: bool) -> bool:
+    """R1.4(b) — must this retirement leave its honest *insufficient* (and its Known Gap) alone?
+
+    True only when **both** hold: the older assertion's evidence requirement was unmet (the same condition
+    as "it raised a Known Gap" — both read ``sufficiency.satisfied``) **and** the identity under the movement
+    is still an open question. Then the supersede link is still written — the newer fact stands — but the
+    label is not restated to ``stale`` and the pipeline does not drop the gap. An ``insufficient`` is a
+    **refusal to assess**, not a weak assessment: calling it ``stale`` says "we knew this and it has been
+    overtaken" about something we never knew, and deleting the gap removes the only record that we still
+    cannot assess it.
+
+    **Why it is conditioned on the identity, and not standing alone.** D-13.14 names the gap deletion as one
+    of *three consequences of the over-merge*: the supersede path "draws a relocation, removes the pair from
+    the analyst's queue, and deletes the retired edge's Known Gap — turning an honest ``insufficient`` into
+    ``stale``". The harm is an identity error laundering itself into a movement assessment; it is not that
+    retiring an under-evidenced position is wrong in general. Unconditioned, this rule stops a legitimate
+    relocation's retired end from ever reading ``stale`` — measured, on the real corpus — which disables the
+    beat rather than protecting anything. **Both narrow prohibitions therefore share one trigger.**
+    """
+    if not identity_unearned:
+        return False
+    suff = older.sufficiency
+    return suff is not None and not suff.satisfied
 
 
 def _restate(older: EdgeView, config: ConfigBundle) -> None:
@@ -226,10 +264,14 @@ def promote_supersessions(
     assessment the status machine just attached, so replaying the same logs + config yields the same
     edges byte-for-byte (gate G2).
 
-    ``nodes`` and ``unsettled_identities`` supply the **earned-identity** gate's two inputs (R1.4): whether
-    the subject is a build-materialized provisional instance, and whether its identity is still an open
-    ``candidate`` merge. Both optional and default-``None`` so every existing caller is unchanged; absent
-    (or with the gate unconfigured) the behaviour is exactly the pre-S2 one.
+    ``nodes`` and ``unsettled_identities`` supply R1.4's two inputs: whether the subject is a
+    build-materialized provisional instance, and whether its identity is still an open ``candidate`` merge.
+    Both optional and default-``None`` so every existing caller is unchanged; absent (or with the gate
+    unconfigured) the behaviour is exactly the pre-S2 one.
+
+    **R1.4 changes two narrow things and nothing else** — see :func:`identity_is_unearned` and
+    :func:`protects_an_honest_refusal`. It never blocks a promotion: an earned relocation is promoted,
+    retired, restated to ``stale`` and drawn exactly as before.
     """
     outcome = SupersedeOutcome()
     floor = _floor(config)
@@ -246,12 +288,6 @@ def promote_supersessions(
             failures = ["supersede-floor-not-configured"]
         else:
             failures = _floor_failures(newer, floor, config)
-            # R1.4 — the newer assertion clearing the CREDIBILITY floor is not enough: promoting also
-            # removes the pair from the analyst's queue and draws a relocation, which is only the machine's
-            # call over an identity it earned.
-            failures = failures + _identity_failures(
-                older, newer, nodes, unsettled_identities or set(), floor
-            )
         if failures:
             older.attrs[GATE] = GATE_HELD
             newer.attrs[GATE] = GATE_HELD
@@ -260,21 +296,44 @@ def promote_supersessions(
             outcome.held_pairs.append((older.id, newer.id))
             continue
 
+        # The floor is cleared: the pair IS promoted. R1.4 changes two narrow things about *how*, and
+        # nothing about *whether* — an over-broad guard here disables the relocation beat, which is the
+        # opposite failure and just as bad.
+        unearned = (
+            identity_is_unearned(older, newer, nodes, unsettled_identities or set(), floor)
+            if floor is not None else None
+        )
         older.superseded_by = newer.id
         newer.supersedes = older.id
         older.attrs[GATE] = GATE_PROMOTED
         newer.attrs[GATE] = GATE_PROMOTED
-        # The pair is adjudicated by the machine — it is no longer a question for the analyst.
-        older.attrs.pop(CANDIDATE, None)
-        remaining = [oid for oid in newer.attrs.get(PENDING_OLDER, []) if oid != older.id]
-        if remaining:
-            newer.attrs[PENDING_OLDER] = remaining
+        if unearned is None:
+            # Earned: the pair is adjudicated by the machine — no longer a question for the analyst.
+            older.attrs.pop(CANDIDATE, None)
+            remaining = [oid for oid in newer.attrs.get(PENDING_OLDER, []) if oid != older.id]
+            if remaining:
+                newer.attrs[PENDING_OLDER] = remaining
+            else:
+                newer.attrs.pop(PENDING_OLDER, None)
+                newer.attrs.pop(CANDIDATE, None)
+            older.attrs.pop(PENDING_NEWER, None)
         else:
-            newer.attrs.pop(PENDING_OLDER, None)
-            newer.attrs.pop(CANDIDATE, None)
-        older.attrs.pop(PENDING_NEWER, None)
-        _restate(older, config)
-        outcome.retired_element_ids.append(older.id)
+            # R1.4(a): the movement is asserted — it cleared the credibility floor — but the identity under
+            # it is still an open question, and an identity error here is exactly what turns into a
+            # fabricated relocation. So the machine does NOT take the pair off the analyst's desk:
+            # `candidate_supersede` and the pending links STAY, with the reason recorded, and the analyst is
+            # still the one who decides. Promotion is not withheld; adjudication is.
+            older.attrs[ADJUDICATION_HELD] = unearned
+            newer.attrs[ADJUDICATION_HELD] = unearned
+            outcome.identity_unearned_pairs.append((older.id, newer.id))
+        # R1.4(b): over an unearned identity, a retired assertion that never *had* an assessment keeps its
+        # honest refusal — the label is not restated to `stale` and (in the pipeline) its Known Gap is not
+        # dropped. Every other retirement, earned or merely well-evidenced, restates exactly as before.
+        if protects_an_honest_refusal(older, unearned is not None):
+            outcome.protected_refusals.append(older.id)
+        else:
+            _restate(older, config)
+            outcome.retired_element_ids.append(older.id)
         if newer.target != older.target:
             outcome.drawn_edges.append(_drawn_edge(older, newer))
 

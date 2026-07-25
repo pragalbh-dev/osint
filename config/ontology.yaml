@@ -480,9 +480,20 @@ layer_routing:
   # the suppressed supersede is visible to the analyst instead of silently not happening. Never one of the
   # three without the other two.
   absent_bucket: unknown
-  # Legacy DERIVED claim bundles this stage supersedes. The offline basing pass is deleted, so its frozen
-  # `inference` output (`*__basing.json`, marked with this `derived_layer`) is no longer evidence — it is
-  # stale derived output of a pass that no longer exists. With routing ON the build ignores those claims
-  # and derives the edge itself; with routing OFF they still load, which is what keeps flag-off
-  # byte-identical. RK-DATA removes the bundles from the corpus, after which both branches agree.
+  # Legacy DERIVED output this stage supersedes, declared at BOTH levels it can arrive by.
+  #
+  # The offline basing pass is deleted, so its frozen `inference` claims are no longer evidence — they are
+  # stale output of a mechanism that no longer exists, and reading them delivers the same attribution TWICE
+  # (once frozen and never ageing or re-deriving, once derived and live).
+  #   * `..._bundle_suffixes` — the boot/seed loader SKIPS these files when routing is on, so the double
+  #     attribution never enters the store at all. With routing OFF they load exactly as before, which is
+  #     what keeps flag-off byte-identical. Both halves of that are load-bearing: removing the glob
+  #     unconditionally IS the byte-identity break, and leaving it unconditional IS the double attribution.
+  #     Flag-gating it is the one answer that costs neither — the disagreement existed only because the flag
+  #     boundary had not been applied to this coupling.
+  #   * `..._layers` — the rebuild's BACKSTOP, keyed on the `derived_layer` marker the pass stamped on its
+  #     claims. It catches a store that already holds them, where the file-level skip never ran: a live
+  #     `POST /ingest` of a legacy bundle, or any caller that seeds without config in hand.
+  # RK-DATA removes the bundles from the corpus, after which both declarations are inert.
+  superseded_derived_bundle_suffixes: ["__basing.json"]
   superseded_derived_layers: [unit-attribution]

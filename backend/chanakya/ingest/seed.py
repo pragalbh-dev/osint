@@ -109,7 +109,11 @@ def ingest_bundle(path: str | Path) -> list[ClaimRecord]:
 
 
 def seed_store_from_bundles(
-    store: SupportsAppendMany, bundles_dir: str | Path, *, exclude_docs: Sequence[str] = ()
+    store: SupportsAppendMany,
+    bundles_dir: str | Path,
+    *,
+    exclude_docs: Sequence[str] = (),
+    skip_suffixes: Sequence[str] = (),
 ) -> int:
     """Append every ``<source_id>.json`` bundle under ``bundles_dir`` into ``store``; return the count.
 
@@ -124,9 +128,21 @@ def seed_store_from_bundles(
     full seed would have produced (the append is order-independent at the reduction, and the arrival is
     what an alert is *about*). A held-back document is a demo/staging choice, never a data edit: no bundle
     contents change, only which of them are present at boot.
+
+    ``skip_suffixes`` names bundle-filename suffixes to leave **unread** — the flag-gated retirement of a
+    derived bundle family whose derivation now happens at rebuild instead (RK-LAYER). The distinction from
+    ``exclude_docs`` matters: a held-back document is *not yet collected* and will arrive later, whereas a
+    retired derived bundle is *stale output of a deleted mechanism* and must never arrive, because reading
+    it alongside the live derivation delivers the same conclusion twice — once frozen and never ageing, once
+    derived. Empty (the default, and always the case with the flag off) ⇒ the glob is exactly as it was, and
+    that is what keeps the keyless boot byte-identical. The caller supplies the list from config
+    (``LayerRouting.retired_bundle_suffixes``) so the flag boundary lives in one place, not at every call
+    site; this function stays a dumb, config-free file reader.
     """
     total = 0
     for path in sorted(Path(bundles_dir).glob("*.json")):
+        if any(path.name.endswith(suffix) for suffix in skip_suffixes):
+            continue
         if any(bundle_belongs_to_doc(path.name, doc) for doc in exclude_docs):
             continue
         claims = ingest_bundle(path)

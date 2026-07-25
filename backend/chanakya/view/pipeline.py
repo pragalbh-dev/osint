@@ -472,7 +472,7 @@ def _assemble(
     for ei, cs in edge_groups.items():
         edges.extend(build_instance_edges(ei, cs))
     edges.extend(outcome.link_edges)
-    for _claim_id, predicate, endpoint, end in outcome.withheld:
+    for predicate, endpoint, end in outcome.withheld:
         outcome.gaps.append(withheld_edge_gap(predicate, endpoint, end))
 
     # Never leave an edge dangling: materialise a referenced-but-undeclared node, citing the edge's
@@ -934,12 +934,14 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # collect on a position the graph has just established the subject has LEFT — the opposite of the
     # honest-refusal contract, which is about what we cannot assess, not about what has been overtaken.
     #
-    # R1.4 / C2 — but the deletion is no longer SILENT. Turning an honest `insufficient` into `stale` is
-    # correct only when the retirement itself was earned; if an identity error put the pair on one instance,
-    # this line is where the last trace of the doubt disappeared. So the retired edge now records which gap
-    # it absorbed. The promotion gate in `promote_supersessions` is the other half: a retirement that would
-    # DRAW a relocation over an identity the system did not earn is held for the analyst, and then nothing
-    # is retired and no gap is dropped at all.
+    # R1.4(b) — and the deletion is now both NARROW and non-silent. `retired_element_ids` already excludes
+    # every assertion whose evidence requirement was unmet: an `insufficient` is a *refusal to assess*, not a
+    # weak assessment, so calling it `stale` would say "we knew this and it has been overtaken" about
+    # something we never knew, and dropping its gap would remove the only record that we still cannot assess
+    # it. Those keep both their label and their gap. A WELL-EVIDENCED retirement is untouched — it reads
+    # `stale` and its gap (it has none) is moot; R1.4(b) protects an honest refusal, it does not disable
+    # retirement. Where a gap IS dropped, the retired edge records which one, so the drop is auditable
+    # rather than a disappearance.
     retired = set(supersede_outcome.retired_element_ids)
     if retired:
         absorbed = {g.related_ref: g.id for g in known_gaps if g.related_ref in retired}
@@ -952,6 +954,13 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # assertions that could be retired, they are statements about what the build could not conclude.
     known_gaps.extend(routing_outcome.gaps)
     known_gaps.extend(derivation.gaps)
+    # One gap per missing thing. Several mechanisms can independently notice the same absence (two claims
+    # withheld against one endpoint, a gap raised on an element that also carries a routing gap), and a
+    # register that lists the same finding twice reads as two findings — which is how an analyst learns to
+    # skim it. First occurrence wins, so the order above (assessment gaps, then routing, then derivation) is
+    # the precedence, and it is deterministic (gate G2).
+    _seen_gaps: set[str] = set()
+    known_gaps = [g for g in known_gaps if not (g.id in _seen_gaps or _seen_gaps.add(g.id))]
 
     view = GraphView(
         nodes=list(nodes.values()),

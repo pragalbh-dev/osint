@@ -617,6 +617,12 @@ class LayerRouting:
     #: let an unstated ``site_type`` buy a second concurrent basing for free. Note this is only the first
     #: third of the third state — see :meth:`normalise_tag`.
     absent_bucket: str = "unknown"
+    #: Bundle-filename suffixes the boot/seed loader **skips** while routing is on, so a frozen derived
+    #: conclusion cannot be replayed alongside the live derivation of the same fact. Empty (routing off) ⇒
+    #: the loader globs exactly as it always did, which is what keeps the flag-off view byte-identical.
+    superseded_derived_bundle_suffixes: tuple[str, ...] = ()
+    #: ``derived_layer`` markers the **rebuild** declines to read as evidence — the backstop for a store
+    #: that already holds such claims, where the file-level skip above never ran.
     superseded_derived_layers: tuple[str, ...] = ()
 
     @classmethod
@@ -643,8 +649,17 @@ class LayerRouting:
             site_type_vocabulary=_strs("site_type_vocabulary"),
             site_type_aliases=alias_pairs,
             absent_bucket=str(block.get("absent_bucket") or "unknown"),
+            superseded_derived_bundle_suffixes=_strs("superseded_derived_bundle_suffixes"),
             superseded_derived_layers=_strs("superseded_derived_layers"),
         )
+
+    def retired_bundle_suffixes(self) -> tuple[str, ...]:
+        """Bundle suffixes a loader should skip — ``()`` unless routing is on (the flag gate, in one place).
+
+        Callers hand the result straight to ``ingest.seed.seed_store_from_bundles(skip_suffixes=…)``, so the
+        flag boundary is applied here rather than re-derived at every seed call site.
+        """
+        return self.superseded_derived_bundle_suffixes if self.enabled else ()
 
     def normalise_tag(self, value: object) -> tuple[str, bool]:
         """A stated ``instance_key_tag`` value → ``(bucket, mapped)`` — C7's normalisation prerequisite.
