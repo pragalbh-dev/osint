@@ -17,7 +17,7 @@ import { useTripwires } from '@/api/viewmodel'
 import { useAnchorCheck, useArmedObservables } from '@/api/hooks'
 import { TRIPWIRES, WATCH_INTRO } from '@/demo/scenario'
 import type { LiveFiring, LiveTripwire } from '@/api/adapters'
-import type { ObservableAnchorProblem, ObservableDef } from '@/api/types'
+import { isAnchorFault, type ObservableAnchorProblem, type ObservableDef } from '@/api/types'
 import { AlertEvidence } from './AlertEvidence'
 
 const LIVE_INTRO =
@@ -98,18 +98,34 @@ function armedTitle(id: string): string {
  *  here is a coverage failure, never an all-clear. The backend supplies the sentence; nothing is
  *  composed here, so what the API says and what the analyst reads cannot drift. */
 function AnchorProblem({ problem }: { problem: ObservableAnchorProblem }) {
+  // AH-2 — an anchor naming a DECLARED entity that no document has produced yet is not a fault, and
+  // must not be dressed as one. It is still shown (the analyst should know part of the subject is
+  // uncovered) but in the panel's neutral register: the loud treatment is reserved for anchors that
+  // are genuinely broken, so that when it does appear it still means something.
+  const fault = isAnchorFault(problem)
+  const label = !fault
+    ? 'AWAITING COVERAGE'
+    : problem.watching_nothing
+      ? 'WATCHING NOTHING'
+      : problem.watched_node_count === null
+        ? 'SCOPE LOST — NOW UNSCOPED'
+        : 'ANCHOR UNRESOLVED'
   return (
-    <div className="mt-[9px] rounded border border-dashed border-live px-[11px] py-[9px]">
-      <div className="mb-[4px] font-mono text-[10px] tracking-[0.06em] text-live">
-        {problem.watching_nothing
-          ? 'WATCHING NOTHING'
-          : problem.watched_node_count === null
-            ? 'SCOPE LOST — NOW UNSCOPED'
-            : 'ANCHOR UNRESOLVED'}
+    <div
+      className={`mt-[9px] rounded border border-dashed px-[11px] py-[9px] ${
+        fault ? 'border-live' : 'border-hairline-strong'
+      }`}
+    >
+      <div
+        className={`mb-[4px] font-mono text-[10px] tracking-[0.06em] ${
+          fault ? 'text-live' : 'text-text-faint'
+        }`}
+      >
+        {label}
       </div>
       <div className="text-[12px] leading-[1.5] text-text-dim">{problem.warning}</div>
       <div className="mt-[6px] font-mono text-[10.5px] text-text-faint">
-        unresolved · {problem.unresolved_anchors.join(', ')}
+        {fault ? 'unresolved' : 'awaiting coverage'} · {problem.unresolved_anchors.join(', ')}
       </div>
     </div>
   )
@@ -124,7 +140,11 @@ function ArmedObservableCard({ def, problem }: { def: ObservableDef; problem?: O
   const on = typeof def.trigger?.on === 'string' ? String(def.trigger.on) : null
   const dead = problem?.watching_nothing === true
   return (
-    <div className={`rounded border px-[14px] py-[13px] ${problem ? 'border-live' : 'border-hairline'}`}>
+    <div
+      className={`rounded border px-[14px] py-[13px] ${
+        problem && isAnchorFault(problem) ? 'border-live' : 'border-hairline'
+      }`}
+    >
       <div className="mb-[7px] flex items-center justify-between gap-3">
         <span className="text-[13px] text-text">{armedTitle(def.observable_id)}</span>
         <StateBadge label={dead ? 'watching nothing' : 'armed'} open={dead} />
@@ -142,7 +162,11 @@ function ArmedObservableCard({ def, problem }: { def: ObservableDef; problem?: O
 function LiveTripwireCard({ tripwire, problem }: { tripwire: LiveTripwire; problem?: ObservableAnchorProblem }) {
   const open = tripwire.state === 'fired'
   return (
-    <div className={`rounded border px-[14px] py-[13px] ${problem ? 'border-live' : 'border-hairline'}`}>
+    <div
+      className={`rounded border px-[14px] py-[13px] ${
+        problem && isAnchorFault(problem) ? 'border-live' : 'border-hairline'
+      }`}
+    >
       <div className="mb-[7px] flex items-center justify-between gap-3">
         <span className="text-[13px] text-text">{tripwire.name}</span>
         <StateBadge label={tripwire.stateLabel} open={open} />

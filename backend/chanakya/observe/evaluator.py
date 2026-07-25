@@ -410,11 +410,16 @@ def _anchor_explanation(
         }
     detail = resolve_scope_detail(observable, view, config)
     out: dict[str, Any] = {
-        "anchor_check": "ok" if not detail.missing else "unresolved anchors",
+        "anchor_check": "ok" if detail.warning is None else detail.severity,
         "anchors_requested": list(detail.requested),
         "anchors_resolved": detail.resolved_map,
         "anchor_resolution": dict(detail.resolution_via or {}),
         "unresolved_anchors": list(detail.missing),
+        # AH-2 — an anchor awaiting coverage is not a broken one; keep them apart on every surface.
+        "anchors_pending_coverage": list(detail.pending_coverage),
+        "anchors_dangling": list(detail.dangling),
+        "anchor_severity": detail.severity,
+        "anchors_declared_in": dict(detail.declared_in or {}),
         "watched_node_count": detail.watched_node_count,  # None = unscoped (watches everything)
         "watching_nothing": detail.watching_nothing,
     }
@@ -429,17 +434,33 @@ def anchor_diagnostics(config: ConfigBundle, view: GraphView) -> list[dict[str, 
     The list is the API/SPA-facing form of :class:`ScopeResolution`: one entry per *broken* observable,
     so an empty list is the positive statement "every armed tripwire's anchors bind to a real node".
     Deterministic (config order); no clock/RNG — safe to call on any read path.
+
+    **AH-2, two corrections to what counts as reportable:**
+
+    * An ``arm-only`` observable is skipped. Both ``_fire`` and ``arm`` return on ``ARM_ONLY`` *before*
+      calling ``resolve_scope``, so its scope is provably never consulted — reporting an anchor problem
+      there blames an anchor for a silence that ``explain()`` already attributes, correctly and
+      separately, to arm-only mode. ``explain()`` still reports its anchors, so nothing is hidden.
+    * Entries carry ``severity``. A caller that renders every entry with equal loudness will cry wolf on
+      this system's own default boot state, where a deliberately-withheld document leaves a declared
+      entity uncovered; ``severity == "pending_coverage"`` is the quiet case.
     """
     out: list[dict[str, Any]] = []
     for obs in config.observables.observables:
+        if compile_trigger(obs.trigger).mode == ARM_ONLY:
+            continue
         detail: ScopeResolution = resolve_scope_detail(obs, view, config)
-        if not detail.missing:
+        if detail.warning is None:
             continue
         out.append(
             {
                 "observable_id": obs.observable_id,
                 "unresolved_anchors": list(detail.missing),
                 "resolved_anchors": detail.resolved_map,
+                "pending_coverage": list(detail.pending_coverage),
+                "dangling": list(detail.dangling),
+                "declared_in": dict(detail.declared_in or {}),
+                "severity": detail.severity,
                 "watched_node_count": detail.watched_node_count,
                 "watching_nothing": detail.watching_nothing,
                 "warning": detail.warning,

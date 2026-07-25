@@ -67,7 +67,9 @@ def test_all_miss_carries_the_same_sentence_on_meta() -> None:
     """One sentence, so a consumer never has to re-derive the meaning from three parallel lists."""
     out = apply_lens(_view(), SubjectLens(subject_id="s", anchors=["unit_paaad_typo"], max_hops=3))
     assert "unit_paaad_typo" in out.meta["anchor_warning"]
-    assert out.meta["anchor_warning"] in (_gap(out).what_missing if _gap(out) else "")
+    gap = _gap(out)
+    assert gap is not None
+    assert out.meta["anchor_warning"] in gap.what_missing
 
 
 def test_partial_miss_is_reported_even_though_the_lens_still_returns_a_graph() -> None:

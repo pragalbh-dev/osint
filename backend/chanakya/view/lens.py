@@ -87,19 +87,44 @@ def _passes_materiality(node: NodeView, filt: dict[str, Any]) -> bool:
     return True
 
 
-def _anchor_warning(subject: SubjectLens, missing: list[str], declared: int) -> str:
-    """The one sentence an analyst reads when a lens cannot find part of its own subject (AH-1)."""
+def _anchor_warning(
+    subject: SubjectLens, missing: list[str], declared: int, dangling: list[str] | None = None
+) -> str:
+    """The one sentence an analyst reads when a lens cannot find part of its own subject (AH-1).
+
+    **AH-2** — ``dangling`` are the misses that match no view node *and* no declared registry entity.
+    A miss that IS a declared entity is a coverage gap the lens will close by itself, so the remedy
+    ("correct the anchor id") must not be attached to it; this system's own default boot state withholds
+    a document precisely so one shipped anchor is uncovered at first paint.
+    """
     named = ", ".join(missing)
+    broken = list(dangling or [])
+    if broken:
+        fix = (
+            f" Next step: correct the anchor id in the subject definition — {', '.join(broken)} "
+            "match no node and no declared entity."
+        )
+    else:
+        fix = (
+            " These name entities that ARE declared in the registry but for which no source has yet "
+            "produced a claim, so the lens will pick them up when coverage arrives — no edit needed."
+        )
+    if declared == 0:
+        return (
+            f"subject {subject.subject_id!r} declares NO anchors at all, so there is nothing for the lens "
+            "to centre on and this view is empty by construction — NOT because there is nothing to "
+            "report. Next step: declare at least one anchor in the subject definition."
+        )
     if len(missing) >= declared:
         return (
             f"insufficient evidence to scope subject {subject.subject_id!r}: none of its declared "
             f"anchors resolve to a node in this view (unresolved: {named}). This view is empty because "
-            "the lens could not find its subject — NOT because there is nothing to report."
+            f"the lens could not find its subject — NOT because there is nothing to report.{fix}"
         )
     return (
         f"subject {subject.subject_id!r} is partially scoped: {len(missing)} of {declared} declared "
         f"anchors resolve to no node in this view (unresolved: {named}). Anything reachable only from "
-        "those anchors is missing from this view, so its absence here is not evidence of absence."
+        f"those anchors is missing from this view, so its absence here is not evidence of absence.{fix}"
     )
 
 
@@ -109,13 +134,13 @@ def _anchor_gap(subject: SubjectLens, missing: list[str], warning: str) -> Known
     ``confirmable`` because the condition is resolvable by either correcting the anchor id or by coverage
     that creates the entity; ``next_coverage_due`` stays ``None`` because this is a scoping/resolution
     failure with no source cadence behind it, and inventing a date would be the fabrication this system
-    forbids. The gap names the fix instead.
+    forbids. The gap names the fix instead — inside ``warning``, which now carries the remedy that
+    actually applies (AH-2), rather than appending a generic one that may be wrong advice.
     """
     return KnownGap(
         id=f"gap-anchor-unresolved-{subject.subject_id}",
         what_missing=(
-            f"{warning} Next step: correct the anchor id in the subject definition, or wait for "
-            "coverage that creates the entity — then re-scope."
+            f"{warning}"
         ),
         observability_ceiling="confirmable",
         next_coverage_due=None,
@@ -164,9 +189,18 @@ def apply_lens(view: GraphView, subject: SubjectLens, *, config: ConfigBundle | 
     unrecognised = sorted(set(subject.materiality_filter) - CONSUMED_FILTER_KEYS)
 
     missing = [r.requested for r in resolutions if r.node_id is None]
+    # AH-2 — a miss that names a DECLARED registry entity is awaiting coverage, not broken; only the
+    # rest earn "correct the anchor id". Registry-free (`config is None`) degrades to "all broken",
+    # which is the honest reading when there is no registry to vouch for the id.
+    registry = config.entities.as_map() if config is not None else {}
+    dangling = [a for a in missing if a not in registry]
     # NB `len(resolutions)`, not `len(anchors)` — `anchors` is the *resolved* set, so using it would
-    # call every partial miss a total one.
-    anchor_warning = _anchor_warning(subject, missing, len(resolutions)) if missing else None
+    # call every partial miss a total one. A lens that declares NO anchors resolves nothing and returns
+    # an EMPTY view; that is the same silence this whole change exists to kill, so it is diagnosed too.
+    if missing or not subject.anchors:
+        anchor_warning = _anchor_warning(subject, missing, len(resolutions), dangling)
+    else:
+        anchor_warning = None
     if anchor_warning is not None:
         # AH-1 — the meta fields below have existed since AR-2 and **nothing consumed them**, so a lens
         # that could not find its own subject still rendered as a smaller-but-confident graph. A Known

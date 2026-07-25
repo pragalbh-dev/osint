@@ -424,13 +424,37 @@ export interface ConfigWriteResult {
  *  `watching_nothing` is the disqualifying case — the tripwire cannot fire at all, so its silence
  *  is not an all-clear. `watched_node_count === null` is the opposite failure: it fell back to
  *  UNSCOPED and now evaluates the whole graph instead of the subject it declared. */
+/** How loud an anchor problem actually is (AH-2). Only the last three are faults:
+ *  - `pending_coverage` — the anchor names a DECLARED entity no source has produced yet. Expected,
+ *    self-clearing, and the shipped default boot state (documents are withheld from the seed on
+ *    purpose so a reviewer can ingest them live). Rendering it as an alarm cries wolf on a healthy
+ *    system, which trains an analyst to ignore the surface — the same failure as silence, reached
+ *    from the other side.
+ *  - `dangling` — the anchor matches no node, no declared entity and no alias. A real broken id.
+ *  - `watching_nothing` — the tripwire cannot fire at all; its silence is not an all-clear.
+ *  - `unscoped` — the opposite failure: it fell back to evaluating the WHOLE graph. */
+export type AnchorSeverity = 'pending_coverage' | 'dangling' | 'watching_nothing' | 'unscoped'
+
 export interface ObservableAnchorProblem {
   observable_id: string
   unresolved_anchors: string[]
   resolved_anchors?: Record<string, string>
+  /** Misses that name a declared registry entity — awaiting coverage, not broken. */
+  pending_coverage?: string[]
+  /** Misses that match nothing anywhere — the genuine config fault. */
+  dangling?: string[]
+  /** anchor → `"watch_instances"` | `"subject:<lens id>"`; which config file to actually edit. */
+  declared_in?: Record<string, string>
+  severity?: AnchorSeverity
   watched_node_count: number | null
   watching_nothing: boolean
   warning: string
+}
+
+/** Is this a fault the analyst must act on, or a coverage gap that clears itself? Defaults to
+ *  "fault" when the backend did not say, so an older/unknown payload is never quietly downgraded. */
+export function isAnchorFault(p: ObservableAnchorProblem): boolean {
+  return (p.severity ?? 'dangling') !== 'pending_coverage'
 }
 
 /** GET /config/observables → `diagnostics.anchor_check`. `checked: false` means the check could not

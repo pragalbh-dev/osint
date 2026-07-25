@@ -314,3 +314,28 @@ extra fetch) → the Watch panel renders a per-tripwire complaint plus a banner,
 **Not surfaced:** the lens half. `apply_lens` now emits a Known Gap for an unresolved anchor and carries
 `meta.anchor_warning`, but the SPA calls `useLiveSync()` with **no subject**, so it never requests a lensed
 view — there is no screen for it to land on. Honest state: API + ASK tool reads only.
+
+## AH-2 — anchor check gains a severity (additive, 2026-07-25)
+
+Follow-up to the AH-1 entry above. Same endpoints, same shapes; three new **optional** fields on each
+`diagnostics.anchor_check.unresolved[]` entry (and on `explain()`):
+
+- `severity`: `"pending_coverage" | "dangling" | "watching_nothing" | "unscoped"`
+- `pending_coverage[]` / `dangling[]`: the unresolved anchors split by whether the id names a **declared
+  registry entity** (uncovered, self-clearing) or nothing at all (a real broken id)
+- `declared_in`: anchor → `"watch_instances"` | `"subject:<lens id>"` — which config file to edit
+
+**Rendering rule (load-bearing).** Do **not** render every entry with equal loudness. `pending_coverage`
+is the shipped default boot state — two documents are withheld from the seed on purpose, so one lens
+anchor is legitimately uncovered at first paint — and alarming on it makes the app shout on a healthy
+first paint and go quiet when the demo alert fires. Alarm on the other three only; show
+`pending_coverage` in a neutral register. Treat an **absent/unrecognised** `severity` as a fault: an
+underclaim is as dishonest as an overclaim.
+
+The `warning` string is still composed once on the backend and must be rendered **verbatim** — it now
+carries the correct remedy for the case ("no edit is needed" for a coverage gap; "correct the anchor id"
+plus the owning config file for a broken one).
+
+Consumers updated: `rail/watchSummary.ts` (faults only; also stops collapsing *scope lost* into the
+milder partial case), `panel/views/WatchView.tsx` (`AWAITING COVERAGE` block), `api/types.ts`
+(`AnchorSeverity`, `isAnchorFault`).

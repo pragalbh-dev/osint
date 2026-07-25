@@ -22,7 +22,13 @@ all miss keeps returning its (non-matching) ``watch_instances`` set rather than 
 
 from __future__ import annotations
 
-from chanakya.observe import anchor_diagnostics, evaluate, explain, resolve_scope, resolve_scope_detail
+from chanakya.observe import (
+    anchor_diagnostics,
+    evaluate,
+    explain,
+    resolve_scope,
+    resolve_scope_detail,
+)
 from chanakya.schemas import SubjectLens, SubjectsConfig
 
 from .conftest import config_with, relocation_observable, view

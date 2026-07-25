@@ -90,3 +90,56 @@ describe('watchSummary — the rail Watching row', () => {
     expect(s.note).toBe('3 armed · 1 watching nothing · 1 fired')
   })
 })
+
+// ── AH-2: the rail is an ALARM surface, so only faults belong on it ──────────────────────────
+// The shipped app withholds two documents from the seed on purpose, so one declared lens anchor is
+// legitimately uncovered at first paint. Counting that as "anchor unresolved" made the rail shout on
+// a healthy system and fall silent once the demo alert fired — precisely backwards.
+
+describe('watchSummary — anchor severity (AH-2)', () => {
+  it('an anchor awaiting coverage is NOT counted on the rail', () => {
+    const s = watchSummary(OBS, [], 3, {
+      checked: true,
+      unresolved: [{ watching_nothing: false, watched_node_count: 2, severity: 'pending_coverage' }],
+    })
+    expect(s.note).toBe('3 armed · none fired')
+  })
+
+  it('the shipped boot shape — two pending, nothing broken — leaves the caption untouched', () => {
+    const s = watchSummary(OBS, [], 3, {
+      checked: true,
+      unresolved: [
+        { watching_nothing: false, watched_node_count: 2, severity: 'pending_coverage' },
+        { watching_nothing: false, watched_node_count: 32, severity: 'pending_coverage' },
+      ],
+    })
+    expect(s.note).toBe('3 armed · none fired')
+  })
+
+  it('a genuinely broken anchor is still counted beside a pending one', () => {
+    const s = watchSummary(OBS, [], 3, {
+      checked: true,
+      unresolved: [
+        { watching_nothing: false, watched_node_count: 2, severity: 'pending_coverage' },
+        { watching_nothing: false, watched_node_count: 5, severity: 'dangling' },
+      ],
+    })
+    expect(s.note).toBe('3 armed · 1 anchor unresolved · none fired')
+  })
+
+  it('scope lost is not collapsed into the milder partial case — it watches the WHOLE graph', () => {
+    const s = watchSummary(OBS, [], 3, {
+      checked: true,
+      unresolved: [{ watching_nothing: false, watched_node_count: null, severity: 'unscoped' }],
+    })
+    expect(s.note).toBe('3 armed · 1 scope lost · none fired')
+  })
+
+  it('a problem with no stated severity is treated as a fault, never quietly downgraded', () => {
+    const s = watchSummary(OBS, [], 3, {
+      checked: true,
+      unresolved: [{ watching_nothing: false }],
+    })
+    expect(s.note).toBe('3 armed · 1 anchor unresolved · none fired')
+  })
+})
