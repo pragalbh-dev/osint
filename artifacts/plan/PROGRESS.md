@@ -29,7 +29,7 @@ the section below + `DECISIONS.md`._
 
 | ID | Session | Wave | Status | PR | Depends (merged) | Merged commit |
 |----|---------|------|--------|----|--------------------|---------------|
-| RK-SPIKE | S0 — close micro-decisions + prototype characterize-and-cluster + claim-gold slice | 0 | in-progress | — | — | — |
+| RK-SPIKE | S0 — close micro-decisions + prototype characterize-and-cluster + claim-gold slice | 0 | **merged** (design branch) | — | — | 3525427 |
 | RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
 | RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | not-started | — | RK-SPIKE | — |
 | RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | not-started | — | RK-ATOMS | — |
@@ -526,3 +526,53 @@ Wave-1 siblings are unaffected → no rebase). Mirrored for the frontend in
   (N+1 + beyond §4.8).
 - **`IngestRequest.source_type: str | None = None`** (master §4.8) — the keyed live lane needs the source's
   credibility class (`ingest_document(source_type=…)`); the keyless bundle path ignores it.
+
+## Handoff — RK-SPIKE (S0), 2026-07-25
+
+**Shipped.** The three micro-decisions closed as **D-13.17…D-13.20** (spine/13 §13), plus **ten spec closures
+C1–C10** (plan §5b). A **12-item verified defect register** (`tmp/conv/rk-spike-verified-defects.md`), a
+**characterize-and-cluster prototype** (`tmp/spike-rk/proto/`, no embeddings, byte-deterministic), **24
+independently-authored acceptance cases** (`tmp/spike-rk/cases/`), an **integration matcher**
+(`tmp/spike-rk/match.py`), and the **claim-gold slice + per-slice sub-oracle + abstracted shapes**
+(`tmp/spike-rk/gold/`). Gates **G15/G16/G18 amended** and **G19 added**, wired into the gate table, the stage
+gate lists and owned test paths. Blind-case result: **15/24**, residue triaged in
+`tmp/conv/rk-spike-REVIEW-VERDICT.md` §2.
+
+**Decisions** (principle → choice → alternative rejected). *Target-first (#1)* → the coref auto-bind policy is
+set on general principle → **rejects** the shipped config's demo-preservation rationale (the data pass owes a
+re-carried earned-alias beat, best split across two documents). *Anti-fabrication (the non-negotiable)* → an
+authoritative bind needs **both** a deterministic structural gate **and** a source-grade floor → **rejects**
+trusting a model-chosen label, since a bind fuses **uncapped** while a source-stated `same-as` only raises.
+*Reversibility* → the referent atom is a **grouping signal the rebuild may decline**, and node identity is
+**claim-atom-primary** → **rejects** referent-as-address, which would make intra-document over-merge permanent.
+*Harm asymmetry* → same-doc contrast is a **band ceiling** (a band name, not a float) → **rejects** a
+coefficient (drops a pair two bands at the shipped thresholds) and the transitive `distinct-from` rail (every
+ORBAT list contains an enumeration). *Independence* → **evidential lineage, not document count**.
+
+**Deviations.** No production code (by design). The completeness critic never ran (session limit), so "what
+were all three hands never asked" is only partly answered — plan §11 now names what remains open.
+
+**Follow-ups.** (1) The anaphor gate must be **reformulated positively or reverted to raise-only** — its
+absence-test form *fails open* under extractor under-reach. (2) **D6/C8 source-independence is new code**, not
+config. (3) The **licensing quote** is written but read nowhere, so the raise-only mitigation is currently
+fictional. (4) **Rarity-graded name** has no implementation. (5) **D11** — the flagship `confirmed` may rest on
+*nominal* independence; DATA/EVAL adjudicate the source text. (6) **D12** — the ontology makes the sourced
+customs relation inexpressible while making an unsourced one easy (→ RK-LAYER). (7) The sub-oracle grades
+twelve entries `confirmed` on a single source, contradicting the system's own rule (→ DATA). (8) Case-suite
+gaps: no `absent`-gap assertion anywhere (an over-raiser passes the whole suite) and G15's positive half is
+untested.
+
+**Gate fixtures.** All new gate fixtures **must be abstract** — the data pass established that across the whole
+corpus there is essentially **one numbered formation, one stated basing and zero serials**, so the corpus
+cannot exercise G16/G18/G19 at all. That inertness is a legitimate consequence of sparse data with the
+mechanism at full strength, **not** a reason to weaken the ladder.
+
+**Three-hands separation, evidenced.** Three worktrees on three branches with disjoint inputs: the implementer
+(`spike/rk-impl`) never read `corpus/**`, the answer key, or the cases; the test author (`spike/rk-test`) wrote
+all 24 cases from the spec and never opened the impl branch or `proto/`; the data hand (`spike/rk-data`) read
+the corpus read-only and authored **abstracted** shapes so the implementer got the structural difficulty
+without the content. The separation paid: the case author found a contradiction between two of the
+orchestrator's own requirements (→ C1), the implementer found that D-13.20 re-opened the door it was written to
+close (→ C7/C8), and the adversarial review found **three bugs in the orchestrator's own matcher** — two of
+which made the reported score wrong — plus that **A1/A5 encoded the forbidden id ordering** about to be frozen
+at S1.
