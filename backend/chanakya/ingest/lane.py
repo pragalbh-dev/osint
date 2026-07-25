@@ -44,7 +44,7 @@ from typing import Any
 from chanakya.edge_direction import canonicalize_claims
 from chanakya.ingest import loaders
 from chanakya.ingest.client import ExtractionClient
-from chanakya.ingest.dedup import assign_claim_ids, dedup_within_doc, remap_claim_refs
+from chanakya.ingest.dedup import assign_claim_ids, dedup_within_doc, namespace_chunk_ids
 from chanakya.ingest.extract import extract_document
 from chanakya.ingest.imagery import LiteratureRef, inherit_observation_time, read_image_document
 from chanakya.schemas import Alert, ClaimRecord, ConfigBundle, GraphView, IngestResult
@@ -198,16 +198,14 @@ async def _extract_doc_claims(
     if not tasks:
         return []
     results = await asyncio.gather(*tasks)
-    # Provisional claim ids are unique only *within* one extraction call; a doc with several images makes
+    # Provisional atom ids are unique only *within* one extraction call; a doc with several images makes
     # several calls that can mint colliding provisional ids (each imagery call mints its own obs/inf pair).
     # Namespace each chunk before ``assign_claim_ids`` remaps premises off those ids — rewriting each
-    # chunk's own inference ``premises`` / retraction ``targets`` in lockstep so the linkage survives.
+    # chunk's own cross-claim references *and* its provisional referent atoms in lockstep, through the one
+    # shared definition in ``dedup`` (the seed recorder calls the same function, so the two cannot drift).
     claims: list[ClaimRecord] = []
     for k, chunk in enumerate(results):
-        remap = {c.claim_id: f"chunk{k}-{c.claim_id}" for c in chunk}
-        for c in chunk:
-            update: dict[str, Any] = {"claim_id": remap[c.claim_id], **remap_claim_refs(c, remap)}
-            claims.append(c.model_copy(update=update))
+        claims.extend(namespace_chunk_ids(chunk, f"chunk{k}"))
     return _finalize(claims, doc.source_id, config)
 
 

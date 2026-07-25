@@ -35,7 +35,7 @@ from collections import defaultdict
 from typing import Any
 
 from chanakya.edge_direction import OBJECT_MENTION_ATTR, SUBJECT_MENTION_ATTR
-from chanakya.schemas import ClaimRecord, DocRef, make_claim_id
+from chanakya.schemas import REFERENT_PREFIX, ClaimRecord, DocRef, make_claim_id
 
 #: Tier-3 attribute keys whose values are **claim ids** and therefore must follow every id reassignment,
 #: exactly like ``premises``/``targets``. Keeping the list here (with the one function that rewrites them)
@@ -119,6 +119,14 @@ def _claim_signature(claim: ClaimRecord) -> str:
     asserts, stated payload, event time, premises and target). ``report_time``/``ingest_time`` are
     excluded — they are document-level constants, so they can never separate two claims of one doc —
     and ``claim_id``/``resolved_ref``/``extraction`` are excluded so a restatement still collapses.
+
+    **The referent atom separates, when it is stated** (A1; see :func:`dedup_within_doc` for the full
+    reasoning). Two same-content mentions that within-document coreference put in *different* clusters are
+    not a restatement of one assertion — they are two assertions that happen to share a surface string —
+    so they must not fold into one atom. The key is emitted **only when a referent is set**, so while the
+    field is dormant (S1) every signature string is byte-identical to its pre-S1 value and the pass cannot
+    have shifted a single grouping or ordering tiebreak. Absence stays *unknown*, never a value: an unset
+    referent and a set one are also kept apart, because "we don't know" is not evidence of sameness.
     """
     sig: dict[str, Any] = {
         "doc": _doc_key(claim),
@@ -130,6 +138,8 @@ def _claim_signature(claim: ClaimRecord) -> str:
         "premises": list(claim.premises),
         "targets": claim.targets,
     }
+    if claim.referent_id is not None:
+        sig["referent"] = claim.referent_id
     return json.dumps(sig, sort_keys=True, ensure_ascii=False, default=str)
 
 
@@ -166,14 +176,23 @@ def _locator_for_claim(claim: ClaimRecord) -> str:
 
 # ── cross-claim reference rewriting (one definition, every id-reassignment path) ─────────────────
 
-def remap_claim_refs(claim: ClaimRecord, remap: dict[str, str]) -> dict[str, Any]:
-    """The ``model_copy`` update rewriting **every** claim-id reference on ``claim`` through ``remap``.
+def remap_claim_refs(
+    claim: ClaimRecord, remap: dict[str, str], *, referents: dict[str, str] | None = None
+) -> dict[str, Any]:
+    """The ``model_copy`` update rewriting **every** atom reference on ``claim`` through the given maps.
 
     A claim points at other claims in three ways: an inference's ``premises``, a retraction's ``targets``,
     and the tier-3 mention refs a relationship carries for its endpoints (:data:`_REF_ATTRS` — INGEST's
     mention-keyed provenance). All three must be rewritten together wherever ids are reassigned: the
     canonical minting in :func:`assign_claim_ids`, and the per-chunk namespacing in the ingest lane and the
     corpus seed. Ids absent from ``remap`` are left alone, so this is safe to apply to any claim.
+
+    ``referents`` is the **second atom level** (A1): the referent atom lives in its own ``ref:``-prefixed
+    namespace, so it can never be rewritten by accident through ``remap`` (a claim-id map holds no
+    ``ref:`` keys), and a caller that reassigns provisional referents must say so explicitly. Only
+    :func:`namespace_chunk_ids` does — the canonical claim-atom minting in :func:`assign_claim_ids`
+    deliberately passes nothing, because a referent atom is minted once and never re-minted (D-13.11);
+    it is *carried* through the copy, not rewritten.
 
     Returns only the keys that actually change, so an untouched claim copies nothing.
     """
@@ -184,6 +203,8 @@ def remap_claim_refs(claim: ClaimRecord, remap: dict[str, str]) -> dict[str, Any
             update["premises"] = remapped
     if claim.targets is not None and claim.targets in remap:
         update["targets"] = remap[claim.targets]
+    if referents and claim.referent_id is not None and claim.referent_id in referents:
+        update["referent_id"] = referents[claim.referent_id]
     attributes = claim.attributes
     if attributes:
         changed = {
@@ -196,7 +217,55 @@ def remap_claim_refs(claim: ClaimRecord, remap: dict[str, str]) -> dict[str, Any
     return update
 
 
+def namespace_chunk_ids(claims: list[ClaimRecord], token: str) -> list[ClaimRecord]:
+    """Prefix one extraction call's **provisional** atom ids with ``token``, references in lockstep.
+
+    Provisional ids are unique only *within* one extraction call. A document whose text lane runs beside
+    one or more co-loaded images makes several calls, each minting its own ``d07-img1``-shaped ids and its
+    own coreference clusters — so concatenating them without namespacing lets two unrelated mentions share
+    an id and silently fuse. Both the live lane and the frozen-bundle recorder need exactly this reshaping
+    (KEYLESS ≡ LIVE), and both used to spell it out in near-identical loops; keeping the one definition
+    here is what stops a *second* atom level from being namespaced in one path and forgotten in the other.
+
+    The referent prefix is preserved (``ref:d10-c1`` → ``ref:chunk0-d10-c1``), so a namespaced referent is
+    still a well-formed referent id and stays disjoint from every claim id. Inputs are not mutated.
+    """
+    remap = {c.claim_id: f"{token}-{c.claim_id}" for c in claims}
+    referents = {
+        c.referent_id: f"{REFERENT_PREFIX}{token}-{c.referent_id[len(REFERENT_PREFIX):]}"
+        for c in claims
+        if c.referent_id is not None and c.referent_id.startswith(REFERENT_PREFIX)
+    }
+    out: list[ClaimRecord] = []
+    for claim in claims:
+        update: dict[str, Any] = {
+            "claim_id": remap[claim.claim_id],
+            **remap_claim_refs(claim, remap, referents=referents),
+        }
+        out.append(claim.model_copy(update=update))
+    return out
+
+
 # ── public passes ───────────────────────────────────────────────────────────────────────────────
+
+def _folded_referent(members: list[ClaimRecord]) -> str | None:
+    """The one referent atom a fold group shares — the explicit half of the fold decision (A1).
+
+    **Two mentions with different referents never fold**, because :func:`_claim_signature` includes the
+    referent, so every group reaching here is referent-homogeneous and this returns that single value.
+    The disagreement branch is therefore unreachable by construction — and it **raises** rather than
+    picking one or blanking the field, so if the signature is ever changed to drop the referent the loss
+    is loud instead of a silent identity fusion. (Analyst/coref authority must not degrade to a hint, A6.)
+    """
+    values = {member.referent_id for member in members}
+    if len(values) > 1:
+        raise ValueError(
+            "fold group spans two referent atoms "
+            f"{sorted(v for v in values if v is not None)!r} — the claim signature must separate them; "
+            "folding would fuse two evidence atoms permanently (atoms never split)"
+        )
+    return values.pop()
+
 
 def dedup_within_doc(claims: list[ClaimRecord]) -> list[ClaimRecord]:
     """Collapse within-document restatements: one assertion → one claim carrying every stated span.
@@ -207,6 +276,18 @@ def dedup_within_doc(claims: list[ClaimRecord]) -> list[ClaimRecord]:
     normalised s/p/o, the structured value, premises …), are **never** merged. Inputs are not mutated;
     the output is ordered deterministically (by earliest span, then signature), so the pass is itself
     order-independent.
+
+    **The fold is referent-aware (A1).** This pass is where a claim atom's identity is fixed, and the
+    evidence log is append-only: a claim atom, once folded, can never be split again. So the two possible
+    errors are not symmetric — an over-fold permanently destroys a distinction the source made and takes
+    the analyst out of the loop, while an under-fold is fully recoverable, because the *rebuild* can still
+    group two claim atoms into one node (and, being a derived grouping, can be challenged and undone).
+    That asymmetry — the same one behind D-13.18's "the rebuild may decline a grouping" — decides it: the
+    referent enters the signature, so two mentions coreference judged to be **different** referents stay
+    two atoms with one span each, and the folded group's shared referent is carried onto the
+    representative **explicitly** (:func:`_folded_referent`) rather than surviving incidentally as a field
+    the representative happened to hold. It also matches the direction this pass already errs in — the
+    signature is deliberately a *superset* key so it keeps claims apart rather than dropping an assertion.
     """
     groups: dict[str, list[ClaimRecord]] = defaultdict(list)
     for claim in claims:
@@ -222,7 +303,9 @@ def dedup_within_doc(claims: list[ClaimRecord]) -> list[ClaimRecord]:
         refs = sorted(by_ref.values(), key=_docref_sort_key)
         doc_ref: DocRef | list[DocRef] = refs[0] if len(refs) == 1 else refs
         representative = min(members, key=_earliest_docref_key)
-        merged.append(representative.model_copy(update={"doc_ref": doc_ref}))
+        merged.append(representative.model_copy(
+            update={"doc_ref": doc_ref, "referent_id": _folded_referent(members)}
+        ))
 
     merged.sort(key=lambda c: (_earliest_docref_key(c), _claim_signature(c)))
     return merged
@@ -244,6 +327,12 @@ def assign_claim_ids(claims: list[ClaimRecord], *, doc_id: str) -> list[ClaimRec
     signature→variant inference (premises = [observation_id, literature_id]), the coreference cluster, and
     any future inference/retraction would dangle after id assignment. This is why the fix lives here, not
     in a single caller: every path that assigns ids (the live lane *and* the frozen-bundle seed) inherits it.
+
+    **The canonical id assigned here IS the claim atom** (A1) — the per-mention addressing bedrock every
+    later stage keys on. The *referent* atom is deliberately **not** touched: it is minted once at ingest
+    and never re-minted (D-13.11), so it is carried through the ``model_copy`` unchanged (no ``referents``
+    map is passed to :func:`remap_claim_refs`). The two levels are independent by design — reassigning a
+    claim atom must never perturb the grouping signal hung on it.
     """
     ordered = sorted(claims, key=lambda c: (_earliest_docref_key(c), _claim_signature(c)))
     seen: dict[str, int] = {}
