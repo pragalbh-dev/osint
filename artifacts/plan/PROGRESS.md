@@ -32,7 +32,7 @@ the section below + `DECISIONS.md`._
 | RK-SPIKE | S0 — close micro-decisions + prototype characterize-and-cluster + claim-gold slice | 0 | **merged** (design branch) | — | — | 3525427 |
 | RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
 | RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | **merged** (design branch) | — | RK-SPIKE | 114a0f6 |
-| RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | not-started | — | RK-ATOMS | — |
+| RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | **integrated** (#63) | — | RK-ATOMS | 0cfc069 |
 | RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | not-started | — | RK-LAYER | — |
 | RK-NAMECUT | S4 — cut the name-key + re-anchor decisions/config + golden regen | 4 | not-started | — | RK-COREF | — |
 | RK-MATERIALITY | Two-layer operator-scoped chokepoints | 4 | not-started | — | RK-COREF | — |
@@ -633,3 +633,66 @@ all 63 tests from the spec alone, proved **25 of them failed against unmodified 
 never opened the impl branch or its notes; the orchestrator merged test-into-impl and ran the suite. **The
 separation paid twice:** the test hand found the fold's input-order nondeterminism (which changed the design),
 and its independent G17 gate flagged the constructor composition the implementer's own gate had waved through.
+
+## Handoff — RK-LAYER (S2), 2026-07-25
+
+**Shipped, behind one flag — `layer_routing.enabled` in `config/ontology.yaml`, shipping `false`.** One flag for
+all six mechanisms, because they are one change to what a node *is* and half of it is incoherent. Layer tags on
+the whole declared surface (15 node types / 90 attribute entries, values `design | instance | meta`); the
+straddle split + endpoint materialization; the **presence** and **formation** citizens with `count` as a
+*sourced* attribute; the offline basing pass **deleted** and replaced by a rebuild-derived edge citing its two
+premise claim-atoms; `operated-by`, D12's event↔trading_org edge (with `party_role` as an edge attribute), and a
+`site_type`-tagged supersede key; the D2 no-silent-pick clause; and R1.4's two prohibitions.
+
+**Verified at the integration point.** Independently-authored suite (`s2/rk-test`, never saw the impl) against
+the corpus-blind implementation (`s2/rk-impl`): **1184 passed, 7 skipped, 2 xfailed**, ruff clean. **Flag-off is
+byte-identical to S1** — golden md5 `bb6f16a5`, booted view `160/73/18 @22d668a3`. **Flag-on genuinely changes
+the graph**, measured independently by the orchestrator: booted **172/87/22**, full scenario **183/95/27**, two
+rebuilds byte-identical. *(An unchanged flag-on graph would have meant the stage did nothing — §5a-bis.)*
+
+**Decisions** (principle → choice → alternative rejected). *A gap must bind, not annotate* → the `site_type`
+rule is **per-`(subject, predicate)` over every basing of that subject**, applied as a **post-pass after
+derivation**, never as a key input → **rejects** the per-edge tag, which **silently killed the flagship
+relocation** (one end classified, one not, different buckets, no gap, still deterministic): **separation *is*
+de-confliction, so a partial tag is worse than none**. *This amends C1, and S3 inherits it for G18's wall.*
+*Two citizens, defined by their creating evidence* → a **new instance-layer node type** for presence →
+**rejects** reusing `unit` with a discriminator (fuses the citizens **G15** guards, so the gate would assert a
+distinction the type system denies) and `refines: unit` (a presence asserts *less*; refinement models
+*narrower*, not *weaker*). *`stale` is a freshness demotion **from confirmed*** → R1.4's two prohibitions are
+**unconditional and independent**, both behind the flag → **rejects** conditioning (b) on (a)'s trigger:
+overwriting `insufficient` with `stale` asserts the position was **once established and has merely aged**,
+which is false in the system's own vocabulary — *an assertion never established cannot age*. Retirement is
+carried by `superseded_by`, independent of the label, so the beat needs no overwrite. *Layer must classify
+honestly* → a **third value (`meta`)** → **rejects** forcing meta kinds into design/instance, which would
+corrupt the straddle-split trigger (it fires on a layer *mismatch*, so a mis-tag generates phantom splits).
+
+**Deviations.** `config/ontology.yaml` edited from S2 as designed, but also from S1 by directive (recorded).
+`imported-by → unit` left as-is pending a decision on whether it should require a stated unit.
+
+**Follow-ups.** (1) **`operated-by` has no producer** — declared but non-extractor, so nothing emits a *stated*
+one: **either someone owns the A7 extraction extension or half of G18 is fixture-only forever.** (2) **C6 is
+unimplementable as written** — it needs three values and `perishable` is a boolean; **S3 owns that file, so
+re-spec before S3 starts.** (3) **A2's "endpoint layers fall out of endpoint types" is wrong** — it cannot
+express §5's worked example, so `materializes` is an explicit per-edge declaration; correct A2. (4) **DATA owes
+the `site_type` mapping** — three alias entries were shown to restore the flagship fully *and* de-conflict
+another unit's two basings into concurrently-valid ones, which is the proof the held state is a refusal on
+specific grounds, not a disabled mechanism. (5) A **pre-existing defect** fixed here: a derived basing inherited
+the *later* of its premises' dates, so every basing of a unit shared one induction date and became unorderable
+— a 2021 sighting carried 2025. **General lesson: anything the offline passes froze is evidence about an older
+graph.**
+
+**Honest inertness (§5a-bis).** R1.4(b) is currently **inert on the real corpus in both surfaces** — on the
+booted surface the flagship's origin is `insufficient` but its Rahwali documents are withheld so it is never
+superseded; on the full surface the extra evidence lifts that edge to assessable so it correctly restates. The
+two conditions never co-occur. That is **inert-because-the-data-is-sparse with the mechanism at full strength**,
+not hidden-to-protect-a-fixture, and it is exercised by unit mirrors on both sides.
+
+**Three-hands separation, evidenced — and it paid three times.** Three worktrees, disjoint inputs: the
+implementer stayed corpus-blind; the test author wrote every test from the spec and proved they failed first;
+the data hand authored 18 abstract fixtures over 27 invented documents. **Three integration rounds each found a
+different class of defect, and every one was caught by an independently-authored mirror rather than by anything
+the implementer wrote**: a guard too broad → the wrong lever → a wrong condition. The pattern is not "be less
+cautious" — it is that **a guard needs the assertion of what must still work sitting next to it**, because every
+test an implementer can see rewards caution. The data hand separately found the two structural gaps that
+reshaped the stage (no node type for a presence; `site_type` unusable as a key), and the test author found
+**three of its own tests passing for the wrong reason**.
