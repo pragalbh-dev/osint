@@ -291,8 +291,10 @@ name-key path (F3).
   below).
 
 **What earns an instance merge (roughly in priority order):**
-- a shared **unique identifier** (serial, registration, unambiguous designation) → the fast path to confirmed
-  identity;
+- a shared **unique identifier** (a serial or registration — **NOT a bare designation**, see D-13.20) → the
+  fast path, which **lifts the caps but never waives independent corroboration** (D-13.20 as amended; a
+  designation only identifies as the composite `(service_branch, designator)` AND-key, because designations are
+  reused across armies and across time);
 - **discriminator agreement** (same operator + compatible geography + same designation, consistent over time)
   → graded; reaches *probable*, and *confirmed* only subject to the two guards below;
 - **relational** (shared neighbourhood, via the clean anchors) → graded contribution (already built — but see
@@ -303,9 +305,11 @@ name-key path (F3).
 - a **discriminator conflict** (different operator, incompatible geo at overlapping times) → **hard wall**.
 
 **Co-location is not a formation unifier — the OOB-critical cap.** Shared anchors alone (design + site +
-operator) are **recall plus graded support that tops out at *probable***. Confirming a **formation** identity
-merge requires a **unit-level discriminator** — a designation, a serial, temporally-witnessed continuity, or
-analyst confirmation. Merging co-located reports into one *presence* is safe (a presence asserts only
+operator) are **recall plus graded support that tops out at *probable*** — read throughout as **"not fused;
+queued and reported"** (D-13.20's terminology correction: there is no *probable merge*; only a `same_as` fuses).
+Confirming a **formation** identity merge requires a **unit-level discriminator** — the composite
+`(service_branch, designator)` key, a serial, temporally-witnessed continuity, or analyst confirmation (**a bare
+designation is not one**). Merging co-located reports into one *presence* is safe (a presence asserts only
 presence); merging them into one *formation* on co-location alone would **undercount the adversary's order of
 battle** — the harmful direction of error for this use case. The residual is a **first-class coverage item**:
 *"HQ-9/P presence at Rahwali confirmed; formation/unit count unresolved (1–2 candidates); designation coverage
@@ -439,8 +443,14 @@ correctness, not migration thrift:
   buried in prose, so the build-time binding and the resolver can use them. **Optional**, never required: a
   required field would force the extractor to fabricate a value the source didn't state (violating the
   non-negotiable) or drop the claim. Absence is recorded and treated as `unknown` (§7).
-- **Within-document coreference handles** — emit them, so Tier 0 can mint one provisional instance per
-  document-local referent (§6). Largely already produced by the built-but-off coref work.
+- **Within-document coreference handles** — emit them, so Tier 0 can **propose** one provisional instance per
+  document-local referent (§6). Largely already produced by the built-but-off coref work. **The handle is a
+  grouping *proposal*, not an address** — the rebuild groups claim atoms and may decline it (D-13.18); and an
+  *authoritative* bind is gated on both a deterministic structural check **and** a source-grade floor
+  (D-13.17), because a bind fuses uncapped while a source-stated `same-as` only raises.
+- **A contrastive channel** — mentions the source enumerates as siblings, with the licensing quote, on their own
+  lane (D-13.19). Optional; absence is `unknown`. **Not** the stated-`distinct-from` rail, which is hard,
+  transitive and ungraded.
 - **No cross-document identity** — the extractor never decides that two documents' mentions are the same
   thing.
 
@@ -474,7 +484,7 @@ auto-bind-threshold micro-decision, §13.)
   materialized into the view — never per-query, never baked into the immutable claim (bi-level invariant). An
   instance-layer edge *materializes* the instance it implies; a cross-layer holding edge (e.g. `equips`) does
   not.
-- **D-13.7** Mint per **document-local coreference cluster**, not per mention/edge. Two-tier resolution: Tier
+- **D-13.7** *(amended by D-13.18 — read together)* **The referent atom so minted is a grouping *signal*, never the address of the node: the rebuild groups CLAIM atoms and may DECLINE a referent grouping** (D-13.18). Mint per **document-local coreference cluster**, not per mention/edge. Two-tier resolution: Tier
   0 within-doc coref (source-grounded); Tier 1 cross-doc earned. Edges and attributes of a referent attach to
   its one provisional instance.
 - **D-13.8** Discriminators are attributes + relationships + derived geo, declared per instance-type, and
@@ -527,8 +537,13 @@ auto-bind-threshold micro-decision, §13.)
   Layer-routing test: *does the fact change if a different operator fields the design?* No → design; yes →
   instance.
 - **D-13.14** **Co-location is not a formation unifier.** Shared anchors (design + site + operator) give
-  recall + graded support that tops out at *probable*; confirming a **formation** merge requires a unit-level
-  discriminator (designation, serial, temporally-witnessed continuity, analyst). Merging co-located reports
+  recall + graded support that tops out at *probable* (**read: "not fused; queued and reported"** — D-13.20);
+  confirming a **formation** merge requires a unit-level discriminator (**the composite `(service_branch,
+  designator)` AND-key — a bare designation is NOT one, D-13.20**, a serial, temporally-witnessed continuity,
+  or an analyst). **This cap is anti-fabrication machinery, not OOB hygiene:** because `based-at` is functional
+  and unit-keyed, a formation over-merge makes two sites one unit's before/after, and the supersede path then
+  **draws a relocation, removes the pair from the analyst's queue, and deletes the retired edge's Known Gap** —
+  turning an honest `insufficient` into `stale`. Merging co-located reports
   into one **presence** is safe; merging them into one **formation** on co-location alone would **undercount
   the order of battle** — the harmful error for this use case. Relocation lives at the formation level as an
   honest ladder (two presences → *possible relocation* → *confirmed relocation* on designation continuity /

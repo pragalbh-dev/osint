@@ -171,9 +171,15 @@ Each is an F0-amendment against `00-master-plan.md` §4. Stated once here; cited
     coref is off in S1 so there is no cluster grain yet. The field is added to `ClaimRecord` in S1 as
     **optional, default `None`** (so `extra="forbid"` fixtures still load and S1 stays non-breaking) and is populated
     only from S3. `make_referent_id` lives beside `make_claim_id` in `schemas/ids.py`.
-  A knowledge node (S4) is a derived **grouping** of referent atoms; nothing re-mints (D-13.11's mint-once holds).
-  `resolved_ref` stays the *derived* pointer. `Record` is `extra="forbid"`, so the optional field is a real schema
-  amendment, not a loose add. (Realizes D-13.7/D-13.11; claim atom **S1**, referent atom **S3**.)
+  **A knowledge node (S4) is a derived grouping of CLAIM atoms; the referent atom is a grouping *signal* the
+  rebuild consults — never the address of the node.** (Corrected 2026-07-25 per **D-13.18** and the review
+  verdict: the earlier wording made the referent atom the grouping unit, which — with "atoms never split" —
+  makes an intra-document over-bind **permanent** and is disqualifying. Claim-atom-primary is what keeps
+  spine/13 §4's "challengeable proposal" true: the rebuild may **decline** a referent grouping and de-group to
+  claim-atom granularity, raising for an analyst. No atom splits; the grouping declines.) Nothing re-mints
+  (D-13.11's mint-once holds). `resolved_ref` stays the *derived* pointer. `Record` is `extra="forbid"`, so the
+  optional field is a real schema amendment, not a loose add. (Realizes D-13.7/D-13.11/**D-13.18**; claim atom
+  **S1**, referent atom **S3**.)
 - **A2 — layer as a type property (amends the ontology contract + the config schema).** Every `node_type` **and**
   every `attribute_type` in `config/ontology.yaml` gains a `layer` tag (design | instance). This builds on the
   **structured `TypeDef.attrs`** that **S1** already introduces for A7 (converting `schemas/config_models.py`'s bare
@@ -193,11 +199,14 @@ Each is an F0-amendment against `00-master-plan.md` §4. Stated once here; cited
   into the immutable claim. An instance-layer edge materializes the instance it implies; a cross-layer holding
   edge does not. (D-13.6; S2.)
 - **A5 — node id from atoms, name becomes a label (amends master §4.2 + the id namespace).** Canonical id =
-  deterministic function of member atoms (min member-id, or a unique identifier when present), computed after
-  grouping. **Fallback:** when a member carries no referent atom (e.g. a pre-baked fixture whose claims predate the
-  referent field), the canonical id falls back to the **claim atom (`claim_id`)** — so the golden and any frozen
-  bundle still key deterministically. The human label ("HQ-9/P (PAF, Rahwali)") is *derived*. `rebuild()` emits an
-  old→new redirect map. (D-13.11; S4.)
+  deterministic function of member atoms, computed **after** grouping — **keyed on the member CLAIM atoms**
+  (min member `claim_id`, or a unique identifier when the cluster has one). *(Corrected 2026-07-25 per D-13.18
+  and the review verdict: the earlier wording keyed on the referent atom with the claim atom only as a
+  "fallback" — the inverted ordering. Claim-atom-primary is not a fallback, it is the rule: the referent atom
+  is a grouping signal, and a node whose id keyed on it could not survive the rebuild **declining** that
+  grouping.)* A referent atom may still be *recorded* on the node as the signal that produced its grouping; it
+  is never the address. The human label ("HQ-9/P (PAF, Rahwali)") is *derived*. `rebuild()` emits an old→new
+  redirect map. (D-13.11/**D-13.18**; S4.)
 - **A6 — analyst decisions key on atoms; human-authored config anchors stay on stable handles (amends master §4.7
   HITL + §4.4 config).** Two distinct cases:
   - **Analyst decisions** — merge accept/reject/split and status/integrity overrides — key on **claim/referent
@@ -235,7 +244,8 @@ like G1/G2) so it is immune to the re-key's data churn. New rows:
 | **G15 presence-not-fused** | An `observed-at` equipment sighting never becomes a `based-at` formation basing without organizational evidence (`inducted-into` or a stated formation); the two citizens stay distinct | the imagery-lane conflation returning; kit-photographed-here → formation-stationed-here |
 | **G16 co-location-cap** | Two instances sharing only design+site+operator cannot reach `confirmed` formation-merge without a unit-level discriminator; they may reach presence-merge | OOB undercount by fusing two batteries into one unit on co-location |
 | **G17 atom-immutability** | Atoms are minted only at ingest and never inside `rebuild()`; **no code path under `rebuild()` calls `make_claim_id` or `store.append`** (the basing derivation must be a pure edge, not a minted claim); node ids derive deterministically from atom membership; two rebuilds yield identical ids (extends G2). *Phasing:* the no-mint/no-append clause binds from **S2**, the id-from-atoms/determinism clause from **S4** (A5). *Fixture must be non-vacuous:* include an `observed-at`+`inducted-into` premise pair so the derived-basing branch actually executes under `rebuild()` (else it passes vacuously), or use an input-independent static call-graph scan of rebuild-reachable modules for `make_claim_id(`/`store.append` | rebuild-time minting or evidence-writing; basing minting a claim inside rebuild; a random/nondeterministic id breaking pure-recompute |
-| **G18 relationship-conflict-wall** | A **stated** `based-at`/`operated-by` conflict at overlapping times **hard-walls** a merge (it can never be overridden by a relational score); value normalization (PAF ≡ "Pakistan Air Force") fires before the wall is tested | two units at different sites at overlapping times fusing into one; the operator-conflict wall not firing because normalization didn't run |
+| **G18 relationship-conflict-wall** | A **stated** `based-at`/`operated-by` conflict at overlapping times **within the same `site_type`** (**C1**) **hard-walls** a merge (never overridable by a relational score); value normalization (PAF ≡ "Pakistan Air Force") fires before the wall is tested, and an **unnormalizable** stated value yields the third state — no wall *and* no fusion, plus a named gap (**C7**). The gate must **name the wall channel** and assert an **analyst-visible reason** (§5a) | two units at different sites at overlapping times fusing into one; the operator-conflict wall not firing because normalization didn't run; a wall built the geo-veto way (non-transitive **and** unreported) while the gate passes; a differing `site_type` mis-read as a conflict |
+| **G19 cross-namespace-non-fusion** | Two instances in incompatible namespaces (a PLA-side and a PAF-side unit) **cannot fuse** — in the Phase-2 fuzzy fixpoint **and** in the Phase-1 bootstrap. Covers the alias branch: `AliasIndex` equivalence must be **non-reflexive** (a real alias link) and the alias branch must be **type- and namespace-gated**, else the namespace-gated exact-name branch is never reached | the single most dangerous over-merge class for an operator-scoped OOB map (D4); cross-**type** fusion through the same alias hole; a remedy that gates only the Phase-2 loop and leaves bootstrap open |
 
 **G6 no-magic-numbers still binds:** the co-location cap threshold, the per-layer merge floors, the coref
 auto-bind threshold, the relationship-wall's overlap window, and any discriminator-priority weights live in
@@ -263,6 +273,35 @@ evidence for each.
   as configuration. **Scope it in S3 or disclose it.**
 - **"Rarity-graded name" has no implementation anywhere**, yet D-13.2 and D-13.10 both rest on it. Either S3
   builds it or the design stops claiming it.
+
+### 5b. The spec closures C1–C10 (RK-SPIKE + its adversarial review) — binding
+
+Full statements: **C1–C4** in `../../tmp/conv/rk-spike-DECISIONS.md`; **C5–C10** in
+`../../tmp/conv/rk-spike-REVIEW-VERDICT.md`. They are cited by number from the stage scopes in §7, which is
+what the hands actually read — **this appendix alone does not reach them.**
+
+| # | Closure | Lands in |
+|---|---|---|
+| **C1** | G18's relationship wall fires on a conflict at overlapping times **within one `site_type`**; a differing `site_type` is **not** a conflict (so a unit at a garrison *and* a forward site is two valid basings). One declaration, **two consumers**: the wall (S3) *and* `based-at`'s supersede `instance_key` (S2) — the second is where the D1 fabrication path stays open if it is missed. `unknown` `site_type` must **fail safe** (same bucket / raise, never de-conflicted) | §7 RK-LAYER 5, RK-COREF 7 |
+| **C2** | G16 asserts on the **observable outcome**: no confirmed formation merge · node count preserved · **no drawn relocation** · **no Known-Gap deletion / no `insufficient → stale`** on the retired edge. A presence-level merge in the same case is *expected* | §5a G16, §7 RK-COREF |
+| **C3** | The D-13.18 decline fires on a conflicting critical discriminator of **either kind** — attributes (read `attr_history`, never the first-wins scalar) **and relationships** (the same overlapping-time predicate G18 uses, under C1's `site_type` rule) | §7 RK-COREF 7 |
+| **C4** | What the spike does **NOT** verify: no contract slot for a sourced `count`, design-layer nodes, the **licensing quote**, **source identity** (so D6/C8 independence is unverified), or config | disclosures, §9 |
+| **C5** | The Tier-0 gate is evaluated **per link**; a cluster binds only over passing links and each failing link becomes an injected Tier-1 candidate pair — a **partial** bind, not all-or-nothing (the spec's "**both** members' surface forms" never generalised to n-ary clusters) | §7 RK-COREF 7 |
+| **C6** | `perishable` is declared **per (type, attribute)**: geography is perishable for a *formation*, **constitutive** for a *presence*, **identifying** for a *place*. Without it no anchor/design can confirm and lever 2 cannot exist. Plus fix the `places.augment` ordering | §7 RK-COREF 7 |
+| **C7** | Value normalization is a prerequisite for walling on **any** slot (not just operator); an unnormalizable stated critical value ⇒ **no wall AND no fusion** + a named gap. **A gap must bind the fusion path, not merely annotate it** | §5 G18, §7 RK-COREF 7 |
+| **C8** | Independence keys on **evidential lineage, not document count** — inherit spine/04's independence groups; a cite-of-a-prior-report is same-group. **New code**; same root cause as D11 | §7 RK-COREF 7 |
+| **C9** | An authoritative coref bind may instantiate **only over entity ids attested in the contributing document** — decisions (a) and (b) share the `Entity.doc_ids` carrier and (a) must not ship without it | §7 RK-COREF 7 |
+| **C10** | A relocation may be drawn from one source only when that source authoritatively co-refers its own mentions **and** clears the authoritative-bind grade floor; a bare single-member instance never licenses one | §7 RK-COREF 7 |
+
+**Two further review findings that raise the severity of what §5a already names:**
+- **Name is a verdict in Phase 1, at every type.** The widest name-only fusion path **bypasses the bands
+  entirely** via the Phase-1 bootstrap disjunction (`resolve/cluster.py:455-463`) and applies to `unit`,
+  `variant`, `basing_site` and every other type — **not** only the two lowered per-type floors, and it never
+  reaches `confirm_is_durable` at all. R1.2/R3.1/R3.2 must bind the **bootstrap**, not just Phase 2.
+- **Alias self-equivalence bypasses both the namespace and the type gate.** `AliasIndex` equivalence is
+  reflexive where its docstring promises a real alias link, so the namespace-gated exact-name branch is never
+  reached — making cross-operator **and cross-type** fusion reachable in **Phase 1**. G19's remedy must cover
+  the bootstrap, not only the Phase-2 loop.
 
 **And one ordering fix, cheap and load-bearing:** `places.augment` runs **after** `resolve_entities`
 (`resolve/__init__.py:181` vs `:177`), so place merges are invisible to `relational_score`. spine/13 §6 lever 2
@@ -426,12 +465,39 @@ formation citizens; replace the offline basing pass with a pure rebuild-derived 
    (RK-DATA removes them from the regen set — §10). Correct the three stale "no source states basing" comments
    (the design pass is done in this branch; keep aligned).
 
-**Contracts:** A2, A3, A4. **Gates:** G15 (presence-not-fused), **G17** (RK-ATOMS authors the atoms-only-at-ingest
+5. **Ontology additions this stage owns (added 2026-07-25 — S2 owns `config/ontology.yaml`, and no later stage
+   does).**
+   - **`operated-by`** — G18's relationship wall names it and **the predicate does not exist**. Add it here, or
+     G18 silently tests half of itself. (Previously mis-assigned to S3, which neither owns the file nor listed
+     the work.)
+   - **D12's `contract_import_event` ↔ `trading_org` edge** — the customs document's actual spine (event ↔
+     consignee ↔ shipper) is currently **unrepresentable**, while the schema *does* offer `imported-by → unit`,
+     which no such document states. **A schema that makes the sourced relation inexpressible and the unsourced
+     one easy pressures extraction toward fabrication.** Also re-examine whether `imported-by → unit` should
+     require a stated unit.
+   - **`based-at`'s supersede `instance_key` tagged by `site_type`** (**R1.3 / C1's second consumer**) — so a
+     unit legitimately at a garrison *and* a forward site is **two concurrent valid basings, not a relocation**.
+     The ontology currently rests unit-only keying on "correct while the corpus has no such simultaneous pair"
+     (`config/ontology.yaml:40-44`), which working-principles #1 forbids as a design input. **State the absent
+     `site_type` default explicitly and fail safe:** `unknown` ⇒ same bucket (the wall fires) or ⇒ raise —
+     **never** ⇒ de-conflicted, since the evasion direction is over-merge. `site_type` becomes a config-declared
+     closed vocabulary under the same normalization prerequisite (C7).
+   - **Carry forward the relocation/relational mitigation** (`co_instances`, `resolve/scoring.py:337-350`): a
+     dated relationship to the same neighbour at two different times is **not** the same relationship. A naive
+     `site_type` re-key changes the `edge_instance` shape and would **silently drop this mitigation**, so a
+     confirmed relocation would manufacture relational evidence that origin ≡ destination. Gate-fixture it.
+
+**Contracts:** A2, A3, A4. **Gates:** G15 (presence-not-fused — **plus the C/D2 clause: an ambiguous or
+truncated formation attribution must produce a named gap; never a silent pick**, since the truncation at
+`ingest/basing.py:301` records no `SkipRecord` while every other rejection path does), **G17** (RK-ATOMS authors the atoms-only-at-ingest
 portion; RK-LAYER **extends** it with the no-mint/no-append-under-`rebuild()` clause — the fixture must include an
 `observed-at`+`inducted-into` premise pair so the derived-basing branch actually runs, else it passes vacuously),
 G1/G2 (basing stays pure). **Owned paths:** `config/ontology.yaml`, `ontology.py`, `schemas/config_models.py`
 (contended, after S1), `view/pipeline.py`, `resolve/__init__.py` (endpoint-layer typing; contended — see §3),
-`ingest/basing.py`, `tests/view/**`, `tests/gates/test_g15_*`, `test_g17_*`. **Acceptance:** a straddling mention
+`ingest/basing.py`, **`config/credibility.yaml`**, **`credibility/supersession.py`** (the D1 promotion path —
+`promote_supersessions` must not machine-adjudicate a pair out of the analyst's queue over a sub-confirmed
+identity, **R1.4**, and must not delete the retired edge's Known Gap), `tests/view/**`,
+`tests/gates/test_g15_*`, `test_g17_*`. **Acceptance:** a straddling mention
 splits into linked design+instance nodes; an `observed-at` materializes a presence; a **stated** `based-at` binds a
 formation directly while a **derived** one is a rebuild-materialized edge citing its two premise claim-atoms (no
 minted claim); G17 green (no mint/append under `rebuild()`); **flag off ⇒ byte-identical to S1**. **Out of scope:**
@@ -481,12 +547,53 @@ fragmentation metrics are meaningful.
 - **No runtime embeddings** (as RK-SPIKE): the cluster machinery uses only alias/rarity + BM25 + fuzzy +
   relational/discriminator signals.
 
+7. **The RK-SPIKE closures C1/C3/C5–C10 (mandatory — added 2026-07-25).** These are stage scope, not
+   background reading; the full statements are in `../../tmp/conv/rk-spike-DECISIONS.md` (C1–C4) and
+   `../../tmp/conv/rk-spike-REVIEW-VERDICT.md` (C5–C10).
+   - **C5** the Tier-0 gate is evaluated **per link** (anchor→member); a cluster binds only over passing links,
+     and each failing link becomes an injected Tier-1 candidate pair (a **partial** bind, not all-or-nothing).
+     Declare the equivalence-marker vocabulary in config, verb forms included.
+   - **C6** declare `perishable` **per (type, attribute)** — geography is perishable for a *formation*,
+     constitutive for a *presence*, identifying for a *place*. The shipped `attribute_roles.<type>.<attr>`
+     schema already supports it. This is what lets an anchor/design layer confirm at all (without it designs
+     never collapse and spine/13 §6 lever 2 cannot exist). **Also fix the ordering bug:** `places.augment`
+     runs *after* `resolve_entities` (`resolve/__init__.py:181` vs `:177`), so place merges are invisible to
+     `relational_score`.
+   - **C7** normalization is a prerequisite for walling on **any** slot (not just operator); an unnormalizable
+     stated critical value ⇒ **no wall AND no fusion**, plus a named gap. **A gap must bind the fusion path,
+     not merely annotate it.**
+   - **C8** the independence predicate is **evidential lineage, not document count** — inherit spine/04's
+     independence groups; a cite-of-a-prior-report is same-group. **New code** (D6), and it is the same root
+     cause as D11.
+   - **C9** an authoritative coref bind may instantiate **only over entity ids attested in the contributing
+     document** — it shares decision (b)'s `Entity.doc_ids` carrier and must not ship without it.
+   - **C10** a relocation may be drawn from one source only when that source authoritatively co-refers its own
+     mentions **and** clears the authoritative-bind grade floor; a bare single-member instance never licenses
+     one.
+   - **Bind the caps to the Phase-1 bootstrap disjunction** (`resolve/cluster.py:455-463`), not only to the
+     Phase-2 collection loop: **name is a verdict in Phase 1 at every type**, and the caps exist only in
+     Phase 2. R1.2/R3.1/R3.2 all depend on this.
+   - **Reject the "fusion is licensed by a structural trigger, never a score" whitelist** (the prototype's
+     invention): D-13.9 specifies a *graded* path constrained by two guards. Keep the half that is right — the
+     guard is a hard **precondition on the fusion path** (R3.1) — and reject the positive trigger whitelist.
+   - **Reformulate the anaphor gate positively** (named, declared, ontology-typed antecedent; `unknown`-typed
+     endpoints count as type-compatible so a second undeclared endpoint fails the gate). **If the positive gate
+     is not built, `UNAMBIGUOUS_ANAPHOR` reverts to raise-only.**
+
 **Contracts:** consumes A2–A4; lands A7's coref half; **extends** the earned-identity judge with the relationship
-discriminator (not merely "exercises" it). **Gates:** G16, **G18**, plus the existing G7 confirmed-gate. **Owned
-paths:** `ingest/coref.py`, `resolve/{__init__,cluster,rconfig}.py`, `tests/resolve/**`, `tests/gates/test_g16_*`,
-`test_g18_*`. **Acceptance:** the characterize-and-cluster prototype's cases pass; co-location does not over-confirm
-a formation; a stated based-at/operated-by conflict at overlapping times hard-walls (G18); honest residual
-fragmentation reports as a `/coverage` gap. **Out of scope:** cutting the name-key (S4).
+discriminator (not merely "exercises" it). **Gates:** G16 (three-part per **C2**: no confirmed formation merge ·
+**no drawn relocation edge** · **no Known-Gap deletion and no `insufficient → stale` transition** on the retired
+edge), **G18** (per **C1**: fires within one `site_type`; names the wall channel; asserts an analyst-visible
+reason), **G19** (cross-namespace **and** cross-type non-fusion, covering the Phase-1 alias branch), plus the
+existing G7 confirmed-gate. **Owned paths:** `ingest/coref.py`, `resolve/{__init__,cluster,rconfig,aliases}.py`,
+**`config/resolution.yaml`** (the home of nearly every knob this stage adds — `coref_authoritative_evidence`,
+`hard_id_fields.unique`, `attribute_roles` incl. per-(type,attribute) `perishable`, the value-normalization
+classes, the contrast band ceiling), `tests/resolve/**`, `tests/gates/test_g16_*`, `test_g18_*`, **`test_g19_*`**.
+**Acceptance:** the characterize-and-cluster prototype's cases pass; co-location does not over-confirm a
+formation **and draws no relocation**; a stated based-at/operated-by conflict at overlapping times within one
+`site_type` hard-walls (G18); a cross-namespace or cross-type pair cannot fuse in **either** phase (G19); an
+untestable critical discriminator neither walls nor fuses; honest residual fragmentation reports as a
+`/coverage` gap. **Out of scope:** cutting the name-key (S4).
 
 ### RK-NAMECUT (S4) — cut the name-key; re-anchor decisions to atoms & config to stable handles; regen the golden
 
