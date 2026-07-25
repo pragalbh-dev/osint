@@ -229,3 +229,60 @@ the disqualifying class. That one is highest priority regardless of how the wiri
 `coreference` block) or the consumer allow-list is not reachable from the fixtures — S3 requires **both** gates
 to flip, and a fixture that supplies neither sees an inert pass. Reconcile it the way the flag was reconciled:
 the fixtures must **discover** the config keys, and the implementation must be enable-able from a bundle.
+
+---
+
+# Round 5 — three rulings from the user (2026-07-25)
+
+## M12 — the mark-vs-word test is a FILTER with a benign failure direction, never a verdict
+
+**The concern is right: it is a heuristic and it can false-fire in both directions.** A short *word* looks like a
+mark (`TX-5 air defence` — "air" is three characters), and a long *mark* looks like a word (`HQ-9 Export` is a
+different variant, but "Export" passes any length test). So it **cannot be a decision procedure**, and it must
+not be presented as the thing that makes the gate sound.
+
+**Ruling — status, not mechanism, is what changes:**
+1. **It demotes to raise-only; it never vetoes.** A false-fire therefore costs **one analyst glance**, not a lost
+   merge — the failure direction is benign by construction. That is already how M1 was specified ("goes raise-only
+   with its quote"); this states it as the *reason* the heuristic is admissible at all.
+2. **It is explicitly incomplete, and we say so.** A long mark will pass. The gate must not claim to catch every
+   mislabelled equivalence, and the disclosures should say the structural conjuncts are a **cheap filter over the
+   model's own claim**, not a proof of it.
+3. **Do NOT add more pattern rules to compensate** — that is the wrong direction, and piling heuristics on a
+   fallible test makes it *look* authoritative while staying fallible. The residue is caught by the
+   **analyst queue**, which is why surfacing the licensing quote is on the critical path rather than a nicety.
+4. Reuse the shipped knob only; **no second threshold for the same idea** (G6).
+
+## M13 — M2 requires a PRODUCER change too; today it cannot express a span set
+
+**Verified.** `ingest/coref.py:98` declares `licensing_quote: str | None` — **one** string — and
+`_quote_supported(quote, text)` (`:258-260`) validates exactly one span. So the producer **cannot emit** the span
+set M2 licenses, which is why the two-field equivalence fails. The consumer-side ruling was not enough.
+
+**Ruling:** the producer emits an ordered **sequence** of spans per cluster, and **each is validated verbatim
+independently** — same predicate, applied per member. This lands in the same code path as the safety gap already
+in the failure set (*a span set containing a sentence the document never contains was accepted*): **M2 relaxed
+contiguity, not verifiability**, and one un-verified span is fabricated licensing evidence. Fix the shape and the
+per-span check **together**, since a sequence with a single-span check is strictly worse than today.
+
+**And note what this does to the coref grain, which is the user's point:** a cluster may now carry evidence drawn
+from several places in one document, so the licensing evidence is *per cluster*, while the verbatim check is
+*per span*. Do not collapse a set into a concatenated string to reuse the old check — that would let a fabricated
+join pass while every part looked present.
+
+## M14 — the keyed re-extraction: after S3 goes green, before S4
+
+Timing is mine to call and this is it, with reasons rather than convenience:
+- **Not before S3 closes.** The A7 coref contract is still moving (34 open failures, and M13 changes the
+  producer's schema). Re-recording against a moving schema buys bundles we would immediately invalidate —
+  working-principles #3: the data follows the design, and the contract must freeze first.
+- **Not after S4.** S4 cuts the name-key and re-anchors identity on **earned clusters**. With zero coreference
+  annotations in the frozen claims, S4 would land its most consequential change on data that cannot exercise it —
+  we would be testing the name-cut against no clusters at all.
+- **So: S3 integrates green → freeze the A7 coref contract → keyed re-record → S4 runs on real clusters.**
+
+**Gated as plan §10 already requires** — it re-freezes the graded oracle, the single hardest-to-reverse action in
+the plan: a **`DECISIONS.md` entry recording user approval**, EVAL coordination, and the **old oracle archived**
+so pre- and post-re-key grading stay comparable. Two known consequences to carry into it: the **32 scripted-client
+tests need a second queued response**, and re-extraction is **confirmed non-deterministic** — so freeze once and
+version, or KEYLESS≡LIVE breaks.
