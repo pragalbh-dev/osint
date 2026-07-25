@@ -304,7 +304,9 @@ def dedup_within_doc(claims: list[ClaimRecord]) -> list[ClaimRecord]:
       by arrival order. Phase 1 of the live lane is a concurrent fan-out, so that order is not guaranteed.
       Harmless today (the excluded fields are constant per document, and ``assign_claim_ids`` restamps
       ``claim_id`` immediately afterwards) but it is real nondeterminism sitting under the identity
-      substrate, and it wants a total tiebreak — not a fix to attempt inside a byte-identical stage.
+      substrate. The fix is to make the representative choice **total** — a deterministic final key such as
+      the pre-dedup construction id — rather than to lean on ``min``'s tie behaviour; not something to
+      attempt inside a stage whose invariant is a byte-identical view.
     * *A fold can orphan an inbound claim-id reference.* Folding b into a drops b's id, but
       :func:`assign_claim_ids` runs **after** and builds its remap only from the survivors, so another
       claim's ``premises`` / ``targets`` / endpoint mention ref pointing at b is left dangling rather than
