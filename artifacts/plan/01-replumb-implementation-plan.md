@@ -293,7 +293,9 @@ corpus (working-principles #1). The distinction is real but easy to cargo-cult f
   "fixed" by loosening thresholds**.
 - **Never gate, default-away, or curb a target-correct capability to keep a fixture green** (#1/#5). A mechanism
   may legitimately be **byte-inert on the current corpus** — the data pass established that the corpus holds
-  essentially one numbered formation, one stated basing and zero serials, so most of the discriminator ladder
+  essentially one numbered formation and zero serials, plus five `based-at` claims over three subjects
+  (corrected 2026-07-25 from "one stated basing"; the conclusion holds, since the only multi-basing subject
+  carries a dated succession rather than a conflict), so most of the discriminator ladder
   *cannot* fire on it — but inert-because-the-data-is-sparse is not the same as hidden-to-protect-a-fixture.
   The first is honest; the second is forbidden.
 

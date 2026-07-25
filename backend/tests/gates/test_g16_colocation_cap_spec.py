@@ -4,6 +4,13 @@ Authored from the session spec alone (`artifacts/plan/sessions/RK-COREF.md` scop
 the implementation. Abstract fixture, as the gate list requires: "the corpus holds essentially one numbered
 formation, one stated basing and zero serials, so it cannot exercise them."
 
+**The quoted count is wrong, and the quote is left as written because it is a quote.** Re-measured on the
+frozen corpus: **five** ``based-at`` claims over **three** subjects, not one. The numbered-formation and
+zero-serials halves hold, and the conclusion the sentence is cited for — this gate must use an abstract
+fixture because the corpus cannot exercise it — is unaffected: the one subject carrying multiple basings
+carries a dated succession, not two co-located formations. Corrected at the source in
+`artifacts/plan/PROGRESS.md`.
+
 **This is anti-fabrication machinery, not OOB hygiene** (§7 RK-COREF 7, quoted):
 
     "because ``based-at`` is functional and unit-keyed, a formation over-merge makes two sites one unit's

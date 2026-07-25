@@ -70,3 +70,39 @@ that is wrong in the *safe* direction still costs a reader their scepticism.
   reference map *cited these fixtures as available* while they were on no branch anyone would check out —
   including `S2-DATA-to-DATAC-site-type-vocabulary.md`, the spec for the `site_type` mapping that DATA owes
   and that §8 lists as an open item.
+
+---
+
+## Resolved 2026-07-25 — S3 landed, and the three drift items above are now corrected in place
+
+The harness accepted every edit this pass (including `HANDOFF-REPLUMB.md`, which a previous attempt this
+session had refused), so nothing had to be diverted into this file. Recorded here anyway so the corrections
+are findable from the observation that prompted them.
+
+**S3 merged.** `s3/rk-impl` → `design/resolution-redesign` (`68a129b`), followed by
+`fix/anchor-resolution-honesty` (`83cab74`). Suite green, `earned_identity.enabled` ships `false`, and the
+flag-off baselines are unmoved: golden md5 `bb6f16a516c31eb0846494b62271a601`, full scenario 169/80/71/20,
+booted 160/73/66/18/450.
+
+**1. "Everything described here is committed on `design/resolution-redesign`."** Was false for S3 — RK-COREF
+lived on `s3/rk-impl` in a separate worktree. Corrected in `artifacts/plan/HANDOFF-REPLUMB.md` and
+`tmp/conv/RK-COREF-CONTINUATION.md`, in both cases as a dated correction beside the original rather than a
+silent rewrite, because the *pattern* is the thing to watch: "described here" has never meant "merged here".
+
+**2. The stage tables.** `HANDOFF-REPLUMB.md` §1 read "1324 passed / 4 failed"; `PROGRESS.md`'s board read
+"not-started". Both now read merged, with the merge commit and the flag state.
+
+**3. "One stated basing."** Re-measured on the frozen corpus: **five `based-at` claims over three distinct
+subjects** — three on `unit_hq9b` (`site_rawalpindi`, then twice to `site_rahwali`: the relocation pair), one
+on a PAF/Army AD Command HQ-9BE battery, one on the Beijing Institute of Radio Measurement. The *conclusion*
+is untouched — G18's wall needs two conflicting stated relationships on one subject, and the only
+multi-basing subject carries a dated succession, so the wall still has nothing to fire on — but the number is
+one a reviewer re-derives, and they would have found it wrong. Corrected in `PROGRESS.md`,
+`HANDOFF-REPLUMB.md`, `01-replumb-implementation-plan.md`, `sessions/RK-COREF.md`, `tests/_rk_coref.py`,
+`tests/gates/test_g18_relationship_conflict_wall.py` and `tests/gates/test_g16_colocation_cap_spec.py`. The
+last two quote the session note verbatim, so the quote is left intact with the correction beneath it.
+
+**Deliberately left alone:** `tmp/conv/RK-COREF-IMPL-NOTES.md` and the measurement table inside
+`RK-COREF-CONTINUATION.md` also say "one stated basing". Those are dated measurement logs of what was
+believed at the time, not live specs — rewriting a log is worse than leaving it. Anyone reading them lands
+here or on `PROGRESS.md` for the corrected count.

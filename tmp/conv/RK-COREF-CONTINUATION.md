@@ -181,6 +181,12 @@ so where it disagrees with the log above, the log above is later and wins.
 **S3 is mid-flight, not broken.** Everything below is committed on `design/resolution-redesign` (= PR #63).
 Nothing is on `main`.
 
+> **Correction (2026-07-25, later the same day).** The sentence immediately above was **false for S3 when it
+> was written** — RK-COREF was on `s3/rk-impl` in a separate worktree, not on `design/resolution-redesign`.
+> **It has since merged**, so it is true now. The snapshot below otherwise describes a mid-flight state that
+> has been overtaken: S3 is finished, the five review blockers are closed, and the suite is green with
+> `earned_identity.enabled` shipping `false`. Read it as history, not as current status.
+
 ## Where it stands
 - **Implementer** `s3/rk-impl`: all 11 scope items landed behind one flag — **`earned_identity.enabled`** in
   `config/resolution.yaml`, shipping `false`. Flag-off byte-identity held through every change (golden

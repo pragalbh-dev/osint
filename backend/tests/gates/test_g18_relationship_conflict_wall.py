@@ -19,8 +19,14 @@ the harm it names is realized:
    the whole subject to one bucket: separation IS de-confliction, so a partial tag is worse than none (S2
    measured a per-edge tag silently killing the flagship relocation).
 
-Abstract fixtures (ruling M4). The corpus holds essentially one stated basing and no ``operated-by`` data at
-all, so neither arm can fire on it — the mechanism is at full strength and the data is sparse.
+Abstract fixtures (ruling M4). The corpus holds **five** ``based-at`` claims over **three** subjects — three
+on one unit (one site, then twice to a second, i.e. the relocation pair) plus one battery and one institute —
+and no ``operated-by`` data at all. So neither arm can fire on it: the wall needs two *conflicting* stated
+relationships on one subject, and the only subject with more than one basing has a dated succession rather
+than a conflict. The mechanism is at full strength and the data is sparse.
+
+(The count was previously written as "one stated basing". That was wrong and is the sort of number a reviewer
+re-derives; the conclusion — G18 has nothing to fire on — is unchanged.)
 """
 
 from __future__ import annotations

@@ -9,6 +9,11 @@ a test can neither pass nor fail on a mis-guessed key.
 Every fixture is abstract (corpus-independent, like G1/G2): §7 RK-COREF's gate note — "All fixtures must
 be abstract — the corpus holds essentially one numbered formation, one stated basing and zero serials, so
 it cannot exercise them."
+
+**Correction to the quoted count:** the corpus holds **five** ``based-at`` claims over **three** subjects,
+not one. The rest of the note (one numbered formation, zero serials, and therefore abstract fixtures) is
+accurate, and the reason for abstract fixtures is unchanged — the one multi-basing subject carries a dated
+succession rather than the conflict G18 would need. See ``artifacts/plan/PROGRESS.md``.
 """
 
 from __future__ import annotations
