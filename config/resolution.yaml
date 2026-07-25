@@ -163,14 +163,18 @@ identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analys
 # the calibration ledger), not a reason to default it off — the demo data bends to the target, not vice versa.
 name_alone_caps_at_possible: true
 
-# ── the three identity CEILINGS (S3) are NOT declared here ────────────────────────────────────────
+# ── the three identity CEILINGS are NOT declared here ─────────────────────────────────────────────
 # `name_ceiling`, `colocation_ceiling` and `contrast_ceiling` live in the `earned_identity` block at the
 # bottom of this file, and nowhere else. They used to be declared in BOTH places — with the third one
 # spelled `contrast_band_ceiling` up here and `contrast_ceiling` down there — and the reader consulted this
-# copy first. So editing the stage block, the block whose own header promises to hold every threshold, cap
-# and floor the stage adds, was a silent no-op: setting all three to `confirmed` there changed nothing.
-# Two names for one dial in two places is worse than either, because the copy a reader edits is the copy
-# that does not run. If you are looking for a ceiling, it is in `earned_identity`.
+# copy first, so editing the block that promises to hold them was a silent no-op. Two names for one dial in
+# two places is worse than either, because the copy a reader edits is the copy that does not run. If you are
+# looking for a ceiling, it is in `earned_identity`.
+# A ceiling's VALUE now means what it says: `confirmed` permits the fusion (the cap does not fire),
+# `probable` withholds it and guarantees the pair a queue place with its reason, `possible` withholds it and
+# retains the link on the watch-list with its reason. Any other value is rejected at load. It used to be a
+# truthiness test — any non-empty value withheld identically — so `confirmed` behaved exactly like
+# `probable` and only DELETING the key lifted a cap.
 
 # In-document coreference (INGEST extraction pass 2, ingest/coref.py): which evidence categories may
 # BOOTSTRAP (auto-merge) rather than merely raise. This is the one signal allowed past the raise-only rule
@@ -185,18 +189,14 @@ name_alone_caps_at_possible: true
 # Still gated by every other rail: a distinct-from veto drops the pair outright, and a type / namespace /
 # hard-attribute contradiction demotes it to the queue instead of merging.
 #
-# FLIPPED IN RK-COREF (S3) — but flipped in the STAGE BLOCK, not here. The list S3 opts in lives at
-# `earned_identity.authoritative_categories` below and is read only while `earned_identity.enabled` is on.
-# This top-level key is the pre-S3 operator knob and stays EMPTY, which is what makes the stage flag a real
-# interlock rather than a claim about one.
-#
-# The distinction was measured, not stylistic. Every restraint S3 adds — the co-location cap, the name cap,
-# the stated-contrast ceiling, the relationship wall, the referent decline, the document-scoping of a bind —
-# is gated on that flag. Listing the categories HERE authorises the bootstrap unconditionally, so a shipped
-# flag-OFF deployment got the authorisation with none of the restraints: two co-located batteries fused at
-# `confirmed` on one coref link (flag-on: `probable`, capped), a pair the document explicitly CONTRASTS
-# fused at `confirmed` (flag-on: `probable`), and a bind licensed by one document spread onto a profile
-# built from another. Flag-off was strictly LESS safe than flag-on. Authorisation now flips with restraint.
+# The list that is actually opted in lives at `earned_identity.authoritative_categories` below; this
+# top-level key stays EMPTY and is simply a second place an operator may authorise a category. Both are read
+# unconditionally, and that is safe for one reason only: every restraint that bounds a bind — the co-location
+# cap, the name cap, the stated-contrast ceiling, the relationship wall, the referent decline, the
+# document-scoping of a bind — is unconditional too. When the authorisation was live while those restraints
+# sat behind a stage flag that shipped off, the measured result was two co-located batteries fused at
+# `confirmed` on one coref link, a pair the document explicitly CONTRASTS fused at `confirmed`, and a bind
+# licensed by one document spread onto a profile built from another.
 #
 # The second original reason for the empty list — "preserving an orphan-alias demo beat an analyst is meant
 # to earn" — remains OVERRULED, independently of where the list lives: that is demo preservation, and
@@ -207,7 +207,7 @@ name_alone_caps_at_possible: true
 # A category listed by EITHER route still clears every other rail before it may bind: the distinct-from
 # veto, type and namespace agreement, the hard-attribute contradiction check, its own per-link deterministic
 # gate (recomputed by the resolver, never trusted from a stamp), and a source-grade floor. Those are
-# properties of the pair and stay flag-independent. NAME_VARIANT is deliberately absent from both lists and
+# properties of the pair. NAME_VARIANT is deliberately absent from both lists and
 # stays raise-only permanently: because an authoritative bind bypasses banding, a licensed NAME_VARIANT *is*
 # the exact-normalised-name auto-merge lane D-13.1 exists to delete.
 coref_authoritative_evidence: []
@@ -354,38 +354,35 @@ place_bind_on_curated_toponym: true
 #                    identifying   — the attribute identifies the entity (a place's coordinates). Strong
 #                                    identity evidence; satisfies the non-perishable requirement to confirm.
 #                  Without `constitutive` and `identifying`, spine/13 §6 lever 2 has no rung to stand on.
-#                  Rows using the two NEW values live in `earned_identity.attribute_roles` (bottom of this
-#                  file), not here: declaring them unconditionally would move the flag-off graph.
 # Conservative starter taxonomy (err toward NOT walling). Exactly ONE critical is wired — variant
 # .operator_branch, the D5 marquee wall — and it was verified ADDITIVE-AND-INERT on the frozen corpus:
 # no variant STATES operator_branch (the China/Pakistan traps are already held apart by
 # config/entities.yaml distinct_from), so it produces zero veto pairs and changes no partition. It is
 # declared anyway because the mechanism must be designed for the discipline, not for the corpus in hand.
 #
-# NORMALISATION FINDING (why unit.service_branch and trading_org.origin_country were NOT critical). Both
-# are natural D5 walls in principle (a different branch / country ⇒ a different entity), but the corpus
+# NORMALISATION FINDING (why unit.service_branch and trading_org.origin_country were once NOT critical).
+# Both are natural D5 walls in principle (a different branch / country ⇒ a different entity), but the corpus
 # STATES them unnormalised: service_branch appears as 'Air Force' / 'PAF' / 'Pakistan Air Force' (all one
 # branch) and 'Army' / 'Pakistan Army'; origin_country as 'CHINA' vs 'China'. A critical veto compares
-# values exactly (absence ≠ conflict, but 'CHINA' ≠ 'China'), so walling them SHATTERS legitimate merges —
+# values exactly (absence ≠ conflict, but 'CHINA' ≠ 'China'), so walling them SHATTERED legitimate merges —
 # it split the three SINO-GALAXY trading-org spellings and would false-wall 'PAF' from 'PAF air defense
-# units'. That is the honest limit of an exact-match wall on this data, and `value_normalization` (bottom
-# of this file, S3) is what lifts it.
-#
-# WHAT ACTUALLY SHIPS NOW, because the paragraph above described the pre-S3 state and the rows below have
-# since moved: `unit.service_branch` IS promoted — but only with the stage flag on, via the per-field
-# `earned_role: critical` override on its row (see the note there). Flag-off it stays `supporting`, so the
-# flag-off graph is unmoved; flattening the row to a bare `role: critical` was MEASURED to shift it
-# 169/80/20 -> 170/84/21, i.e. exactly the shattering this finding predicts, because unnormalised branch
-# strings become drawn walls before normalisation is consulted. `trading_org.origin_country` is NOT
-# promoted at S3 and remains `supporting` unconditionally, even though normalisation rows exist for it.
+# units'. That was the honest limit of an exact-match wall, and the finding's own stated remedy was
+# `value_normalization` (bottom of this file). THAT REMEDY IS NOW UNCONDITIONAL: values are folded into their
+# declared equivalence class BEFORE conflict detection and before namespace derivation, so 'CHINA' and
+# 'China' are one value and 'PAF' and 'Pakistan Air Force' are one branch. The stated blocker is gone, so
+# both slots are promoted to `critical` — a genuinely different service branch is a different unit, and a
+# genuinely different country of origin is a different company, which for a supply-chain map is the whole
+# question. Three rails keep that safe: the C7 normaliser (a spelling is never a conflict),
+# `critical_veto_min_grade` (an untrustworthy conflict RAISES to the analyst instead of walling), and C7's
+# third state (an unreadable stated value neither walls nor fuses, and names a gap).
 # EVERY entry declares a `time_role` — an omitted one is a silent `durable`, which is how a perishable
 # attribute quietly becomes durable identity support and the D-13.9(a) cap evaporates.
 #
-# `requires: earned_identity` marks a row that is CONSUMED ONLY while `earned_identity.enabled` is on. It is
-# the stage flag applied at row granularity, and it exists so C6's two new values live HERE — in the one block
-# a reader and an auditor inspect — rather than in a parallel overlay nobody would find. (M3's whole point is
-# that a vocabulary declared somewhere other than the types that need it is inert config with a longer name.)
-# Unmarked rows are pre-S3 and are consumed unconditionally. Every marker dies with the flag at S4.
+# There are NO ROW-LEVEL STAGE MARKERS. `requires: earned_identity` (consume this row only while a flag is
+# on) and `earned_role:` (a second role for when the flag is on) are both retired, and a row still carrying
+# either is a LOUD load error rather than a silently ignored one — a tolerated staging marker is a
+# compatibility mode with a shorter name, and an ignored `earned_role: critical` would quietly demote a wall
+# its author meant to declare. One block, one declaration per row.
 attribute_roles:
   variant:
     operator_branch: {role: critical, time_role: durable}   # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
@@ -395,16 +392,11 @@ attribute_roles:
     family:          {role: supporting, time_role: durable}
     range_class:     {role: supporting, time_role: durable}
   unit:
-    # PROMOTED TO CRITICAL in S3, which is what C7 was a prerequisite for. It was `supporting` — i.e. inert —
-    # only because the corpus states it unnormalised ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an
-    # exact-match wall on those "SHATTERS legitimate merges". `value_normalization` removes that objection, so
-    # a genuinely different service branch is now a genuinely different unit.
-    #
-    # `earned_role` is a per-FIELD override applied only with the stage flag on, rather than `requires:` on the
-    # whole row. That distinction is load-bearing: this row EXISTED before S3, so gating the row would delete
-    # a pre-S3 declaration flag-off and silently move flag-off scoring (it drops out of the agreement ratio).
-    # `requires:` is for rows that are wholly new and have no earlier form to preserve.
-    service_branch:  {role: supporting, earned_role: critical, time_role: durable}
+    # CRITICAL. It was `supporting` — i.e. inert — only because the corpus states it unnormalised
+    # ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an exact-match wall on those "SHATTERS legitimate
+    # merges". `value_normalization` removes that objection, so a genuinely different service branch is a
+    # genuinely different unit.
+    service_branch:  {role: critical, time_role: durable}
     designator:      {role: supporting, time_role: durable}
     echelon:         {role: supporting, time_role: durable}
     alert_posture:   {role: supporting, time_role: perishable}   # a stated readiness/alert status — expected
@@ -414,7 +406,7 @@ attribute_roles:
     # half of C6's per-(type, attribute) point — the same attribute, the opposite consequence, on a different
     # citizen (compare `presence.coordinates` below).
     home_garrison:   {role: supporting, time_role: perishable}
-    coordinates:     {role: supporting, time_role: perishable, requires: earned_identity}
+    coordinates:     {role: supporting, time_role: perishable}
   presence:
     # A PRESENCE *IS* operator + design + site + window. Those attributes cannot change without it being a
     # DIFFERENT presence, so they are `constitutive`: their agreement CONFIRMS (which is what lets the presence
@@ -425,23 +417,29 @@ attribute_roles:
     # raises, while a `critical` wall would compare raw coordinates with `==` and hard-wall two reports of one
     # presence over a rounding difference. Genuine geographic impossibility is walled by `geo_conflict_max_km`,
     # which has a tolerance; this rail supplies the positive half.
-    coordinates:     {role: supporting, time_role: constitutive, requires: earned_identity}
-    operator_branch: {role: supporting, time_role: constitutive, requires: earned_identity}
-    service_branch:  {role: supporting, time_role: constitutive, requires: earned_identity}
-    design:          {role: supporting, time_role: constitutive, requires: earned_identity}
-    site:            {role: supporting, time_role: constitutive, requires: earned_identity}
-    observed_window: {role: supporting, time_role: constitutive, requires: earned_identity}
-    count:           {role: neutral,   time_role: perishable,    requires: earned_identity}
+    coordinates:     {role: supporting, time_role: constitutive}
+    operator_branch: {role: supporting, time_role: constitutive}
+    service_branch:  {role: supporting, time_role: constitutive}
+    design:          {role: supporting, time_role: constitutive}
+    site:            {role: supporting, time_role: constitutive}
+    observed_window: {role: supporting, time_role: constitutive}
+    count:           {role: neutral,   time_role: perishable}
   basing_site:
     # A PLACE IS ITS COORDINATES — `identifying`, the rung that lets a place confirm. Same attribute as
     # `presence.coordinates` and `unit.coordinates` above, three different identity consequences, which is
     # exactly the per-(type, attribute) keying C6 exists to express.
-    coordinates:     {role: supporting, time_role: identifying, requires: earned_identity}
+    coordinates:     {role: supporting, time_role: identifying}
   area_of_operations:
     # An AREA answers "roughly where", so its coordinates identify the area itself but never what is inside it.
-    coordinates:     {role: supporting, time_role: identifying, requires: earned_identity}
+    coordinates:     {role: supporting, time_role: identifying}
   trading_org:
-    origin_country:  {role: supporting, time_role: durable}
+    # CRITICAL, on the same reasoning as `unit.service_branch` above and with the same three rails under it.
+    # This was held back on the stated ground that "promoting needs value normalisation first" — and the
+    # normalisation rows for `origin_country` (CHINA / PRC / CN → China) were already shipped, so the reason
+    # had expired. For an operator-scoped supply-chain map two same-named trading organisations with
+    # different stated countries of origin are the most dangerous over-merge class there is: fusing them
+    # silently moves a supplier across a border. Two countries is not a spelling difference.
+    origin_country:  {role: critical, time_role: durable}
   component:
     radar_band:      {role: supporting, time_role: durable}
     component_class: {role: supporting, time_role: durable}
@@ -505,30 +503,27 @@ distinct_from:
     - "HQ-9BE"             # flagship distinct-from: ~125 km Army vs ~260 km PAF
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
-# EARNED IDENTITY — the RK-COREF (S3) stage block. ONE FLAG, mirroring S2's `layer_routing.enabled`.
+# EARNED IDENTITY — what a merge has to EARN. No flag: these mechanisms always run.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 #
-# S1 gave claims a stable address; S2 split design from instance; S3 makes identity EARNED. The pieces
-# below are one change to *what earns identity* and half of them would be incoherent — promoting
-# coreference to a required tier without the decline mechanism, or binding the caps to the bootstrap
-# without the per-layer profile, each leaves the system worse than either end state. So: one flag.
+# Claims have a stable address; design is split from instance; and identity is EARNED. The pieces below are
+# one change to *what earns identity* and half of them would be incoherent — promoting coreference to a
+# required tier without the decline mechanism, or binding the caps to the bootstrap without the per-layer
+# profile, each leaves the system worse than either end. They were staged in behind one `enabled` flag that
+# SHIPPED FALSE, which is why the flag is now DELETED rather than flipped: with it off, the shipped build
+# fused two same-named coref-linked trading orgs whose stated origin countries were CHINA and Pakistan, and
+# promoted a relocation over an identity it had not earned. A safety mechanism you can switch off is a
+# safety mechanism the shipped build does not have.
 #
-# `enabled: false` ⇒ every mechanism here is inert and the graph is byte-identical to S2's flag-off view.
-# That claim is only worth writing because it is now ENFORCED IN BOTH DIRECTIONS. It was not: the review
-# measured `authoritative_categories` reaching the resolver through an ungated union while every restraint
-# in this block early-returned on the flag, so flag-off ran the S3 AUTHORISATION with none of the S3
-# RESTRAINTS — strictly less safe than flag-on. Authorisation and restraint now flip together, and
-# `tests/gates/test_s3_flag_off_equivalence.py` pins the flag off explicitly (rather than inheriting it
-# from ambient config) and asserts the flag-off baselines, so the next such leak fails CI.
-#
-# Every threshold, cap, floor, category list and vocabulary this stage adds lives HERE, never as a code
+# What lives here is TUNABLES — every threshold, cap, floor, category list and vocabulary, never a code
 # literal (gate G6) and never in a second copy at the top level: the three ceilings used to be declared
 # twice under two spellings, with the top-level copy winning, which made editing this block a silent
 # no-op. They are declared once, here. Ceilings are declared as BAND NAMES, never floats: analyst B's
 # arithmetic showed any ×coefficient can drop a pair TWO bands — out of the analyst's queue entirely — and
-# its safe value depends on thresholds that will move. A band name is threshold-independent.
+# its safe value depends on thresholds that will move. A band name is threshold-independent. A ceiling's
+# value is honoured literally — `confirmed` PERMITS the fusion, `probable` withholds it and queues the pair,
+# `possible` withholds it and watch-lists the pair — and any other value is rejected at load.
 earned_identity:
-  enabled: false
 
   # ── D-13.17 — which coreference categories may BOOTSTRAP (an uncapped, unbanded fusion at 1.0) ────
   # An "authoritative" coref pair is a Phase-1 bootstrap trigger: it merges at hardcoded confidence 1.0

@@ -243,6 +243,13 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
             ledger = identity_ledger(breakdown)
             if ledger:
                 attrs["identity_ledger"] = ledger
+            # WHY this pair is an open question rather than a merge — the cap's own words, the stated
+            # critical disagreement, the licensing coreference quote, the bridged wall. The resolver has
+            # always computed it; nothing rendered it, so the one surface an analyst actually opens showed a
+            # score and no grounds. "Escalate to the analyst" is not satisfied by a value in a dict.
+            reason = partition.candidate_reasons.get(key)
+            if reason:
+                attrs["reason"] = reason
             out.append(
                 EdgeView(
                     id=f"same-as:{key}",
@@ -323,8 +330,8 @@ def _assemble(
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
     edge_groups: dict[str, list[ClaimRecord]] = defaultdict(list)
-    # Layer routing (A2/A3/A4) is OFF unless the ontology says otherwise, and when off every branch below
-    # falls through to the pre-S2 path — which is what makes the flag-off view byte-identical (gate G2).
+    # Layer routing (A2/A3/A4) always runs; what it *does* is whatever the ontology declares (an ontology
+    # that declares no `materializes`, no `instance_split` and no `instance_key_tag` routes nothing).
     # `outcome` is an OUT-parameter rather than a fourth return value on purpose: the 3-tuple signature is
     # what every existing caller (and every independently-authored test) already binds.
     routing = routing or LayerRouting()
@@ -421,7 +428,7 @@ def _assemble(
     # Runs after every entity claim has folded, so a node's full attribute set is visible: the trigger is a
     # property of the whole node, not of whichever claim happened to arrive first. Before the edges are
     # keyed, so a split node's edges attach to the right half.
-    if routing.enabled and node_types is not None:
+    if node_types is not None:
         split_straddlers(nodes, node_types, routing, outcome)
 
     ep_types = endpoint_node_types or {}
@@ -430,7 +437,7 @@ def _assemble(
         # Remap endpoints through the merge map so build_instance_edges (which reads the raw
         # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
         subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
-        if routing.enabled and lane is not None and node_types is not None:
+        if lane is not None and node_types is not None:
             # A4/D-13.6 — endpoint identity is resolved HERE, in the derived layer, never baked into the
             # immutable claim: an instance-layer edge materializes the instance it implies, a holding edge
             # mints nothing, and an edge whose ontology demands a STATED endpoint is withheld rather than
@@ -496,9 +503,8 @@ def _assemble(
                     claim_ids=list(e.claim_ids),
                 )
 
-    if routing.enabled:
-        apply_design_citations(nodes, outcome)
-        label_provisional_instances(nodes, outcome)
+    apply_design_citations(nodes, outcome)
+    label_provisional_instances(nodes, outcome)
 
     # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
     for node in nodes.values():
@@ -733,17 +739,16 @@ def _drop_superseded_derivations(claims: list[ClaimRecord], config: ConfigBundle
     """Ignore frozen ``inference`` claims whose derivation ``rebuild()`` now performs itself (A4/D-13.6).
 
     The offline basing pass used to **mint** its conclusion into the append-only log. That pass is deleted,
-    and with layer routing on the same edge is materialized in the derived layer every rebuild — so those
-    frozen claims are not evidence, they are stale *output* of a mechanism that no longer exists. Reading
-    them as evidence would double-count the derivation and let a conclusion outlive its premises.
+    and the same edge is materialized in the derived layer every rebuild — so those frozen claims are not
+    evidence, they are stale *output* of a mechanism that no longer exists. Reading them as evidence would
+    double-count the derivation and let a conclusion outlive its premises.
 
     This is a **derived-layer read**, not a retraction: the claims stay in the log, still replayable, still
     inspectable, exactly as ``as_of`` rewinding and HITL exclusion leave their inputs alone. Which
-    ``derived_layer`` values are superseded is declared in config, and with routing **off** the list is
-    never consulted — which is why the flag-off view still contains those edges, byte-identically.
+    ``derived_layer`` values are superseded is declared in config; an empty declaration retires nothing.
     """
     routing = LayerRouting.from_ontology(config.ontology)
-    if not (routing.enabled and routing.superseded_derived_layers):
+    if not routing.superseded_derived_layers:
         return claims
     retired = set(routing.superseded_derived_layers)
     return [
@@ -803,20 +808,18 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # 2b. the DERIVED basing edge (A4/D-13.6/G17) — `<unit, based-at, site>` materialized here, citing its
     #     two premise claim-atoms, with no mint and no append. It runs before scoring so the derived edge is
     #     priced by the same machinery as every other edge (and capped by its gate flag, never confirmed).
-    derivation = derived_basing.BasingDerivation()
-    if routing.enabled:
-        derivation = derived_basing.derive(
-            nodes, edges, claims_by_id, config, lane, node_types, routing
+    derivation = derived_basing.derive(
+        nodes, edges, claims_by_id, config, lane, node_types, routing
+    )
+    edges.extend(derivation.edges)
+    # 2c. NOW that every basing of every subject exists — stated and derived — apply the `site_type`
+    #     sub-bucket, or take the third state (R1.3/C1/L1/C7). This is the only point at which the
+    #     per-subject decision can be made correctly.
+    derivation.gaps.extend(
+        retag_instances(
+            edges, nodes, lane, routing, order_instance_edges, derived_basing.edge_bounds
         )
-        edges.extend(derivation.edges)
-        # 2c. NOW that every basing of every subject exists — stated and derived — apply the `site_type`
-        #     sub-bucket, or take the third state (R1.3/C1/L1/C7). This is the only point at which the
-        #     per-subject decision can be made correctly.
-        derivation.gaps.extend(
-            retag_instances(
-                edges, nodes, lane, routing, order_instance_edges, derived_basing.edge_bounds
-            )
-        )
+    )
     derived_edge_ids = {e.id for e in derivation.edges}
 
     # 3. credibility (per-claim) — decisions carry analyst integrity flags (origin-wide, incl. future claims)
@@ -918,20 +921,18 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
     #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
     #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
-    # R1.4's two prohibitions both ride the stage flag, like everything else S2 changes — flag-off promotion
-    # behaviour is untouched by construction rather than by argument. (A safety fix behind a flag is only
-    # acceptable because the whole stage is: the flag is the stage's cutover, not a way of keeping the fix
-    # off.) The two are independent: (a) asks whether this is one unit, (b) whether we ever established the
-    # origin at all.
+    # R1.4's two prohibitions are unconditional. They are what closes the fabrication path: without them a
+    # sub-confirmed identity promotes, the analyst's candidate is popped off the queue, the retired assertion
+    # is restated `stale` (asserting it was once established) and a differing target draws a relocation
+    # nobody reported. The two are independent: (a) asks whether this is one unit, (b) whether we ever
+    # established the origin at all.
     #
     # "Unsettled" is the OPEN CANDIDATE MERGE — every endpoint of a same-as the resolver put in front of the
     # analyst and nobody has adjudicated. Deliberately not the node's assessed status: the legitimate
     # flagship relocation sits at *probable*, so reading the confidence label would suppress the beat this is
     # meant to leave working. The question is whether the IDENTITY DECISION is still open.
     unsettled = {eid for pair in partition.candidates for eid in pair}
-    supersede_outcome = promote_supersessions(
-        edges, config, nodes, unsettled, layer_routing=routing.enabled
-    )
+    supersede_outcome = promote_supersessions(edges, config, nodes, unsettled)
     edges.extend(supersede_outcome.drawn_edges)
     # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it
     # raised while it was still being assessed as a live fact. The gap would tell an analyst to go
@@ -953,6 +954,22 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
             if edge.id in absorbed:
                 edge.attrs["retired_known_gap"] = absorbed[edge.id]
         known_gaps = [g for g in known_gaps if g.related_ref not in retired]
+    # G19's escalate half: a pair the evidence otherwise FUSED, refused by a type or namespace
+    # contradiction. One gap PER ENDPOINT (the pair is what is contradicted, but a gap hangs off a node and
+    # each of the two mentions is separately un-anchored by the refusal), so neither half is left with no
+    # edge, no queue item and no record — which is what the cross-type refusal used to do.
+    for pair_ref, what_missing in sorted(partition.identity_refusals.items()):
+        for endpoint in pair_ref.split("|"):
+            if endpoint in nodes:
+                known_gaps.append(
+                    KnownGap(
+                        id=f"gap:identity:{pair_ref}:{endpoint}",
+                        related_ref=endpoint,
+                        what_missing=what_missing,
+                        observability_ceiling="confirmable",
+                        missing_slots=["identity"],
+                    )
+                )
     # The routing's + derivation's own named gaps: an unrouted straddle, a suppressed supersede, a withheld
     # relation, a truncated formation attribution. Appended AFTER the retirement filter — these are not
     # assertions that could be retired, they are statements about what the build could not conclude.

@@ -1,7 +1,8 @@
 """Layer routing — the type/instance split, applied at rebuild (A2/A3/A4; spine/13 §3a/§5).
 
 ``config/ontology.yaml`` says which *layer* every node type and every attribute belongs to; this module
-is what that declaration **does**. Three mechanisms, all pure, all behind ``layer_routing.enabled``:
+is what that declaration **does**. Three mechanisms, all pure, all unconditional — what each one *does* is
+bounded by what the ontology declares, never by a stage switch:
 
 1. **Endpoint materialization (A4/D-13.6).** An edge that declares ``materializes`` needs an *instance*
    endpoint, but a source states only the design — *"HQ-9/P at Rahwali"* arrives as
@@ -91,7 +92,7 @@ class RoutingOutcome:
 
 
 def routing_config(ontology: Any) -> LayerRouting:
-    """``config/ontology.yaml → layer_routing``, compiled. Absent ⇒ disabled ⇒ every mechanism inert."""
+    """``config/ontology.yaml → layer_routing``, compiled. Absent block ⇒ every knob unset."""
     return LayerRouting.from_ontology(ontology)
 
 

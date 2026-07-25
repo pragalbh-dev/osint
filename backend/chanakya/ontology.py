@@ -586,22 +586,23 @@ class NodeTypeIndex:
         return None
 
 
-# ── layer routing: the one flag, and its knobs (A2/A3/A4 — RK-LAYER/S2) ──────────────────────────
+# ── layer routing: the type/instance split and its knobs (A2/A3/A4) ──────────────────────────────
 #
 # Read from ``config/ontology.yaml``'s top-level ``layer_routing`` block (a plain YAML mapping —
-# ``OntologyConfig`` is ``extra="allow"``, the same precedent the ``materiality`` block already sets). One
-# flag turns on the whole type/instance split at rebuild time, because the pieces are one change to what a
-# node *is* and half of it would be incoherent. Every value is config-authored; nothing here is a code
-# literal beyond the key names and the fail-safe fallbacks (gate G6).
+# ``OntologyConfig`` is ``extra="allow"``, the same precedent the ``materiality`` block already sets). The
+# split runs **unconditionally**: the staging flag that gated it is deleted, because the pieces are one
+# change to what a node *is*, and a system that can be switched between two answers to that question has
+# two ontologies. Each mechanism is bounded by what these knobs — and the node/edge type declarations they
+# read — actually declare; nothing here is a code literal beyond the key names and the fail-safe fallbacks
+# (gate G6).
 
 _LAYER_ROUTING = "layer_routing"
 
 
 @dataclass(frozen=True)
 class LayerRouting:
-    """``config/ontology.yaml → layer_routing``, compiled. Absent block ⇒ :attr:`enabled` False ⇒ inert."""
+    """``config/ontology.yaml → layer_routing``, compiled. An absent block leaves every knob unset."""
 
-    enabled: bool = False
     presence_type: str = ""
     design_link_edge: str = ""
     provisional_prefix: str = "presence"
@@ -617,9 +618,8 @@ class LayerRouting:
     #: let an unstated ``site_type`` buy a second concurrent basing for free. Note this is only the first
     #: third of the third state — see :meth:`normalise_tag`.
     absent_bucket: str = "unknown"
-    #: Bundle-filename suffixes the boot/seed loader **skips** while routing is on, so a frozen derived
-    #: conclusion cannot be replayed alongside the live derivation of the same fact. Empty (routing off) ⇒
-    #: the loader globs exactly as it always did, which is what keeps the flag-off view byte-identical.
+    #: Bundle-filename suffixes the boot/seed loader **skips**, so a frozen derived conclusion cannot be
+    #: replayed alongside the live derivation of the same fact. Empty ⇒ the loader globs everything.
     superseded_derived_bundle_suffixes: tuple[str, ...] = ()
     #: ``derived_layer`` markers the **rebuild** declines to read as evidence — the backstop for a store
     #: that already holds such claims, where the file-level skip above never ran.
@@ -641,7 +641,6 @@ class LayerRouting:
             if isinstance(aliases, dict) else ()
         )
         return cls(
-            enabled=bool(block.get("enabled", False)),
             presence_type=str(block.get("presence_type") or ""),
             design_link_edge=str(block.get("design_link_edge") or ""),
             provisional_prefix=str(block.get("provisional_prefix") or "presence"),
@@ -654,12 +653,14 @@ class LayerRouting:
         )
 
     def retired_bundle_suffixes(self) -> tuple[str, ...]:
-        """Bundle suffixes a loader should skip — ``()`` unless routing is on (the flag gate, in one place).
+        """Bundle suffixes a loader should skip — the declared list, read through one accessor.
 
         Callers hand the result straight to ``ingest.seed.seed_store_from_bundles(skip_suffixes=…)``, so the
-        flag boundary is applied here rather than re-derived at every seed call site.
+        decision lives here rather than being re-derived at every seed call site. A frozen bundle whose
+        conclusion the rebuild now derives itself is stale *output*, not evidence: replaying it would
+        double-count the derivation and let a conclusion outlive its premises.
         """
-        return self.superseded_derived_bundle_suffixes if self.enabled else ()
+        return self.superseded_derived_bundle_suffixes
 
     def normalise_tag(self, value: object) -> tuple[str, bool]:
         """A stated ``instance_key_tag`` value → ``(bucket, mapped)`` — C7's normalisation prerequisite.

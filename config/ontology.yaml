@@ -31,7 +31,8 @@
 #     fires on a layer MISMATCH — the moment such a type carried an `instance` attribute it would generate
 #     a phantom split. `meta` says "outside the two-layer routing": never split, never materialized,
 #     never bound across. It is stated here rather than left implicit.
-# All of this is INERT unless `layer_routing.enabled` (bottom of this file) is true.
+# All of this is live at every rebuild; what each mechanism does is bounded by the declarations here and
+# in the `layer_routing` block at the bottom of this file.
 #
 # Ratified data-agent decisions applied (tmp/conv/DATA-C-corpus-and-oracle-observations.md):
 #   - supplies-component reserved for Manufacturer->Component; the Component->Variant hero edge is `equips`.
@@ -77,7 +78,7 @@
 # a node ATTRIBUTE on the endpoint the key drops (here the site's `site_type`) whose NORMALISED CLASS tags
 # the bucket, so `edge:<unit>:based-at:garrison` and `edge:<unit>:based-at:dispersal_site` are different
 # instances and only a genuine same-class change is a supersede. Read via `EdgeLaneIndex.instance_key_tag`
-# and applied only when layer_routing is enabled (flag-off keys are byte-unchanged).
+# and applied at every rebuild.
 #   THE RAW STATED STRING IS NEVER THE KEY (ruling L1). `site_type` is free text and its stated values
 #   conflate four concepts, so a raw-string key would both fail to wall a real conflict and silently kill a
 #   real relocation. The key is the normalised class from the closed vocabulary in `layer_routing` below,
@@ -426,10 +427,14 @@ event_types:
 materiality:
   function_attr: functional_role
 
-# ── LAYER ROUTING (A2/A3/A4 — RK-LAYER/S2) ──────────────────────────────────────────────────────────
-# THE ONE FLAG for everything the type/instance split changes at rebuild time. `enabled: false` means the
-# build behaves exactly as it did before this stage: every declaration above is read, nothing is routed,
-# split, materialized or derived, and the view is byte-identical. `enabled: true` turns on, together:
+# ── LAYER ROUTING (A2/A3/A4) ─────────────────────────────────────────────────────────────────────────
+# Everything the type/instance split changes at rebuild time. THERE IS NO ENABLE FLAG: it used to ship
+# `enabled: false`, i.e. the six mechanisms below — including two that close a fabrication path — were
+# declared and dormant in the shipped build. These are one change to what a node IS, and a system that can be
+# switched between two answers to that question has two ontologies, so the switch is deleted rather than
+# defaulted true. What each mechanism DOES is bounded by the declarations in this block and by the per-type
+# `layer` / `materializes` / `instance_split` / `instance_key_tag` declarations above — an ontology that
+# declares none of them routes nothing, which is a fact about the ontology and not a switch. The six:
 #   1. the STRADDLE SPLIT — a design-layer node carrying an instance-layer attribute is split into a
 #      design node + a linked provisional instance (only where the node type declares `instance_split`);
 #      where no citizen is declared the unrouted straddle is RECORDED on the node, never guessed;
@@ -442,10 +447,10 @@ materiality:
 #   4. `instance_key_tag` — the site_type-tagged supersede bucket for `based-at` (R1.3/C1);
 #   5. `requires_stated_endpoints` — an edge whose declared-stated endpoint was only materialized is
 #      withheld with a named gap (D12);
-#   6. the EARNED-IDENTITY gate on supersede promotion (R1.4, see credibility.yaml supersede_floor).
-# It is one flag on purpose: these are one change to what a node IS, and half of it would be incoherent.
+#   6. the EARNED-IDENTITY prohibitions on supersede promotion (R1.4, see credibility.yaml
+#      supersede_floor): a promotion over an unearned identity is held for the analyst, and a retirement
+#      never restates an honest `insufficient` as `stale`.
 layer_routing:
-  enabled: false
   # The instance citizen the build materializes, and the edge it is linked to its design by. Both name
   # declarations above; nothing here is a code literal (G6).
   presence_type: presence

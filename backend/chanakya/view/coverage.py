@@ -26,7 +26,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 
 from chanakya.resolve.rconfig import ResolveConfig
-from chanakya.schemas import Partition
+from chanakya.schemas import Partition, pair_key
 from chanakya.schemas.base import Record
 
 # ``type_of`` may be a plain callable ``entity_id -> type`` or a mapping; both are accepted (contract).
@@ -66,14 +66,31 @@ class CoveragePolicy(Record):
     critical_veto_min_grade: str | None = None
     surface_wall_bridges: bool = True
     coverage_gap_ratio: float | None = None
-    # RK-COREF (S3). Residual fragmentation IS a coverage gap — that is the design's own position ("it
-    # reflects genuine evidential uncertainty") — but only if the reader can see WHICH refusals produced it.
-    # Three of S3's mechanisms deliberately withhold a merge, so a tail read without them looks like a
-    # collection problem when part of it is a stated policy. Absent ⇒ the flag is off and no cap applied.
-    earned_identity: bool = False
+    # Residual fragmentation IS a coverage gap — that is the design's own position ("it reflects genuine
+    # evidential uncertainty") — but only if the reader can see WHICH refusals produced it. Three mechanisms
+    # deliberately withhold a merge, so a tail read without them looks like a collection problem when part of
+    # it is a stated policy. A ceiling reads ``None`` when it is undeclared, and ``confirmed`` when it is
+    # declared but permits the fusion.
     name_ceiling: str | None = None
     colocation_ceiling: str | None = None
     contrast_ceiling: str | None = None
+
+
+class WithheldLink(Record):
+    """A retained identity link a CAP withheld from the analyst's queue — with the grounds (D4 / G19).
+
+    The ``possible`` tier is not drawn (by design: a watch-list link is not a finding). That made it a place
+    where a *decision* could be stored and never read: a pair a cap refused kept its confidence and its
+    breakdown and, for a type whose only honest identity signal is its name, nothing that said why. Counts
+    alone cannot answer the question the coverage report exists to answer — how much of this residual
+    fragmentation is missing collection and how much is stated policy — so the withheld links are listed
+    with their reasons.
+    """
+
+    a: str = ""
+    b: str = ""
+    confidence: float | None = None
+    reason: str = ""
 
 
 class IdentityCoverage(Record):
@@ -90,6 +107,9 @@ class IdentityCoverage(Record):
     collection_gaps: list[str] = []
     #: The effective gap ratio used to compute ``collection_gaps`` — echoed for transparency.
     coverage_gap_ratio: float | None = None
+    #: Retained (``possible``-tier) links a cap withheld, each with the reason. Sorted; empty when no cap
+    #: fired. This is how a withheld pair reaches a human at all: it is never drawn as an edge.
+    withheld: list[WithheldLink] = []
     #: The full set of policy dials that produced this summary.
     policy: CoveragePolicy = CoveragePolicy()
 
@@ -160,6 +180,16 @@ def identity_coverage(
             if unresolved / max(counts.confirmed, 1) >= ratio:
                 collection_gaps.append(etype)
 
+    withheld = [
+        WithheldLink(
+            a=a, b=b,
+            confidence=partition.merge_confidence.get(pair_key(a, b)),
+            reason=partition.candidate_reasons[pair_key(a, b)],
+        )
+        for a, b in sorted(partition.possible)
+        if partition.candidate_reasons.get(pair_key(a, b))
+    ]
+
     return IdentityCoverage(
         confirmed=len(partition.same_as),
         probable=len(partition.candidates),
@@ -167,6 +197,7 @@ def identity_coverage(
         by_type=dict(sorted(by_type.items())),
         collection_gaps=collection_gaps,
         coverage_gap_ratio=ratio,
+        withheld=withheld,
         policy=_policy(cfg, ratio),
     )
 
@@ -186,7 +217,6 @@ def _policy(cfg: ResolveConfig | None, effective_ratio: float | None) -> Coverag
         critical_veto_min_grade=cfg.critical_veto_min_grade,
         surface_wall_bridges=cfg.surface_wall_bridges,
         coverage_gap_ratio=effective_ratio,
-        earned_identity=cfg.earned_identity_on,
         name_ceiling=cfg.earned_identity.name_ceiling or None,
         colocation_ceiling=cfg.earned_identity.colocation_ceiling or None,
         contrast_ceiling=cfg.earned_identity.contrast_ceiling or None,

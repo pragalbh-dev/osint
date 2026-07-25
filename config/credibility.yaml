@@ -89,8 +89,10 @@ supersede_floor:
   # subject, and one whose merges are all settled, both pass: no identity decision is pending, so there is
   # none to distrust, and holding those would stop every honest relocation and teach the analyst to ignore
   # the queue. Held ⇒ `candidate_supersede` stays and the analyst decides, which D-P4.4 already makes the
-  # DEFAULT outcome. A boolean, not a threshold: there is no number to tune here (G6 by construction).
-  require_earned_identity: true
+  # DEFAULT outcome.
+  # There is NO KNOB here. The gate was declared as `require_earned_identity: true` — a boolean with no
+  # number to tune, i.e. a switch for turning a safety prohibition off. A prohibition that closes a
+  # fabrication path cannot be optional, so it is now part of the pass and not part of the config.
 
 # ── the assertable band (ASK; spine/09) ──────────────────────────────────────────────────────────
 # Which assessed statuses are strong enough for an ANSWER to *rest on* a link — i.e. to walk it as the
@@ -219,13 +221,14 @@ basing_proposer:
 # group licensed by a verbatim quote. Emits `coref-same-as` claims only; it never merges anything itself — the
 # merge is derived at rebuild, so a split stays native.
 #
-# REQUIRED FROM RK-COREF (S3) — the producer is ON. It was deliberately commented out until "the honor policy"
-# landed, on the stated condition "turn it on together with that honor policy, not before". S3 IS that policy:
-# the doc-local cluster is now the mint grain (it is where the referent atom is minted), the per-link
-# deterministic gates and the source-grade floor decide what may bind, and D-13.18 lets the rebuild DECLINE a
-# grouping outright. So both switches flip in one deliberate motion, which is what the two-switch design was
-# for — flipping this one alone still changes no topology, because the CONSUMER
-# (resolution.yaml -> earned_identity) is what authorises a bind.
+# The producer is ON, and THIS BLOCK IS THE ONLY SWITCH. It used to ride a second, unrelated flag in
+# resolution.yaml as well, so a deployment that had declared this block still emitted nothing until another
+# file was edited — two switches for one motion, which is how a configured capability comes to look broken.
+# The honour policy it was waiting for is in place: the doc-local cluster is the mint grain (it is where the
+# referent atom is minted), the per-link deterministic gates and the source-grade floor decide what may bind,
+# and D-13.18 lets the rebuild DECLINE a grouping outright. Declaring a category here only makes it
+# PROPOSABLE; which categories may auto-bind is the separate, stricter decision in
+# resolution.yaml -> earned_identity.authoritative_categories.
 #
 # Cost is real and stated: a SECOND extraction call per document, and every frozen bundle must be re-recorded
 # to carry coreference at all (there are zero coref annotations in the current bundles — ruling M4 — which is
