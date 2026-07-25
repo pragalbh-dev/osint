@@ -186,3 +186,46 @@ criterion is instead: *the guards bind, no threshold was loosened, and every los
 three are met. **Rising fragmentation at S3 is the expected, correct signal** — S2 fragmented per-mention (F8)
 and S3 additionally withdraws fusions that were never earned. **DATA owes the keyed re-record with
 coreference**; until it lands the graph is honestly sparser than it will be, and that is stated, not hidden.
+
+---
+
+# Round 4 — S3 integration triage: 34 failures, two causes (+ my own harness fix)
+
+**First, a harness fix of mine: 66 → 34.** The test fixtures' flag *discovery* is sound, but its token list
+predated S3, so it enabled S2's `layer_routing.enabled` and never found `earned_identity.enabled` — every
+behavioural test ran against the **flag-off** graph and failed for the wrong reason. Same coupling class as S2's
+hand-copied config knob. Fixed, with the standing rule recorded in the token list: **when a stage adds a flag,
+add its tokens in the same commit.**
+
+## Cause A — C6/M3 shipped INERT: the values exist, the declarations do not (13 failures)
+
+`test_rk_coref_time_role.py` + parts of the ladder. Verbatim: *"no shipped declaration uses
+`['constitutive','identifying']` (roles in use: `['durable','perishable']`)"* · *"no attribute of the presence
+citizen … is declared"* · *"no geography attribute is declared in `attribute_roles` at all, so geography has no
+time role on any citizen"* · *"`variant.operator_branch` declares no legal `time_role`"*.
+
+So the four-value `time_role` **schema** landed but was **never applied to the types that need it** — which is
+precisely the failure M3 was written to prevent (*"without those declarations C6 is inert and **lever 2 still
+cannot exist**"*). And the consequence is measurable: *"two presences of the same design, at the same
+coordinate, under the same operator, in the same window"* **do not confirm** — because geography has no
+`constitutive` role anywhere, so the presence citizen still cannot confirm on the evidence that defines it.
+**The test hand is right; this is the real gap, not a fixture artifact.**
+
+## Cause B — the auto-bind gate does not fire, and one conjunct is missing entirely (18 failures)
+
+`test_rk_coref_autobind.py` + `decline` + `plumbing`. The tell is *"the in-document bind itself did not fire, so
+the leak assertion below is vacuous (`same_as=[]`)"* — **coref binding produces no merges at all** in these
+fixtures. Downstream of that: a **grade-A textbook parenthetical alias** does not bind; **M1's word-extension
+mirror** (`RX-9` → `RX-9 engagement radar`, a descriptive *word*, which must license) does not bind; **M2's
+two-field equivalence** does not license; **C5's partial bind** does not bind; and a `NAME_VARIANT` cluster is
+**dropped rather than queued** with its quote.
+
+**And one is a genuine safety gap, not a wiring gap:** *"a span set containing a sentence the document never
+contains was accepted — the verbatim check is what makes the evidence re-derivable."* **M2 relaxed contiguity,
+not verifiability.** A span set whose members are not each verbatim is fabricated licensing evidence, which is
+the disqualifying class. That one is highest priority regardless of how the wiring is resolved.
+
+**Likely single root cause for the wiring half:** the producer half of coref (the `config/credibility.yaml`
+`coreference` block) or the consumer allow-list is not reachable from the fixtures — S3 requires **both** gates
+to flip, and a fixture that supplies neither sees an inert pass. Reconcile it the way the flag was reconciled:
+the fixtures must **discover** the config keys, and the implementation must be enable-able from a bundle.
