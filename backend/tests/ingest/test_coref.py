@@ -17,10 +17,13 @@ is exercised against real text. The beats asserted here:
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
+import chanakya
 from chanakya import edge_direction, settings
 from chanakya.config.store import ConfigStore
 from chanakya.ingest import adapters, coref, loaders
@@ -30,10 +33,22 @@ from chanakya.ingest.extract import extract_document
 from chanakya.schemas.claim import ClaimRecord, Triple
 from chanakya.schemas.config_models import ConfigBundle
 
+#: The repository root, derived from the installed package rather than ``settings.repo_root()`` — the latter
+#: follows ``CHANAKYA_ROOT`` and would point at the flag-on shadow deployment, which is the one thing an
+#: assertion about *what the repo ships* must not do.
+REPO_ROOT = Path(chanakya.__file__).parent.parents[1]
+
 _TEXT = (
     "China Precision Machinery Import-Export Corporation (CPMIEC) signed the contract.\n"
     "The export agency delivered the battery to Rahwali in March.\n"
 )
+
+
+#: This module owns pass 2's *call* contract — how many calls it costs and what it does with the answer —
+#: so it keeps the scripted FIFO authoritative for the coreference call and opts out of the ingest
+#: conftest's off-queue side channel. Without this, "the queue is one deep, so a second call raises" would
+#: stop being an assertion here, which is precisely the assertion the dormancy beats rest on.
+pytestmark = pytest.mark.scripts_coref
 
 
 # ── fixtures ───────────────────────────────────────────────────────────────────────────────────
@@ -46,7 +61,15 @@ def _offline_geocoder(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture(scope="module")
 def config() -> ConfigBundle:
-    """The real shipped config — the pass is dormant on it (the RK-COREF stage flag ships off)."""
+    """The real deployment config this process is pointed at.
+
+    Normally that is the shipped one, on which the pass is dormant. It is **not** assumed to be: the suite
+    can be run against a shadow deployment with the S3 stage flag forced on (``--earned-identity=on``),
+    which is how flag-ON is measured without editing the tree. So a beat that needs the pass *off* pins it
+    off with :func:`_disabled` rather than leaning on ambient config, and the separate statement "the repo
+    ships it off" is asserted where it belongs — against the file itself, in
+    :func:`test_the_shipped_config_ships_the_stage_flag_off`.
+    """
     return ConfigStore.seed_from(settings.config_dir()).snapshot()
 
 
@@ -67,6 +90,19 @@ def _enabled(config: ConfigBundle, **knobs: Any) -> ConfigBundle:
     block = {**(getattr(config.resolution, "earned_identity", None) or {}), "enabled": True}
     resolution = config.resolution.model_copy(update={"earned_identity": block})
     return config.model_copy(update={"credibility": credibility, "resolution": resolution})
+
+
+def _disabled(config: ConfigBundle) -> ConfigBundle:
+    """The same config with the S3 stage flag pinned **off** — an explicit flag-off baseline.
+
+    The mirror of :func:`_enabled`, and the reason it exists: a beat that means "pass 2 did not run" must
+    say so, not inherit it from whatever config the process was pointed at. Ambient dormancy silently turns
+    every such beat into an exhausted-queue error the moment the suite is run flag-on, which says nothing
+    about the code under test.
+    """
+    block = {**(getattr(config.resolution, "earned_identity", None) or {}), "enabled": False}
+    return config.model_copy(update={"resolution": config.resolution.model_copy(
+        update={"earned_identity": block})})
 
 
 def _doc() -> loaders.LoadedDoc:
@@ -102,20 +138,35 @@ def _coref_edges(claims: list[ClaimRecord]) -> list[ClaimRecord]:
 
 # ── dormancy: the slice changes nothing until a deployment opts in ─────────────────────────────
 
-def test_dormant_by_default_makes_no_second_call(config: ConfigBundle) -> None:
-    """The shipped config leaves the stage flag off ⇒ exactly ONE extraction call, no coref claims.
+def test_the_shipped_config_ships_the_stage_flag_off() -> None:
+    """The repo's own ``config/resolution.yaml`` ships ``earned_identity.enabled: false``.
+
+    Split out of the dormancy beat below and asserted against the **file**, not a snapshot, on purpose. It is
+    a claim about what this repository ships, and it must stay checkable even while the suite is being run
+    against a flag-on shadow deployment — which is exactly when a snapshot-based version of it would either
+    lie or fail for the wrong reason.
+    """
+    resolution = yaml.safe_load((REPO_ROOT / "config" / "resolution.yaml").read_text(encoding="utf-8"))
+    assert resolution["earned_identity"]["enabled"] is False, (
+        "the RK-COREF (S3) stage flag must ship OFF; turning it on is a separate, deliberate decision"
+    )
+
+
+def test_dormant_with_the_flag_off_makes_no_second_call(config: ConfigBundle) -> None:
+    """The stage flag off ⇒ exactly ONE extraction call, no coref claims.
 
     A scripted client raises when over-drawn, so a single queued response *is* the assertion that pass 2
-    never fired.
+    never fired. This module keeps that property (``pytestmark`` above opts out of the off-queue side
+    channel), so the one-deep queue is still doing the work.
     """
-    claims = _extract(config, _FILL)
+    claims = _extract(_disabled(config), _FILL)
     assert _coref_edges(claims) == []
     assert claims, "pass 1 must still emit normally"
 
 
 def test_dormant_when_categories_configured_empty(config: ConfigBundle) -> None:
     """A block that allows no evidence kind is dormant too — never a silent fall-back to all of them."""
-    assert _extract(_enabled(config, categories=[]), _FILL) == _extract(config, _FILL)
+    assert _extract(_enabled(config, categories=[]), _FILL) == _extract(_disabled(config), _FILL)
 
 
 # ── the happy path: a cluster on its own lane, licensed by a quote ─────────────────────────────
@@ -154,7 +205,7 @@ def test_pass_one_claims_gain_only_the_referent_atom(config: ConfigBundle) -> No
     about the grouping as a whole. So the contract is now the narrower and more useful one — every other field
     of every pass-1 claim is byte-identical, and the referent is set only where a cluster was accepted.
     """
-    base = _extract(config, _FILL)
+    base = _extract(_disabled(config), _FILL)
     with_coref = _extract(_enabled(config), _FILL, _cluster(members=[1, 2]))
     revised = with_coref[:len(base)]
 
@@ -175,7 +226,7 @@ def test_rescues_an_undeclared_descriptive_mention(config: ConfigBundle) -> None
     fill = {**_FILL, "relations": [
         {"relation": "manufactures", "subject": "the export agency", "object": "HQ-9/P",
          "source_quote": "The export agency delivered the battery to Rahwali in March."}]}
-    mentions = coref.inventory(_extract(config, fill))
+    mentions = coref.inventory(_extract(_disabled(config), fill))
     undeclared = [m for m in mentions if m.claim_id is None]
     assert "the export agency" in {m.name for m in undeclared}
 
@@ -191,7 +242,7 @@ def test_undeclared_endpoints_are_typed_from_the_ontology(config: ConfigBundle) 
         {"relation": "manufactures", "subject": "CPMIEC", "object": "HQ-9/P",
          "source_quote": "China Precision Machinery Import-Export Corporation (CPMIEC) signed the contract."}]}
     rules = edge_direction.direction_map(config)
-    typed = {m.name: m.entity_type for m in coref.inventory(_extract(config, fill), rules)}
+    typed = {m.name: m.entity_type for m in coref.inventory(_extract(_disabled(config), fill), rules)}
     assert typed["CPMIEC"] == "manufacturer"
     assert typed["HQ-9/P"] == "variant"
 
@@ -233,7 +284,7 @@ def test_categories_config_restricts_what_may_be_emitted(config: ConfigBundle) -
 
 def test_max_mentions_skips_the_document_whole(config: ConfigBundle) -> None:
     """The cost guard skips an outsized inventory rather than truncating it (no silent partial coverage)."""
-    assert _extract(_enabled(config, max_mentions=1), _FILL) == _extract(config, _FILL)
+    assert _extract(_enabled(config, max_mentions=1), _FILL) == _extract(_disabled(config), _FILL)
 
 
 # ── unit-level rails over the inventory (cross-type + stated distinctions) ─────────────────────
@@ -317,7 +368,7 @@ def test_relations_carry_the_mention_that_named_each_endpoint(config: ConfigBund
         "relations": [{"relation": "manufactures", "subject": "CPMIEC", "object": "HQ-9/P",
                        "source_quote": "China Precision Machinery Import-Export Corporation (CPMIEC)"}],
     }
-    claims = _extract(config, fill)
+    claims = _extract(_disabled(config), fill)
     by_name = {c.payload.name: c.claim_id for c in claims if c.asserts == "entity"}
     relation = next(c for c in claims
                     if isinstance(c.payload, Triple) and c.payload.predicate == "manufactures")
