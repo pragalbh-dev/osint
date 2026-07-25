@@ -12,8 +12,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 from chanakya.view import view_to_json
 from tests.fixtures import loaders
 

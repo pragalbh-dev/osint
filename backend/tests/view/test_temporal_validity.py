@@ -30,7 +30,6 @@ from chanakya.view.pipeline import _assemble
 from chanakya.view.supersede import build_instance_edges
 from tests.fixtures import loaders
 
-
 # ── the pure report-as-upper-bound helper ───────────────────────────────────────────────────────
 
 def test_report_bound_point_anchor_uses_report_as_upper_bound() -> None:

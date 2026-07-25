@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from chanakya.view import view_to_json
 from tests.fixtures import loaders
 
