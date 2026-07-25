@@ -351,3 +351,37 @@ loosen — which is precisely how a safety property gets traded away to make a t
 With the flag on, the coref **producer fires**, and **32 scripted-client tests exhaust their queued responses**.
 So the keyed re-record commit must carry those **second queued responses** with it — otherwise turning the flag
 on breaks 32 tests for a reason unrelated to identity, and the noise buries whatever the re-record actually did.
+
+---
+
+## M16 — the bake-off is a genuine THREE-WAY measurement (user, 2026-07-25)
+
+**Candidates fixed by the user:** **Opus 5** · **Gemini Flash 3.6** · **GPT 5.6 Sol**. All three keys are in
+`osint/.env` (verified present by name only; values never read or printed).
+
+**This retires §8's honest fallback.** §8 said GPT had *no client and no provisioned key* and that
+`google-genai` was *absent from the shipped image*, so the stated fallback was **"if only Anthropic can be
+exercised, 'the harness decides' collapses to 'the incumbent stays'."** Measured now: **all three SDKs import
+cleanly** (`anthropic`, `google.genai`, `openai`) — so that note is **stale** and the fallback no longer applies.
+A real three-way comparison is possible, and the scorecard must therefore report one rather than a default.
+
+**Remaining build work, small:** two of the three clients already exist (`AnthropicExtractionClient`,
+`GeminiExtractionClient`, behind the `ExtractionClient` Protocol + `build_extraction_client` factory), so
+**GPT needs one new client class** — the seam is already abstracted, which is why this is a class and not a
+refactor.
+
+**What does NOT relax.** The gating preconditions stay **pass/fail, not weighted** (§8): the winner must keep the
+**VLM imagery path** whole, must be **live-runnable in the shipped image** *and* be the producer that **freezes
+the seed bundles** (so KEYLESS≡LIVE holds by construction), and must be a **pinned** model id — never a floating
+`-latest` alias, which would break both reproducibility and the frozen seed. And the **no-sampling-params** rule
+holds across providers.
+
+**Two measurement disciplines that now matter more, because a three-way result invites over-reading:**
+**N repeated runs per candidate with variance reported**, and a **minimum margin** before a difference counts as
+material — a within-noise gap is reported as **"no measured difference"**, not as a winner. Re-extraction is
+**confirmed non-deterministic** on a small slice, so without this a three-way scorecard will manufacture a
+ranking out of run-to-run jitter.
+
+**And the ruler must be fixed first** (unchanged from the corrected M14): repair the sub-oracle's twelve
+single-source `confirmed` entries before the bake-off consumes it, or all three candidates are measured against a
+flattering yardstick.
