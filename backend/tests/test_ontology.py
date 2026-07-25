@@ -17,10 +17,20 @@ EXTRACTOR_ENUM = {
     # derived from it stay separate claims at separate confidences.
     "based-at", "observed-at", "inducted-into", "imported-by", "exported-by", "equips",
     "supplies-component", "manufactures", "design-authority-for", "component-of", "replenishes",
+    # D12 (RK-LAYER): the customs document's own spine — event ↔ consignee / shipper — was
+    # UNREPRESENTABLE while `imported-by -> unit` (which no such document states) was easy. A schema that
+    # makes the sourced relation inexpressible and the unsourced one easy pressures extraction toward
+    # fabrication, so this edge is extractor-emittable on purpose: the fix is only half done if the
+    # extractor still cannot say the thing the document actually says.
+    "customs-party",
 }
 NON_EXTRACTOR = {
     "same-as", "distinct-from", "substitutable-by", "evidenced-by",
     "corroborates", "contradicts", "supersedes", "derived-from", "sustained-by",
+    # Layer-binding edges (A2/A4): the BUILD draws these from the layer routing at rebuild — no source
+    # asserts "this presence is an instance of that design". `operated-by` is declared so G18's
+    # relationship-conflict wall has a real predicate; it has no producer yet.
+    "instance-of", "operated-by",
 }
 
 

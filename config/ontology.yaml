@@ -5,14 +5,33 @@
 # ATTRIBUTE ENTRIES (RK-ATOMS / A7): each `attrs` item is an AttrDef MAPPING — `- {name: role}` — never a
 # bare string. The bare form was migrated away in one pass and the loader now REJECTS it, deliberately:
 # a dual-form loader biases every later implementer toward the old shape, and a "temporary" tolerance is
-# how this file would never have migrated at all. One attribute per line is the shape the next stage
-# extends: A2/RK-LAYER adds a per-attribute `layer` (design | instance) as a second key on each entry
-# (`- {name: designator, layer: instance}`), which is the straddle-split trigger. `discriminator`
-# (operator | geography | designation | time, A7) is the other declarable key; both are OPTIONAL and
-# deliberately absent everywhere below — absence reads `unknown`, never a positive claim about the
-# attribute, and neither is this stage's to populate. Identity SEMANTICS — an attribute's role
-# (identity / critical / supporting) and its per-(type, attribute) perishability — stay in
-# config/resolution.yaml's `attribute_roles`; only what is ONTOLOGICAL belongs here.
+# how this file would never have migrated at all. One attribute per line is the shape A2 extends.
+# `discriminator` (operator | geography | designation | time, A7) is the other declarable key; it is
+# OPTIONAL and deliberately absent everywhere below — absence reads `unknown`, never a positive claim
+# about the attribute. Identity SEMANTICS — an attribute's role (identity / critical / supporting) and its
+# per-(type, attribute) perishability — stay in config/resolution.yaml's `attribute_roles`; only what is
+# ONTOLOGICAL belongs here.
+#
+# LAYER (A2 / RK-LAYER / D-13.3) — every node type AND every attribute entry carries
+# `layer: design | instance`. One question decides it: *does this fact change if a different operator
+# fields the same design?* No => design (abstract, shared: a variant, a component, a maker, a place).
+# Yes => instance (concrete, operator-bound, located, timed: a presence, a formation, an import event).
+#   * Layer is a property of the TYPE, uniform, never contextual. A genuinely DUAL attribute (a design's
+#     nominal range vs a deployment's effective range) is SPLIT INTO TWO attribute types, one per layer —
+#     never tagged "depends" (D-13.3). Where the instance counterpart of a design attribute is not
+#     modelled it is simply ABSENT below; absence is a gap, not a claim that the attribute is dual.
+#   * The per-ATTRIBUTE layer is the load-bearing half: an INSTANCE-layer attribute sitting on a
+#     DESIGN-layer node type is the STRADDLE-SPLIT TRIGGER — the signal that one extracted mention lumped
+#     a design and one of its instances together (spine/13 §5.1). If attributes only inherited the host
+#     node's layer, the misplacement would be invisible.
+#   * Edge endpoint layers are NOT declared: they are derived from the endpoint node types each edge
+#     already names in `from`/`to` (EdgeLaneIndex.endpoint_layers), so a layer is authored in one place.
+#   * `meta` is the THIRD value (ruling L3). A source, an indicator, a known gap, an operator are NEITHER
+#     a design nor an instance of one; forcing them into `design` would corrupt the split trigger, which
+#     fires on a layer MISMATCH — the moment such a type carried an `instance` attribute it would generate
+#     a phantom split. `meta` says "outside the two-layer routing": never split, never materialized,
+#     never bound across. It is stated here rather than left implicit.
+# All of this is INERT unless `layer_routing.enabled` (bottom of this file) is true.
 #
 # Ratified data-agent decisions applied (tmp/conv/DATA-C-corpus-and-oracle-observations.md):
 #   - supplies-component reserved for Manufacturer->Component; the Component->Variant hero edge is `equips`.
@@ -49,63 +68,90 @@
 # share one instance and `view.supersede` can see both targets. Only `based-at` is functional today; when
 # a state edge is unsure, leave the default. Read by `EdgeLaneIndex.instance_key` and built into the key
 # by `EdgeLaneIndex.edge_instance_key`, used by BOTH producers (resolve.entities.base_ref and the
-# view.pipeline fallback) so they can never disagree. SUB-SCOPE LIMITATION: `based-at` is truly single-
-# valued per (unit, site_TYPE) — a unit at a garrison AND a forward field site at once is two valid
-# instances, not a supersede. Subject-only keying is correct while the corpus has no such simultaneous
-# pair (the relocation beat is one unit, one site_type: Rawalpindi->Rahwali); tagging the key by site_type
-# is a Tier-4 refinement to land when the derivation stamps site_type (see the xfail in test_supersede).
+# view.pipeline fallback) so they can never disagree.
+#
+# `instance_key_tag` (R1.3 / C1, RK-LAYER) CLOSES the old sub-scope limitation. `based-at` is single-valued
+# per (unit, site_TYPE), not per unit: a unit at a garrison AND concurrently at a forward field site is TWO
+# VALID BASINGS, not a relocation. The previous subject-only key rested on "the corpus has no such
+# simultaneous pair", which is a corpus fact standing in for a design — forbidden. `instance_key_tag` names
+# a node ATTRIBUTE on the endpoint the key drops (here the site's `site_type`) whose NORMALISED CLASS tags
+# the bucket, so `edge:<unit>:based-at:garrison` and `edge:<unit>:based-at:dispersal_site` are different
+# instances and only a genuine same-class change is a supersede. Read via `EdgeLaneIndex.instance_key_tag`
+# and applied only when layer_routing is enabled (flag-off keys are byte-unchanged).
+#   THE RAW STATED STRING IS NEVER THE KEY (ruling L1). `site_type` is free text and its stated values
+#   conflate four concepts, so a raw-string key would both fail to wall a real conflict and silently kill a
+#   real relocation. The key is the normalised class from the closed vocabulary in `layer_routing` below,
+#   and an unmappable value takes the THIRD STATE declared there: no de-confliction, no fusion, named gap.
+#
+# `requires_stated_endpoints` (D12) names endpoints that must have been STATED by a source — an endpoint
+# the build had to MATERIALIZE (no entity-form claim ever declared it) does not satisfy it, and the edge is
+# withheld with a named gap instead of asserting a relation no document states.
 
 node_types:
   - name: manufacturer
     freshness_class: durable
+    layer: design               # a maker is the same maker whoever buys from it
     attrs:
-      - {name: role}
-      - {name: tier}
-      - {name: foreign_control}
-      - {name: named_examples}
-      - {name: production_rate}
-      - {name: export_agent}
-      - {name: place_ref}
+      - {name: role, layer: design}
+      - {name: tier, layer: design}
+      - {name: foreign_control, layer: design}
+      - {name: named_examples, layer: design}
+      - {name: production_rate, layer: design}
+      - {name: export_agent, layer: design}
+      - {name: place_ref, layer: design}
   - name: trading_org           # ING-3: generic trading / intermediary / freight org (a customs consignee /
     freshness_class: durable    # shipper / export-agent shell) — NOT an OEM. `manufacturer` is reserved for real makers.
+    layer: design               # an org, like a maker — not an instance of a design
     attrs:
-      - {name: role}
-      - {name: origin_country}
-      - {name: foreign_control}
-      - {name: place_ref}
+      - {name: role, layer: design}
+      - {name: origin_country, layer: design}
+      - {name: foreign_control, layer: design}
+      - {name: place_ref, layer: design}
   - name: component
     freshness_class: durable
+    layer: design
     # functional_role identifiers: acquisition | battle_management | engagement_fire_control | interceptor
+    # instance_split: a component mention carrying an INSTANCE attribute (an operator) is a lumped mention;
+    # the instance half becomes a provisional PRESENCE linked back to the shared design by `instance-of`.
+    instance_split: {node_type: presence, link: instance-of}
     attrs:
-      - {name: component_class}
-      - {name: functional_role}
-      - {name: model_designation}
-      - {name: radar_band}
-      - {name: host_chassis}
-      - {name: observable_fingerprint}
-      - {name: foreign_control}
+      - {name: component_class, layer: design}
+      - {name: functional_role, layer: design}
+      - {name: model_designation, layer: design}
+      - {name: radar_band, layer: design}
+      - {name: host_chassis, layer: design}
+      - {name: observable_fingerprint, layer: design}
+      - {name: foreign_control, layer: design}   # who controls the tech, a property of the design lineage
   - name: variant
     freshness_class: durable
+    layer: design
     # family retained as an attr (e.g. "HQ-9"); operator_branch replaces the old `branch`.
+    # `operator_branch` is the canonical straddle case of spine/13 §5.1: an operator is an INSTANCE fact
+    # riding on a DESIGN node. See `instance_split` above/below for what the build does with it.
+    instance_split: {node_type: presence, link: instance-of}
     attrs:
-      - {name: family}
-      - {name: base_designator}
-      - {name: export_designator}
-      - {name: aliases}
-      - {name: range_class}
-      - {name: range_km}
-      - {name: operator_branch}
-      - {name: associated_rounds}
-      - {name: associated_radars}
+      - {name: family, layer: design}
+      - {name: base_designator, layer: design}
+      - {name: export_designator, layer: design}
+      - {name: aliases, layer: design}
+      - {name: range_class, layer: design}       # NOMINAL — the design's advertised class
+      - {name: range_km, layer: design}          # NOMINAL. The instance counterpart (a deployment's
+                                                 # EFFECTIVE range) is a separate attribute type by
+                                                 # D-13.3 and is deliberately NOT modelled — no query
+                                                 # needs it; absence is a gap, not a dual tag.
+      - {name: operator_branch, layer: instance} # STRADDLE TRIGGER (spine/13 §5.1)
+      - {name: associated_rounds, layer: design}
+      - {name: associated_radars, layer: design}
   - name: contract_import_event
     freshness_class: durable
+    layer: instance             # a dated transaction between named parties — operator-bound by construction
     attrs:
-      - {name: event_subtype}
-      - {name: quantity}
-      - {name: count_state}
-      - {name: variant_delivered}
-      - {name: linked_unit}
-      - {name: evidence_date}
+      - {name: event_subtype, layer: instance}
+      - {name: quantity, layer: instance}
+      - {name: count_state, layer: instance}
+      - {name: variant_delivered, layer: instance}
+      - {name: linked_unit, layer: instance}
+      - {name: evidence_date, layer: instance}
     # HARD-ATTRIBUTE RAIL (T3b-C). A bill-of-lading / contract reference IS the event's identity: the
     # d05 customs manifest carries three DISTINCT bills (KPQA-HC-2020-118834 / -118835 / -119011) that
     # the scorer was proposing as mutual merge candidates on shared-neighbourhood alone. Merging any two
@@ -116,25 +162,76 @@ node_types:
     # absence is not disagreement.
     identity:
       identifier_patterns: ['[A-Za-z0-9\[\]]+(?:[-/][A-Za-z0-9\[\]]+){2,}']
+  # THE FORMATION CITIZEN (A3 / D-13.13). `unit` IS the formation: the organizational, designation-bearing
+  # individual that persists through moves. It is minted ONLY on organizational evidence — a stated
+  # designation, an ORBAT reference, an induction/logistics document. A bare equipment sighting never
+  # forces one; reifying an organizational individual we cannot source would breach the non-negotiable.
+  # (The build never creates a `unit` node itself, which is how that gate is enforced structurally: a unit
+  # exists only because a claim named one.)
   - name: unit
     freshness_class: durable
+    layer: instance
     attrs:
-      - {name: echelon}
-      - {name: designator}
-      - {name: service_branch}
-      - {name: parent_unit}
-      - {name: equipment_fingerprint}
-      - {name: count_state}
-      - {name: home_garrison}
+      - {name: echelon, layer: instance}
+      - {name: designator, layer: instance}
+      - {name: service_branch, layer: instance}
+      - {name: parent_unit, layer: instance}
+      - {name: equipment_fingerprint, layer: instance}
+      - {name: count_state, layer: instance}
+      - {name: home_garrison, layer: instance}
+  # THE PRESENCE CITIZEN (A3 / D-13.13) — the workhorse instance: "<operator>'s <design> observed at
+  # <site> during <window>". Born from OBSERVATION evidence (imagery, a NOTAM, a geolocated photo, a
+  # sighting write-up), which is what open sources actually give you. It is the instance an `observed-at`
+  # sighting MATERIALIZES when the mention named only the design (spine/13 §5.3).
+  #   `count` is a SOURCED attribute, default UNKNOWN (absent), and is NEVER derived from how many reports
+  #   merged — k reports of one battery is not k launchers. It is populated only from a value a source
+  #   stated (see layer_routing.count_attrs).
+  - name: presence
+    freshness_class: perishable    # a presence is a dated occupancy, not a durable thing
+    layer: instance
+    attrs:
+      - {name: operator_branch, layer: instance}
+      - {name: count, layer: instance}                  # SOURCED; absent => unknown, never "= reports merged"
+      - {name: count_state, layer: instance}
+      - {name: occupancy_state, layer: instance}
+      - {name: occupancy_observed_date, layer: instance}
+      - {name: observed_window, layer: instance}
+  # THE OPERATOR — the scoping authority the instance layer is bound to ("never across operators within
+  # the instance layer", spine/13 §3). Declared as a node type so `operated-by` has a range and G18's
+  # relationship wall has a real predicate to fire on. `extractor: false` on that edge today: nothing
+  # produces an operator mention yet (the extraction schema carries the operator as a discriminator
+  # ATTRIBUTE), so this type is ontology-only until that is extended — see the RK-LAYER notes.
+  - name: operator
+    freshness_class: durable
+    layer: meta                    # L3: an operator is NEITHER a design nor an instance of one — it is the
+                                   # namespace instances are scoped TO. Tagging it `design` would put it in
+                                   # the routing path it is supposed to bound.
+    attrs:
+      - {name: country, layer: meta}
+      - {name: service_branch, layer: meta}
+      - {name: echelon, layer: meta}
+  # A PLACE is design-layer: Nur Khan is the same place whoever occupies it, so by the routing test it is
+  # shared, not operator-scoped. Its OCCUPANCY, though, is an instance fact — which makes the two
+  # occupancy attrs below genuine straddlers. No `instance_split` is declared for a site on purpose: the
+  # citizen of a site's occupancy is the PRESENCE that `observed-at` already materializes there, so
+  # splitting the site as well would mint a second, duplicate instance for the same fact. Where the
+  # occupancy attrs are present and no presence exists to carry them, the build records the unrouted
+  # straddle ON the node (`layer_straddle_unrouted`) rather than guessing a structure — visible, never
+  # silent, and never fabricated.
   - name: basing_site
     freshness_class: durable       # the site is durable; occupancy perishability lives on the based-at edge
+    layer: design
     attrs:
-      - {name: coordinates}
-      - {name: site_type}
-      - {name: site_signature_geometry}
-      - {name: occupancy_state}
-      - {name: occupancy_observed_date}
-      - {name: decoy_risk_flag}
+      - {name: coordinates, layer: design}              # a place's coordinates identify the place
+      - {name: site_type, layer: design}
+      - {name: site_signature_geometry, layer: design}
+      - {name: occupancy_state, layer: instance}        # STRADDLER — whose kit is here, when
+      - {name: occupancy_observed_date, layer: instance} # STRADDLER
+      - {name: decoy_risk_flag, layer: design}          # a durable property of the SITE ("decoys are used
+                                                        # here"), the sibling of site_signature_geometry.
+                                                        # The per-LOOK decoy flag is a claim attribute, not
+                                                        # this — which is where the derived-basing gate
+                                                        # reads it from.
   # AREA OF OPERATIONS (T3b-A) — a REFINEMENT of basing_site, not a rival of it.
   #
   # `based-at` / `observed-at` range over `basing_site`, so the extractor and RESOLVE's endpoint typing
@@ -158,12 +255,13 @@ node_types:
   # carries the bare admin polities that carry no marker at all. Extending either list is a config edit.
   - name: area_of_operations
     freshness_class: durable
+    layer: design                  # an area of responsibility is a place-kind, shared like any place
     refines: basing_site
     attrs:
-      - {name: area_kind}
-      - {name: admin_level}
-      - {name: coordinates}
-      - {name: occupancy_state}
+      - {name: area_kind, layer: design}
+      - {name: admin_level, layer: design}
+      - {name: coordinates, layer: design}
+      - {name: occupancy_state, layer: instance}   # STRADDLER, same reading as basing_site's
     identity:
       name_head_markers: [sector, belt, zone, corridor, province, region, theatre, theater]
       named_instances: ["Punjab", "Sindh", "Balochistan", "Khyber Pakhtunkhwa", "Gilgit-Baltistan",
@@ -174,53 +272,68 @@ node_types:
       # Areas can still merge/queue on name + alias evidence, which is the only honest signal for them.
       relational: false
 
+  # A holding is operator-scoped by nature ("Pakistan's interceptor stock"), so the node is instance-layer.
+  # Two of its attrs are facts about the PRODUCTION BASE rather than about this holding, so they are
+  # design-layer. A design attribute on an instance node is NOT a straddle trigger: the trigger is
+  # deliberately one-directional (instance-on-design), because that is the direction in which a lumped
+  # mention hides an un-individuated instance. The reverse merely records a shared upstream fact.
   - name: interceptor_stockpile    # SPLIT from sustainment — perishable (depth/consumption move fast)
     freshness_class: perishable
+    layer: instance
     attrs:
-      - {name: stocked_round}
-      - {name: magazine_depth}
-      - {name: consumption_rate}
-      - {name: days_of_supply}
-      - {name: resupply_lead_time}
-      - {name: production_sole_source_flag}
-      - {name: foreign_control}
+      - {name: stocked_round, layer: instance}
+      - {name: magazine_depth, layer: instance}
+      - {name: consumption_rate, layer: instance}
+      - {name: days_of_supply, layer: instance}
+      - {name: resupply_lead_time, layer: instance}
+      - {name: production_sole_source_flag, layer: design}   # a property of the production base
+      - {name: foreign_control, layer: design}                # a property of the design/tech lineage
   - name: techdata_authority       # SPLIT from sustainment — durable / force-revalidated
     freshness_class: force-revalidated
+    layer: design                  # authority over a DESIGN's technical data — shared, not operator-bound
     attrs:  # holds ∈ TDP | firmware | crypto-keys | calibration-ref
-      - {name: holds}
-      - {name: foreign_control}
+      - {name: holds, layer: design}
+      - {name: foreign_control, layer: design}
+  # SYSTEM / META KINDS (ruling L3). A source, an indicator and a known gap are things the SYSTEM keeps
+  # about the world, not things IN the two-layer world: they are neither a design nor an instance of one.
+  # `meta` keeps them out of the routing path entirely. (Tagging them `design` would have been a lie that
+  # bites: the split trigger fires on a layer mismatch, so the first `instance`-tagged attribute on one of
+  # these would have produced a phantom split.)
   - name: source
     freshness_class: n/a
+    layer: meta
     attrs:
-      - {name: source_type}
-      - {name: primary_origin_id}
-      - {name: aggregator_of}
-      - {name: bias_vector}
-      - {name: coordinated_inauthenticity_flag}
-      - {name: adversary_denial_flag}
-      - {name: reliability_grade}
-      - {name: citation_url}
+      - {name: source_type, layer: meta}
+      - {name: primary_origin_id, layer: meta}
+      - {name: aggregator_of, layer: meta}
+      - {name: bias_vector, layer: meta}
+      - {name: coordinated_inauthenticity_flag, layer: meta}
+      - {name: adversary_denial_flag, layer: meta}
+      - {name: reliability_grade, layer: meta}
+      - {name: citation_url, layer: meta}
   - name: indicator
     freshness_class: n/a
+    layer: meta
     attrs:
-      - {name: indicator_class}
-      - {name: lifecycle_stage}
-      - {name: observation_date}
-      - {name: valid_time}
-      - {name: resolved_entity_ref}
-      - {name: edge_instance_ref}
-      - {name: artifact_integrity}
-      - {name: first_seen}
-      - {name: caption_vs_image_consistency}
-      - {name: evidentiary_strength}
+      - {name: indicator_class, layer: meta}
+      - {name: lifecycle_stage, layer: meta}
+      - {name: observation_date, layer: meta}
+      - {name: valid_time, layer: meta}
+      - {name: resolved_entity_ref, layer: meta}
+      - {name: edge_instance_ref, layer: meta}
+      - {name: artifact_integrity, layer: meta}
+      - {name: first_seen, layer: meta}
+      - {name: caption_vs_image_consistency, layer: meta}
+      - {name: evidentiary_strength, layer: meta}
   - name: known_gap
     freshness_class: n/a
+    layer: meta
     # observability_ceiling ∈ confirmable | probable-max | never-observable  (HYPHENATED per frozen view.py)
     attrs:
-      - {name: observability_ceiling}
-      - {name: next_coverage_due}
-      - {name: related_ref}
-      - {name: missing_slots}
+      - {name: observability_ceiling, layer: meta}
+      - {name: next_coverage_due, layer: meta}
+      - {name: related_ref, layer: meta}
+      - {name: missing_slots, layer: meta}
 
 # Edge domain/range (D-A, DECISIONS §6 "EVAL"): every `extractor: true` edge is uniquely determined by
 # its (from -> to) node types, so a write-time re-lane (chanakya/ontology.py) puts an asserted fact on
@@ -236,10 +349,10 @@ edge_types:
   # edge_direction.py also reads these from/to for write-time direction canonicalization (both mechanisms,
   # one source of truth). manufactures is TIGHTENED to Mfr->Variant (D-A) so Mfr->Component is unambiguously
   # supplies-component; the oracle's two manufactures->component edges reconcile separately (answer_key task).
-  - {name: based-at,             from: unit,                  to: basing_site,             extractor: true, freshness_class: perishable, instance_key: [from]}    # Unit->Site (field 30d / garrison 18mo); FUNCTIONAL — key the supersede instance on the unit alone so a relocation's before/after co-locate (D-P4.4)
-  - {name: observed-at,          from: [variant, component],  to: basing_site,             extractor: true, freshness_class: perishable}                          # EQUIPMENT->Site — the OBSERVED-occupancy lane (D-P4.2): "a TEL cluster / fire unit was seen at site Y on DATE". Deliberately a SEPARATE edge from `based-at`: what a satellite frame (or a write-up reading one) can honestly state is that *equipment* is at a place, not that a *named formation* is based there. (A source that *names a formation* at a site DOES state a basing — that is a stated `based-at`, this edge's sibling, extractor-emitted; only equipment-at-site is an `observed-at`.) When the formation is unstated, attributing the observed occupancy to a unit is a derived inference (ingest/basing.py) that keeps its own, lower confidence — never fused into one flat basing assertion (the d11 recycled-image and d20 grade-E relocation-spoof traps punish exactly that fusion). NOT functional (a variant is fielded at many sites at once), so the default (from,to) instance key stands.
-  - {name: inducted-into,        from: variant,               to: unit,                    extractor: true, freshness_class: semi-durable}  # Variant->Unit
-  - {name: imported-by,          from: contract_import_event, to: unit,                    extractor: true, freshness_class: durable}       # Contract->Unit
+  - {name: based-at,             from: unit,                  to: basing_site,             extractor: true, freshness_class: perishable, instance_key: [from], instance_key_tag: site_type}    # FORMATION->Site (field 30d / garrison 18mo); FUNCTIONAL — key the supersede instance on the unit alone so a relocation's before/after co-locate (D-P4.4), TAGGED by the site's site_type so a garrison + a forward site are two valid basings rather than a manufactured relocation (R1.3/C1)
+  - {name: observed-at,          from: [variant, component],  to: basing_site,             extractor: true, freshness_class: perishable, materializes: {end: from, node_type: presence, link: instance-of}}   # EQUIPMENT->Site — the OBSERVED-occupancy lane (D-P4.2): "a TEL cluster / fire unit was seen at site Y on DATE". Deliberately a SEPARATE edge from `based-at`: what a satellite frame (or a write-up reading one) can honestly state is that *equipment* is at a place, not that a *named formation* is based there. (A source that *names a formation* at a site DOES state a basing — that is a stated `based-at`, this edge's sibling, extractor-emitted; only equipment-at-site is an `observed-at`.) When the formation is unstated, attributing the observed occupancy to a unit is a derived inference (ingest/basing.py) that keeps its own, lower confidence — never fused into one flat basing assertion (the d11 recycled-image and d20 grade-E relocation-spoof traps punish exactly that fusion). NOT functional (a variant is fielded at many sites at once), so the default (from,to) instance key stands. MATERIALIZES (A4/D-13.6, spine/13 §5.3): this edge needs an INSTANCE subject but a source states only the design ("HQ-9/P at Rahwali"), so the build must NOT point it at the shared design node — at rebuild it materializes a provisional PRESENCE as the subject and links that presence back to the design with `instance-of`. NOTE the domain deliberately still reads `[variant, component]`: per A4/D-13.6 the endpoint LAYER is static while endpoint IDENTITY is resolved at rebuild, so this declaration describes WHAT A SOURCE STATES (equipment at a place) and the presence lives in the DERIVED layer. Rewriting the domain to `presence` would make the ontology describe the build's output instead of the source's assertion. The `materializes` key is EXPLICIT, per-edge and opt-in rather than derived from the endpoint layers, because the endpoint layers cannot express the gap — the domain is design-typed while the semantics require an instance subject. Opt-in is also the fail-safe direction: an edge that declares nothing mints nothing, so no new edge type silently starts minting instances.
+  - {name: inducted-into,        from: variant,               to: unit,                    extractor: true, freshness_class: semi-durable}  # Variant->Unit — ORGANIZATIONAL evidence (the premise that earns a formation), NOT a located presence. Declares no `materializes` deliberately: "the HQ-9/P has entered service with Army Air Defence" is a holding statement about a design, not a sighting, so it mints nothing (spine/13 §5.3's contrast case).
+  - {name: imported-by,          from: contract_import_event, to: unit,                    extractor: true, freshness_class: durable, requires_stated_endpoints: [to]}       # Contract->Unit. D12: no customs/BoL document names the receiving UNIT, yet this edge was the easy one to assert while the document's actual spine (event<->consignee/shipper) was unrepresentable — a schema that makes the sourced relation inexpressible and the unsourced one easy PRESSURES EXTRACTION TOWARD FABRICATION. `customs-party` below closes the expressiveness half; `requires_stated_endpoints: [to]` closes the other half: the unit must have been STATED, never materialized from the edge itself.
   - {name: exported-by,          from: contract_import_event, to: manufacturer,            extractor: true, freshness_class: durable, supplier_end: to}    # Contract->Manufacturer/export-agent (supplier = the exporter/OEM at the `to` end)
   - {name: equips,               from: component,             to: variant,                 extractor: true, freshness_class: durable, supplier_end: from}  # Component->Variant (hero); the component is the supplier
   - {name: supplies-component,   from: manufacturer,          to: component,               extractor: true, freshness_class: durable, supplier_end: from}  # Manufacturer->Component (sole Mfr->Component edge); the maker is the supplier
@@ -247,6 +360,26 @@ edge_types:
   - {name: design-authority-for, from: techdata_authority,    to: variant,                 extractor: true, freshness_class: durable, supplier_end: from}  # techdata_authority->Variant; the authority is the supplier
   - {name: component-of,         from: component,             to: component,               extractor: true, freshness_class: durable, supplier_end: from}  # deep-tier BOM (Component->Component; sub-component is the supplier of the parent)
   - {name: replenishes,          from: contract_import_event, to: interceptor_stockpile,   extractor: true, freshness_class: perishable}    # Contract->stockpile (follow-on resupply; observable)
+  # D12 — THE CUSTOMS SPINE, made expressible. A bill-of-lading / customs manifest states its parties:
+  # a CONSIGNEE (who receives) and a SHIPPER / forwarder (who sends). Neither could be attached to the
+  # event before this edge existed, while `imported-by -> unit` (which no such document states) was easy —
+  # the anti-fabrication hazard above. ONE edge type with a `party_role` attribute rather than one edge per
+  # role, deliberately: `canonical_edge` keys on the (from -> to) type pair, so two extractor edges between
+  # the same pair would be a vocabulary COLLISION, and splitting them by writing them in opposite
+  # directions would make the model's chosen direction authoritative — a flipped write would silently turn
+  # a shipper into a consignee, which is the same class of fabrication this edge exists to remove. The role
+  # is stated verbatim by the document, so it is sourced, not inferred.
+  - {name: customs-party,        from: contract_import_event, to: trading_org,             extractor: true, freshness_class: durable, attrs: [{name: party_role, layer: instance}]}   # Contract->consignee/shipper/forwarder; party_role ∈ consignee | shipper | forwarder | notify-party (stated by the document)
+  # LAYER BINDING (A2/A4, spine/13 §3) — these link the two layers and are NEVER merged across them.
+  # Not extractor-emitted: the build draws them, from the layer routing, at rebuild.
+  - {name: instance-of,          from: presence,              to: [variant, component],    freshness_class: durable}                        # a provisional presence -> the shared design it is an instance of (the link the straddle-split and the endpoint materialization both draw)
+  # `operated-by` (D7/G18) — the STATED operator relation. It exists so G18's relationship-conflict wall has
+  # a real predicate to fire on instead of testing half of itself. NOT functional: two different operators on
+  # one instance is a wall (they are different units), never a supersede — a change of operator is not a
+  # relocation, so the default (from,to) instance key stands. NO PRODUCER YET: nothing emits an `operator`
+  # mention (the extraction schema carries the operator as a discriminator ATTRIBUTE), so this is
+  # ontology-only until the extraction contract is extended — see the RK-LAYER notes.
+  - {name: operated-by,          from: [unit, presence],      to: operator,                freshness_class: semi-durable}                   # formation/presence -> operator
   # derived / rollup — NOT extractor-emitted (synthesized by SCORE/MONITOR/RESOLVE)
   - {name: sustained-by,         from: unit,                  freshness_class: n/a}                          # object polymorphic: interceptor_stockpile | techdata_authority — rollup only (edge_direction: from-only)
   - {name: supersedes,           freshness_class: n/a, symmetric: true}                                      # derived (site relocation); never reoriented
@@ -277,3 +410,79 @@ event_types:
 # single `equips` lane. Absent on a supplier node → that edge falls back to per-edge-type counting.
 materiality:
   function_attr: functional_role
+
+# ── LAYER ROUTING (A2/A3/A4 — RK-LAYER/S2) ──────────────────────────────────────────────────────────
+# THE ONE FLAG for everything the type/instance split changes at rebuild time. `enabled: false` means the
+# build behaves exactly as it did before this stage: every declaration above is read, nothing is routed,
+# split, materialized or derived, and the view is byte-identical. `enabled: true` turns on, together:
+#   1. the STRADDLE SPLIT — a design-layer node carrying an instance-layer attribute is split into a
+#      design node + a linked provisional instance (only where the node type declares `instance_split`);
+#      where no citizen is declared the unrouted straddle is RECORDED on the node, never guessed;
+#   2. ENDPOINT MATERIALIZATION — an edge declaring `materializes` gets its instance endpoint minted
+#      (a provisional presence) instead of being pointed at the shared design node; a cross-layer holding
+#      edge that declares nothing mints nothing;
+#   3. the DERIVED BASING EDGE — `<unit, based-at, site>` is materialized IN rebuild from its two premise
+#      claim-atoms (an `observed-at` + an `inducted-into`) instead of being minted offline as an
+#      `inference` claim. Nothing is minted and nothing is appended inside rebuild (G17);
+#   4. `instance_key_tag` — the site_type-tagged supersede bucket for `based-at` (R1.3/C1);
+#   5. `requires_stated_endpoints` — an edge whose declared-stated endpoint was only materialized is
+#      withheld with a named gap (D12);
+#   6. the EARNED-IDENTITY gate on supersede promotion (R1.4, see credibility.yaml supersede_floor).
+# It is one flag on purpose: these are one change to what a node IS, and half of it would be incoherent.
+layer_routing:
+  enabled: false
+  # The instance citizen the build materializes, and the edge it is linked to its design by. Both name
+  # declarations above; nothing here is a code literal (G6).
+  presence_type: presence
+  design_link_edge: instance-of
+  # The id namespace for a materialized provisional instance. Deliberately NOT the `ent:` namespace: a
+  # provisional instance is not a claim-declared entity, and keeping it out of `ent:` means G13's
+  # no-name-as-address scan does not acquire a new offender at S4.
+  provisional_prefix: presence
+  # A materialized presence inherits any of these attributes a SOURCE STATED on the grounding observation
+  # claim. `count` is here because A3/D-13.19 make it a sourced attribute: it is populated only from a
+  # stated value and is otherwise ABSENT (= unknown). It is NEVER computed from how many claims or reports
+  # merged onto the presence — k reports of one battery is not k launchers.
+  count_attrs: [count, quantity, count_state, occupancy_state, occupancy_observed_date]
+  # `instance_key_tag`'s CLOSED VOCABULARY + normalisation (C1 inherits C7 — ruling L1).
+  #
+  # `site_type` as SOURCES STATE IT is unenumerated free text, and the stated values conflate FOUR
+  # different concepts: the kind of place ("airfield"), how we learned about it ("observed-imagery-site",
+  # "stated_destination"), the equipment at it ("HQ-9/P site"), and an area/operator class ("joint-use
+  # facility"). Keying a supersede on the RAW STRING breaks C1 in BOTH directions: two basings at the same
+  # kind of site spelled differently read as different (so the wall never fires and the over-merge C1
+  # exists to prevent is allowed), while a relocation whose two ends are described on different axes gets
+  # two different keys (so the relocation SILENTLY stops firing while the code still looks deterministic).
+  # So: the raw string is NEVER the key. The key is the normalised CLASS, from this closed list.
+  #
+  # This vocabulary is the KIND-OF-PLACE axis ONLY. Do not add values from the other three concepts — how
+  # we learned about a site belongs to provenance, what is parked there belongs to the presence, and an
+  # area-of-responsibility is a different NODE TYPE (`area_of_operations`).
+  site_type_vocabulary:
+    - garrison          # permanent home station
+    - airfield          # air base / airfield
+    - emplacement       # prepared firing position / revetment complex
+    - dispersal_site    # dispersal or alternate site
+    - depot             # storage / logistics
+    - test_range        # test or training range
+    - production_site   # factory / assembly plant
+    - command_centre    # command, control or sector-management centre
+  # Raw stated value -> vocabulary class. Casefolded + punctuation-collapsed on both sides, so only genuine
+  # synonyms need an entry. DATA owns filling this in for the values the corpus actually states (ruling L1
+  # step 4); S2 declares the slot and the fail-safe. Until it lands, unmapped values take the third state
+  # below — which is the honest behaviour, not a bug.
+  site_type_aliases: {}
+  # THE THIRD STATE (C7). A value that is ABSENT or does not map into the vocabulary must not be guessed at.
+  # It gets NO de-confliction — it collapses to `absent_bucket`, one shared bucket, because the evasion
+  # direction here is over-merge and a bucket of its own would let an unstated site_type buy a second
+  # concurrent basing for free. And it gets NO FUSION — the edge is marked ineligible for supersede
+  # nomination, so an unresolved site class can never manufacture a relocation. And it gets a NAMED GAP, so
+  # the suppressed supersede is visible to the analyst instead of silently not happening. Never one of the
+  # three without the other two.
+  absent_bucket: unknown
+  # Legacy DERIVED claim bundles this stage supersedes. The offline basing pass is deleted, so its frozen
+  # `inference` output (`*__basing.json`, marked with this `derived_layer`) is no longer evidence — it is
+  # stale derived output of a pass that no longer exists. With routing ON the build ignores those claims
+  # and derives the edge itself; with routing OFF they still load, which is what keeps flag-off
+  # byte-identical. RK-DATA removes the bundles from the corpus, after which both branches agree.
+  superseded_derived_layers: [unit-attribution]
