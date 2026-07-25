@@ -323,3 +323,31 @@ freezes the seed bundles (so KEYLESS≡LIVE holds **by construction**), and must
 floating `-latest` alias. If only the incumbent can actually be exercised, the outcome is **"the incumbent
 stays"** — a legitimate result, but **not** a three-way measurement, and the scorecard must say so rather than
 imply a comparison that never ran.
+
+---
+
+## M15 — G19's control fixture collides with G16's cap. The FIXTURE changes, not the cap.
+
+**The collision (real).** `test_g19_*_spec`'s **control** — the must-fuse mirror that proves the namespace/type
+gate is not over-blocking — is built from `shared_neighbours` over two `unit`s. But that evidence class is, by the
+test hand's own docstring, *"the co-location evidence class and nothing else"* — and **G16 forbids exactly that
+from confirming a formation merge**. So G19's control cannot fuse while G16 holds, and the two gates contend.
+
+**Ruling: the fixture is wrong, the cap is right.** The implementer kept the cap and escalated rather than
+weakening it — correct, and I want that on the record: **weakening G16 to make G19's control go green is the F8
+trap wearing G16's clothing.** A gate must never be relaxed to satisfy another gate's fixture.
+
+**The fix:** G19's control must fuse for a reason **no other gate restrains** — either a **design-layer** pair
+(G16 governs the *instance* layer, so co-location does not apply), or two units sharing a **composite
+`(service_branch, designator)`** identifier, which is a unit-level discriminator and therefore *legitimately*
+confirms under G16. Either removes the contention without touching a cap.
+
+**The general lesson, worth carrying to S4:** a gate's **control** must be built from an evidence class that no
+*other* gate restrains. Otherwise the two gates contend and the pressure lands on whichever cap is easier to
+loosen — which is precisely how a safety property gets traded away to make a test green.
+
+## M14 — third consequence, from the implementer
+
+With the flag on, the coref **producer fires**, and **32 scripted-client tests exhaust their queued responses**.
+So the keyed re-record commit must carry those **second queued responses** with it — otherwise turning the flag
+on breaks 32 tests for a reason unrelated to identity, and the noise buries whatever the re-record actually did.
