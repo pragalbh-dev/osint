@@ -142,7 +142,7 @@
         "'Compiled 04 March 2025' is provenance, not a fact about the plant.",
         "'north apron' individuates a location within the station; it is not a second station."
       ],
-      "corpus_status": "NOT EXERCISABLE as a coreference fixture. The frozen bundles carry no coreference annotation of any kind - the producer is switched off - so there is no cluster, no category and no licensing quote anywhere in the frozen data to test against, and the only route to one is a keyed re-extract. The raw PROSE shape does exist: the corpus contains a textbook long-name-plus-parenthetical apposition. That is a warning rather than a comfort, because that particular apposition is a deliberate demo beat an analyst is meant to earn, and switching the producer on would auto-bind it.",
+      "corpus_status": "NOT EXERCISABLE as a coreference fixture - the frozen bundles carry no annotation of any kind, so there is no cluster, category or quote to test against and the only route to one is a keyed re-extract. Two things about the raw prose are worth knowing, though. The corpus does contain textbook long-name-plus-parenthetical appositions - and one of them is a deliberate demo beat an analyst is meant to earn, so switching the producer on would auto-bind it. And the *cue vocabulary* this category is usually built on is largely absent: across half the corpus the phrases 'also known as', 'a.k.a.', 'i.e.', 'referred to as' and 'also designated' occur zero times. Equivalence there is carried almost entirely by parentheticals and slash-forms, so a marker vocabulary built as a list of lexical cues has little purchase on this data and the parenthetical branch carries the load.",
       "documents": [
         {
           "doc_label": "register-CC",
@@ -224,7 +224,7 @@
         "'has taken delivery of further transfer plant' states no count and no location.",
         "'are being re-cabinetted' is a works activity, not a sighting of plant at Calder on a date."
       ],
-      "corpus_status": "NOT EXERCISABLE. Needs a cluster whose quote is genuine and insufficient; there are no clusters. Note also that this defect cannot be scheduled even with a re-extract - a quote that under-licenses is a model behaviour, observable but not commandable, which is exactly why it has to be authored.",
+      "corpus_status": "NOT EXERCISABLE as a bind - but the corpus makes this fixture's *rule* far more consequential than it looks, and this is the sharpest corpus finding of the pass. The frozen data contains genuine, explicitly stated equivalences whose two surface forms are dozens of lines apart, or in two different record fields of one structured document, or where the cue names a third form on a *prior* document entirely. In those cases NO single span can contain both surface forms - so the both-forms-in-the-quote conjunct has a real FALSE-NEGATIVE class in this corpus: it will correctly withhold, and it will withhold on equivalences the document really does assert. The fixture's required outcome is still right (withhold, and let an analyst see the quote); what the corpus adds is that this path will be busy, and that the queue is therefore load-bearing rather than a rare fallback.",
       "documents": [
         {
           "doc_label": "press-DD",
@@ -301,7 +301,7 @@
         "'No markings or signage are legible' is a stated absence of identifiers - a fact worth keeping, and not a fact about either design's identity.",
         "'single pass, 0.5 m' is collection metadata."
       ],
-      "corpus_status": "NOT EXERCISABLE as a bind. The raw material for the failure is present - the corpus does enumerate two designs in one breath in several places - but the mislabelled cluster over it does not exist and cannot be produced on demand.",
+      "corpus_status": "EXERCISABLE IN KIND, and better represented than expected: the corpus contains parentheses that ENUMERATE several related marks in one breath (four marks of one family inside a single parenthesis) as well as parentheses that state a genuine equivalence. Both shapes therefore live in the frozen data, which is exactly the pair a marker vocabulary has to separate. The mislabelled cluster over the enumerating one does not exist and cannot be produced on demand.",
       "documents": [
         {
           "doc_label": "survey-EE",
@@ -824,7 +824,7 @@
         "'across the northern scheme' is an area of responsibility, not a site.",
         "'this item does not say which mark' is a stated limit of the source - keep it as a gap, not as silence."
       ],
-      "corpus_status": "EXERCISABLE IN KIND, and live in the frozen data: a base design mark and a more specific mark of which it is a prefix are the corpus's own central designator ambiguity, and the shipped containment knob states the doctrine in exactly these terms (an extra descriptive WORD describes the same thing more fully; an extra MARK is a different thing). The corpus even has the harder version - one source blurs the two marks while the answer key grades them a confirmed distinction on a hedged weaker source. What is NOT exercisable is the labelled bind: the pair never arrives as a cluster, so the gate is never offered the case.",
+      "corpus_status": "EXERCISABLE IN KIND, and abundantly - richer than the S2 pass suggested. The corpus carries several one-line prefix collisions between a shorter mark and a longer one (including a pair where the shorter is a literal prefix of the longer and the document then states their distinctness in its own voice), plus a family whose base mark, a suffixed mark and a hyphenation variant appear across documents. The shipped containment knob states the doctrine in exactly these terms. What is NOT exercisable is the labelled bind: the pair never arrives as a cluster, so the gate is never offered the case.",
       "documents": [
         {
           "doc_label": "press-LL",
@@ -907,7 +907,7 @@
       "negative_gold": [
         "'Four skids are recorded' is a sourced figure whose subject is ambiguous between the two marks - keep the figure and the ambiguity together."
       ],
-      "corpus_status": "NOT EXERCISABLE, and the highest-value authored case in this shape. The corpus contains the mark pair and contains parenthetical appositions, but never the two combined in one span - so the one input that makes the deterministic marker test pass on a wrong bind does not exist anywhere in the frozen data, and cannot be conjured without a re-extract that might or might not produce it.",
+      "corpus_status": "PARTIALLY EXERCISABLE, and the corpus is more dangerous here than I first wrote. It contains parentheticals that state a real equivalence between two marks AND a parenthetical that merely lists four marks of one family - so both the licensing and the non-licensing use of the same punctuation are live in the frozen data, and a marker vocabulary that accepts any parenthetical will bind the second kind. The specific input this fixture authors - a narrowing mark inside a parenthetical on the SUBJECT design - is not in the corpus, and cannot be conjured without a re-extract that may or may not produce it.",
       "documents": [
         {
           "doc_label": "register-LM",
@@ -1073,7 +1073,7 @@
       "negative_gold": [
         "'with effect from' marks an establishment date, not a sighting."
       ],
-      "corpus_status": "NOT EXERCISABLE. Anaphoric prose is abundant in the corpus - documents refer back to the battery, the system, the site - but the gate turns on the document's MENTION INVENTORY, which only exists once the producer runs. Nothing in the frozen data exposes one.",
+      "corpus_status": "EXERCISABLE in substance. One corpus document uses a bare definite noun phrase five times for a body named exactly once at the top, with the only nearby distractors non-coreferent by kind - the cleanest positive case for the anaphor gate anywhere in the corpus. The gate's own input (a mention inventory) still only exists once the producer runs, so the annotation half remains authored.",
       "documents": [
         {
           "doc_label": "bulletin-NN",
@@ -1156,7 +1156,7 @@
       "negative_gold": [
         "'are both re-roled' is a change of role, not a change of location for either body."
       ],
-      "corpus_status": "NOT EXERCISABLE at body level, and this is a structural limit rather than an accident: across the 52 scenario documents there is essentially one numbered body (an off-subject decoy), so two candidate bodies of one kind cannot occur in one document. The same ambiguity at design or site level is plausible in the corpus prose but was not verified per-document in this pass.",
+      "corpus_status": "EXERCISABLE at design/system level - corrected from my first assessment. One corpus document offers FOUR same-kind antecedents before a bare referring expression, and adjacency favours the WRONG one (the phrase sits immediately after a distractor and denotes something else); another has two referring expressions in a single sentence pointing at two different referents. So the ambiguity case is real and severe in the prose. It remains not exercisable at BODY level, where the corpus has one numbered body in 52 documents.",
       "documents": [
         {
           "doc_label": "bulletin-PP",
@@ -1318,7 +1318,7 @@
         "'this month' is not a date; it bounds one to the publication month at best.",
         "'two further skids' is a delivery increment, not a total holding."
       ],
-      "corpus_status": "PARTIALLY EXERCISABLE in substance. The corpus genuinely contains bodies referred to only by descriptor, and - better - it contains stated absences of identity, including one document stating the absence across its whole pass history and one stating a non-disclosure policy, so the 'this will not close' reason is real data. The single-member cluster that carries it is not.",
+      "corpus_status": "EXERCISABLE in substance, better than expected. One corpus document uses a referring expression for an organisation it never names at all, and the corpus supplies the stronger version of the fixture's second half - documents that STATE the absence of identity, including one stating it across a whole pass history and one stating a non-disclosure policy, so the 'this will not close' reason is real data rather than an authored flourish.",
       "documents": [
         {
           "doc_label": "press-RR",
@@ -1834,7 +1834,7 @@
       "negative_gold": [
         "Each bulletin is its own operator's publication; neither is evidence about the other's establishment."
       ],
-      "corpus_status": "PARTIALLY EXERCISABLE. At DESIGN level the corpus genuinely carries one designation associated with two different operators in two countries, which is this fixture's shape one layer down. At BODY level it is not exercisable: one numbered body in 52 documents, and it is a planted designator-string collision belonging to a foreign army.",
+      "corpus_status": "EXERCISABLE at design level, and richly - one designation string is attached to five different national contexts, another is fielded by three operators with three different contract values attached to what the sources all call 'the deal', and two design families each appear as a perfect two-operator/two-name square stated in a single line. At BODY level it is not exercisable: one numbered body in 52 documents, and it is a planted designator collision belonging to a foreign army.",
       "coref_clusters": [],
       "documents": [
         {
@@ -2057,7 +2057,7 @@
         "'Its plant passes to the Calder depot party' is a custody transfer, not a renaming of the section.",
         "'The title is re-raised' is an explicit statement of discontinuity - the strongest evidence in the set."
       ],
-      "corpus_status": "NOT EXERCISABLE. No disestablishment or re-raising statement exists in the corpus, and there are no body titles to carry one. Note this rung of the ladder - continuity witnessed in time - has no corpus data anywhere, in either direction.",
+      "corpus_status": "PARTIALLY EXERCISABLE - corrected. The corpus does contain a stated chain of amalgamations and redesignations of one body across decades, with the document itself saying the chain is not consistently recorded and that accounts differ on the final date. That is an unbounded alias sink: a transitive closure over 'was redesignated as' has no floor there, which is the same hazard this fixture guards from the other side. What is missing is the clean version - a stated disestablishment followed by a re-raising of the same title - and the body in question is the off-subject decoy, so nothing about the subject can be tested this way.",
       "coref_clusters": [],
       "documents": [
         {
@@ -2142,7 +2142,7 @@
       "negative_gold": [
         "The same figure of six skids appears in both documents - one figure twice, not a corroborated total of twelve."
       ],
-      "corpus_status": "EXERCISABLE, and already conceded in the shipped config: the body's branch discriminator is declared soft PRECISELY because the corpus states it unnormalised across three different forms, and the config comment says so in as many words. That is this fixture's problem sitting live in the frozen data with the workaround already applied - and the workaround is the wrong one of the three states (soft, i.e. fusable, rather than neither-wall-nor-fuse). What the corpus does not supply is a candidate merge whose two sides state two irreconcilable forms; in the corpus the forms mostly co-occur in the same documents.",
+      "corpus_status": "EXERCISABLE, on both sides of one candidate merge - a direct correction to what I first wrote. Two corpus documents place the SAME subject under two service commands whose names differ by one word, where one name is a substring of the other, both strings are registered aliases of a single entity in the shipped registry, and the answer key says only one of the two services is right. The same pair of documents disagrees on five other facts about that one designation with no cross-reference between them. The corpus adds three more hard-failure abbreviations: two that are never expanded anywhere in 52 documents, and one that is a single edit away from a different country's acronym, so a normalizer that 'corrects' it moves the entity to the wrong nation. The shipped config has already conceded the shape by declaring the discriminator soft - which is the wrong one of the three states.",
       "coref_clusters": [],
       "documents": [
         {
@@ -2294,7 +2294,7 @@
       "negative_gold": [
         "'joint directorate' names an organisational arrangement; it does not state a share of the plant."
       ],
-      "corpus_status": "EXERCISABLE IN KIND. The corpus contains a joint-use compound naming two services in one string (verified in the S2 pass, as a stated site-kind value), so the containment trap has real material - a string that literally contains one operator's name while denoting a joint arrangement.",
+      "corpus_status": "EXERCISABLE. Joint-use compounds naming two services in one string occur in the corpus (primary side only - zero in the chaff half), so the containment trap has real material. And the operator collision in F7a is a second, sharper instance of the same shape: one command name literally contains the other while denoting a different service.",
       "coref_clusters": [],
       "documents": [
         {
@@ -2507,7 +2507,7 @@
       "negative_gold": [
         "'Coordinates given to station precision' and 'Position given to apron precision' are statements about precision - they must be read, not discarded as prose."
       ],
-      "corpus_status": "LIKELY EXERCISABLE, not re-verified in this pass. The corpus was deliberately seeded with coordinates in more than one notation and with per-node-type precision classes, and the shipped ontology already comments that a place's coordinates identify the place. I did not re-check the per-document notations, so treat the two-notations-one-point pair as authored.",
+      "corpus_status": "EXERCISABLE - upgraded. The primary half of the corpus carries resolved coordinates on a double-digit number of claims across five different notations, which is precisely the reconcile-the-notation-before-comparing requirement. The chaff half carries no coordinates for any military object at all - every chaff site is a bare toponym - so geometric place resolution has no fallback there, and one chaff post says why that hurts ('which village exactly, it is a big district').",
       "coref_clusters": [],
       "documents": [
         {
@@ -2581,7 +2581,7 @@
       "negative_gold": [
         "'no coordinates recorded' is a stated absence in the register - keep it as an absence, not as a licence to infer one."
       ],
-      "corpus_status": "NOT VERIFIED, and probably absent. Places whose coordinates are missing are common in the corpus, but a single place NAME attached to two materially different stated positions is not something I confirmed, and it would most likely be read as a data error rather than as the identity trap it is.",
+      "corpus_status": "EXERCISABLE IN KIND, with a caveat I checked myself. The frozen data does contain one aerodrome identifier filed at two positions in two documents roughly 1,100 km apart - and the wrong one lands in the other of the two cities this subject's relocation question turns on. But the second document is tagged in the answer key with a code-string-noise corruption class, is marked off-subject, and is expected to yield no claim at all, so it is unclear whether the mismatch is the intended noise or an unnoticed error, and either way it cannot reach the graph through claims while that expectation holds. So: the shape is real in the source text, it is not usable as a clean test, and the residual risk belongs to any pass that reads chaff navigation-warning position fixes as place evidence. The unpositioned-namesake half is common - places with no coordinates are frequent throughout.",
       "coref_clusters": [],
       "documents": [
         {
@@ -2676,7 +2676,7 @@
         "'Each holds Vanguard-pattern plant of the TL-40 type' is a design fact about both, and evidence for neither identity.",
         "'in the northern scheme' is an area of responsibility, not a site."
       ],
-      "corpus_status": "PARTIALLY EXERCISABLE. The sourced-figure half is real - the corpus states order-of-battle figures in prose - and the destination now exists, since the shipped ontology declares the count attribute as sourced-only and explicitly never derived from how many reports merged. What is absent is the enumeration of two INDIVIDUATED bodies in one document, so the contrast channel has no corpus input.",
+      "corpus_status": "PARTIALLY EXERCISABLE, and the sourced-count half is richer than the S2 pass found: the corpus states order-of-battle figures repeatedly, including one document stating two incompatible figures for one force in four lines (a per-battery TEL count and a per-battalion range, with the two echelon words never equated), one stating a count with the unit type left as a slash-pair, one stating '3 (or possibly 4, sources vary)', and one stating a figure with two competing organising words for what the figure counts. The destination now exists too - the shipped ontology declares the count attribute sourced-only and never derived from reports merged. What is absent is the enumeration of two INDIVIDUATED bodies in one document, so the contrast channel itself has no corpus input.",
       "documents": [
         {
           "doc_label": "bulletin-AX",
@@ -2810,7 +2810,7 @@
       "negative_gold": [
         "Two operators' own bulletins are not two independent looks at one body."
       ],
-      "corpus_status": "EXERCISABLE IN KIND, and deliberately planted: the corpus carries one designator-string collision decoy - a foreign body whose title collides with subject-side strings. Being off-subject limits what it demonstrates, but it is a genuine cross-operator same-string pair and it is the one case in the corpus where this gate can bite.",
+      "corpus_status": "EXERCISABLE IN KIND, and deliberately planted - one designator-string collision decoy, a foreign body whose title collides with subject-side strings, with the answer key stating the document must not be read as being about the subject. Every discriminating signal sits outside the numeral. Being off-subject limits what it demonstrates, but it is the one place in the corpus where this gate can bite on real data.",
       "coref_clusters": [],
       "documents": [
         {
@@ -2908,7 +2908,7 @@
       "negative_gold": [
         "'Marrow Bank is also the name of the district' is the document stating a name collision - the strongest evidence in the fixture, and evidence against identity, not for it."
       ],
-      "corpus_status": "NOT VERIFIED in this pass as a three-way collision. The corpus does contain both area-class and site-class places with overlapping naming, and the ontology had to grow a refinement to keep areas out of the site lane, so the site-versus-area half of the fixture has real precedent.",
+      "corpus_status": "EXERCISABLE - corrected and stronger than I first wrote. The corpus carries two legal entities of one shipping group on a single line (a national agent and a European carrier) which must not merge; a research institute named two different ways in one parenthesis, colliding by naming pattern with a different organisation's institutes that the answer key says must stay distinct; and - the sharpest cross-boundary case in the corpus - one bare locative phrase used for sites in two different countries, in both halves of the corpus, one of them a missile-launch rumour and the other the subject's own site.",
       "documents": [
         {
           "doc_label": "register-BB",
@@ -2988,7 +2988,7 @@
       "negative_gold": [
         "'has taken over the Ashgate transfer yard' is a stated change of custody with no operator attached - keep it, unattributed."
       ],
-      "corpus_status": "NOT EXERCISABLE from corpus data, and the hazard was not found there in the first place - it came from the code and config review. The seed place gazetteer does carry real aliases (one deliberately withheld so a merge can be earned), so alias entries with content exist; I did not check whether any entry has the same string on both sides or bridges two kinds of thing. The self-referential entry in this fixture is authored to make the route testable.",
+      "corpus_status": "NOT EXERCISABLE as authored, and I checked: the seed place gazetteer holds 74 alias entries and NONE has the same string on both sides, so the self-referential entry in this fixture is invented to make the route testable. What the corpus does supply is what an ungated transitive alias route would eat: a redesignation chain the document itself says is not consistently recorded, a person-name chain of five spellings that would join a civilian import, a second civilian import and a defence consignment, and two truncated telephone numbers sharing a prefix - a false edge built from a redaction artefact.",
       "coref_clusters": [],
       "documents": [
         {
@@ -3058,7 +3058,7 @@
         "'this quarter' is not a date.",
         "'No location, holder or date of works is given' is the source stating its own limits - keep it as a gap."
       ],
-      "corpus_status": "PARTIALLY EXERCISABLE. Thin design-only mentions are real in the corpus, largely in chaff documents, and the corpus supplies something better than a thin mention - stated absences of identity, including a non-disclosure policy, which is a gap that will not close from official sources. What it does not supply is the trap at full strength: the corpus holds several presences of the subject design, so a thin mention arriving into a graph with exactly ONE candidate - the condition that makes the only-candidate fallacy irresistible - has to be authored.",
+      "corpus_status": "EXERCISABLE, strongly - upgraded. The corpus's thinnest document types its object only as 'some kind of solid-fuel job', flips its identity twice in one sentence, gives its location as two nameless definite descriptions, dates it from a recycled older image, and flips its whole class in the final line. Elsewhere the corpus has a post stating 'no date given in that post btw, no location either, just \\\"a designated site\\\"', a document with no date at all, and a commissioning event with a precise date and an undisclosed garrison. The one condition the corpus cannot supply is the fixture's sharpest edge - a thin mention arriving where exactly ONE candidate instance exists - because the corpus holds several presences of the subject design.",
       "coref_clusters": [],
       "documents": [
         {
