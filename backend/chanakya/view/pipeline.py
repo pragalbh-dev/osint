@@ -71,6 +71,7 @@ from .export import sorted_view
 from .layers import (
     RoutingOutcome,
     apply_design_citations,
+    label_provisional_instances,
     retag_instances,
     route_triple,
     split_straddlers,
@@ -492,6 +493,7 @@ def _assemble(
 
     if routing.enabled:
         apply_design_citations(nodes, outcome)
+        label_provisional_instances(nodes, outcome)
 
     # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
     for node in nodes.values():

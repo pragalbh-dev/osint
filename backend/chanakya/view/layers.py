@@ -70,6 +70,10 @@ class RoutingOutcome:
 
     #: presence node id → the design node id it is an ``instance-of``.
     materialized: dict[str, str] = field(default_factory=dict)
+    #: presence node id → the *other* endpoint of the edge that materialized it (a site), where there is
+    #: one. Kept so the derived human label can be assembled from node **names** rather than parsed back
+    #: out of the id — a label built by splitting an id is a label that breaks when the id scheme does.
+    materialized_at: dict[str, str] = field(default_factory=dict)
     #: design node id → claims that mentioned it and were routed onto a materialized instance. Re-pointing
     #: a sighting must not cost the design node its provenance: the source *did* name the design — that is
     #: how the presence came to exist — so the design keeps citing the claim, exactly as it did before
@@ -271,12 +275,39 @@ def route_triple(
         )
         nodes[pid] = node
         outcome.materialized[pid] = instance_end
+        outcome.materialized_at[pid] = other_end
     if claim.claim_id not in node.claim_ids:
         node.claim_ids.append(claim.claim_id)
     _inherit_sourced_attrs(node, claim, layers)
     _record_link(outcome, pid, instance_end, mat, claim)
     outcome.design_citations.setdefault(instance_end, set()).add(claim.claim_id)
     return (pid, obj) if mat.end == _FROM_END else (subject, pid)
+
+
+def label_provisional_instances(nodes: dict[str, NodeView], outcome: RoutingOutcome) -> None:
+    """Give every materialized instance a **derived** human label (A5: the label is derived, never minted).
+
+    A node with no name renders as its raw id, and a raw id is not something an analyst can read — which is
+    the whole complaint the display-name work already fixed once for claim-backed nodes. A provisional
+    instance has no *stated* name (no source named it; that is what makes it provisional), so its label is
+    composed from the two nodes it stands between: "<design> at <site>". Nothing is invented — both halves
+    are names an analyst can already click through to — and it is marked *provisional* so the label never
+    reads as a settled identity.
+
+    Runs after every node exists, so the site's own name (itself possibly an analyst-curated display name)
+    is available. Sorted for determinism (gate G2).
+    """
+    for pid in sorted(outcome.materialized):
+        node = nodes.get(pid)
+        if node is None or node.name:
+            continue
+        design = nodes.get(outcome.materialized[pid])
+        site = nodes.get(outcome.materialized_at.get(pid, ""))
+        design_label = (design.name if design is not None else None) or outcome.materialized[pid]
+        if site is not None:
+            node.name = f"{design_label} at {site.name or site.id} (provisional presence)"
+        else:
+            node.name = f"{design_label} (provisional instance)"
 
 
 def apply_design_citations(nodes: dict[str, NodeView], outcome: RoutingOutcome) -> None:
