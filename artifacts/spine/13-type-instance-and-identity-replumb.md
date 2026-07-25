@@ -469,8 +469,13 @@ auto-bind-threshold micro-decision, §13.)
   *comparison*; the merge is *earned*. Name-as-identity runs in **two stacked lanes** today — an exact-string
   dict-key collision at profile build **and** an exact-normalized-name auto-merge at confidence 1.0 in the
   resolver's bootstrap — so the re-key must remove **both**, not just the dict key. (Realizes D1.)
-- **D-13.2** Certainty is reserved for unique identifiers; name similarity contributes a *rarity-graded
-  score*. (Realizes D2/D3.)
+- **D-13.2** Certainty is reserved for unique identifiers; name similarity contributes a graded score.
+  **The *rarity*-grading half is DEFERRED (M8, 2026-07-25) and must not be claimed as shipped** — it has no
+  implementation and no observable contract was ever stated. Nothing depends on it: D-13.10's cap is a
+  *ceiling* (name alone never exceeds *possible*), which holds whether the name score is graded or flat, so
+  deferring costs no guard. Its contract, for whenever it is built: *all else equal, the `name` component is
+  monotonically non-increasing in the frequency of the matched tokens across the entity inventory.*
+  (Realizes D2/D3; rarity → roadmap.)
 - **D-13.3** The type/instance layer split is a first-class structural property in the ontology: node-types
   *and* attribute-types are layer-tagged; edge endpoint-layers derive from declared endpoint types. Layer is
   a property of the type (uniform); a genuinely dual attribute is split into two types.

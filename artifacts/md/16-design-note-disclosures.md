@@ -176,3 +176,15 @@ graded behaviour degrades *gracefully* would be wrong in specific, nameable ways
   queue** ("adjudicated by the machine"), and draws a relocation. This is why the re-key treats the
   co-location cap as **anti-fabrication machinery** rather than order-of-battle hygiene, and why its gate must
   assert the absence of a *drawn relocation edge* rather than merely the absence of a confirmed merge.
+
+## Identity scoring — name is capped, not rarity-graded (2026-07-25)
+
+- **A name contributes a flat, capped score — not a rarity-weighted one.** The design describes name similarity
+  as *rarity-graded* (a distinctive name counting for more than a common one), and that grading is **not built**:
+  it has no implementation, and no observable contract for it was ever stated, so it could not even be tested.
+  It is **deferred and stated rather than quietly claimed**. What *is* built is the part the safety argument
+  actually rests on — a **ceiling**: a pair agreeing on nothing but its name can never exceed the weakest
+  verdict, whatever the name's rarity. So the guard against name-as-identity holds; only the precision gain of
+  rewarding a distinctive name is outstanding. The contract is recorded so it is testable when added: all else
+  equal, the name component must be monotonically non-increasing in how often the matched tokens occur across
+  the inventory.
