@@ -1,0 +1,580 @@
+"""The per-run metrics — every scored line the scorecard prints, and the rule that a metric with no
+substrate reports *nothing* rather than a zero.
+
+:class:`MetricValue` is the load-bearing type here, and its invariant is enforced in code, not by
+convention: a metric is either ``measured`` with a number, or ``unavailable`` with a reason and
+``value=None``. There is no third state and no default. That is what stops the one failure mode this
+harness could commit by accident — a metric whose substrate has not shipped (coref binding needs S3)
+quietly scoring 0.0 for every candidate and dragging a real difference out of nothing, or scoring 1.0
+and hiding one.
+
+The metrics, and what each really measures:
+
+* **surface P/R/F1** — the matcher's alignment (see :mod:`matcher`; its leniency is the measurement).
+* **citation faithfulness** — does the claim's cited span exist, sit in bounds, and lexically contain the
+  claim's own surfaces? A *proxy* for entailment, and named as one: it asks "is the cited text about
+  this?", not "does the cited text entail this". An optional judge seam is provided for the real thing.
+* **extract-only-stated** — the fabrication line. Does the model assert surfaces that appear nowhere in
+  the document? This is the metric the project's non-negotiable rule cares about most.
+* **discriminator capture / fabrication-avoidance (A7)** — of the identity discriminators the source
+  states, how many did the model carry? And of the ones the source does *not* state, how many did it
+  correctly leave empty? The second is a fabrication measure: A7's contract is "absence means unknown,
+  never infer an operator from nationality".
+* **structured-output reliability** — did the forced tool call return, and did it stay inside the offered
+  schema?
+* **graph recall** — of the per-slice sub-oracle's nodes and edges, how many survive a rebuild of this
+  run's claims?
+* **kind tagging** — low weight, self-correcting (D-13.5), reported for completeness.
+* **coref binding** — top-weighted and **awaiting S3**: ``referent_id`` is dormant (always ``None``) until
+  RK-COREF lands. The computation is implemented and correct; availability is checked at run time.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Iterable, Mapping, Sequence
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+from rapidfuzz import fuzz
+
+from chanakya.schemas import GraphView
+
+from .gold import SubOracle
+from .matcher import MatchResult, similarity
+from .policy import MatchPolicy, Pricing
+from .recording import CallRecord
+from .surface import DISCRIMINATOR_SLOTS, SurfaceClaim, normalize_surface
+
+Status = Literal["measured", "unavailable"]
+Direction = Literal["higher_is_better", "lower_is_better"]
+
+#: The reason string the coref metric reports until RK-COREF (S3) lands. Matched on in the report so the
+#: line reads "AWAITING S3", never "0.00".
+AWAITING_S3 = (
+    "AWAITING S3 (RK-COREF): referent_id is dormant on every claim, so no system clustering exists to "
+    "score. Not a failure of any candidate and not a zero — simply not measured."
+)
+
+
+@dataclass(frozen=True)
+class MetricValue:
+    """One metric on one run: a number, or an explicit refusal to report one.
+
+    The constructor enforces the invariant. A ``measured`` metric must carry a value; an ``unavailable``
+    metric must carry ``None`` and a reason. Constructing anything else raises, so no code path can
+    accidentally publish a placeholder number.
+    """
+
+    name: str
+    value: float | None
+    status: Status
+    reason: str = ""
+    unit: str = "rate"                       # "rate" | "seconds" | "usd" | "count"
+    direction: Direction = "higher_is_better"
+    detail: dict[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if self.status == "measured" and self.value is None:
+            raise ValueError(f"metric {self.name!r}: status=measured with no value")
+        if self.status == "unavailable":
+            if self.value is not None:
+                raise ValueError(
+                    f"metric {self.name!r}: status=unavailable must carry value=None, got {self.value!r} "
+                    "— an unavailable metric may never publish a number"
+                )
+            if not self.reason:
+                raise ValueError(f"metric {self.name!r}: status=unavailable needs a reason")
+
+    @classmethod
+    def measured(cls, name: str, value: float, **kw: Any) -> MetricValue:
+        return cls(name=name, value=float(value), status="measured", **kw)
+
+    @classmethod
+    def unavailable(cls, name: str, reason: str, **kw: Any) -> MetricValue:
+        return cls(name=name, value=None, status="unavailable", reason=reason, **kw)
+
+
+def _rate(numerator: int, denominator: int, name: str, reason: str, **kw: Any) -> MetricValue:
+    """A count ratio, or an explicit unavailable when the denominator is empty (never 0/0 → 0.0)."""
+    if denominator <= 0:
+        return MetricValue.unavailable(name, reason, **kw)
+    return MetricValue.measured(name, numerator / denominator, **kw)
+
+
+# ── surface P / R / F1 ────────────────────────────────────────────────────────────────────────────
+
+def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
+    """Precision / recall / F1 from the alignment. Degenerate slices report unavailable, not 0.0."""
+    detail = {
+        "matched": len(match.pairs),
+        "gold_total": match.gold_total,
+        "extracted_total": match.extracted_total,
+        "missed_gold": [g.key for g in match.missed_gold],
+        "unmatched_extracted": [e.key for e in match.unmatched_extracted],
+        "rejections": dict(match.rejections),
+    }
+    if match.gold_total == 0:
+        reason = "the gold slice is empty — nothing to score against"
+        return {n: MetricValue.unavailable(n, reason, detail=detail)
+                for n in ("surface_precision", "surface_recall", "surface_f1")}
+    if match.extracted_total == 0:
+        # Extracting nothing is a real, scoreable outcome: recall 0, F1 0. Precision is genuinely 0/0.
+        return {
+            "surface_precision": MetricValue.unavailable(
+                "surface_precision", "the run extracted no claims — precision is 0/0, undefined",
+                detail=detail),
+            "surface_recall": MetricValue.measured("surface_recall", 0.0, detail=detail),
+            "surface_f1": MetricValue.measured("surface_f1", 0.0, detail=detail),
+        }
+    return {
+        "surface_precision": MetricValue.measured("surface_precision", match.precision, detail=detail),
+        "surface_recall": MetricValue.measured("surface_recall", match.recall, detail=detail),
+        "surface_f1": MetricValue.measured("surface_f1", match.f1, detail=detail),
+    }
+
+
+# ── grounding: citation faithfulness + extract-only-stated ────────────────────────────────────────
+
+#: A judge that answers "does this text support this claim?". ``None`` = use the lexical proxy.
+EntailmentJudge = Callable[[SurfaceClaim, str], bool]
+
+
+def _lexically_grounded(claim: SurfaceClaim, haystack: str, policy: MatchPolicy) -> bool:
+    """Every role surface must appear (fuzzily) inside ``haystack``."""
+    hay = normalize_surface(haystack)
+    if not hay:
+        return False
+    for surface in claim.role_surfaces():
+        needle = normalize_surface(surface)
+        if not needle:
+            continue
+        if float(fuzz.partial_ratio(needle, hay)) / 100.0 < policy.grounding_similarity:
+            return False
+    return True
+
+
+def _slice_spans(claim: SurfaceClaim, doc_texts: Mapping[str, str]) -> tuple[list[str], list[str]]:
+    """The cited text for each char-addressable ref → (slices, out-of-bounds ref descriptions)."""
+    slices: list[str] = []
+    out_of_bounds: list[str] = []
+    for ref in claim.refs:
+        if not ref.char_addressable or ref.file not in doc_texts:
+            continue
+        text = doc_texts[ref.file]
+        assert ref.span is not None
+        start, end = sorted(ref.span)
+        if start < 0 or end > len(text) or start >= end:
+            out_of_bounds.append(f"{ref.file}[{ref.span[0]}:{ref.span[1]}] vs len {len(text)}")
+            continue
+        slices.append(text[start:end])
+    return slices, out_of_bounds
+
+
+def citation_faithfulness(
+    claims: Sequence[SurfaceClaim], doc_texts: Mapping[str, str], policy: MatchPolicy,
+    judge: EntailmentJudge | None = None,
+) -> MetricValue:
+    """Do claims cite a real, in-bounds span whose text actually carries the claim's surfaces?
+
+    A claim with **no** provenance at all counts as unfaithful — the project treats an unsourced claim as
+    the cardinal failure, so it cannot be excluded as "not gradable".
+
+    Claims whose only refs are non-char-addressable (an image bbox/region, a PDF page, a CSV row) are
+    excluded from the denominator and **reported** in ``detail['not_char_addressable']``. Counting them
+    as passes would launder the imagery lane; counting them as failures would punish a model for the
+    locator shape our own pipeline chose.
+    """
+    graded = 0
+    faithful = 0
+    unsourced: list[str] = []
+    oob: list[str] = []
+    not_addressable: list[str] = []
+
+    for claim in claims:
+        if not claim.refs:
+            unsourced.append(claim.key)
+            graded += 1
+            continue
+        slices, bad = _slice_spans(claim, doc_texts)
+        if bad:
+            oob.append(f"{claim.key}: {'; '.join(bad)}")
+        if not slices:
+            if bad:
+                graded += 1  # it cited a span; the span does not exist. That is a failure, not an excuse.
+            else:
+                not_addressable.append(claim.key)
+            continue
+        graded += 1
+        cited = "\n".join(slices)
+        ok = judge(claim, cited) if judge is not None else _lexically_grounded(claim, cited, policy)
+        if ok:
+            faithful += 1
+
+    detail = {
+        "graded": graded,
+        "faithful": faithful,
+        "unsourced": unsourced,
+        "span_out_of_bounds": oob,
+        "not_char_addressable": not_addressable,
+        "method": "entailment-judge" if judge is not None else "lexical proxy (span contains the surfaces)",
+    }
+    return _rate(
+        faithful, graded, "citation_faithfulness",
+        "no claim carried a char-addressable citation, so faithfulness could not be checked",
+        detail=detail,
+    )
+
+
+def extract_only_stated(
+    claims: Sequence[SurfaceClaim], doc_texts: Mapping[str, str], policy: MatchPolicy,
+) -> MetricValue:
+    """The fabrication line: does the model assert surfaces the document does not contain anywhere?
+
+    Weaker than faithfulness on purpose — it does not care *where* in the document the support is, only
+    that it exists. A claim that fails this is not a mis-cited claim; it is an invented one.
+
+    Image-derived claims cannot be checked against text and are excluded from the denominator and
+    reported. That exclusion is the honest limit of this metric, and the VLM lane is exactly where
+    fabrication risk is highest — so the count is surfaced, never buried.
+    """
+    graded = 0
+    supported = 0
+    unsupported: list[str] = []
+    ungradable: list[str] = []
+
+    for claim in claims:
+        texts = [doc_texts[ref.file] for ref in claim.refs if ref.file in doc_texts]
+        if not texts:
+            ungradable.append(claim.key)
+            continue
+        graded += 1
+        if _lexically_grounded(claim, "\n".join(texts), policy):
+            supported += 1
+        else:
+            unsupported.append(claim.key)
+
+    detail = {
+        "graded": graded,
+        "supported": supported,
+        "unsupported": unsupported,
+        "ungradable_no_text_source": ungradable,
+    }
+    return _rate(
+        supported, graded, "extract_only_stated",
+        "no claim could be checked against document text (all sources were non-text)",
+        detail=detail,
+    )
+
+
+# ── structured output / tool-call reliability ─────────────────────────────────────────────────────
+
+def structured_output_reliability(calls: Sequence[CallRecord]) -> MetricValue:
+    """Fraction of forced tool calls that returned, and returned inside the offered schema."""
+    total = len(calls)
+    failed = [c for c in calls if not c.ok]
+    invented = {c.tool_name: list(c.invented_fields()) for c in calls if c.ok and c.invented_fields()}
+    clean = sum(1 for c in calls if c.ok and not c.invented_fields())
+    detail = {
+        "calls": total,
+        "failed": [c.error for c in failed],
+        "invented_top_level_fields": invented,
+        "clean": clean,
+    }
+    return _rate(clean, total, "structured_output_reliability",
+                 "no extraction call was made", detail=detail)
+
+
+# ── A7 discriminators ─────────────────────────────────────────────────────────────────────────────
+
+def _walk_mentions(node: Any) -> Iterable[dict[str, Any]]:
+    """Every named mention dict in a raw tool payload — anything with a non-empty string ``name``.
+
+    Generic on purpose: the extraction schemas differ per source format (prose, notice, tender, imagery,
+    …) and a per-format walker would silently skip whichever format the candidate happened to be given.
+    """
+    if isinstance(node, dict):
+        name = node.get("name")
+        if isinstance(name, str) and name.strip():
+            yield node
+        for value in node.values():
+            yield from _walk_mentions(value)
+    elif isinstance(node, list):
+        for item in node:
+            yield from _walk_mentions(item)
+
+
+def _mention_context(mention: Mapping[str, Any]) -> dict[str, str | None]:
+    ctx = mention.get("context")
+    if not isinstance(ctx, Mapping):
+        return {slot: None for slot in DISCRIMINATOR_SLOTS}
+    out: dict[str, str | None] = {}
+    for slot in DISCRIMINATOR_SLOTS:
+        value = ctx.get(slot)
+        out[slot] = str(value) if isinstance(value, str) and value.strip() else None
+    return out
+
+
+@dataclass(frozen=True)
+class DiscriminatorTally:
+    captured: int = 0            # source states it, model carried it (value agrees)
+    wrong: int = 0               # source states it, model filled something else
+    missed: int = 0              # source states it, model left it empty
+    fabricated: int = 0          # source does NOT state it, model filled it anyway
+    correct_abstention: int = 0  # source does NOT state it, model left it empty
+    ungradable_mentions: int = 0  # model mentions that aligned to no gold entity claim
+
+    @property
+    def stated_total(self) -> int:
+        return self.captured + self.wrong + self.missed
+
+    @property
+    def absent_total(self) -> int:
+        return self.fabricated + self.correct_abstention
+
+
+def tally_discriminators(
+    payloads: Sequence[Mapping[str, Any]], gold: Sequence[SurfaceClaim], policy: MatchPolicy,
+) -> DiscriminatorTally:
+    """Align raw-payload mentions to gold entity claims by name, then grade the four A7 slots.
+
+    Graded on the **raw tool payload**, not on ``ClaimRecord``: ``MentionContext`` is populated by the
+    model but consumed by nothing downstream until S3, so the finished claim never carries it. The raw
+    payload is the only place the model's discriminator behaviour is visible at all.
+    """
+    gold_entities = [g for g in gold if g.form == "entity"]
+    mentions = [m for payload in payloads for m in _walk_mentions(payload)]
+
+    # Greedy one-to-one name alignment, deterministic on (-score, gold key, mention index).
+    scored: list[tuple[float, str, int]] = []
+    for g in gold_entities:
+        for i, m in enumerate(mentions):
+            s = similarity(g.roles.get("name"), str(m.get("name")), policy)
+            if s >= policy.role_min_similarity:
+                scored.append((s, g.key, i))
+    scored.sort(key=lambda row: (-row[0], row[1], row[2]))
+
+    used_gold: set[str] = set()
+    used_mention: set[int] = set()
+    aligned: list[tuple[SurfaceClaim, Mapping[str, Any]]] = []
+    by_key = {g.key: g for g in gold_entities}
+    for _, gold_key, idx in scored:
+        if gold_key in used_gold or idx in used_mention:
+            continue
+        used_gold.add(gold_key)
+        used_mention.add(idx)
+        aligned.append((by_key[gold_key], mentions[idx]))
+
+    captured = wrong = missed = fabricated = abstained = 0
+    for g, mention in aligned:
+        got = _mention_context(mention)
+        for slot in DISCRIMINATOR_SLOTS:
+            expected = g.discriminators.get(slot)
+            actual = got.get(slot)
+            if expected is not None:
+                if actual is None:
+                    missed += 1
+                elif similarity(expected, actual, policy) >= policy.role_min_similarity:
+                    captured += 1
+                else:
+                    wrong += 1
+            else:
+                if actual is None:
+                    abstained += 1
+                else:
+                    fabricated += 1
+
+    return DiscriminatorTally(
+        captured=captured, wrong=wrong, missed=missed, fabricated=fabricated,
+        correct_abstention=abstained, ungradable_mentions=len(mentions) - len(used_mention),
+    )
+
+
+def discriminator_metrics(tally: DiscriminatorTally) -> dict[str, MetricValue]:
+    """Capture rate (of stated discriminators) and fabrication-avoidance (of unstated ones)."""
+    detail = {
+        "captured": tally.captured, "wrong": tally.wrong, "missed": tally.missed,
+        "fabricated": tally.fabricated, "correct_abstention": tally.correct_abstention,
+        "ungradable_mentions": tally.ungradable_mentions,
+    }
+    return {
+        "discriminator_capture": _rate(
+            tally.captured, tally.stated_total, "discriminator_capture",
+            "the gold slice labels no stated discriminators, so capture cannot be measured",
+            detail=detail,
+        ),
+        "discriminator_fabrication_avoidance": _rate(
+            tally.correct_abstention, tally.absent_total, "discriminator_fabrication_avoidance",
+            "the gold slice labels no ABSENT discriminators, so abstention cannot be measured",
+            detail=detail,
+        ),
+    }
+
+
+# ── coref binding (AWAITING S3) ───────────────────────────────────────────────────────────────────
+
+def coref_binding(match: MatchResult) -> MetricValue:
+    """B-cubed F1 of the system's document-local coref clusters against the gold's — **awaiting S3**.
+
+    The metric is fully defined and implemented: over the aligned (gold, extracted) pairs, each item's
+    B-cubed precision is |same system cluster ∧ same gold cluster| / |same system cluster|, its recall the
+    same over the gold cluster, and the metric is the F1 of their means. What is missing is the
+    *substrate*: ``ClaimRecord.referent_id`` is dormant until RK-COREF (S3) mints referent ids, so there
+    is no system clustering to compare. Until then this returns ``unavailable`` with :data:`AWAITING_S3`.
+
+    It deliberately does **not** fall back to "every claim is its own cluster", which would score a real
+    number (and a flattering one for a model that never co-refers) off a capability nobody has built.
+    """
+    graded = [p for p in match.pairs if p.gold.coref_cluster is not None]
+    if not graded:
+        return MetricValue.unavailable(
+            "coref_binding",
+            "the gold slice carries no coref_cluster labels, so binding cannot be scored",
+        )
+    if not any(p.extracted.referent_id for p in graded):
+        return MetricValue.unavailable("coref_binding", AWAITING_S3)
+
+    items = [(p.gold.coref_cluster, p.extracted.referent_id) for p in graded]
+    precisions: list[float] = []
+    recalls: list[float] = []
+    for gold_c, sys_c in items:
+        same_sys = [g for g, s in items if s == sys_c]
+        same_gold = [s for g, s in items if g == gold_c]
+        precisions.append(sum(1 for g in same_sys if g == gold_c) / len(same_sys))
+        recalls.append(sum(1 for s in same_gold if s == sys_c) / len(same_gold))
+    p = sum(precisions) / len(precisions)
+    r = sum(recalls) / len(recalls)
+    f1 = 2 * p * r / (p + r) if (p + r) else 0.0
+    return MetricValue.measured(
+        "coref_binding", f1, detail={"bcubed_precision": p, "bcubed_recall": r, "graded": len(graded)}
+    )
+
+
+# ── kind tagging ──────────────────────────────────────────────────────────────────────────────────
+
+def kind_tagging(match: MatchResult) -> MetricValue:
+    """Accuracy of the claim ``kind`` on aligned pairs where the gold labels one (low weight, D-13.5)."""
+    graded = [p for p in match.pairs if p.gold.kind]
+    correct = sum(1 for p in graded if p.gold.kind == p.extracted.kind)
+    return _rate(correct, len(graded), "kind_tagging",
+                 "the gold slice labels no claim kinds", detail={"graded": len(graded)})
+
+
+# ── graph recall vs the per-slice sub-oracle ──────────────────────────────────────────────────────
+
+def graph_recall(view: GraphView, oracle: SubOracle, policy: MatchPolicy) -> dict[str, MetricValue]:
+    """Node / edge / combined recall of the rebuilt view against the per-slice sub-oracle.
+
+    Nodes align on ontology type + fuzzy name (ids are re-minted every extraction, so an id comparison
+    would measure our id derivation, not the model). Edges are credited only when both endpoints aligned
+    **and the direction matches**; a reversed edge is counted separately in ``detail`` and credited to
+    nobody — canonical direction is a pipeline invariant, and silently accepting either way round would
+    hide a real extraction defect.
+    """
+    scored: list[tuple[float, str, str]] = []
+    view_nodes = {n.id: n for n in view.nodes}
+    for onode in oracle.nodes:
+        for vnode in view.nodes:
+            if normalize_surface(onode.type) != normalize_surface(vnode.type):
+                continue
+            s = similarity(onode.name, vnode.name, policy)
+            if s >= policy.role_min_similarity:
+                scored.append((s, onode.key, vnode.id))
+    scored.sort(key=lambda row: (-row[0], row[1], row[2]))
+
+    matched_node: dict[str, str] = {}
+    used_view: set[str] = set()
+    for _, okey, vid in scored:
+        if okey in matched_node or vid in used_view:
+            continue
+        matched_node[okey] = vid
+        used_view.add(vid)
+
+    edges_by_type: dict[str, list[tuple[str, str]]] = {}
+    for e in view.edges:
+        edges_by_type.setdefault(normalize_surface(e.type), []).append((e.source, e.target))
+
+    matched_edges = 0
+    reversed_only: list[str] = []
+    missing_edges: list[str] = []
+    for oedge in oracle.edges:
+        src = matched_node.get(oedge.source.key)
+        tgt = matched_node.get(oedge.target.key)
+        pairs = edges_by_type.get(normalize_surface(oedge.type), [])
+        if src and tgt and (src, tgt) in pairs:
+            matched_edges += 1
+        elif src and tgt and (tgt, src) in pairs:
+            reversed_only.append(oedge.key)
+            missing_edges.append(oedge.key)
+        else:
+            missing_edges.append(oedge.key)
+
+    detail = {
+        "oracle_nodes": len(oracle.nodes),
+        "matched_nodes": len(matched_node),
+        "missing_nodes": [n.key for n in oracle.nodes if n.key not in matched_node],
+        "oracle_edges": len(oracle.edges),
+        "matched_edges": matched_edges,
+        "reversed_direction_not_credited": reversed_only,
+        "missing_edges": missing_edges,
+        "view_nodes": len(view_nodes),
+        "view_edges": len(view.edges),
+    }
+    total = len(oracle.nodes) + len(oracle.edges)
+    return {
+        "graph_node_recall": _rate(len(matched_node), len(oracle.nodes), "graph_node_recall",
+                                   "the sub-oracle declares no nodes", detail=detail),
+        "graph_edge_recall": _rate(matched_edges, len(oracle.edges), "graph_edge_recall",
+                                   "the sub-oracle declares no edges", detail=detail),
+        "graph_recall": _rate(len(matched_node) + matched_edges, total, "graph_recall",
+                              "the sub-oracle is empty", detail=detail),
+    }
+
+
+# ── cost + latency ────────────────────────────────────────────────────────────────────────────────
+
+def latency_metric(total_latency_s: float, calls: int) -> MetricValue:
+    """Total wall time across the run's extraction calls (lower is better)."""
+    if calls <= 0:
+        return MetricValue.unavailable("latency_s", "no extraction call was made",
+                                       unit="seconds", direction="lower_is_better")
+    return MetricValue.measured("latency_s", total_latency_s, unit="seconds",
+                                direction="lower_is_better", detail={"calls": calls})
+
+
+def cost_metric(usage: Mapping[str, int] | None, pricing: Pricing | None) -> MetricValue:
+    """Run cost in USD — ``unavailable`` unless BOTH real usage and real prices exist.
+
+    Never estimates. A cost line invented from a guessed price is a fabricated benchmark number, and this
+    harness holds itself to the rule it exists to enforce.
+    """
+    if pricing is None:
+        return MetricValue.unavailable(
+            "cost_usd", "UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml",
+            unit="usd", direction="lower_is_better")
+    if not usage:
+        return MetricValue.unavailable(
+            "cost_usd", "the provider reported no token usage for this run",
+            unit="usd", direction="lower_is_better")
+    cost = (usage.get("input_tokens", 0) / 1e6) * pricing.input_per_mtok + (
+        usage.get("output_tokens", 0) / 1e6) * pricing.output_per_mtok
+    return MetricValue.measured("cost_usd", cost, unit="usd", direction="lower_is_better",
+                                detail=dict(usage))
+
+
+__all__ = [
+    "AWAITING_S3",
+    "DiscriminatorTally",
+    "EntailmentJudge",
+    "MetricValue",
+    "citation_faithfulness",
+    "coref_binding",
+    "cost_metric",
+    "discriminator_metrics",
+    "extract_only_stated",
+    "graph_recall",
+    "kind_tagging",
+    "latency_metric",
+    "structured_output_reliability",
+    "surface_metrics",
+    "tally_discriminators",
+]
