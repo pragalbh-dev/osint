@@ -53,15 +53,33 @@ def _cfg(**kw):
     )
 
 
+#: Sentinel for "state one identical site class at both ends" — the DEFAULT, deliberately.
+#:
+#: The site-class pair is a **three-way discriminator** (absent / same / different), so a fixture that leaves it
+#: absent lands in L1's third state by construction: held, gap-named, nothing promoted. An earlier version of
+#: this file defaulted to absent, which made the *earned-promotion mirror* unpassable — it was asserting "this
+#: relocation must promote" over an input that (correctly) forbids promotion. The rule this bakes in, and it
+#: generalises to S3: **when a mechanism has a three-way outcome, a mirror must state the discriminating input
+#: explicitly**, or it silently tests the wrong branch. So the default here is the branch that *is* a
+#: relocation, and ``None`` must now be passed on purpose.
+SAME_CLASS = "<same-class>"
+
+
 def _relocation(
-    *, rival: bool = False, site_types: tuple[str, str] | None = None,
+    *, rival: bool = False, site_types: tuple[str, str] | None | str = SAME_CLASS,
     names: tuple[str, str] = ("Alpha Cantonment", "Bravo Forward Site"),
 ) -> list:
     """One unit, two dated basings at two different sites — the relocation shape, in the abstract.
 
+    ``site_types`` is the discriminating input: :data:`SAME_CLASS` (default) states one identical class at both
+    ends — a genuine relocation; a 2-tuple states whatever you pass; ``None`` states nothing at all, which is
+    L1's third state (*we do not know the class*).
+
     ``rival`` adds a second, name-similar unit mention that lands as a **candidate** merge (probable, not
     fused): the subject's identity is then an open question the analyst has been handed.
     """
+    if site_types == SAME_CLASS:
+        site_types = rk.same_class_pair()
     attrs_a = dict(_A) | ({"site_type": site_types[0]} if site_types else {})
     attrs_b = dict(_B) | ({"site_type": site_types[1]} if site_types else {})
     claims = [
@@ -121,13 +139,20 @@ def test_a_relocation_over_an_unquestioned_identity_is_still_promoted() -> None:
 
     Without this test the refusals below could be satisfied by disabling supersession altogether, which
     would delete the relocation beat instead of protecting it.
+
+    **Both discriminating inputs are stated explicitly**, because two separate three-way mechanisms decide
+    this outcome and a mirror that leaves either implicit tests the wrong branch: the identity is
+    uncontested (no rival mention ⇒ no open ``candidate``), and the two sites share **one** site class
+    (:data:`SAME_CLASS`) so C1 reads them as one position over time rather than two concurrent basings.
     """
-    view = rk.build_view(_cfg(), _relocation())
+    view = rk.build_view(_cfg(), _relocation(site_types=rk.same_class_pair()))
     edges = _basings(view)
 
     assert set(edges) == {SITE_A, SITE_B}, f"fixture broken: basings are {sorted(edges)}"
     assert edges[SITE_A].superseded_by == edges[SITE_B].id, (
-        "the earned relocation was not promoted — the supersede beat must survive R1.4's guard"
+        "the earned relocation was not promoted — the supersede beat must survive R1.4's guard. Both sites "
+        f"state the same class ({rk.same_class_pair()[0]!r}) and nothing contests the subject's identity, so "
+        "neither C1's de-confliction nor R1.4's guard has anything to withhold here"
     )
     assert _drawn(view), "no node→node `supersedes` edge was drawn for the earned relocation (D-P4.11)"
     assert not _candidate_identity_edges(view, UNIT), (
@@ -397,8 +422,10 @@ def test_an_absent_site_type_lands_in_the_same_third_state_as_an_unmappable_one(
 
     The one-bucket half is the over-merge safety property; the no-fusion half is what stops the machine
     adjudicating a relocation between two sites whose kind it cannot even name.
+
+    ``site_types=None`` is passed **explicitly** — this is the one place absence is the thing under test.
     """
-    view = rk.build_view(_cfg(), _relocation())
+    view = rk.build_view(_cfg(), _relocation(site_types=None))
     edges = _basings(view)
     older, newer = edges[SITE_A], edges[SITE_B]
 
@@ -493,6 +520,53 @@ def test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown() ->
     )
 
 
+# ── the whole three-way outcome, in one place ───────────────────────────────────────────────────
+
+def test_the_site_class_pair_decides_the_relocation_three_ways() -> None:
+    """C1/R1.3 + L1 have **three** outcomes, and all three are asserted together so none can drift.
+
+    Verified by the orchestrator against the implementation (2026-07-25), holding everything else constant:
+
+    | ``site_type`` pair | outcome |
+    |---|---|
+    | absent / unmappable | **held** — L1's third state: no de-confliction, no fusion, a named gap |
+    | **same class both ends** | **promotes** — a genuine relocation |
+    | different classes | **no relocation** — two concurrently valid basings (C1) |
+
+    The middle row is the one that makes C1 *precision* rather than mere refusal, and the row a broad
+    over-correction silently loses: a guard that simply stopped promoting would satisfy rows 1 and 3 and look
+    safe. This test is the single place that reads the whole table, so tightening one row cannot quietly break
+    another.
+    """
+    same = rk.same_class_pair()
+    different = _vocabulary_pair()
+    outcomes = {}
+    for label, site_types in (("absent", None), ("same", same), ("different", different)):
+        view = rk.build_view(_cfg(), _relocation(site_types=site_types))
+        edges = _basings(view)
+        outcomes[label] = (
+            edges[SITE_A].superseded_by,
+            bool(_drawn(view)),
+            edges[SITE_A].edge_instance == edges[SITE_B].edge_instance,
+        )
+
+    absent, promoted, differing = outcomes["absent"], outcomes["same"], outcomes["different"]
+
+    assert absent == (None, False, True), (
+        f"absent site classes did not land in the third state: {absent} (want no retirement, no drawn edge, "
+        f"one shared instance) — L1 rule 3. Measured table: {outcomes}"
+    )
+    assert promoted[0] is not None and promoted[1], (
+        f"one identical site class at both ends did not promote: {promoted} — that is a genuine relocation, "
+        "and C1 exists to de-conflict *differing* classes, not to disable supersession. This is the row a "
+        f"broad guard loses. Measured table: {outcomes}"
+    )
+    assert differing == (None, False, False), (
+        f"two different site classes were not read as two concurrently valid basings: {differing} (want no "
+        f"retirement, no drawn edge, two separate instances) — C1/R1.3. Measured table: {outcomes}"
+    )
+
+
 # ── §7 RK-LAYER 5: the co_instances relocation/relational mitigation must survive the re-key ────
 
 def _colocated_pair(site_types: tuple[str, str] | None) -> list:
@@ -516,10 +590,7 @@ def test_the_two_ends_of_a_relocation_never_become_merge_candidates(same_class: 
     Parametrized over both site-class shapes, because the re-key is exactly what splits the instance in the
     differing-class case: the mitigation has to survive *both*, or C1's fix buys a new over-merge.
     """
-    if same_class:
-        site_types = None if not rk.site_type_vocabulary() else (_vocabulary_pair()[0],) * 2
-    else:
-        site_types = _vocabulary_pair() if rk.site_type_vocabulary() else ("garrison", "forward")
+    site_types = rk.same_class_pair() if same_class else _vocabulary_pair()
 
     view = rk.build_view(_cfg(), _colocated_pair(site_types))
     sites = {n.id for n in rk.nodes_of(view, "basing_site")}

@@ -235,6 +235,46 @@ def site_type_mapping() -> dict[str, str]:
     return out
 
 
+#: A plausible *kind of place*, used only while no vocabulary is declared. Stating **one identical string at
+#: both ends** is a well-defined input either way — nothing can de-conflict two equal values — so the
+#: same-class fixture stays meaningful before and after the vocabulary lands. The *differing*-class fixture has
+#: no such fallback and must read the declared vocabulary.
+_FALLBACK_CLASS = "garrison"
+
+
+def same_class_pair() -> tuple[str, str]:
+    """One declared site class, stated at **both** ends — the "this really is a relocation" input.
+
+    C1/R1.3's middle case, and the discriminating input a mirror must state explicitly: same class ⇒ the two
+    basings are one position over time ⇒ the relocation is real and must promote.
+    """
+    vocab = site_type_vocabulary()
+    term = next(iter(vocab.values()))[0] if vocab else _FALLBACK_CLASS
+    return (str(term), str(term))
+
+
+def legal_layer_values() -> set[str]:
+    """``{design, instance}`` plus whatever **single** third value the shipped config declares (**L3**).
+
+    L3: "give ``layer`` a third value (or an explicit exemption) for kinds that are neither … **State the
+    third value in config; do not leave it implicit.**" Discovered rather than hardcoded, so a rename of the
+    meta value does not fail a test that is really about *classification*; that there is at most **one** extra
+    value is asserted separately.
+    """
+    declared: set[str] = set()
+    for typedef in shipped_ontology().node_types:
+        try:
+            declared.add(str(declared_layer(typedef, what=typedef.name)))
+        except AssertionError:
+            continue
+    for _owner, entry in declared_attr_entries():
+        try:
+            declared.add(str(declared_layer(entry, what=str(entry.get("name")))))
+        except AssertionError:
+            continue
+    return set(LAYERS) | {v for v in declared if v not in LAYERS}
+
+
 def classify_site_type(stated: Any) -> str | None:
     """The declared class a stated ``site_type`` resolves to, or ``None`` when it cannot be classified.
 

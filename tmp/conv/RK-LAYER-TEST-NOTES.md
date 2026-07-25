@@ -4,14 +4,66 @@
 `plan/sessions/RK-LAYER.md` · `spine/13` §3a/§5 + D-13.3/5/6/13/14 · `tmp/conv/rk-spike-verified-defects.md`
 D1/D2/D12 · `tmp/conv/rk-spike-DECISIONS.md` C1/C2 · `tmp/conv/RK-LAYER-RULINGS.md` L1–L4).
 The implementation branch (`s2/rk-impl`), the impl worktree, `RK-LAYER-IMPL-NOTES.md` and the data branch
-(`s2/rk-data`) were **not** read. Base: `design/resolution-redesign` @ `a3d68b4`.
+(`s2/rk-data`) were **not** read. Base: `design/resolution-redesign` @ `5f6ca9a` (which does **not** yet contain `s2/rk-impl`).
 
-**Suite state.** Baseline before these tests: `1094 passed, 7 skipped, 2 xfailed`.
-After: **`39 failed, 1126 passed, 7 skipped, 2 xfailed`** — 32 new passing (regression guards + mirrors +
-negative controls), **39 new failing** (the S2 behaviour that does not exist yet). No pre-existing test
-changed or broke. `ruff check` clean.
+**Suite state on this base** (which does **not** contain `s2/rk-impl`): baseline before these tests
+`1094 passed, 7 skipped, 2 xfailed`; after, **`43 failed, 1125 passed, 7 skipped, 2 xfailed`** — the passing
+ones are regression guards, mirrors, premise checks and negative controls; the failing ones are the S2
+behaviour absent from this base. No pre-existing test changed or broke. `ruff check` clean.
 
-**Four coordinator rulings folded in (2026-07-25), after the first pass:**
+**Against the implementation** (`s2/rk-impl`, run by the orchestrator): **1173 passed, 7 failed** — all 7 in
+these files, all 7 the test hand's fault, all 7 fixed below.
+
+---
+
+## Integration round (2026-07-25) — the 7 failures, and what changed
+
+The orchestrator diagnosed each failure against the code: **the implementation was correct in all seven.**
+Triage: `tmp/conv/RK-LAYER-INTEGRATION-TRIAGE.md`.
+
+**A. Two were a stale spec count; now count-independent (2).**
+`…_declares_the_stated_type_and_attribute_counts` and `…_every_attribute_entry_declares_a_layer` faithfully
+asserted the session file's "13 node types / 81 attribute entries" — a surface the orchestrator's own later
+rulings (**L2**'s presence type, **L4**'s count attribute) told the implementer to *grow*. Measured after S2:
+**15 types / 90 entries, every one tagged**, values `design | instance | meta`. The count is now unpinned in
+the session file; the first test became `test_the_layer_tagging_covers_the_whole_declared_surface` — **every**
+type and **every** entry classified with a legal value, vocabulary closed at one third value, totals
+*reported* rather than asserted. `legal_layer_values()` **discovers** the third value instead of hardcoding
+`meta`, so the attribute test no longer rejects the exact tagging L3 requires.
+
+**B. One was a ruling I predate; now asserted on behaviour (1).**
+`test_the_basing_derived_bundle_suffix_is_gone` demanded the glob be removed *unconditionally* — which, as the
+implementer correctly objected, **is** the flag-off byte-identity break. Ruled: flag-gate it. Replaced by two
+behavioural tests over a self-written temp bundle dir (flag on ⇒ the frozen `d99__basing.json` is **not**
+seeded; flag off ⇒ it **is**), plus one asserting the suffix is config-declared. Behaviour rather than a module
+constant is the durable form: it survives RK-DATA finally deleting the bundles, and it holds the mirror, so
+over-reaching the fix fails too. The config-declared check needed tightening as well — matching any
+list-of-strings containing "basing" hit `basing_site` in blocking keys and passed for the wrong reason.
+
+**C. Four were one fixture omission — and this is the interesting one (4).** `_relocation()` defaulted
+`site_types=None` while `fixture_config` defaults `flag_on=True`, so under the ruling *absent ≡ unmappable ≡
+third state* every fixture it built landed in the third state **by construction**. The earned-promotion mirror
+was therefore asserting "this must promote" over an input that correctly forbids promotion — unpassable — and
+my own two pins ("held while classes unknown" and "earned relocation still promoted") could not both hold.
+Verified by the orchestrator holding all else constant: absent ⇒ held; **same class both ends ⇒ promotes**;
+different classes ⇒ two concurrently valid basings. The implementation gets all three right.
+
+Fixed by making the discriminating input explicit: `_relocation()` now defaults to **`SAME_CLASS`** (one
+identical class at both ends — a genuine relocation), and `None` must be passed deliberately, which only the
+absent-value third-state test now does. **The rule this bakes in, and it generalises to S3: when a mechanism
+has a three-way outcome, a mirror must state the discriminating input explicitly, or it silently tests the
+wrong branch.** Added `test_the_site_class_pair_decides_the_relocation_three_ways`, which reads the whole table
+in one place — including the middle row (**same class ⇒ promotes**) that makes C1 *precision* rather than mere
+refusal, and that a broad over-correction silently loses while still looking safe.
+
+Every changed test was re-verified to still **fail on this base for its intended reason** (no layer tags / no
+declared vocabulary / no flag) — never on a stale count or a false positive. The differing-class arm of the
+`co_instances` guard now fails here too, deliberately: it requires the *declared* vocabulary, and its earlier
+literal fallback let it pass without one.
+
+---
+
+**Four coordinator rulings folded in earlier the same day, after the first pass:**
 
 1. **The baseline discrepancy is resolved — two valid surfaces exist and neither number was wrong.** The
    **booted app** (160 / 73 / 18 gaps / 450 claims, hash `22d668a3…dac3a9`) deliberately withholds
@@ -77,7 +129,7 @@ the shipped `credibility.yaml` so no fixture can pass or fail on a mis-guessed k
 
 | test | asserts | spec | today |
 |---|---|---|---|
-| `test_the_shipped_ontology_still_declares_the_stated_type_and_attribute_counts` | 13 node types, 81 attribute entries — the denominators A2 is measured against, read from the YAML | session item 1: "(81 attribute entries, 13 node types) … this **adds one key per entry**, nothing is restructured" | **PASSES** (a deliberate denominator guard: dropping an entry to shrink the tagging job must fail) |
+| `test_the_layer_tagging_covers_the_whole_declared_surface` | **every** node type and **every** attribute entry classified with a legal value; the vocabulary closed at one third value; totals reported, never asserted | session item 1 as corrected: "**Do NOT pin a frozen type/attribute count** … The durable, count-independent assertion is: **every node type and every attribute entry is classified with a legal value, and no entry claims two layers**" | **FAILS**: `layer classification is incomplete: 0/13 node types and 0/81 attribute entries carry a legal value` (replaces the pinned-count test that failed a *correct* implementation at 15/90) |
 | `test_every_node_type_is_classified` | every type carries a tag; a third value is allowed but only **one**; an untagged type is allowed only for L3's meta kinds | A2 + **L3** "give `layer` a third value (or an explicit exemption) … **State the third value in config**" | **FAILS**: `node type(s) carry no layer tag and are not one of L3's meta kinds: ['basing_site', 'component', 'contract_import_event', 'interceptor_stockpile', 'manufacturer', 'trading_org', 'unit', 'variant']` |
 | `test_the_meta_kinds_are_not_forced_into_design_or_instance` | `source`/`indicator`/`known_gap` are **not** design or instance | **L3** "Forcing a meta type into `design` or `instance` would corrupt the straddle-split trigger … a mis-tagged meta type would generate phantom splits" | **PASSES vacuously today** (nothing is tagged) — it is the clause that bites if a migration tags all 13 `design`; guarded by the row above failing |
 | `test_the_types_whose_layer_the_design_fixes_are_tagged_accordingly` | variant/component/manufacturer ⇒ design; `unit` ⇒ instance | spine/13 §3 "Type / design layer — variant, component, radar, manufacturer"; **L2** "`unit` is the **formation** citizen" | **FAILS**: `layer tags contradict the design: {'variant': None, 'component': None, 'manufacturer': None, 'unit': None}` |
@@ -122,7 +174,8 @@ the shipped `credibility.yaml` so no fixture can pass or fail on a mis-guessed k
 `test_rebuild_materializes_the_derived_basing_edge` · `…_cites_both_premise_claim_atoms` ·
 `…_is_weaker_than_a_stated_one` · `test_the_derivation_appends_nothing_to_the_evidence_log` ·
 `test_two_rebuilds_of_the_derived_basing_are_byte_identical` · `test_the_offline_minting_pass_no_longer_mints`
-· `test_the_basing_derived_bundle_suffix_is_gone`.
+· `test_the_derived_basing_bundle_is_skipped_with_the_flag_on` (+ `…_still_loads_with_the_flag_off`, which
+**passes** — the mirror that stops the glob fix over-reaching — and `…_suffix_is_config_declared`).
 
 Verbatim signatures (representative):
 - `rebuild() materialized no 'based-at' edge from the derivation triangle … Edges built: [('inducted-into', 'hq9p', 'unit_8ad'), ('observed-at', 'hq9p', 'site_rahwali')]`
@@ -262,5 +315,8 @@ Ordered by how likely each is to cause an implementer/test disagreement.
   flag-off "2 xfailed" baseline holds. If the re-key ever splits on absence, that test XPASSes and — being
   strict — turns red. I did not touch it (not mine to edit); flagging it so nobody reads it as a new
   regression.
+- **`tests/gates/test_g15_presence_not_fused.py` was an add/add conflict** — both hands wrote that gate.
+  Resolved at integration by **keeping both**: the implementer's at the canonical name, this one at
+  `…_spec.py`. Two independent takes on one gate are coverage, not duplication.
 - **File ownership.** All new files are prefixed `test_rk_layer_*` / `test_g15_*` / `test_g17_*` /
   `test_s2_*` plus `tests/_rk_layer.py`, so the impl hand's own tests under `tests/view/**` cannot collide.

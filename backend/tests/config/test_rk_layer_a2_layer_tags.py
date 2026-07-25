@@ -32,27 +32,48 @@ import pytest
 from chanakya.ontology import EdgeLaneIndex
 from tests import _rk_layer as rk
 
-#: The session file states both totals outright — "81 attribute entries, 13 node types" (item 1). They are
-#: asserted as well as re-derived from the file so a migration that *drops* an entry to make the tagging
-#: job smaller cannot pass either.
-DECLARED_NODE_TYPES = 13
-DECLARED_ATTR_ENTRIES = 81
-
-
 # ── the node-type half ──────────────────────────────────────────────────────────────────────────
 
-def test_the_shipped_ontology_still_declares_the_stated_type_and_attribute_counts() -> None:
-    """The denominators A2 is measured against. A dropped entry must fail, not shrink the job."""
+def test_the_layer_tagging_covers_the_whole_declared_surface() -> None:
+    """The **count-independent** completeness assertion, per the session file as corrected 2026-07-25:
+
+        "**Do NOT pin a frozen type/attribute count** (corrected 2026-07-25): this stage is *supposed* to grow
+        the surface — **L2** adds an instance-layer *presence* type and **L4** a numeric equipment-count
+        attribute — so a pinned count is a tripwire pointed at ourselves. The durable, count-independent
+        assertion is: **every node type and every attribute entry is classified with a legal value, and no
+        entry claims two layers** (D-13.3's split rule)."
+
+    An earlier version of this test pinned 13 / 81 and failed against a *correct* implementation that had grown
+    the surface to 15 / 90 — exactly what L2 and L4 told it to do. The measured totals are still **reported**,
+    because a reader wants the denominator, but nothing asserts them.
+    """
     ontology = rk.shipped_ontology()
     entries = rk.declared_attr_entries()
+    measured = f"{len(ontology.node_types)} node types / {len(entries)} attribute entries"
 
-    assert len(ontology.node_types) == DECLARED_NODE_TYPES, (
-        f"config/ontology.yaml declares {len(ontology.node_types)} node types; session item 1 says 13 — "
-        "A2 adds one key per entry and restructures nothing"
+    assert ontology.node_types and entries, (
+        f"the shipped ontology declares no types or no attribute entries ({measured}) — A2 has nothing to tag"
     )
-    assert len(entries) == DECLARED_ATTR_ENTRIES, (
-        f"config/ontology.yaml declares {len(entries)} attribute entries; session item 1 says 81 — "
-        "A2 adds one key per entry and restructures nothing"
+    legal = rk.legal_layer_values()
+    extra = sorted(legal - set(rk.LAYERS))
+    assert len(extra) <= 1, (
+        f"the layer vocabulary is open-ended: {extra} beyond (design | instance), measured over {measured} — "
+        "L3 allows a THIRD value, not one word per meta kind, and 'State the third value in config'"
+    )
+
+    def classified(subject, what: str) -> bool:
+        try:
+            return str(rk.declared_layer(subject, what=what)) in legal
+        except AssertionError:
+            return False
+
+    types_ok = sum(classified(t, t.name) for t in ontology.node_types)
+    attrs_ok = sum(classified(e, f"{owner}.{e.get('name')}") for owner, e in entries)
+
+    assert (types_ok, attrs_ok) == (len(ontology.node_types), len(entries)), (
+        f"layer classification is incomplete: {types_ok}/{len(ontology.node_types)} node types and "
+        f"{attrs_ok}/{len(entries)} attribute entries carry a legal value from {sorted(legal)} — the durable "
+        "assertion is coverage of the whole declared surface, whatever its size"
     )
 
 
@@ -145,7 +166,15 @@ def test_both_layers_are_actually_used() -> None:
 # ── the attribute half (the non-obvious piece, per A2) ──────────────────────────────────────────
 
 def test_every_attribute_entry_declares_a_layer() -> None:
-    """A2: "… **and** every ``attribute_type`` in ``config/ontology.yaml`` gains a ``layer`` tag"."""
+    """A2: "… **and** every ``attribute_type`` in ``config/ontology.yaml`` gains a ``layer`` tag".
+
+    **Count-independent** (session file, corrected 2026-07-25): *every* entry must be classified, however many
+    there are, with a value from the legal set — which per **L3** is ``design | instance`` plus the one third
+    value the config declares for the kinds that are neither. An earlier version of this test hardcoded
+    ``{design, instance}`` and would have failed a correct implementation the moment it tagged
+    ``source``/``indicator``/``known_gap`` the way L3 requires.
+    """
+    legal = rk.legal_layer_values()
     untagged: list[str] = []
     bad_value: dict[str, object] = {}
     for owner, entry in rk.declared_attr_entries():
@@ -155,17 +184,18 @@ def test_every_attribute_entry_declares_a_layer() -> None:
         except AssertionError:
             untagged.append(where)
             continue
-        if str(layer) not in rk.LAYERS:
+        if str(layer) not in legal:
             bad_value[where] = layer
 
+    total = len(rk.declared_attr_entries())
     assert not untagged, (
-        f"{len(untagged)} of {DECLARED_ATTR_ENTRIES} attribute entries carry no layer tag: "
+        f"{len(untagged)} of {total} attribute entries carry no layer tag: "
         f"{untagged[:12]}{' …' if len(untagged) > 12 else ''} — A2 tags EVERY attribute_type, and the "
         "per-attribute layer is the piece the straddle-split trigger reads (§7 RK-LAYER 2)"
     )
     assert not bad_value, (
-        f"attribute entries declare a layer outside (design | instance): {bad_value} — A2 fixes the "
-        "vocabulary; 'unknown'/'both'/'contextual' is expressly not one of the two values"
+        f"attribute entries declare a layer outside the legal set {sorted(legal)}: {bad_value} — A2 fixes the "
+        "vocabulary; 'unknown'/'both'/'contextual' is expressly not one of the values"
     )
 
 

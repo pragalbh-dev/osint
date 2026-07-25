@@ -176,17 +176,123 @@ def test_the_offline_minting_pass_no_longer_mints() -> None:
     )
 
 
-def test_the_basing_derived_bundle_suffix_is_gone() -> None:
-    """§7 RK-LAYER 4: "the **``__basing.json`` derived-claim bundles cease to exist**: the seed loader's
-    ``_DERIVED_BUNDLE_SUFFIXES`` glob and the ``pending.py`` references that ride them **drop with the
-    deleted pass**"."""
-    from chanakya.ingest import seed
+#: A frozen derived-basing bundle, of the shape the deleted offline pass used to freeze.
+_FROZEN_BASING_BUNDLE = "d99__basing.json"
+_FROZEN_DOC_BUNDLE = "d99.json"
 
-    suffixes = tuple(getattr(seed, "_DERIVED_BUNDLE_SUFFIXES", ()))
-    offenders = [s for s in suffixes if "basing" in s]
 
-    assert not offenders, (
-        f"the seed loader still globs derived basing bundles {offenders} — with the pass deleted, such a "
-        "bundle would replay a frozen inference the rebuild now derives, so the same attribution would "
-        "arrive twice and the frozen copy would never age or re-derive (§7 RK-LAYER 4)"
+def _write_bundles(root) -> None:
+    """One ordinary bundle plus one frozen ``__basing.json`` inference beside it."""
+    import json
+
+    ordinary = rk.rel_claim("c-obs", DESIGN, "observed-at", SITE, iso="2025-03-29")
+    derived = rk.rel_claim(
+        "c-frozen-basing", UNIT, BASING, SITE, iso="2025-03-29", kind="inference",
+        premises=["c-obs", "c-ind"], attributes={"derived_via": "observed-at+inducted-into"},
+    )
+    (root / _FROZEN_DOC_BUNDLE).write_text(
+        json.dumps([ordinary.model_dump(mode="json")]), encoding="utf-8")
+    (root / _FROZEN_BASING_BUNDLE).write_text(
+        json.dumps([derived.model_dump(mode="json")]), encoding="utf-8")
+
+
+class _Collector:
+    """The minimal ``SupportsAppendMany`` the seed loader writes into."""
+
+    def __init__(self) -> None:
+        self.claim_ids: list[str] = []
+
+    def append_many(self, records) -> None:
+        self.claim_ids.extend(r.claim_id for r in records)
+
+
+def _seed(root, config) -> _Collector:
+    """Run the seed loader, threading ``config`` through whichever keyword it accepts.
+
+    The flag has to reach the glob somehow and the spec does not fix the parameter's name, so it is
+    discovered. A loader that accepts no config at all cannot be flag-gated — reported as the failure it is.
+    """
+    import inspect
+
+    from chanakya.ingest.seed import seed_store_from_bundles
+
+    sink = _Collector()
+    params = inspect.signature(seed_store_from_bundles).parameters
+    for name in ("config", "config_bundle", "bundle", "cfg", "configuration"):
+        if name in params:
+            seed_store_from_bundles(sink, root, **{name: config})
+            return sink
+    seed_store_from_bundles(sink, root)
+    return sink
+
+
+def test_the_derived_basing_bundle_is_skipped_with_the_flag_on(tmp_path) -> None:
+    """§7 RK-LAYER 4 as **ruled 2026-07-25** (reconciling both hands): "**Flag-gate the glob** … flag **on** ⇒
+    the glob is **skipped**, so a frozen bundle cannot replay an inference the rebuild now derives (the same
+    attribution would arrive twice and the frozen copy would never age or re-derive). The bundles themselves
+    still die with RK-DATA."
+
+    Asserted on the loader's **behaviour**, not on the absence of a module constant: the constant is an
+    implementation detail, while "does a frozen derived attribution still enter the log?" is the property —
+    and the behavioural form survives RK-DATA finally deleting the bundles, because this fixture writes its
+    own. (The earlier version of this test asserted the constant was gone *unconditionally*, which would have
+    demanded the very flag-off byte-identity break the implementer was right to refuse.)
+    """
+    _write_bundles(tmp_path)
+
+    loaded = _seed(tmp_path, rk.fixture_config(flag_on=True))
+
+    assert "c-obs" in loaded.claim_ids, (
+        f"the ordinary bundle was not seeded at all ({loaded.claim_ids}) — the fixture is broken, not the code"
+    )
+    assert "c-frozen-basing" not in loaded.claim_ids, (
+        f"with the flag ON the frozen {_FROZEN_BASING_BUNDLE} was still seeded ({loaded.claim_ids}) — the "
+        "rebuild now derives that attribution itself, so seeding the frozen copy makes the same attribution "
+        f"arrive twice and the frozen one never ages or re-derives. {rk.flag_report()}"
+    )
+
+
+def test_the_derived_basing_bundle_still_loads_with_the_flag_off(tmp_path) -> None:
+    """The other half of the same ruling: "flag **off** ⇒ the glob stays, so flag-off byte-identity holds".
+
+    The mirror matters as much as the skip: dropping the glob unconditionally *is* the flag-off byte-identity
+    break, so this is the assertion that stops the fix over-reaching.
+    """
+    _write_bundles(tmp_path)
+
+    loaded = _seed(tmp_path, rk.fixture_config(flag_on=False))
+
+    assert "c-frozen-basing" in loaded.claim_ids, (
+        f"with the flag OFF the frozen {_FROZEN_BASING_BUNDLE} was skipped ({loaded.claim_ids}) — the bundles "
+        "die with RK-DATA, not here; skipping them now breaks S2's own safety property"
+    )
+
+
+def test_the_superseded_bundle_suffix_is_config_declared() -> None:
+    """G6: which frozen bundles the rebuild has taken over is a statement about *data*, so it belongs in
+    config rather than a code literal — and an analyst should be able to see the list.
+
+    Discovered by **value**, not by key name, so a rename cannot fail a test that is really about the suffix
+    being declared at all.
+    """
+    declared: dict[str, list[str]] = {}
+
+    def walk(prefix: str, value) -> None:
+        if isinstance(value, dict):
+            for key, sub in value.items():
+                walk(f"{prefix}.{key}" if prefix else str(key), sub)
+        elif isinstance(value, (list, tuple)) and value and all(isinstance(v, str) for v in value):
+            # A *bundle suffix*, not merely a string mentioning basing: `basing_site` appears in blocking
+            # keys and trace lanes throughout the config, and matching those would pass this test for the
+            # wrong reason (it did, on first run).
+            if any("basing" in v and (v.endswith(".json") or "__" in v) for v in value):
+                declared[prefix] = list(value)
+
+    walk("", rk.shipped_bundle().model_dump())
+
+    assert declared, (
+        "no config surface declares the derived-bundle SUFFIX the flag gates (searched every list-of-strings "
+        "for one naming a basing *bundle* — `…__basing.json`-shaped, not merely the string 'basing_site') — "
+        "the flag-gated glob should read a config-declared list so the takeover is auditable and hot-editable "
+        "(G6: no magic strings in code)"
     )
