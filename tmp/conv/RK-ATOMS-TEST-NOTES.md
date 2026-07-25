@@ -36,6 +36,74 @@ xfail**, and **37 pass** as regression guards. `1063 − 37 = 1026` — **no pre
 
 ---
 
+## Amendment, 2026-07-25 — the "no backward compatibility" ruling
+
+Rebased onto `design/resolution-redesign` @ `d7e443c` (my suite merged at `9f070a6`, the implementation at
+`114a0f6`, plus `ab1b705` which amended my G17 file to exempt the id-defining module from the mint-site
+rule). **Against that merged base my whole suite passed — including the two tests that accepted the
+bare-string `attrs` form.** That is what the ruling withdraws: the shipped S1 loader is a **dual-form**
+loader, exactly the "temporary tolerance" the ruling forbids.
+
+**Revised state after the ruling: `3 failed, 1091 passed, 7 skipped, 2 xfailed in 31.40s`.** The three
+failures are precisely the inverted/new assertions, and no other test in the suite moved.
+
+### What changed in the suite
+
+| Test | Change | Now |
+|---|---|---|
+| `test_typedef_still_accepts_the_old_bare_string_attrs_form` | **inverted and renamed** → `test_a_bare_string_attr_entry_is_rejected` — a bare string must **raise** | **FAILS-NOW** |
+| `test_mixed_bare_and_structured_entries_in_one_type_still_read` | **inverted and renamed** → `test_a_mixed_bare_and_structured_attrs_list_is_rejected` — a half-migrated type must **raise** | **FAILS-NOW** |
+| `test_attribute_names_read_the_same_from_either_form` | **deleted** — there is only one form now; the surviving `test_typedef_accepts_structured_attr_entries` covers it | — |
+| `test_a_structured_attr_entry_tolerates_an_unfamiliar_key` | **deleted** — it asserted tolerance *via* `layer`, and the ruling forbids asserting anything about `layer` at S1 (see silence **S-6**) | — |
+| `test_the_repo_ontology_config_still_loads_after_the_restructure` | **replaced** by the three migration-net tests below | — |
+| `test_the_repo_ontology_config_loads_under_the_structured_only_schema` | **new** — no bare string may survive in the shipped `config/ontology.yaml` | **FAILS-NOW** |
+| `test_the_loader_round_trips_the_shipped_attribute_names_name_for_name` | **new** — loaded model == what the file declares, per type, in order (catches a loader that drops/reorders/renames on parse) | GUARD |
+| `test_the_structured_migration_loses_no_declared_attribute` | **new** — the frozen pre-migration vocabulary must survive in full (catches a *botched migration*: a dropped or renamed attribute) | GUARD |
+
+`tests/_rk_atoms.py` gains `raw_attr_name()` (reads a **raw YAML** entry, tolerant of either shape, for the
+round-trip test) and its `attr_names()` docstring now states that the bare-string branch is a legacy-input
+name extractor and **never** the form validator — otherwise the round-trip test would fail for the wrong
+reason. No other test of mine leaned on the bare form (verified by grep across all six files).
+
+### Verbatim signatures after the ruling
+
+```
+tests/schemas/test_a7_discriminators.py:167: in test_a_bare_string_attr_entry_is_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/schemas/test_a7_discriminators.py:177: in test_a_mixed_bare_and_structured_attrs_list_is_rejected
+    with pytest.raises(ValueError):
+E   Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/schemas/test_a7_discriminators.py:255: AssertionError: config/ontology.yaml still declares 81
+bare-string attrs entries (first few: ['manufacturer.role', 'manufacturer.tier',
+'manufacturer.foreign_control', 'manufacturer.named_examples', 'manufacturer.production_rate']) — the bare
+form is removed, not tolerated (ruling 2026-07-25)
+```
+
+`DID NOT RAISE` is the proof asked for: the two inverted tests are being run **against a loader that still
+coerces bare strings**, so they are genuinely testing the removal, not describing it.
+
+### Facts the implementer of the removal needs
+
+* **The migration is confined to one file.** `config/ontology.yaml` — **13 types, 81 bare-string entries**
+  (`manufacturer` 7, `trading_org` 4, `component` 7, `variant` 9, `contract_import_event` 6, `unit` 7,
+  `basing_site` 6, `area_of_operations` 4, `interceptor_stockpile` 7, `techdata_authority` 2, `source` 8,
+  `indicator` 10, `known_gap` 4). The other two configs that grep for `attrs:` — `subjects.yaml`
+  (`materiality_attrs`) and `credibility.yaml` (`gated_attrs`, `fingerprint_attrs`) — are **unrelated keys
+  in other sections**, not `TypeDef.attrs`.
+* **Nothing else constructs a `TypeDef`.** The only `TypeDef(` in `chanakya/**` is the class definition, and
+  no test or fixture builds one with bare attrs (verified by grep over `tests/**`).
+* **The golden view is safe.** `backend/tests/fixtures/golden/config/ontology.yaml` declares **no `attrs` at
+  all** (`- {name: unit, freshness_class: durable}`), so the structured-only migration cannot move the
+  golden view — S1's byte-identical invariant and the md5 pin are unaffected.
+* The frozen pre-migration vocabulary now lives as `PRE_MIGRATION_ATTRS` in
+  `tests/schemas/test_a7_discriminators.py`, captured from `d7e443c`. It is a **subset** check, so DATA-C
+  may add attributes freely; only a loss or a rename fails.
+
+---
+
 ## Per test
 
 Legend: **FAILS-NOW** = the spec's behaviour is absent from the current code, so the test proves it can
@@ -125,7 +193,11 @@ pre-existing latent nondeterminism in `dedup_within_doc` for every field outside
 harmless because `assign_claim_ids` overwrites `claim_id` deterministically afterwards. The referent would
 inherit it. **Flagged for the orchestrator.**
 
-### `tests/schemas/test_a7_discriminators.py` — scope item 4 (5 FAILS-NOW + 18 guards)
+### `tests/schemas/test_a7_discriminators.py` — scope item 4
+
+> **Superseded in part by the 2026-07-25 ruling** — read the "Amendment" section above for the current
+> table of this file's `attrs` tests. The discriminator half (below) is unchanged; the `TypeDef.attrs`
+> rows marked with the old "accepts both forms" framing are the ones the ruling inverted.
 
 Spec lines (plan §4 A7 / spine/13 §10 / session file item 4):
 
@@ -285,14 +357,21 @@ must not blank the referent, and it must not rewrite the referent into a **claim
 keys happen to include the referent's own value (namespaces must not cross). Any richer reconciliation the
 implementation adds is compatible with both.
 
-**S-6 — the structured-attrs entry shape is under-specified beyond "S2 adds `layer`".** The session file
-fixes only the *seam* (ontological facts on the entry; identity semantics stay in
-`config/resolution.yaml`'s `attribute_roles`). It does not say whether the entry is a model or a dict,
-whether the name key is `name`, or whether a bare string must keep working forever. I asserted: the
-attribute **name is recoverable** from either form, mixed forms in one type both read, and an unfamiliar key
-(S2's `layer`) is tolerated rather than rejected. I did **not** assert any field beyond the name, so S2
-remains free.
+**S-6 — the structured-attrs entry shape is under-specified beyond the name.** *(Rewritten after the
+2026-07-25 ruling — the compatibility half of this silence is now closed.)* **Closed:** the bare-string form
+is illegal, so "must a bare string keep working?" is answered — no. **Still open:** whether the entry is a
+model or a mapping, and whether the name key is spelled `name`. Handled by discovery (`attr_names`'s
+accessor-then-`name` ladder). I assert **only** the attribute name — no other field — so S2 stays free.
+
+**Withdrawn by the ruling, with one residual risk to note.** My `..._tolerates_an_unfamiliar_key` test is
+deleted because the ruling forbids asserting anything about `layer` at S1. It had a second purpose the
+deletion loses: it protected the S1→S2 seam ("design the entry so **S2 adds a field** and nothing else is
+reshaped"). I judged the risk small — adding a field to a pydantic model *is* "S2 adds a field", and a
+strict entry that rejects unknown keys is now the more consistent design under "one form only, loud errors"
+— but it is no longer covered by a test, so **S2 owns it**. Flagged rather than smuggled back in.
 
 **Not a silence, but worth stating:** `TypeDef.attrs` has **no code consumer today** — nothing in
-`chanakya/**` reads it (verified). It is declarative only. So the restructure cannot be validated through
-behaviour; the loader-level assertions above are the whole of what is checkable at S1.
+`chanakya/**` reads it (verified; the only `TypeDef(` is the class definition). It is declarative only. So
+the restructure cannot be validated through behaviour; the loader-level and file-level assertions above are
+the whole of what is checkable at S1 — which is exactly why the migration net (round-trip + no-loss) is the
+part that earns its keep.

@@ -297,13 +297,15 @@ corpus (working-principles #1). The distinction is real but easy to cargo-cult f
   *cannot* fire on it — but inert-because-the-data-is-sparse is not the same as hidden-to-protect-a-fixture.
   The first is honest; the second is forbidden.
 
-**One S1 affordance with an expiry date, flagged rather than left to rot.** S1's `TypeDef.attrs` loader accepts
-**both** the legacy bare-string form and the new structured form, so no config file had to change in S1. That is
-a *migration affordance*, *not* a permanent feature — and if it is left indefinitely it becomes exactly the
-mechanism by which `config/ontology.yaml` never migrates and the data never bends to the design. **S2 must
-populate the structured form for every node-type and attribute-type (A2's `layer` tag), and should then either
-remove the legacy tolerance or record explicitly why it stays.** Track it as an S2 acceptance item, not as a
-nice-to-have.
+**No backward compatibility — removed in S1, by user directive (2026-07-25).** S1 initially accepted **both**
+the legacy bare-string `attrs` form and the new structured form so no config file had to change. That was
+withdrawn: **a dual-form loader biases every later implementer toward the old shape**, and a "temporary"
+tolerance is exactly the mechanism by which `config/ontology.yaml` never migrates and the data never bends to
+the design (#1). So `config/ontology.yaml` is migrated to the structured form **in S1**, the coerce-in /
+dump-back-as-bare pair is **deleted**, and a bare string in `attrs` is now a **loud validation error**. Entries
+stay **name-only** at S1 — the `layer` tag is A2/S2's job. *Ownership note:* `config/ontology.yaml` is nominally
+S2's single-owner file (§3); editing it from S1 is a deliberate, recorded exception, safe because S1→S2 is
+strictly serial. **General rule this sets: no migration shim outlives the stage that introduces it.**
 
 ### 5b. The spec closures C1–C10 (RK-SPIKE + its adversarial review) — binding
 
@@ -569,6 +571,27 @@ fragmentation metrics are meaningful.
    per-instance-type critical-discriminator declaration (operator/branch critical) and value normalization
    (PAF ≡ "Pakistan Air Force"), distinct from RK-DATA's data/answer-key regen; confirm at stage start whether the
    existing normalization suffices or needs extension.
+
+8. **A synthetic sandbox with coreference baked in — the S3 test fixture (user-approved 2026-07-25; full
+   reasoning in `../../tmp/conv/RULING-coref-in-the-sandbox.md`).** Coref is off today, so the frozen bundles
+   carry **no coref annotations at all** — testing Tier-0/Tier-1 on real data would otherwise need a **keyed,
+   confirmed-non-deterministic re-extract**. A gitignored synthetic sandbox with coref baked in removes that
+   dependency and makes S3 developable offline, keyless and deterministically. **Owner: the data hand**,
+   independently of whoever implements S3.
+   **The boundary that must not blur:** a baked sandbox tests the **consumer** (does the resolution machinery
+   behave, *given* coref handles?) and can **never** test the **producer** (does the extractor actually emit
+   correct handles on real prose?). Per **F6** the replumb *moves* the load-bearing burden onto coref +
+   discriminator capture, so hand-authored clusters — every one of them implicitly *correct* — would leave the
+   dominant risk untested while the suite goes green. Producer quality is measured **only** where §8 already puts
+   it: **coref-binding accuracy against the hand-labelled claim-gold slice, post-S3**. "The sandbox passes" must
+   never be cited as "coref works".
+   **Requirements:** bake in **over-bound and under-bound** clusters and quotes that do *not* support their bind
+   (a sandbox of only-correct coref tests optimism, and the D-13.18 decline path can only fire on bad input);
+   cover all three real categories **plus** the cases that must fail each of D-13.17's deterministic gates;
+   carry the licensing quote **verbatim** (it is load-bearing per D-13.17 and currently *written but read
+   nowhere*, so this is also how that wiring gets tested); label it unmistakably synthetic, keep it out of the
+   frozen corpus and out of any answer-key-scored recall metric; and **disclose** in the design note that the
+   resolution machinery is validated on synthetic coreference while real binding accuracy is measured separately.
 
 **Caveats to carry (spine/13 §13):**
 - **F9 (load-bearing).** The shipped status-weighted relational signal counts **only completed merges** — a
