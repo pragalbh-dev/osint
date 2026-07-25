@@ -131,3 +131,58 @@ deliberately **not** fixing the shape by decree — the implementer owns the sch
 **It reconciles at integration**, like the S2 flag name. What I *do* fix is the behaviour the shape must
 support, which the test hand already pinned: multi-span licenses · **two-document spans do not** · span count
 relaxes neither the grade floor nor M1 · each span still verbatim.
+
+---
+
+# Round 3 — the two HIGH spec problems the implementer found, ruled
+
+## M10 — the universal name cap vs `identity.relational: false`: honest fragmentation, with a curated escape
+
+**The collision (real).** D-13.10 caps name at *possible* **for every layer**, so a merge needs one more
+signal. But a type declaring `identity.relational: false` has its relational term **forced to zero by the
+ontology** — so "earn one more signal" demands evidence the ontology forbids from existing, and such types
+become **permanently unmergeable**. Measured cost here: 5 area merges.
+
+**And the ontology's own comment appears to promise otherwise** (`config/ontology.yaml:269-272`): *"An area's
+identity is its NAME and its geography — never its neighbourhood… Areas can still merge/queue on name + alias
+evidence, which is the only honest signal for them."*
+
+**Ruling: the fragmentation is CORRECT, and the comment's promise is the thing that must change.**
+1. **Areas must not merge on name.** The very reason `relational: false` exists is that shared neighbourhood
+   put `Punjab ↔ Sindh` in the merge queue — a near-fusion of two different provinces. A type whose *only*
+   available signal is a name is a type we **cannot honestly individuate**, and the design's own doctrine
+   settles that: *"honest fragmentation is the goal, not forced density"* and residual fragmentation must
+   surface as a **measured coverage gap**. Exempting such types from the cap would make name a **verdict**
+   again for exactly the types most prone to string collision — the bug D-13.1 exists to delete.
+2. **The escape is curated identity, not name.** A `relational: false` type may still merge on a **registry /
+   `config/entities.yaml` stable-id declaration** or a **replayed analyst decision** — both are *asserted
+   equivalences*, not string coincidences, and neither is capped by D-13.10 (which caps *name similarity*).
+   That keeps a human able to unify two areas deliberately while the machine never guesses.
+3. **Rejected: promoting alias-equivalence to the "one more signal."** Tempting, but it contradicts D-13.20's
+   S4 rule that the alias index is **pure recall — a name-class buys a *comparison*, never a merge.** An alias
+   entry derived from string similarity is still name evidence wearing a table.
+4. **Action:** correct `ontology.yaml:272` — it currently promises a merge path the design forbids, and a
+   comment that promises more than the code delivers is the failure mode we have hit three times this session.
+   Residual area fragmentation is a `/coverage` item, and it goes in the disclosures.
+
+## M11 — "fragmentation must resolve at S3" was MY error; the criterion moves to RK-DATA
+
+**The finding.** S3 ships the guards, but **the corpus cannot ship the earning material**: there are **zero
+coreference annotations and zero referent ids in all 492 frozen claims**, and producing them is a **keyed
+re-record**. So the mechanism that resolves fragmentation has *no input*, and my acceptance criterion
+("fragmentation must resolve at S3") was **unsatisfiable by construction**.
+
+**What the implementer did is exactly right and worth recording:** faced with an unsatisfiable criterion, it
+**did not touch a floor to make the number look better** — it measured, attributed all 14 lost merges by
+type-pair, and reported. That is the F8 trap declined under pressure. Fragmentation went **up** (`same_as`
+66 → 52, candidates 19 → 43), and every loss is accounted for: 2 cross-type fusions the reflexive-alias hole
+had allowed in Phase 1, 2 formation merges the co-location cap withheld, 10 name-only pairs the cap now refuses
+**on the fusion path** rather than only in the collection loop (2 of which the shipped config already said
+should be a HITL call). `manufacturer` merges held at 16 → 16 — **the cap is a cap, not a ban**, which is the
+tell that it is calibrated rather than blunt.
+
+**Ruling:** the acceptance criterion moves to **RK-DATA**, where the re-record with coreference lands. S3's
+criterion is instead: *the guards bind, no threshold was loosened, and every lost merge is attributed.* All
+three are met. **Rising fragmentation at S3 is the expected, correct signal** — S2 fragmented per-mention (F8)
+and S3 additionally withdraws fusions that were never earned. **DATA owes the keyed re-record with
+coreference**; until it lands the graph is honestly sparser than it will be, and that is stated, not hidden.
