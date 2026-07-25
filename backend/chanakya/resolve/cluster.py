@@ -16,14 +16,34 @@ from __future__ import annotations
 from collections import defaultdict
 from collections.abc import Mapping
 from dataclasses import dataclass, field
+from typing import Any
 
 from chanakya.schemas import pair_key
 
 from .aliases import AliasIndex
 from .entities import Entity, EntityGraph, as_pair, namespace_compatible, unordered_pairs
 from .normalize import normalize, tokens
-from .rconfig import ATTRIBUTE, RELATIONAL, SIGNALS, SOURCE_ASSERTED, TEMPORAL, ResolveConfig
-from .scoring import _shared_unique_id, geo_conflict_km, has_durable_identity_support, merge_score
+from .rconfig import (
+    ATTRIBUTE,
+    BAND_POSSIBLE,
+    BAND_PROBABLE,
+    DISCRIMINATOR,
+    NAME,
+    RELATIONAL,
+    SIGNALS,
+    SOURCE_ASSERTED,
+    TEMPORAL,
+    ResolveConfig,
+)
+from .scoring import (
+    _shared_unique_id,
+    agreeing_discriminators,
+    co_instances,
+    geo_conflict_km,
+    has_durable_identity_support,
+    merge_score,
+    shared_neighbour_predicates,
+)
 
 Pair = frozenset[str]
 
@@ -61,6 +81,11 @@ class ResolveResult:
     candidate_reasons: dict[str, str] = field(default_factory=dict)
     possible: list[tuple[str, str]] = field(default_factory=list)  # retained sub-HITL watch-list (D4; NOT drawn)
     distinct_from: list[tuple[str, str]] = field(default_factory=list)  # vetoed pairs surfaced as edges
+    # pair_key → the analyst-facing reason a HARD WALL holds this pair apart (G18/S3). A wall built the
+    # geo-veto way would be non-transitive AND invisible while the gate still passed, which is the failure
+    # §5a was written to stop — so a wall this stage adds must both join ``veto`` (hard + transitive +
+    # drawn) and say WHY, on the drawn edge, in words an analyst can act on.
+    wall_reasons: dict[str, str] = field(default_factory=dict)
     merge_confidence: dict[str, float] = field(default_factory=dict)
     merge_breakdown: dict[str, dict[str, float]] = field(default_factory=dict)
 
@@ -144,8 +169,84 @@ def _name_alone(bd: dict[str, float]) -> bool:
     line of identity evidence, so it is deliberately excluded — the test is purely ``relational == 0`` and
     ``source_asserted == 0``. A pair that agrees on nothing but its name has not *earned* an analyst's
     attention; with the policy dial on it caps at ``possible`` rather than reaching the review queue.
+
+    **Since RK-COREF, when the breakdown carries the split (D-13.20), the test is on the NAME sub-signal
+    rather than on the fused ``attribute`` term** — and that is a correction, not a refinement. Fused,
+    ``attribute`` is ``max(name, discriminator)``, so a pair agreeing on a declared *discriminator* and
+    nothing else read as "name alone" and was capped out of the analyst's queue, while a pair with a strong
+    name and a weak-but-present discriminator read the same as a bare coincidence. The cap was firing on the
+    wrong pairs in both directions. With the flag off the breakdown has no sub-signals and the old fused
+    test runs unchanged (gate G2).
     """
+    if NAME in bd:
+        return bd[NAME] > 0 and bd[DISCRIMINATOR] == 0 and bd[RELATIONAL] == 0 and bd[SOURCE_ASSERTED] == 0
     return bd[ATTRIBUTE] > 0 and bd[RELATIONAL] == 0 and bd[SOURCE_ASSERTED] == 0
+
+
+# ── the Phase-1 bootstrap triggers, NAMED (S3 item 10 / review §4) ───────────────────────────────
+#
+# The bootstrap disjunction merges at a hardcoded 1.0 and **bypasses banding entirely**, so no cap
+# restrains it. The review's finding: *name is a verdict in Phase 1 at every type, and the caps exist only
+# in Phase 2* — the widest fusion path in the system is the one nothing guards, and it never reaches
+# ``confirm_is_durable`` at all. Naming each trigger is what lets the caps bind the disjunction rather than
+# only the collection loop (R1.2/R3.1/R3.2).
+TRIGGER_UNIQUE_ID = "shared-unique-identifier"
+TRIGGER_ALIAS = "alias-equivalence"
+TRIGGER_EXACT_NAME = "exact-normalised-name"
+TRIGGER_CONTAINMENT = "name-containment-or-acronym"
+TRIGGER_COREF = "authoritative-coreference"
+TRIGGER_PLACE = "curated-gazetteer-anchor"
+#: The triggers that are *nothing but a name*. D-13.20 puts name at the bottom of the discriminator ladder,
+#: ceiling ``possible``.
+NAME_TRIGGERS = frozenset({TRIGGER_EXACT_NAME, TRIGGER_CONTAINMENT})
+#: The triggers the name cap does **not** touch, because none of them is a name coincidence: a shared unique
+#: identifier is the top of the ladder; an ALIAS link is a curated (or analyst-accepted) *statement* of
+#: equivalence one rung up from a string match — and the mechanism by which an analyst's earned merge sticks
+#: across rebuilds; an authoritative coref bind has passed its own deterministic gate and grade floor.
+#: Everything else — including the Phase-2 fuzzy path, which has no trigger at all — is capped. That last
+#: clause is D3: the cap used to be consulted **only** in the post-fixpoint collection loop, so the Phase-2
+#: fixpoint that actually unions never saw it, and a near-identical name auto-merged at a lowered per-type
+#: floor without anything else agreeing.
+EARNED_TRIGGERS = frozenset({TRIGGER_UNIQUE_ID, TRIGGER_ALIAS, TRIGGER_COREF, TRIGGER_PLACE})
+
+
+def _name_cap_reason(trigger: str | None, ceiling: str) -> str:
+    """Analyst-facing rationale for a name-only pair the cap withheld from FUSION (D-13.10, S3 item 10).
+
+    Prose only — no threshold, no code literal (gate G6). Distinct wording from every other reason in this
+    module because it is a distinct question: not "a critical attribute disagrees" and not "a wall is in the
+    way", but "the only thing saying these are one entity is what they are called".
+    """
+    how = trigger or "similarity of the two names"
+    return (
+        f"name-only identity, capped at '{ceiling}' — the sole line of evidence joining this pair is the "
+        f"{how}: the two sides share no neighbour, no stated discriminator and no source assertion of "
+        f"identity. Designations and organisation names are reused across armies and across time, so a name "
+        f"match is recall evidence, not a verdict. ONE more trivially-available signal (a shared neighbour, "
+        f"an agreeing stated attribute, a source saying so) clears the cap; until then the merge is withheld "
+        f"and the link is retained for the analyst rather than asserted (D-13.10)."
+    )
+
+
+def _colocation_cap_reason(shared: tuple[str, ...], discriminators: tuple[str, ...]) -> str:
+    """Analyst-facing rationale for a formation merge the co-location cap withheld (D-13.14 / G16).
+
+    Says what would lift it, because the cap is not a refusal to decide — it is a statement of *what is
+    missing*. Prose only (gate G6).
+    """
+    on = ", ".join(shared) if shared else "a shared design, site and operator"
+    want = ", ".join(discriminators) if discriminators else "a unit-level identifier"
+    return (
+        f"co-location is not identity, capped at '{BAND_PROBABLE}' — everything these two formations agree "
+        f"on is where they are standing ({on}). Two batteries at one airfield, running one design, under one "
+        f"branch share all of that BY CONSTRUCTION, so the shared neighbourhood is evidence of dispersal, "
+        f"not of identity. Confirming a FORMATION needs a unit-level discriminator ({want}); none is stated "
+        f"on both sides. The merge is withheld — and deliberately so: `based-at` is functional and "
+        f"unit-keyed, so fusing these two would make their two sites one unit's before-and-after, the "
+        f"supersede path would then DRAW a relocation nobody reported, pop the pair out of this queue as "
+        f"'machine-adjudicated', and delete the retired edge's Known Gap. A presence-level merge is a "
+        f"different and weaker claim, and is not capped here (D-13.14)."
+    )
 
 
 def _candidate_pairs(
@@ -159,13 +260,17 @@ def _candidate_pairs(
     keys = set(cfg.blocking_keys)
     blocks: dict[tuple, set[str]] = {}
     trans = cfg.transliteration
+    # C7: the namespace BLOCKING key is normalised too, not only the wall's comparison. Normalising at
+    # conflict time alone would fix the wall and leave the blocking split — 'PAF' and 'Pakistan Air Force'
+    # in two different blocks — which is the half of D4 the remedy would otherwise have missed.
+    nsn = cfg.namespace_normaliser
 
     def add(block: tuple, eid: str) -> None:
         blocks.setdefault(block, set()).add(eid)
 
     for eid, ent in graph.entities.items():
         etype = ent.etype if "type" in keys else ""
-        ns = ent.namespace() if "country_or_domain_namespace" in keys else ""
+        ns = ent.namespace(nsn) if "country_or_domain_namespace" in keys else ""
         if "name_token" in keys:
             for tok in tokens(ent.name, trans):
                 add(("nt", etype, ns, tok), eid)
@@ -176,6 +281,13 @@ def _candidate_pairs(
                 v = ent.attrs.get(attr)
                 if v is not None:
                     add(("hid", attr, str(v)), eid)
+        # D-13.20's composite AND-keys block on the whole tuple of values, so two records sharing a
+        # designation but not a branch never land in one block — the same asymmetry the decision rests on,
+        # applied to recall as well as to the verdict. A key with any component unstated blocks on nothing.
+        for key in cfg.unique_id_keys(ent.etype):
+            values = [ent.attrs.get(attr) for attr in key]
+            if all(v is not None for v in values):
+                add(("hidk", key, tuple(str(v) for v in values)), eid)
 
     # Relational blocking: same-type entities that share a graph neighbour are candidates — the
     # "different names, same neighbourhood" merge the fixpoint exists to catch (precision comes later).
@@ -197,7 +309,7 @@ def _candidate_pairs(
     for a, b in unordered_pairs(eids):
         if alias_idx.equivalent(
             normalize(graph.entities[a].name, trans), normalize(graph.entities[b].name, trans)
-        ) or _name_containment(graph.entities[a], graph.entities[b], cfg, toks):
+        ) or _name_containment(graph.entities[a], graph.entities[b], cfg, toks, nsn):
             pairs.add(frozenset((a, b)))
 
     return pairs | raise_only
@@ -247,7 +359,9 @@ def _token_index(graph: EntityGraph, cfg: ResolveConfig) -> dict[str, list[str]]
     return {eid: tokens(ent.name, cfg.transliteration) for eid, ent in graph.entities.items()}
 
 
-def _name_containment(a: Entity, b: Entity, cfg: ResolveConfig, toks: dict[str, list[str]]) -> bool:
+def _name_containment(
+    a: Entity, b: Entity, cfg: ResolveConfig, toks: dict[str, list[str]], normalise: Any = None
+) -> bool:
     """High-precision open-world name equivalence: containment or acronym, same type + namespace.
 
     The registry (P3.0) pre-resolves every surface form we have *already seen*; this is the tail it has
@@ -258,7 +372,7 @@ def _name_containment(a: Entity, b: Entity, cfg: ResolveConfig, toks: dict[str, 
     with its expansion, so ordinary blocking would never propose "PAAD" against "Pakistan Army Air
     Defence"), and again to *decide* the bootstrap merge.
     """
-    if a.etype != b.etype or not namespace_compatible(a, b):
+    if a.etype != b.etype or not namespace_compatible(a, b, normalise):
         return False
     ta, tb = toks.get(a.eid, []), toks.get(b.eid, [])
     if not ta or not tb or ta == tb:
@@ -311,6 +425,7 @@ def resolve_entities(
     raise_only: set[Pair],
     authoritative: set[Pair] | None = None,
     raise_walls: Mapping[Pair, str] | None = None,
+    place_identity: set[Pair] | None = None,
 ) -> ResolveResult:
     """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
 
@@ -334,6 +449,11 @@ def resolve_entities(
     """
     authoritative = authoritative or set()
     raise_walls = raise_walls or {}
+    # RK-COREF item 11: place identity decided BEFORE the fixpoint (``places.place_merge_pairs``) so a place
+    # merge is visible to ``relational_score``. Its own bootstrap channel rather than folded into
+    # ``authoritative``, because labelling a curated-gazetteer anchor "authoritative coreference" in an
+    # analyst-facing reason would be a lie about where the evidence came from.
+    place_identity = place_identity or set()
     res = ResolveResult()
     if not cfg.scorable:
         return res  # no bands configured ⇒ inert (identity partition) — no code literal needed
@@ -344,7 +464,9 @@ def resolve_entities(
     toks = _token_index(graph, cfg)
     pairs = sorted(
         tuple(sorted(p))
-        for p in _candidate_pairs(graph, cfg, alias_idx, raise_only | authoritative | set(raise_walls), toks)
+        for p in _candidate_pairs(
+            graph, cfg, alias_idx, raise_only | authoritative | place_identity | set(raise_walls), toks
+        )
     )
 
     def vetoed(a: str, b: str) -> bool:
@@ -396,6 +518,137 @@ def resolve_entities(
             return 0.0
         return _bottleneck_confidence(merge_edges, x, y)
 
+    nsn = cfg.namespace_normaliser  # C7: fold 'PAF' ≡ 'Pakistan Air Force' BEFORE it becomes a namespace key
+    earned = cfg.earned_identity
+
+    def bootstrap_trigger(a: str, b: str) -> str | None:
+        """Which Phase-1 trigger licenses this pair — **named** — or ``None``.
+
+        Exactly the historic disjunction, unchanged in membership and in order; naming the winner is what
+        lets a cap bind the bootstrap (review §4: *name is a verdict in Phase 1 at every type, and the caps
+        exist only in Phase 2*). Flag off ⇒ the caller only asks "is it non-None", i.e. the old ``if`` (G2).
+        """
+        ea, eb = graph.entities[a], graph.entities[b]
+        na, nb = normalize(ea.name, trans), normalize(eb.name, trans)
+        pair = frozenset((a, b))
+        # ORDERED BY LADDER STRENGTH, and the order is load-bearing — not cosmetic. The disjunction returns
+        # the FIRST match, and the caps then read the trigger to decide whether the pair is "nothing but a
+        # name". Checked name-first (as it originally was), a pair the document *authoritatively co-refers*
+        # was reported as a name-containment match whenever a name rule happened to fire too — so the name
+        # cap withheld a merge that coreference had earned, and the whole auto-bind policy went silently
+        # inert. (Measured: "Alpha Precision Machinery" / "APM" is an acronym expansion AND an explicit
+        # equivalence; the acronym rule won the race and the bind never happened.) A pair licensed by a
+        # stronger rung must be reported at that rung, so the strongest is tested first.
+        if _shared_unique_id(ea, eb, cfg):
+            return TRIGGER_UNIQUE_ID
+        # The document itself stated this equivalence in a quotable span, and the pair cleared the
+        # veto/type/namespace/contradiction/grade gates upstream — evidence no string comparison can reach.
+        if pair in authoritative:
+            return TRIGGER_COREF
+        if pair in place_identity:
+            return TRIGGER_PLACE
+        if alias_idx.equivalent(na, nb):
+            return TRIGGER_ALIAS
+        if bool(na) and na == nb and ea.namespace(nsn) == eb.namespace(nsn):
+            return TRIGGER_EXACT_NAME
+        if _name_containment(ea, eb, cfg, toks, nsn):
+            return TRIGGER_CONTAINMENT
+        return None
+
+    def cross_namespace_or_type(a: str, b: str) -> tuple[str, str] | None:
+        """G19: is this pair unfusable on TYPE or NAMESPACE? ``(ceiling, reason)`` or ``None``.
+
+        The single most dangerous over-merge class for an operator-scoped order of battle, and until now it
+        was guarded nowhere that mattered: ``namespace_compatible`` gated only the bootstrap's exact-name
+        branch, ``_name_containment``, ``_identity_pairs`` and ``_coref_pairs`` — **never the Phase-2 fuzzy
+        fixpoint** — and relational blocking emits pairs with no namespace key at all, so a PLA-side and a
+        PAF-side instance could be scored and auto-merged. Cross-type was only ever a *skip in candidate
+        collection*, so the bootstrap could fuse a component into a variant on an identical name.
+
+        Applied as a hard **precondition on the fusion path** in BOTH phases (R3.1) **whenever the S3 stage
+        flag is on** — its only caller, :func:`fusion_blocked`, returns ``None`` outright with the flag off,
+        so this refusal is stage machinery and *not* a property of the shipped default configuration. Never
+        a score contributor — and deliberately not as a *veto*: two things in different namespaces are not a
+        do-not-merge *finding* to draw, they are simply not fusable, and a source or proposer that explicitly
+        asserts the identity still reaches the analyst through the existing cross-type escape hatch.
+
+        **The two halves get different ceilings, and the asymmetry is deliberate.** A type mismatch is a
+        schema fact, not a judgement call: T3b-A already decided that asking an analyst whether an
+        air-defence *sector* is the same thing as an air-defence *centre* "is not triage, it is noise", and
+        that decision stands — the fusion closes, the queue does not change. A namespace mismatch between two
+        entities of the SAME type is the opposite: a PLA-side and a PAF-side unit that look alike is precisely
+        the adversarial conflation an analyst must see, so it caps at ``probable`` **with the reason**.
+        """
+        ea, eb = graph.entities[a], graph.entities[b]
+        if ea.etype != eb.etype:
+            return BAND_POSSIBLE, (
+                f"not fusable: cross-type ({ea.etype} vs {eb.etype}). Two entities of different ontology "
+                f"types are not one entity however alike their names look — and until now this was only a "
+                f"*skip* in candidate collection, so the Phase-1 bootstrap could still fuse them on an "
+                f"identical name (G19)."
+            )
+        if not namespace_compatible(ea, eb, nsn):
+            return BAND_PROBABLE, (
+                f"not fusable: cross-namespace ({ea.namespace(nsn)} vs {eb.namespace(nsn)}). These two "
+                f"profiles are scoped to different operators, and for an operator-scoped order of battle a "
+                f"cross-operator fusion is the costliest over-merge there is — it silently moves an asset "
+                f"from one army to another. The merge is refused; the resemblance is real and is raised, "
+                f"because a look-alike straddling two operators is either an extraction error or deliberate "
+                f"conflation, and both are the analyst's call (G19)."
+            )
+        return None
+
+    def colocation_only(a: str, b: str, bd: dict[str, float]) -> tuple[str, ...] | None:
+        """D-13.14/G16: the shared predicates, when a FORMATION pair agrees on nothing but co-location.
+
+        ``None`` ⇒ the cap does not apply (not a formation pair, or a unit-level discriminator agrees, or
+        the pair has some non-co-location evidence). A tuple ⇒ the cap applies and these are the shared
+        predicates to name. Presence types are deliberately outside the cap: a presence-level merge in the
+        same case is *expected* (C2), because a presence asserts only "this kit was seen here", which is
+        exactly what two co-located reports do corroborate.
+        """
+        ea, eb = graph.entities[a], graph.entities[b]
+        if ea.etype not in earned.formation_types or eb.etype not in earned.formation_types:
+            return None
+        if bd[RELATIONAL] <= 0.0:
+            return None  # nothing shared ⇒ nothing for co-location to explain
+        shared = shared_neighbour_predicates(graph, a, b, uf.find, co_instances(graph, a, b))
+        if not shared or not shared.issubset(set(earned.colocation_predicates)):
+            return None  # some shared link is NOT a co-location link ⇒ real relational evidence
+        if _shared_unique_id(ea, eb, cfg):
+            return None  # the ladder's TOP rung — a shared COMPLETE composite AND-key lifts every cap
+        if agreeing_discriminators(ea, eb, earned.formation_discriminators, cfg):
+            return None  # a unit-level discriminator agrees ⇒ more than co-location ⇒ the cap lifts
+        return tuple(sorted(shared))
+
+    def fusion_blocked(a: str, b: str, bd: dict[str, float], trigger: str | None) -> tuple[str, str] | None:
+        """The ONE fusion precondition both phases consult — ``(ceiling, reason)`` or ``None`` (R3.1).
+
+        A hard precondition on the fusion path, never a positive whitelist of triggers: D-13.9 specifies a
+        **graded** path constrained by guards, and converting a negative cap into a whitelist changes the
+        system in both directions (it is what made designs unable to collapse at all in the spike). So every
+        pair still earns its way up the ordinary scored path; this only says which pairs may not cross the
+        *fusion* line, and at what ceiling they stop.
+
+        Ceiling ``possible`` ⇒ withheld from the analyst's queue as well (it has not earned attention).
+        Ceiling ``probable`` ⇒ withheld from fusion but GUARANTEED a queue place with this reason — the
+        analyst is exactly who should decide.
+        """
+        if not cfg.earned_identity_on:
+            return None
+        incompatible = cross_namespace_or_type(a, b)
+        if incompatible is not None:
+            return incompatible
+        if earned.name_ceiling == BAND_POSSIBLE and trigger not in EARNED_TRIGGERS and _name_alone(bd):
+            return BAND_POSSIBLE, _name_cap_reason(trigger, earned.name_ceiling)
+        if earned.colocation_ceiling:
+            shared = colocation_only(a, b, bd)
+            if shared is not None:
+                return earned.colocation_ceiling, _colocation_cap_reason(
+                    shared, earned.formation_discriminators
+                )
+        return None
+
     def has_durable_trigger(a: str, b: str) -> bool:
         """A DURABLE bootstrap trigger fires for this pair — pair-intrinsic support
         (:func:`has_durable_identity_support`: shared unique id / same-value non-perishable agreement / a
@@ -442,27 +695,47 @@ def resolve_entities(
     # auto-band pair confirmed on durable evidence and merged (byte-unchanged).
     perishable_capped: dict[Pair, str] = {}
 
+    # S3: pairs a CAP refused fusion to, at ceiling ``probable`` — the same block-merge-and-review contract
+    # as ``perishable_capped`` and ``raise_walls`` (the third and fourth instances of one proven shape, not
+    # new machinery). Ceiling ``possible`` pairs are recorded separately: those have not earned attention.
+    capped_probable: dict[Pair, str] = {}
+    capped_possible: dict[Pair, str] = {}
+
+    def record_cap(pair: Pair, ceiling: str, reason: str) -> None:
+        if ceiling == BAND_POSSIBLE:
+            capped_possible[pair] = reason
+            capped_probable.pop(pair, None)
+        else:
+            capped_probable[pair] = reason
+            capped_possible.pop(pair, None)
+
+    def clear_cap(pair: Pair) -> None:
+        """A pair that EARNED its way out of a cap is no longer capped — re-decided every pass, like the
+        perishable cap, because the relational term is partition-dependent and a cap must never be pinned."""
+        capped_probable.pop(pair, None)
+        capped_possible.pop(pair, None)
+
     # ── Phase 1: high-precision bootstrap (no relational term) ────────────────────────────────
     for a, b in pairs:
         if uf.find(a) == uf.find(b) or vetoed(a, b) or violates_veto_transitively(a, b):
             continue
         if frozenset((a, b)) in raise_walls:
             continue  # a below-floor critical conflict may not bootstrap-merge — it is raised to HITL
+        trigger = bootstrap_trigger(a, b)
+        if trigger is None:
+            continue
         ea, eb = graph.entities[a], graph.entities[b]
-        na, nb = normalize(ea.name, trans), normalize(eb.name, trans)
-        same_ns = ea.namespace() == eb.namespace()
-        # exact-name merge is gated on matching namespace + a non-empty name (China ≠ Pakistan; "" ≠ "").
-        if (
-            _shared_unique_id(ea, eb, cfg)
-            or alias_idx.equivalent(na, nb)
-            or (bool(na) and na == nb and same_ns)
-            or _name_containment(ea, eb, cfg, toks)
-            # The document itself stated this equivalence in a quotable span, and the pair cleared the
-            # veto/type/namespace/contradiction gates upstream — evidence no string comparison can reach.
-            or frozenset((a, b)) in authoritative
-        ):
-            bd = merge_score(ea, eb, graph, uf.find, cfg, alias_idx, pair_confidence=pair_confidence)
-            merge(a, b, 1.0, bd)  # unambiguous evidence → identity confidence 1.0
+        bd = merge_score(ea, eb, graph, uf.find, cfg, alias_idx, pair_confidence=pair_confidence)
+        # S3 (review §4, R1.2/R3.1/R3.2): the caps bind the BOOTSTRAP DISJUNCTION, not merely the Phase-2
+        # collection loop. A bootstrap merge lands at a hardcoded 1.0 and never touches ``_band``, so a cap
+        # that lives downstream of banding is a cap on a path this one does not take. A blocked pair is not
+        # discarded — it falls through to the scored path and is banded on its merits, which is what makes
+        # this a cap and not a ban. Flag off ⇒ ``fusion_blocked`` is always None (byte-unchanged, gate G2).
+        blocked = fusion_blocked(a, b, bd, trigger)
+        if blocked is not None:
+            record_cap(frozenset((a, b)), *blocked)
+            continue
+        merge(a, b, 1.0, bd)  # unambiguous evidence → identity confidence 1.0
 
     # ── Phase 2: relational fixpoint (iterate to no-new-auto-merge; monotone ⇒ terminates) ────
     changed = True
@@ -478,6 +751,14 @@ def resolve_entities(
                 pair_confidence=pair_confidence,
             )
             floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
+            # The same precondition Phase 1 consults, on the loop that ACTUALLY UNIONS (D3/D4). Re-decided
+            # every pass: a pair can earn its way out of the name cap as clusters grow and it gains a shared
+            # neighbour, exactly as it can earn durable support out of the perishable cap.
+            blocked = fusion_blocked(a, b, bd, None)
+            if blocked is not None:
+                record_cap(frozenset((a, b)), *blocked)
+                continue
+            clear_cap(frozenset((a, b)))
             if _band(bd, cfg, has_raise=False, auto_merge=floor) == "auto":
                 # Stage 3B-iii: a would-be auto-merge that still confirms on DURABLE evidence merges; one that
                 # only confirms because a perishable ordered succession raised its score rests on a shared
@@ -523,6 +804,7 @@ def resolve_entities(
             graph.entities[a].etype != graph.entities[b].etype
             and frozenset((a, b)) not in raise_only
             and frozenset((a, b)) not in perishable_capped  # a capped confirm is guaranteed its queue place
+            and frozenset((a, b)) not in capped_probable
         ):
             continue
         bd = merge_score(
@@ -533,13 +815,15 @@ def resolve_entities(
         has_raise = frozenset((a, b)) in raise_only
         raised_wall = frozenset((a, b)) in raise_walls
         capped_perishable = frozenset((a, b)) in perishable_capped
-        band = _band(bd, cfg, has_raise=has_raise or raised_wall or capped_perishable, auto_merge=floor)
-        # A below-floor critical conflict, or a perishable-only would-be confirm, is blocked from merge
-        # upstream, so a high deterministic score would otherwise band it "auto" and drop it here — force it
-        # to the review queue. Both are always the analyst's call: never silently walled/capped, never
-        # silently merged.
-        if (raised_wall or capped_perishable) and band == "auto":
-            band = "hitl"
+        # S3: a cap that refused FUSION at ceiling ``probable`` is guaranteed a queue place with its reason —
+        # the third instance of the block-merge-and-review contract. A cap at ceiling ``possible`` is the
+        # opposite promise: it has not earned attention, so it is withheld from the queue and retained on the
+        # watch-list (the ``name_alone`` shape). Both empty with the flag off (gate G2).
+        capped_prob = frozenset((a, b)) in capped_probable
+        capped_poss = frozenset((a, b)) in capped_possible
+        band = _band(
+            bd, cfg, has_raise=has_raise or raised_wall or capped_perishable or capped_prob, auto_merge=floor
+        )
         # D9 (Stage 3A-ii) — the BRIDGE-ACROSS-A-WALL alarm. This pair cleared ``vetoed`` above (not
         # directly walled), but its union would fuse two clusters a hard wall holds apart (``bridged_wall``)
         # AND it scores as a genuine would-be merge — band ``auto``/``hitl``, real corroboration to both
@@ -559,9 +843,27 @@ def resolve_entities(
         # the operator turned the dial on (default off ⇒ byte-unchanged).
         capped = (
             cfg.name_alone_caps_at_possible
-            and not (has_raise or raised_wall or is_bridge or capped_perishable)
+            and not (has_raise or raised_wall or is_bridge or capped_perishable or capped_prob)
             and _name_alone(bd)
-        )
+        ) or (capped_poss and not (has_raise or raised_wall or is_bridge))
+        # EVERY pair reaching this loop was refused a merge upstream — Phase 1 and Phase 2 already ran and did
+        # not union it — so an "auto" band here never means "merge it", it means "something blocked it". Unless
+        # a cap has explicitly withheld it from the queue, that makes it a REVIEW ITEM, and it must not fall
+        # through to the watch-list.
+        #
+        # This replaces an enumeration of three specific blockers (a below-floor critical conflict, a
+        # perishable-only confirm, an S3 probable-cap), and the enumeration is what produced the bug: a
+        # ``NAME_VARIANT`` cluster — raise-only *permanently*, whose whole justification is that the analyst
+        # receives it WITH the licensing quote — scored into the auto band, matched none of the three, and
+        # landed in ``possible``. Retained but never surfaced, i.e. raise-only had become a quiet drop rather
+        # than a referral. Deriving the demotion from "was it capped?" cannot go stale as blockers are added.
+        # …with one exception, and it is a deliberate operator choice rather than a gap: a pair refused ONLY
+        # by the transitive wall is a D9 *bridge*, and an operator may switch that alarm off
+        # (``surface_wall_bridges: false``) to revert to the pre-D9 silent non-merge. Suppressed means
+        # suppressed — promoting it here would re-surface the alarm the operator turned off.
+        suppressed_bridge = not cfg.surface_wall_bridges and violates_veto_transitively(a, b)
+        if band == "auto" and not capped and not suppressed_bridge:
+            band = "hitl"
         pfloor = cfg.possible_floor
         if band == "hitl" and not capped:
             res.candidates.append((a, b))
@@ -573,6 +875,8 @@ def resolve_entities(
                 res.candidate_reasons[pair_key(a, b)] = raise_walls[frozenset((a, b))]
             elif capped_perishable:
                 res.candidate_reasons[pair_key(a, b)] = perishable_capped[frozenset((a, b))]
+            elif capped_prob:
+                res.candidate_reasons[pair_key(a, b)] = capped_probable[frozenset((a, b))]
             elif is_bridge and wall is not None:
                 res.candidate_reasons[pair_key(a, b)] = _bridge_reason(wall)
         # The retained `possible` watch-list (D4): a scored pair in [possible_floor, hitl_low) that today

@@ -59,8 +59,15 @@ def mk_config(
     auto_merge_by_type: dict[str, float] | None = None,
     possible_floor: float | None = None,
     name_alone_caps_at_possible: bool = False,
+    earned_identity: dict[str, Any] | None = None,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
+    # The gate FAILS CLOSED on an empty marker vocabulary — an unconfigured conjunct must never license the
+    # strongest fusion path in the system. So a fixture that opts into authoritative coreference has to
+    # declare what licenses one, exactly as the shipped config does. Only the vocabulary is supplied here;
+    # the stage flag is not, so a legacy opt-in still gets legacy behaviour everywhere else.
+    if coref_authoritative_evidence and earned_identity is None:
+        earned_identity = {"equivalence_markers": ["also known as", "aka", "formerly"]}
     bands = dict(BANDS)
     if possible_floor is not None:
         bands["possible_floor"] = possible_floor
@@ -93,6 +100,7 @@ def mk_config(
         containment_min_short_tokens=containment_min_short_tokens,
         acronym_min_len=acronym_min_len,
         critical_veto_min_grade=critical_veto_min_grade,
+        earned_identity=earned_identity or {},
     )
     places_cfg = PlacesConfig(places=places or [], proximity_radius_m=proximity_radius_m or {})
     # ``source_grades``: {source_id: source_class} + a one-factor rubric, so R(source) == the number below
@@ -152,23 +160,45 @@ def coref(
     obj: str,
     *,
     evidence: str = "EXPLICIT_EQUIVALENCE",
-    quote: str = "Full Name (SHORT)",
+    #: ``None`` ⇒ a well-formed licensing span built from the two surface forms. D-13.17's gate is
+    #: recomputed by the resolver from the span + the two forms, so a fixture that wants a bind must offer a
+    #: span that genuinely licenses one; the old placeholder named neither side and licenses nothing. Pass an
+    #: explicit string to exercise a FAILING gate.
+    quote: str | None = None,
     source: str = "src-t",
     cluster: str = "c1",
+    referent: str | None = None,
+    gate: str | None = None,
+    forms: tuple[str, str] | None = None,
+    quotes: list[str] | None = None,
+    detail: str = "fixture",
+    doc: str = "d.txt",
 ) -> ClaimRecord:
     """An in-document coreference claim as INGEST's extraction pass 2 emits it (``ingest/coref.py``).
 
     Written on its own predicate, carrying the categorical evidence kind and the verbatim licensing span
     in the tier-3 bag — that bag is what ``resolve._coref_pairs`` reads to decide bootstrap vs raise-only.
     """
+    quote = quote if quote is not None else f"{subject}, also known as {obj}, per the register"
     return ClaimRecord(
         claim_id=_cid("cr"),
         source_id=source,
-        doc_ref=DocRef(file="d.txt", span=(0, 1)),
+        doc_ref=DocRef(file=doc, span=(0, 1)),
         kind="observation",
         asserts="relationship",
         payload=Triple(subject=subject, predicate="coref-same-as", object=obj),
-        attributes={"_coref_cluster": cluster, "_coref_evidence": evidence, "source_quote": quote},
+        attributes={
+            "_coref_cluster": cluster,
+            "_coref_evidence": evidence,
+            "source_quote": quote,
+            # RK-COREF (S3): the grouping grain, the per-link gate verdict and the VERBATIM span set. A link
+            # with no ``_coref_gate`` can never bind once the stage flag is on — the gate is a required
+            # precondition, so an absent verdict fails closed.
+            **({"_coref_referent": referent} if referent else {}),
+            **({"_coref_gate": gate, "_coref_gate_detail": detail} if gate else {}),
+            **({"_coref_forms": list(forms)} if forms else {}),
+            "_coref_quotes": list(quotes) if quotes is not None else [quote],
+        },
     )
 
 
