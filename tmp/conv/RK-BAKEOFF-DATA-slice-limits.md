@@ -21,10 +21,29 @@ the seven cited corpus documents. Everything below was measured, not recalled.
 | `d20_supersede_spoof` | named-social (adversary, decoy-flagged) | E | adversary | 2025-06 | 16 |
 | `cs01_stale_orbat` | reference, stale-as-current (chaff) | C | third-party | 2015-06 (page 2013-03) | 16 |
 
-**125 hand-labeled claim rows.** 108 positive-gold, plus 17 negative-gold (11 `NOT_A_CLAIM:`, 6
-`ANTI_COREF:`), plus 19 `UNMODELLED:` rows recording things the ontology cannot express, plus 2
-`AMBIGUOUS:` pairs. 27 rows are negative-polarity. Every row carries a verbatim span and a line number —
-verified 125/125 on 2026-07-25.
+**125 hand-labeled claim rows**, which split as follows (corrected 2026-07-25 against the gold adapter's
+reconciliation — the earlier "108 positive-gold" line in this section did not sum to 125):
+
+| Bucket | Rows | Scored? |
+|---|---|---|
+| claim-shaped positive gold (entity / triple / event) | **65** | yes — this is the recall denominator |
+| `ATTR:` attribute rows | 22 | no — the scorer's comparison unit has no attribute form |
+| `NOT_A_CLAIM:` traps | 11 | yes, inverted — emitting one is a fabrication |
+| `UNMODELLED:` (ontology cannot express it) | 19 | no — neutral, a finding about the ontology |
+| `ANTI_COREF:` must-not-bind pairs | 6 | binding only, and only once S3 lands |
+| `AMBIGUOUS:` unresolved pairs | 2 | identity-assertion only |
+
+27 rows are negative-polarity; 13 rows are polarity `unknown` (all `NOT_A_CLAIM:`/`AMBIGUOUS:`, i.e. never
+scored as claims). Every row carries a verbatim span and a line number — verified 125/125 on 2026-07-25,
+and re-verified through the adapter: 125/125 spans resolve to char offsets that slice back to the quoted
+string (122 byte-exact; the 3 others differ only by whitespace collapse inside `d05`'s fixed-width table),
+and 125/125 start on the line the gold states.
+
+**Loading all 125 rows as positive gold would cap a perfect extractor at 87/125 ≈ 0.70 recall.** Measured
+through the real scorer: a candidate emitting exactly the 65 positive-gold claims scores recall **1.0000**
+via `eval.gold.adapter`, and **0.6960** via a mechanical 125-row load. Anyone re-deriving the denominators
+must keep the negative gold typed and out of the recall denominator, or the bake-off charges every
+candidate 0.30 recall for a loader artefact.
 
 **Six document types, one document each of most of them.** That is the first and largest limit: for five
 of the six source classes the slice has **N=1**, so "the model handles social media badly" and "the model
@@ -65,11 +84,24 @@ lists 11 surfaces across 4 documents), but that is **entity resolution**, a diff
 different stage. If the bake-off calls its cross-document result "coref", it will be mislabelling what it
 measured.
 
-**(d) One mechanical trap.** 13 of the 120 mention strings carry an annotator locator — "(Post 3)",
-"(this report's AOI)" — and are therefore not byte-verbatim. A scorer doing exact-match without stripping a
-trailing parenthetical will mark 11% of the coref gold unmatchable and blame the model. Documented in
-`claim-gold.json` → `mention_verbatim_note` (added 2026-07-25). With that one normalization, 120/120
-mentions and 120/120 licensing quotes are verbatim.
+**(d) One mechanical trap — and the naive fix for it over-corrects.** Mention strings carry an annotator
+locator ("(Post 3)", "(this report's AOI)") and are therefore not byte-verbatim; a scorer doing exact match
+without stripping a trailing parenthetical will mark part of the coref gold unmatchable and blame the model.
+Documented in `claim-gold.json` → `mention_verbatim_note` (added 2026-07-25). Two numbers in that note are
+off, measured through the adapter on 2026-07-25 (**labels unchanged — reported, not fixed**):
+
+- **12 mentions carry a locator, not 13.** A purely syntactic trailing-parenthetical strip fires on 20 of
+  the 120, and 8 of those parentheticals are genuine document text — `PORT MUHAMMAD BIN QASIM (PQ)`,
+  `the FT-2000 (sometimes rendered FT-2000A)`, `Baseline imagery (2024-11)`. Stripping those truncates a
+  correct mention into an unmatchable one, i.e. the same harm the note warns about, pointed the other way.
+  `eval.gold.adapter.strip_annotator_locator` therefore strips only when the annotated form does not occur
+  in its document.
+- **119/120 mentions are verbatim after that strip, not 120/120.** The 13th item the note counts is
+  `d17b-AMBIG-1`'s Telegram caption, which is not a locator case at all: it differs from the document only
+  in whether the comma sits inside or outside the closing quotation mark (`imagery pending,"` in the
+  document vs `imagery pending"` in the label). The adapted registry flags it with
+  `verbatim_in_document: false` so an exact-match scorer sees it is unmatchable instead of charging the
+  miss to a candidate. 32/32 licensing quotes *are* verbatim — that half of the note checks out.
 
 ---
 
@@ -138,3 +170,23 @@ Each of these is a hole, not a weakness — no score on this slice says anything
 - **State the minimum material margin before running**, in coref points, and hold to it. With N=32 clusters
   and confirmed run-to-run non-determinism, small gaps are jitter and must be reported as
   "no measured difference".
+- **Read absolute recall against the slice's own ceiling, not against 1.00.** 16 of the 65 scored claims
+  carry a role surface that appears nowhere in their document, because the gold labels a *resolved* subject
+  ("HQ-9/P" where the sentence says only "was formally inducted…") or an annotator's composition ("The
+  missile itself / the HQ-9/P"). No extractor quoting the document can produce those strings, so those pairs
+  live or die on the matcher's fuzzy tolerance. Only 34 of 65 have every role surface quotable from the
+  claim's own cited span. Counts are carried in the adapted file as `surface_verbatimness`. The labels are
+  defensible for a *claim* gold and were left alone — stripping the annotator sugar would truncate the
+  surfaces that genuinely are document text.
+- **Three of the four negative classes are declared neutral and are not neutral until the harness wires
+  them.** Precision is `matched / extracted`, so any unpaired claim costs the candidate whatever span it
+  sits on. That is correct for `NOT_A_CLAIM:` and wrong for the other three — most sharply for `UNMODELLED:`,
+  where 19 rows mean a candidate that reads all 19 off-ontology sentences correctly can lose up to 11
+  precision points for reading correctly. `eval.gold.adapter` ships the hooks (`trap_avoidance`,
+  `identity_over_read`, `precision_exclusions`); until they are called, say so on the scorecard.
+- **Do not score a trap by span overlap alone.** Trap `d20-r13`'s span overlaps positive claim `d20-r14`'s,
+  so a bare overlap test charges a fabrication to a model that read `d20-r14` correctly. A trap hit requires
+  the claim to be *unpaired* against the positive gold as well as overlapping. Separately, the existing
+  `extract_only_stated` metric does **not** catch trap emissions (measured: 9 of 11 trap spans read as
+  "supported", because the trap text really is in the document) — which is exactly why the typed
+  `not_a_claim` class is carried rather than folded into the lexical fabrication line.

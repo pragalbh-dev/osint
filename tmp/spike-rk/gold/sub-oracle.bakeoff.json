@@ -1,0 +1,670 @@
+{
+  "docs": [
+    "d02_ispr_induction",
+    "d04_armyrec_ranges",
+    "d19_rahwali_confirm",
+    "d05_customs_manifest",
+    "d17b_withheld_gap",
+    "d20_supersede_spoof",
+    "cs01_stale_orbat"
+  ],
+  "edges": [
+    {
+      "source": "sl_var_hq9p",
+      "target": "sl_unit_paad",
+      "type": "inducted-into"
+    },
+    {
+      "source": "sl_var_hq9p",
+      "target": "sl_var_hq9be",
+      "type": "distinct-from"
+    },
+    {
+      "source": "sl_var_ft2000",
+      "target": "sl_var_hq9p",
+      "type": "distinct-from"
+    },
+    {
+      "source": "sl_mfr_casic",
+      "target": "sl_var_hq9be",
+      "type": "manufactures"
+    },
+    {
+      "source": "sl_mfr_cpmiec",
+      "target": "sl_var_hq9p",
+      "type": "manufactures"
+    },
+    {
+      "source": "sl_comp_ht233",
+      "target": "sl_var_hq9b_generic",
+      "type": "equips"
+    },
+    {
+      "source": "sl_comp_tel",
+      "target": "sl_site_rahwali",
+      "type": "observed-at"
+    },
+    {
+      "source": "sl_comp_ht233",
+      "target": "sl_site_rahwali",
+      "type": "observed-at"
+    },
+    {
+      "source": "sl_comp_tel",
+      "target": "sl_site_old_rawalpindi",
+      "type": "observed-at"
+    },
+    {
+      "source": "sl_var_hq9p",
+      "target": "sl_site_rahwali",
+      "type": "observed-at"
+    },
+    {
+      "source": "sl_event_118834",
+      "target": "sl_event_118835",
+      "type": "distinct-from"
+    },
+    {
+      "source": "sl_event_118834",
+      "target": "sl_event_119011",
+      "type": "distinct-from"
+    },
+    {
+      "source": "sl_event_118835",
+      "target": "sl_event_119011",
+      "type": "distinct-from"
+    },
+    {
+      "source": "sl_site_sialkot",
+      "target": "sl_site_pasrur",
+      "type": "distinct-from"
+    }
+  ],
+  "excluded_edges": [
+    {
+      "basis": "stated",
+      "edge_id": "sl_e03",
+      "excluded_because": "endpoint is a surface form, not a declared oracle node (['HQ-9P']); the scorer's oracle model cannot express it",
+      "source": "sl_var_hq9p",
+      "status": "probable",
+      "target": "HQ-9P",
+      "type": "same-as"
+    },
+    {
+      "basis": "stated",
+      "edge_id": "sl_e04",
+      "excluded_because": "endpoint is a surface form, not a declared oracle node (['FD-2000']); the scorer's oracle model cannot express it",
+      "source": "sl_var_hq9p",
+      "status": "probable",
+      "target": "FD-2000",
+      "type": "same-as"
+    },
+    {
+      "basis": "NOT STATED ANYWHERE IN THE SLICE",
+      "edge_id": "sl_e13",
+      "excluded_because": "insufficient-evidence: the gold states this edge is NOT derivable from the slice; a candidate is right not to emit it",
+      "missing": "**A numbered-unit ORBAT reference** — a source that names a designated formation and the site it is based at. Nothing in the slice provides one; on inspection, nothing in the corpus does either (see DATA-FINDINGS).",
+      "source": "(any formation)",
+      "status": "insufficient-evidence",
+      "target": "(any site)",
+      "type": "based-at"
+    },
+    {
+      "basis": "NOT STATED (and contradicted within the slice)",
+      "edge_id": "sl_e14",
+      "excluded_because": "insufficient-evidence: the gold states this edge is NOT derivable from the slice; a candidate is right not to emit it",
+      "missing": "A locatable origin or destination; a unit designation to carry continuity through the move; a non-derivative second source. d20's own participants say it: 'No imagery, no second source, one guy's thread going viral.'",
+      "source": "sl_site_rahwali",
+      "status": "insufficient-evidence",
+      "target": "sl_site_old_rawalpindi",
+      "type": "supersedes"
+    },
+    {
+      "basis": "stated",
+      "edge_id": "sl_e19",
+      "excluded_because": "endpoint is a surface form, not a declared oracle node (['the garrison itself']); the scorer's oracle model cannot express it",
+      "source": "sl_site_old_rawalpindi",
+      "status": "probable",
+      "target": "the garrison itself",
+      "type": "distinct-from"
+    },
+    {
+      "basis": "stated (registry rename with CUIN)",
+      "edge_id": "sl_e20",
+      "excluded_because": "endpoint is a surface form, not a declared oracle node (['ORIENT ELECTRONIC TRADING CO']); the scorer's oracle model cannot express it",
+      "source": "sl_org_orient",
+      "status": "probable",
+      "target": "ORIENT ELECTRONIC TRADING CO",
+      "type": "same-as"
+    },
+    {
+      "basis": "stated ('see also' + shared invoice number)",
+      "edge_id": "sl_e21",
+      "excluded_because": "endpoint is a surface form, not a declared oracle node (['SINO-GALAXY IMPEX CO, LTD']); the scorer's oracle model cannot express it",
+      "source": "sl_org_sinogalaxy",
+      "status": "probable",
+      "target": "SINO-GALAXY IMPEX CO, LTD",
+      "type": "same-as"
+    },
+    {
+      "basis": "NOT STATED",
+      "edge_id": "sl_e22",
+      "excluded_because": "insufficient-evidence: the gold states this edge is NOT derivable from the slice; a candidate is right not to emit it",
+      "missing": "A named receiving unit; the end-user certificate (stated NOT attached).",
+      "source": "sl_event_118834",
+      "status": "insufficient-evidence",
+      "target": "(a unit)",
+      "type": "imported-by"
+    },
+    {
+      "basis": "NOT STATED",
+      "edge_id": "sl_e23",
+      "excluded_because": "insufficient-evidence: the gold states this edge is NOT derivable from the slice; a candidate is right not to emit it",
+      "missing": "A manufacturer anywhere in the chain.",
+      "source": "sl_event_118834",
+      "status": "insufficient-evidence",
+      "target": "(a manufacturer)",
+      "type": "exported-by"
+    },
+    {
+      "basis": "NOT STATED — derived at best",
+      "edge_id": "sl_e24",
+      "excluded_because": "insufficient-evidence: the gold states this edge is NOT derivable from the slice; a candidate is right not to emit it",
+      "missing": "An untruncated part/drawing reference; the end-user certificate (ref. letter DGDP/IMP/2020/2246, 'copy not scanned'); a physical examination record; any statement of military end-use.",
+      "source": "sl_event_118835",
+      "status": "insufficient-evidence",
+      "target": "sl_comp_ht233",
+      "type": "equips / supplies-component"
+    }
+  ],
+  "excluded_nodes": [
+    {
+      "declared_type": "(family — NOT a node type)",
+      "excluded_because": "declared type is not an ontology type",
+      "id": "sl_family_hq9",
+      "name": "HQ-9 / Hongqi-9 family",
+      "status": "confirmed",
+      "surface_forms": [
+        "the Chinese-origin HQ-9 family",
+        "the Chinese Hongqi-9",
+        "the HQ-9 family proper",
+        "China's HQ-9 long-range surface-to-air missile system",
+        "the HQ-9/HQ-9B/HQ-9BE/HQ-9P designator family"
+      ],
+      "type": ""
+    }
+  ],
+  "node_detail": [
+    {
+      "declared_type": "variant",
+      "id": "sl_var_hq9p",
+      "name": "HQ-9/P",
+      "status": "confirmed",
+      "surface_forms": [
+        "HQ-9/P",
+        "HQ-9P",
+        "FD-2000",
+        "the Army variant",
+        "the Army's HQ-9/P",
+        "High to Medium Air Defence System (HIMADS)",
+        "The system",
+        "the system",
+        "The HQ-9/P",
+        "The missile itself",
+        "HQ-9/P (HIMADS) battery"
+      ],
+      "type": "variant"
+    },
+    {
+      "declared_type": "variant",
+      "id": "sl_var_hq9be",
+      "name": "HQ-9BE",
+      "status": "probable",
+      "surface_forms": [
+        "the HQ-9BE",
+        "a longer-ranged variant",
+        "the PAF variant",
+        "the PAF's HQ-9BE",
+        "this variant, procured under a separate contract"
+      ],
+      "type": "variant"
+    },
+    {
+      "declared_type": "variant",
+      "id": "sl_var_hq9b_generic",
+      "name": "HQ-9B (used GENERICALLY by d19)",
+      "status": "possible",
+      "surface_forms": [
+        "HQ-9B",
+        "the HQ-9B system",
+        "HQ9B",
+        "HQ9B btry",
+        "HQ9B battery"
+      ],
+      "type": "variant"
+    },
+    {
+      "declared_type": "variant",
+      "id": "sl_var_ft2000",
+      "name": "FT-2000 (/ FT-2000A)",
+      "status": "possible",
+      "surface_forms": [
+        "the FT-2000",
+        "FT-2000A",
+        "\"FT-2000 batteries\""
+      ],
+      "type": "variant"
+    },
+    {
+      "declared_type": "manufacturer",
+      "id": "sl_mfr_casic",
+      "name": "CASIC",
+      "status": "probable",
+      "surface_forms": [
+        "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)",
+        "CASIC",
+        "the CASIC export HQ-9BE marketing designation"
+      ],
+      "type": "manufacturer"
+    },
+    {
+      "declared_type": "manufacturer",
+      "id": "sl_mfr_cpmiec",
+      "name": "CPMIEC",
+      "status": "possible",
+      "surface_forms": [
+        "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "type": "manufacturer"
+    },
+    {
+      "declared_type": "component",
+      "id": "sl_comp_ht233",
+      "name": "HT-233 engagement radar",
+      "status": "probable",
+      "surface_forms": [
+        "the HT-233 fire-control/engagement radar",
+        "HT-233-band engagement-radar parameters",
+        "associated HT-233 phased-array engagement radars",
+        "ref dwg HT233-"
+      ],
+      "type": "component"
+    },
+    {
+      "declared_type": "component",
+      "id": "sl_comp_tel",
+      "name": "TEL (transporter-erector-launcher)",
+      "status": "confirmed",
+      "surface_forms": [
+        "the TEL and battery-command cluster",
+        "Six TEL-pattern vehicles",
+        "transporter-erector-launchers (TELs)",
+        "batteries/launchers (TELs)",
+        "six single-stage TEL (transporter-erector-launcher) vehicles"
+      ],
+      "type": "component"
+    },
+    {
+      "declared_type": "unit (formation)",
+      "id": "sl_unit_paad",
+      "name": "an unnamed Pakistan Army Air Defence (PAAD) unit",
+      "status": "insufficient-evidence",
+      "surface_forms": [
+        "a Pakistan Army Air Defence (PAAD) unit",
+        "the newly raised/re-equipped unit",
+        "the unit"
+      ],
+      "type": "unit"
+    },
+    {
+      "declared_type": "unit (formation, as a CARDINALITY)",
+      "id": "sl_unit_orbat_count",
+      "name": "Pakistani HQ-9/P holdings: two operational battalions + a third in the pipeline",
+      "status": "insufficient-evidence",
+      "surface_forms": [
+        "two operational battalions",
+        "a third battalion reportedly in the delivery pipeline",
+        "a secondary battery near the Punjab border sector"
+      ],
+      "type": "unit"
+    },
+    {
+      "declared_type": "basing_site",
+      "id": "sl_site_karachi_centre",
+      "name": "Army Air Defence Centre, Karachi",
+      "status": "probable",
+      "surface_forms": [
+        "the Army Air Defence Centre, Karachi",
+        "ARMY AIR DEFENCE CENTRE, KARACHI"
+      ],
+      "type": "basing_site"
+    },
+    {
+      "declared_type": "basing_site",
+      "id": "sl_site_rahwali",
+      "name": "Rahwali airfield",
+      "status": "probable",
+      "surface_forms": [
+        "Rahwali airfield",
+        "Rahwali",
+        "near Rahwali airbase, Gujranwala",
+        "the site",
+        "this site",
+        "the location"
+      ],
+      "type": "basing_site"
+    },
+    {
+      "declared_type": "basing_site",
+      "id": "sl_site_sialkot",
+      "name": "Sialkot-area dispersal site",
+      "status": "insufficient-evidence",
+      "surface_forms": [
+        "the previously tracked Sialkot-area ... dispersal site"
+      ],
+      "type": "basing_site"
+    },
+    {
+      "declared_type": "basing_site",
+      "id": "sl_site_pasrur",
+      "name": "Pasrur dispersal site",
+      "status": "insufficient-evidence",
+      "surface_forms": [
+        "the previously tracked ... Pasrur dispersal sites"
+      ],
+      "type": "basing_site"
+    },
+    {
+      "declared_type": "basing_site",
+      "id": "sl_site_old_rawalpindi",
+      "name": "\"the old Rawalpindi-area site\" / \"the old Rawalpindi site\" / \"the port road area\"",
+      "status": "insufficient-evidence",
+      "surface_forms": [
+        "\"the old Rawalpindi-area site\" near the port road turnoff",
+        "a suspected forward SAM deployment area",
+        "the suspected forward site",
+        "the fenced compound",
+        "\"the forward HQ-9/P site\"",
+        "the old Rawalpindi site",
+        "near the port road area",
+        "\"near port road site\"",
+        "new loc"
+      ],
+      "type": "basing_site"
+    },
+    {
+      "declared_type": "basing_site",
+      "id": "sl_site_ad_depot",
+      "name": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+      "status": "insufficient-evidence",
+      "surface_forms": [
+        "final destination Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area"
+      ],
+      "type": "basing_site"
+    },
+    {
+      "declared_type": "trading_org",
+      "id": "sl_org_orient",
+      "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+      "status": "probable",
+      "surface_forms": [
+        "ORIENT ELECTRO TRADING (PVT) LTD",
+        "ORIENT ELECTRO TRADING PVT LTD",
+        "ORIENT ELECTRONIC TRADING CO"
+      ],
+      "type": "trading_org"
+    },
+    {
+      "declared_type": "trading_org",
+      "id": "sl_org_sinogalaxy",
+      "name": "SINO-GALAXY IMP/EXP CO. LTD",
+      "status": "probable",
+      "surface_forms": [
+        "SINO-GALAXY IMP/EXP CO. LTD",
+        "SINO-GALAXY IMPEX CO, LTD",
+        "SINO GALAXY IMP. & EXP. CO.",
+        "zhang.wei@sinogalaxy-export.cn"
+      ],
+      "type": "trading_org"
+    },
+    {
+      "declared_type": "trading_org",
+      "id": "sl_org_alnoor",
+      "name": "AL-NOOR CARGO SERVICES",
+      "status": "probable",
+      "surface_forms": [
+        "AL-NOOR CARGO SERVICES"
+      ],
+      "type": "trading_org"
+    },
+    {
+      "declared_type": "contract_import_event",
+      "id": "sl_event_118834",
+      "name": "GD KPQA-HC-2020-118834",
+      "status": "probable",
+      "surface_forms": [
+        "GD No: KPQA-HC-2020-118834",
+        "B/L No: YMLUW189234567",
+        "line 118834"
+      ],
+      "type": "contract_import_event"
+    },
+    {
+      "declared_type": "contract_import_event",
+      "id": "sl_event_118835",
+      "name": "GD KPQA-HC-2020-118835",
+      "status": "probable",
+      "surface_forms": [
+        "GD No: KPQA-HC-2020-118835",
+        "B/L No: YMLUW189234568",
+        "GD 118835"
+      ],
+      "type": "contract_import_event"
+    },
+    {
+      "declared_type": "contract_import_event",
+      "id": "sl_event_119011",
+      "name": "GD KPQA-HC-2020-119011",
+      "status": "probable",
+      "surface_forms": [
+        "GD No: KPQA-HC-2020-119011",
+        "B/L No: COSU6178820410"
+      ],
+      "type": "contract_import_event"
+    },
+    {
+      "declared_type": "known_gap",
+      "id": "sl_gap_tel_count",
+      "name": "TEL / battery / launcher count",
+      "status": "confirmed",
+      "surface_forms": [
+        "The exact number of batteries/launchers (TELs) inducted was not disclosed",
+        "\"sufficient numbers\"",
+        "estimated at 6–8 TELs",
+        "no unit markings or signage"
+      ],
+      "type": "known_gap"
+    },
+    {
+      "declared_type": "known_gap",
+      "id": "sl_gap_designation",
+      "name": "unit designation / order-of-battle documentation",
+      "status": "confirmed",
+      "surface_forms": [
+        "unit numbers, basing locations, or the precise contractual designations",
+        "no unit markings or signage visible in any pass to date",
+        "confirmed order-of-battle documentation",
+        "not releasing order-of-battle details for sensitive air defence assets"
+      ],
+      "type": "known_gap"
+    },
+    {
+      "declared_type": "known_gap",
+      "id": "sl_gap_ht233_maker",
+      "name": "HT-233 manufacturer",
+      "status": "confirmed",
+      "surface_forms": [],
+      "type": "known_gap"
+    },
+    {
+      "declared_type": "area_of_operations",
+      "id": "sl_areas",
+      "name": "Karachi/Sindh coastal sector; strategic air defence belt; Arabian Sea approach; Punjab border sector; PUNJAB AIR DEFENCE BELT",
+      "status": "probable",
+      "surface_forms": [
+        "its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+        "positions oriented toward the Arabian Sea approach",
+        "near the Punjab border sector",
+        "PAKISTAN — PUNJAB AIR DEFENCE BELT"
+      ],
+      "type": "area_of_operations"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "sl_var_hq9p",
+      "name": "HQ-9/P",
+      "type": "variant"
+    },
+    {
+      "id": "sl_var_hq9be",
+      "name": "HQ-9BE",
+      "type": "variant"
+    },
+    {
+      "id": "sl_var_hq9b_generic",
+      "name": "HQ-9B (used GENERICALLY by d19)",
+      "type": "variant"
+    },
+    {
+      "id": "sl_var_ft2000",
+      "name": "FT-2000 (/ FT-2000A)",
+      "type": "variant"
+    },
+    {
+      "id": "sl_mfr_casic",
+      "name": "CASIC",
+      "type": "manufacturer"
+    },
+    {
+      "id": "sl_mfr_cpmiec",
+      "name": "CPMIEC",
+      "type": "manufacturer"
+    },
+    {
+      "id": "sl_comp_ht233",
+      "name": "HT-233 engagement radar",
+      "type": "component"
+    },
+    {
+      "id": "sl_comp_tel",
+      "name": "TEL (transporter-erector-launcher)",
+      "type": "component"
+    },
+    {
+      "id": "sl_unit_paad",
+      "name": "an unnamed Pakistan Army Air Defence (PAAD) unit",
+      "type": "unit"
+    },
+    {
+      "id": "sl_unit_orbat_count",
+      "name": "Pakistani HQ-9/P holdings: two operational battalions + a third in the pipeline",
+      "type": "unit"
+    },
+    {
+      "id": "sl_site_karachi_centre",
+      "name": "Army Air Defence Centre, Karachi",
+      "type": "basing_site"
+    },
+    {
+      "id": "sl_site_rahwali",
+      "name": "Rahwali airfield",
+      "type": "basing_site"
+    },
+    {
+      "id": "sl_site_sialkot",
+      "name": "Sialkot-area dispersal site",
+      "type": "basing_site"
+    },
+    {
+      "id": "sl_site_pasrur",
+      "name": "Pasrur dispersal site",
+      "type": "basing_site"
+    },
+    {
+      "id": "sl_site_old_rawalpindi",
+      "name": "\"the old Rawalpindi-area site\" / \"the old Rawalpindi site\" / \"the port road area\"",
+      "type": "basing_site"
+    },
+    {
+      "id": "sl_site_ad_depot",
+      "name": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+      "type": "basing_site"
+    },
+    {
+      "id": "sl_org_orient",
+      "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+      "type": "trading_org"
+    },
+    {
+      "id": "sl_org_sinogalaxy",
+      "name": "SINO-GALAXY IMP/EXP CO. LTD",
+      "type": "trading_org"
+    },
+    {
+      "id": "sl_org_alnoor",
+      "name": "AL-NOOR CARGO SERVICES",
+      "type": "trading_org"
+    },
+    {
+      "id": "sl_event_118834",
+      "name": "GD KPQA-HC-2020-118834",
+      "type": "contract_import_event"
+    },
+    {
+      "id": "sl_event_118835",
+      "name": "GD KPQA-HC-2020-118835",
+      "type": "contract_import_event"
+    },
+    {
+      "id": "sl_event_119011",
+      "name": "GD KPQA-HC-2020-119011",
+      "type": "contract_import_event"
+    },
+    {
+      "id": "sl_gap_tel_count",
+      "name": "TEL / battery / launcher count",
+      "type": "known_gap"
+    },
+    {
+      "id": "sl_gap_designation",
+      "name": "unit designation / order-of-battle documentation",
+      "type": "known_gap"
+    },
+    {
+      "id": "sl_gap_ht233_maker",
+      "name": "HT-233 manufacturer",
+      "type": "known_gap"
+    },
+    {
+      "id": "sl_areas",
+      "name": "Karachi/Sindh coastal sector; strategic air defence belt; Arabian Sea approach; Punjab border sector; PUNJAB AIR DEFENCE BELT",
+      "type": "area_of_operations"
+    }
+  ],
+  "produced_by": {
+    "adapter": "eval.gold.adapter",
+    "from_digest_sha256": "7b2994bce83bf23744fa2660203b5f5eec9cea8f3f6babafa824f3aaabec9dfd",
+    "from_schema": "rk-spike-sub-oracle/1.1",
+    "note": "Derived file. Edit the labeled sub-oracle, then regenerate."
+  },
+  "reconciliation": {
+    "excluded_edges": 10,
+    "excluded_nodes": 1,
+    "scored_edges": 14,
+    "scored_nodes": 26,
+    "source_edges": 24,
+    "source_nodes": 27
+  },
+  "schema_version": "rk-bakeoff-sub-oracle/1.0"
+}

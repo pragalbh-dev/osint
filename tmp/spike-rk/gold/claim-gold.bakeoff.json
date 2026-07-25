@@ -1,0 +1,4668 @@
+{
+  "claims": [
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C0-source",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The artifact form is stated in the header line 'PRESS RELEASE' (L1); the issuer is L4. Grade and bias are registry values, NOT stated by the doc.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "source_type": "PRESS RELEASE"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 4,
+        "span": [
+          37,
+          75
+        ]
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "gold_id": "d02-r01",
+      "name": "Inter-Services Public Relations (ISPR)",
+      "polarity": "positive",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C1-system",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "'reportedly' hedges the designator, not the existence.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d02-C1-system",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the Army Air Defence Centre, Karachi",
+        "operator": "Pakistan Army Air Defence (PAAD)",
+        "time": "14 October 2021"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 11,
+        "span": [
+          299,
+          412
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "gold_id": "d02-r02",
+      "name": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+      "polarity": "positive",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C1-system",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "EXPLICIT_EQUIVALENCE by apposition, hedged 'reportedly'. CAUTION: HIMADS is a capability CLASS ('high to medium air defence system'), not a designator — it must not become a global alias that pulls in every other HIMADS.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d02-C1-system",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 11,
+        "span": [
+          305,
+          376
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d02-r03",
+      "object": "HQ-9/P",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d02_ispr_induction",
+      "subject": "High to Medium Air Defence System (HIMADS)"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C2-unit",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The strongest claim in the doc. The object end is an UNNAMED formation — no designator, no echelon. This is formation-shaped evidence with no formation identity.",
+        "gold_predicate": "inducted-into",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d02-C2-unit",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the Army Air Defence Centre, Karachi",
+        "operator": "Pakistan Army Air Defence (PAAD)",
+        "time": "14 October 2021"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 11,
+        "span": [
+          378,
+          457
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d02-r04",
+      "object": "a Pakistan Army Air Defence (PAAD) unit",
+      "polarity": "positive",
+      "predicate": "inducted-into",
+      "source_id": "d02_ispr_induction",
+      "subject": "HQ-9/P"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C3-site",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "An establishment/training centre, not a firing position. Geography is city-precision at best; the doc gives no grid, no district.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "coordinates": "Karachi (bare parent-city toponym)",
+          "site_type": "Centre"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d02-C3-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Karachi (city precision only)",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 11,
+        "span": [
+          247,
+          297
+        ]
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "gold_id": "d02-r05",
+      "name": "the Army Air Defence Centre, Karachi",
+      "polarity": "positive",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-AMBIG-2",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "**AMBIGUOUS.** The parenthetical names a FAMILY ('HQ-9P/FD-2000 family'), so it licenses a family-level alias set only. Reading it as the variant-level identity FD-2000 == HQ-9/P over-reads this document. d04 states it properly; d02 does not.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 15,
+        "span": [
+          820,
+          876
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d02-r07",
+      "object": "FD-2000",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d02_ispr_induction",
+      "subject": "HQ-9/P"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C5-gap",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "Absence stated in the source's own voice, with the REASON. This is the model case for 'insufficient evidence, and here is why coverage will not improve'.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "battery/launcher (TEL) count",
+          "observability_ceiling": "stated policy of non-disclosure"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 17,
+        "span": [
+          1408,
+          1602
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "d02-r11",
+      "name": "the exact number of batteries/launchers (TELs) inducted",
+      "polarity": "negative",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d02-C1-system",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The event form of r04, kept as its own row because the event carries the location and the count_state that the bare relationship does not.",
+        "gold_predicate": "EVENT:InductionEvent",
+        "gold_tier3_attributes": {
+          "count_state": "\"sufficient numbers\"",
+          "event_time": "2021-10-14",
+          "location": "Army Air Defence Centre, Karachi"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d02-C1-system",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the Army Air Defence Centre, Karachi",
+        "operator": "Pakistan Army Air Defence (PAAD)",
+        "time": "14 October 2021"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "line": 11,
+        "span": [
+          158,
+          458
+        ]
+      },
+      "event_type": "InductionEvent",
+      "form": "event",
+      "gold_id": "d02-r16",
+      "participants": [
+        "HQ-9/P",
+        "a Pakistan Army Air Defence (PAAD) unit"
+      ],
+      "polarity": "positive",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C1-hq9p",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "'reportedly designated' hedges the designator only.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "export_designator": "HQ-9/P",
+          "family": "HQ-9",
+          "operator_branch": "The Pakistan Army's Air Defence Command"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C1-hq9p",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "The Pakistan Army's Air Defence Command",
+        "time": "October 2021"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 7,
+        "span": [
+          494,
+          598
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "gold_id": "d04-r01",
+      "name": "a battery-level deployment reportedly designated HQ-9/P",
+      "polarity": "positive",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C1-hq9p",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "EXPLICIT_EQUIVALENCE, unhedged. Slash-vs-no-slash variant.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C1-hq9p",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 7,
+        "span": [
+          600,
+          646
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d04-r02",
+      "object": "HQ-9P",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d04_armyrec_ranges",
+      "subject": "HQ-9/P"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C1-hq9p",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "EXPLICIT_EQUIVALENCE at VARIANT level (contrast d02-r07, which is family-level only). This is the row that licenses the FD-2000 alias merge.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C1-hq9p",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 7,
+        "span": [
+          652,
+          789
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d04-r03",
+      "object": "FD-2000",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d04_armyrec_ranges",
+      "subject": "HQ-9/P"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C2-hq9be",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "'is believed to operate'.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "export_designator": "HQ-9BE",
+          "family": "HQ-9",
+          "operator_branch": "the Pakistan Air Force"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C2-hq9be",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "the Pakistan Air Force",
+        "time": "October 2021"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 9,
+        "span": [
+          1223,
+          1350
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "gold_id": "d04-r05",
+      "name": "a longer-ranged variant ... the HQ-9BE",
+      "polarity": "positive",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-ANTI-1",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "THE anti-merge row of the slice. Stated in the author's voice but hedged ('appear to be'). Grade C, single source. An honest system reaches 'probable distinct', not 'confirmed distinct', on this evidence alone.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-ANTI-1",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "Pakistan Army vs Pakistan Air Force",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 11,
+        "span": [
+          1933,
+          2182
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d04-r07",
+      "object": "HQ-9BE",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d04_armyrec_ranges",
+      "subject": "HQ-9/P"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C3-ft2000",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "'seeker' is NOT a declared variant attribute — recorded verbatim as a tier-3 attribute so the discriminating fact is not lost.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "range_class": "lower-tier, medium-range derivative",
+          "seeker": "passive anti-radiation seeker"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C3-ft2000",
+      "discriminators": {
+        "designation": "FT-2000 / FT-2000A",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 13,
+        "span": [
+          2611,
+          2827
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "gold_id": "d04-r09",
+      "name": "the FT-2000 (sometimes rendered FT-2000A)",
+      "polarity": "positive",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C3-ft2000",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "A stated technical differentia (seeker type) — the strongest form of anti-identity evidence available in this corpus, and it is on the DESIGN layer, not the instance layer.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C3-ft2000",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 13,
+        "span": [
+          2709,
+          2827
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d04-r10",
+      "object": "the HQ-9 family proper",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d04_armyrec_ranges",
+      "subject": "the FT-2000"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C4-casic",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "**AMBIGUOUS which variant.** 'the manufacturer' is an apposition inside a sentence about the HQ-9BE range figure. It licenses CASIC-as-manufacturer-of-the-thing-under-discussion; whether that extends to HQ-9/P is not stated here.",
+        "gold_predicate": "manufactures",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d04-C4-casic",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "China",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 9,
+        "span": [
+          1780,
+          1930
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d04-r13",
+      "object": "the HQ-9BE",
+      "polarity": "positive",
+      "predicate": "manufactures",
+      "source_id": "d04_armyrec_ranges",
+      "subject": "China Aerospace Science and Industry Corporation (CASIC)"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d04-C5-gap",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "A stated collection gap covering exactly the three unit-level discriminators the replumb's priority ladder needs. Independent corroboration of the corpus-wide designation gap.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "unit numbers; basing locations; contractual designations"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "line": 17,
+        "span": [
+          3874,
+          4090
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "d04-r16",
+      "name": "unit numbers, basing locations, or the precise contractual designations",
+      "polarity": "negative",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C1-site",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The operator slot is STATED BUT DISJUNCTIVE ('Army/PAF'). A disjunctive operator is not a usable discriminator and must not be silently resolved to either service.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "coordinates": "~10 km NW of Gujranwala along the GT Road corridor, Punjab (relative form, no grid)",
+          "site_type": "airfield; Pakistan Army/PAF joint-use facility"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "~10 km NW of Gujranwala along the GT Road corridor, Punjab",
+        "operator": "Pakistan Army/PAF joint-use (DISJUNCTIVE)",
+        "time": "reporting period 24–31 March 2025"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 11,
+        "span": [
+          329,
+          444
+        ]
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "gold_id": "d19-r01",
+      "name": "Rahwali airfield",
+      "polarity": "positive",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C2-presence",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "A PRESENCE claim. 'confirms ... first detected on the single-pass collection reported earlier this quarter' references an earlier report NOT in this slice — so the 'confirmation' partly rests on out-of-slice evidence.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "arrangement": "a fan arrangement",
+          "observation_date": "27 March",
+          "platform": "Planet SkySat, 0.5m"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C2-presence",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "northeast dispersal area, Rahwali airfield",
+        "operator": "Pakistan Army/PAF joint-use (DISJUNCTIVE)",
+        "time": "27 March 2025"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 11,
+        "span": [
+          446,
+          661
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r02",
+      "object": "Rahwali airfield, in the northeast dispersal area",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "the TEL and battery-command cluster"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C3-radar",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "The ONLY designation-shaped discriminator in the doc, and the doc disowns it: 'the vendor's characterization, not independently re-derived by this desk'.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "geometry": "large octagonal",
+          "offset": "roughly 380 m east of the TEL cluster",
+          "radar_band": "HT-233-band"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C3-radar",
+      "discriminators": {
+        "designation": "HT-233 (vendor characterization)",
+        "geography": "Rahwali airfield, hardstand 380 m E of TEL cluster",
+        "operator": "unknown",
+        "time": "27 March 2025"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 11,
+        "span": [
+          778,
+          994
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r05",
+      "object": "its prepared hardstand roughly 380 m east of the TEL cluster, Rahwali airfield",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C3-radar",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "The doc's verb is 'associated with', which is weaker than `equips`. Recording it as equips is already an upgrade — flagged so a scorer does not credit the stronger reading.",
+        "gold_predicate": "equips",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C3-radar",
+      "discriminators": {
+        "designation": "HT-233",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 11,
+        "span": [
+          824,
+          912
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r06",
+      "object": "the HQ-9B system",
+      "polarity": "positive",
+      "predicate": "equips",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "the HT-233 fire-control/engagement radar"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C5-sources",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "FINDING: the second 'independent' signal is an UNNAMED vendor relayed through an unnamed intermediary, and the doc admits 'no further geolocation detail released at this subscription tier'. Its independence is asserted, not demonstrable, and it lives inside the same document as the first signal.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "operator": "not disclosed to subscribers",
+          "source_type": "commercial ELINT aggregator feed, relayed via a third-party maritime/air RF-monitoring service"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the same general locale",
+        "operator": "unknown",
+        "time": "during the reporting window"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 13,
+        "span": [
+          1250,
+          1466
+        ]
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "gold_id": "d19-r07",
+      "name": "a commercial ELINT aggregator feed",
+      "polarity": "positive",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C2-presence",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "A third observation, same discipline (optical), different platform. Platform-independence is not discipline-independence.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "platform": "different collection platform than the 27 March pass"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C2-presence",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Rahwali airfield",
+        "operator": "unknown",
+        "time": "29 March 2025"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 13,
+        "span": [
+          1676,
+          1842
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r08",
+      "object": "the radar hardstand occupied and TEL count unchanged, Rahwali airfield",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "a repeat optical pass on 29 March"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-AMBIG-1",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "**AMBIGUOUS.** Stated as a rendering variant here, then explicitly disclaimed at L19. Also collides head-on with d04-r07, which states HQ-9/P and HQ-9BE are DISTINCT. On the slice these two docs are in direct conflict and neither can be preferred on grade alone (B vs C, but d04 argues the point and d19 disclaims its own).",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-AMBIG-1",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 15,
+        "span": [
+          2466,
+          2586
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r09",
+      "object": "HQ-9P",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "HQ-9BE"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C2-presence",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "**THE presence/formation borderline.** A named COMMAND + an anonymous BATTERY is not a named formation, so this is `observed-at`, not a stated `based-at`. Getting this wrong mints a formation the source never named.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "first_association": "first collection cycle to associate ... with the location"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C2-presence",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Rahwali",
+        "operator": "PAF/Army Air Defence Command (DISJUNCTIVE)",
+        "time": "reporting period 24–31 March 2025"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 15,
+        "span": [
+          2418,
+          2683
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r11",
+      "object": "Rahwali",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "a PAF/Army Air Defence Command HQ-9BE ... battery"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C4-othersites",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "THIN: named region, no coords, no equipment claim, no operator. Existence only.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "occupancy_state": "\"last confirmed\" state from the 07 March pass",
+          "site_type": "dispersal site"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C4-othersites",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Sialkot area",
+        "operator": "unknown",
+        "time": "07 March pass"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 17,
+        "span": [
+          3070,
+          3238
+        ]
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "gold_id": "d19-r14",
+      "name": "Sialkot-area dispersal site",
+      "polarity": "positive",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C4-othersites",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "THIN, as r14.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "occupancy_state": "\"last confirmed\" state from the 07 March pass",
+          "site_type": "dispersal site"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C4-othersites",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Pasrur",
+        "operator": "unknown",
+        "time": "07 March pass"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 17,
+        "span": [
+          3070,
+          3238
+        ]
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "gold_id": "d19-r15",
+      "name": "Pasrur dispersal site",
+      "polarity": "positive",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C4-othersites",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Stated by enumeration + explicit cardinality ('both'). This is the corpus's cleanest two-same-type-instances-that-must-not-merge case — but at SITE level, not formation level.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C4-othersites",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 17,
+        "span": [
+          3099,
+          3214
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r16",
+      "object": "Pasrur dispersal site",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "Sialkot-area dispersal site"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C4-othersites",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Contrasted with Rahwali by the paragraph structure ('No new activity ... at the previously tracked' vs the Rahwali paragraph's new detection).",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d19-C4-othersites",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 17,
+        "span": [
+          3070,
+          3173
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d19-r17",
+      "object": "Rahwali airfield",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d19_rahwali_confirm",
+      "subject": "the previously tracked Sialkot-area and Pasrur dispersal sites"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d19-C5-sources",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The doc self-declares as an AGGREGATOR of three feeds and prior issues of itself. Its internal 'two independent signals' are therefore all inside one aggregating source.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "aggregator_of": "open commercial imagery, subscriber ELINT relay reporting, and prior digest issues (14 Feb 2025, 07 Mar 2025)",
+          "source_type": "Weekly Imagery & Signals Digest"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "Issue dated: 04 April 2025"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "line": 22,
+        "span": [
+          3603,
+          3727
+        ]
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "gold_id": "d19-r18",
+      "name": "IISS Military Balance+ / Open-Source Airpower Monitor",
+      "polarity": "positive",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C4-events",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The GD number and B/L number ARE the event's identity — the only hard identifiers in the slice.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "bl_no": "YMLUW189234567",
+          "containers": "TCNU7712204 / TCNU7712341 (2 x 40ft HC)",
+          "declared_value": "USD 612,400 (CIF PQ)",
+          "filing_date": "04-11-2020",
+          "gd_no": "KPQA-HC-2020-118834",
+          "hs_code": "8526.91.00",
+          "packages": "14 WOODEN CRATES, gross wt 9,870 kg",
+          "port_of_discharge": "PORT MUHAMMAD BIN QASIM (PQ)",
+          "vessel": "MV YM INCEPTION  Voy: 0091E   Line: Yang Ming (SCAC YMLU)"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "designation": "KPQA-HC-2020-118834 / B/L YMLUW189234567",
+        "geography": "PORT MUHAMMAD BIN QASIM (PQ)",
+        "operator": "unknown",
+        "time": "04-11-2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 12,
+        "span": [
+          531,
+          590
+        ]
+      },
+      "entity_type": "contract_import_event",
+      "form": "entity",
+      "gold_id": "d05-r01",
+      "name": "KPQA-HC-2020-118834",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C4-events",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Shares a container and a vessel voyage with r01 — maximum relational pull toward a merge that would corrupt the supply-chain count.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "bl_no": "YMLUW189234568",
+          "containers": "TCNU7712204 (shared, see line 118834)",
+          "declared_value": "USD 188,900",
+          "filing_date": "04-11-2020",
+          "gd_no": "KPQA-HC-2020-118835",
+          "hs_code": "8526.92.00",
+          "packages": "6 CRATES, gross wt 4,120 kg",
+          "port_of_discharge": "BIN QASIM",
+          "vessel": "MV YM INCEPTION  Voy: 0091E"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "designation": "KPQA-HC-2020-118835 / B/L YMLUW189234568",
+        "geography": "BIN QASIM",
+        "operator": "unknown",
+        "time": "04-11-2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 35,
+        "span": [
+          1612,
+          1671
+        ]
+      },
+      "entity_type": "contract_import_event",
+      "form": "entity",
+      "gold_id": "d05-r02",
+      "name": "KPQA-HC-2020-118835",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C4-events",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Different vessel, different line, different container.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "bl_no": "COSU6178820410",
+          "containers": "CSNU4402217",
+          "declared_value": "USD 244,150",
+          "exam": "GREEN CHANNEL -- NO PHYSICAL EXAMINATION",
+          "filing_date": "09-11-2020",
+          "gd_no": "KPQA-HC-2020-119011",
+          "hs_code": "8526.91.00",
+          "packages": "9 CRATES, gross wt 6,005 kg",
+          "port_of_discharge": "Port Qasim",
+          "vessel": "MV COSCO SHIPPING ARIES  Voy: 118W  Line: COSCO"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "designation": "KPQA-HC-2020-119011 / B/L COSU6178820410",
+        "geography": "Port Qasim",
+        "operator": "unknown",
+        "time": "09-11-2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 68,
+        "span": [
+          3130,
+          3189
+        ]
+      },
+      "entity_type": "contract_import_event",
+      "form": "entity",
+      "gold_id": "d05-r03",
+      "name": "KPQA-HC-2020-119011",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C4-events",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Licensed by distinct GD/B/L identifiers AND by the doc's own cross-reference treating them as two lines. THE canonical over-merge case.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 48,
+        "span": [
+          2101,
+          2155
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d05-r04",
+      "object": "KPQA-HC-2020-118835",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d05_customs_manifest",
+      "subject": "KPQA-HC-2020-118834"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C4-events",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Distinct identifiers, dates, vessels.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 68,
+        "span": [
+          3130,
+          3189
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d05-r05",
+      "object": "KPQA-HC-2020-119011",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d05_customs_manifest",
+      "subject": "KPQA-HC-2020-118835"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C4-events",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Same HS code as 118834 — the shape most likely to be merged.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 68,
+        "span": [
+          3130,
+          3189
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d05-r06",
+      "object": "KPQA-HC-2020-119011",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d05_customs_manifest",
+      "subject": "KPQA-HC-2020-118834"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C1-consignee",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The NTN is a national tax number — a hard identifier. Nothing in the doc calls this firm a shell or a front; that reading is derived.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "ntn": "3298761-4",
+          "place_ref": "Suite 4-C, Sharae Faisal Commercial Complex, Karachi",
+          "role": "Consignee"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C1-consignee",
+      "discriminators": {
+        "designation": "NTN 3298761-4",
+        "geography": "Suite 4-C, Sharae Faisal Commercial Complex, Karachi",
+        "operator": "unknown",
+        "time": "04-11-2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 18,
+        "span": [
+          784,
+          937
+        ]
+      },
+      "entity_type": "trading_org",
+      "form": "entity",
+      "gold_id": "d05-r07",
+      "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C1-consignee",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "EXPLICIT_EQUIVALENCE with a registry citation — the strongest identity licence in the whole slice. Note the surfaces differ by a whole token ('ELECTRO' vs 'ELECTRONIC'), so string similarity alone would under-bind it.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {
+          "registry_ref": "SECP CUIN 0087762, 2019"
+        },
+        "span_byte_exact": false
+      },
+      "coref_cluster": "d05-C1-consignee",
+      "discriminators": {
+        "designation": "SECP CUIN 0087762",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 73,
+        "span": [
+          3317,
+          3447
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d05-r08",
+      "object": "ORIENT ELECTRONIC TRADING CO",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d05_customs_manifest",
+      "subject": "ORIENT ELECTRO TRADING PVT LTD"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C2-shipper",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Country appears as 'CHINA' here and 'China' at line 76 — the exact casing drift the config warns walls would misfire on.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "origin_country": "CHINA",
+          "origin_port": "Tianjin Xingang",
+          "role": "Shipper"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C2-shipper",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Origin: Tianjin Xingang",
+        "operator": "CHINA",
+        "time": "04-11-2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 21,
+        "span": [
+          938,
+          982
+        ]
+      },
+      "entity_type": "trading_org",
+      "form": "entity",
+      "gold_id": "d05-r09",
+      "name": "SINO-GALAXY IMP/EXP CO. LTD",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C2-shipper",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "EXPLICIT_EQUIVALENCE via 'see also' plus a shared invoice number.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {
+          "shared_ref": "inv. #SG-20-4471"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C2-shipper",
+      "discriminators": {
+        "designation": "inv. #SG-20-4471",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 22,
+        "span": [
+          1000,
+          1056
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d05-r10",
+      "object": "SINO-GALAXY IMPEX CO, LTD",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d05_customs_manifest",
+      "subject": "SINO-GALAXY IMP/EXP CO. LTD"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C2-shipper",
+        "gold_evidence_mode": "derived-required",
+        "gold_notes": "**AMBIGUOUS.** No direct licence for this surface; it is only reachable transitively through line 22. Same consignee/vessel/voyage makes it near-certain, but the certainty comes from context, not from a stated equivalence.",
+        "gold_predicate": "same-as",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d05-C2-shipper",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "CHINA",
+        "time": "04-11-2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 41,
+        "span": [
+          1811,
+          1855
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d05-r11",
+      "object": "SINO-GALAXY IMP/EXP CO. LTD",
+      "polarity": "positive",
+      "predicate": "same-as",
+      "source_id": "d05_customs_manifest",
+      "subject": "SINO GALAXY IMP. & EXP. CO."
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C6-forwarder",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "Third org in the doc, identifier-backed (AEO certificate). Its AEO status is what auto-cleared the risk flag.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "aeo_cert": "PK-AEO-0231",
+          "place_ref": "Bin Qasim Town, Karachi",
+          "role": "Freight Fwdr"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "AEO Cert No. PK-AEO-0231",
+        "geography": "Bin Qasim Town, Karachi",
+        "operator": "unknown",
+        "time": "2020-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 32,
+        "span": [
+          1468,
+          1532
+        ]
+      },
+      "entity_type": "trading_org",
+      "form": "entity",
+      "gold_id": "d05-r12",
+      "name": "AL-NOOR CARGO SERVICES",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C7-destination",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "THIN + low-integrity: a handwritten broker annotation, relative geography, two alternative anchors ('Kala Chitta / Attock Cantt'). Existence only; nothing observed there, nobody based there.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "coordinates": "~12 km NNW of Kala Chitta / Attock Cantt area (relative, no grid)",
+          "provenance": "handwritten annotation on file copy",
+          "site_type": "Depot"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "~12 km NNW of Kala Chitta / Attock Cantt area",
+        "operator": "unknown",
+        "time": "2020-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 62,
+        "span": [
+          2801,
+          3050
+        ]
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "gold_id": "d05-r18",
+      "name": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+      "polarity": "positive",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d05-C8-gap",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "The single document that would establish end-use is cited but absent. Names exactly what is missing — the insufficient-evidence template's ideal input.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "end-user certificate (ref. letter DGDP/IMP/2020/2246, copy not scanned)"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "DGDP/IMP/2020/2246",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "2020"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+        "line": 60,
+        "span": [
+          2674,
+          2800
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "d05-r19",
+      "name": "End-user certificate",
+      "polarity": "negative",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C1-site",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "The site's only name is a quoted nickname from forum reporting. Geography is self-inconsistent (see the ambiguity note). No coordinates anywhere in the document.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "coordinates": "NONE STATED",
+          "naming_basis": "referred to in prior open reporting simply as ...",
+          "site_type": "suspected forward SAM deployment area"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "\"the old Rawalpindi-area site\" near the port road turnoff (SELF-INCONSISTENT)",
+        "operator": "unknown",
+        "time": "2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 9,
+        "span": [
+          450,
+          648
+        ]
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "gold_id": "d17b-r01",
+      "name": "\"the old Rawalpindi-area site\" near the port road turnoff",
+      "polarity": "positive",
+      "source_id": "d17b_withheld_gap"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C1-site",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "A STATED distinct-from on a site with no coordinates — anti-identity evidence that arrives before any identity evidence does. Worth noting the wall must hold even though neither endpoint is locatable.",
+        "gold_predicate": "distinct-from",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 9,
+        "span": [
+          519,
+          601
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d17b-r02",
+      "object": "the garrison itself",
+      "polarity": "positive",
+      "predicate": "distinct-from",
+      "source_id": "d17b_withheld_gap",
+      "subject": "\"the old Rawalpindi-area site\""
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C1-site",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "THE negative observation. Absence looked for and reported — evidence, not silence.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "cloud_cover": "~15%, partial obscuration along the northern tree line",
+          "pass": "2025-06-11 (single pass, ~1030 local)",
+          "platform": "commercial EO, sub-meter resolution, pansharpened"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the suspected forward site (unlocatable)",
+        "operator": "unknown",
+        "time": "2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 22,
+        "span": [
+          1359,
+          1486
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d17b-r03",
+      "object": "any of the hardstands or along the access spur (the suspected forward site)",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d17b_withheld_gap",
+      "subject": "transporter-erector-launchers (TELs)"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C1-site",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "A CHANGE claim: something assessed as present in Nov-2024 is absent now. Note the prior assessment was itself hedged ('possible').",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "comparison": "in the 2024-11 chip showed what was assessed as a possible radar trailer footprint"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the cleared laydown area",
+        "operator": "unknown",
+        "time": "2025-06-11 vs 2024-11 baseline"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 22,
+        "span": [
+          1487,
+          1630
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d17b-r04",
+      "object": "The cleared laydown area (the suspected forward site)",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d17b_withheld_gap",
+      "subject": "a possible radar trailer footprint"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C1-site",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "A deliberate check for concealment, reported negative — strengthens the negative observation rather than merely repeating it.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "northern and southern pad clusters",
+        "operator": "unknown",
+        "time": "2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 22,
+        "span": [
+          1631,
+          1760
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d17b-r05",
+      "object": "either the northern or southern pad clusters",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d17b_withheld_gap",
+      "subject": "canvas-covered or tarped objects of TEL-consistent dimensions"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C1-site",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "Third independent negative indicator.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-C1-site",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the fenced compound",
+        "operator": "unknown",
+        "time": "2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 24,
+        "span": [
+          1975,
+          2162
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d17b-r06",
+      "object": "anywhere within the fenced compound",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d17b_withheld_gap",
+      "subject": "unusual vehicle staging, generator trailers, or the tented storage typically associated with missile canister or spares handling"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C3-gap",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "**The designation discriminator declared absent across the entire collection history.** The strongest statement in the corpus that the top rung of the discriminator ladder has no data to stand on.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "unit markings / signage — absent in ANY pass to date",
+          "observability_ceiling": "never observed across the full pass history"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 40,
+        "span": [
+          4117,
+          4172
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "d17b-r09",
+      "name": "unit markings or signage",
+      "polarity": "negative",
+      "source_id": "d17b_withheld_gap"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-AMBIG-1",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "A POSITIVE claim, reported not endorsed, that directly opposes r03's negative — but the doc says the two may not even be about the same place. The contradiction is itself unresolvable, which is the honest finding.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "attributed_to": "an unnamed \"regional source\"",
+          "carrier": "a Telegram-linked OSINT aggregator"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d17b-AMBIG-1",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "near port road site (no coordinates)",
+        "operator": "unknown",
+        "time": "2025-06-11 0640Z"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 30,
+        "span": [
+          2538,
+          2827
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d17b-r12",
+      "object": "near port road site",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d17b_withheld_gap",
+      "subject": "\"fresh HQ-9/P TEL deployment confirmed near port road site, imagery pending\""
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d17b-C3-gap",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "A stated next-coverage window — literally the 'and when next coverage is due' half of the non-negotiable, supplied by the source.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "persistence of the negative finding; second-vendor cross-reference for the same window",
+          "next_coverage_due": "within the next 5–7 days"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "within the next 5–7 days of 2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "line": 34,
+        "span": [
+          3623,
+          3809
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "d17b-r14",
+      "name": "follow-up tasking",
+      "polarity": "positive",
+      "source_id": "d17b_withheld_gap"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-C1-battery",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "The negative half of r01. Grade E, adversary bias, unnamed sources, no imagery.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-C1-battery",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Rahwali",
+        "operator": "unknown",
+        "time": "early week of 2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 6,
+        "span": [
+          223,
+          312
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d20-r02",
+      "object": "Rahwali",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d20_supersede_spoof",
+      "subject": "the HQ9B btry"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-AMBIG-2",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "The positive half. 'toward' is not 'at' — even the claimed arrival is hedged into a direction of travel.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-AMBIG-2",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "the old Rawalpindi site (no name, no coords, 'old' as the only qualifier)",
+        "operator": "unknown",
+        "time": "early week of 2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 6,
+        "span": [
+          314,
+          354
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d20-r03",
+      "object": "the old Rawalpindi site",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d20_supersede_spoof",
+      "subject": "the HQ9B btry"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-AMBIG-1",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "**AMBIGUOUS designator** (see d20-AMBIG-1). Cites imagery it does not show. Dated a MONTH BEFORE the relocation claim, so it cannot be read as a contemporaneous rebuttal.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "claimed_basis": "Satellite imagery from earlier this year",
+          "imagery_attached": "none"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-AMBIG-1",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "near Rahwali airbase, Gujranwala",
+        "operator": "unknown",
+        "time": "2025-05-09 (~14:20 IST)"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 14,
+        "span": [
+          609,
+          825
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d20-r04",
+      "object": "near Rahwali airbase, Gujranwala",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d20_supersede_spoof",
+      "subject": "HQ-9/P (HIMADS) battery"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-AMBIG-2",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "**CONTRADICTS r03 while retweeting it.** Same origin claim, different destination. This is the row that proves an echo can *mutate* content, not merely repeat it.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "provenance": "RT of Post 1"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-AMBIG-2",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "near the port road area (no coords)",
+        "operator": "unknown",
+        "time": "2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 30,
+        "span": [
+          1348,
+          1537
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d20-r06",
+      "object": "near the port road area",
+      "polarity": "positive",
+      "predicate": "observed-at",
+      "source_id": "d20_supersede_spoof",
+      "subject": "HQ9B"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-C1-battery",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "**AMBIGUOUS independence.** Claims a separate contact ('per my contact') while self-declaring as a follow-up to the origin post. Cannot be scored as independent, cannot be proven derivative. The honest label is 'independence unestablished'.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {
+          "claimed_basis": "per my contact",
+          "self_declared_relation": "Following up on yesterday's report"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-C1-battery",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Rahwali",
+        "operator": "unknown",
+        "time": "2025-06-12"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 38,
+        "span": [
+          1710,
+          1881
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d20-r08",
+      "object": "Rahwali",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d20_supersede_spoof",
+      "subject": "HQ9B battery"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-C1-battery",
+        "gold_evidence_mode": "stated-attributed",
+        "gold_notes": "Same author as Post 1, one day later, with an explicit refusal to source and a third (unnamed) destination. Same origin, so no corroboration.",
+        "gold_predicate": "observed-at",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-C1-battery",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "Rahwali; destination 'new loc' (UNNAMED)",
+        "operator": "unknown",
+        "time": "2025-06-12"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 54,
+        "span": [
+          2358,
+          2531
+        ]
+      },
+      "form": "triple",
+      "gold_id": "d20-r09",
+      "object": "Rahwali site basically empty now allegedly",
+      "polarity": "negative",
+      "predicate": "observed-at",
+      "source_id": "d20_supersede_spoof",
+      "subject": "whole btry"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-C4-gap",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "Every discriminator slot in this document is empty: no post names a service branch, a designation, or a coordinate. The relocation is a FORMATION-level claim asserted with zero formation evidence.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "unit designation; service branch; coordinates for either endpoint; any imagery"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 46,
+        "span": [
+          2078,
+          2137
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "d20-r14",
+      "name": "the battery / the formation",
+      "polarity": "negative",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "d20-C3-origin",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "The origin post's own URL is unrecoverable — the claim cannot be traced to a live artifact, only to a retweet of it.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "citation_url": "[link unavailable, account locked/protected — h/t retweet by @PakSkiesWatch]",
+          "handle_self_description": "Faisal Baig | Defence & Security tracker",
+          "source_type": "social post"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "d20-C3-origin",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "2025-06-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "line": 2,
+        "span": [
+          7,
+          184
+        ]
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "gold_id": "d20-r15",
+      "name": "@faisal_defencewatch (Post 1)",
+      "polarity": "positive",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "cs01-C5-gap",
+        "gold_evidence_mode": "negative-observation",
+        "gold_notes": "The document states its own staleness AND the circular-reprint mechanism that keeps the figure alive. A self-declared too-clean signal.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "missing_slots": "independent confirmation of unit strength since the 2015 assessment",
+          "staleness": "This 2015 figure continues to be reproduced in subsequent trade press and conference briefing slides without apparent revision"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "nothing since the 2015 assessment"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "line": 15,
+        "span": [
+          2033,
+          2292
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "gold_id": "cs01-r06",
+      "name": "unit strength",
+      "polarity": "negative",
+      "source_id": "cs01_stale_orbat"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "cs01-C3-cpmiec",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "**Stated cleanly and — on the wider corpus — FALSE.** CPMIEC is the export agent, not the maker (d22 argues this explicitly; d23 is the same conflation). The gold labels what the document says; the sub-oracle must hold it at `possible` and record that the slice alone cannot refute it.",
+        "gold_predicate": "manufactures",
+        "gold_tier3_attributes": {},
+        "span_byte_exact": true
+      },
+      "coref_cluster": "cs01-C3-cpmiec",
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "China",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "line": 17,
+        "span": [
+          2412,
+          2607
+        ]
+      },
+      "form": "triple",
+      "gold_id": "cs01-r07",
+      "object": "The missile itself / the HQ-9/P",
+      "polarity": "positive",
+      "predicate": "manufactures",
+      "source_id": "cs01_stale_orbat",
+      "subject": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "cs01-C1-hq9p",
+        "gold_evidence_mode": "stated-hedged",
+        "gold_notes": "Stated inside the generic composition, so this is a DESIGN-layer equips claim. It is also the third hedged HT-233 mention in the slice ('associated'), none of which is an independent positive identification.",
+        "gold_predicate": "equips",
+        "gold_tier3_attributes": {
+          "component_class": "phased-array engagement radar"
+        },
+        "span_byte_exact": true
+      },
+      "coref_cluster": "cs01-C1-hq9p",
+      "discriminators": {
+        "designation": "HT-233",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "unknown"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "line": 11,
+        "span": [
+          1291,
+          1379
+        ]
+      },
+      "form": "triple",
+      "gold_id": "cs01-r09",
+      "object": "the HQ-9/P battery",
+      "polarity": "positive",
+      "predicate": "equips",
+      "source_id": "cs01_stale_orbat",
+      "subject": "associated HT-233 phased-array engagement radars"
+    },
+    {
+      "attributes": {
+        "gold_coref_tag": "cs01-C6-source",
+        "gold_evidence_mode": "stated",
+        "gold_notes": "A database record retrieved from a cache — two timestamps, neither of which is a publication date.",
+        "gold_predicate": "ENTITY_EXISTS",
+        "gold_tier3_attributes": {
+          "citation_url": "Record ID: SADM-AD-0091",
+          "source_type": "Air Defence Systems Database (cached copy)"
+        },
+        "span_byte_exact": true
+      },
+      "discriminators": {
+        "designation": "unknown",
+        "geography": "unknown",
+        "operator": "unknown",
+        "time": "cached 2015-06-04; modified 2013-03-11"
+      },
+      "doc_ref": {
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "line": 1,
+        "span": [
+          0,
+          141
+        ]
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "gold_id": "cs01-r16",
+      "name": "South Asia Defence Monitor — Air Defence Systems Database",
+      "polarity": "positive",
+      "source_id": "cs01_stale_orbat"
+    }
+  ],
+  "coref_registry": [
+    {
+      "cluster": "d02-C1-system",
+      "licensing_category": "EXPLICIT_EQUIVALENCE + UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+      "mentions": [
+        {
+          "annotated": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+          "locator_stripped": false,
+          "text": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the newly commissioned system",
+          "locator_stripped": false,
+          "text": "the newly commissioned system",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "The system",
+          "locator_stripped": false,
+          "text": "The system",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the system's engagement envelope",
+          "locator_stripped": false,
+          "text": "the system's engagement envelope",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "this state-of-the-art air defence system",
+          "locator_stripped": false,
+          "text": "this state-of-the-art air defence system",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the system's induction",
+          "locator_stripped": false,
+          "text": "the system's induction",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the newly commissioned system",
+          "locator_stripped": false,
+          "text": "the newly commissioned system",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The apposition licenses HIMADS<->this-system. The later definite NPs ('The system', 'the newly commissioned system') are unambiguous anaphors — exactly one system is in the discourse. Binding is tight; the *designator* attached to it is hedged.",
+      "referent_type": "variant",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "cluster": "d02-C2-unit",
+      "licensing_category": "UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "The COAS, addressing the officers and troops of the newly raised/re-equipped unit",
+      "mentions": [
+        {
+          "annotated": "a Pakistan Army Air Defence (PAAD) unit",
+          "locator_stripped": false,
+          "text": "a Pakistan Army Air Defence (PAAD) unit",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the newly raised/re-equipped unit",
+          "locator_stripped": false,
+          "text": "the newly raised/re-equipped unit",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "troops of the unit",
+          "locator_stripped": false,
+          "text": "troops of the unit",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the officers of the unit",
+          "locator_stripped": false,
+          "text": "the officers of the unit",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Definite 'the unit' with exactly one unit in the discourse. The acronym expansion 'Pakistan Army Air Defence (PAAD)' is an EXPLICIT_EQUIVALENCE but it names the *arm*, so it licenses the branch attribute, not the formation's identity.",
+      "referent_type": "unit",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "cluster": "d02-C3-site",
+      "licensing_category": "NAME_VARIANT",
+      "licensing_quote": "COAS VISITS ARMY AIR DEFENCE CENTRE, KARACHI",
+      "mentions": [
+        {
+          "annotated": "ARMY AIR DEFENCE CENTRE, KARACHI",
+          "locator_stripped": false,
+          "text": "ARMY AIR DEFENCE CENTRE, KARACHI",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the Army Air Defence Centre, Karachi",
+          "locator_stripped": false,
+          "text": "the Army Air Defence Centre, Karachi",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Headline caps vs body title case — same referent, casing variant only.",
+      "referent_type": "basing_site",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "cluster": "d02-C4-person",
+      "licensing_category": "EXPLICIT_EQUIVALENCE + UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "The Chief of Army Staff (COAS), General Qamar Javed Bajwa, today visited",
+      "mentions": [
+        {
+          "annotated": "The Chief of Army Staff (COAS), General Qamar Javed Bajwa",
+          "locator_stripped": false,
+          "text": "The Chief of Army Staff (COAS), General Qamar Javed Bajwa",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the COAS",
+          "locator_stripped": false,
+          "text": "the COAS",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "He",
+          "locator_stripped": false,
+          "text": "He",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "The COAS",
+          "locator_stripped": false,
+          "text": "The COAS",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "A textbook 4-mention chain (title apposition, acronym, pronoun) whose referent type the ontology does not declare. Perfect coref evidence with nowhere to land.",
+      "referent_type": "UNMODELLED (no person node type)",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "cluster": "d02-AMBIG-1",
+      "licensing_category": "AMBIGUOUS",
+      "licensing_quote": "On arrival, the COAS was received by the General Officer Commanding and senior officers of Army Air Defence.",
+      "mentions": [
+        {
+          "annotated": "a Pakistan Army Air Defence (PAAD) unit",
+          "locator_stripped": false,
+          "text": "a Pakistan Army Air Defence (PAAD) unit",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "senior officers of Army Air Defence",
+          "locator_stripped": false,
+          "text": "senior officers of Army Air Defence",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Army Air Defence remains fully prepared",
+          "locator_stripped": false,
+          "text": "Army Air Defence remains fully prepared",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "AMBIGUOUS -> resolved to ANTI-COREF. 'Army Air Defence' is the arm of service; 'a Pakistan Army Air Defence (PAAD) unit' is one formation within it. Near-total token overlap, different referents, and the doc never contrasts them explicitly.",
+      "referent_type": "unit vs arm-of-service",
+      "source_id": "d02_ispr_induction"
+    },
+    {
+      "cluster": "d04-C1-hq9p",
+      "licensing_category": "EXPLICIT_EQUIVALENCE",
+      "licensing_quote": "a battery-level deployment reportedly designated HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures, particularly from the system's original 2015-era marketing push)",
+      "mentions": [
+        {
+          "annotated": "a battery-level deployment reportedly designated HQ-9/P",
+          "locator_stripped": false,
+          "text": "a battery-level deployment reportedly designated HQ-9/P",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HQ-9P",
+          "locator_stripped": false,
+          "text": "HQ-9P",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the export designation FD-2000",
+          "locator_stripped": false,
+          "text": "the export designation FD-2000",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "The Army variant",
+          "locator_stripped": false,
+          "text": "The Army variant",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the Army's HQ-9/P",
+          "locator_stripped": false,
+          "text": "the Army's HQ-9/P",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The parenthetical states, in the author's voice, that HQ-9P and FD-2000 are other designations FOR THIS SYSTEM. This is the slice's cleanest prose alias statement.",
+      "referent_type": "variant",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "cluster": "d04-C2-hq9be",
+      "licensing_category": "UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE. PAF sourcing suggests this variant, procured under a separate contract",
+      "mentions": [
+        {
+          "annotated": "a longer-ranged variant referred to in most recent trade literature as the HQ-9BE",
+          "locator_stripped": false,
+          "text": "a longer-ranged variant referred to in most recent trade literature as the HQ-9BE",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "this variant, procured under a separate contract",
+          "locator_stripped": false,
+          "text": "this variant, procured under a separate contract",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the PAF variant",
+          "locator_stripped": false,
+          "text": "the PAF variant",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the HQ-9BE variant",
+          "locator_stripped": false,
+          "text": "the HQ-9BE variant",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the PAF's HQ-9BE",
+          "locator_stripped": false,
+          "text": "the PAF's HQ-9BE",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "'this variant' immediately follows its antecedent; 'the PAF variant' is licensed by the operator contrast the doc itself draws.",
+      "referent_type": "variant",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "cluster": "d04-C3-ft2000",
+      "licensing_category": "NAME_VARIANT",
+      "licensing_quote": "the FT-2000 (sometimes rendered FT-2000A)",
+      "mentions": [
+        {
+          "annotated": "the FT-2000 (sometimes rendered FT-2000A)",
+          "locator_stripped": false,
+          "text": "the FT-2000 (sometimes rendered FT-2000A)",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the FT-2000",
+          "locator_stripped": false,
+          "text": "the FT-2000",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "\"FT-2000 batteries\"",
+          "locator_stripped": false,
+          "text": "\"FT-2000 batteries\"",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Explicit rendering variant. Note the third mention is inside a quoted claim the doc attributes to others and rejects.",
+      "referent_type": "variant",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "cluster": "d04-C4-casic",
+      "licensing_category": "EXPLICIT_EQUIVALENCE",
+      "licensing_quote": "not clarified by either Islamabad or the manufacturer, China Aerospace Science and Industry Corporation (CASIC)",
+      "mentions": [
+        {
+          "annotated": "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)",
+          "locator_stripped": false,
+          "text": "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "CASIC markets",
+          "locator_stripped": false,
+          "text": "CASIC markets",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "CASIC promotional material",
+          "locator_stripped": false,
+          "text": "CASIC promotional material",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Acronym apposition. Binds tightly as a name; what it is the manufacturer OF is the ambiguous part.",
+      "referent_type": "manufacturer",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "cluster": "d04-ANTI-1",
+      "licensing_category": "AMBIGUOUS -> resolved by stated contrast",
+      "licensing_quote": "despite the shared \"HQ-9\" family name, the Army and PAF systems appear to be genuinely separate procurement lines rather than a single system fielded twice — different missile rounds, reportedly different engagement radars",
+      "mentions": [
+        {
+          "annotated": "The Army variant",
+          "locator_stripped": false,
+          "text": "The Army variant",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the PAF variant",
+          "locator_stripped": false,
+          "text": "the PAF variant",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "THE contrastive-prior licence in the slice: an explicit 'not one thing fielded twice', hedged with 'appear to be'. Everything else about the two (family, country, maker, customer) agrees, so name+relational evidence pushes toward merge and only the stated contrast plus operator+range holds them apart.",
+      "referent_type": "variant vs variant",
+      "source_id": "d04_armyrec_ranges"
+    },
+    {
+      "cluster": "d19-C1-site",
+      "licensing_category": "UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "a second, non-imagery indicator has closed some of the ambiguity around the site",
+      "mentions": [
+        {
+          "annotated": "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab)",
+          "locator_stripped": false,
+          "text": "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab)",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the site",
+          "locator_stripped": false,
+          "text": "the site",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the same general locale",
+          "locator_stripped": false,
+          "text": "the same general locale",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the same location",
+          "locator_stripped": false,
+          "text": "the same location",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "this site",
+          "locator_stripped": false,
+          "text": "this site",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the location",
+          "locator_stripped": false,
+          "text": "the location",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "an HQ-9-family site",
+          "locator_stripped": false,
+          "text": "an HQ-9-family site",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Definite anaphora with one site in focus. BUT 'the same general locale' / 'the same location' are the doc ASSERTING co-location for the ELINT fix whose geolocation it says was never released — bind the mentions, flag the corroboration.",
+      "referent_type": "basing_site",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "cluster": "d19-C2-presence",
+      "licensing_category": "UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "Battery strength at this site is estimated at 6–8 TELs plus one engagement radar and associated command/guidance van",
+      "mentions": [
+        {
+          "annotated": "the TEL and battery-command cluster",
+          "locator_stripped": false,
+          "text": "the TEL and battery-command cluster",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Six TEL-pattern vehicles",
+          "locator_stripped": false,
+          "text": "Six TEL-pattern vehicles",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery",
+          "locator_stripped": false,
+          "text": "a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Battery strength at this site",
+          "locator_stripped": false,
+          "text": "Battery strength at this site",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Ties 'battery' to the TEL cluster within one sentence. The referent is a PRESENCE; no formation designator appears anywhere in the document.",
+      "referent_type": "presence (equipment at site)",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "cluster": "d19-C3-radar",
+      "licensing_category": "EXPLICIT_EQUIVALENCE (hedged)",
+      "licensing_quote": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system",
+      "mentions": [
+        {
+          "annotated": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar",
+          "locator_stripped": false,
+          "text": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the radar hardstand",
+          "locator_stripped": false,
+          "text": "the radar hardstand",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HT-233-band engagement-radar parameters",
+          "locator_stripped": false,
+          "text": "HT-233-band engagement-radar parameters",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "one engagement radar",
+          "locator_stripped": false,
+          "text": "one engagement radar",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the HT-233 identification",
+          "locator_stripped": false,
+          "text": "the HT-233 identification",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The identification is explicitly NOT endorsed: 'Analysts should still treat the HT-233 identification itself as the vendor's characterization, not independently re-derived by this desk.' Bind the mentions; do not inherit the desk's authority for the type ID.",
+      "referent_type": "component",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "cluster": "d19-AMBIG-1",
+      "licensing_category": "AMBIGUOUS",
+      "licensing_quote": "readers tracking the HQ-9/HQ-9B/HQ-9BE/HQ-9P designator family should note continuing inconsistency across open sources in how Pakistani service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing designation; this digest uses \"HQ-9B\" generically per prior issues unless a source specifies otherwise",
+      "mentions": [
+        {
+          "annotated": "HQ-9B",
+          "locator_stripped": false,
+          "text": "HQ-9B",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HQ-9BE",
+          "locator_stripped": false,
+          "text": "HQ-9BE",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HQ-9P",
+          "locator_stripped": false,
+          "text": "HQ-9P",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the HQ-9/HQ-9B/HQ-9BE/HQ-9P designator family",
+          "locator_stripped": false,
+          "text": "the HQ-9/HQ-9B/HQ-9BE/HQ-9P designator family",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "**THE most valuable row in the slice.** The source states an equivalence and then disclaims the mapping in the same document, and declares one of the four surfaces a GENERIC label. Generic-vs-specific is a refines relation, not identity — and the ontology cannot express it between two variants.",
+      "referent_type": "variant",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "cluster": "d19-C4-othersites",
+      "licensing_category": "ANTI_COREF (stated enumeration)",
+      "licensing_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass.",
+      "mentions": [
+        {
+          "annotated": "the previously tracked Sialkot-area and Pasrur dispersal sites",
+          "locator_stripped": false,
+          "text": "the previously tracked Sialkot-area and Pasrur dispersal sites",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "'both' makes the cardinality explicit: two distinct sites, same type, same operator, same region, adjacent in one clause, each with essentially no discriminating context. They must not merge with each other or with Rahwali.",
+      "referent_type": "basing_site (x2, contrastive)",
+      "source_id": "d19_rahwali_confirm"
+    },
+    {
+      "cluster": "d05-C1-consignee",
+      "licensing_category": "EXPLICIT_EQUIVALENCE",
+      "licensing_quote": "ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC TRADING CO -- name change ref SECP CUIN 0087762, 2019)",
+      "mentions": [
+        {
+          "annotated": "ORIENT ELECTRO TRADING (PVT) LTD",
+          "locator_stripped": false,
+          "text": "ORIENT ELECTRO TRADING (PVT) LTD",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "ORIENT ELECTRO TRADING (PVT) LTD",
+          "locator_stripped": false,
+          "text": "ORIENT ELECTRO TRADING (PVT) LTD",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "ORIENT ELECTRO TRADING PVT LTD",
+          "locator_stripped": false,
+          "text": "ORIENT ELECTRO TRADING PVT LTD",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "ORIENT ELECTRONIC TRADING CO",
+          "locator_stripped": false,
+          "text": "ORIENT ELECTRONIC TRADING CO",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Consignee ORIENT ELECTRO TRADING (PVT) LTD / ORI",
+          "locator_stripped": false,
+          "text": "Consignee ORIENT ELECTRO TRADING (PVT) LTD / ORI",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The ONLY identifier-backed equivalence in the slice: a corporate-registry rename with a CUIN, plus an NTN on the first mention. Punctuation variants ('(PVT) LTD' vs 'PVT LTD') are NAME_VARIANTs on top of it.",
+      "referent_type": "trading_org",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "cluster": "d05-C2-shipper",
+      "licensing_category": "EXPLICIT_EQUIVALENCE (line 22) + NAME_VARIANT",
+      "licensing_quote": "(see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)",
+      "mentions": [
+        {
+          "annotated": "SINO-GALAXY IMP/EXP CO. LTD",
+          "locator_stripped": false,
+          "text": "SINO-GALAXY IMP/EXP CO. LTD",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "SINO-GALAXY IMPEX CO, LTD",
+          "locator_stripped": false,
+          "text": "SINO-GALAXY IMPEX CO, LTD",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "SINO GALAXY IMP. & EXP. CO.",
+          "locator_stripped": false,
+          "text": "SINO GALAXY IMP. & EXP. CO.",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "SINO-GALAXY IMPEX CO, LTD",
+          "locator_stripped": false,
+          "text": "SINO-GALAXY IMPEX CO, LTD",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "zhang.wei@sinogalaxy-export.cn",
+          "locator_stripped": false,
+          "text": "zhang.wei@sinogalaxy-export.cn",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "'see also' + a shared invoice number licenses IMP/EXP <-> IMPEX. The third surface ('SINO GALAXY IMP. & EXP. CO.', no hyphen, spelled-out ampersand) is licensed only TRANSITIVELY. The email domain is a weak fourth signal.",
+      "referent_type": "trading_org",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "cluster": "d05-C3-port",
+      "licensing_category": "EXPLICIT_EQUIVALENCE (parenthetical abbreviation) + NAME_VARIANT",
+      "licensing_quote": "Port of Discharge: PORT MUHAMMAD BIN QASIM (PQ)",
+      "mentions": [
+        {
+          "annotated": "PORT MUHAMMAD BIN QASIM (PQ)",
+          "locator_stripped": false,
+          "text": "PORT MUHAMMAD BIN QASIM (PQ)",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "BIN QASIM",
+          "locator_stripped": false,
+          "text": "BIN QASIM",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Port Qasim",
+          "locator_stripped": false,
+          "text": "Port Qasim",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "QICT PQ",
+          "locator_stripped": false,
+          "text": "QICT PQ",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "CIF PQ",
+          "locator_stripped": false,
+          "text": "CIF PQ",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The '(PQ)' apposition licenses the abbreviation; the other surfaces are casing/shortening variants of the same port. Five surfaces, one referent, zero prose.",
+      "referent_type": "place / port of discharge",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "cluster": "d05-C4-events",
+      "licensing_category": "ANTI_COREF (distinct stated identifiers)",
+      "licensing_quote": "Container:       TCNU7712204 (shared, see line 118834)",
+      "mentions": [
+        {
+          "annotated": "GD No: KPQA-HC-2020-118834",
+          "locator_stripped": false,
+          "text": "GD No: KPQA-HC-2020-118834",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "GD No: KPQA-HC-2020-118835",
+          "locator_stripped": false,
+          "text": "GD No: KPQA-HC-2020-118835",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "GD No: KPQA-HC-2020-119011",
+          "locator_stripped": false,
+          "text": "GD No: KPQA-HC-2020-119011",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "**THE over-merge trap.** Same consignee, same shipper, same HS-code family, and 118834/118835 SHARE A CONTAINER — so name similarity and shared neighbourhood both argue for merging. Only the distinct GD and B/L references say no. The doc's own cross-reference ('shared, see line 118834') proves it treats them as two lines, not one.",
+      "referent_type": "contract_import_event (x3, contrastive)",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "cluster": "d05-AMBIG-1",
+      "licensing_category": "AMBIGUOUS -> ANTI-COREF",
+      "licensing_quote": "Freight Fwdr:    AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
+      "mentions": [
+        {
+          "annotated": "Bin Qasim Town, Karachi",
+          "locator_stripped": false,
+          "text": "Bin Qasim Town, Karachi",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "PORT MUHAMMAD BIN QASIM (PQ)",
+          "locator_stripped": false,
+          "text": "PORT MUHAMMAD BIN QASIM (PQ)",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "A town and a port terminal sharing a name. Also 'Karachi International Container Terminal / QICT PQ' puts 'Karachi' inside the name of a terminal at Port Qasim — the geographic false-merge trap, entirely inside one document.",
+      "referent_type": "place",
+      "source_id": "d05_customs_manifest"
+    },
+    {
+      "cluster": "d17b-C1-site",
+      "licensing_category": "UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "The area consistent with the suspected forward site shows the previously noted perimeter berm and access road configuration largely unchanged from the 2024-11 baseline.",
+      "mentions": [
+        {
+          "annotated": "a suspected forward SAM deployment area",
+          "locator_stripped": false,
+          "text": "a suspected forward SAM deployment area",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself",
+          "locator_stripped": false,
+          "text": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the suspected forward site",
+          "locator_stripped": false,
+          "text": "the suspected forward site",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the fenced compound",
+          "locator_stripped": false,
+          "text": "the fenced compound",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the forward HQ-9/P site",
+          "locator_stripped": false,
+          "text": "the forward HQ-9/P site",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Definite anaphora with one site in focus, so the mentions bind. But the referent has NO name, NO coordinates and a self-contradictory location description — it is a well-bound cluster with an unidentifiable referent, which is exactly the 'under-determined + gap' outcome the design wants.",
+      "referent_type": "basing_site",
+      "source_id": "d17b_withheld_gap"
+    },
+    {
+      "cluster": "d17b-C2-baseline",
+      "licensing_category": "NAME_VARIANT",
+      "licensing_quote": "Prior baseline reference: chip from 2024-11 pass (same vendor, cataloged separately)",
+      "mentions": [
+        {
+          "annotated": "chip from 2024-11 pass (same vendor, cataloged separately)",
+          "locator_stripped": false,
+          "text": "chip from 2024-11 pass (same vendor, cataloged separately)",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the 2024-11 baseline",
+          "locator_stripped": false,
+          "text": "the 2024-11 baseline",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the 2024-11 chip",
+          "locator_stripped": false,
+          "text": "the 2024-11 chip",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Baseline imagery (2024-11)",
+          "locator_stripped": false,
+          "text": "Baseline imagery (2024-11)",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "A dated artifact referred to four ways. Binds on the date token.",
+      "referent_type": "prior observation",
+      "source_id": "d17b_withheld_gap"
+    },
+    {
+      "cluster": "d17b-AMBIG-1",
+      "licensing_category": "AMBIGUOUS",
+      "licensing_quote": "whether the two references concern the same site footprint could not be independently established from the forum post's description alone, as it gives no coordinates and describes the location only as \"near the port road, same as always.\"",
+      "mentions": [
+        {
+          "annotated": "the suspected forward site (this report's AOI)",
+          "locator_stripped": true,
+          "text": "the suspected forward site",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "\"fresh HQ-9/P TEL deployment confirmed near port road site, imagery pending\"",
+          "locator_stripped": false,
+          "text": "\"fresh HQ-9/P TEL deployment confirmed near port road site, imagery pending\"",
+          "verbatim_in_document": false
+        }
+      ],
+      "note": "**THE most valuable ambiguity in the slice.** The source states, in its own voice, that co-reference cannot be established, and names the reason (no coordinates). Neither merging nor asserting distinctness is faithful; the only faithful output is 'same footprint unestablished — coordinates missing'.",
+      "referent_type": "basing_site (two references, unresolvable)",
+      "source_id": "d17b_withheld_gap"
+    },
+    {
+      "cluster": "d20-C1-battery",
+      "licensing_category": "EXPLICIT_EQUIVALENCE (retweet) + NAME_VARIANT",
+      "licensing_quote": "RT @faisal_defencewatch huge if confirmed. HQ9B out of Rahwali, redeployed near the port road area allegedly.",
+      "mentions": [
+        {
+          "annotated": "the HQ9B btry that was sitting at Rahwali",
+          "locator_stripped": false,
+          "text": "the HQ9B btry that was sitting at Rahwali",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HQ9B out of Rahwali",
+          "locator_stripped": false,
+          "text": "HQ9B out of Rahwali",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HQ9B battery gone from Rahwali",
+          "locator_stripped": false,
+          "text": "HQ9B battery gone from Rahwali",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "whole btry gone to new loc",
+          "locator_stripped": false,
+          "text": "whole btry gone to new loc",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the \"Rahwali empty\" claim",
+          "locator_stripped": false,
+          "text": "the \"Rahwali empty\" claim",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Posts 1, 4, 5, 7 and 8 are one claim: Post 4 is an explicit retweet, Post 5 says 'Following up on yesterday's report', Post 7 is the same author, Post 8 links back to Post 1 'as the sole source'. The equivalence is at the CLAIM level, so it licenses collapsing the corroboration count to ONE — the opposite of what a naive count does.",
+      "referent_type": "presence (equipment)",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "cluster": "d20-C2-skeptics",
+      "licensing_category": "NAME_VARIANT (n/a — distinct handles)",
+      "licensing_quote": "per the Rahwali 'left the base' claim going around — cannot confirm, would want imagery before believing it. single unverified source afaik.",
+      "mentions": [
+        {
+          "annotated": "@IndoPacSentry (Post 3)",
+          "locator_stripped": true,
+          "text": "@IndoPacSentry",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "@SushantNMehta (Post 6)",
+          "locator_stripped": true,
+          "text": "@SushantNMehta",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "@grey_falcon_osint (Post 8)",
+          "locator_stripped": true,
+          "text": "@grey_falcon_osint",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Three posts that assert nothing about the world and instead characterize the claim's sourcing. Negative gold for extraction, positive gold for credibility.",
+      "referent_type": "source commentary",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "cluster": "d20-C3-origin",
+      "licensing_category": "EXPLICIT_EQUIVALENCE",
+      "licensing_quote": "linking back to @faisal_defencewatch's original post as the sole source",
+      "mentions": [
+        {
+          "annotated": "@faisal_defencewatch (Post 1)",
+          "locator_stripped": true,
+          "text": "@faisal_defencewatch",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "@faisal_defencewatch (Post 7)",
+          "locator_stripped": true,
+          "text": "@faisal_defencewatch",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "h/t retweet by @PakSkiesWatch",
+          "locator_stripped": false,
+          "text": "h/t retweet by @PakSkiesWatch",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "@faisal_defencewatch's original post as the sole source",
+          "locator_stripped": false,
+          "text": "@faisal_defencewatch's original post as the sole source",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The document names its own single origin. This is the too-clean / echo-burst licence, stated by one of the participants.",
+      "referent_type": "source",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "cluster": "d20-AMBIG-1",
+      "licensing_category": "AMBIGUOUS",
+      "licensing_quote": "Satellite imagery from earlier this year confirms HQ-9/P (HIMADS) battery co-located near Rahwali airbase, Gujranwala — consistent with the reported 2025 redeployment.",
+      "mentions": [
+        {
+          "annotated": "the HQ9B btry that was sitting at Rahwali (Post 1, 2025-06-11)",
+          "locator_stripped": true,
+          "text": "the HQ9B btry that was sitting at Rahwali",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "HQ-9/P (HIMADS) battery co-located near Rahwali airbase (Post 2, 2025-05-09)",
+          "locator_stripped": true,
+          "text": "HQ-9/P (HIMADS) battery co-located near Rahwali airbase",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "an HQ-9/P 'move' out of Rahwali (Post 6, 2025-06-12)",
+          "locator_stripped": true,
+          "text": "an HQ-9/P 'move' out of Rahwali",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "**The hardest ambiguity in the slice.** Same site, overlapping window, two designators that d04 calls distinct and d19 calls interchangeable. Neither merging nor splitting is defensible from this document; the discriminator that would settle it (a unit designation) is absent from all eight posts.",
+      "referent_type": "presence — designator conflict",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "cluster": "d20-AMBIG-2",
+      "licensing_category": "AMBIGUOUS",
+      "licensing_quote": "RT @faisal_defencewatch huge if confirmed. HQ9B out of Rahwali, redeployed near the port road area allegedly.",
+      "mentions": [
+        {
+          "annotated": "the old Rawalpindi site (Post 1)",
+          "locator_stripped": true,
+          "text": "the old Rawalpindi site",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "near the port road area (Post 4, a retweet of Post 1)",
+          "locator_stripped": true,
+          "text": "near the port road area",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "new loc (Post 7, unnamed)",
+          "locator_stripped": true,
+          "text": "new loc",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "A retweet that changes the destination. One claim, three mutually incompatible objects, and no coordinates for any of them. The relocation's second endpoint does not exist in a determinable form anywhere in the document.",
+      "referent_type": "destination site — internal contradiction",
+      "source_id": "d20_supersede_spoof"
+    },
+    {
+      "cluster": "cs01-C1-hq9p",
+      "licensing_category": "EXPLICIT_EQUIVALENCE + UNAMBIGUOUS_ANAPHOR",
+      "licensing_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system",
+      "mentions": [
+        {
+          "annotated": "The HQ-9/P",
+          "locator_stripped": false,
+          "text": "The HQ-9/P",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the HQ-9/P",
+          "locator_stripped": false,
+          "text": "the HQ-9/P",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "the system",
+          "locator_stripped": false,
+          "text": "the system",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "The missile itself",
+          "locator_stripped": false,
+          "text": "The missile itself",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "Pakistani HQ-9/P batteries",
+          "locator_stripped": false,
+          "text": "Pakistani HQ-9/P batteries",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "The opening sentence states the export-variant-of relation explicitly. Later definite NPs ('the system', 'The missile itself') are unambiguous anaphors.",
+      "referent_type": "variant",
+      "source_id": "cs01_stale_orbat"
+    },
+    {
+      "cluster": "cs01-C2-formations",
+      "licensing_category": "AMBIGUOUS (cardinality without individuation)",
+      "licensing_quote": "places Pakistani holdings at two operational battalions (approximately eight to twelve TEL launchers per battalion equivalent, figures vary by source) assigned to the PAF's Central Air Command, with a third battalion reportedly in the delivery pipeline",
+      "mentions": [
+        {
+          "annotated": "two operational battalions",
+          "locator_stripped": false,
+          "text": "two operational battalions",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "a third battalion reportedly in the delivery pipeline",
+          "locator_stripped": false,
+          "text": "a third battalion reportedly in the delivery pipeline",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "per battalion equivalent",
+          "locator_stripped": false,
+          "text": "per battalion equivalent",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "**The OOB shape.** A count with no designator and no site for any member. There is nothing to co-refer and nothing to keep apart — which is precisely why a system that counts merged reports as formations gets the order of battle wrong in both directions.",
+      "referent_type": "unit (a COUNT, not individuated mentions)",
+      "source_id": "cs01_stale_orbat"
+    },
+    {
+      "cluster": "cs01-C3-cpmiec",
+      "licensing_category": "EXPLICIT_EQUIVALENCE",
+      "licensing_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+      "mentions": [
+        {
+          "annotated": "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+          "locator_stripped": false,
+          "text": "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "A textbook acronym apposition that binds cleanly to a FALSE role. Clean syntax is not evidence of a true relation.",
+      "referent_type": "manufacturer",
+      "source_id": "cs01_stale_orbat"
+    },
+    {
+      "cluster": "cs01-C4-areas",
+      "licensing_category": "ANTI_COREF (areas are not sites)",
+      "licensing_quote": "the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+      "mentions": [
+        {
+          "annotated": "its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+          "locator_stripped": false,
+          "text": "its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "positions oriented toward the Arabian Sea approach",
+          "locator_stripped": false,
+          "text": "positions oriented toward the Arabian Sea approach",
+          "verbatim_in_document": true
+        },
+        {
+          "annotated": "a secondary battery near the Punjab border sector",
+          "locator_stripped": false,
+          "text": "a secondary battery near the Punjab border sector",
+          "verbatim_in_document": true
+        }
+      ],
+      "note": "Head-anchored area words (belt, sector, approach). These are responsibilities, not places a battery sits; a relocation tripwire cannot fire on 'the Sindh coastal sector'.",
+      "referent_type": "area_of_operations",
+      "source_id": "cs01_stale_orbat"
+    }
+  ],
+  "doc_paths": {
+    "cs01_stale_orbat": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+    "d02_ispr_induction": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+    "d04_armyrec_ranges": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+    "d05_customs_manifest": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+    "d17b_withheld_gap": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+    "d19_rahwali_confirm": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+    "d20_supersede_spoof": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt"
+  },
+  "docs": [
+    "d02_ispr_induction",
+    "d04_armyrec_ranges",
+    "d19_rahwali_confirm",
+    "d05_customs_manifest",
+    "d17b_withheld_gap",
+    "d20_supersede_spoof",
+    "cs01_stale_orbat"
+  ],
+  "excluded_from_scoring": {
+    "attribute_rows": {
+      "reason": "The scorer's comparison unit (SurfaceClaim) has exactly three forms — triple, entity, event — and the pipeline never emits an attribute as a claim: attributes ride inside payload.attrs on the entity/event claim they describe, and from_claim_record() drops payload.attrs entirely. So there is no extracted object these 22 rows could ever pair with. Encoding them as triples (predicate = the attribute name) would load cleanly and then produce 22 guaranteed false negatives for every candidate, dragging a perfect model's recall from 1.00 to 0.75 for a representation choice the harness cannot see. They are excluded and NAMED here rather than scored. This could go the other way — carrying them as triples costs every candidate the same, so a RANKING would survive — but the absolute number would be a lie, and attribute capture is partly already measured, on the raw tool payload, by the A7 discriminator metrics.",
+      "rows": [
+        {
+          "attribute": "family",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 15,
+            "span": [
+              793,
+              910
+            ]
+          },
+          "gold_id": "d02-r06",
+          "notes": "'believed to be' hedge.",
+          "polarity": "positive",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "subject": "The system",
+          "value": "Chinese Hongqi-9"
+        },
+        {
+          "attribute": "range_km",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 15,
+            "span": [
+              912,
+              999
+            ]
+          },
+          "gold_id": "d02-r08",
+          "notes": "A statement about the *national air-defence envelope*, not a clean intercept-range figure for the round. Recording it as variant.range_km is already an interpretation.",
+          "polarity": "positive",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "subject": "The system",
+          "value": "well beyond 100 km"
+        },
+        {
+          "attribute": "service_branch",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 11,
+            "span": [
+              400,
+              457
+            ]
+          },
+          "gold_id": "d02-r09",
+          "notes": "The ONE operator discriminator this doc supplies, and it is stated cleanly. Contrast cs01, which assigns the same design to the Pakistan AIR FORCE.",
+          "polarity": "positive",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "subject": "a Pakistan Army Air Defence (PAAD) unit",
+          "value": "Pakistan Army"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 17,
+            "span": [
+              1645,
+              1774
+            ]
+          },
+          "gold_id": "d02-r10",
+          "notes": "A background-briefing non-figure. count_state must stay the literal string; it is not a number and must never be coerced into one.",
+          "polarity": "positive",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "subject": "a Pakistan Army Air Defence (PAAD) unit",
+          "value": "\"sufficient numbers\""
+        },
+        {
+          "attribute": "range_km",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 7,
+            "span": [
+              792,
+              879
+            ]
+          },
+          "gold_id": "d04-r04",
+          "notes": "Doubly hedged ('generally credited', 'in the region of') and disowned at L19 as 'indicative rather than authoritative'. Conflicts with cs01's 200 km for the SAME designator.",
+          "polarity": "positive",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "subject": "The Army variant",
+          "value": "in the region of 125 km"
+        },
+        {
+          "attribute": "range_km",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 9,
+            "span": [
+              1520,
+              1638
+            ]
+          },
+          "gold_id": "d04-r06",
+          "notes": "Range is the second of the only two discriminators separating C1 from C2.",
+          "polarity": "positive",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "subject": "the PAF variant",
+          "value": "around 260 km"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 11,
+            "span": [
+              663,
+              776
+            ]
+          },
+          "gold_id": "d19-r03",
+          "notes": "An OBSERVED count. Keep separate from r04's estimate — one is counted, one is inferred.",
+          "polarity": "positive",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "subject": "the TEL cluster at Rahwali",
+          "value": "Six TEL-pattern vehicles"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 15,
+            "span": [
+              2685,
+              2914
+            ]
+          },
+          "gold_id": "d19-r04",
+          "notes": "An ESTIMATED range with the source's own confidence caveat attached. spine/13 3a: the count is an attribute of the presence with its own sourced evidence — never derived from how many reports merged.",
+          "polarity": "positive",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "subject": "Battery strength at this site",
+          "value": "estimated at 6–8 TELs plus one engagement radar and associated command/guidance van"
+        },
+        {
+          "attribute": "event_subtype",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 27,
+            "span": [
+              1170,
+              1319
+            ]
+          },
+          "gold_id": "d05-r16",
+          "notes": "CRITICAL: the STATED end-use is CIVIL ('INDUSTRIAL NAVIGATION AID'; line 80 says 'CIVIL AIR NAVIGATION AID SYSTEM'). Every military reading of this document is derived, and the gold must not launder it into a stated fact.",
+          "polarity": "positive",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "subject": "KPQA-HC-2020-118834",
+          "value": "\"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE, FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT\""
+        },
+        {
+          "attribute": "model_designation",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 53,
+            "span": [
+              2317,
+              2384
+            ]
+          },
+          "gold_id": "d05-r17",
+          "notes": "**AMBIGUOUS and the must-degrade case.** The only textual link from this shipment to HT-233 is a drawing reference, truncated mid-token, inside an annex the doc labels 'scan quality poor', interleaved with a pasted email. It states a drawing reference on ONE line item. It does NOT state that the consignment is an HT-233 part, and any `equips`/`supplies-component` edge from it is derived, not stated.",
+          "polarity": "positive",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "subject": "SERVO DRIVE UNIT, AZ/EL, QTY 2",
+          "value": "ref dwg HT233-"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 86,
+            "span": [
+              3838,
+              4004
+            ]
+          },
+          "gold_id": "d05-r20",
+          "notes": "No physical inspection occurred, and the risk flag was auto-cleared by the forwarder's status. A stated reason the declared contents were never verified — an integrity input, not a supply-chain fact.",
+          "polarity": "negative",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": false,
+          "subject": "KPQA-HC-2020-119011",
+          "value": "EXAM TYPE: GREEN CHANNEL -- NO PHYSICAL EXAMINATION"
+        },
+        {
+          "attribute": "occupancy_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+            "line": 34,
+            "span": [
+              3269,
+              3362
+            ]
+          },
+          "gold_id": "d17b-r07",
+          "notes": "Scoped to the pass window — the doc does not claim the site is empty in general.",
+          "polarity": "negative",
+          "source_id": "d17b_withheld_gap",
+          "span_byte_exact": true,
+          "subject": "the suspected forward site",
+          "value": "a negative TEL presence observation for the pass window noted"
+        },
+        {
+          "attribute": "site_signature_geometry",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+            "line": 20,
+            "span": [
+              1049,
+              1217
+            ]
+          },
+          "gold_id": "d17b-r08",
+          "notes": "The only positive characterization of the site: infrastructure geometry. This is the sole discriminating content available for cross-document matching.",
+          "polarity": "positive",
+          "source_id": "d17b_withheld_gap",
+          "span_byte_exact": true,
+          "subject": "the suspected forward site",
+          "value": "perimeter berm and access road configuration; hardstand pads; northern and southern pad clusters; a cleared laydown area"
+        },
+        {
+          "attribute": "primary_origin_id",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 30,
+            "span": [
+              1349,
+              1391
+            ]
+          },
+          "gold_id": "d20-r07",
+          "notes": "Explicit retweet marker: this post is derivative and must not add corroboration weight.",
+          "polarity": "positive",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "subject": "@PakSkiesWatch (Post 4)",
+          "value": "@faisal_defencewatch"
+        },
+        {
+          "attribute": "coordinated_inauthenticity_flag",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 54,
+            "span": [
+              2359,
+              2437
+            ]
+          },
+          "gold_id": "d20-r10",
+          "notes": "An explicit refusal to source, from the sole origin of the whole cluster. The single most decisive credibility fact in the document.",
+          "polarity": "positive",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "subject": "@faisal_defencewatch",
+          "value": "I don't share sources sorry"
+        },
+        {
+          "attribute": "primary_origin_id",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 61,
+            "span": [
+              2749,
+              2957
+            ]
+          },
+          "gold_id": "d20-r11",
+          "notes": "THE echo-collapse licence: an aggregator naming the single source, and citing volume ('several people are sharing this') as if it were corroboration.",
+          "polarity": "positive",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "subject": "@grey_falcon_osint (Post 8)",
+          "value": "@faisal_defencewatch's original post as the sole source"
+        },
+        {
+          "attribute": "family",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 9,
+            "span": [
+              286,
+              375
+            ]
+          },
+          "gold_id": "cs01-r01",
+          "notes": "FINDING: the ontology DROPPED `variant-of`, so a stated design-family relation can only be flattened into a `family` attribute. The refines relation between a family and its export variant — the exact type/instance distinction the replumb is about — has no edge.",
+          "polarity": "positive",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "subject": "The HQ-9/P",
+          "value": "China's HQ-9 long-range surface-to-air missile system"
+        },
+        {
+          "attribute": "equipment_fingerprint",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 11,
+            "span": [
+              1123,
+              1439
+            ]
+          },
+          "gold_id": "cs01-r03",
+          "notes": "**A DESIGN-layer fact, not an instance observation.** Apply the layer-routing test: would this change if a different operator fielded the same design? No. Routing it to an instance would manufacture a sighting of six TELs that nobody observed.",
+          "polarity": "positive",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "subject": "Battery composition",
+          "value": "one command-and-control vehicle, six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters, associated HT-233 phased-array engagement radars, and a search/acquisition radar element"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 15,
+            "span": [
+              1656,
+              1971
+            ]
+          },
+          "gold_id": "cs01-r04",
+          "notes": "**The closest thing in the corpus to an ORBAT statement — and it still names no formation and no site.** A cardinality attributed to a third-party assessment, with an internal range on the launcher figure and an explicit 'figures vary by source'. This is a count claim, not two formation nodes.",
+          "polarity": "positive",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "subject": "Pakistani holdings",
+          "value": "two operational battalions (approximately eight to twelve TEL launchers per battalion equivalent, figures vary by source)"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 15,
+            "span": [
+              1973,
+              2031
+            ]
+          },
+          "gold_id": "cs01-r05",
+          "notes": "A PROSPECTIVE formation. Counting it into an order of battle would over-count; dropping it silently would lose a stated pipeline signal. It belongs as a separate, clearly-prospective count row.",
+          "polarity": "positive",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "subject": "a third battalion",
+          "value": "reportedly in the delivery pipeline"
+        },
+        {
+          "attribute": "range_km",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 17,
+            "span": [
+              2294,
+              2410
+            ]
+          },
+          "gold_id": "cs01-r08",
+          "notes": "**Attribute conflict on the SAME designator:** 200 km here, 'in the region of 125 km' in d04, 'well beyond 100 km' in d02. Three sources, three figures, one name — the attribute-agreement signal is actively misleading on this corpus.",
+          "polarity": "positive",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "subject": "The missile itself",
+          "value": "on the order of 200 km against aerodynamic targets"
+        },
+        {
+          "attribute": "count_state",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 21,
+            "span": [
+              3482,
+              3684
+            ]
+          },
+          "gold_id": "cs01-r12",
+          "notes": "The document identifies a second outlet as a REPRINT of the same 2013 sourcing — a too-clean / aggregator-circularity signal stated by the source itself.",
+          "polarity": "positive",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "subject": "the system's operational status",
+          "value": "described in near-identical language by a separate industry newsletter, suggesting continued reliance on the same underlying 2013 sourcing"
+        }
+      ]
+    }
+  },
+  "negative_gold": {
+    "ambiguous": {
+      "harness_hook": "eval.gold.adapter.identity_over_read (the penalty) + .precision_exclusions (the exclusion)",
+      "how_to_score": "Over-read rate = pairs over which the candidate emitted a same-as or distinct-from triple / total pairs. Silence is the correct answer and scores clean. N=2: report the raw count, never a rate to two decimals, and never rank on it.",
+      "precision_denominator": "excluded — a non-identity claim over this span is not an error",
+      "precision_exclusion_automatic": "NO — unwired today, same as anti_coref: an unpaired non-identity claim on one of these two spans costs precision until the harness calls the hook.",
+      "recall_denominator": "excluded",
+      "rows": [
+        {
+          "class": "ambiguous",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+            "line": 30,
+            "span": [
+              3014,
+              3252
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d17b-AMBIG-1",
+          "gold_id": "d17b-r11",
+          "notes": "**THE crown-jewel ambiguous row.** The source explicitly refuses to bind, and names the missing discriminator (coordinates). Correct behaviour: emit the pair as unresolved with the reason, not as a merge and not as a distinct-from.",
+          "polarity": "unknown",
+          "reason": "same-footprint-unestablished",
+          "source_id": "d17b_withheld_gap",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the suspected forward site",
+            "\"near port road site\" (the Telegram-linked OSINT aggregator post)"
+          ]
+        },
+        {
+          "class": "ambiguous",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 6,
+            "span": [
+              223,
+              264
+            ]
+          },
+          "evidence_mode": "derived-required",
+          "gold_coref_tag": "d20-AMBIG-1",
+          "gold_id": "d20-r16",
+          "notes": "**The highest-value ambiguity in the slice.** d04 says these two designators name DISTINCT variants; d19 says one is sometimes rendered as the other. Same site, overlapping window, no unit designator anywhere. Faithful output: one presence at Rahwali with an unresolved designator, not two presences and not one merged battery.",
+          "polarity": "unknown",
+          "reason": "same-presence-as",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the HQ9B btry (Post 1)",
+            "HQ-9/P (HIMADS) battery (Post 2)"
+          ]
+        }
+      ],
+      "scoring_role": "penalise_identity_assertion"
+    },
+    "anti_coref": {
+      "harness_hook": "eval.gold.adapter.precision_exclusions",
+      "how_to_score": "Over-bind rate = pairs whose two surfaces share a referent_id (or a coref cluster) in the candidate's output / total pairs. Substrate is S3-dependent, exactly like coref_binding: report UNAVAILABLE, never 0.00, while referent_id is dormant.",
+      "precision_denominator": "excluded — emitting a claim here is not an error",
+      "precision_exclusion_automatic": "NO — unwired today. The scorer's precision is matched/extracted, so an unpaired claim on one of these six spans currently costs the candidate. One of the six (d05-r21) overlaps a positive claim and so is usually paired anyway; the other five are live over-penalties.",
+      "recall_denominator": "excluded",
+      "rows": [
+        {
+          "class": "anti_coref",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 13,
+            "span": [
+              472,
+              567
+            ]
+          },
+          "evidence_mode": "derived-required",
+          "gold_coref_tag": "d02-AMBIG-1",
+          "gold_id": "d02-r15",
+          "notes": "NEGATIVE GOLD, and the doc's biggest over-bind trap: 'Army Air Defence' (arm) shares nearly every token with 'Pakistan Army Air Defence (PAAD) unit' (formation). The doc never contrasts them, so the licence to keep them apart is semantic, not stated.",
+          "polarity": "negative",
+          "reason": "arm-of-service-is-not-the-formation",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "surfaces": [
+            "senior officers of Army Air Defence",
+            "a Pakistan Army Air Defence (PAAD) unit"
+          ]
+        },
+        {
+          "class": "anti_coref",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 5,
+            "span": [
+              219,
+              346
+            ]
+          },
+          "evidence_mode": "derived-required",
+          "gold_coref_tag": "d04-AMBIG-3",
+          "gold_id": "d04-r18",
+          "notes": "NEGATIVE GOLD. The family term is the parent of BOTH C1 and C2 in this doc. Binding it to either variant is the type/instance collapse; the doc even says the two share the family name and are not one system.",
+          "polarity": "negative",
+          "reason": "family-is-not-a-variant",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the Chinese-origin HQ-9 family",
+            "HQ-9/P"
+          ]
+        },
+        {
+          "class": "anti_coref",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 19,
+            "span": [
+              3507,
+              3596
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d19-AMBIG-1",
+          "gold_id": "d19-r10",
+          "notes": "NEGATIVE GOLD. The doc declares one of its own surfaces a GENERIC label. Generic and specific are a refines relation; merging them as same-as loses the distinction between the design family and the export variant.",
+          "polarity": "negative",
+          "reason": "generic-label-not-a-designator",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "surfaces": [
+            "HQ-9B",
+            "HQ-9BE"
+          ]
+        },
+        {
+          "class": "anti_coref",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 32,
+            "span": [
+              1468,
+              1532
+            ]
+          },
+          "evidence_mode": "derived-required",
+          "gold_coref_tag": "d05-AMBIG-1",
+          "gold_id": "d05-r21",
+          "notes": "NEGATIVE GOLD. A town and a seaport terminal sharing a name inside one document.",
+          "polarity": "negative",
+          "reason": "town-is-not-the-port-terminal",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Bin Qasim Town, Karachi",
+            "PORT MUHAMMAD BIN QASIM (PQ)"
+          ]
+        },
+        {
+          "class": "anti_coref",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 7,
+            "span": [
+              265,
+              332
+            ]
+          },
+          "evidence_mode": "derived-required",
+          "gold_coref_tag": "d05-AMBIG-1",
+          "gold_id": "d05-r22",
+          "notes": "NEGATIVE GOLD. A terminal at Port Qasim whose NAME begins with 'Karachi'. Name-based geography would put this shipment at the wrong port, ~35 km away.",
+          "polarity": "negative",
+          "reason": "terminal-name-contains-a-different-city",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Karachi International Container Terminal / QICT PQ",
+            "Karachi (the city) / Port of Karachi"
+          ]
+        },
+        {
+          "class": "anti_coref",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 15,
+            "span": [
+              1779,
+              1834
+            ]
+          },
+          "evidence_mode": "derived-required",
+          "gold_coref_tag": "cs01-C2-formations",
+          "gold_id": "cs01-r15",
+          "notes": "**NEGATIVE GOLD, and the OOB lesson of the slice.** A cardinality is not two referents. Minting two formation nodes from this invents individuals the source never named; discarding the number loses the only order-of-battle figure in the slice. The faithful output is one under-determined formation claim carrying count_state = 2 (+1 prospective).",
+          "polarity": "negative",
+          "reason": "count-is-not-two-individuated-formations",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "surfaces": [
+            "two operational battalions",
+            "two formation nodes"
+          ]
+        }
+      ],
+      "scoring_role": "penalise_binding"
+    },
+    "not_a_claim": {
+      "harness_hook": "eval.gold.adapter.trap_avoidance",
+      "how_to_score": "Rate = traps at which the candidate emitted no claim / total traps. A claim hits a trap when its doc_ref overlaps the trap span AND the matcher left it unpaired against the positive gold. The unpaired condition is load-bearing, not caution: trap d20-r13's span overlaps positive claim d20-r14's, so a bare overlap test charges a trap hit to a model that emitted d20-r14 correctly. Lower is worse; this is the fabrication line at a place the gold knows the answer.",
+      "precision_denominator": "included — an emission here is a false positive AND a trap hit",
+      "precision_exclusion_automatic": "n/a — this class is meant to cost precision, and does",
+      "recall_denominator": "excluded",
+      "rows": [
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 17,
+            "span": [
+              1776,
+              1833
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "-",
+          "gold_id": "d02-r12",
+          "notes": "NEGATIVE GOLD. A modal about the future. An extractor that mints a second induction/import event here has fabricated one.",
+          "polarity": "unknown",
+          "reason": "prospective-modal",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "surfaces": [
+            "further inductions",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 13,
+            "span": [
+              2174,
+              2311
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "d19-C3-radar",
+          "gold_id": "d19-r19",
+          "notes": "NEGATIVE GOLD. The doc refuses to endorse the type ID. An extractor that credits d19 as an independent HT-233 identification has ignored an explicit disclaimer.",
+          "polarity": "unknown",
+          "reason": "explicit-non-endorsement",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the HT-233 identification",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 13,
+            "span": [
+              1859,
+              2033
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "-",
+          "gold_id": "d19-r20",
+          "notes": "NEGATIVE GOLD. Methodological reasoning about decoys 'elsewhere in the region'. Not a claim that decoys are at Rahwali; an extractor must not mint a decoy observation here.",
+          "polarity": "unknown",
+          "reason": "decoy-risk-reasoning",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "surfaces": [
+            "an imagery-only assessment",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 91,
+            "span": [
+              4084,
+              4202
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "d05-AMBIG-2",
+          "gold_id": "d05-r23",
+          "notes": "**AMBIGUOUS by truncation.** The one place the document begins to state an identity-match is cut off mid-token AND explicitly labelled 'non-adjudicative'. An extractor must not complete the sentence for it.",
+          "polarity": "unknown",
+          "reason": "truncated-and-self-disclaimed",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "surfaces": [
+            "CROSS-REFERENCE NOTE (internal PRAL data-matching, non-adjudicative)",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 54,
+            "span": [
+              2398,
+              2561
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "d05-C2-shipper",
+          "gold_id": "d05-r24",
+          "notes": "NEGATIVE GOLD for the subject line and 'FrOm' casing garble. The email DOMAIN (sinogalaxy-export.cn) is a weak corroborating signal for the shipper cluster and is recorded there; the message body asserts nothing about the subject.",
+          "polarity": "unknown",
+          "reason": "pasted-email-noise",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": false,
+          "surfaces": [
+            "FrOm: zhang.wei@sinogalaxy-export.cn / Subject: RE: shipping docs pkg 2",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+            "line": 40,
+            "span": [
+              3982,
+              4115
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "d17b-C1-site",
+          "gold_id": "d17b-r10",
+          "notes": "NEGATIVE GOLD, and the most important row in the doc: the source disclaims its own site-to-system association. Crediting d17b with an HQ-9/P site claim ignores an explicit disclaimer.",
+          "polarity": "unknown",
+          "reason": "identity-rests-on-prior-association",
+          "source_id": "d17b_withheld_gap",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Site identity as \"the forward HQ-9/P site\"",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+            "line": 34,
+            "span": [
+              3363,
+              3543
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "-",
+          "gold_id": "d17b-r15",
+          "notes": "NEGATIVE GOLD. Three alternatives listed, none asserted. An extractor that mints a dispersal or rotation claim here has fabricated one.",
+          "polarity": "unknown",
+          "reason": "enumerated-alternatives",
+          "source_id": "d17b_withheld_gap",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the negative finding",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 22,
+            "span": [
+              991,
+              1157
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "d20-C2-skeptics",
+          "gold_id": "d20-r12",
+          "notes": "NEGATIVE GOLD. Asserts nothing about the world; it characterizes the claim's sourcing. An extractor that mints a relocation claim from Post 3 has inverted the post's meaning.",
+          "polarity": "unknown",
+          "reason": "explicit-refusal-to-assert",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the Rahwali 'left the base' claim",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 46,
+            "span": [
+              2023,
+              2236
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "d20-C2-skeptics",
+          "gold_id": "d20-r13",
+          "notes": "NEGATIVE GOLD, plus two credibility facts stated outright: 'no second source' and 'one guy's thread'. It also supplies a base rate ('this happens every few months with this site') that nothing in the ontology can carry.",
+          "polarity": "unknown",
+          "reason": "explicit-refusal-to-assert",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "surfaces": [
+            "an HQ-9/P 'move' out of Rahwali",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 21,
+            "span": [
+              3418,
+              3480
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "cs01-C5-gap",
+          "gold_id": "cs01-r13",
+          "notes": "**The time discriminator declared unusable by the document.** With report_time unrecoverable, freshness decay has to fall back on the cache-retrieval and last-modified headers — which are 2015 and 2013 respectively.",
+          "polarity": "unknown",
+          "reason": "publication-time-unrecoverable",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the cached record",
+            "-"
+          ]
+        },
+        {
+          "class": "not_a_claim",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 29,
+            "span": [
+              4347,
+              4445
+            ]
+          },
+          "evidence_mode": "not-a-claim",
+          "gold_coref_tag": "cs01-C5-gap",
+          "gold_id": "cs01-r14",
+          "notes": "NEGATIVE GOLD. The record is cut off mid-sentence ('networked with the country's broader integrated air defence…'). An extractor must not complete it.",
+          "polarity": "unknown",
+          "reason": "truncated-artifact",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the cached record",
+            "-"
+          ]
+        }
+      ],
+      "scoring_role": "penalise_emission"
+    },
+    "unmodelled": {
+      "harness_hook": "eval.gold.adapter.precision_exclusions",
+      "how_to_score": "Not scored. Report the count as a coverage finding about the ONTOLOGY, not about any candidate. If a per-candidate number is wanted, it is 'ontology-gap recognition' and belongs on the roadmap, not in this bake-off's composite.",
+      "precision_denominator": "excluded — REQUIRES harness wiring; see the report",
+      "precision_exclusion_automatic": "NO — unwired today, and this is the class where it bites hardest: 19 rows, of which 11 do NOT overlap any positive claim, so a model that reads all 19 off-ontology sentences correctly loses up to 11 precision points for reading correctly.",
+      "recall_denominator": "excluded",
+      "rows": [
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 13,
+            "span": [
+              658,
+              790
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d02-C1-system",
+          "gold_id": "d02-r13",
+          "notes": "FINDING: the ontology has no C2/network node type and no integrated-into edge, so a stated architectural dependency is unrepresentable. Also a clean acronym apposition (EXPLICIT_EQUIVALENCE) that has nowhere to bind.",
+          "polarity": "positive",
+          "reason": "integrated-into-c2-network",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the newly commissioned system",
+            "the Command, Control, Communication and Intelligence Air Defence (CLIAD) network"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+            "line": 11,
+            "span": [
+              188,
+              297
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d02-C4-person",
+          "gold_id": "d02-r14",
+          "notes": "FINDING: the richest, least ambiguous coref chain in the doc (4 mentions incl. a pronoun) belongs to a type the ontology does not declare. A coref evaluator scored on ontology-typed mentions only would never see it.",
+          "polarity": "positive",
+          "reason": "person-visits-site",
+          "source_id": "d02_ispr_induction",
+          "span_byte_exact": true,
+          "surfaces": [
+            "The Chief of Army Staff (COAS), General Qamar Javed Bajwa",
+            "the Army Air Defence Centre, Karachi"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 11,
+            "span": [
+              2118,
+              2303
+            ]
+          },
+          "evidence_mode": "stated-hedged",
+          "gold_coref_tag": "d04-ANTI-1",
+          "gold_id": "d04-r08",
+          "notes": "FINDING: the ontology can say A equips B, but cannot say 'A and A-prime differ in their equipping components without naming them'. The single most load-bearing piece of anti-identity evidence in the doc is unrepresentable.",
+          "polarity": "positive",
+          "reason": "differs-in-component",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the Army and PAF systems",
+            "different missile rounds, reportedly different engagement radars"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 13,
+            "span": [
+              2829,
+              2898
+            ]
+          },
+          "evidence_mode": "negative-observation",
+          "gold_coref_tag": "d04-C3-ft2000",
+          "gold_id": "d04-r11",
+          "notes": "FINDING: no edge type can carry 'operator X does not operate design Y'. The ontology has no operated-by / fielded-by edge at all — operator is only an attribute — so this negative, which is the direct refutation of the false-merge trap, has nowhere to go.",
+          "polarity": "negative",
+          "reason": "has-not-acquired",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Pakistan",
+            "the FT-2000"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 13,
+            "span": [
+              3062,
+              3274
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d04-C3-ft2000",
+          "gold_id": "d04-r12",
+          "notes": "FINDING: a source explicitly refuting another source's claim is a first-class credibility signal, and there is no `refutes` / `contradicts`-with-target edge an extractor may emit (contradicts is derived-only).",
+          "polarity": "negative",
+          "reason": "refutes-third-party-claim",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "at least one erroneous claim in regional media that Pakistan operates \"FT-2000 batteries\"",
+            "this publication was unable to substantiate"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 13,
+            "span": [
+              2611,
+              2676
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d04-C4-casic",
+          "gold_id": "d04-r14",
+          "notes": "FINDING: 'markets' is not 'manufactures'. The ontology carries the distinction only as a manufacturer ATTRIBUTE (export_agent), so a stated marketing relation must either be dropped or silently upgraded to manufactures — the exact conflation d22/d23 exist to punish.",
+          "polarity": "positive",
+          "reason": "markets",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "CASIC",
+            "the FT-2000"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 5,
+            "span": [
+              140,
+              217
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d04-AMBIG-2",
+          "gold_id": "d04-r15",
+          "notes": "**AMBIGUOUS / cross-doc tension.** Dates first confirmed induction to ~2018-19, while d02 (same month) reports the formal induction as 2021-10-14. Recorded as stated; the reconciliation is not in this document. Flagged for DATA-C.",
+          "polarity": "positive",
+          "reason": "prior-confirmation-time",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "induction",
+            "nearly three years before October 2021"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+            "line": 17,
+            "span": [
+              4091,
+              4210
+            ]
+          },
+          "evidence_mode": "negative-observation",
+          "gold_coref_tag": "d04-C2-hq9be",
+          "gold_id": "d04-r17",
+          "notes": "Absence of confirmation by an interested party — a credibility input with no carrier.",
+          "polarity": "negative",
+          "reason": "has-not-confirmed",
+          "source_id": "d04_armyrec_ranges",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Chinese state media",
+            "export of the HQ-9BE variant specifically to Pakistan"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 15,
+            "span": [
+              2606,
+              2683
+            ]
+          },
+          "evidence_mode": "stated-hedged",
+          "gold_coref_tag": "d19-C2-presence",
+          "gold_id": "d19-r12",
+          "notes": "FINDING: the doc asserts a relocation but names NO origin. `supersedes` is derived-only in the ontology, so an extractor has no lane for a stated state-change, and the second endpoint does not exist in this source at all. The relocation is a cross-document construction.",
+          "polarity": "positive",
+          "reason": "recently-redeployed-from-unstated-origin",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the HQ-9BE battery at Rahwali",
+            "(origin site not named anywhere in the document)"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+            "line": 15,
+            "span": [
+              2338,
+              2416
+            ]
+          },
+          "evidence_mode": "negative-observation",
+          "gold_coref_tag": "d19-C1-site",
+          "gold_id": "d19-r13",
+          "notes": "A first_seen / novelty claim — a real integrity input with no declared carrier.",
+          "polarity": "negative",
+          "reason": "not-previously-cited-as",
+          "source_id": "d19_rahwali_confirm",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Rahwali",
+            "an HQ-9-family site"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 13,
+            "span": [
+              591,
+              638
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d05-C3-port",
+          "gold_id": "d05-r13",
+          "notes": "FINDING: the ontology declares no port/facility node type — only `basing_site` and its `area_of_operations` refinement — and no edge from an import event to a place. A port of discharge must be forced into basing_site (wrong kind of thing) or dropped.",
+          "polarity": "positive",
+          "reason": "port-of-discharge",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "surfaces": [
+            "PORT MUHAMMAD BIN QASIM (PQ)",
+            "KPQA-HC-2020-118834"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 18,
+            "span": [
+              784,
+              833
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d05-C1-consignee",
+          "gold_id": "d05-r14",
+          "notes": "**MAJOR FINDING.** The doc's core structure is event <-> consignee <-> shipper, and NONE of it is expressible: `imported-by` goes contract_import_event -> unit (no unit here) and `exported-by` goes contract_import_event -> manufacturer (the shipper is a trading_org). There is no edge between contract_import_event and trading_org at all, so the entire supply-chain intermediary layer this document exists to expose has no lane.",
+          "polarity": "positive",
+          "reason": "consignee-of",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "surfaces": [
+            "ORIENT ELECTRO TRADING (PVT) LTD",
+            "KPQA-HC-2020-118834"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d05_customs_manifest.txt",
+            "line": 21,
+            "span": [
+              938,
+              982
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d05-C2-shipper",
+          "gold_id": "d05-r15",
+          "notes": "As r14: `exported-by` requires a manufacturer at the far end; a trading_org shipper does not type.",
+          "polarity": "positive",
+          "reason": "shipper-of",
+          "source_id": "d05_customs_manifest",
+          "span_byte_exact": true,
+          "surfaces": [
+            "SINO-GALAXY IMP/EXP CO. LTD",
+            "KPQA-HC-2020-118834"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+            "line": 30,
+            "span": [
+              2955,
+              3111
+            ]
+          },
+          "evidence_mode": "stated",
+          "gold_coref_tag": "d17b-AMBIG-1",
+          "gold_id": "d17b-r13",
+          "notes": "FINDING: 'does not corroborate' is neither `corroborates` nor `contradicts` — a third state (checked and failed to confirm) that the evidence layer cannot express.",
+          "polarity": "negative",
+          "reason": "does-not-corroborate",
+          "source_id": "d17b_withheld_gap",
+          "span_byte_exact": true,
+          "surfaces": [
+            "The present collection",
+            "the forum assertion of fresh TEL deployment"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 6,
+            "span": [
+              191,
+              436
+            ]
+          },
+          "evidence_mode": "stated-attributed",
+          "gold_coref_tag": "d20-C1-battery",
+          "gold_id": "d20-r01",
+          "notes": "FINDING: `supersedes` is derived-only, so a STATED relocation has no extractor lane. The best the ontology can do is two presence claims — one negative at Rahwali, one positive at an unlocatable destination. Note the poster's own hedge 'big move if true'.",
+          "polarity": "positive",
+          "reason": "relocated-from-to",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the HQ9B btry that was sitting at Rahwali",
+            "Rahwali -> the old Rawalpindi site"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+            "line": 14,
+            "span": [
+              778,
+              824
+            ]
+          },
+          "evidence_mode": "negative-observation",
+          "gold_coref_tag": "d20-AMBIG-1",
+          "gold_id": "d20-r05",
+          "notes": "An absence-of-departure claim, which is not the same as a presence claim and has no lane. Also predates the departure claim by a month.",
+          "polarity": "negative",
+          "reason": "has-not-left",
+          "source_id": "d20_supersede_spoof",
+          "span_byte_exact": true,
+          "surfaces": [
+            "HQ-9/P (HIMADS) battery",
+            "near Rahwali airbase"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 11,
+            "span": [
+              853,
+              1029
+            ]
+          },
+          "evidence_mode": "stated-hedged",
+          "gold_coref_tag": "cs01-C1-hq9p",
+          "gold_id": "cs01-r02",
+          "notes": "**THE operator conflict.** d02 states the HQ-9/P was inducted into a Pakistan ARMY unit and d04 states the ARMY operates HQ-9/P while the PAF operates HQ-9BE. This document assigns HQ-9/P to the PAF, over the same city (Karachi). Operator is a critical-if-present discriminator, so this is a genuine wall-triggering conflict — and it arrives from a stale, low-grade source. Also FINDING: there is no `operated-by`/`operates` edge in the ontology at all, so the conflict can only be seen if operator is captured as an attribute on both sides.",
+          "polarity": "positive",
+          "reason": "operates",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the Pakistan Air Force's Air Defence Command",
+            "the HQ-9/P"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 23,
+            "span": [
+              3687,
+              3971
+            ]
+          },
+          "evidence_mode": "stated-hedged",
+          "gold_coref_tag": "cs01-C4-areas",
+          "gold_id": "cs01-r10",
+          "notes": "Areas of responsibility, not sites — and the second one is explicitly uncorroborated by the desk. A basing edge here would be precision the source does not have. Note 'a secondary battery' is a FOURTH under-determined formation reference, again with no designator.",
+          "polarity": "positive",
+          "reason": "deployed-in-area",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "surfaces": [
+            "the HQ-9/P",
+            "positions oriented toward the Arabian Sea approach; a secondary battery near the Punjab border sector"
+          ]
+        },
+        {
+          "class": "unmodelled",
+          "doc_ref": {
+            "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+            "line": 21,
+            "span": [
+              3154,
+              3417
+            ]
+          },
+          "evidence_mode": "stated-attributed",
+          "gold_coref_tag": "cs01-C1-hq9p",
+          "gold_id": "cs01-r11",
+          "notes": "**Cross-doc time conflict:** an induction 'already' complete in 2013, against d02's formal induction on 2021-10-14 and d04's '~2018-19 first confirmed'. Three irreconcilable induction dates across the corpus for one designator.",
+          "polarity": "positive",
+          "reason": "characterized-as-inducted",
+          "source_id": "cs01_stale_orbat",
+          "span_byte_exact": true,
+          "surfaces": [
+            "Pakistani defence officials",
+            "\"already inducted in limited numbers\" (2013)"
+          ]
+        }
+      ],
+      "scoring_role": "neutral_exclude"
+    }
+  },
+  "produced_by": {
+    "adapter": "eval.gold.adapter",
+    "from_digest_sha256": "9905b64c0aabcc8944cc465e542e6910b16a14ed4eee33379fba8db4a20e5ddd",
+    "from_schema": "rk-spike-claim-gold/1.0",
+    "note": "Derived file. Edit the labeled gold, then regenerate — never hand-edit this."
+  },
+  "reconciliation": {
+    "bucket_sizes": {
+      "attribute_rows": 22,
+      "claims": 65,
+      "negative:ambiguous": 2,
+      "negative:anti_coref": 6,
+      "negative:not_a_claim": 11,
+      "negative:unmodelled": 19
+    },
+    "coref": {
+      "claims_carrying_a_scoreable_cluster": 51,
+      "curated_clusters": 32,
+      "curated_mentions": 120,
+      "distinct_clusters_among_claims": 24,
+      "mentions_verbatim_in_their_document": 119,
+      "mentions_with_locator_stripped": 12
+    },
+    "declared_counts_reproduced": {
+      "anti_coref_rows": 6,
+      "coref_clusters": 32,
+      "documents": 7,
+      "not_a_claim_rows": 11,
+      "rows": 125,
+      "unmodelled_rows": 19
+    },
+    "negative_polarity_rows": 27,
+    "placed_rows": 125,
+    "scored_recall_denominator": 65,
+    "source_rows": 125,
+    "spans": {
+      "byte_exact": 122,
+      "decoded": 125,
+      "exact_under_gold_normalisation": 125
+    }
+  },
+  "schema_version": "rk-bakeoff-claim-gold/1.0",
+  "surface_verbatimness": {
+    "all_role_surfaces_verbatim_in_own_span": 34,
+    "all_role_surfaces_verbatim_somewhere_in_document": 49,
+    "reading": "A ceiling on this SLICE, not a defect in any candidate. The gold labels resolved subjects and annotator-composed surfaces; those rows can only match a verbatim extractor through the matcher's fuzzy tolerance. Report absolute recall against this ceiling, never against 1.00.",
+    "rows_with_a_surface_absent_from_the_whole_document": [
+      "d02-r11",
+      "d04-r05",
+      "d19-r02",
+      "d19-r05",
+      "d19-r07",
+      "d19-r08",
+      "d19-r11",
+      "d19-r14",
+      "d19-r16",
+      "d17b-r03",
+      "d17b-r04",
+      "d17b-r12",
+      "d20-r14",
+      "d20-r15",
+      "cs01-r07",
+      "cs01-r09"
+    ],
+    "rows_with_a_surface_absent_from_their_span": [
+      "d02-r04",
+      "d02-r07",
+      "d02-r11",
+      "d04-r02",
+      "d04-r03",
+      "d04-r05",
+      "d04-r07",
+      "d04-r10",
+      "d04-r13",
+      "d19-r02",
+      "d19-r05",
+      "d19-r07",
+      "d19-r08",
+      "d19-r11",
+      "d19-r14",
+      "d19-r16",
+      "d19-r17",
+      "d19-r18",
+      "d05-r04",
+      "d05-r05",
+      "d05-r06",
+      "d05-r10",
+      "d05-r11",
+      "d17b-r03",
+      "d17b-r04",
+      "d17b-r12",
+      "d20-r03",
+      "d20-r14",
+      "d20-r15",
+      "cs01-r07",
+      "cs01-r09"
+    ],
+    "scored_claims": 65
+  }
+}
