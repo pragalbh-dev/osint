@@ -158,9 +158,10 @@ def test_graph_recall_is_measured_against_the_supplied_sub_oracle(inputs) -> Non
     assert alpha.series["graph_edge_recall"].mean == pytest.approx(1.0)
 
 
-def test_coref_binding_is_not_measured_for_anyone_yet(inputs) -> None:
-    """Top-weighted and awaiting S3 — reported as unmeasured, never as a zero for both candidates."""
-    from eval.extraction.metrics import AWAITING_S3
+def test_coref_binding_on_a_dormant_channel_is_unmeasured_never_a_zero(inputs) -> None:
+    """Top-weighted. With extraction pass 2 dormant nothing binds, and that must read as NOT MEASURED for
+    everyone — a zero would be a score neither candidate earned, and a tie neither of them made."""
+    from eval.extraction.metrics import NO_CLUSTERING
 
     config = bakeoff_config()
     result = run_bakeoff(inputs, config, _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}),
@@ -168,7 +169,7 @@ def test_coref_binding_is_not_measured_for_anyone_yet(inputs) -> None:
     for score in result.scores:
         series = score.series["coref_binding"]
         assert series.status == "unavailable" and series.values == ()
-        assert any("coref_cluster labels" in r or r == AWAITING_S3 for r in series.reasons)
+        assert any("coref_cluster labels" in r or r == NO_CLUSTERING for r in series.reasons)
 
 
 # ── the anti-fabrication path: identical candidates must not be ranked ─────────────────────────────
@@ -249,7 +250,10 @@ def test_a_wobbling_candidates_variance_widens_the_required_margin(inputs) -> No
 # ── preflight ─────────────────────────────────────────────────────────────────────────────────────
 
 def test_preflight_judges_every_dry_gate_without_spending_anything() -> None:
-    reports = preflight(bakeoff_config(), require_key=False)
+    # `evidence={}` is passed explicitly, not left to the default: the default reads the operator's real
+    # recorded imagery evidence off disk, and a test whose verdict depends on whether somebody ran the
+    # probe this afternoon is not a test.
+    reports = preflight(bakeoff_config(), require_key=False, evidence={})
     assert len(reports) == 2
     for report in reports:
         statuses = {g.name: g.status for g in report.gates}
@@ -257,3 +261,95 @@ def test_preflight_judges_every_dry_gate_without_spending_anything() -> None:
         assert statuses["keyless_equals_live"] == "PASS"
         assert statuses["pinned_model_id"] == "PASS"
         assert not report.eligible
+
+
+def test_preflight_honours_recorded_imagery_evidence_but_not_a_stale_pin() -> None:
+    """The imagery gate is the one gate inspection cannot judge, so it is judged on a recorded probe — and
+    a record for a model id the candidate no longer names is treated as absent, never inherited."""
+    from eval.extraction.vlm_probe import ImageryEvidence
+
+    config = bakeoff_config()
+    alpha, beta = config.candidates
+    evidence = {
+        alpha.id: ImageryEvidence(candidate_id=alpha.id, model_id=alpha.model_id, image="frame.png",
+                                  calls_ok=1, calls_total=1, recorded_at="2026-07-25T00:00:00+00:00"),
+        beta.id: ImageryEvidence(candidate_id=beta.id, model_id="some-other-pin", image="frame.png",
+                                 calls_ok=1, calls_total=1, recorded_at="2026-07-25T00:00:00+00:00"),
+    }
+    statuses = {
+        r.candidate_id: {g.name: g.status for g in r.gates}
+        for r in preflight(config, require_key=False, evidence=evidence)
+    }
+    assert statuses[alpha.id]["vlm_imagery_path"] == "PASS"
+    assert statuses[beta.id]["vlm_imagery_path"] == "UNKNOWN"
+
+
+# ── the coref precondition ────────────────────────────────────────────────────────────────────────
+
+def test_a_required_coref_metric_refuses_before_any_budget_is_spent(inputs) -> None:
+    """`coref_binding` is top-weighted and declared required in the shipped config, and extraction pass 2
+    ships OFF. The refusal has to happen up front: paying for N runs per candidate and *then* reporting
+    INSUFFICIENT_CRITERIA buys a measurement that was structurally impossible before the first call."""
+    from eval.extraction.coref_channel import FLAG, CorefChannelDormant
+
+    config = bakeoff_config(required_metrics=["coref_binding"])
+    spent: list[str] = []
+
+    def factory(candidate, run_index):
+        spent.append(candidate.id)
+        return RoutedScriptedClient(FULL_PAYLOAD, {})
+
+    with pytest.raises(CorefChannelDormant) as excinfo:
+        run_bakeoff(inputs, config, factory, require_key=False)
+    assert FLAG in str(excinfo.value)                    # it names the flag rather than flipping it
+    assert "Do not re-weight it to zero" in str(excinfo.value)
+    assert spent == []                                   # not one client was ever built
+
+
+def test_with_both_halves_of_the_substrate_present_the_required_metric_no_longer_blocks(
+        inputs, pipeline_config, tmp_path) -> None:
+    """The block lifts by turning the channel on and labelling the slice — never by dropping the criterion.
+
+    Both halves are needed: the model-facing channel (``cluster_coreferences``, flag-gated) and cluster
+    labels in the gold. With either missing the run refuses up front; with both present it proceeds."""
+    from dataclasses import replace
+
+    from eval.extraction import coref_channel
+
+    live_config = coref_channel.with_channel_on(pipeline_config)
+    channel = coref_channel.inspect(live_config)
+    assert channel.measurable
+    assert channel.tool_name == "cluster_coreferences"
+    assert channel.cluster_field == "clusters[].member_ids"
+
+    labeled_gold = write_claim_gold(tmp_path / "gold_labeled.json", [
+        {"gold_id": "g1", "source_id": "doc1", "form": "entity", "entity_type": "manufacturer",
+         "name": "North Ridge Foundry", "doc_ref": {"file": "doc1.txt", "span": [0, 47]},
+         "kind": "observation", "coref_cluster": "c1"},
+        {"gold_id": "g2", "source_id": "doc1", "form": "entity", "entity_type": "component",
+         "name": "Type-7 Coupler", "doc_ref": {"file": "doc1.txt", "span": [29, 47]},
+         "kind": "observation", "coref_cluster": "c2"},
+    ])
+
+    config = bakeoff_config(required_metrics=["coref_binding"])
+    result = run_bakeoff(replace(inputs, config=live_config, gold_path=labeled_gold), config,
+                         _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}), require_key=False)
+    assert result.scores
+    # The scripted double answers pass 2 with a payload carrying no clusters, so nothing is bound and the
+    # metric still reports NOT MEASURED — with the honest reason, and never a zero.
+    reasons = result.scores[0].series["coref_binding"].reasons or ()
+    assert any("NO CLUSTERING" in r for r in reasons)
+
+
+def test_a_required_coref_metric_refuses_on_an_unlabeled_slice(inputs, pipeline_config) -> None:
+    """The gold half of the same precondition, end to end: a live channel scored against a slice with no
+    cluster labels is still an impossible measurement, and still refused before any budget is spent."""
+    from dataclasses import replace
+
+    from eval.extraction import coref_channel
+
+    config = bakeoff_config(required_metrics=["coref_binding"])
+    live = replace(inputs, config=coref_channel.with_channel_on(pipeline_config))
+    with pytest.raises(coref_channel.CorefChannelDormant, match="no coref_cluster labels"):
+        run_bakeoff(live, config, _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}),
+                    require_key=False)

@@ -1,0 +1,36 @@
+{
+  "evidence": [
+    {
+      "calls_ok": 1,
+      "calls_total": 1,
+      "candidate_id": "anthropic-opus-5",
+      "error": null,
+      "image": "d17b_withheld_gap.png",
+      "model_id": "claude-opus-5",
+      "probe_version": 1,
+      "recorded_at": "2026-07-25T20:27:24+00:00"
+    },
+    {
+      "calls_ok": 1,
+      "calls_total": 1,
+      "candidate_id": "gemini-3-6-flash",
+      "error": null,
+      "image": "d17b_withheld_gap.png",
+      "model_id": "gemini-3.6-flash",
+      "probe_version": 1,
+      "recorded_at": "2026-07-25T20:27:33+00:00"
+    },
+    {
+      "calls_ok": 1,
+      "calls_total": 1,
+      "candidate_id": "openai-gpt-5-6-sol",
+      "error": null,
+      "image": "d17b_withheld_gap.png",
+      "model_id": "gpt-5.6-sol",
+      "probe_version": 1,
+      "recorded_at": "2026-07-25T20:27:49+00:00"
+    }
+  ],
+  "note": "Evidence for the PASS/FAIL VLM imagery gate. A record is honoured only while its model_id matches the candidate's pinned model_id and its probe_version matches the current probe. No record, or a stale one, means UNKNOWN \u2014 never a pass.",
+  "schema_version": "rk-bakeoff-vlm-evidence/1.0"
+}

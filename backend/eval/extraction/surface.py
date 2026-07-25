@@ -118,9 +118,10 @@ def _refs_of(claim: ClaimRecord) -> tuple[SpanRef, ...]:
 def from_claim_record(claim: ClaimRecord) -> SurfaceClaim:
     """Reduce a pipeline ``ClaimRecord`` to a :class:`SurfaceClaim`.
 
-    ``referent_id`` is carried through untouched — it is ``None`` on every claim until RK-COREF (S3)
-    lands, which is precisely how the coref-binding metric knows its substrate is absent rather than
-    scoring an empty clustering as perfect or as zero.
+    ``referent_id`` is carried through untouched. RK-COREF (S3) has landed, so it is now filled whenever
+    extraction pass 2 ran and a cluster was accepted — and still ``None`` when the pass was dormant or the
+    model bound nothing, which is precisely how the coref-binding metric knows its substrate is absent
+    rather than scoring an empty clustering as perfect or as zero.
     """
     payload = claim.payload
     roles: dict[str, str] = {}

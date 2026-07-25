@@ -13,7 +13,7 @@ import pytest
 
 from eval.extraction.compare import decide, per_metric_comparisons
 from eval.extraction.gates import GateReport, GateResult
-from eval.extraction.metrics import AWAITING_S3, MetricValue
+from eval.extraction.metrics import NO_CLUSTERING, MetricValue
 from eval.extraction.render import render_markdown, to_json
 from eval.extraction.scorecard import (
     RunScore,
@@ -56,10 +56,10 @@ def test_a_series_measured_in_some_runs_is_partial_and_not_rankable() -> None:
 
 
 def test_a_fully_unavailable_series_keeps_the_reason_and_reports_no_value() -> None:
-    values = [MetricValue.unavailable("coref_binding", AWAITING_S3) for _ in range(3)]
+    values = [MetricValue.unavailable("coref_binding", NO_CLUSTERING) for _ in range(3)]
     series = build_series("coref_binding", values, 3, 3)
     assert series.status == "unavailable" and series.values == () and series.mean is None
-    assert series.reasons == (AWAITING_S3,)
+    assert series.reasons == (NO_CLUSTERING,)
 
 
 def test_two_runs_are_below_the_ranking_floor_of_three() -> None:

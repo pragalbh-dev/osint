@@ -14,7 +14,7 @@ from dataclasses import asdict, is_dataclass
 from typing import Any
 
 from .compare import COMPOSITE, MetricComparison, Verdict, summarize_spread
-from .metrics import AWAITING_S3
+from .metrics import NO_CLUSTERING
 from .policy import BakeoffConfig
 from .scorecard import CandidateScore
 
@@ -78,13 +78,16 @@ def render_markdown(
 
     awaiting = [
         n for n in metric_names
-        if all(AWAITING_S3 in (s.series[n].reasons or ()) for s in exercised if n in s.series)
+        if all(NO_CLUSTERING in (s.series[n].reasons or ()) for s in exercised if n in s.series)
         and exercised
     ]
     if awaiting:
-        add("\n> **Awaiting substrate.** " + ", ".join(f"`{n}`" for n in awaiting) +
-            " — the metric is implemented and defined, but S3 (RK-COREF) has not landed, so no number is "
-            "reported for anyone. It is not zero and it is not a tie; it is not measured.")
+        add("\n> **No clustering to score.** " + ", ".join(f"`{n}`" for n in awaiting) +
+            " — the metric is implemented and its substrate has shipped (S3 / RK-COREF), but not one "
+            "claim in this run carried a referent id, so no number is reported for anyone. Either "
+            "extraction pass 2 was dormant on this run's config (`resolution.earned_identity.enabled` — "
+            "preflight reports it) or every candidate declined to bind any mention. It is not zero and "
+            "it is not a tie; it is not measured.")
 
     # ── composite + verdict ───────────────────────────────────────────────────────────────────────
     add("\n## 3. Composite and verdict\n")

@@ -25,34 +25,43 @@ Module map::
     compare.py    the minimum-margin rule, tiering, the composite, and the Verdict invariant
     gates.py      the pass/fail preconditions
     runner.py     N runs per candidate → bundles → rebuild → comparative scorecard
+    secrets.py    .env key loading — names only; a value never leaves the module
+    coref_channel.py  is there a model-facing coref output channel, and is it switched on?
+    vlm_probe.py  the deliberate imagery experiment that turns the VLM gate from UNKNOWN into evidence
     render.py     markdown + JSON output, gates printed above every score
 """
 
 from __future__ import annotations
 
 from .compare import NO_DIFFERENCE_PHRASE, Verdict, compare_metric, decide
+from .coref_channel import CorefChannel, CorefChannelDormant, with_channel_on
 from .gates import GateReport, GateResult, evaluate_gates
 from .gold import load_claim_gold, load_sub_oracle
 from .gpt_client import OpenAIExtractionClient
 from .matcher import MatchResult, match_claims
-from .metrics import AWAITING_S3, MetricValue
+from .metrics import NO_CLUSTERING, MetricValue
 from .policy import BakeoffConfig, Candidate, MatchPolicy, load_bakeoff_config
 from .recording import RecordingExtractionClient
 from .render import render_markdown, to_json
 from .runner import BakeoffInputs, BakeoffResult, preflight, run_bakeoff
 from .scorecard import CandidateScore, MetricSeries, RunScore
+from .secrets import key_names_present, load_env_file
 from .surface import SurfaceClaim, from_claim_record
+from .vlm_probe import ImageryEvidence, gate_from_evidence, probe_candidate
 
 __all__ = [
-    "AWAITING_S3",
+    "NO_CLUSTERING",
     "NO_DIFFERENCE_PHRASE",
     "BakeoffConfig",
     "BakeoffInputs",
     "BakeoffResult",
     "Candidate",
+    "CorefChannel",
+    "CorefChannelDormant",
     "CandidateScore",
     "GateReport",
     "GateResult",
+    "ImageryEvidence",
     "MatchPolicy",
     "MatchResult",
     "MetricSeries",
@@ -66,12 +75,17 @@ __all__ = [
     "decide",
     "evaluate_gates",
     "from_claim_record",
+    "gate_from_evidence",
+    "key_names_present",
     "load_bakeoff_config",
+    "load_env_file",
     "load_claim_gold",
     "load_sub_oracle",
     "match_claims",
     "preflight",
+    "probe_candidate",
     "render_markdown",
     "run_bakeoff",
     "to_json",
+    "with_channel_on",
 ]

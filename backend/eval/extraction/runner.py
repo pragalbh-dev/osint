@@ -35,6 +35,7 @@ from chanakya.schemas import ClaimRecord, ConfigBundle, GraphView
 from chanakya.store import EvidenceLog
 from chanakya.view import rebuild
 
+from . import coref_channel
 from . import metrics as M
 from .compare import MetricComparison, Verdict, composite_series, decide, per_metric_comparisons
 from .gates import GateReport, evaluate_gates
@@ -44,6 +45,7 @@ from .policy import BakeoffConfig, Candidate
 from .recording import RecordingExtractionClient
 from .scorecard import CandidateScore, RunScore, aggregate_runs, unexercised
 from .surface import SurfaceClaim, from_claim_record
+from .vlm_probe import ImageryEvidence, evidence_for, load_evidence
 
 #: ``(candidate, run_index) -> client``. Returning ``None`` marks the candidate unexercisable.
 ClientFactory = Callable[[Candidate, int], Any | None]
@@ -245,8 +247,16 @@ def run_bakeoff(
     ``candidates`` optionally restricts the run to some ids — but note that a *narrowed* bake-off is
     still reported as what it is: candidates that were not run appear nowhere, and if only one candidate
     survives the gates the verdict is ``SOLE_ELIGIBLE_CANDIDATE``, never ``WINNER``.
+
+    Preconditions are checked **before the first API call**. ``coref_binding`` is the top-weighted
+    criterion and is declared required, but it needs both halves of its substrate: extraction pass 2 live
+    on this run's config, and cluster labels in the labeled slice (see :mod:`.coref_channel`). Either one
+    missing raises here, rather than after N extractions per candidate have been paid for and the verdict
+    comes back INSUFFICIENT_CRITERIA.
     """
+    coref_channel.require(inputs.config, config)
     gold = load_claim_gold(inputs.gold_path)
+    coref_channel.require_gold_labels(gold, config)
     oracle = load_sub_oracle(inputs.sub_oracle_path)
 
     wanted = set(candidates) if candidates else None
@@ -263,18 +273,31 @@ def run_bakeoff(
                          config=config)
 
 
-def preflight(config: BakeoffConfig, *, require_key: bool = True) -> list[GateReport]:
+def preflight(config: BakeoffConfig, *, require_key: bool = True,
+              evidence: Mapping[str, ImageryEvidence] | None = None) -> list[GateReport]:
     """Evaluate every gate that can be judged **without spending a single API call**.
 
-    The VLM gate necessarily comes back UNKNOWN here (nothing was exercised), which is the honest answer:
-    a gate nobody ran is not a gate anybody passed. Everything else — pinned id, production client path,
-    SDK import, key presence — is checkable dry, and checking it first is how a bake-off avoids paying
-    for runs on a candidate that is already disqualified.
+    Pinned id, production client path, SDK import and key presence are all checkable dry, and checking
+    them first is how a bake-off avoids paying for runs on a candidate that is already disqualified.
+
+    The VLM imagery gate is the exception: it cannot be judged by inspection, because "would this model
+    read an image" is not a property of the config. It is judged on **recorded evidence** from
+    :mod:`.vlm_probe` — a real standalone-image call through the real imagery lane, whose verdict is
+    pinned to the model id it was recorded against. No record, or a record for a model id this candidate
+    no longer names, reads UNKNOWN. That is the honest answer *and* a blocking one: a gate nobody ran is
+    not a gate anybody passed, and UNKNOWN must never quietly become a pass.
     """
-    return [
-        evaluate_gates(cand, config, image_calls_ok=0, image_calls_total=0, require_key=require_key)
-        for cand in config.candidates
-    ]
+    records = dict(evidence) if evidence is not None else load_evidence()
+    reports: list[GateReport] = []
+    for cand in config.candidates:
+        record = evidence_for(cand, records)
+        reports.append(evaluate_gates(
+            cand, config,
+            image_calls_ok=record.calls_ok if record else 0,
+            image_calls_total=record.calls_total if record else 0,
+            require_key=require_key,
+        ))
+    return reports
 
 
 __all__ = [

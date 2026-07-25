@@ -25,8 +25,11 @@ The metrics, and what each really measures:
 * **graph recall** — of the per-slice sub-oracle's nodes and edges, how many survive a rebuild of this
   run's claims?
 * **kind tagging** — low weight, self-correcting (D-13.5), reported for completeness.
-* **coref binding** — top-weighted and **awaiting S3**: ``referent_id`` is dormant (always ``None``) until
-  RK-COREF lands. The computation is implemented and correct; availability is checked at run time.
+* **coref binding** — top-weighted. RK-COREF (S3) has landed, so the substrate exists: extraction pass 2
+  offers the model a real mention-cluster field and stamps the accepted cluster's referent atom onto
+  ``ClaimRecord.referent_id``. The pass is flag-gated, and :mod:`eval.extraction.coref_channel` checks
+  the flag *before* any budget is spent, so "unmeasured" here means the models bound nothing — never a
+  silent schema gap.
 """
 
 from __future__ import annotations
@@ -48,11 +51,20 @@ from .surface import DISCRIMINATOR_SLOTS, SurfaceClaim, normalize_surface
 Status = Literal["measured", "unavailable"]
 Direction = Literal["higher_is_better", "lower_is_better"]
 
-#: The reason string the coref metric reports until RK-COREF (S3) lands. Matched on in the report so the
-#: line reads "AWAITING S3", never "0.00".
-AWAITING_S3 = (
-    "AWAITING S3 (RK-COREF): referent_id is dormant on every claim, so no system clustering exists to "
-    "score. Not a failure of any candidate and not a zero — simply not measured."
+#: The reason the coref metric reports when no claim carries a referent id. Matched on in the report so
+#: the line reads "NO CLUSTERING", never "0.00".
+#:
+#: RK-COREF (S3) has landed, so the *substrate* now exists: extraction pass 2 offers the model a real
+#: mention-cluster field and stamps each accepted cluster's referent atom onto ``ClaimRecord``. What this
+#: string now means is therefore narrower and more interesting than it used to — either the pass was
+#: dormant on this run's config (``eval.extraction.coref_channel`` checks that up front, before any
+#: budget is spent, precisely so this cannot be the explanation), or the pass ran and every candidate
+#: declined to bind anything. Both are "not measured"; neither is a zero, and neither is a model's score.
+NO_CLUSTERING = (
+    "NO CLUSTERING: not one claim carries a referent_id, so there is no system clustering to score. "
+    "Either extraction pass 2 was dormant on this run's config (check "
+    "resolution.earned_identity.enabled — preflight reports it) or every candidate declined to bind any "
+    "mention. Not a failure of any candidate and not a zero — simply not measured."
 )
 
 
@@ -410,19 +422,22 @@ def discriminator_metrics(tally: DiscriminatorTally) -> dict[str, MetricValue]:
     }
 
 
-# ── coref binding (AWAITING S3) ───────────────────────────────────────────────────────────────────
+# ── coref binding ─────────────────────────────────────────────────────────────────────────────────
 
 def coref_binding(match: MatchResult) -> MetricValue:
-    """B-cubed F1 of the system's document-local coref clusters against the gold's — **awaiting S3**.
+    """B-cubed F1 of the system's document-local coref clusters against the gold's.
 
-    The metric is fully defined and implemented: over the aligned (gold, extracted) pairs, each item's
-    B-cubed precision is |same system cluster ∧ same gold cluster| / |same system cluster|, its recall the
-    same over the gold cluster, and the metric is the F1 of their means. What is missing is the
-    *substrate*: ``ClaimRecord.referent_id`` is dormant until RK-COREF (S3) mints referent ids, so there
-    is no system clustering to compare. Until then this returns ``unavailable`` with :data:`AWAITING_S3`.
+    Over the aligned (gold, extracted) pairs, each item's B-cubed precision is |same system cluster ∧
+    same gold cluster| / |same system cluster|, its recall the same over the gold cluster, and the metric
+    is the F1 of their means.
+
+    The substrate is ``ClaimRecord.referent_id``, minted by RK-COREF (S3)'s extraction pass 2 — a second
+    forced-tool call whose schema carries the model's own mention clustering. That pass ships behind a
+    flag; :mod:`eval.extraction.coref_channel` checks it is live *before* any API budget is spent, so a
+    dormant channel is caught as a precondition rather than surfacing here as a mystery blank.
 
     It deliberately does **not** fall back to "every claim is its own cluster", which would score a real
-    number (and a flattering one for a model that never co-refers) off a capability nobody has built.
+    number (and a flattering one for a model that never co-refers) off a decision no model made.
     """
     graded = [p for p in match.pairs if p.gold.coref_cluster is not None]
     if not graded:
@@ -431,7 +446,7 @@ def coref_binding(match: MatchResult) -> MetricValue:
             "the gold slice carries no coref_cluster labels, so binding cannot be scored",
         )
     if not any(p.extracted.referent_id for p in graded):
-        return MetricValue.unavailable("coref_binding", AWAITING_S3)
+        return MetricValue.unavailable("coref_binding", NO_CLUSTERING)
 
     items = [(p.gold.coref_cluster, p.extracted.referent_id) for p in graded]
     precisions: list[float] = []
@@ -562,7 +577,7 @@ def cost_metric(usage: Mapping[str, int] | None, pricing: Pricing | None) -> Met
 
 
 __all__ = [
-    "AWAITING_S3",
+    "NO_CLUSTERING",
     "DiscriminatorTally",
     "EntailmentJudge",
     "MetricValue",

@@ -122,11 +122,39 @@ def test_the_shipped_bakeoff_config_loads_and_declares_the_disciplines() -> None
     assert cfg.replication.runs_per_candidate >= cfg.replication.min_runs_for_ranking
     assert cfg.replication.min_runs_for_ranking >= 2
     assert cfg.margin.min_absolute > 0 and cfg.margin.noise_multiplier > 0
-    assert {c.id for c in cfg.candidates} >= {"anthropic-opus-4-8"}
+    # The three candidates are a fixed decision, so what is asserted is the SHAPE of the field, not the
+    # version strings: three declared candidates, one per provider, none text-only. Pinning the ids here
+    # instead would mean a re-pin — a thing this bake-off is expected to do — shows up as a failing test
+    # rather than as a new measurement. The pinned-id discipline is enforced where it belongs, by
+    # `gate_pinned_model_id` against `gates.floating_alias_patterns`.
+    providers = sorted(c.provider for c in cfg.candidates)
+    assert providers == ["anthropic", "google", "openai"]
+    assert len({c.id for c in cfg.candidates}) == 3
+    assert not any(c.multimodal == "none" for c in cfg.candidates)   # text-only is a disqualifier
     # the two non-negotiables are weighted at least as heavily as anything else that is scored
     top = max(cfg.weights.values())
     assert cfg.weights["citation_faithfulness"] >= top - 0.51
     assert cfg.weights["extract_only_stated"] >= top - 0.51
+
+
+def test_every_shipped_candidate_carries_a_concretely_pinned_model_id() -> None:
+    """Discipline 1: a floating alias may never be measured, because the frozen seed would stop equalling
+    what live produces. Asserted through the gate itself, so config and gate can never drift apart."""
+    from eval.extraction.gates import gate_pinned_model_id
+
+    cfg = load_bakeoff_config(settings.config_dir() / "bakeoff.yaml")
+    for candidate in cfg.candidates:
+        gate = gate_pinned_model_id(candidate, cfg)
+        assert gate.status == "PASS", f"{candidate.id}: {gate.detail}"
+
+
+def test_the_top_weighted_criterion_is_still_declared_required() -> None:
+    """`coref_binding` is top-weighted and blocks the verdict. Dropping it from `required_metrics` to make
+    a run go green is the one move that turns an honest gap into a silent one, so the config is held to it
+    here rather than trusted to a comment."""
+    cfg = load_bakeoff_config(settings.config_dir() / "bakeoff.yaml")
+    assert "coref_binding" in cfg.required_metrics
+    assert cfg.weights["coref_binding"] == max(cfg.weights.values())
 
 
 def test_no_candidate_ships_with_an_invented_price() -> None:

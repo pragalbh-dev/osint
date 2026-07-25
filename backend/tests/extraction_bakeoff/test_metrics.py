@@ -6,7 +6,7 @@ import pytest
 
 from eval.extraction.matcher import match_claims
 from eval.extraction.metrics import (
-    AWAITING_S3,
+    NO_CLUSTERING,
     MetricValue,
     citation_faithfulness,
     coref_binding,
@@ -205,14 +205,14 @@ def test_the_mention_walk_finds_nested_mentions_in_any_format() -> None:
     assert tally_discriminators([payload], [GOLD_ENTITY], POLICY).captured == 1
 
 
-# ── coref: implemented, awaiting S3 ───────────────────────────────────────────────────────────────
+# ── coref: implemented; the substrate shipped, so "unavailable" now means nobody bound ───────────
 
-def test_coref_binding_reports_awaiting_s3_not_a_number() -> None:
+def test_coref_binding_reports_no_clustering_not_a_number() -> None:
     gold = [entity("g1", "North Ridge Foundry", coref_cluster="c1")]
-    got = [entity("c1", "North Ridge Foundry")]          # referent_id is dormant → None
+    got = [entity("c1", "North Ridge Foundry")]          # nothing was bound → referent_id None
     metric = coref_binding(match_claims(gold, got, POLICY))
     assert metric.status == "unavailable" and metric.value is None
-    assert metric.reason == AWAITING_S3
+    assert metric.reason == NO_CLUSTERING
 
 
 def test_coref_binding_computes_bcubed_once_referents_exist() -> None:

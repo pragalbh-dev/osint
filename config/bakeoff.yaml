@@ -57,7 +57,10 @@ gates:
 # dollars into a 0..1 score needs a normalisation constant nobody has justified, and inventing one would
 # manufacture separation. They are human tie-breakers.
 weights:
-  coref_binding: 5.0            # top-weighted, AWAITING S3 substrate
+  # Top-weighted, and now MEASURABLE: S3 (RK-COREF) shipped extraction pass 2, a second forced-tool call
+  # whose schema carries the model's own mention clustering, and whose accepted clusters mint the
+  # referent id this metric scores. It is flag-gated — see `required_metrics` below.
+  coref_binding: 5.0
   discriminator_capture: 4.5
   citation_faithfulness: 4.5    # non-negotiable
   extract_only_stated: 4.5      # non-negotiable
@@ -81,8 +84,16 @@ weights:
 #
 # The block lifts by itself: measure them and the verdict proceeds. Removing a name from this list is a
 # decision to rank without it, and should be made deliberately rather than to make a red run go green.
+#
+# `coref_binding` no longer blocks for want of a channel — S3 built one. It blocks for want of the
+# channel being SWITCHED ON: extraction pass 2 is dormant unless `resolution.earned_identity.enabled` is
+# true, and that ships FALSE. So the bake-off must be run with the flag on, which costs a second
+# extraction call per document and is a deliberate operator decision, not a default. The harness checks
+# this as a PRECONDITION (eval/extraction/coref_channel.py) before spending a single API call, and names
+# the flag when it refuses — so the failure mode is a loud refusal up front, never N paid runs followed
+# by a blank cell.
 required_metrics:
-  - coref_binding           # AWAITING S3 (RK-COREF): no extraction-side coref channel exists yet
+  - coref_binding           # measurable with resolution.earned_identity.enabled: true (ships false)
   - discriminator_capture   # needs A7 discriminators graded against the labeled slice
 
 # ── The claim-match policy: what counts as the same claim ──────────────────────────────────────────
@@ -133,10 +144,13 @@ match_policy:
 # `pricing` is null everywhere on purpose. Nobody here knows these models' real prices, and a fabricated
 # price is a fabricated benchmark line; cost is reported as UNPRICED until a human fills these in.
 candidates:
-  - id: anthropic-opus-4-8
-    label: "Anthropic Opus 4.8 (incumbent)"
+  - id: anthropic-opus-5
+    label: "Anthropic Opus 5"
     provider: anthropic
-    model_id: claude-opus-4-8
+    # PINNED. `claude-opus-5` is the complete, concrete id — the Anthropic scheme carries no date suffix
+    # on a current model, and appending one 404s. It is not a floating alias: it does not resolve to
+    # "whatever Opus is newest", it names Opus 5 and nothing else.
+    model_id: claude-opus-5
     client_module: chanakya.ingest.client
     client_class: AnthropicExtractionClient
     sdk_module: anthropic
@@ -145,12 +159,15 @@ candidates:
     freezes_seed: true
     pricing: null
 
-  - id: gemini-flash-pinned
-    label: "Gemini Flash (pinned)"
+  - id: gemini-3-6-flash
+    label: "Gemini Flash 3.6"
     provider: google
-    # DELIBERATELY a placeholder, not `gemini-flash-latest`: the floating alias FAILS the pinned-model-id
-    # gate by design. Replace with the concrete dated version before running.
-    model_id: "REPLACE-WITH-PINNED-GEMINI-VERSION"
+    # PINNED, and deliberately NOT `gemini-flash-latest` (which the shipped extraction client still uses
+    # as its live-resilience default). The alias tracks whatever Flash is current, so a frozen seed would
+    # silently stop equalling what live produces — it fails the pinned-model-id gate by design.
+    # `gemini-3.6-flash` reports version `3.6-flash-07-2026` from the models endpoint; that version
+    # string is metadata, not an addressable id, so the concrete id is this.
+    model_id: gemini-3.6-flash
     client_module: chanakya.ingest.client
     client_class: GeminiExtractionClient
     sdk_module: google.genai
@@ -162,10 +179,14 @@ candidates:
   - id: openai-gpt-5-6-sol
     label: "OpenAI GPT 5.6 Sol"
     provider: openai
-    model_id: "REPLACE-WITH-PINNED-GPT-VERSION"
+    # PINNED. The OpenAI models endpoint exposes no dated snapshot for the 5.6 family (`gpt-5.6-sol`,
+    # `-luna`, `-terra` and nothing else), so this IS the concrete id — there is no more specific one to
+    # pin to.
+    model_id: gpt-5.6-sol
     # NOTE: this client lives under `backend/eval`, so it FAILS the KEYLESS==LIVE gate as configured.
     # That is the honest state today, not an oversight: to win, the client has to move to
-    # `chanakya/ingest` first. See gates.production_client_package.
+    # `chanakya/ingest` first (which also means adding `openai` to the shipped image's dependencies —
+    # a deliberate decision, not a config edit). See gates.production_client_package.
     client_module: eval.extraction.gpt_client
     client_class: OpenAIExtractionClient
     sdk_module: openai

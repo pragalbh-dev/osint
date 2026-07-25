@@ -35,12 +35,22 @@ from collections.abc import Sequence
 from typing import Any
 
 #: Matches ``chanakya.ingest.client.MAX_TOKENS`` — one document's worth of tool arguments. Sent as
-#: ``max_completion_tokens`` (the newer parameter; ``max_tokens`` is rejected by reasoning models).
+#: ``max_output_tokens`` (the Responses API's name for the output cap).
 MAX_COMPLETION_TOKENS = 8192
 
 
 class OpenAIExtractionClient:
-    """Live extractor on the OpenAI Chat Completions API with a forced function call.
+    """Live extractor on the OpenAI **Responses** API with a forced function call.
+
+    **Why Responses and not Chat Completions.** The first cut of this client used
+    ``chat.completions.create`` and it does not work on the candidate under test: ``gpt-5.6-sol``
+    rejects the request outright with *"Function tools with reasoning_effort are not supported for
+    gpt-5.6-sol in /v1/chat/completions. To use function tools, use /v1/responses or set reasoning_effort
+    to 'none'."* The API offers two ways out and only one of them is honest here — setting
+    ``reasoning_effort='none'`` would silently benchmark a *deliberately weakened* GPT against two
+    competitors running at their own defaults, which is a rigged comparison wearing a fixed model id. So
+    the client moved to ``/v1/responses`` and the model keeps its native reasoning. This is a transport
+    change; nothing about what is asked of the model changed.
 
     ``model_id`` has **no default**: it is supplied by the candidate declaration in ``config/bakeoff.yaml``
     and is stamped onto every claim's ``Extraction.version``, so provenance records the exact pinned
@@ -62,53 +72,65 @@ class OpenAIExtractionClient:
 
     @staticmethod
     def _image_block(image: bytes, media_type: str) -> dict[str, Any]:
-        """A base64 data-URI image part (the Chat Completions ``image_url`` shape)."""
+        """A base64 data-URI image part (the Responses ``input_image`` shape)."""
         encoded = base64.standard_b64encode(image).decode("ascii")
-        return {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{encoded}"}}
+        return {"type": "input_image", "image_url": f"data:{media_type};base64,{encoded}"}
 
     @staticmethod
     def _text_block(text: str) -> dict[str, Any]:
-        return {"type": "text", "text": text}
+        return {"type": "input_text", "text": text}
 
     # ── the one call ──────────────────────────────────────────────────────────────────────────────
 
     def _call(
-        self, *, tool_name: str, input_schema: dict[str, Any], system: str, content: Any
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, content: Any,
     ) -> dict[str, Any]:
-        """Force exactly one function call and return its parsed arguments as a plain dict."""
-        messages: list[dict[str, Any]] = []
-        if system:
-            messages.append({"role": "system", "content": system})
-        messages.append({"role": "user", "content": content})
+        """Force exactly one function call and return its parsed arguments as a plain dict.
 
-        tool = {
-            "type": "function",
-            "function": {"name": tool_name, "parameters": input_schema},
+        ``strict`` is deliberately left off the tool: every extraction schema in this project is
+        all-optional by construction (a required field is how a model is pushed into inventing an
+        operator or a date the source never stated), and strict mode demands the opposite. Turning it on
+        would trade the anti-fabrication property for a validation guarantee — exactly backwards for the
+        thing this bake-off exists to measure.
+
+        Two things are *absent* on purpose, and both are honesty rules rather than style:
+
+        * **No sampling parameter** — no ``temperature`` / ``top_p`` / ``seed``, the same rule the shipped
+          Anthropic and Gemini clients are held to. A knob set on one candidate and not the others would
+          make the bake-off a comparison of settings.
+        * **No ``reasoning`` / ``reasoning_effort``** — the model runs at its own default. Turning
+          reasoning down is the other way out of the Chat Completions rejection described above, and it
+          would benchmark a deliberately weakened GPT under a fixed model id.
+
+        An empty ``system`` sends **no** instructions key at all, rather than an explicit ``null``: the
+        parity claim is that no system message was sent, and only omission states that unambiguously.
+        """
+        request: dict[str, Any] = {
+            "model": self.model_id,
+            "input": [{"role": "user", "content": content}],
+            "tools": [{"type": "function", "name": tool_name, "parameters": input_schema}],
+            "tool_choice": {"type": "function", "name": tool_name},
+            "max_output_tokens": MAX_COMPLETION_TOKENS,
         }
-        response = self._client.chat.completions.create(
-            model=self.model_id,
-            messages=messages,
-            tools=[tool],
-            tool_choice={"type": "function", "function": {"name": tool_name}},
-            max_completion_tokens=MAX_COMPLETION_TOKENS,
-        )
+        if system:
+            request["instructions"] = system
+        response = self._client.responses.create(**request)
         self.last_usage = _usage_dict(getattr(response, "usage", None))
 
-        for choice in getattr(response, "choices", None) or []:
-            message = getattr(choice, "message", None)
-            for call in getattr(message, "tool_calls", None) or []:
-                fn = getattr(call, "function", None)
-                if fn is None or getattr(fn, "name", None) != tool_name:
-                    continue
-                args = getattr(fn, "arguments", None)
-                if isinstance(args, dict):
-                    return dict(args)
-                parsed = json.loads(args or "{}")
-                if not isinstance(parsed, dict):
-                    raise RuntimeError(
-                        f"OpenAI returned non-object arguments for tool {tool_name!r}: {type(parsed).__name__}"
-                    )
-                return parsed
+        for item in getattr(response, "output", None) or []:
+            if getattr(item, "type", None) != "function_call":
+                continue  # reasoning items and message items ride the same list; skip them
+            if getattr(item, "name", None) != tool_name:
+                continue
+            args = getattr(item, "arguments", None)
+            if isinstance(args, dict):
+                return dict(args)
+            parsed = json.loads(args or "{}")
+            if not isinstance(parsed, dict):
+                raise RuntimeError(
+                    f"OpenAI returned non-object arguments for tool {tool_name!r}: {type(parsed).__name__}"
+                )
+            return parsed
         raise RuntimeError(f"OpenAI returned no forced function call for tool {tool_name!r}")
 
     # ── the ExtractionClient surface ──────────────────────────────────────────────────────────────
@@ -119,9 +141,14 @@ class OpenAIExtractionClient:
     ) -> dict[str, Any]:
         """Force one tool call over ``text`` (+ optional rendered page ``images``) → filled arguments.
 
-        Text-only sends a bare string (the unchanged wire shape); with page images the user turn becomes
-        a text part plus one image part per page, so prose, tables and figures are read together — the
-        PDF-multimodal path the shipped clients implement.
+        Text-only sends the prose as a **bare string**, which is what both shipped clients do (Anthropic
+        passes ``content=text``, Gemini passes ``contents=text``). Keeping the three wire shapes identical
+        on the common lane matters: the bake-off is meant to measure models, and a text-only document
+        wrapped in a parts array for one candidate and not the others is a difference in the *harness*
+        that would show up as a difference in the *model*.
+
+        With page images the user turn becomes a text part plus one image part per page, so prose, tables
+        and figures are read together — the PDF-multimodal path the shipped clients implement.
         """
         content: Any = text
         if images:
@@ -147,13 +174,18 @@ class OpenAIExtractionClient:
 def _usage_dict(usage: Any) -> dict[str, int] | None:
     """Normalise the SDK usage object to ``{input_tokens, output_tokens}``, or ``None`` if absent.
 
-    Returns ``None`` rather than zeros when the API reports nothing: a zero token count would price a run
-    at zero dollars, which is a fabricated benchmark line.
+    Reads the Responses API's own names first and falls back to the Chat Completions ones, so a mixed or
+    older SDK still prices correctly. Returns ``None`` rather than zeros when the API reports nothing: a
+    zero token count would price a run at zero dollars, which is a fabricated benchmark line.
     """
     if usage is None:
         return None
-    prompt = getattr(usage, "prompt_tokens", None)
-    completion = getattr(usage, "completion_tokens", None)
+    prompt = getattr(usage, "input_tokens", None)
+    if prompt is None:
+        prompt = getattr(usage, "prompt_tokens", None)
+    completion = getattr(usage, "output_tokens", None)
+    if completion is None:
+        completion = getattr(usage, "completion_tokens", None)
     if prompt is None and completion is None:
         return None
     return {"input_tokens": int(prompt or 0), "output_tokens": int(completion or 0)}
