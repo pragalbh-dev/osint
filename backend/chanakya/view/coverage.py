@@ -86,14 +86,14 @@ class IdentityCoverage(Record):
     policy: CoveragePolicy = CoveragePolicy()
 
 
-def _typer(type_of: TypeOf) -> Callable[[str], "str | None"]:
+def _typer(type_of: TypeOf) -> Callable[[str], str | None]:
     """Normalise a callable-or-mapping ``type_of`` into a callable ``entity_id -> type | None``."""
     if isinstance(type_of, Mapping):
         return type_of.get
     return type_of
 
 
-def _link_type(a: str, b: str, typer: Callable[[str], "str | None"]) -> str:
+def _link_type(a: str, b: str, typer: Callable[[str], str | None]) -> str:
     """The entity type to attribute a two-ended identity link to.
 
     Merges/candidates are within-type by construction (the resolver requires equal ``etype`` before it
