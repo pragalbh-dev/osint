@@ -44,8 +44,20 @@ rule). **Against that merged base my whole suite passed — including the two te
 bare-string `attrs` form.** That is what the ruling withdraws: the shipped S1 loader is a **dual-form**
 loader, exactly the "temporary tolerance" the ruling forbids.
 
-**Revised state after the ruling: `3 failed, 1091 passed, 7 skipped, 2 xfailed in 31.40s`.** The three
-failures are precisely the inverted/new assertions, and no other test in the suite moved.
+**Revised state after the ruling: `3 failed, 1093 passed, 7 skipped, 2 xfailed`.** The three failures are
+precisely the assertions that gate the removal, and no other test in the suite moved.
+
+**Two facts measured, not assumed, that differ from the integration brief:**
+1. `design/resolution-redesign` is still at **`d7e443c`**, and `config/ontology.yaml` there is **still
+   entirely bare-string** — 81 entries, YAML entry types `{'str'}`. The migration the brief describes as done
+   ("all 13 `attrs` lists → 81 name-only entries") has **not landed on this base**; its 13/81 shape matches
+   my independent capture exactly, so we are describing the same file, but the change must be on an unmerged
+   branch. My `..._loads_under_the_structured_only_schema` test therefore fails **for the right reason** and
+   will go green when the migration merges — it is the gate on that merge, not a stale assertion.
+2. No test in the suite depends on the bare `TypeDef.attrs` form. Every other `attrs` hit in `tests/**` is
+   the **claim payload's** tier-2 `EntityDescriptor.attrs` dict — a different field entirely — so the four
+   other ontology-loading test files (`test_t3b_fragmentation`, `test_operator_branch_alert_posture`,
+   `test_freshness_class_defaults`, `test_extract`) cannot break on the removal.
 
 ### What changed in the suite
 
@@ -57,8 +69,43 @@ failures are precisely the inverted/new assertions, and no other test in the sui
 | `test_a_structured_attr_entry_tolerates_an_unfamiliar_key` | **deleted** — it asserted tolerance *via* `layer`, and the ruling forbids asserting anything about `layer` at S1 (see silence **S-6**) | — |
 | `test_the_repo_ontology_config_still_loads_after_the_restructure` | **replaced** by the three migration-net tests below | — |
 | `test_the_repo_ontology_config_loads_under_the_structured_only_schema` | **new** — no bare string may survive in the shipped `config/ontology.yaml` | **FAILS-NOW** |
-| `test_the_loader_round_trips_the_shipped_attribute_names_name_for_name` | **new** — loaded model == what the file declares, per type, in order (catches a loader that drops/reorders/renames on parse) | GUARD |
+| `test_the_loader_round_trips_the_shipped_attribute_names_name_for_name` | **new** — loaded model == what the file declares, per type, in order (catches a loader that drops/reorders/renames on parse); carries a **non-vacuity floor** (≥81 names actually compared) | GUARD |
 | `test_the_structured_migration_loses_no_declared_attribute` | **new** — the frozen pre-migration vocabulary must survive in full (catches a *botched migration*: a dropped or renamed attribute) | GUARD |
+| `test_the_frozen_pre_migration_yardstick_is_intact` | **new** — pins the yardstick at 13 types / 81 names so it cannot be trimmed instead of fixing the migration | GUARD |
+| `test_the_migration_loss_check_detects_a_planted_loss` | **new** — negative control: the *same* detection logic must catch a dropped attribute, a **renamed** one, and a vanished type | GUARD |
+
+**Why each of the three withdrawn-compatibility tests went the way it did.** `..._accepts_the_old_bare_string_...`
+and `..._mixed_bare_and_structured_...` became **rejection** tests, because each names a specific input that
+must now fail loudly — a bare list, and the half-migrated list that is the likeliest botched-migration
+artefact — so there is real behaviour left to assert. `..._read_the_same_from_either_form` was **deleted**
+instead: it asserted an *equivalence between two forms*, and with one legal form the proposition has no
+content — inverting it would only restate the bare-string rejection a third time.
+
+**The docstring that asserted something false is gone.** The replaced test's docstring read *"the headline
+non-breaking check, against the real file: `config/ontology.yaml` is **untouched in S1**"* — true when
+written, false the moment the migration was decided. It is deleted rather than patched, and the tests that
+replaced it each state exactly what they guarantee (the file carries no bare string · the loader yields what
+the file declares · the pre-migration vocabulary survives in full). No test in `backend/tests/**` now
+contains the string "untouched in S1", and no test named `test_the_real_config_ontology_yaml_still_loads`
+exists anywhere in the suite (both verified by grep) — item 4 was this test under a paraphrased name.
+
+**Proof the two migration-net guards can fail.** They pass today only because nothing has been lost yet, so
+their detection path is exercised directly instead. `_migration_losses()` is shared by the real check and its
+negative control; against a synthetic post-migration vocabulary with one attribute dropped, one renamed, and
+one whole type removed:
+
+```
+yardstick: 13 types / 81 names
+lossless input -> ([], {})
+lossy input    -> (['known_gap'], {'variant': ['range_km'], 'unit': ['designator']})
+```
+
+The rename case is the one that earns its keep: `unit.designator` → `unit_designator` leaves the attribute
+*count* unchanged, so a count-based check would pass it; a per-name check catches it.
+
+**Independence of the yardstick.** `PRE_MIGRATION_ATTRS` was read out of `config/ontology.yaml` at
+`d7e443c` **before** any migration, not from the implementer's before/after diff — so the no-loss check does
+not inherit the assumption it is supposed to test.
 
 `tests/_rk_atoms.py` gains `raw_attr_name()` (reads a **raw YAML** entry, tolerant of either shape, for the
 round-trip test) and its `attr_names()` docstring now states that the bare-string branch is a legacy-input
