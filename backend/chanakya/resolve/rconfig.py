@@ -64,6 +64,21 @@ TIME_ROLES_CONFIRMING = (TIME_DURABLE, TIME_CONSTITUTIVE, TIME_IDENTIFYING)
 #: stage that introduces it (plan §5a-bis), and a silently-tolerated old form biases every later author.
 _LEGACY_PERISHABLE_KEY = "perishable"
 _TIME_ROLE_KEY = "time_role"
+
+# ── the THIRD axis: is this attribute IDENTITY-BEARING, or does it merely name a CLASS? ───────────
+#
+# ``role`` says what a stated DISAGREEMENT does (wall / soft penalty / nothing) and ``time_role`` says what
+# TIME does to it. Neither says what an *agreement* is worth — and the two were read as if agreement always
+# meant "one entity", which is false for a whole family of attributes: **every member of a class shares its
+# class by definition**. "Both are HQ-9 family", "both are S-band", "both are Pakistan Air Force" says the
+# two mentions belong to the same set; it says nothing about them being the same *thing*. Treated as an
+# agreeing discriminator, a class label switched OFF the name cap — the only remaining guard on the widest
+# fusion lane — so two entities fused at ``confirmed`` with no queue item, no watch-list entry, no wall and
+# no gap. A taxonomic attribute is therefore excluded from every POSITIVE identity signal (the discriminator
+# ratio, the durable-support test) while keeping its negative consequences in full: a stated difference on a
+# critical taxonomic attribute is still a hard wall, and on a supporting one still a soft penalty. Absence of
+# the key ⇒ identity-bearing, which is the direction an author can safely forget.
+_TAXONOMIC_KEY = "taxonomic"
 #: The two retired STAGE MARKERS. ``requires: earned_identity`` gated a row on the S3 staging flag and
 #: ``earned_role:`` overrode a row's ``role`` while that flag was on. The flag is gone — the machinery is
 #: unconditional — so a row carrying either marker is a row whose author still believes there are two
@@ -420,6 +435,14 @@ def _validate_attribute_roles(roles: Any) -> None:
                 raise AttributeRoleError(
                     f"attribute_roles.{entity_type}.{attr} declares {_TIME_ROLE_KEY}={role!r}, which is "
                     f"not one of {list(TIME_ROLES)} (C6)."
+                )
+            taxonomic = spec.get(_TAXONOMIC_KEY)
+            if taxonomic is not None and not isinstance(taxonomic, bool):
+                raise AttributeRoleError(
+                    f"attribute_roles.{entity_type}.{attr} declares {_TAXONOMIC_KEY}={taxonomic!r}; it takes "
+                    f"true or false only. 'true' means the attribute names a CLASS every member shares, so "
+                    f"its agreement is not evidence of identity (it stays a wall / a penalty when it "
+                    f"disagrees); omit it for an identity-bearing attribute."
                 )
 
 
@@ -871,6 +894,34 @@ class ResolveConfig:
     def supporting_role_attrs(self, entity_type: str) -> list[str]:
         """Compiler: attrs whose disagreement is a SOFT penalty in ``attribute_score``, never a wall."""
         return self._role_attrs(entity_type, ROLE_SUPPORTING)
+
+    def attribute_is_taxonomic(self, entity_type: str, attr: str) -> bool:
+        """Does this attribute name a **class** rather than bear identity? (the third axis, ``taxonomic:``)
+
+        A taxonomic attribute is one every member of the class shares by definition — a design family, a
+        component class, a radar band, a service branch, a country of origin. Its *agreement* carries no
+        individuating information, so it is excluded from every positive identity signal: it may not raise
+        the ``discriminator`` sub-signal (:func:`scoring._discriminator_agreement`) and it may not supply
+        durable identity support (:func:`scoring.has_durable_identity_support`). Its NEGATIVE consequences
+        are untouched — a stated difference on a critical taxonomic attribute is still a hard wall, on a
+        supporting one still a soft penalty.
+
+        This is the guard the name cap needed. The cap ("the only thing joining this pair is what it is
+        called") lifts on any agreeing discriminator, and a class label agreeing is the one thing that is
+        *always* available between two mentions of the same kind of thing — so a co-stated ``family`` turned
+        the cap off and fused two variants at ``confirmed`` with nothing else agreeing. Undeclared ⇒ False
+        (identity-bearing), the direction an author can safely forget.
+        """
+        spec = self.attribute_roles(entity_type).get(attr)
+        return isinstance(spec, dict) and spec.get(_TAXONOMIC_KEY) is True
+
+    def taxonomic_attrs(self, entity_type: str) -> list[str]:
+        """Attributes of ``entity_type`` declared ``taxonomic: true``, sorted (deterministic — gate G2)."""
+        roles = self.attribute_roles(entity_type)
+        return sorted(
+            a for a, spec in roles.items()
+            if isinstance(spec, dict) and spec.get(_TAXONOMIC_KEY) is True
+        )
 
     def attribute_time_role(self, entity_type: str, attr: str) -> str | None:
         """The declared ``time_role`` of an attribute (C6) — one of :data:`TIME_ROLES`, or ``None``.

@@ -376,6 +376,8 @@ def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bo
     if a.etype != b.etype:
         return False  # role attrs + perishability are per-type; a cross-type pair has no durable attr agreement
     for attr in _identity_relevant_attrs(a.etype, cfg):
+        if cfg.attribute_is_taxonomic(a.etype, attr):
+            continue  # a class every member shares is not durable identity support — it is not support at all
         va = a.attrs.get(attr)
         # C6: ``attribute_confirms_identity`` is the four-value read of the same question the boolean
         # ``perishable is not True`` asked — and byte-identical on the two roles that existed before. What it
@@ -593,6 +595,13 @@ def _discriminator_agreement(
         seen_id.add(k)
         if a.attrs.get(k) is None or b.attrs.get(k) is None:
             continue  # not stated on both sides ⇒ not part of the agreement ratio (absence ≠ evidence)
+        if cfg.attribute_is_taxonomic(a.etype, k):
+            # A CLASS label, not an identity. Every member of a class shares it BY DEFINITION, so its
+            # agreement individuates nothing — and this ratio is precisely what lifts the name cap, the only
+            # remaining guard on the widest fusion lane. Excluded from the ratio entirely (it neither raises
+            # nor lowers it): a taxonomic DISAGREEMENT is already carried by the wall (a critical role) or the
+            # soft conflict penalty (a supporting role), so no negative evidence is lost here.
+            continue
         if durable_only and cfg.attribute_perishable(a.etype, k) is True:
             continue
         present += 1

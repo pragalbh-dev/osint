@@ -383,22 +383,50 @@ place_bind_on_curated_toponym: true
 # either is a LOUD load error rather than a silently ignored one — a tolerated staging marker is a
 # compatibility mode with a shorter name, and an ignored `earned_role: critical` would quietly demote a wall
 # its author meant to declare. One block, one declaration per row.
+#
+# `taxonomic: true` — THE THIRD AXIS, and the one the first two could not express. `role` says what a stated
+# DISAGREEMENT does; `time_role` says what TIME does to the value. Neither says what an AGREEMENT is worth,
+# and it was read as always meaning "one entity". That is false for every attribute that names a CLASS:
+# every member of a class shares its class by definition, so "both are HQ-9 family", "both are S-band",
+# "both are Pakistan Air Force" locates two mentions in the same set and says nothing about them being the
+# same THING. Measured consequence: a co-stated `family` counted as an agreeing discriminator, which is
+# exactly what lifts the name cap — the only remaining guard on the widest fusion lane — so two different
+# variants fused at `confirmed` with no queue item, no watch-list entry, no wall and no gap. A `taxonomic`
+# attribute is excluded from the positive identity signals ONLY (the discriminator ratio, durable support);
+# every negative consequence is untouched — a critical taxonomic disagreement is still a hard wall, a
+# supporting one still a soft penalty. Omitted ⇒ identity-bearing, the safe direction to forget.
 attribute_roles:
   variant:
-    operator_branch: {role: critical, time_role: durable}   # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
+    # TAXONOMIC as well as critical: a stated branch DIFFERENCE is a wall, but two designs both stated
+    # 'PLAAF' are not thereby one design — an operator's inventory is a set, not an identity.
+    operator_branch: {role: critical, time_role: durable, taxonomic: true}
+                                                            # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
                                                             # cannot be one entity — a stated branch difference
                                                             # is a wall. Durable: a design's operator lineage
                                                             # does not change; a different one is another line.
-    family:          {role: supporting, time_role: durable}
-    range_class:     {role: supporting, time_role: durable}
+    # THE MEASURED CASE. `family: HQ-9` is stated on HQ-9, HQ-9A, HQ-9B and HQ-9BE alike — that is what the
+    # family means. Counted as an agreeing discriminator it lifted the name cap and put HQ-9 ↔ HQ-9A,
+    # HQ-9 ↔ HQ-9B, HQ-9A ↔ HQ-9B and HQ-9A ↔ HQ-9BE on the fusion path: the costliest over-merge in this
+    # ORBAT, proposed on nothing but two similar names and the family they share by definition.
+    family:          {role: supporting, time_role: durable, taxonomic: true}
+    range_class:     {role: supporting, time_role: durable, taxonomic: true}
+    # …and the design layer's one IDENTITY-BEARING attribute, which it needs or D-13.10's permissive half
+    # ("design collapses readily … one more trivially-available signal clears the name cap") has nothing left
+    # to stand on: every other declared variant attribute names a class. An EXPORT DESIGNATOR names one
+    # production line and one customer — FD-2000 is the HQ-9/P export, HQ-9BE the HQ-9B export — so two
+    # mentions stating the same one really are one design. Individuating, therefore NOT taxonomic.
+    export_designator: {role: supporting, time_role: durable}
   unit:
     # CRITICAL. It was `supporting` — i.e. inert — only because the corpus states it unnormalised
     # ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an exact-match wall on those "SHATTERS legitimate
     # merges". `value_normalization` removes that objection, so a genuinely different service branch is a
     # genuinely different unit.
-    service_branch:  {role: critical, time_role: durable}
-    designator:      {role: supporting, time_role: durable}
-    echelon:         {role: supporting, time_role: durable}
+    # …and TAXONOMIC: 'both are Pakistan Air Force' is true of every PAF unit there is. The wall on a stated
+    # DIFFERENCE is the whole point of the row and is unaffected; what it may no longer do is stand in as
+    # positive evidence that two similarly-named formations are one formation.
+    service_branch:  {role: critical, time_role: durable, taxonomic: true}
+    designator:      {role: supporting, time_role: durable}   # a designator individuates — identity-bearing
+    echelon:         {role: supporting, time_role: durable, taxonomic: true}   # every battalion is a battalion
     alert_posture:   {role: supporting, time_role: perishable}   # a stated readiness/alert status — expected
                                                                  # to CHANGE over time, never a durable trait,
                                                                  # so a clean update is not a contradiction.
@@ -417,9 +445,14 @@ attribute_roles:
     # raises, while a `critical` wall would compare raw coordinates with `==` and hard-wall two reports of one
     # presence over a rounding difference. Genuine geographic impossibility is walled by `geo_conflict_max_km`,
     # which has a tolerance; this rail supplies the positive half.
+    # Constitutive AND individuating — the coordinates, the design, the site and the window are what tell two
+    # presences apart, so these are the rungs that let a presence confirm.
     coordinates:     {role: supporting, time_role: constitutive}
-    operator_branch: {role: supporting, time_role: constitutive}
-    service_branch:  {role: supporting, time_role: constitutive}
+    # …the two BRANCH rows are constitutive but taxonomic: a presence is scoped to an operator, and two
+    # presences of the same operator are not thereby one presence. Their difference still reads as
+    # distinctness; their agreement no longer stands in for identity.
+    operator_branch: {role: supporting, time_role: constitutive, taxonomic: true}
+    service_branch:  {role: supporting, time_role: constitutive, taxonomic: true}
     design:          {role: supporting, time_role: constitutive}
     site:            {role: supporting, time_role: constitutive}
     observed_window: {role: supporting, time_role: constitutive}
@@ -439,12 +472,21 @@ attribute_roles:
     # had expired. For an operator-scoped supply-chain map two same-named trading organisations with
     # different stated countries of origin are the most dangerous over-merge class there is: fusing them
     # silently moves a supplier across a border. Two countries is not a spelling difference.
-    origin_country:  {role: critical, time_role: durable}
+    # TAXONOMIC too: two stated countries is a wall, but two companies both stated 'China' is a country's
+    # whole industry, not one company.
+    origin_country:  {role: critical, time_role: durable, taxonomic: true}
   component:
-    radar_band:      {role: supporting, time_role: durable}
-    component_class: {role: supporting, time_role: durable}
+    # Both name a CLASS of hardware. 'Both are S-band' / 'both are an engagement radar' is what makes two
+    # components comparable, never what makes them the same component — and this corpus states them on a
+    # dozen radar mentions whose names differ only in prose, which is precisely where the name cap must hold.
+    radar_band:      {role: supporting, time_role: durable, taxonomic: true}
+    component_class: {role: supporting, time_role: durable, taxonomic: true}
+    # The individuating counterpart, for the same reason as `variant.export_designator`: a MODEL DESIGNATION
+    # names one piece of hardware ('HT-233', 'Type 305B'), not a bracket of them, so its agreement is the one
+    # component signal that may clear the name cap.
+    model_designation: {role: supporting, time_role: durable}
   manufacturer:
-    tier:            {role: supporting, time_role: durable}
+    tier:            {role: supporting, time_role: durable, taxonomic: true}   # a supplier tier is a bracket
 
 # ── credibility floor on the critical-attribute veto (D5 take-care a, Stage 3A) ──────────────────
 # A source-credibility floor on the critical→veto wall above. A stated critical-attribute disagreement

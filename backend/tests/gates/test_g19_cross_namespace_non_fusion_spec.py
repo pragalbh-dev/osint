@@ -172,13 +172,16 @@ def test_an_exact_name_match_inside_one_namespace_still_bootstraps() -> None:
     """The mirror for Phase 1: the exact-name + namespace branch must survive the alias fix.
 
     D-13.10 caps name *alone*, so this pair also agrees on a durable declared attribute — the "one more
-    trivially-available signal" that clears the cap at the design layer.
+    trivially-available signal" that clears the cap at the design layer. That attribute is an
+    ``export_designator`` (one production line) and deliberately not ``family``: a class every member of the
+    family shares cannot be the extra signal, or the cap is off for every same-kind pair in the corpus.
     """
     part = rc.part_of(
         [
-            rc.ent("a", "variant", ALIASED_NAME, attrs={"country": PAKISTAN, "family": "HQ-9"}, doc="d1"),
-            rc.ent("b", "variant", ALIASED_NAME, attrs={"country": PAKISTAN, "family": "HQ-9"},
-                   doc="d2", sid="mid"),
+            rc.ent("a", "variant", ALIASED_NAME,
+                   attrs={"country": PAKISTAN, "export_designator": "FD-2000"}, doc="d1"),
+            rc.ent("b", "variant", ALIASED_NAME,
+                   attrs={"country": PAKISTAN, "export_designator": "FD-2000"}, doc="d2", sid="mid"),
         ],
         rc.bundle(),
     )

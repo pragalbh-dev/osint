@@ -12,6 +12,8 @@ so a `== 1` family size genuinely guards the feature.
 
 from __future__ import annotations
 
+import pytest
+
 from chanakya.schemas import GraphView
 
 
@@ -40,6 +42,23 @@ def test_cpmiec_spelling_variants_collapse_to_one_manufacturer(view: GraphView) 
     assert _claim_count(view, fam[0]) >= 2, "the CPMIEC node pooled no corroboration — the merge did not land"
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "CLOSING THE CLASS-ATTRIBUTE LOOPHOLE SPLIT THIS FAMILY 2-1, and the split is the target behaviour. "
+        "Two of the three spellings still merge (IMPEX ≡ IMP/EXP, 0.504 — they share a neighbour). The third, "
+        "'SINO GALAXY IMP. & EXP. CO.', reached the auto band only because its co-stated origin_country "
+        "agreed with the cluster's, and a shared country is a class every Chinese exporter is in, not evidence "
+        "that two companies are one company. With `origin_country` declared taxonomic the pair is name-alone, "
+        "the name cap holds, and the link is RETAINED on the watch-list with its reason at 0.438 — visible, "
+        "adjudicable, and not asserted. The competing spec is a property, not a corpus outcome: "
+        "tests/resolve/test_rk_coref_ladder.py::test_an_identical_name_alone_never_fuses_at_any_type "
+        "parametrizes over `manufacturer` too, so 'a name alone never fuses' already covers organisations. "
+        "TO CLOSE (DATA): add the third spelling to `alias_table` under the SINO-GALAXY canonical — an alias "
+        "LINK is a curated statement of equivalence, is an EARNED trigger, and the cap does not touch it. "
+        "That is the honest way to assert this merge; a class attribute is not."
+    ),
+)
 def test_sino_galaxy_spelling_variants_collapse_to_one_trading_org(view: GraphView) -> None:
     """The SINO-GALAXY IMP/EXP · IMPEX · IMP.&EXP. spellings are one consignor."""
     fam = _family(view, "trading_org", "sino", "galaxy")

@@ -218,3 +218,43 @@ emits coreference annotations will start exercising it).
   keyless boot (it needs a live client). Compliant, and scoped out by the specs by name.
 - `mypy` reports 5 errors in `view/basing.py` and `view/pipeline.py` — both files untouched by this pass, so
   pre-existing. Every file this pass edited is ruff- and mypy-clean.
+
+---
+
+## Item 3 — SINO-GALAXY splits 2-1 once a CLASS attribute may no longer stand in for identity
+
+**Owner: DATA (one alias-table row).** Not a threshold and not a code fix.
+
+Closing the class-attribute loophole (BLOCKER 1: an agreeing `family` / `origin_country` / `service_branch`
+was lifting the name cap, the only remaining guard on the widest fusion lane) removed the signal that carried
+the third SINO-GALAXY spelling into its cluster.
+
+Measured on the booted `hq9p_primary` corpus:
+
+| pair | before | after |
+|---|---|---|
+| `SINO-GALAXY IMPEX CO, LTD` ≡ `SINO-GALAXY IMP/EXP CO. LTD` | merged @0.504 | merged @0.504 (unchanged — they share a neighbour) |
+| `SINO GALAXY IMP. & EXP. CO.` ≡ that cluster | merged | **watch-list @0.438, with the name-cap reason** |
+
+So the consignor is two nodes, not one. The pair is *retained and readable*, never dropped: its reason names
+the ground ("name-only identity, capped at 'possible' — … no neighbour, no stated discriminator, no source
+assertion"). What used to fuse it was the two sides' agreeing `origin_country`, and a shared country is a
+class every Chinese exporter is in — not evidence that two companies are one company.
+
+**Expected-red (`xfail(strict)`):**
+`tests/acceptance/test_per_type_automerge_corpus.py::test_sino_galaxy_spelling_variants_collapse_to_one_trading_org`.
+Everything else in that module still passes, including the two same-type traps (CASIC ≠ its own institutes,
+ORIENT ≠ SINO-GALAXY) and the CPMIEC / Taian merges — the per-type auto floor is NOT inert.
+
+**TO CLOSE:** add `SINO GALAXY IMP. & EXP. CO.` to `config/resolution.yaml → alias_table` under the
+SINO-GALAXY canonical. An alias LINK is a curated statement of equivalence, it is an EARNED trigger, and the
+name cap does not touch it — that is the honest way to assert this merge. (The competing spec is a *property*,
+not a corpus outcome: `test_an_identical_name_alone_never_fuses_at_any_type` is parametrized over
+`manufacturer` too, so "a name alone never fuses" already covers organisations.)
+
+### Also in this change (not a data item)
+`config/resolution.yaml → attribute_roles` gains a third axis, `taxonomic: true`, plus two new
+identity-bearing rows (`variant.export_designator`, `component.model_designation`) so the design layer keeps a
+rung that can legitimately clear the name cap. Two property specs that had used `family` as their "one more
+trivially-available signal" now use `export_designator`: the swap makes the spec *stricter*, since a family is
+shared by every member of the family.
