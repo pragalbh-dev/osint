@@ -136,6 +136,40 @@ def image_frames(docs: list[DocInput]) -> list[str]:
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
 @dataclass(frozen=True)
+class LanePlan:
+    """One candidate's lane: its provider's declared pacing and the wall-clock floor that imposes.
+
+    A lane, not a run, because that is the unit pacing applies to. Each candidate holds its own limiter,
+    so a provider capped at 3 requests a minute makes its OWN lane long and leaves the others at full
+    speed — and the run's wall-clock is therefore the *slowest* lane, not the sum of them.
+    """
+
+    candidate_id: str
+    provider: str
+    limit: Any
+    calls_floor: int
+    calls_ceiling: int
+
+    def seconds_floor(self) -> float:
+        from .throttle import projected_seconds
+
+        return projected_seconds(self.limit, self.calls_floor, concurrency=1)
+
+    def seconds_ceiling(self) -> float:
+        from .throttle import projected_seconds
+
+        return projected_seconds(self.limit, self.calls_ceiling, concurrency=1)
+
+
+def _hms(seconds: float) -> str:
+    if seconds <= 0:
+        return "—"
+    minutes, sec = divmod(int(round(seconds)), 60)
+    hours, minutes = divmod(minutes, 60)
+    return f"{hours}h{minutes:02d}m" if hours else f"{minutes}m{sec:02d}s"
+
+
+@dataclass(frozen=True)
 class SpendPlan:
     """Exactly what a run is about to cost, as a floor and a ceiling. See the module docstring."""
 
@@ -145,6 +179,8 @@ class SpendPlan:
     runs_per_candidate: int
     coref_pass: bool
     dry: bool
+    #: Per-candidate pacing, so the plan states wall-clock as well as call count. Empty = nothing paced.
+    lanes: tuple[LanePlan, ...] = ()
 
     @property
     def calls_per_run_floor(self) -> int:
@@ -187,6 +223,22 @@ class SpendPlan:
                          "than two mentions,")
             lines.append("  so a candidate that reads a document poorly costs less for it. --dry-run "
                          "reports the exact count.")
+        if self.lanes:
+            lines.append("")
+            lines.append("  per-provider pacing (config/bakeoff.yaml -> rate_limits), and the WALL-CLOCK")
+            lines.append("  FLOOR it imposes on each lane. Lanes run concurrently, so the run takes the")
+            lines.append("  SLOWEST lane, not the sum:")
+            for lane in self.lanes:
+                paced = lane.limit.describe(lane.provider)
+                floor, ceiling = lane.seconds_floor(), lane.seconds_ceiling()
+                window = (f"  >= {_hms(floor)}–{_hms(ceiling)} of pacing alone"
+                          if ceiling > 0 else "  no pacing delay")
+                lines.append(f"      {lane.candidate_id}: {paced}")
+                lines.append(f"          {lane.calls_floor}–{lane.calls_ceiling} calls,{window}")
+            worst = max((lane.seconds_ceiling() for lane in self.lanes), default=0.0)
+            if worst > 0:
+                lines.append(f"      RUN WALL-CLOCK FLOOR (slowest lane, pacing only, provider latency "
+                             f"on top): {_hms(worst)}")
         if self.dry:
             lines.append("  nothing is billed: no key is read and no client is built.")
         return "\n".join(lines)
@@ -221,11 +273,62 @@ def blocked_before_spending(
 
 
 def plan_spend(docs: list[DocInput], *, candidate_ids: list[str], runs_per_candidate: int,
-               coref_pass: bool, dry: bool) -> SpendPlan:
+               coref_pass: bool, dry: bool, config: Any = None) -> SpendPlan:
     frames = tuple(image_frames(docs))
     text = sum(1 for d in docs if Path(d.file).suffix.lower() not in _IMAGE_SUFFIXES)
-    return SpendPlan(candidates=tuple(candidate_ids), text_docs=text, frames=frames,
+    plan = SpendPlan(candidates=tuple(candidate_ids), text_docs=text, frames=frames,
                      runs_per_candidate=runs_per_candidate, coref_pass=coref_pass, dry=dry)
+    if config is None:
+        return plan
+    lanes: list[LanePlan] = []
+    for cid in candidate_ids:
+        candidate = config.candidate(cid)
+        lanes.append(LanePlan(
+            candidate_id=cid, provider=candidate.provider,
+            limit=config.rate_limit(candidate.provider),
+            calls_floor=plan.calls_per_run_floor * runs_per_candidate,
+            calls_ceiling=plan.calls_per_run_ceiling * runs_per_candidate,
+        ))
+    return SpendPlan(candidates=plan.candidates, text_docs=text, frames=frames,
+                     runs_per_candidate=runs_per_candidate, coref_pass=coref_pass, dry=dry,
+                     lanes=tuple(lanes))
+
+
+def resume_preview(config: Any, docs: list[DocInput], bundles_root: Path, *,
+                   candidate_ids: list[str], enabled: bool, producer: str = "live") -> str:
+    """What is already on disk and will NOT be re-bought — stated before the run, like the spend.
+
+    Read through the same :class:`~eval.extraction.resume.ResumeStore` the run uses, with the same
+    fingerprint, so this cannot report a hit the run then misses. A number here is money the previous
+    invocations already spent and this one keeps.
+    """
+    from . import resume as R
+
+    store = R.ResumeStore(root=bundles_root, invocation="preview", enabled=enabled)
+    if not enabled:
+        return ("resume:      DISABLED (--no-resume) — every document will be bought fresh, so "
+                "`determinism` is sampled in one sitting")
+    lines: list[str] = []
+    total_hits = total_slots = 0
+    for cid in candidate_ids:
+        candidate = config.candidate(cid)
+        fp = R.fingerprint(model_id=candidate.model_id, docs=docs, producer=producer)
+        hits = 0
+        for run_index in range(1, config.replication.runs_per_candidate + 1):
+            for doc in docs:
+                total_slots += 1
+                if store.load(cid, run_index, doc.source_id, fp) is not None:
+                    hits += 1
+        total_hits += hits
+        lines.append(f"      {cid}: {hits}/{config.replication.runs_per_candidate * len(docs)} "
+                     "document-extraction(s) already on disk and valid")
+    head = (f"resume:      ENABLED — {total_hits}/{total_slots} document-extraction(s) reusable "
+            "(fingerprint = pinned model id + document set + prompt/schema version; anything else is "
+            "re-bought)")
+    if total_hits:
+        head += ("\n             NB: reusing them means these runs were NOT all sampled in one sitting. "
+                 "The scorecard says so, and marks `determinism`.")
+    return "\n".join([head, *lines])
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
@@ -321,5 +424,5 @@ def dry_client_factory(candidate: Any, run_index: int) -> DryRunClient:
     return DryRunClient(model_id=candidate.model_id)
 
 
-__all__ = ["DryRunClient", "SpendPlan", "blocked_before_spending", "build_slice", "dry_client_factory",
-           "image_frames", "plan_spend"]
+__all__ = ["DryRunClient", "LanePlan", "SpendPlan", "blocked_before_spending", "build_slice",
+           "dry_client_factory", "image_frames", "plan_spend", "resume_preview"]

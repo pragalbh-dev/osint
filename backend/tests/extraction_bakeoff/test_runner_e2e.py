@@ -358,22 +358,29 @@ def test_preflight_honours_recorded_imagery_evidence_but_not_a_stale_pin() -> No
 
 # ── the coref precondition ────────────────────────────────────────────────────────────────────────
 
-def test_a_required_coref_metric_refuses_before_any_budget_is_spent(inputs) -> None:
-    """`coref_binding` is top-weighted and declared required in the shipped config, and extraction pass 2
-    ships OFF. The refusal has to happen up front: paying for N runs per candidate and *then* reporting
-    INSUFFICIENT_CRITERIA buys a measurement that was structurally impossible before the first call."""
-    from eval.extraction.coref_channel import FLAG, CorefChannelDormant
+def test_a_required_coref_metric_refuses_before_any_budget_is_spent(inputs, pipeline_config) -> None:
+    """`coref_binding` is top-weighted and declared required, and a run whose bundle cannot express a
+    clustering must refuse UP FRONT: paying for N runs per candidate and *then* reporting
+    INSUFFICIENT_CRITERIA buys a measurement that was structurally impossible before the first call.
+
+    Dormancy is constructed the way an operator can still construct it — ``--no-coref``, i.e. declining to
+    pay for the second extraction call — rather than through the deleted staging flag."""
+    from dataclasses import replace
+
+    from eval.extraction import coref_channel
 
     config = bakeoff_config(required_metrics=["coref_binding"])
+    suppressed = replace(inputs, config=coref_channel.without_channel(pipeline_config))
     spent: list[str] = []
 
     def factory(candidate, run_index):
         spent.append(candidate.id)
         return RoutedScriptedClient(FULL_PAYLOAD, {})
 
-    with pytest.raises(CorefChannelDormant) as excinfo:
-        run_bakeoff(inputs, config, factory, require_key=False)
-    assert FLAG in str(excinfo.value)                    # it names the flag rather than flipping it
+    with pytest.raises(coref_channel.CorefChannelDormant) as excinfo:
+        run_bakeoff(suppressed, config, factory, require_key=False)
+    # It names the config gap and the remedy, and changes nothing itself.
+    assert "credibility.coreference" in str(excinfo.value)
     assert "Do not re-weight it to zero" in str(excinfo.value)
     assert spent == []                                   # not one client was ever built
 
@@ -382,13 +389,14 @@ def test_with_both_halves_of_the_substrate_present_the_required_metric_no_longer
         inputs, pipeline_config, tmp_path) -> None:
     """The block lifts by turning the channel on and labelling the slice — never by dropping the criterion.
 
-    Both halves are needed: the model-facing channel (``cluster_coreferences``, flag-gated) and cluster
-    labels in the gold. With either missing the run refuses up front; with both present it proceeds."""
+    Both halves are needed: the model-facing channel (``cluster_coreferences``, now unconditional) and
+    cluster labels in the gold. With either missing the run refuses up front; with both present it
+    proceeds."""
     from dataclasses import replace
 
     from eval.extraction import coref_channel
 
-    live_config = coref_channel.with_channel_on(pipeline_config)
+    live_config = pipeline_config
     channel = coref_channel.inspect(live_config)
     assert channel.measurable
     assert channel.tool_name == "cluster_coreferences"
@@ -421,7 +429,7 @@ def test_a_required_coref_metric_refuses_on_an_unlabeled_slice(inputs, pipeline_
     from eval.extraction import coref_channel
 
     config = bakeoff_config(required_metrics=["coref_binding"])
-    live = replace(inputs, config=coref_channel.with_channel_on(pipeline_config))
+    live = replace(inputs, config=pipeline_config)
     with pytest.raises(coref_channel.CorefChannelDormant, match="no coref_cluster labels"):
         run_bakeoff(live, config, _factory({"alpha": FULL_PAYLOAD, "beta": WEAK_PAYLOAD}),
                     require_key=False)

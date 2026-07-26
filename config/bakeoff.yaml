@@ -213,6 +213,37 @@ match_policy:
   # surface actually appear in the cited span / anywhere in the document?" (rapidfuzz partial_ratio).
   grounding_similarity: 0.85
 
+# ── Per-provider request pacing ────────────────────────────────────────────────────────────────────
+# The run has ONE global `--concurrency`, and that turned out to be the wrong shape. On 2026-07-26 the
+# live three-way run died on `openai.RateLimitError`: that account is capped at 3 requests per minute, the
+# harness fanned eight calls at it, and the exception ended the process — throwing away two other
+# candidates' completed, paid-for work along with it. A cap is a property of an ACCOUNT, not of a model,
+# and nothing here modelled it.
+#
+# So pacing is declared per PROVIDER (keyed by `candidates[].provider`) and enforced per candidate. A
+# capped lane takes as long as its cap takes; the other lanes run at full speed beside it, because each
+# candidate holds its own limiter. A provider not named here is unpaced.
+#
+# THROTTLING IS NOT RETRYING, and the distinction is load-bearing. The retry wrapper re-dials TRANSPORT
+# faults only — a call that never got a response tells us nothing about the model, so retrying it recovers
+# a measurement that was never taken. A RETURNED response is never retried, whatever its status, because
+# `structured_output_reliability` exists to score exactly that. A 429 IS a returned response. The honest
+# answer to a cap is therefore to stay under it, never to retry through it — retrying a 429 would launder
+# a provider's own behaviour into a better number inside the instrument built to expose it.
+#
+# `requests_per_minute` paces request STARTS evenly (one call every 60/rpm seconds) rather than allowing a
+# burst-then-wait bucket: a bucket empties its whole allowance into the first instant of every window,
+# which is the exact shape that trips a cap whose window does not line up with ours.
+rate_limits:
+  openai:
+    requests_per_minute: 3
+    max_concurrent: 1
+    note: >-
+      MEASURED, not guessed: this account returned 429 on 2026-07-26 under the run's default fan-out.
+      Raise it if the account is upgraded — it is an account property and belongs in config, not in code.
+  # anthropic and google are deliberately absent = unpaced. Neither has rate-limited this project's runs,
+  # and inventing a cap nobody has hit would slow a lane for a fact not in evidence.
+
 # ── The candidates ────────────────────────────────────────────────────────────────────────────────
 # Each entry is a *declaration*, not a promise that it can be exercised: `key_env` and `sdk_module` are
 # checked at run time and an unexercisable candidate is reported as such rather than scored.

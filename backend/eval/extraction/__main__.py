@@ -20,10 +20,10 @@ Three commands:
   them from declared artefacts rather than from constants typed into a CLI (see :mod:`.driver`): the
   document slice is read off the gold's own ``docs`` list, each document's source type and co-located
   frames come from the pipeline's source registry, and the imagery evidence comes from ``vlm-probe``'s
-  recorded artefact. The one thing it must actively arrange is the pipeline ``ConfigBundle``: the
-  top-weighted criterion is unmeasurable while extraction pass 2 is dormant, so the command switches it on
-  for the bundle it hands the runner (:func:`eval.extraction.coref_channel.with_channel_on`) — in memory,
-  never on disk — and reports that it did, because it roughly doubles the call count.
+  recorded artefact. Extraction pass 2 — the substrate of the top-weighted criterion — is now
+  unconditional, so the command no longer switches anything on; the only lever left is ``--no-coref``,
+  which *declines* to pay for it (:func:`eval.extraction.coref_channel.without_channel`, in memory, never
+  on disk) and is reported as the blocking decision it is.
 
 Every command loads ``.env`` first (see :mod:`.secrets`) and prints only the **names** it found. A key
 value never reaches stdout, a log, or a stored artefact.
@@ -35,7 +35,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from . import coref_channel, driver, secrets, vlm_probe
+from . import coref_channel, driver, resume, secrets, vlm_probe
 from .gates import non_negotiable_gate_names
 from .policy import BakeoffConfig, load_bakeoff_config
 from .render import render_markdown, to_json
@@ -173,20 +173,22 @@ def _cmd_run(args: argparse.Namespace) -> int:
     oracle_path = _resolve_input(args.sub_oracle, DEFAULT_SUB_ORACLE, "sub oracle")
 
     # ── the pipeline config, and the coref channel decision ───────────────────────────────────────
+    # Pass 2 is unconditional since the identity flags were deleted (design/resolution-redesign), so the
+    # only decision left here is the operator's *cost* one: --no-coref declines to pay for the second
+    # extraction call per document. That suppression is applied to THIS RUN'S bundle only, in memory.
     bundle = ConfigStore.seed_from(settings.config_dir()).snapshot()
-    shipped = coref_channel.inspect(bundle)
-    coref_on = not args.no_coref
-    if coref_on and not shipped.measurable:
-        bundle = coref_channel.with_channel_on(bundle)
+    if args.no_coref:
+        bundle = coref_channel.without_channel(bundle)
     channel = coref_channel.inspect(bundle)
     coref_on = channel.measurable
     print(f"coref channel: {'LIVE' if channel.measurable else f'UNAVAILABLE [{channel.cause}]'}"
           f" — {channel.detail}")
     if not channel.measurable:
         print(f"               remedy: {channel.remedy}")
-    elif not shipped.measurable:
-        print("               switched on for THIS RUN'S bundle only (in memory; config/ untouched). "
-              "It costs a second extraction call per document — that is the range in the plan below.")
+    if args.no_coref:
+        print("               --no-coref: SUPPRESSED for this run's bundle only (in memory; config/ "
+              "untouched). It saves a second extraction call per document and leaves the top-weighted "
+              "criterion unmeasured, which blocks a winner.")
     print()
 
     # ── the slice, and the plan ───────────────────────────────────────────────────────────────────
@@ -219,7 +221,7 @@ def _cmd_run(args: argparse.Namespace) -> int:
 
     plan = driver.plan_spend(
         docs, candidate_ids=wanted, runs_per_candidate=config.replication.runs_per_candidate,
-        coref_pass=coref_on, dry=args.dry_run,
+        coref_pass=coref_on, dry=args.dry_run, config=config,
     )
     print(f"gold:        {gold_path}")
     print(f"sub-oracle:  {oracle_path}")
@@ -239,17 +241,32 @@ def _cmd_run(args: argparse.Namespace) -> int:
             print("aborted; nothing spent.")
             return 1
 
-    out_dir = Path(args.out) if args.out else settings.repo_root() / "tmp/rk-bakeoff/run"
+    # A dry run defaults to its OWN directory. Its bundles could never be *reused* by a live run (the
+    # producer kind is part of the resume fingerprint), but they would still OVERWRITE the artefacts a
+    # paid run left behind, and those are the receipts for calls somebody bought.
+    producer = resume.DRY if args.dry_run else resume.LIVE
+    default_out = "tmp/rk-bakeoff/dry-run" if args.dry_run else "tmp/rk-bakeoff/run"
+    out_dir = Path(args.out) if args.out else settings.repo_root() / default_out
     inputs = BakeoffInputs(
         docs=docs, config=bundle, gold_path=gold_path, sub_oracle_path=oracle_path,
         out_dir=out_dir / "bundles", concurrency=args.concurrency,
     )
+    invocation = resume.new_invocation_id()
+    print(f"invocation:  {invocation}")
+    print(driver.resume_preview(config, docs, out_dir / "bundles", candidate_ids=wanted,
+                                enabled=not args.no_resume, producer=producer))
+    print()
+
     factory = driver.dry_client_factory if args.dry_run else live_client_factory
     result = run_bakeoff(
         inputs, config, factory,
         candidates=wanted,
         require_key=not args.dry_run,
         evidence=evidence,
+        resume_enabled=not args.no_resume,
+        invocation=invocation,
+        pace=not args.dry_run,
+        producer=producer,
     )
 
     # ── the scorecard ─────────────────────────────────────────────────────────────────────────────
@@ -264,11 +281,17 @@ def _cmd_run(args: argparse.Namespace) -> int:
           f"{out_dir / 'bundles'})")
     # The spend actually incurred, against the range projected before it was. Pass 2 is conditional, so
     # this is the only number that closes the loop on the estimate.
-    spent = sum(r.calls_total for s in result.scores for r in s.runs)
+    spent = sum(r.calls_bought for s in result.scores for r in s.runs)
+    scored = sum(r.calls_total for s in result.scores for r in s.runs)
     images = sum(r.image_calls_total for s in result.scores for r in s.runs)
+    replayed = scored - spent
     print(f"\nCALLS ACTUALLY MADE: {spent}  (projected {plan.total_floor}–{plan.total_ceiling}; "
-          f"of these {images} were standalone-image calls)")
-    if not plan.total_floor <= spent <= plan.total_ceiling:
+          f"of the {scored} calls scored, {replayed} were REPLAYED from disk and cost nothing; "
+          f"{images} were standalone-image calls)")
+    if replayed and not args.dry_run:
+        print("  those replayed calls were bought by an earlier invocation — see the scorecard's "
+              "provenance section for which one.")
+    if replayed == 0 and not plan.total_floor <= spent <= plan.total_ceiling:
         print("  NB: the actual count fell OUTSIDE the projected range — the plan's model of the call "
               "pattern is wrong and should be corrected before it is used to budget a live run.")
     if args.dry_run:
@@ -315,10 +338,17 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--evidence", default=None,
                      help="recorded VLM-gate evidence (default: the recorded artefact)")
     run.add_argument("--candidates", nargs="*", default=None, help="restrict to these candidate ids")
-    run.add_argument("--concurrency", type=int, default=8, help="parallel extraction calls (default 8)")
+    run.add_argument("--concurrency", type=int, default=8,
+                     help="parallel DOCUMENTS in flight per candidate (default 8). Request *rate* is "
+                          "bounded per provider by config/bakeoff.yaml -> rate_limits, which is the knob "
+                          "that matters against an account cap")
     run.add_argument("--include-blocked", action="store_true",
                      help="run candidates already disqualified on a dry gate. Buys their diagnostic "
                           "numbers; cannot change the winner")
+    run.add_argument("--no-resume", action="store_true",
+                     help="do NOT reuse documents a previous invocation already paid for. Artefacts are "
+                          "still written; this only refuses to read them. Use it when you want "
+                          "`determinism` sampled in ONE sitting and are willing to buy it again")
     run.add_argument("--no-coref", action="store_true",
                      help="do NOT switch extraction pass 2 on. Halves the call count and leaves the "
                           "top-weighted criterion unmeasured, which blocks a winner — a deliberate, "

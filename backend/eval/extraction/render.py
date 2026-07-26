@@ -59,6 +59,9 @@ def render_markdown(
         for s in not_run:
             add(f"- `{s.candidate_id}` — {s.not_exercised_reason}")
 
+    # ── run provenance: printed BEFORE the numbers, because it qualifies one of them ──────────────
+    add(_provenance_section(scores))
+
     # ── scores ────────────────────────────────────────────────────────────────────────────────────
     add("\n## 2. Measured criteria (mean ± sample SD over the runs)\n")
     metric_names = sorted({n for s in scores for n in s.series})
@@ -79,7 +82,12 @@ def render_markdown(
                 series = s.series.get(name)
                 score_cells.append(summarize_spread(series) if series else "not produced")
             verdict_cell = _metric_verdict_cell(comparisons.get(name))
-            add(f"| `{name}` | {weight_cell} | " + " | ".join(score_cells) + f" | {verdict_cell} |")
+            # `determinism` is the one line whose meaning depends on HOW the runs were obtained, so the
+            # caveat is stamped on the row itself and not left to a section a skimming reader may pass.
+            name_cell = f"`{name}`"
+            if name == "determinism" and any(not s.provenance.single_invocation for s in exercised):
+                name_cell += " ⚠︎ **cross-invocation**"
+            add(f"| {name_cell} | {weight_cell} | " + " | ".join(score_cells) + f" | {verdict_cell} |")
 
     awaiting = [
         n for n in metric_names
@@ -155,6 +163,48 @@ def render_markdown(
     return "\n".join(out) + "\n"
 
 
+def _provenance_section(scores: list[CandidateScore]) -> str:
+    """Where each candidate's runs came from — above every number, because it qualifies one of them.
+
+    A resumed run reuses documents a previous invocation paid for. That is sound: a cached document is
+    refused unless the pinned model id, the document set and the prompt/schema version all still match, so
+    the *inputs* are identical by construction. What is NOT identical is the sitting, and ``determinism``
+    is a measured, weighted criterion whose whole content is run-to-run agreement. Stitching runs from
+    different sessions and printing that number as if it had been sampled in one would be a corrupted
+    measurement wearing a clean one's clothes — the exact failure this harness exists to refuse.
+    """
+    exercised = [s for s in scores if s.exercised]
+    if not exercised:
+        return ""
+    out = ["\n## 1b. Where these runs came from\n"]
+    stitched = [s for s in exercised if not s.provenance.single_invocation]
+    if stitched:
+        out.append("> **⚠︎ RESUMED — this scorecard is not one sitting.** " +
+                   ", ".join(f"`{s.candidate_id}`" for s in stitched) +
+                   " had runs assembled across more than one invocation. Inputs are pinned identical "
+                   "(model id, document set, prompt/schema version — a cached bundle is refused "
+                   "otherwise), so every *content* metric is unaffected. `determinism` is not: it "
+                   "measures run-to-run agreement, and these runs were sampled across provider-side "
+                   "change as well as model variance. Re-run with `--no-resume` for a single-sitting "
+                   "number.\n")
+    replayed = [s for s in exercised
+                if s.provenance.single_invocation and s.provenance.documents_reused
+                and s.provenance.invocations[:1] != (s.provenance.current,)]
+    if replayed and not stitched:
+        out.append("> **Replayed, not re-run.** " + ", ".join(f"`{s.candidate_id}`" for s in replayed) +
+                   " was scored entirely from artefacts an earlier invocation paid for. Those runs *were* "
+                   "sampled in a single sitting, so `determinism` means what it normally means — but the "
+                   "numbers describe that session, not this one.\n")
+    out.append("| candidate | invocations | documents reused | documents bought |")
+    out.append("|---|---|---|---|")
+    for s in exercised:
+        prov = s.provenance
+        invocations = "<br>".join(f"`{i}`" for i in prov.invocations) or "—"
+        out.append(f"| `{s.candidate_id}` | {invocations} | {prov.documents_reused} | "
+                   f"{prov.documents_bought} |")
+    return "\n".join(out)
+
+
 def _metric_verdict_cell(comparison: MetricComparison | None) -> str:
     if comparison is None or not comparison.tiers:
         return "not rankable"
@@ -181,6 +231,14 @@ def to_json(
                 "model_id": s.model_id,
                 "exercised": s.exercised,
                 "not_exercised_reason": s.not_exercised_reason,
+                "provenance": {
+                    "invocations": list(s.provenance.invocations),
+                    "current_invocation": s.provenance.current,
+                    "single_invocation": s.provenance.single_invocation,
+                    "documents_reused": s.provenance.documents_reused,
+                    "documents_bought": s.provenance.documents_bought,
+                    "statement": s.provenance.statement(),
+                },
                 "eligible_to_win": s.eligible_to_win,
                 "gates": [_dump(g) for g in s.gates.gates],
                 "series": {

@@ -101,43 +101,49 @@ def shipped_config():
     return ConfigStore.seed_from(settings.config_dir()).snapshot()
 
 
-def _flag_on(config: Any) -> Any:
-    return coref_channel.with_channel_on(config)
+def _suppressed(config: Any) -> Any:
+    return coref_channel.without_channel(config)
 
 
-def test_switching_the_channel_on_is_an_in_memory_flip_that_actually_takes(shipped_config) -> None:
-    """The flag lives on a nested config model, so the obvious dict-based copy silently drops it and the
-    channel reads dormant — which looks exactly like the answer the operator was trying to change."""
+def test_suppressing_the_channel_is_an_in_memory_edit_that_actually_takes(shipped_config) -> None:
+    """The producer block hangs off a nested config model, so the obvious dict-based copy replaces the
+    model wholesale and the *whole* credibility config reads back empty — which looks like a much larger
+    breakage than the one the operator asked for. ``--no-coref`` is the only cost lever left now that pass
+    2 is unconditional, so it has to take precisely and leave the original alone."""
     from chanakya.ingest import coref
 
-    assert coref._coref_cfg(shipped_config) == {}                 # as shipped
-    flipped = coref_channel.with_channel_on(shipped_config)
-    assert coref._coref_cfg(flipped)                              # the pipeline itself now sees it on
-    assert coref._coref_cfg(shipped_config) == {}                 # and the original is untouched
+    assert coref._coref_cfg(shipped_config)                       # as shipped: pass 2 dispatches
+    suppressed = coref_channel.without_channel(shipped_config)
+    assert coref._coref_cfg(suppressed) == {}                     # the pipeline itself now declines
+    assert coref._coref_cfg(shipped_config)                       # and the original is untouched
+    assert suppressed.credibility.source_class_factors            # nothing else was collateral damage
+    assert suppressed.credibility.thresholds
 
 
-def test_the_shipped_config_leaves_the_coref_channel_dormant_and_names_the_flag(shipped_config) -> None:
-    """S3 shipped the channel switched OFF, and that is the ``gated_off`` cause specifically.
+def test_the_shipped_config_leaves_the_coref_channel_live(shipped_config) -> None:
+    """The staging flags were deleted (design/resolution-redesign), so the shipped config now dispatches
+    pass 2 unconditionally and the top-weighted criterion is measurable without any flag flipping.
 
-    "Gated off" is a different fact from "does not exist" and from "was never configured", and the three
-    have to read differently because they have three different remedies — only one of which is a flag. This
-    is also the flag-deletion seam: once pass 2 is unconditional this cause stops occurring, and the test
-    should be deleted with it rather than relaxed.
+    This is the assertion that replaced the flag-deletion seam's ``gated_off`` test. It is deliberately
+    stated against the SHIPPED config rather than a fixture: what the bake-off must know is whether a real
+    run on this deployment can score ``coref_binding``, and nothing else answers that.
     """
     channel = coref_channel.inspect(shipped_config)
     assert channel.tool_name == "cluster_coreferences"        # the channel EXISTS
     assert channel.cluster_field == "clusters[].member_ids"
-    assert not channel.live and not channel.measurable        # and is switched off
-    assert channel.cause == coref_channel.GATED_OFF
-    assert "the producer IS configured" in channel.detail     # so it is NOT the unconfigured cause
-    assert coref_channel.FLAG in channel.remedy               # the remedy, not the finding, names the flag
-
-
-def test_with_the_flag_on_the_channel_is_live_and_names_its_categories(shipped_config) -> None:
-    channel = coref_channel.inspect(_flag_on(shipped_config))
-    assert channel.live and channel.measurable
+    assert channel.live and channel.measurable                # and is dispatched
+    assert channel.cause == ""
     assert "EXPLICIT_EQUIVALENCE" in channel.categories
     assert "LIVE" in channel.detail
+
+
+def test_a_suppressed_channel_reads_as_the_config_gap_it_is(shipped_config) -> None:
+    """Declining to pay for pass 2 must report as an unconfigured producer, not as a fourth kind of
+    dormancy: the harness gained a cost lever, not a new concept, and the remedy names the lever."""
+    channel = coref_channel.inspect(_suppressed(shipped_config))
+    assert not channel.measurable
+    assert channel.cause == coref_channel.PRODUCER_UNCONFIGURED
+    assert "--no-coref" in channel.remedy
 
 
 def test_the_channel_is_read_off_the_real_schema_not_asserted(monkeypatch, shipped_config) -> None:
@@ -151,7 +157,7 @@ def test_the_channel_is_read_off_the_real_schema_not_asserted(monkeypatch, shipp
         contrasts: list[str] = []
 
     monkeypatch.setattr(coref, "CoreferenceClusters", NoClusters)
-    channel = coref_channel.inspect(_flag_on(shipped_config))
+    channel = coref_channel.inspect(shipped_config)
     assert not channel.measurable
     assert "no mention-cluster field" in channel.detail
 
@@ -159,9 +165,9 @@ def test_the_channel_is_read_off_the_real_schema_not_asserted(monkeypatch, shipp
 def test_a_required_coref_metric_refuses_on_a_dormant_channel(shipped_config) -> None:
     config = bakeoff_config(required_metrics=["coref_binding"])
     with pytest.raises(coref_channel.CorefChannelDormant) as excinfo:
-        coref_channel.require(shipped_config, config)
+        coref_channel.require(_suppressed(shipped_config), config)
     message = str(excinfo.value)
-    assert coref_channel.FLAG in message
+    assert "credibility.coreference" in message
     assert "second extraction call per document" in message
     assert "Do not re-weight it to zero" in message
 
@@ -169,12 +175,12 @@ def test_a_required_coref_metric_refuses_on_a_dormant_channel(shipped_config) ->
 def test_an_unrequired_coref_metric_does_not_refuse(shipped_config) -> None:
     """Not declaring it required is a *recorded decision to rank without it*, which is allowed. What is
     not allowed is the harness making that decision silently on the operator's behalf."""
-    channel = coref_channel.require(shipped_config, bakeoff_config())
+    channel = coref_channel.require(_suppressed(shipped_config), bakeoff_config())
     assert not channel.measurable
 
 
 def test_a_live_channel_satisfies_the_precondition(shipped_config) -> None:
-    channel = coref_channel.require(_flag_on(shipped_config),
+    channel = coref_channel.require(shipped_config,
                                     bakeoff_config(required_metrics=["coref_binding"]))
     assert channel.measurable
 

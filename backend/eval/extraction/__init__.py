@@ -41,7 +41,7 @@ three declarations. This package measures models; it does not host them.
 from __future__ import annotations
 
 from .compare import NO_DIFFERENCE_PHRASE, Verdict, compare_metric, decide
-from .coref_channel import CorefChannel, CorefChannelDormant, with_channel_on
+from .coref_channel import CorefChannel, CorefChannelDormant, without_channel
 from .gates import GateReport, GateResult, ImageryObservations, dry_gates, evaluate_gates
 from .gold import load_claim_gold, load_sub_oracle
 from .matcher import MatchResult, match_claims
@@ -99,5 +99,5 @@ __all__ = [
     "render_markdown",
     "run_bakeoff",
     "to_json",
-    "with_channel_on",
+    "without_channel",
 ]

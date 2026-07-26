@@ -17,6 +17,8 @@ from typing import Any, Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
+from .throttle import RateLimit
+
 SCHEMA_PREFIX = "rk-bakeoff/"
 
 #: The similarity functions a match policy may name (all from ``rapidfuzz.fuzz``, all deterministic).
@@ -141,6 +143,11 @@ class BakeoffConfig(_Strict):
     weights: dict[str, float]
     match_policy: MatchPolicy
     candidates: list[Candidate]
+    #: Per-provider request pacing, keyed by ``Candidate.provider``. A provider not named here is unpaced.
+    #: This belongs in config and not in code for the same reason the margin does: it is an account
+    #: property that changes without any code changing, and a run that silently exceeds it dies partway
+    #: through and discards everything already bought. See :mod:`eval.extraction.throttle`.
+    rate_limits: dict[str, RateLimit] = {}
     #: Metrics that MUST be measured before any winner may be named. Distinct from a weight: a weighted
     #: metric that cannot be scored is excluded from the composite and named; a *required* one blocks the
     #: verdict outright. Plan §8's "definitive pass" criteria live here, so a Wave-0 run cannot render a
@@ -159,6 +166,12 @@ class BakeoffConfig(_Strict):
         declares it non-negotiable, and that declaration is enough to forbid trading it away.
         """
         return tuple(self.gates.non_negotiable_floors or ())
+
+    def rate_limit(self, provider: str) -> RateLimit:
+        """The declared pacing for a provider, or the unpaced default. Never a guessed cap."""
+        from .throttle import limit_for
+
+        return limit_for(self.rate_limits, provider)
 
     def candidate(self, candidate_id: str) -> Candidate:
         for cand in self.candidates:
@@ -194,6 +207,7 @@ __all__ = [
     "Margin",
     "MatchPolicy",
     "Pricing",
+    "RateLimit",
     "Replication",
     "SimilarityName",
     "load_bakeoff_config",

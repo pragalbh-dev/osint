@@ -1732,6 +1732,71 @@ absolute recall is capped for any verbatim extractor and only comparative number
 precision rests on 8 items; and cost is UNPRICED by design — while the operationally decisive cost factor
 turned out to be a rate limit, which no metric in the config models at all.
 
+### RK-BAKEOFF — the run becomes survivable: resume, per-provider pacing, and the coref block lifts (2026-07-26)
+
+Three attempts at the live three-way bake-off died three times — twice on a Gemini concurrency race (a real
+shipped-path bug, since fixed), once on `openai.RateLimitError` from an account capped at **3 requests per
+minute**. `anthropic-opus-5` finished all five of its runs on *every* attempt and was **paid for three
+times**, because the harness held everything in memory: one exception discarded ~225 already-billed calls
+and produced no scorecard at all. Nothing was scored. Three things changed, and none of them is a
+workaround for the thing they protect.
+
+**1. The coref block lifts by merge, not by deletion.** `coref_binding` is the top-weighted criterion and is
+declared in `required_metrics`, so an unmeasurable one returns `INSUFFICIENT_CRITERIA` — a completed,
+perfect run would still have bought nothing. Preflight had been reporting the channel `UNAVAILABLE
+[gated_off]`, blaming `resolution.earned_identity.enabled`. That was **stale**: `design/resolution-redesign`
+deleted the staging flags outright and made the identity machinery, coreference producer included,
+unconditional. Merging it reports the channel **LIVE with nothing flipped**. The tempting alternative —
+dropping `coref_binding` from `required_metrics` to force a verdict — was refused: it converts an honest gap
+into a silent one.
+
+The merge conflicted only in this ledger (both sides append; both blocks kept) and turned 8 tests red. Every
+one was the flag-deletion **seam** the `coref_channel` module had documented in advance, so the seam was
+executed rather than the tests relaxed: `FLAG`, `_EARNED_IDENTITY_KEY`, the `GATED_OFF` cause with its
+branch and remedy, and `with_channel_on` are gone. What replaced the last of those is `without_channel`, and
+the reversal is the point — with pass 2 unconditional an operator can no longer switch it *on*, so the
+remaining decision is whether to **decline to pay** for it. `--no-coref` had quietly become a lie (it set a
+variable the run then overwrote from the now-always-live channel, printed LIVE and spent the second call
+anyway); it now suppresses the producer block on that run's bundle only, and reads as the config gap it is.
+
+**2. Resume, keyed at the document.** Each document's claims *and* its call records are written the instant
+it lands, and a later invocation reuses them. Both halves are stored because three criteria
+(`structured_output_reliability`, both discriminator lines, cost/latency) are measured **at the call** and
+never reach a `ClaimRecord` — a claims-only cache would resume into a run whose reliability line was
+silently unmeasured. Two rules are non-negotiable and tested:
+
+* **A resumed run says so.** `determinism` is a measured, weighted line; runs stitched across sittings were
+  sampled over provider-side change as well as model variance. The scorecard carries a provenance section,
+  stamps the `determinism` row `cross-invocation`, and names `--no-resume` as the way to buy a
+  single-sitting number. A wholly-replayed scorecard is separately marked "replayed, not re-run".
+* **Changed inputs are never reused.** The key is the pinned model id + the document set (identity *and*
+  content) + a prompt/schema digest **derived** from the shipped system prompts and every tool's live
+  `model_json_schema()` — not a hand-bumped constant, which is the kind nobody bumps on the commit where it
+  mattered. A fourth component is the **producer kind**: `--dry-run` walks the identical path with a double
+  that reports the candidate's real `model_id`, so without it every dry run would leave bundles a live run
+  would happily reuse and the scorecard would rank three models on invented text with every gate green. Dry
+  runs also now default to their own output directory, so they cannot overwrite a paid run's receipts.
+
+**3. Per-provider pacing, declared in `config/bakeoff.yaml`.** One global `--concurrency` was the wrong
+shape: a cap is a property of an *account*, not a model. `rate_limits.openai` is set to the measured 3
+req/min with `max_concurrent: 1`; anthropic and google are deliberately absent (= unpaced), because
+inventing a cap nobody has hit would slow a lane for a fact not in evidence. Each candidate holds its **own**
+limiter, so the capped lane is the only slow one. `--concurrency` now bounds documents in flight rather than
+raw calls; rate is the knob that matters against a cap.
+
+**The retry discipline is unchanged and was deliberately not widened.** Retry transport faults only; a
+returned response is never re-issued, whatever its status. A 429 *is* a returned response, so the honest
+answer to a cap is to stay under it — retrying one would launder `structured_output_reliability` inside the
+instrument built to expose it. Pacing is that discipline's other half, not an exception to it.
+
+**Measured, not asserted.** A full `--dry-run` walks the whole path for zero calls and reaches
+`INSUFFICIENT_CRITERIA` — the correct dry verdict, since the scripted double declines to cluster and aligns
+with no gold, leaving `coref_binding`, both discriminator lines and `kind_tagging` honestly unmeasured. The
+throttle is exercised in that dry run against a virtual clock, so the wall-clock projection is the harness's
+own arithmetic rather than a number worked out on paper: the GPT lane costs **13m–24m40s of pacing alone**
+(40–75 calls at 20s spacing), the other two lanes run at full speed beside it, and a three-way re-run is
+therefore ~30 minutes end to end and ~195 calls — of which nothing already on disk is re-bought.
+
 ### DEFAULT-ON — the identity re-key stops being a staged flag, and the loopholes the flags were hiding (2026-07-25)
 
 Three stages of the identity re-key had landed **behind flags that shipped OFF**

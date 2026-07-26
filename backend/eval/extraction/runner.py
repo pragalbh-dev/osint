@@ -5,9 +5,12 @@ The loop itself is small; the discipline around it is the point.
 * **N runs, always.** ``replication.runs_per_candidate`` extractions per candidate, each recorded to its
   own bundle directory, each rebuilt and scored independently. One run is a sample; the spread across
   runs is what the margin rule subtracts before calling any gap real.
-* **Every run leaves an artefact.** ``<out_dir>/<candidate>/run-NN/<source_id>.json``, byte-stable, so
-  any figure on the scorecard can be traced back to the claims that produced it and a disputed run can be
-  re-scored without re-spending the API call.
+* **Every DOCUMENT leaves an artefact, the moment it lands.**
+  ``<out_dir>/<candidate>/run-NN/<source_id>.json`` (byte-stable claims) plus a ``_resume/`` sidecar
+  carrying that document's call records — written by :class:`eval.extraction.resume.ResumeStore` as each
+  document completes, not batched at the end of a run. So any figure on the scorecard traces back to the
+  claims that produced it, a disputed run is re-scored without re-spending anything, and — the reason it
+  is per-document — an exception partway through a run no longer discards the calls already bought.
 * **Real code, real path.** Each run drives ``chanakya.ingest.lane.extract_many`` and
   ``chanakya.view.rebuild`` — the shipped extraction and rebuild, not a scorer-local imitation. A
   bake-off measured on a parallel implementation would measure the imitation.
@@ -23,7 +26,6 @@ from __future__ import annotations
 
 import asyncio
 import importlib
-import json
 import os
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -37,6 +39,7 @@ from chanakya.view import rebuild
 
 from . import coref_channel
 from . import metrics as M
+from . import resume as R
 from .compare import MetricComparison, Verdict, composite_series, decide, per_metric_comparisons
 from .gates import GateReport, dry_gates, evaluate_gates
 from .gold import SubOracle, load_claim_gold, load_sub_oracle
@@ -47,6 +50,7 @@ from .recording import RecordingExtractionClient
 from .resilience import RetryingExtractionClient
 from .scorecard import CandidateScore, RunScore, aggregate_runs, unexercised
 from .surface import SurfaceClaim, from_claim_record
+from .throttle import RequestPacer, ThrottledExtractionClient, virtual_pacer
 from .vlm_probe import ImageryEvidence, observations_for, resolve_evidence
 
 #: ``(candidate, run_index) -> client``. Returning ``None`` marks the candidate unexercisable.
@@ -95,11 +99,15 @@ def live_client_factory(candidate: Candidate, run_index: int) -> Any | None:
     claim's ``Extraction.version``.
 
     The client is wrapped in :class:`~eval.extraction.resilience.RetryingExtractionClient`, which retries
-    **transport faults only** — a call that never received an HTTP response. A run is ~195 billed calls in
-    one un-resumable process, and on 2026-07-26 a single corrupted TLS record ended one after the first
-    candidate had been paid for in full. A response the provider actually returned is never retried,
-    whatever its status: that is the candidate's own behaviour, and ``structured_output_reliability``
-    exists to score it.
+    **transport faults only** — a call that never received an HTTP response. On 2026-07-26 a single
+    corrupted TLS record ended a run after the first candidate had been paid for in full. A response the
+    provider actually returned is never retried, whatever its status: that is the candidate's own
+    behaviour, and ``structured_output_reliability`` exists to score it. A 429 is a returned response, so
+    it is handled by *pacing* (:mod:`.throttle`) and never by re-issuing.
+
+    The run is no longer un-resumable, which changes what a raised exception costs: every document already
+    recorded stays on disk and a later invocation reuses it (:mod:`.resume`). Retry is still the first line
+    — a rescued blip beats a resumed run — but it is no longer the only one.
     """
     del run_index  # the same client serves every run; runs differ only by the model's own variance
     if not os.environ.get(candidate.key_env):
@@ -113,20 +121,6 @@ def live_client_factory(candidate: Candidate, run_index: int) -> Any | None:
 
 
 # ── one run ───────────────────────────────────────────────────────────────────────────────────────
-
-def write_bundles(claims_per_doc: Sequence[list[ClaimRecord]], docs: Sequence[DocInput],
-                  run_dir: Path) -> list[Path]:
-    """Write one byte-stable bundle per document (same shape ``ingest.seed`` freezes)."""
-    run_dir.mkdir(parents=True, exist_ok=True)
-    written: list[Path] = []
-    for doc, claims in zip(docs, claims_per_doc, strict=True):
-        path = run_dir / f"{doc.source_id}.json"
-        rows = [c.model_dump(mode="json") for c in claims]
-        path.write_text(json.dumps(rows, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-                        encoding="utf-8")
-        written.append(path)
-    return written
-
 
 def rebuild_from_claims(claims: Sequence[ClaimRecord], config: ConfigBundle) -> GraphView:
     """Append this run's claims to a fresh in-memory log and reduce them with the shipped ``rebuild()``."""
@@ -148,6 +142,8 @@ def score_run(
     doc_texts: Mapping[str, str],
     config: BakeoffConfig,
     view: GraphView,
+    provenance: R.RunProvenance | None = None,
+    calls_bought: int = 0,
 ) -> RunScore:
     """Every metric for one run. Pure given its inputs — no I/O, no clock, no network.
 
@@ -184,6 +180,8 @@ def score_run(
         image_calls_ok=sum(1 for c in image_calls if c.ok),
         image_calls_total=len(image_calls),
         calls_total=len(recorder.calls),
+        calls_bought=calls_bought,
+        provenance=provenance or R.RunProvenance(),
     )
 
 
@@ -198,42 +196,135 @@ def run_candidate(
     oracle: SubOracle,
     evidence: Mapping[str, ImageryEvidence],
     require_key: bool = True,
+    store: R.ResumeStore,
+    pacer: RequestPacer,
+    producer: str = R.LIVE,
 ) -> CandidateScore:
-    """Run one candidate N times, score each run, and fold them into a :class:`CandidateScore`."""
+    """Run one candidate N times, score each run, and fold them into a :class:`CandidateScore`.
+
+    Two things happen here that did not before, and both exist because a live run of this is ~195 billed
+    calls in one process:
+
+    * **every document is looked up on disk before it is bought.** ``store`` holds what previous
+      invocations paid for, keyed by candidate, run index and document and validated against a
+      fingerprint over the pinned model id, the document set and the prompt/schema version. A hit costs
+      nothing and is recorded as reused; a miss is bought and written the moment it lands.
+    * **calls are paced per provider.** ``pacer`` is this candidate's own limiter, so a lane capped at 3
+      requests a minute slows itself and nothing else — the other candidates are separate loops holding
+      separate pacers.
+    """
     doc_texts = inputs.texts()
     runs: list[RunScore] = []
     image_ok = image_total = 0
+    fingerprint = R.fingerprint(model_id=candidate.model_id, docs=inputs.docs,
+                                producer=producer)
 
     for run_index in range(1, config.replication.runs_per_candidate + 1):
-        client = client_factory(candidate, run_index)
-        if client is None:
-            imagery, _ = observations_for(candidate, evidence=evidence)
-            gates = evaluate_gates(candidate, config, imagery=imagery, require_key=require_key)
-            return unexercised(
-                candidate.id, candidate.label, candidate.model_id, gates,
-                f"no client could be built (key env {candidate.key_env}, client "
-                f"{candidate.client_module}.{candidate.client_class}) — this candidate was NOT measured",
-            )
-        recorder = RecordingExtractionClient(client)
-        claims_per_doc = asyncio.run(extract_many(
-            inputs.docs, concurrency=inputs.concurrency, client=recorder, config=inputs.config))
-        write_bundles(claims_per_doc, inputs.docs,
-                      inputs.out_dir / candidate.id / f"run-{run_index:02d}")
+        cached = {
+            doc.source_id: store.load(candidate.id, run_index, doc.source_id, fingerprint)
+            for doc in inputs.docs
+        }
+        missing = [doc for doc in inputs.docs if cached[doc.source_id] is None]
 
-        flat = [c for chunk in claims_per_doc for c in chunk]
+        bought_ids = {doc.source_id for doc in missing}
+        if missing:
+            client = client_factory(candidate, run_index)
+            if client is None:
+                imagery, _ = observations_for(candidate, evidence=evidence)
+                gates = evaluate_gates(candidate, config, imagery=imagery, require_key=require_key)
+                return unexercised(
+                    candidate.id, candidate.label, candidate.model_id, gates,
+                    f"no client could be built (key env {candidate.key_env}, client "
+                    f"{candidate.client_module}.{candidate.client_class}) — this candidate was NOT measured",
+                )
+            fresh = asyncio.run(_extract_and_persist(
+                missing, client=ThrottledExtractionClient(client, pacer), config=inputs.config,
+                concurrency=inputs.concurrency, store=store, candidate_id=candidate.id,
+                run_index=run_index, fingerprint=fingerprint,
+            ))
+            for source_id, doc_claims, doc_calls in fresh:
+                cached[source_id] = R.CachedDoc(source_id=source_id, claims=doc_claims, calls=doc_calls,
+                                                invocation=store.invocation, recorded_at="")
+
+        # Reassemble in `docs` order, whatever mixture of disk and network produced it. Every slot must
+        # be filled by now: a document is either cached or was just bought, and a failure to buy raised.
+        ordered: list[R.CachedDoc] = []
+        for doc in inputs.docs:
+            entry = cached[doc.source_id]
+            if entry is None:                                    # pragma: no cover - defensive
+                raise RuntimeError(
+                    f"document {doc.source_id!r} of {candidate.id} run {run_index} is neither cached nor "
+                    "freshly extracted; refusing to score a run with a hole in it"
+                )
+            ordered.append(entry)
+        flat = [claim for entry in ordered for claim in entry.claims]
+        recorder = RecordingExtractionClient.replay(
+            [call for entry in ordered for call in entry.calls])
+        provenance = R.summarize(
+            reused=[(doc.source_id, entry.invocation)
+                    for doc, entry in zip(inputs.docs, ordered, strict=True)
+                    if doc.source_id not in bought_ids],
+            bought=sorted(bought_ids),
+            current=store.invocation,
+        )
+
         view = rebuild_from_claims(flat, inputs.config)
         payloads = [c.payload for c in recorder.calls if c.ok and c.payload is not None]
         runs.append(score_run(
             candidate=candidate, run_index=run_index, claims=flat, raw_payloads=payloads,
             recorder=recorder, gold=gold, negative=negative, oracle=oracle, doc_texts=doc_texts,
-            config=config, view=view,
+            config=config, view=view, provenance=provenance,
+            calls_bought=sum(len(entry.calls)
+                             for doc, entry in zip(inputs.docs, ordered, strict=True)
+                             if doc.source_id in bought_ids),
         ))
         image_ok += runs[-1].image_calls_ok
         image_total += runs[-1].image_calls_total
 
     gates = _gates_for(candidate, config, runs, image_ok, image_total, evidence, require_key)
     return aggregate_runs(candidate.id, candidate.label, candidate.model_id, gates, runs,
-                          config.replication)
+                          config.replication, provenance=R.merge([r.provenance for r in runs],
+                                                                 store.invocation))
+
+
+async def _extract_and_persist(
+    docs: Sequence[DocInput], *, client: Any, config: ConfigBundle, concurrency: int,
+    store: R.ResumeStore, candidate_id: str, run_index: int, fingerprint: str,
+) -> list[tuple[str, tuple[ClaimRecord, ...], tuple[Any, ...]]]:
+    """Extract each document and write it the instant it lands. Survives a sibling's failure.
+
+    Two departures from the previous single ``extract_many(all_docs)`` call, both deliberate:
+
+    * **one recorder per document**, so calls are attributed to the document that made them. Without
+      that attribution a cached document could not carry its own call records, and the three
+      measured-at-the-call criteria would silently go missing on any resumed run.
+    * **failures do not cancel siblings' bookkeeping.** ``gather`` is told to return exceptions rather
+      than propagate the first one, so every document that *did* complete is persisted before the error
+      is re-raised. That is the whole point: on 2026-07-26 one exception discarded ~225 already-billed
+      Opus calls, and the fix is not to swallow the exception but to stop it taking the receipts with it.
+
+    ``concurrency`` now bounds **documents** in flight rather than raw calls; a document's own text ∥
+    image calls still overlap. Per-provider pacing (:mod:`.throttle`) is what bounds request *rate*, and
+    it is the knob that matters against an account cap — a global call count never was.
+    """
+    sem = asyncio.Semaphore(max(1, concurrency))
+
+    async def one(doc: DocInput) -> tuple[str, tuple[ClaimRecord, ...], tuple[Any, ...]]:
+        async with sem:
+            recorder = RecordingExtractionClient(client)
+            claims = (await extract_many(
+                [doc], concurrency=1 + len(doc.images), client=recorder, config=config))[0]
+            calls = tuple(recorder.calls)
+            store.save(candidate_id, run_index, doc, claims, calls, fingerprint)
+            return doc.source_id, tuple(claims), calls
+
+    results = await asyncio.gather(*(one(doc) for doc in docs), return_exceptions=True)
+    done: list[tuple[str, tuple[ClaimRecord, ...], tuple[Any, ...]]] = [
+        r for r in results if not isinstance(r, BaseException)]
+    for outcome in results:
+        if isinstance(outcome, BaseException):
+            raise outcome
+    return done
 
 
 def _gates_for(candidate: Candidate, config: BakeoffConfig, runs: Sequence[RunScore],
@@ -279,6 +370,10 @@ def run_bakeoff(
     candidates: Sequence[str] | None = None,
     require_key: bool = True,
     evidence: Mapping[str, ImageryEvidence] | None = None,
+    resume_enabled: bool = True,
+    invocation: str | None = None,
+    pace: bool = True,
+    producer: str = R.LIVE,
 ) -> BakeoffResult:
     """Run every declared candidate N times and produce the comparative verdict.
 
@@ -296,6 +391,17 @@ def run_bakeoff(
     ``preflight`` uses: ``None`` reads the recorded artefact, an explicit mapping is taken as given. The two
     entry points therefore judge the imagery gate on the same evidence by construction, which is what stops
     a green preflight from being followed by ``NO_ELIGIBLE_CANDIDATE``.
+
+    ``resume_enabled`` decides whether documents already on disk under ``inputs.out_dir`` are **reused**.
+    They are always *written* — that is what makes the next invocation cheap — but an operator who wants
+    a clean single-invocation measurement passes ``False`` and pays for it, which is the honest way to get
+    ``determinism`` sampled in one sitting rather than deleting a directory and hoping. Whatever the
+    choice, the scorecard reports which invocations actually contributed.
+
+    ``pace`` applies the per-provider rate limits declared in config. ``False`` swaps each limiter for a
+    virtual-clock one that computes the wait a live run would incur without incurring it — that is how
+    ``--dry-run`` exercises the throttle for real and reports its wall-clock floor instead of skipping the
+    one mechanism added to stop a rate-limit killing a run.
     """
     coref_channel.require(inputs.config, config)
     gold = load_claim_gold(inputs.gold_path)
@@ -306,10 +412,15 @@ def run_bakeoff(
     oracle = load_sub_oracle(inputs.sub_oracle_path)
     records = resolve_evidence(evidence)
 
+    store = R.ResumeStore(root=Path(inputs.out_dir),
+                          invocation=invocation or R.new_invocation_id(),
+                          enabled=resume_enabled)
+
     wanted = set(candidates) if candidates else None
     scores = [
         run_candidate(cand, inputs, config, client_factory, gold=gold, negative=negative, oracle=oracle,
-                      evidence=records, require_key=require_key)
+                      evidence=records, require_key=require_key, store=store,
+                      pacer=_pacer_for(cand, config, pace=pace), producer=producer)
         for cand in config.candidates
         if wanted is None or cand.id in wanted
     ]
@@ -318,6 +429,14 @@ def run_bakeoff(
     comparisons = per_metric_comparisons(scores, config)
     return BakeoffResult(scores=scores, verdict=verdict, comparisons=comparisons, composite=composite,
                          config=config)
+
+
+def _pacer_for(candidate: Candidate, config: BakeoffConfig, *, pace: bool) -> RequestPacer:
+    """This candidate's own limiter. One per candidate, never shared — that is what keeps a capped lane's
+    slowness its own: the three candidates are three independent loops, so a 3-req/min pacer on one of
+    them cannot make the other two wait."""
+    limit = config.rate_limit(candidate.provider)
+    return RequestPacer(limit=limit) if pace else virtual_pacer(limit)
 
 
 def preflight(config: BakeoffConfig, *, require_key: bool = True,
@@ -359,5 +478,4 @@ __all__ = [
     "run_bakeoff",
     "run_candidate",
     "score_run",
-    "write_bundles",
 ]

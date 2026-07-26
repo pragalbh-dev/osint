@@ -120,6 +120,21 @@ class RecordingExtractionClient:
             ),
         )
 
+    # ── replay ────────────────────────────────────────────────────────────────────────────────────
+
+    @classmethod
+    def replay(cls, calls: Sequence[CallRecord]) -> RecordingExtractionClient:
+        """A recorder holding calls that already happened — no inner client, nothing callable.
+
+        The roll-ups below read nothing but ``self.calls``, so a run assembled from cached documents is
+        scored through exactly the same object as a run that just happened. That matters more than it
+        looks: three of the criteria are measured at the CALL and never reach a ``ClaimRecord``, so a
+        resumed run scored without its call records would report reliability, discriminators and cost as
+        unmeasured while looking complete. ``inner`` is ``None`` on purpose — calling this raises rather
+        than silently re-buying a call the caller believed was cached.
+        """
+        return cls(inner=None, calls=list(calls))
+
     # ── roll-ups ──────────────────────────────────────────────────────────────────────────────────
 
     def image_calls(self) -> list[CallRecord]:

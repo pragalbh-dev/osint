@@ -18,24 +18,24 @@ makes the measurement impossible, and discovering that *after* N paid runs per c
 
 WHY THIS ASKS "IS THE CHANNEL AVAILABLE", NOT "IS THE FLAG ON"
 ──────────────────────────────────────────────────────────────
-Pass 2 currently ships dormant behind :data:`FLAG`. That flag is being **deleted** by a parallel effort, so
-the identity machinery — the coreference producer included — becomes unconditional; under the standing
-directive a switch that can be turned off is backward compatibility. A precondition written as "is the flag
-on?" would then either refuse forever or have to be deleted along with it.
+Pass 2 **used** to ship dormant behind ``resolution.earned_identity.enabled``, and this module was written
+with a marked seam so the flag's deletion would be mechanical. That deletion landed
+(``design/resolution-redesign``, merged 2026-07-26): the identity machinery — the coreference producer
+included — is now unconditional, and the seam has been executed. A precondition written as "is the flag on?"
+would by now either refuse forever or have had to be deleted along with it; the one written here needed one
+line removed.
 
-So the question this module asks is the durable one: *could a candidate express a coreference decision on
-this run's config, and if not, why not?* :attr:`CorefChannel.cause` answers that as one of four causes, each
-with a different remedy — and only one of them, :data:`GATED_OFF`, is about a flag. In the unconditional
-world that cause simply stops occurring and the other three keep doing their job:
+The question this module asks is the durable one: *could a candidate express a coreference decision on
+this run's config, and if not, why not?* :attr:`CorefChannel.cause` answers that as one of three causes,
+each with a different remedy, and none of them is about a switch:
 
 * :data:`NO_SCHEMA_FIELD`  — the pass-2 tool has no mention-cluster field (S3 reverted, or the model
   changed). Nothing an operator can switch; the metric is unmeasurable.
 * :data:`PRODUCER_UNCONFIGURED` — ``credibility.coreference`` is absent or empty, so the producer has no
-  knobs at all. This is a genuine unavailability with **nothing to do with any flag**, and it is the case
-  the old flag-shaped message reported wrongly.
+  knobs at all. This is a genuine unavailability, and it is the case the old flag-shaped message reported
+  wrongly. It is now also what :func:`without_channel` produces when an operator deliberately declines to
+  pay for pass 2.
 * :data:`NO_CATEGORIES` — configured, but permitting no evidence kind, so the pass emits nothing.
-* :data:`GATED_OFF` — configured and non-empty, yet the pipeline still declines to run the pass. Today that
-  is exactly :data:`FLAG`. **This is the flag-deletion seam.**
 
 Every cause refuses before any budget is spent. What must never happen is the third option — quietly
 dropping ``coref_binding`` from ``required_metrics`` so the run goes green with the measurement missing.
@@ -47,43 +47,27 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Any, Literal
 
-# ══════════════════════════════════════════════════════════════════════════════════════════════════
-# SEAM (flag deletion). Everything in this block is scheduled to die with
-# `resolution.earned_identity.enabled`. When the flag goes, delete exactly these and nothing else:
-#
-#   * FLAG and _EARNED_IDENTITY_KEY (below)
-#   * GATED_OFF and the branch in `inspect` that returns it
-#   * the GATED_OFF entry in _REMEDY
-#   * with_channel_on()
-#
-# Nothing else in this module reads the flag, by design: `inspect` asks the *pipeline* whether it would
-# dispatch pass 2, so an unconditional pass reports LIVE without a line of this module changing.
-# ══════════════════════════════════════════════════════════════════════════════════════════════════
-
-#: The single config flag that today decides whether extraction pass 2 runs at all. Both switches (the
-#: producer block in ``credibility.coreference`` and the consumer policy in ``resolution``) key off it.
-FLAG = "resolution.earned_identity.enabled"
-
-#: The block :data:`FLAG` lives in, on ``ConfigBundle.resolution``.
-_EARNED_IDENTITY_KEY = "earned_identity"
-
-# ── end seam ──────────────────────────────────────────────────────────────────────────────────────
+#: The block the coreference producer's knobs live in, on ``ConfigBundle.credibility``. Named once so
+#: :func:`_producer_block` and :func:`without_channel` cannot disagree about which block is the switch.
+_PRODUCER_KEY = "coreference"
 
 #: The metric whose substrate this channel is. Named here so the precondition and the report agree.
 METRIC = "coref_binding"
 
-#: The four reasons a channel can be unavailable. Only :data:`GATED_OFF` is about a flag.
-NO_SCHEMA_FIELD = "no_schema_field"
-PRODUCER_UNCONFIGURED = "producer_unconfigured"
-NO_CATEGORIES = "no_categories"
-GATED_OFF = "gated_off"
+Cause = Literal["", "no_schema_field", "producer_unconfigured", "no_categories"]
 
-Cause = Literal["", "no_schema_field", "producer_unconfigured", "no_categories", "gated_off"]
+#: The three reasons a channel can be unavailable. None of them is a flag — see the module docstring.
+#: Annotated as :data:`Cause` so a cause that is not one of the three fails at the constant rather than
+#: at the call site: an unrecognised cause has no remedy, and a refusal with no remedy is the shape that
+#: tempts an operator to drop the criterion instead of fixing it.
+NO_SCHEMA_FIELD: Cause = "no_schema_field"
+PRODUCER_UNCONFIGURED: Cause = "producer_unconfigured"
+NO_CATEGORIES: Cause = "no_categories"
 
 #: Per-cause remedy, appended to the refusal so an operator is told what would actually fix it. Keyed by
-#: cause rather than baked into one sentence, because the four remedies are genuinely different and a
+#: cause rather than baked into one sentence, because the three remedies are genuinely different and a
 #: message that names a flag for a cause that is not about a flag sends the operator to the wrong file.
-_REMEDY: dict[str, str] = {
+_REMEDY: dict[Cause, str] = {
     NO_SCHEMA_FIELD: (
         "No operator action can fix this: the extraction path has no mention-cluster field to fill, so no "
         f"candidate can express a binding. Either restore the pass-2 tool schema or remove {METRIC} from "
@@ -91,18 +75,15 @@ _REMEDY: dict[str, str] = {
     ),
     PRODUCER_UNCONFIGURED: (
         "The producer block `credibility.coreference` is absent or empty, so the pass has no knobs to run "
-        "with. Populate it (categories, max_mentions) — this is a config gap, not a switch."
+        "with. Populate it (categories, max_mentions) — this is a config gap, not a switch. If this run "
+        "asked for it (--no-coref suppresses the block to save a second extraction call per document), "
+        f"that is the cost decision working: drop --no-coref, or remove {METRIC} from required_metrics as "
+        "a deliberate, recorded decision."
     ),
     NO_CATEGORIES: (
         "`credibility.coreference.categories` permits no evidence kind, so the pass would emit nothing. An "
         "explicitly empty list means 'emit nothing' and is never read as 'emit everything'; name at least "
         "one category."
-    ),
-    GATED_OFF: (
-        f"The producer is configured but the pipeline still declines to dispatch pass 2 — today that is "
-        f"{FLAG}, which ships false. Run with it true (it costs a second extraction call per document, "
-        "which is the operator's call to make), or remove "
-        f"{METRIC} from required_metrics as a deliberate, recorded decision."
     ),
 }
 
@@ -174,16 +155,16 @@ def _producer_block(config: Any) -> dict[str, Any]:
     "configured" means.
     """
     credibility = getattr(config, "credibility", None)
-    return dict(getattr(credibility, "coreference", None) or {})
+    return dict(getattr(credibility, _PRODUCER_KEY, None) or {})
 
 
 def inspect(config: Any) -> CorefChannel:
     """Read the run's :class:`~chanakya.schemas.ConfigBundle` and say whether the channel is live.
 
     Deliberately asks the *pipeline* whether it would dispatch pass 2 (``coref._coref_cfg``) rather than
-    reading any flag itself. That is what makes this correct in both worlds: while the flag exists a
-    flag-off config reports :data:`GATED_OFF`; once the pass is unconditional the same call returns the
-    producer block and the channel reports LIVE, with nothing here to change.
+    reading any config key itself. That is what made this correct across the flag's deletion: it kept
+    answering the pipeline's own question, so the day the pass became unconditional the same call started
+    returning the producer block and the channel started reporting LIVE.
     """
     tool_name, cluster_field = _schema_cluster_field()
     if tool_name is None or cluster_field is None:
@@ -201,26 +182,18 @@ def inspect(config: Any) -> CorefChannel:
     cfg = coref._coref_cfg(config)
     categories = coref._categories(cfg) if cfg else ()
 
-    if not cfg and not declared:
-        # A genuine unavailability that has nothing to do with any switch: the deployment never configured
-        # the producer. Reporting this as "the flag is off" (as this module used to) sends an operator to
-        # the wrong file, and would keep doing so after the flag no longer exists.
+    if not cfg or not declared:
+        # A genuine unavailability that has nothing to do with any switch: this deployment does not declare
+        # the producer. Reporting this as "the flag is off" (as this module used to) sent an operator to the
+        # wrong file, and would keep doing so now that no flag exists. `cfg` and `declared` can no longer
+        # disagree — `_coref_cfg` returns the declared block verbatim — so either being empty is the same
+        # fact, and asking about both is what keeps this honest if the pipeline ever re-acquires a gate.
         return CorefChannel(
             live=False, tool_name=tool_name, cluster_field=cluster_field, categories=(),
             cause=PRODUCER_UNCONFIGURED,
             detail=(f"the {tool_name!r} tool exists (schema field {cluster_field}) but this deployment "
                     "declares no coreference producer at all: `credibility.coreference` is absent or "
                     f"empty, so pass 2 has nothing to run with and {METRIC} is unmeasurable"),
-        )
-    if not cfg:
-        # SEAM (flag deletion): unreachable once pass 2 is unconditional — `_coref_cfg` will then return
-        # the declared block, so a non-empty `declared` can no longer coexist with an empty `cfg`.
-        return CorefChannel(
-            live=False, tool_name=tool_name, cluster_field=cluster_field, categories=(),
-            cause=GATED_OFF,
-            detail=(f"the {tool_name!r} tool exists (schema field {cluster_field}) and the producer IS "
-                    "configured, but the extraction path still declines to dispatch pass 2, so no claim "
-                    f"carries a referent_id and {METRIC} is unmeasurable. Today the gate is {FLAG}"),
         )
     if not categories:
         return CorefChannel(
@@ -239,31 +212,31 @@ def inspect(config: Any) -> CorefChannel:
     )
 
 
-def with_channel_on(config: Any) -> Any:
-    """The same pipeline config with extraction pass 2 switched on, **in memory only**.
+def without_channel(config: Any) -> Any:
+    """The same pipeline config with extraction pass 2 suppressed, **in memory only**.
 
-    SEAM (flag deletion): this helper exists only while :data:`FLAG` does. It is *not* the precondition —
-    :func:`inspect` and :func:`require` never call it — so deleting it cannot weaken the check; it is a
-    convenience for a driver that must measure the top-weighted criterion on a config that still ships the
-    pass dormant. Once the pass is unconditional this becomes a no-op with nothing to switch, and it should
-    be deleted along with the flag rather than left as a switch that can be turned off.
+    This replaced ``with_channel_on`` when the flag died. The direction reversed for a real reason, not a
+    cosmetic one: pass 2 is now unconditional, so the thing an operator can still decide is whether to
+    *decline* to pay for it — it costs a second extraction call per document, which is close to half the
+    bill of a run. ``--no-coref`` is that decision, and before the flag's deletion it had quietly become a
+    lie: it set a variable the run then overwrote from the (now always-live) channel, so the run printed
+    LIVE and spent the second call anyway.
 
-    The bake-off cannot measure the top-weighted criterion on the shipped config, and the fix is not to
-    edit ``config/resolution.yaml`` — that would change the running system, the frozen-bundle baseline and
-    every other session's graph to serve a measurement. So the driver flips the flag on the *bundle it
-    hands the runner*, and this is that flip, in one place, spelled once.
+    Suppression is expressed by emptying the producer block rather than by reintroducing a switch, because
+    the producer block already *is* the declaration — an absent one is an honest "this deployment does not
+    run the second extraction pass", and :func:`inspect` already reports exactly that as
+    :data:`PRODUCER_UNCONFIGURED`. So a suppressed run refuses for the same reason and with the same
+    message as a misconfigured one, and no new dormancy concept enters the harness.
 
-    It is deliberately a function the caller invokes, never something :func:`inspect` or :func:`require`
-    does on the caller's behalf: turning the flag on adds a second extraction call per document, and that
-    cost is the operator's decision to take. What this removes is only the *footgun* — the flag lives on a
-    nested config model, so the obvious ``model_copy(update={"resolution": dict(...)})`` silently replaces
-    the model with a plain dict and the flag reads back off. That failure looks exactly like a dormant
-    channel, i.e. like the answer the operator was trying to change.
+    In memory only, and never called by :func:`inspect` or :func:`require`: editing ``config/`` would
+    change the running system, the frozen-bundle baseline and every other session's graph to serve a
+    measurement. What this also removes is the footgun the old helper removed — the block hangs off a
+    nested config model, so the obvious ``model_copy(update={"credibility": dict(...)})`` replaces the
+    model with a plain dict and the whole credibility config reads back empty.
     """
-    resolution = config.resolution
-    earned = {**dict(getattr(resolution, _EARNED_IDENTITY_KEY, None) or {}), "enabled": True}
+    credibility = config.credibility
     return config.model_copy(
-        update={"resolution": resolution.model_copy(update={_EARNED_IDENTITY_KEY: earned})})
+        update={"credibility": credibility.model_copy(update={_PRODUCER_KEY: {}})})
 
 
 class CorefChannelDormant(RuntimeError):
@@ -276,7 +249,7 @@ def require(config: Any, bakeoff_config: Any) -> CorefChannel:
     Raises when ``coref_binding`` is declared required and the channel is unavailable **for any of the four
     causes**, because the alternative — running N extractions per candidate and *then* reporting
     INSUFFICIENT_CRITERIA — pays for a measurement that was structurally impossible before the first call
-    went out. The message carries the cause-specific remedy and never flips anything itself.
+    went out. The message carries the cause-specific remedy and never changes any config itself.
 
     Note what is *not* checked: whether a flag exists. A live channel satisfies this whether it is live
     because someone switched it on or because the pass is unconditional.
@@ -317,6 +290,6 @@ def require_gold_labels(gold: Iterable[Any], bakeoff_config: Any) -> None:
     )
 
 
-__all__ = ["FLAG", "GATED_OFF", "METRIC", "NO_CATEGORIES", "NO_SCHEMA_FIELD", "PRODUCER_UNCONFIGURED",
+__all__ = ["METRIC", "NO_CATEGORIES", "NO_SCHEMA_FIELD", "PRODUCER_UNCONFIGURED",
            "Cause", "CorefChannel", "CorefChannelDormant", "inspect", "require",
-           "require_gold_labels", "with_channel_on"]
+           "require_gold_labels", "without_channel"]

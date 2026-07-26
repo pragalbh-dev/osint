@@ -30,6 +30,7 @@ from typing import Any, Literal
 from .gates import GateReport
 from .metrics import Direction, MetricValue
 from .policy import Replication
+from .resume import RunProvenance, merge
 from .surface import SurfaceClaim, normalize_surface
 
 SeriesStatus = Literal["measured", "partial", "unavailable"]
@@ -52,6 +53,14 @@ class RunScore:
     #: what pass 1 found, so the projection is a floor and a ceiling and only a completed run knows where
     #: between them the truth fell.
     calls_total: int = 0
+    #: Of ``calls_total``, how many this invocation actually PAID FOR. The rest were replayed from disk.
+    #: Kept apart because "calls made" is the line an operator reconciles against the projection, and a
+    #: resumed run that reported its replayed calls as spend would overstate the bill every time.
+    calls_bought: int = 0
+    #: Which invocation(s) bought this run's documents. Recorded per run rather than per candidate because
+    #: resume is keyed at the document: a run can legitimately be part cached and part fresh, and the
+    #: scorecard has to be able to say which.
+    provenance: RunProvenance = field(default_factory=RunProvenance)
     notes: list[str] = field(default_factory=list)
 
     def metric(self, name: str) -> MetricValue | None:
@@ -86,6 +95,14 @@ def determinism_values(runs: Sequence[RunScore]) -> list[MetricValue]:
 
     Leave-one-out rather than a single cross-run number, so determinism carries a spread of its own and
     goes through the same margin rule as every other metric instead of being ranked on a point estimate.
+
+    **What this number assumes, and what carries the caveat.** It reads run-to-run disagreement as model
+    variance, which holds when the runs were sampled in one sitting against pinned inputs. Resume can
+    legitimately assemble a candidate's runs from more than one invocation — the inputs are still pinned
+    identical, because a cached document is refused unless the model id, the document set and the
+    prompt/schema version all match — but the *sittings* differ, so provider-side change is folded in
+    alongside model variance. That is disclosed on the scorecard from :attr:`CandidateScore.provenance`
+    rather than silently adjusted here: there is no honest correction to apply, only a fact to state.
     """
     if len(runs) < 2:
         reason = "determinism needs at least 2 runs of the same candidate to be measurable"
@@ -186,6 +203,10 @@ class CandidateScore:
     runs: tuple[RunScore, ...] = ()
     exercised: bool = True
     not_exercised_reason: str = ""
+    #: The candidate's runs folded together: which invocations contributed, and how much was reused. When
+    #: this reports more than one invocation the ``determinism`` series below was sampled across sittings,
+    #: not within one, and the scorecard says so above the number.
+    provenance: RunProvenance = field(default_factory=RunProvenance)
 
     @property
     def eligible_to_win(self) -> bool:
@@ -195,7 +216,7 @@ class CandidateScore:
 
 def aggregate_runs(
     candidate_id: str, label: str, model_id: str, gates: GateReport, runs: Sequence[RunScore],
-    replication: Replication,
+    replication: Replication, provenance: RunProvenance | None = None,
 ) -> CandidateScore:
     """Fold N :class:`RunScore` into a :class:`CandidateScore`, adding the determinism series."""
     names: list[str] = []
@@ -217,9 +238,11 @@ def aggregate_runs(
     det = determinism_values(runs)
     series["determinism"] = build_series("determinism", det, n_runs, replication.min_runs_for_ranking)
 
+    if provenance is None:
+        provenance = merge([r.provenance for r in runs], "")
     return CandidateScore(
         candidate_id=candidate_id, label=label, model_id=model_id, gates=gates,
-        series=series, runs=tuple(runs),
+        series=series, runs=tuple(runs), provenance=provenance,
     )
 
 
