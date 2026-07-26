@@ -44,6 +44,7 @@ from .matcher import match_claims
 from .negative_gold import NegativeGold, emitted_spans, load_negative_gold
 from .policy import BakeoffConfig, Candidate
 from .recording import RecordingExtractionClient
+from .resilience import RetryingExtractionClient
 from .scorecard import CandidateScore, RunScore, aggregate_runs, unexercised
 from .surface import SurfaceClaim, from_claim_record
 from .vlm_probe import ImageryEvidence, observations_for, resolve_evidence
@@ -92,6 +93,13 @@ def live_client_factory(candidate: Candidate, run_index: int) -> Any | None:
     Resolves ``client_module``/``client_class`` by import, so adding a candidate stays a config edit plus
     one client class. The pinned ``model_id`` from config is passed through and ends up stamped on every
     claim's ``Extraction.version``.
+
+    The client is wrapped in :class:`~eval.extraction.resilience.RetryingExtractionClient`, which retries
+    **transport faults only** — a call that never received an HTTP response. A run is ~195 billed calls in
+    one un-resumable process, and on 2026-07-26 a single corrupted TLS record ended one after the first
+    candidate had been paid for in full. A response the provider actually returned is never retried,
+    whatever its status: that is the candidate's own behaviour, and ``structured_output_reliability``
+    exists to score it.
     """
     del run_index  # the same client serves every run; runs differ only by the model's own variance
     if not os.environ.get(candidate.key_env):
@@ -101,7 +109,7 @@ def live_client_factory(candidate: Candidate, run_index: int) -> Any | None:
         cls = getattr(module, candidate.client_class)
     except Exception:
         return None
-    return cls(model_id=candidate.model_id)
+    return RetryingExtractionClient(cls(model_id=candidate.model_id))
 
 
 # ── one run ───────────────────────────────────────────────────────────────────────────────────────

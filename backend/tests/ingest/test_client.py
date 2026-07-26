@@ -12,6 +12,7 @@ import base64
 import dataclasses
 import json
 import os
+import sys
 
 import httpx
 import pytest
@@ -296,3 +297,57 @@ def test_anthropic_extract_text_only_stays_bare_string() -> None:
     body = json.loads(route.calls.last.request.content)
     # no images → the content is a plain string (unchanged wire shape, back-compatible)
     assert body["messages"][0]["content"] == "only text"
+
+
+
+# ── the lazy-init race (found by RK-BAKEOFF, 2026-07-26) ──────────────────────────────────────────
+
+def test_gemini_builds_exactly_one_sdk_client_under_concurrency(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`_sdk_client` must build one client even when many threads reach it cold, simultaneously.
+
+    `lane.extract_many` fans extraction across threads, so an unguarded lazy init lets every thread build
+    its own `genai.Client`. All but one are then unreachable, and google-genai's httpx wrapper closes its
+    transport in `__del__` — so the orphans tear down sockets that sibling threads are still using. This
+    killed two paid RK-BAKEOFF runs, in the two shapes the race produces:
+    `httpx.ReadError: [SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC]` and
+    `RuntimeError: Cannot send a request, as the client has been closed`.
+
+    The constructor sleeps so the window is wide and the assertion does not depend on scheduler luck:
+    unguarded, all eight threads are inside it at once and eight clients are built.
+    """
+    import threading as _threading
+    import time as _time
+    import types as _types
+
+    built: list[object] = []
+    lock = _threading.Lock()
+
+    def _fake_client(**_: object) -> object:
+        _time.sleep(0.05)  # hold the window open
+        sdk = object()
+        with lock:
+            built.append(sdk)
+        return sdk
+
+    google_mod = _types.ModuleType("google")
+    genai_mod = _types.ModuleType("google.genai")
+    genai_mod.Client = _fake_client  # type: ignore[attr-defined]
+    google_mod.genai = genai_mod  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "google", google_mod)
+    monkeypatch.setitem(sys.modules, "google.genai", genai_mod)
+
+    client = GeminiExtractionClient(api_key="k", model_id="gemini-3.6-flash")
+    seen: list[object] = []
+
+    def worker() -> None:
+        seen.append(client._sdk_client())
+
+    threads = [_threading.Thread(target=worker) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=15)
+
+    assert len(built) == 1, f"built {len(built)} SDK clients — the lazy init is racing"
+    assert len(seen) == 8
+    assert len({id(s) for s in seen}) == 1, "threads received different SDK client objects"

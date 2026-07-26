@@ -45,6 +45,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
@@ -186,13 +187,35 @@ class GeminiExtractionClient:
         # a missing SDK surfaces a clear ImportError at call time, not at build.
         self._api_key = api_key
         self._client: Any = None
+        # The lazy init below runs under concurrency and MUST be guarded — see `_sdk_client`.
+        self._client_lock = threading.Lock()
         self.model_id = model_id
 
     def _sdk_client(self) -> Any:
-        if self._client is None:
-            from google import genai
+        """The SDK client, built once. The lock is load-bearing, not defensive.
 
-            self._client = genai.Client(api_key=self._api_key) if self._api_key else genai.Client()
+        ``lane.extract_many`` fans extraction out across threads (``asyncio.to_thread`` under a
+        semaphore), so several threads reach this method simultaneously on a cold client. Unguarded, each
+        one sees ``self._client is None`` and builds its own ``genai.Client``; the last assignment wins and
+        every other instance becomes unreachable. ``google-genai``'s httpx wrapper closes its transport in
+        ``__del__``, so those orphans take their sockets down as they are collected — while sibling threads
+        are still using them.
+
+        That is not a hypothetical. It broke the RK-BAKEOFF live run twice on 2026-07-26, in the two shapes
+        this race produces: ``httpx.ReadError: [SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC]`` when a
+        connection was torn down mid-response, and ``RuntimeError: Cannot send a request, as the client has
+        been closed`` when a thread reached a client that had already been collected. Both look like
+        network faults and neither is one. The Anthropic and OpenAI clients construct their SDK client in
+        ``__init__`` and were never exposed to this.
+        """
+        if self._client is None:
+            with self._client_lock:
+                if self._client is None:  # re-checked under the lock: the first test is unsynchronised
+                    from google import genai
+
+                    self._client = (
+                        genai.Client(api_key=self._api_key) if self._api_key else genai.Client()
+                    )
         return self._client
 
     def _call(
