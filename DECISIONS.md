@@ -1699,3 +1699,35 @@ gates remain ahead of every candidate, as they should. Full suite **1792 passed 
 is built on two candidates being paid for. That is no longer the state: a real run now spends on **three**
 candidates, so the projection returns to roughly **3 × 5 × 8–15 = 120–225 calls**, ~195 at the measured
 13-calls-per-run pattern. The driver's skip-the-blocked behaviour is unchanged and simply has nobody to skip.
+
+### RK-BAKEOFF — the live run: no verdict, one real bug fixed, and a rate limit that stopped it (2026-07-26)
+
+The authorised three-way live run was attempted. **It did not complete, so there is no primary extractor
+and none was chosen.** Full report: `tmp/conv/RK-BAKEOFF-RESULT.md`.
+
+Preflight was genuinely 3/3 ELIGIBLE — the GPT promotion held up and nothing was excluded by configuration.
+Three attempts were made and each died differently; the first two were our own defect.
+
+| Decision | What was done | Why |
+|---|---|---|
+| **No winner is recorded, because none was measured** | `run_bakeoff` raised before `decide()` on every attempt, so **no metric was computed for any candidate**. Two candidates' raw claim bundles survive on disk; they are reported in the result doc explicitly as *not* a ranking | This is the project's non-negotiable turned on its own instrument. Claim count is not a scored metric and more is not better — an over-extractor emits more claims and scores worse on the three veto lines. Naming a primary extractor on surviving bundles would be the exact failure the gates exist to forbid |
+| **A real concurrency bug in the shipped Gemini client, found and fixed** | `GeminiExtractionClient._sdk_client()` had an **unguarded lazy init**. `extract_many` fans across threads, so every thread built its own `genai.Client`; the orphans' `__del__` closed transports that sibling threads were still using. Surfaced as `[SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC]` (attempt 1) and `Cannot send a request, as the client has been closed` (attempt 2). Fixed with double-checked locking, keeping the laziness that keeps the optional dep optional | Both failures look like network faults and neither is one. This affects **any concurrent Gemini ingest**, which is the shipped path; it was invisible because it cannot happen sequentially. Anthropic and OpenAI build their SDK client in `__init__`, which is why Opus completed 5/5 runs on all three attempts. Verified 15/15 clean at concurrency 8 on the real lane, then confirmed by Gemini's 5/5 clean runs in attempt 3 |
+| **Transport faults are retried; returned responses never are** | New `eval/extraction/resilience.py` wraps the live client factory and retries only calls that **never received an HTTP response**. A 429, a 500, a refusal, a reply with no forced tool call is raised on the first attempt | A run is ~195 billed calls in one un-resumable process, so a single blip must not discard the comparison. But retrying a *returned* response would launder `structured_output_reliability` — the metric that exists to expose exactly that — inside the instrument built to measure it. The predicate treats any exception carrying a status code or response as final, whatever it is named |
+| **A 429 was NOT retried, and NOT scored against the model** | Attempt 3 died on `gpt-5.6-sol` with an account cap of **3 requests/minute** ("Limit 3, Used 3" — no payment method on the account) | Correct on both counts. It is a returned response, so the retry rule leaves it alone. And it is a fact about the **account's billing tier**, not the model — scoring it as unreliability would let the bake-off pick an extractor based on which entitlement the operator happens to hold. Lifting it is an operator action (fund the account) or a harness feature (per-provider rate limiting, which does not exist — there is one global `--concurrency`) |
+| **Stopped instead of buying a fourth attempt** | Cumulative actual spend **~330 calls against an authorised 225 ceiling**, with **Opus paid 3× (~225 calls) rather than 1×**, because it completed five full runs on every attempt and was re-paid each time | The standing instruction is to stop and report rather than spend when the plan runs materially above budget. A fourth attempt is another ~195 calls and still a gamble against a cap that cannot be fixed from this repository |
+
+**The instrument itself came out well.** The spend plan printed before every attempt was accurate to the
+call; the dry run walked the whole path at zero cost and correctly returned `INSUFFICIENT_CRITERIA` from a
+scripted client; preflight blocked nothing it should not have. `gates.py`, the weights, the margin rule and
+the match policy were **not touched** at any point.
+
+**Known limitation, and the highest-value next change if this is ever re-run at this cost:** the harness has
+**no resume**. Per-candidate scores live only in memory, so one exception discards every call already bought
+— which is how ~225 Opus calls became unusable. Checkpointing a completed candidate's `CandidateScore` would
+close that; the retry wrapper only closes the transport-fault case.
+
+**Also stated in the result doc, so a future verdict is not over-read:** five of the slice's six source types
+appear exactly once; 16 of 65 gold claims carry a role surface appearing nowhere in their document, so
+absolute recall is capped for any verbatim extractor and only comparative numbers mean anything; binding
+precision rests on 8 items; and cost is UNPRICED by design — while the operationally decisive cost factor
+turned out to be a rate limit, which no metric in the config models at all.
