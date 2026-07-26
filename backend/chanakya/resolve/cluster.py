@@ -233,16 +233,31 @@ def _name_cap_reason(trigger: str | None, ceiling: str) -> str:
     )
 
 
-def _colocation_cap_reason(shared: tuple[str, ...], discriminators: tuple[str, ...]) -> str:
+def _colocation_cap_reason(
+    shared: tuple[str, ...], discriminators: tuple[str, ...], ceiling: str
+) -> str:
     """Analyst-facing rationale for a formation merge the co-location cap withheld (D-13.14 / G16).
 
     Says what would lift it, because the cap is not a refusal to decide — it is a statement of *what is
     missing*. Prose only (gate G6).
+
+    ``ceiling`` is the band the caller ACTUALLY applied, threaded in rather than assumed. It used to be the
+    literal ``BAND_PROBABLE``, so an operator who declared ``colocation_ceiling: possible`` — a legal value
+    this reader honours — got a pair on the watch-list whose own stated rationale said it was in the review
+    queue. Two costs, both of them the analyst's:
+
+    * the surfaced reason disagreed with the decision the system computed, which is exactly the defect the
+      "a reason must name its real ground" property exists to catch, wearing the clothes of a specific reason;
+    * ``probable`` and ``possible`` produced the *identical* rationale, so the one channel that tells an
+      analyst how much attention a pair has earned said nothing — a fixed default with three legal spellings.
+
+    The sibling :func:`_name_cap_reason` always took its ceiling as an argument; this one did not, and that
+    asymmetry is how the hard-coded band survived the ``ceiling_withholds`` fix one layer down.
     """
     on = ", ".join(shared) if shared else "a shared design, site and operator"
     want = ", ".join(discriminators) if discriminators else "a unit-level identifier"
     return (
-        f"co-location is not identity, capped at '{BAND_PROBABLE}' — everything these two formations agree "
+        f"co-location is not identity, capped at '{ceiling}' — everything these two formations agree "
         f"on is where they are standing ({on}). Two batteries at one airfield, running one design, under one "
         f"branch share all of that BY CONSTRUCTION, so the shared neighbourhood is evidence of dispersal, "
         f"not of identity. Confirming a FORMATION needs a unit-level discriminator ({want}); none is stated "
@@ -430,6 +445,7 @@ def resolve_entities(
     raise_only: set[Pair],
     authoritative: set[Pair] | None = None,
     raise_walls: Mapping[Pair, str] | None = None,
+    raise_ceilings: Mapping[Pair, str] | None = None,
     place_identity: set[Pair] | None = None,
 ) -> ResolveResult:
     """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
@@ -451,9 +467,26 @@ def resolve_entities(
     auto-merge (a critical disagreement must not slip through), yet it is guaranteed a place in the HITL
     candidate queue with a reason — never silently walled, never silently merged. Maps each pair → its
     reason string. Empty by default ⇒ no effect.
+
+    ``raise_ceilings`` says, per raise-wall pair, WHICH band that channel's caller declared — the band the
+    pair may reach, not the fact that it is blocked. An unlisted pair means ``probable``, which is the
+    channel's original and still-dominant promise (a stated critical disagreement is the analyst's call, so
+    it is guaranteed a queue place).
+
+    It exists because one rail on this channel carries a **configured** ceiling rather than a fixed one. A
+    same-document stated contrast is a *cap* — its own analyst-facing reason literally says "Capped at
+    '<contrast_ceiling>'" — but the channel was band-blind, so an operator who declared
+    ``contrast_ceiling: possible`` got a pair in the review QUEUE whose rationale told the analyst it was on
+    the watch-list. That is the surfaced reason disagreeing with the computed decision, and it made
+    ``possible`` and ``probable`` behave identically on that dial: a declared value that does not mean what
+    it says, which is the same defect class as the truthiness read of ``ceiling_withholds`` one layer down.
+
+    The ceiling is honoured for the *band* only. Blocking bootstrap and auto-merge is unconditional on this
+    channel and stays that way, because that half is not a matter of how much attention a pair has earned.
     """
     authoritative = authoritative or set()
     raise_walls = raise_walls or {}
+    raise_ceilings = raise_ceilings or {}
     # RK-COREF item 11: place identity decided BEFORE the fixpoint (``places.place_merge_pairs``) so a place
     # merge is visible to ``relational_score``. Its own bootstrap channel rather than folded into
     # ``authoritative``, because labelling a curated-gazetteer anchor "authoritative coreference" in an
@@ -635,6 +668,15 @@ def resolve_entities(
         exactly what two co-located reports do corroborate.
         """
         ea, eb = graph.entities[a], graph.entities[b]
+        # The presence exemption, read from the key that CLAIMS to grant it. ``presence_types`` documents
+        # itself as "the two citizens S2 created. A presence-level merge in a co-location case is EXPECTED and
+        # must not be capped", and nothing read it: the exemption fell out of presence types not appearing in
+        # ``formation_types``, i.e. it was granted by a *different* key's contents. That is a dial with a label
+        # and no shaft, and it is fragile in the direction that matters — the day an operator adds a presence
+        # type to ``formation_types`` (to cap something else) the documented exemption vanishes silently and
+        # co-located sightings of one design start capping each other. Stated explicitly, it holds either way.
+        if ea.etype in earned.presence_types or eb.etype in earned.presence_types:
+            return None
         if ea.etype not in earned.formation_types or eb.etype not in earned.formation_types:
             return None
         if bd[RELATIONAL] <= 0.0:
@@ -688,7 +730,7 @@ def resolve_entities(
             shared = colocation_only(a, b, bd)
             if shared is not None:
                 return earned.colocation_ceiling, _colocation_cap_reason(
-                    shared, earned.formation_discriminators
+                    shared, earned.formation_discriminators, earned.colocation_ceiling
                 )
         return None
 
@@ -860,6 +902,12 @@ def resolve_entities(
         floor = cfg.auto_merge_for_pair(graph.entities[a].etype, graph.entities[b].etype)
         has_raise = frozenset((a, b)) in raise_only
         raised_wall = frozenset((a, b)) in raise_walls
+        # …and at which band. A raise-wall pair earns a QUEUE place unless its caller declared the ceiling
+        # ``possible``, in which case it earns the watch-list instead — with its reason either way. Unlisted
+        # ⇒ ``probable`` ⇒ ``raised_wall_queued`` is exactly the old ``raised_wall``, so every rail that does
+        # not declare a ceiling (and the shipped ``contrast_ceiling: probable``) is byte-unchanged.
+        raised_wall_poss = raised_wall and raise_ceilings.get(frozenset((a, b))) == BAND_POSSIBLE
+        raised_wall_queued = raised_wall and not raised_wall_poss
         capped_perishable = frozenset((a, b)) in perishable_capped
         # S3: a cap that refused FUSION at ceiling ``probable`` is guaranteed a queue place with its reason —
         # the third instance of the block-merge-and-review contract. A cap at ceiling ``possible`` is the
@@ -868,7 +916,9 @@ def resolve_entities(
         capped_prob = frozenset((a, b)) in capped_probable
         capped_poss = frozenset((a, b)) in capped_possible
         band = _band(
-            bd, cfg, has_raise=has_raise or raised_wall or capped_perishable or capped_prob, auto_merge=floor
+            bd, cfg,
+            has_raise=has_raise or raised_wall_queued or capped_perishable or capped_prob,
+            auto_merge=floor,
         )
         # D9 (Stage 3A-ii) — the BRIDGE-ACROSS-A-WALL alarm. This pair cleared ``vetoed`` above (not
         # directly walled), but its union would fuse two clusters a hard wall holds apart (``bridged_wall``)
@@ -887,11 +937,14 @@ def resolve_entities(
         # Raise pairs AND wall bridges are exempt (an explicit assertion, a stated critical disagreement,
         # or a straddle across a hard wall is *more than a name coincidence*); the cap is a no-op unless
         # the operator turned the dial on (default off ⇒ byte-unchanged).
+        # ``raised_wall_queued`` rather than ``raised_wall``: a raise-wall pair whose caller declared the
+        # ceiling ``possible`` is *asking* to be withheld from the queue, so it must not also be listed as an
+        # exemption from being withheld — that reading is what made the two bands identical on that dial.
         capped = (
             cfg.name_alone_caps_at_possible
-            and not (has_raise or raised_wall or is_bridge or capped_perishable or capped_prob)
+            and not (has_raise or raised_wall_queued or is_bridge or capped_perishable or capped_prob)
             and _name_alone(bd)
-        ) or (capped_poss and not (has_raise or raised_wall or is_bridge))
+        ) or ((capped_poss or raised_wall_poss) and not (has_raise or raised_wall_queued or is_bridge))
         # EVERY pair reaching this loop was refused a merge upstream — Phase 1 and Phase 2 already ran and did
         # not union it — so an "auto" band here never means "merge it", it means "something blocked it". Unless
         # a cap has explicitly withheld it from the queue, that makes it a REVIEW ITEM, and it must not fall

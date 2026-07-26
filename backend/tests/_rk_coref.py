@@ -93,9 +93,8 @@ def graded_sources() -> SourcesConfig:
 
 
 SHIPPED = "<shipped>"
-#: The stage block's key in ``config/resolution.yaml`` — where S3's own knobs live, flag included.
+#: The stage block's key in ``config/resolution.yaml`` — where S3's own knobs live.
 _EARNED_BLOCK = "earned_identity"
-
 
 def bundle(
     *,
@@ -109,7 +108,13 @@ def bundle(
     ``config/resolution.yaml`` (§7 RK-COREF owned paths), so a fixture that re-typed the block could not
     see a knob S3 declares. Pass an explicit :class:`ResolutionConfig` only where a test needs to *vary*
     one dial.
+
+    Raises :class:`~tests._rk_layer.DeadStageKwarg` for a retired staging-flag keyword — one registry, in
+    ``_rk_layer.DEAD_STAGE_KWARGS``, because both fixture builders have the same ``extra="allow"`` hole and a
+    second copy of the refusal list is how one of them ends up not refusing. Everything else in
+    ``**credibility`` is a credibility knob, as before.
     """
+    rk.reject_dead_stage_kwargs("bundle", credibility)
     shipped = rk.shipped_bundle()
     proposer = getattr(shipped.credibility, "basing_proposer", None)
     cred = cred_config(

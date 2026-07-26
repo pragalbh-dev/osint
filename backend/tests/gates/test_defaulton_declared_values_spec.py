@@ -60,10 +60,24 @@ RESOLUTION_BLOCK = "earned_identity"
 
 
 def _live(**block: Any):
-    """The shipped bundle with the identity stage live and the named tunables overridden."""
-    base = rc.bundle(flag_on=True, supersede_floor=dict(rk.SUPERSEDE_FLOOR))
+    """The shipped bundle with the identity stage live and the named tunables overridden.
+
+    The stage is live because the machinery is unconditional, so "live" is just the shipped block. The two
+    retired pins (``bundle(flag_on=True)``, ``earned_identity.enabled``) are gone; both bound to nothing and
+    the second raised, which is what made this file's ceiling assertions unreadable. Detail in the sibling
+    ``test_defaulton_refuse_and_escalate_spec._live``.
+
+    **The damage here was the worse kind**, and it is worth naming because it is the whole reason this file
+    is read carefully rather than trusted: ``test_a_legal_ceiling_value_is_never_rejected`` catches the load
+    exception through ``rc.raises_loudly`` and reports "``name_ceiling='probable'`` … was rejected at load".
+    The ceiling validator accepted every legal band perfectly; the raise came from ``enabled``. So nine reds
+    named the wrong module — and the *mirror*, ``test_a_ceiling_value_the_code_cannot_honour_is_rejected``,
+    was GREEN for the same wrong reason: it passed on the ``enabled`` error, not on ``CeilingValueError``.
+    Nine false reds and nine false greens from one line of fixture. No assertion below changed.
+    """
+    base = rc.bundle(supersede_floor=dict(rk.SUPERSEDE_FLOOR))
     shipped = rc.earned_identity_block()
-    return rc.with_resolution(base, earned_identity={**shipped, "enabled": True, **block})
+    return rc.with_resolution(base, earned_identity={**shipped, **block})
 
 
 # ── the three ceilings, each with a fixture that reaches it ──────────────────────────────────────

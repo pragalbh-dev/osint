@@ -63,7 +63,7 @@ def _shipped(**credibility: Any):
     the target behaviour. ``rk.SUPERSEDE_FLOOR`` is READ from ``config/credibility.yaml`` rather than
     hand-copied, because a hand-copy silently omits any knob added later — which has already cost one round.
     """
-    return rc.bundle(flag_on=False, supersede_floor=dict(rk.SUPERSEDE_FLOOR), **credibility)
+    return rc.bundle(supersede_floor=dict(rk.SUPERSEDE_FLOOR), **credibility)
 
 
 def _split_basings(names: tuple[str, str] = (DESCRIPTOR, DESCRIPTOR)) -> list:
@@ -279,7 +279,6 @@ def _floor_config(*, floor: dict[str, Any] | None = None):
     ``floor=None`` keeps the shipped ``supersede_floor``; pass a dict to vary one knob.
     """
     return rk.fixture_config(
-        flag_on=False,
         resolution=rk.HITL_RESOLUTION,
         supersede_floor=dict(rk.SUPERSEDE_FLOOR) if floor is None else floor,
     )

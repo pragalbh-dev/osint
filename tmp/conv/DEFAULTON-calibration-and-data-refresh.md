@@ -109,3 +109,112 @@ Both are candidates, not merges: both endpoints remain separate nodes and each e
 `d10-sat-cloud-gap` — i.e. the graph is attributing basings to that unit off a document the corpus plants as
 a **false attribution**. That is a separate question from this change (the derivation is unchanged), but it is
 what makes the site-class spread as wide as it is.
+
+---
+
+# Integration pass (2026-07-26) — what the 53 reds actually were
+
+**From: DEFAULTON-integration.** Suite after integration: **1467 passed, 7 skipped, 7 xfailed, 0 failed.**
+No fixture edited, no golden regenerated, **no new xfail added** — the five items above are still the whole
+expected-red set, and they are still the whole data-refresh backlog.
+
+## The headline: 44 of the 53 were BINDING ARTEFACTS, not implementation defects
+
+The red count did not move under the implementer's 16-file change because most of the tests never reached
+the implementation. Two mechanisms, both in the fixture helpers:
+
+1. **`earned_identity.enabled` (37 reds).** The spec helpers pinned the stage with `{"enabled": True}`, which
+   `validate_stage_block` now rejects at construction. Every one of those tests died inside
+   `ResolveConfig.from_bundle` while its failure message named the escalation path, the co-location cap or
+   the country wall. Nothing was measured.
+2. **`raises_loudly` masking the same error (9 more reds, plus 9 FALSE GREENS).**
+   `test_a_legal_ceiling_value_is_never_rejected` catches load exceptions, so it reported
+   "`name_ceiling='probable'` … was rejected at load" when the ceiling validator was perfect and the raise
+   came from `enabled`. Its mirror, `test_a_ceiling_value_the_code_cannot_honour_is_rejected`, was *green for
+   the same wrong reason* — passing on `StageBlockError`, never on `CeilingValueError`.
+
+Also found: `rc.bundle(flag_on=…)` had stopped binding to anything. `CredibilityConfig` is `extra="allow"`,
+so the dead kwarg was filed as a credibility field nobody reads — a fixture that believed it had pinned a
+stage. Both fixture builders now refuse the retired names by name (`_rk_layer.DEAD_STAGE_KWARGS`).
+
+**No assertion was weakened to make anything pass.** Two rulings changed a *probe*; both are recorded in the
+test docstrings and summarised below.
+
+## Rulings (two hands genuinely disagreed; recorded, not split)
+
+- **Declaring the dead flag is an ERROR, not a no-op.** The specs expected `enabled` to be ignored; the
+  implementation rejects it in both directions. The implementation is right — an operator who writes
+  `enabled: false` and is silently overridden is the fabrication path — and it is the spec author's own
+  `perishable:` doctrine, stated in the sibling `declared_values` file. The off-spellings are now asserted as
+  *unreachable* (`test_every_off_spelling_of_the_flag_is_refused_at_load`), which is strictly stronger than
+  "loads and behaves the same".
+- **A hard-walled pair does not get an `identity_status`.** `test_the_pair_is_never_silently_dropped…`
+  demanded membership in `candidates`/`possible`. Refused: `probable` would draw a candidate `same-as`, i.e.
+  an accept-this-merge button for the costliest over-merge in an operator-scoped ORBAT; and `finalise`
+  structurally filters both tiers by `not in distinct`. The property was kept and the probe widened to every
+  analyst-facing channel **plus a new requirement that the refusal carry its grounds** — bare membership no
+  longer passes.
+- **An absent stage block leaves the co-location cap inert, and that is correct.** G6, and the
+  `declared_values` file defends it explicitly. The guard moved to the config surface, where
+  `test_neither_stage_block_declares_an_enablement_switch` already fails if a shipped block drops its
+  ceilings — asserted directly, so moving it cannot lose it.
+
+## Real implementation defects fixed (all on the escalate half)
+
+1. **The hard critical-attribute wall threw its reason away.** `critical_conflict_disposition` computes which
+   attributes credibly disagree and the *raise* branch kept them while the *wall* branch dropped them — so
+   the hardest refusal in the system reached the analyst as `view/pipeline`'s fallback string "explicit
+   do-not-merge (hard veto)". This is the rail that walls two same-named trading orgs stating China and
+   Pakistan. Now 25 of the 30 drawn do-not-merge edges carry a ground-naming reason (the other 5 are curated
+   /claim-asserted, which need none by design).
+2. **A source-asserted identity a wall overrode vanished.** Both `_coref_pairs` and `_identity_pairs` did
+   `if pair in veto: continue`. The verdict is right; the silence was not — no bind, no queue item, no gap,
+   both halves orphaned. Now routed to `identity_refusals` ⇒ one named Known Gap per endpoint, carrying the
+   document's licensing quote where it supplied one.
+3. **`_colocation_cap_reason` hard-coded `'probable'`.** An operator setting `colocation_ceiling: possible`
+   got a watch-list pair whose rationale said it was in the review queue — and the two bands produced the
+   identical reason. The ceiling is now threaded in, like its sibling `_name_cap_reason` always did.
+4. **`contrast_ceiling: possible` behaved exactly like `probable`.** The raise-wall channel was band-blind, so
+   the one rail on it whose ceiling is a config value could not honour it. `raise_ceilings` now carries the
+   declared band. Byte-unchanged on the shipped `probable`.
+5. **Two validated no-ops wired (P7).** `earned_identity.presence_types` granted its documented exemption
+   implicitly via *another* key's contents; now stated explicitly in `colocation_only`.
+   `layer_routing.presence_type` was one of FOUR declarations of the value `presence` and the only one with
+   no consumer — the copy an operator would edit was the copy that did not run. It is now the single source;
+   the three `node_type: presence` duplicates are removed from `config/ontology.yaml`.
+
+## Measured corpus impact — direction is UNDER-merge (the recoverable error)
+
+| surface | nodes | edges | events | gaps | claims |
+|---|---|---|---|---|---|
+| pre-change booted | 160 | 73 | 66 | 18 | 450 |
+| **booted, now** | **186** | **112** | **66** | **33** | **449** |
+| pre-change full scenario | 169 | 80 | 71 | 20 | — |
+| **full scenario, now** | **198** | **120** | **71** | **38** | — |
+
+More surviving nodes ⇒ fewer merges ⇒ under-merge. Events are **unchanged** on both surfaces (66 / 71), so
+nothing in the event lane moved. Gaps up 18→33 and 20→38 is the escalate half becoming visible. Digests
+`6bffe7df968a0ec97607b3716e4fa2a1` (booted) / `0bee71ad3de7a905e894961e219d3a2b` (full), identical across
+five separate processes including `PYTHONHASHSEED=random`. The golden fixture md5 is still
+`bb6f16a516c31eb0846494b62271a601` — untouched.
+
+## Honestly byte-inert on this corpus (principle #5), and why
+
+Defect (2)'s fix fires **zero** times on the real corpus: the booted evidence log contains **0
+`coref-same-as` claims**, and no source-asserted `same-as` collides with a hard veto. The mechanism is at
+full strength — the corpus-independent gate fixture produces exactly that collision and yields two named
+Known Gaps carrying the document's sentence verbatim. This is "inert because the data is sparse", not
+"hidden to protect a fixture". **It closes on the same DATA action as item 2 above** (a re-extraction that
+emits coreference annotations will start exercising it).
+
+## Residue reported, deliberately NOT changed (out of the DEFAULT-ON mandate)
+
+- `next_coverage_due` is populated on only **3 of 33** Known Gaps. The non-negotiable asks a refusal to name
+  what is missing *and when next coverage is due*; the first half holds everywhere (33/33), the second is
+  mostly empty. Needs a per-source collection-cadence model — a DATA/design question, not a fix to make from
+  a test failure.
+- `credibility.entailment_judge_enabled: false` is a default-off boolean, but it is an ASK feature and an
+  *additional* belt over always-on deterministic citation validation; ON by default would also break the
+  keyless boot (it needs a live client). Compliant, and scoped out by the specs by name.
+- `mypy` reports 5 errors in `view/basing.py` and `view/pipeline.py` — both files untouched by this pass, so
+  pre-existing. Every file this pass edited is ruff- and mypy-clean.

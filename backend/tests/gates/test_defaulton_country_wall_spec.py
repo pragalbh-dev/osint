@@ -41,6 +41,7 @@ import pytest
 
 from chanakya.schemas import pair_key
 from tests import _rk_coref as rc
+from tests import _rk_layer as rk
 
 #: One organisation name, stated identically on both sides — the whole of the evidence FOR identity.
 ORG = "Alpha Precision Machinery"
@@ -65,20 +66,59 @@ def _claims(country_a: str, country_b: str, *, attr: str = "origin_country",
     return out
 
 
-#: Every configuration a deployment can be in. "In every configuration" is the property's own words, so the
-#: axis is asserted rather than assumed — including the two that used to switch the wall off wholesale.
+#: Every configuration a deployment can REACH. "In every configuration" is the property's own words, so the
+#: axis is asserted rather than assumed.
 def _configs() -> dict[str, Any]:
-    base = rc.bundle(flag_on=False)                 # the shipped files, untouched by this test
-    shipped = rc.earned_identity_block()
+    base = rc.bundle()                              # the shipped files, untouched by this test
     return {
         "shipped": base,
-        "stage-pinned-off": rc.with_resolution(base, earned_identity={**shipped, "enabled": False}),
-        "stage-pinned-on": rc.with_resolution(base, earned_identity={**shipped, "enabled": True}),
         "stage-block-absent": rc.with_resolution(base, earned_identity=None),
     }
 
 
 CONFIG_IDS = sorted(_configs())
+
+#: The two spellings that try to PIN the stage, kept as data because they are still asserted below — as
+#: unreachable rather than as equivalent. See :func:`test_a_configuration_that_pins_the_stage_does_not_load`.
+PINNED_SPELLINGS: dict[str, Any] = {"stage-pinned-off": False, "stage-pinned-on": True}
+
+
+@pytest.mark.parametrize("spelling", sorted(PINNED_SPELLINGS))
+def test_a_configuration_that_pins_the_stage_does_not_load(spelling: str) -> None:
+    """RULING (integration, 2026-07-26). "In every configuration" now has two configurations, not four.
+
+    This file was authored with ``stage-pinned-off`` and ``stage-pinned-on`` in the axis, on the reading that
+    a deleted flag would be *ignored*. The implementation chose to REJECT it: ``earned_identity.enabled``
+    raises ``StageBlockError`` at construction, in both directions. The two hands disagreed, so the ruling is
+    recorded here rather than split.
+
+    **The implementation is right, and this assertion is strictly stronger than the one it replaces.** The
+    property is "there is no configuration in which the identity machinery is off". A config that loads and
+    quietly ignores ``enabled: false`` satisfies it only in the letter: the operator who wrote that line
+    believes identity is off, deploys, and is wrong — and being wrong about that is the entire fabrication
+    path. A config that *refuses to load* leaves nobody mistaken. Rejecting ``enabled: true`` as well is not
+    over-correction: a key that loads for one value and errors for the other is a switch with a broken half,
+    and the next operator will try the other half.
+
+    It is also the doctrine this spec's own author states, one file over — the ``perishable:`` precedent, in
+    ``test_defaulton_declared_values_spec``: "no migration shim outlives the stage that introduces it … a
+    config still carrying it must fail at load rather than quietly read as 'no time role declared'".
+
+    While the pinned spellings sat in the behavioural axis they contributed eight reds that never reached a
+    wall, a namespace or a partition — every one died inside ``ResolveConfig.from_bundle`` while its message
+    blamed the fusion path.
+    """
+    base = rc.bundle()
+    shipped = rc.earned_identity_block()
+    cfg = rc.with_resolution(
+        base, earned_identity={**shipped, "enabled": PINNED_SPELLINGS[spelling]}
+    )
+
+    assert rc.raises_loudly(lambda: rc.part_of(_claims("China", "Pakistan"), cfg)), (
+        f"a deployment declaring earned_identity.enabled={PINNED_SPELLINGS[spelling]!r} ({spelling}) LOADED. "
+        "A key with no consumer is worse than a missing one: an operator writes it, believes the stage is "
+        "pinned, and gets whatever the code does anyway. Either direction must fail at load, naming the key."
+    )
 
 
 def _surfaced(part: Any, a: str, b: str) -> dict[str, str]:
@@ -153,14 +193,58 @@ def test_the_pair_is_never_silently_dropped_instead_of_refused(config_id: str) -
     "Retained but never surfaced" is the failure mode the register names — a link that scores as a genuine
     would-be merge, is withheld, and then falls off every list. The resemblance is evidence *of something*
     (an alias, an error, a plant); dropping it destroys the finding along with the merge.
-    """
-    part = rc.part_of(_claims("China", "Pakistan"), _configs()[config_id])
 
-    assert rc.status(part, "org_cn", "org_pk") is not None, (
-        f"[{config_id}] the resolver never linked the two profiles at all — the refusal became a silent "
-        f"non-event (candidates={part.candidates}, possible={part.possible}). A cross-operator look-alike "
-        "is the single most useful thing to put in front of an analyst; it may not be the one thing the "
-        "system throws away."
+    **RULING (integration, 2026-07-26): the property stands; the probe moves off ``identity_status``.**
+    This was authored as ``identity_status(...) is not None``, i.e. the pair must appear in ``candidates`` or
+    ``possible``. On this pair the implementation cannot satisfy that, and should not:
+
+    * ``identity_status`` is defined as the label of an identity **link** — ``confirmed`` (merged),
+      ``probable`` (a drawn candidate ``same-as`` an analyst may accept), ``possible`` (the watch-list, "these
+      might be the same"). All three assert a *degree of belief that the two are one thing*. This pair has a
+      credible, stated, both-sides-attested contradiction; the honest statement is not a weak identity
+      hypothesis, it is a refusal.
+    * ``probable`` would draw a candidate ``same-as`` edge — an *accept-this-merge* affordance for the
+      costliest over-merge in an operator-scoped ORBAT. Handing an analyst a one-click button to commit the
+      exact fusion the wall exists to prevent is the fabrication direction, not the escalation direction.
+    * it is a designed invariant, not an oversight: ``finalise`` filters both tiers by
+      ``as_pair(p) not in distinct`` (``resolve/cluster.py``), so a walled pair is structurally excluded from
+      the identity bands. And ``identity_status`` is consumed downstream by Stage-3C link weighting and
+      Stage-4 coverage, which would then be reading a merge hypothesis about a walled pair.
+
+    So the probe asks what the docstring above actually argues — did the pair "fall off every list?" — over
+    every channel a human reads, and it is **stricter** than the original in the way that matters: the
+    original was satisfied by bare membership in a tier, with or without a reason. This requires the refusal
+    to be reachable AND to carry its grounds. Membership with no reason no longer passes.
+    """
+    config = _configs()[config_id]
+    claims = _claims("China", "Pakistan")
+    part = rc.part_of(claims, config)
+    key = pair_key(*sorted(("org_cn", "org_pk")))
+    gaps = [
+        g for g in (rk.build_view(config, claims).known_gaps or [])
+        if g.related_ref in ("org_cn", "org_pk", key)
+    ]
+    channels = {
+        "identity band": rc.status(part, "org_cn", "org_pk"),
+        "wall reason": part.wall_reasons.get(key),
+        "identity refusal": part.identity_refusals.get(key),
+        "candidate reason": part.candidate_reasons.get(key),
+        "known gap": "; ".join(sorted(g.id for g in gaps)) or None,
+    }
+    reached = {name: v for name, v in channels.items() if v}
+
+    assert reached, (
+        f"[{config_id}] the resolver refused the pair and told NO ONE — searched the identity bands, the "
+        f"wall-reason channel, the identity-refusal register, the candidate reasons and the Known Gaps "
+        f"(candidates={part.candidates}, possible={part.possible}). A cross-operator look-alike is the "
+        "single most useful thing to put in front of an analyst; it may not be the one thing the system "
+        "throws away."
+    )
+    grounded = {n: v for n, v in reached.items() if n != "identity band"}
+    assert grounded, (
+        f"[{config_id}] the pair appears in an identity band ({reached}) and nowhere that carries a REASON. "
+        "Membership without grounds is the quiet drop wearing a referral's clothes: the analyst gets a "
+        "number and never learns which question was withheld."
     )
 
 
@@ -212,7 +296,7 @@ def test_the_fixture_would_fuse_without_the_country_difference() -> None:
     Without this control, "they did not fuse" could pass because the pair never scored, never blocked
     together, or was dropped for some unrelated reason — and the whole file would be measuring nothing.
     """
-    part = rc.part_of(_claims("China", "China"), rc.bundle(flag_on=False))
+    part = rc.part_of(_claims("China", "China"), rc.bundle())
 
     assert rc.fused(part, "org_cn", "org_pk"), (
         "the control pair (same name, same country, coreference link) did NOT fuse, so every refusal in "

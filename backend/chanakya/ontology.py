@@ -39,6 +39,27 @@ _MATERIALIZES = "materializes"
 _REQUIRES_STATED = "requires_stated_endpoints"
 
 
+def presence_citizen(ontology: OntologyConfig, declared: object) -> str | None:
+    """The instance citizen a split/materialization mints — ``declared``, else ``layer_routing.presence_type``.
+
+    **One name for one dial.** ``layer_routing.presence_type`` documents itself as "the instance citizen the
+    build materializes … nothing here is a code literal (G6)", and it was parsed into a field that nothing
+    ever read: the citizen came from the ``node_type: presence`` written out again on each ``instance_split``
+    and ``materializes`` declaration. So the value existed in four places, the one an operator would edit was
+    the one with no consumer, and editing it changed nothing — the same "two names for one dial in two
+    places, and the copy a reader edits is the copy that does not run" defect the three band ceilings already
+    cost this project a stage to find.
+
+    Resolved in the reader's favour rather than deleted, because the shared value genuinely belongs in one
+    place: the per-declaration ``node_type`` is now an override for a type that needs a *different* citizen,
+    and omitting it — which every shipped declaration now does — reads the one declared default. Delete
+    ``presence_type`` from config and the splits stop declaring a citizen, which is what makes it a dial.
+    """
+    if isinstance(declared, str) and declared.strip():
+        return declared
+    return LayerRouting.from_ontology(ontology).presence_type or None
+
+
 @dataclass(frozen=True)
 class Materialization:
     """One edge's declared instance materialization (A4 / D-13.6 / spine/13 §5.3).
@@ -172,7 +193,7 @@ class EdgeLaneIndex:
             spec = getattr(e, _MATERIALIZES, None)
             if isinstance(spec, dict):
                 end = str(spec.get("end") or _FROM_END)
-                node_type = spec.get("node_type")
+                node_type = presence_citizen(ontology, spec.get("node_type"))
                 link = spec.get("link")
                 if end in (_FROM_END, _TO_END) and isinstance(node_type, str) and isinstance(link, str):
                     self._materializes[e.name] = Materialization(end=end, node_type=node_type, link=link)
@@ -466,10 +487,11 @@ class NodeTypeIndex:
                 self._layer[t.name] = t.layer
             per_attr = {a.name: a.layer for a in t.attrs if isinstance(a.layer, str)}
             if per_attr:
-                self._attr_layer[t.name] = dict(per_attr)  # type: ignore[arg-type]
+                self._attr_layer[t.name] = dict(per_attr)
             split = getattr(t, _INSTANCE_SPLIT, None)
             if isinstance(split, dict):
-                node_type, link = split.get("node_type"), split.get("link")
+                node_type = presence_citizen(ontology, split.get("node_type"))
+                link = split.get("link")
                 if isinstance(node_type, str) and isinstance(link, str):
                     self._splits[t.name] = Materialization(
                         end=_FROM_END, node_type=node_type, link=link

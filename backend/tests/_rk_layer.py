@@ -374,7 +374,7 @@ def layer_accessors() -> dict[str, Any]:
     return found
 
 
-# ── the staging flag is GONE ─────────────────────────────────────────────────────────────────────
+# ── the staging flag is GONE, and asking for it is an ERROR ──────────────────────────────────────
 #
 # ``FLAG_TOKENS`` / ``flag_candidates`` / ``enable_layer_routing`` / ``flag_report`` lived here to *discover*
 # the stage flags in the shipped config and switch them on for a behavioural test. There are no stage flags
@@ -382,6 +382,40 @@ def layer_accessors() -> dict[str, Any]:
 # the behavioural bundle and a fixture that "turns the stage on" would be turning on something that is not a
 # stage. The discovery harness is deleted rather than left returning an empty dict — a helper that always
 # finds nothing reads as a broken search, not as an absent feature.
+#
+# Deleting it is only half. Both fixture builders here take ``**credibility`` and ``CredibilityConfig`` is
+# ``extra="allow"``, so ``fixture_config(flag_on=False)`` did not fail when the parameter died — it filed a
+# field named ``flag_on`` onto the credibility config, where nothing reads it. The caller believed it had
+# pinned a stage; it had set a knob that does not exist, silently, and would have gone on believing it. That
+# is the harness form of the exact defect this whole change is about: a surface bound BY NAME-GUESSING, which
+# grades a stand-in while its failure text names the shipped code. So the retired names are refused
+# explicitly, by name, with what to do instead.
+
+#: Retired staging-flag keywords, with their replacement. Any fixture builder taking ``**credibility``
+#: must run :func:`reject_dead_stage_kwargs` before the extras reach the config.
+DEAD_STAGE_KWARGS = {
+    "flag_on": (
+        "the identity machinery is unconditional, so there is no stage for a fixture to pin — the shipped "
+        "bundle IS the live one. Drop the keyword. (It used to call enable_layer_routing; once the flag died "
+        "`**credibility` absorbed it into a credibility field nobody reads, so every caller silently got the "
+        "opposite of an explicit pin.)"
+    ),
+    "earned_identity_on": (
+        "the flag accessor is deleted; the shipped bundle is live. Vary a TUNABLE instead (a ceiling, a grade "
+        "floor, a predicate list) via _rk_coref.with_resolution(earned_identity={...})."
+    ),
+}
+
+
+class DeadStageKwarg(TypeError):
+    """A fixture builder was handed a staging-flag keyword that no longer binds to anything."""
+
+
+def reject_dead_stage_kwargs(where: str, kwargs: dict[str, Any]) -> None:
+    """Fail loudly for a retired staging-flag keyword, rather than filing it as a credibility extra."""
+    for dead, why in sorted(DEAD_STAGE_KWARGS.items()):
+        if dead in kwargs:
+            raise DeadStageKwarg(f"{where}({dead}=…) no longer binds to anything: {why}")
 
 # ── reading the layer off a materialized view element ───────────────────────────────────────────
 
@@ -450,7 +484,10 @@ def fixture_config(
 
     The basing-proposer knobs are copied verbatim from the shipped ``credibility.yaml`` rather than
     re-typed, so a fixture cannot pass or fail on a mis-guessed knob name.
+
+    Raises :class:`DeadStageKwarg` for a retired staging-flag keyword — see :data:`DEAD_STAGE_KWARGS`.
     """
+    reject_dead_stage_kwargs("fixture_config", credibility)
     shipped = shipped_bundle()
     proposer = getattr(shipped.credibility, "basing_proposer", None)
     cred: CredibilityConfig = cred_config(

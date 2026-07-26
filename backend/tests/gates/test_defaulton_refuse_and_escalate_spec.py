@@ -58,13 +58,26 @@ from tests import _rk_layer as rk
 def _live(**block: Any):
     """The shipped bundle with the identity stage LIVE — see the module docstring for why.
 
-    Today that means pinning the stage flag on; once the flag is deleted the same call is simply the shipped
-    default with the named tunables overridden, so this helper keeps working in both worlds and neither
-    reading changes what the assertions mean.
+    **The second world arrived.** This helper was authored to work in both: "once the flag is deleted the
+    same call is simply the shipped default with the named tunables overridden, so this helper keeps working
+    in both worlds and neither reading changes what the assertions mean." The flag is deleted, so that is
+    exactly what it now is — the shipped block plus ``block``, and nothing else.
+
+    Both halves of the old pin are gone, and each was actively lying about what it bound to:
+
+    * ``rc.bundle(flag_on=True)`` stopped calling ``enable_layer_routing`` when the flag died, and instead
+      filed a nonexistent ``flag_on`` field onto the credibility config (``extra="allow"``) where nothing
+      reads it. ``bundle()`` now refuses the keyword by name.
+    * ``"enabled": True`` is rejected at construction by ``validate_stage_block`` — rightly: a key that
+      loads for ``True`` and errors for ``False`` is a switch with a broken half, which invites the next
+      operator to try ``False``. While it sat here, all fifteen assertions in this file died inside
+      ``ResolveConfig.from_bundle`` and reported an escalation defect that had never been measured.
+
+    Not one assertion below changed.
     """
-    base = rc.bundle(flag_on=True, supersede_floor=dict(rk.SUPERSEDE_FLOOR))
+    base = rc.bundle(supersede_floor=dict(rk.SUPERSEDE_FLOOR))
     shipped = rc.earned_identity_block()
-    return rc.with_resolution(base, earned_identity={**shipped, "enabled": True, **block})
+    return rc.with_resolution(base, earned_identity={**shipped, **block})
 
 
 #: Gap text that marks a Known Gap as being about *this identity question* rather than about the element's

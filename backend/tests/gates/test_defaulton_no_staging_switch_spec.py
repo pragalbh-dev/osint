@@ -185,6 +185,52 @@ def _dotted(expr: ast.expr) -> str:
     return type(expr).__name__
 
 
+#: Method names that READ a key out of a mapping. A switch literal handed to one of these is consulted.
+_LOOKUP_METHODS = frozenset({"get", "pop", "setdefault", "getattr"})
+
+
+def _consulted_literals(tree: ast.AST) -> set[int]:
+    """``id()`` of every string-constant node the module actually **consults the value of**.
+
+    Shape (d) below flags a raw switch key literal. Appearing in the source is not the same as gating on it,
+    and the difference is not cosmetic — it is the difference between the defect and the fix. ``rconfig``
+    names ``"enabled"`` exactly once, as a KEY in the table that makes declaring it a load error:
+
+        _NO_SUCH_KNOB = {"enabled": ("the identity machinery is unconditional — there is no stage to
+        enable. A switch that can turn it off is the arrangement that shipped the fabrication path open")}
+
+    That is the strongest possible compliance with this gate's own property, and the scan reported it as a
+    surviving dual path — sending the next reader to delete the guard. So the rule is sharpened to the thing
+    the property is actually about: is the key's VALUE read?
+
+    Consulted ⇒ a hit: ``block.get("enabled")``, ``block["enabled"]``, ``"enabled" in block``,
+    ``key == "enabled"`` — every shape in which a value flows into a branch.
+    Declared ⇒ not a hit: a bare key in a dict literal. It cannot gate anything by itself; whatever later
+    reads it out is caught by one of the shapes above, and a default-off *field* is caught by surface 2.
+    """
+    out: set[int] = set()
+
+    def mark(expr: Any) -> None:
+        if isinstance(expr, ast.Constant) and isinstance(expr.value, str):
+            out.add(id(expr))
+
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Subscript):
+            mark(node.slice)
+        elif isinstance(node, ast.Compare):
+            mark(node.left)
+            for cmp in node.comparators:
+                mark(cmp)
+        elif isinstance(node, ast.Call):
+            name = node.func.attr if isinstance(node.func, ast.Attribute) else (
+                node.func.id if isinstance(node.func, ast.Name) else ""
+            )
+            if name in _LOOKUP_METHODS:
+                for arg in node.args:
+                    mark(arg)
+    return out
+
+
 def _stage_switch_reads() -> dict[str, list[str]]:
     """``what -> ["module.py:lineno", …]`` for every surviving stage-switch declaration, read or thread."""
     root = Path(rk.PKG_ROOT)
@@ -197,6 +243,7 @@ def _stage_switch_reads() -> dict[str, list[str]]:
         source = path.read_text(encoding="utf-8")
         tree = ast.parse(source)
         stage_module = RESOLUTION_BLOCK in source or ONTOLOGY_BLOCK in source
+        consulted = _consulted_literals(tree)
         for node in ast.walk(tree):
             # a) `<stage thing>.enabled`
             if isinstance(node, ast.Attribute):
@@ -220,10 +267,14 @@ def _stage_switch_reads() -> dict[str, list[str]]:
                 for arg in [*args.posonlyargs, *args.args, *args.kwonlyargs]:
                     if arg.arg in _SWITCH_PARAMS or arg.arg.lower() in _SWITCH_ATTRS:
                         note(f"param {node.name}({arg.arg}=…)", path, arg)
-            # d) the raw key literal, in a module that owns a stage block
+            # d) the raw key literal, in a module that owns a stage block — where its VALUE is consulted
             elif isinstance(node, ast.Constant) and isinstance(node.value, str):
-                if node.value in _SWITCH_KEY_LITERALS and (stage_module or node.value != "enabled"):
-                    note(f"key literal {node.value!r}", path, node)
+                if (
+                    node.value in _SWITCH_KEY_LITERALS
+                    and (stage_module or node.value != "enabled")
+                    and id(node) in consulted
+                ):
+                    note(f"key literal {node.value!r} consulted", path, node)
     return {k: sorted(v) for k, v in hits.items()}
 
 
@@ -239,6 +290,10 @@ def test_no_module_gates_identity_behaviour_on_a_stage_switch() -> None:
 
     Naming-tolerant, and it reports every hit with a file:line, so a rename is a readable failure rather
     than a silent pass.
+
+    Shape (d) asks whether the key's VALUE is consulted, not whether the string appears — see
+    :func:`_consulted_literals`, and :func:`test_the_key_literal_scan_still_catches_every_gate_shape` for
+    the non-vacuity proof that sharpening it did not open a hole.
     """
     hits = _stage_switch_reads()
 
@@ -249,6 +304,59 @@ def test_no_module_gates_identity_behaviour_on_a_stage_switch() -> None:
         "no migration shim, no compatibility mode — the machinery is unconditional. Where a mechanism "
         "genuinely needs a value, read the value (a ceiling, a predicate list, a grade floor); never a "
         "boolean that decides whether the mechanism runs at all."
+    )
+
+
+#: Every shape in which a module can gate on a switch key by name. Each MUST be caught by shape (d).
+_GATE_SHAPES = {
+    "mapping-get": 'if not block.get("enabled"):\n    return None\n',
+    "subscript": 'if not block["enabled"]:\n    return None\n',
+    "membership": 'if "enabled" not in block:\n    return None\n',
+    "comparison": 'if key == "enabled":\n    return None\n',
+    "pop-default": 'if not block.pop("enabled", False):\n    return None\n',
+}
+#: …and the one shape that must NOT be caught: naming the key in order to REFUSE it.
+_REFUSAL_SHAPE = '_NO_SUCH_KNOB = {"enabled": "there is no stage to enable"}\n'
+
+
+@pytest.mark.parametrize("shape", sorted(_GATE_SHAPES))
+def test_the_key_literal_scan_still_catches_every_gate_shape(shape: str) -> None:
+    """Non-vacuity for :func:`_consulted_literals`, which is the one place this file relaxed anything.
+
+    Shape (d) used to flag the bare string ``"enabled"`` anywhere in a stage module. That reported
+    ``rconfig``'s *rejection table* — the guard that makes declaring the flag a load error — as a surviving
+    dual path, i.e. it told the next reader to delete the fix. The scan now asks whether the value is read.
+
+    Relaxing a scan is exactly where a gate quietly stops gating, so the relaxation is pinned from both
+    sides: every way a module could actually consult the key is still caught (here), and the refusal shape is
+    still exempt (:func:`test_the_key_literal_scan_exempts_a_refusal_of_the_key`).
+    """
+    tree = ast.parse(_GATE_SHAPES[shape])
+    consulted = {
+        n.value for n in ast.walk(tree)
+        if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) in _consulted_literals(tree)
+    }
+
+    assert "enabled" in consulted, (
+        f"the sharpened key-literal scan no longer sees a switch consulted as {shape!r}:\n"
+        f"{_GATE_SHAPES[shape]}"
+        "That is a module gating identity behaviour on a stage switch and the gate would now pass over it. "
+        "Widen _consulted_literals — the exemption is for a key that is REFUSED, never for one that is read."
+    )
+
+
+def test_the_key_literal_scan_exempts_a_refusal_of_the_key() -> None:
+    """The other side of the same pin: naming a key in order to reject it is compliance, not a dual path."""
+    tree = ast.parse(_REFUSAL_SHAPE)
+    consulted = {
+        n.value for n in ast.walk(tree)
+        if isinstance(n, ast.Constant) and isinstance(n.value, str) and id(n) in _consulted_literals(tree)
+    }
+
+    assert "enabled" not in consulted, (
+        "the scan counts a bare dict KEY as a consulted switch. A key in a rejection table gates nothing — "
+        "flagging it makes the strongest form of compliance read as the defect, which is how a reader ends "
+        "up deleting the guard that closes the fabrication path."
     )
 
 
@@ -282,24 +390,78 @@ def _colocated_formations() -> list:
     ]
 
 
-def _with_block(**block: Any):
-    """The shipped bundle with the resolution stage block replaced wholesale (``None`` ⇒ block absent)."""
-    base = rc.bundle(flag_on=False)
+#: Sentinel for "replace the stage block with nothing at all". Needed because ``{}`` is falsy and the old
+#: ``{**shipped, **block} if block else None`` therefore mapped the ``shipped-as-is`` case — the one whose id
+#: promises "whatever config/ ships today" — onto the ABSENT block instead. That is the same truthiness bug
+#: the implementation just fixed one layer down in ``ceiling_withholds`` (where any non-empty ceiling
+#: withheld, so ``confirmed`` behaved like ``probable``), reproduced in the fixture that was meant to catch
+#: it: a value that does not mean what its label says. So absence is spelled, never inferred.
+ABSENT = "<absent>"
+
+
+def _with_block(block: Any = None):
+    """The shipped bundle with the resolution stage block overridden.
+
+    ``None`` ⇒ the shipped block untouched. A dict ⇒ the shipped block with those keys overridden (``{}`` is
+    therefore "shipped, as-is", which is what it always claimed to be). :data:`ABSENT` ⇒ no block at all.
+    """
+    base = rc.bundle()
     shipped = rc.earned_identity_block()
-    return rc.with_resolution(base, earned_identity=({**shipped, **block} if block else None))
+    if block is ABSENT:
+        return rc.with_resolution(base, earned_identity=None)
+    return rc.with_resolution(base, earned_identity={**shipped, **(block or {})})
 
 
-#: Every way a deployment can *try* to switch the stage off. All four must behave identically, because a
-#: mechanism that is on by default is on in all of them.
-OFF_SPELLINGS: dict[str, Any] = {
-    "shipped-as-is": {},                    # whatever config/ ships today
-    "enabled-false": {"enabled": False},
-    "enabled-zero": {"enabled": 0},
-    "enabled-null": {"enabled": None},
+#: Every way a deployment can *try* to switch the stage off, and what must happen. Two outcomes are
+#: acceptable and they are NOT interchangeable, so each spelling declares which one it is owed:
+#:
+#: * ``"reject"`` — the configuration does not load. Every ``enabled`` spelling is here. See
+#:   :func:`test_every_off_spelling_of_the_flag_is_refused_at_load` for the ruling.
+#: * ``"hold"`` — the configuration loads and the refusal holds anyway.
+OFF_SPELLINGS: dict[str, tuple[str, Any]] = {
+    "shipped-as-is": ("hold", {}),               # whatever config/ ships today
+    "block-absent": ("hold", ABSENT),            # the over-correction: no stage block at all
+    "enabled-false": ("reject", {"enabled": False}),
+    "enabled-zero": ("reject", {"enabled": 0}),
+    "enabled-null": ("reject", {"enabled": None}),
 }
 
+#: The spellings that must LOAD, i.e. the ones a behavioural assertion can be made about.
+HOLD_SPELLINGS = sorted(k for k, (kind, _) in OFF_SPELLINGS.items() if kind == "hold")
+REJECT_SPELLINGS = sorted(k for k, (kind, _) in OFF_SPELLINGS.items() if kind == "reject")
 
-@pytest.mark.parametrize("spelling", sorted(OFF_SPELLINGS))
+
+@pytest.mark.parametrize("spelling", REJECT_SPELLINGS)
+def test_every_off_spelling_of_the_flag_is_refused_at_load(spelling: str) -> None:
+    """RULING (integration, 2026-07-26). Declaring the dead flag is an ERROR, not a no-op.
+
+    This file was authored expecting all spellings to "behave identically" — on the reading that a deleted
+    flag would simply be *ignored*. The implementation chose to REJECT it: ``earned_identity.enabled`` raises
+    ``StageBlockError`` at construction, whatever it is set to. The two hands disagreed, so the ruling is
+    recorded rather than split, and the assertion is made **stronger**, not weaker.
+
+    Ignoring the key satisfies the property only in the letter. The operator who writes ``enabled: false``
+    believes identity is off; the system runs it anyway; and that gap between the config file and the running
+    system is the whole of the danger — the file is the system's own account of what it does. Refusing to load
+    leaves nobody mistaken. ``enabled: true`` is refused for the same reason: a key that loads for one value
+    and errors for the other is a switch with a broken half, and the next operator tries the other half.
+
+    It is also this author's own stated doctrine, quoted in the sibling ``declared_values`` file: a retired
+    key "must fail at load rather than quietly read as" the absent case.
+
+    So "no configuration switches it off" is now proved twice over — the off-spellings do not load
+    (**here**), and the spellings that DO load still refuse the merge (the two behavioural tests below).
+    """
+    _, block = OFF_SPELLINGS[spelling]
+
+    assert rc.raises_loudly(lambda: rc.part_of(_cross_country(), _with_block(block))), (
+        f"a deployment spelling the stage off as {spelling!r} LOADED cleanly. A key with no consumer is worse "
+        "than a missing one: it is the config file claiming a control the system does not have, and here the "
+        "control it claims is the one that opens the fabrication path. Fail at load, naming the key."
+    )
+
+
+@pytest.mark.parametrize("spelling", HOLD_SPELLINGS)
 def test_no_configuration_switches_the_cross_operator_wall_off(spelling: str) -> None:
     """The behavioural half, on the class that most damages an operator-scoped order of battle.
 
@@ -307,7 +469,7 @@ def test_no_configuration_switches_the_cross_operator_wall_off(spelling: str) ->
     config says. This refusal reads no list, no ceiling and no vocabulary; it is a property of the pair, so
     there is nothing for a configuration to legitimately turn off.
     """
-    cfg = _with_block(**OFF_SPELLINGS[spelling])
+    cfg = _with_block(OFF_SPELLINGS[spelling][1])
     part = rc.part_of(_cross_country(), cfg)
 
     assert not rc.fused(part, "org_cn", "org_pk"), (
@@ -325,7 +487,7 @@ def test_the_stage_block_being_absent_entirely_does_not_switch_it_off() -> None:
     compiled field is empty and every mechanism that consults one becomes a no-op. So the refusals that
     are properties of the PAIR (type, namespace) must hold with no stage config at all.
     """
-    part = rc.part_of(_cross_country(), _with_block())  # no kwargs ⇒ block replaced with None
+    part = rc.part_of(_cross_country(), _with_block(ABSENT))
 
     assert not rc.fused(part, "org_cn", "org_pk"), (
         "with the stage block absent entirely, the cross-operator pair fused. An absent block must not be "
@@ -334,15 +496,39 @@ def test_the_stage_block_being_absent_entirely_does_not_switch_it_off() -> None:
     )
 
 
-@pytest.mark.parametrize("spelling", ["enabled-false", "enabled-zero", "enabled-null", "shipped-as-is"])
+#: The co-location cap is asserted on the spellings where a ceiling VALUE exists to apply — see the ruling in
+#: :func:`test_no_configuration_switches_the_co_location_cap_off`. ``block-absent`` is covered instead by
+#: :func:`test_an_absent_stage_block_is_caught_at_the_config_surface_not_the_behavioural_one`.
+CEILING_HOLD_SPELLINGS = [s for s in HOLD_SPELLINGS if OFF_SPELLINGS[s][1] is not ABSENT]
+
+
+@pytest.mark.parametrize("spelling", CEILING_HOLD_SPELLINGS)
 def test_no_configuration_switches_the_co_location_cap_off(spelling: str) -> None:
     """The second behavioural probe, on the cap that is *anti-fabrication machinery* rather than hygiene.
 
     Fusing two co-located batteries makes their two sites one unit's before-and-after; the supersede path
     then draws a relocation nobody reported and pops the pair off the analyst's desk. The cap that stops
     that reads its ceiling from config — a value — but whether it runs may not be configurable.
+
+    **RULING (integration, 2026-07-26): the absent-block case belongs on the config surface, not here**, and
+    the two hands' own files decide it. This test's docstring already draws the line — the cap "reads its
+    ceiling from config — a value". With the block deleted there is no value, so there is nothing to apply:
+    the mechanism is at full strength with no input, which is the honest kind of inert. And the sibling
+    ``declared_values`` file states the convention explicitly and defends it: "'Absent ⇒ the mechanism is
+    simply off, with no code literal' is a standing convention across every dial in this system (gate G6) …
+    Demanding an error there would break a rule the whole config surface depends on."
+
+    Nothing is conceded by that: an absent block is not a deployment a config can reach quietly, because
+    ``test_neither_stage_block_declares_an_enablement_switch`` fails the moment the shipped block stops
+    declaring its ceilings. The guard moves surface; it does not disappear — asserted directly below.
+
+    The cross-operator wall is different, and is still asserted with no block at all, because it is a
+    property of the PAIR: it reads no ceiling, no list and no vocabulary, so there is nothing for an absent
+    config to legitimately take away. That distinction is this file's own ("the refusals that are properties
+    of the PAIR (type, namespace) must hold with no stage config at all"), and it is why the two behavioural
+    probes have different axes rather than one relaxed axis.
     """
-    cfg = _with_block(**OFF_SPELLINGS[spelling])
+    cfg = _with_block(OFF_SPELLINGS[spelling][1])
     part = rc.part_of(_colocated_formations(), cfg)
 
     assert not rc.fused(part, "unit_a", "unit_b"), (
@@ -350,6 +536,26 @@ def test_no_configuration_switches_the_co_location_cap_off(spelling: str) -> Non
         "and an operator — and nothing unit-level — were CONFIRMED as one unit. Every battery at a base "
         "shares exactly that evidence, so this is an order-of-battle undercount by construction, and it is "
         "the first link of the fabricated-relocation chain (D-13.14/G16)."
+    )
+
+
+def test_an_absent_stage_block_is_caught_at_the_config_surface_not_the_behavioural_one() -> None:
+    """The other half of the ruling above, so moving the guard cannot quietly lose it.
+
+    The co-location cap is inert with no ceiling declared. That is only acceptable while a *shipped* config
+    cannot arrive in that state unnoticed — so this asserts the config gate genuinely covers the case, by
+    running that gate's own rule against a block with the ceilings removed and requiring it to object.
+    """
+    stripped = {
+        k: v for k, v in _block("resolution.yaml", RESOLUTION_BLOCK).items()
+        if k not in ("name_ceiling", "colocation_ceiling", "contrast_ceiling")
+    }
+    missing = [k for k in REQUIRED_RESOLUTION_TUNABLES if k not in stripped]
+
+    assert missing, (
+        "the config gate's required-tunable list does not name the ceilings, so a shipped config could drop "
+        "them — and with them the co-location cap — while every gate in this file stayed green. The "
+        "behavioural axis excuses an absent ceiling ONLY because this surface refuses to ship one."
     )
 
 
