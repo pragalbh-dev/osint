@@ -13,6 +13,19 @@ it gets reviewed, and it lands only when the whole chain is done.
 > silent edit because the same drift is the thing to watch: this file describes work that may still be sitting
 > on a stage branch, and "described here" has never automatically meant "merged here".
 
+> ### ⚠ UPDATE (2026-07-26) — **IDENTITY IS NOW UNCONDITIONAL. THERE IS NO FLAG.**
+> `defaulton/rk-impl` merged into this branch (merge commit `5692ef3`, pushed). **The two staging switches are
+> DELETED from the tree, not defaulted to on**, and reintroducing either is now a *construction-time error*:
+> - `supersede_floor.require_earned_identity` — gone; `config/credibility.yaml` says "There is NO KNOB here".
+> - row-level `requires: earned_identity` and `earned_role:` — gone, registered as `_RETIRED_STAGE_KEYS` in
+>   `resolve/rconfig.py`; a row carrying either raises `StageBlockError` at construction.
+>
+> **Everything below that says "flag", "flag-off", "flag-on", or "ships off" is STALE for S3.** The
+> flag-off equivalence gates (`test_s2_flag_off_equivalence.py`, `test_s3_flag_off_equivalence.py`) were
+> **deleted** in that merge — there is no second behaviour to be equivalent to. §2's gotcha about editing the
+> `enabled:` key, and §3's closing "verify flag-off on both surfaces", no longer describe this system.
+> The measured baselines in §5 are also stale; the current ones are in §9.
+
 ---
 
 ## 1. Where the work stands
@@ -22,7 +35,8 @@ it gets reviewed, and it lands only when the whole chain is done.
 | **RK-SPIKE** (S0) | close the design opens; prototype characterize-and-cluster; build the claim-gold slice | **done** |
 | **RK-ATOMS** (S1) | claim atom as the stable address; dormant referent field; atom-aware dedup; A7 discriminator schema | **done** (integrated) |
 | **RK-LAYER** (S2) | layer typing; straddle split; presence/formation citizens; basing as a rebuild-derived edge | **done** (integrated, `0cfc069`) |
-| **RK-COREF** (S3) | coref-cluster minting; per-layer policy; the caps; the relationship + namespace walls | **done, merged 2026-07-25** — `s3/rk-impl` is in this branch; suite green, flag ships off |
+| **RK-COREF** (S3) | coref-cluster minting; per-layer policy; the caps; the relationship + namespace walls | **done, merged 2026-07-25** — `s3/rk-impl` is in this branch; suite green. ~~flag ships off~~ **the flag is now DELETED — see the 2026-07-26 update above** |
+| **DEFAULT-ON** | make identity unconditional (delete both staging switches + patch the loopholes); make an analyst's decision MUTATE graph state; close the coverage/gap/watch-list honesty holes | **done, merged 2026-07-26** — `defaulton/rk-impl` → `5692ef3`, pushed. Suite 1526p/7s/16x. See §9 |
 | **RK-BAKEOFF** | three-way extractor comparison | **not started** — next, see §4 |
 | **RK-DATA** | keyed re-record + corpus/oracle regen | **not started** — after the bake-off |
 | **RK-NAMECUT** (S4) | cut the name-key; re-anchor decisions to atoms | **not started** — after the re-record |
@@ -135,12 +149,16 @@ stays"* fallback **no longer applies**. Report a real comparison, not a default.
 | `artifacts/md/16-design-note-disclosures.md` | the honest-limitations list for the design note |
 | `DECISIONS.md` | ledger; the RK-SPIKE section is at the end |
 
-**Measured baselines** (keep these; they are the flag-off targets): golden md5
-`bb6f16a516c31eb0846494b62271a601` · **booted** view `160 nodes / 73 edges / 18 gaps / 450 claims`, hash
-`22d668a3…dac3a9` · **full-scenario** `169 / 80 / 71 events / 20 gaps`. The booted surface **deliberately
-withholds `d18_rahwali_pass1` + `d19_rahwali_confirm`** (ingested live for the demo) — and those are *exactly the
-flagship relocation pair*, so **a flag-off assertion on the booted surface is blind to the supersede path.** Use
-the full-scenario surface as the gate.
+**Measured baselines** — ~~keep these; they are the flag-off targets~~ **STALE, superseded by §9.** The old
+figures (golden md5 `bb6f16a516c31eb0846494b62271a601` · booted `160 nodes / 73 edges / 18 gaps / 450 claims`,
+hash `22d668a3…dac3a9` · full-scenario `169 / 80 / 71 events / 20 gaps`) predate S2/S3/DEFAULT-ON and **no
+longer describe this branch** — the booted view is now `183 / 111 / 27 gaps`. Struck rather than deleted so a
+reader who remembers the old numbers can see they were retired deliberately. **Use §9.**
+
+What is still true and still matters: the booted surface **deliberately withholds `d18_rahwali_pass1` +
+`d19_rahwali_confirm`** (ingested live for the demo) — and those are *exactly the flagship relocation pair*, so
+**the booted surface is blind to the supersede path.** Measured 2026-07-26: **zero** elements carry any
+supersede marker on *either* boot, so anything asserted about supersession today rests on fixtures alone.
 
 ---
 
@@ -231,3 +249,88 @@ independence is keyed on publisher rather than lineage).
    unless the A7 extraction extension is owned. C11 scopes it to S3; if it slips, the gate must **declare the arm
    fixture-only** and it goes in the disclosures.
 4. **The sub-oracle's twelve single-source confirms** — blocks the bake-off (§4).
+
+---
+
+## 9. DEFAULT-ON — merged 2026-07-26. What is true now, and what the user must regenerate
+
+**Merge commit `5692ef3`** (`defaulton/rk-impl` → this branch), pushed fast-forward `7030387..5692ef3`.
+Zero conflicts. Suite in this worktree: **1526 passed, 7 skipped, 16 xfailed** (baseline was 1518/7/13).
+
+### 9.1 The measured corpus, re-measured on this branch after the merge
+
+| | keyless boot | full corpus (`CHANAKYA_SEED_WITHHOLD=""`) |
+|---|---|---|
+| nodes / edges | **183 / 111** | **196 / 123** |
+| Known Gaps | **27** | **33** |
+| walls (`distinct-from`) | 34 | 38 |
+| `same-as` candidates | 14 | 14 |
+| gaps missing a `coverage_statement` | **0** | **0** |
+| duplicate (node, statement) gaps | **0** | **0** |
+| contradictory identity pairs (same-as *and* wall over one canonical pair) | **0** | **0** |
+| elements on the supersede path | **0** | **0** |
+
+Combined node+edge status histogram, keyless: `possible 77 · probable 148 · confirmed 11 · stale 3 ·
+insufficient 12 · None 43` — **identical before and after the merge.** The only graph-shape delta across the
+whole pass is Known Gaps 37 → 27, which is **de-duplication of presentation only** (one `(node, statement)`
+is one gap; collapsed ids ride the survivor as `also_raised_as`, so no finding was dropped).
+
+**Direction, for whoever reads a node count and worries:** this branch merges **less**, not more. More
+surviving nodes = fewer merges = **the recoverable error**. An over-merge fuses two co-located batteries and
+fabricates a relocation (§6's D1); an under-merge leaves a duplicate in the analyst's queue with its grounds
+attached. The real change here is on the **write** path, not the shape: 14 of 14 adjudications now land or
+are told why not, against 8 of 14 silently still drawn and 1 wholly inert before.
+
+### 9.2 What changed behaviourally
+
+- **The HITL rule is mechanised.** A human REJECT used to return `200` and leave `GET /view` byte-identical.
+  Three causes, all closed: the learned bar was keyed on *display* names (now **entity ids**); the analyst's
+  wall decorated `wall_grounds` but never joined **`veto`**, the hard+transitive channel; and a refused
+  instruction said nothing. `POST /hitl/merge` now returns an **`AdjudicationReceipt`** whose verdict is
+  derived by **reading the rebuilt view**, never from "did the write succeed", and an un-applied instruction
+  is stamped on the drawn edge so it survives a reload.
+- **The non-negotiable's second clause is met on the graph surface.** Every Known Gap now carries a derived
+  `coverage_statement` — a real date where the registry supports one (3 gaps), and otherwise an honest
+  statement of *which class could close it and why that class has no revisit interval*. **No cadence was
+  invented**: verified by re-booting with the clock moved 17 months forward and watching the 3 real dates not
+  move. Underneath it, a correctness fix: a slot **absent** from the slot→source-class map no longer inherits
+  "any class can close it", which had let an identity question inherit the satellite constellation's 7-day
+  revisit.
+- **A pair no mechanism withheld is no longer invisible** on `GET /coverage` (355/355, was 331/355).
+- **A missing discriminator is not permission to cross a wall** — a fragment proposed against both sides of a
+  hard wall says so and names the attribute it is silent on.
+
+### 9.3 Stated honestly — do not read the green suite as more than it is
+
+1. **`stale` tightening is a PARTIAL close, on two counts.** Conditioned on the confirmed *magnitude* but
+   **not** on `min_independent_groups` (the full bar flips the flagship relocation beat from history to open
+   question across 8 behavioural specs). And the compensating marker lives in `gate_vector`, which **reaches
+   no analyst surface at all** — it has exactly one consumer in the repo, a unit test. Pre-existing, and moot
+   here (0 elements on the supersede path), but named rather than papered over. Ledger item 7.
+2. **A machine cap can overrule an explicit human ACCEPT.** On the headline pair, `accept` returns
+   `applied=false`. This is the *safe* direction and is exactly what prevents the fabricated relocation, and
+   it is acknowledged with an accurate ground — but it inverts our own HITL rule, so **be ready to explain it
+   as deliberate rather than discover it live on the call.**
+3. **Fixture-green, corpus-inert:** `attrs.suppressed_candidate` fires on 0 of 34 walls; the supersede path
+   is untouched on both boots; the hero relocation beat stays **held** behind the unauthored `site_type`
+   alias map (§8 item 2). These pass tests and do nothing on the real data.
+4. **The SPA is unverified by any compiler.** `frontend/node_modules` is absent in these worktrees, so
+   neither `npm run typecheck` nor vitest ran against the DEFAULT-ON frontend changes.
+
+### 9.4 What the USER must regenerate or run (agents cannot / should not)
+
+1. **`npm ci && npm run typecheck` (+ vitest) in `frontend/` — before the demo.** The single untested claim
+   in the pass. Changes are additive and `typeof`-guarded, so risk is low, but nobody has compiled them.
+2. **The golden `expected_view.json` — 2 `xfail(strict)`.** It predates `coverage_statement` and
+   `also_raised_as` and differs by **exactly** those two fields (verified: strip them and the files are
+   equal). **Not regenerated by an agent** — regenerating a golden so it matches new code is how a
+   determinism gate stops being one. G2's real property is still enforced by its two siblings. Ledger item 5.
+3. **The supersede fixture in `tests/view/test_layer_instance_key.py` — 1 `xfail(strict)`.** Its "well
+   evidenced" retired basing carries `assertion_confidence` **0.0**; giving it real weight is a *data*
+   change. Ledger item 6.
+4. **Still outstanding from §8, unchanged:** the `site_type` alias mapping (DATA), the keyed re-record and
+   oracle re-freeze (needs recorded user approval), the sub-oracle's twelve single-source confirms.
+
+**Ledger:** `tmp/conv/DEFAULT-ON-calibration-ledger.md` (items 1, 2, 5, 6, 7 — **3 and 4 never existed**, see
+the numbering note there). **Decisions:** `DECISIONS.md`, final section. **Disclosures:**
+`artifacts/md/16-design-note-disclosures.md`, final section.

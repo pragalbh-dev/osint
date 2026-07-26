@@ -33,7 +33,8 @@ the section below + `DECISIONS.md`._
 | RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
 | RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | **merged** (design branch) | — | RK-SPIKE | 114a0f6 |
 | RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | **integrated** (#63) | — | RK-ATOMS | 0cfc069 |
-| RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | **merged** (#63, 2026-07-25) — behind `resolution.earned_identity.enabled`, shipping `false` | — | RK-LAYER | 68a129b |
+| RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | **merged** (#63, 2026-07-25) — ~~behind `resolution.earned_identity.enabled`, shipping `false`~~ **THE FLAG IS GONE — identity is unconditional, see DEFAULT-ON below** | — | RK-LAYER | 68a129b |
+| **DEFAULT-ON** | Make identity **unconditional** (delete both staging switches, patch the loopholes) + make an analyst's decision **mutate graph state** + close the gap/coverage/watch-list honesty holes | 3.5 | **merged** (#63, 2026-07-26) — suite 1526p/7s/16x; pushed `7030387..5692ef3` | — | RK-COREF | 5692ef3 |
 | RK-NAMECUT | S4 — cut the name-key + re-anchor decisions/config + golden regen | 4 | not-started | — | RK-COREF | — |
 | RK-MATERIALITY | Two-layer operator-scoped chokepoints | 4 | not-started | — | RK-COREF | — |
 | RK-DATA | Corpus / answer-key / golden regeneration + coverage additions | 2–4 | not-started | — | contract-freeze per stage | — |
@@ -705,3 +706,74 @@ cautious" — it is that **a guard needs the assertion of what must still work s
 test an implementer can see rewards caution. The data hand separately found the two structural gaps that
 reshaped the stage (no node type for a presence; `site_type` unusable as a key), and the test author found
 **three of its own tests passing for the wrong reason**.
+
+---
+
+## Handoff — DEFAULT-ON (identity unconditional), 2026-07-26
+
+**Merged into `design/resolution-redesign` as `5692ef3`; pushed fast-forward `7030387..5692ef3`, zero
+conflicts.** Full detail in `artifacts/plan/HANDOFF-REPLUMB.md` §9. Decisions in `DECISIONS.md` (final
+section). Calibration in `tmp/conv/DEFAULT-ON-calibration-ledger.md`.
+
+**Suite:** 1526 passed, 7 skipped, 16 xfailed (baseline 1518 / 7 / 13). Every xfail is `strict` with an
+inline reason and a ledger entry. **No corpus file, answer key or golden fixture was edited.**
+
+### 1. Decisions
+
+- **Identity is unconditional. The flags are DELETED, not defaulted.** `supersede_floor.require_earned_
+  identity` is gone (config now says "There is NO KNOB here"); the row markers `requires: earned_identity`
+  and `earned_role:` are gone and registered as `_RETIRED_STAGE_KEYS` — a row carrying either now raises
+  `StageBlockError` **at construction**. The stated ground: *a gate that closes a fabrication path is not a
+  policy dial*, and *a tolerated staging marker is a compatibility mode with a shorter name*. The flag-off
+  equivalence gates were deleted with them — there is no second behaviour left to be equivalent to.
+- **An analyst's override now mutates graph state.** The wall joins `veto` (hard + transitive), the learned
+  bar is keyed on **entity ids** rather than display names, and `POST /hitl/merge` returns a receipt whose
+  verdict is derived by **reading the rebuilt view**. Pinned by 11 corpus-driven gate tests in
+  `backend/tests/gates/test_the_analyst_decision_lands_spec.py`, each booting its own app (a decision log is
+  append-only; a test inheriting another's decisions measures the wrong graph).
+- **Rulings:** a missing discriminator is not permission to cross a wall · an assertion never established
+  cannot age into history · declared-empty ≠ absent in the slot→source-class map · "no cap fired" is not a
+  reason to be invisible · one `(node, statement)` is one Known Gap.
+
+### 2. Deviations / partial closes — stated, not silent
+
+- **`stale` tightening is partial on two counts.** Conditioned on the confirmed *magnitude*, not on
+  `min_independent_groups` (the full bar flips the flagship relocation beat across 8 behavioural specs). And
+  its compensating marker lives in `gate_vector`, which **reaches no analyst surface** — one consumer in the
+  whole repo, a unit test. Pre-existing and moot here (0 elements on the supersede path), but four strings
+  in the tree claimed otherwise and were **corrected at triage** (ledger item 7).
+- **A machine cap can overrule an explicit human ACCEPT** on the headline pair (`applied=false`). The safe
+  direction, and precisely what prevents the fabricated relocation — but an inversion of the HITL rule.
+  Explain it as deliberate; do not discover it live.
+
+### 3. Follow-ups the USER must run or regenerate
+
+1. **`npm ci && npm run typecheck` in `frontend/`** — `node_modules` is absent in these worktrees, so the
+   SPA changes are the one untested claim in the pass.
+2. **`expected_view.json`** (2 xfail) — differs from the rebuilt view by exactly `coverage_statement` and
+   `also_raised_as`. Deliberately **not** regenerated by an agent.
+3. **The zero-credibility supersede fixture** (1 xfail) — giving it evidential weight is a data change.
+4. Unchanged from before: the `site_type` alias map (DATA), the keyed re-record + oracle re-freeze (needs
+   recorded user approval), the sub-oracle's twelve single-source confirms (blocks RK-BAKEOFF).
+
+### 4. Measured corpus (re-measured on this branch, post-merge)
+
+Keyless **183 nodes / 111 edges / 27 gaps / 34 walls / 14 candidates**; full corpus **196 / 123 / 33 / 38 /
+14**. Zero gaps lack a coverage statement, zero duplicate `(node, statement)` gaps, zero contradictory
+identity pairs, zero elements on the supersede path — **on both boots**. Status histogram **identical**
+before and after the merge. The only shape delta in the whole pass is gaps 37 → 27, de-duplication of
+presentation only (`also_raised_as` preserves the collapsed ids).
+
+**Direction:** this branch merges **less**, not more — more surviving nodes = fewer merges = the
+**recoverable** error. The real change is on the write path: 14/14 adjudications now land or are told why
+not, against 8/14 silently still drawn and 1 wholly inert before.
+
+### 5. How the three-hands separation was evidenced
+
+Implementer, verifier and final triage were separate hands. The verifier reconstructed the "before" state by
+`git archive` of the merge base into a scratchpad (**never** a checkout) and re-measured every claimed
+before/after itself, rather than trusting the report — which is how it caught that the implementer's stated
+compensation for the `stale` partial close was **false as written**. Triage then confirmed that
+independently with a repo-wide search before correcting the four strings. Two claims in this pass were
+measurably wrong when first written; both were caught by a hand that refused to take the previous hand's
+word.
