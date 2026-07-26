@@ -80,6 +80,7 @@ export function mergeCardDataFromItem(item: LiveReviewItem): MergeCardData {
       ? 'Only the cited row is a source’s assertion — the rest the resolver computed from the two records.'
       : 'Every row here the resolver computed from the two records; no source asserts the identity.',
     differsOn,
+    whyOpen: m?.reason ?? undefined,
     ifYou: m?.consequence ?? [],
     unknowns: m?.unknowns ?? [],
     options: item.options.map((o) => ({ key: o.key, label: o.label })),

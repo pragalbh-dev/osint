@@ -27,6 +27,7 @@ from .rconfig import (
     ATTRIBUTE,
     BAND_POSSIBLE,
     BAND_PROBABLE,
+    CEILINGS_THAT_MUST_ESCALATE,
     DISCRIMINATOR,
     NAME,
     RELATIONAL,
@@ -747,8 +748,14 @@ def resolve_entities(
 
     def fusion_blocked(
         a: str, b: str, bd: dict[str, float], trigger: str | None, *, would_fuse: bool
-    ) -> tuple[str, str] | None:
-        """The ONE fusion precondition both phases consult — ``(ceiling, reason)`` or ``None`` (R3.1).
+    ) -> tuple[str, str, str] | None:
+        """The ONE fusion precondition both phases consult — ``(ceiling, reason, rail)`` or ``None`` (R3.1).
+
+        ``rail`` names WHICH cap fired, so the caller can ask the declared
+        :data:`~chanakya.resolve.rconfig.CEILINGS_THAT_MUST_ESCALATE` whether this ground still owes the
+        analyst a record when the ceiling takes the pair off the queue. Threaded as data rather than sniffed
+        out of the reason prose: a rail's identity is a fact about which branch ran, and recovering it by
+        substring-matching its own rationale is how the two come to disagree.
 
         A hard precondition on the fusion path, never a positive whitelist of triggers: D-13.9 specifies a
         **graded** path constrained by guards, and converting a negative cap into a whitelist changes the
@@ -774,19 +781,19 @@ def resolve_entities(
             ceiling, reason, what_missing = incompatible
             if would_fuse:
                 res.identity_refusals[pair_key(a, b)] = what_missing
-            return ceiling, reason
+            return ceiling, reason, "cross_identity"
         if (
             ceiling_withholds(earned.name_ceiling)
             and trigger not in EARNED_TRIGGERS
             and _name_alone(bd)
         ):
-            return earned.name_ceiling, _name_cap_reason(trigger, earned.name_ceiling)
+            return earned.name_ceiling, _name_cap_reason(trigger, earned.name_ceiling), "name_ceiling"
         if ceiling_withholds(earned.colocation_ceiling):
             shared = colocation_only(a, b, bd)
             if shared is not None:
                 return earned.colocation_ceiling, _colocation_cap_reason(
                     shared, earned.formation_discriminators, earned.colocation_ceiling
-                )
+                ), "colocation_ceiling"
         return None
 
     def has_durable_trigger(a: str, b: str) -> bool:
@@ -840,20 +847,31 @@ def resolve_entities(
     # new machinery). Ceiling ``possible`` pairs are recorded separately: those have not earned attention.
     capped_probable: dict[Pair, str] = {}
     capped_possible: dict[Pair, str] = {}
+    # …and, of the ceiling-``possible`` caps, the ones whose RAIL is declared as still owing the analyst a
+    # record (``CEILINGS_THAT_MUST_ESCALATE``). Withholding the queue place is triage; withholding the record
+    # too would make the refusal indistinguishable from a pair that never resembled anything. Rendered as a
+    # per-endpoint Known Gap via ``Partition.withheld_escalations``, NOT as a queue item — the ceiling's own
+    # instruction is honoured and the escalate half of the non-negotiable still lands. Empty on the shipped
+    # config, where every escalating rail's ceiling is ``probable`` and keeps its queue place outright.
+    capped_escalate: dict[Pair, str] = {}
 
-    def record_cap(pair: Pair, ceiling: str, reason: str) -> None:
+    def record_cap(pair: Pair, ceiling: str, reason: str, rail: str) -> None:
         if ceiling == BAND_POSSIBLE:
             capped_possible[pair] = reason
             capped_probable.pop(pair, None)
+            if rail in CEILINGS_THAT_MUST_ESCALATE:
+                capped_escalate[pair] = reason
         else:
             capped_probable[pair] = reason
             capped_possible.pop(pair, None)
+            capped_escalate.pop(pair, None)
 
     def clear_cap(pair: Pair) -> None:
         """A pair that EARNED its way out of a cap is no longer capped — re-decided every pass, like the
         perishable cap, because the relational term is partition-dependent and a cap must never be pinned."""
         capped_probable.pop(pair, None)
         capped_possible.pop(pair, None)
+        capped_escalate.pop(pair, None)
 
     # ── Phase 1: high-precision bootstrap (no relational term) ────────────────────────────────
     for a, b in pairs:
@@ -1064,6 +1082,25 @@ def resolve_entities(
             res.merge_breakdown[pair_key(a, b)] = bd
             if reason:
                 res.candidate_reasons[pair_key(a, b)] = reason
+            # …and where the rail that capped it is declared as still owing an escalation, the pair leaves
+            # the queue but NOT the analyst's sight: each endpoint gets a named Known Gap carrying the cap's
+            # own words (which already name the ground and the band actually applied). ``setdefault`` so a
+            # more specific refusal recorded elsewhere is never overwritten.
+            if pair in capped_escalate:
+                res.withheld_escalations.setdefault(
+                    pair_key(a, b),
+                    # BOTH mentions are named. The gap hangs off one node but the thing that is unsettled is
+                    # the PAIR, and "this may be the same as something else" is not a finding an analyst can
+                    # act on. Ids rather than names on purpose: the pairs this rail catches routinely carry
+                    # the SAME descriptor on both sides (that is why they are ambiguous), so the name is
+                    # exactly the field that cannot tell them apart.
+                    f"the identity of '{a}' and '{b}' is UNSETTLED: the score reads them as one entity and "
+                    "a cap refused the fusion, while the configured band also withheld the pair from the "
+                    "review queue — so this record is the escalation rather than a queue item. The merge is "
+                    "refused (correctly). What is missing is a discriminator that would settle it either "
+                    "way; until one is stated, treat these as two separate records and read no relocation "
+                    f"between their sites. The cap's own grounds: {capped_escalate[pair]}",
+                )
 
     # Always surface a configured/​learned distinct-from between two instantiated entities as an edge —
     # the trap is visible even when the pair never became a scored candidate (different blocks).
@@ -1087,14 +1124,29 @@ def learned_distinct_eid_pairs(
         norm_to_eids.setdefault(normalize(ent.name, trans), []).append(eid)
     out: set[tuple[str, str]] = set()
     for barred in alias_idx.distinct:
-        names = sorted(barred)
-        if len(names) != len({*names}):  # a self-pair — ignore
+        # ``barred`` is a frozenset, so it is ALREADY de-duplicated: the old guard compared ``len(names)``
+        # against ``len(set(names))`` and could therefore never fire, and a same-name rejection (a
+        # one-element set) fell straight through to this two-target unpack and raised ValueError — turning
+        # the analyst's reject button into a 500 on exactly the pair type this system exists to keep apart.
+        # Same-name rejections are carried by ``distinct_eids`` below, so a short entry is skipped here.
+        try:
+            na, nb = sorted(barred)
+        except ValueError:
             continue
-        na, nb = names
         for a in norm_to_eids.get(na, []):
             for b in norm_to_eids.get(nb, []):
                 if a != b:
                     out.add(tuple(sorted((a, b))))  # type: ignore[arg-type]
+    # The same-name rejections, which are keyed on entity ids because no name pair can express them.
+    # Restricted to instantiated entities for the same reason the config veto is: there is nothing to hold
+    # apart if one side is not in the graph.
+    for barred_eids in alias_idx.distinct_eids:
+        try:
+            a, b = sorted(barred_eids)
+        except ValueError:
+            continue
+        if a in graph.entities and b in graph.entities:
+            out.add((a, b))
     return out
 
 

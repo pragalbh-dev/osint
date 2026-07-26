@@ -1952,10 +1952,15 @@ def _to_partition(
     # sentence underneath it, so an analyst adjudicating the pair can read the source rather than trust a
     # number. Only for pairs an analyst will actually see (candidates + accepted merges), and only for the
     # pairs a source really spoke about — a pair with no identity claim gets no key, not an empty promise.
+    # ``licensing_claim_ids``, not ``identity_claim_ids``: this list is the drawer's contents, and a raised
+    # coreference is a source speaking to the pair even though it does not feed ``source_asserted``. With the
+    # narrower set, a raise-only NAME_VARIANT proposal — whose entire product IS the referral — reached the
+    # analyst with an empty drawer, so the one-click-to-source non-negotiable failed on the single card where
+    # the sentence is the whole case. The score itself still rides ``merge_breakdown`` and is untouched.
     identity_claims: dict[str, list[str]] = {}
     if graph is not None:
         for a, b in sorted({as_pair(p) for p in [*result.candidates, *result.same_as]}):
-            cids = scoring.identity_claim_ids(graph, a, b)
+            cids = scoring.licensing_claim_ids(graph, a, b)
             if cids:
                 identity_claims[pair_key(a, b)] = cids
 

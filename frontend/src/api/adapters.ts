@@ -119,6 +119,23 @@ export function supersedeHoldReasons(edge: EdgeView | null | undefined): string[
   return []
 }
 
+/** `attrs.reason` off an identity edge — WHY the resolver refused (or only proposed) this merge.
+ *  Returned VERBATIM, for the same reason `supersedeHoldReasons` is: this is the resolver's own
+ *  computed ground, and a UI paraphrase would put our words between the analyst and the rail that
+ *  actually fired.
+ *
+ *  Two different edges carry it and both matter. On a candidate `same-as` it is the basis on which
+ *  the pair became a question at all; on a `distinct-from` it is the ground the wall rests on — and
+ *  a derived wall's ground ("these geocode to two gazetteer anchors declared distinct") is precisely
+ *  the inference the analyst is in the loop to check. The merge card previously showed only
+ *  `merge_confidence` plus the signal breakdown, which says how STRONG the resemblance is and never
+ *  why the system would not act on it. Those are different questions and only the second one carries
+ *  an instruction. */
+export function identityReason(edge: EdgeView | null | undefined): string | null {
+  const raw = edge?.attrs?.reason
+  return typeof raw === 'string' && raw.length > 0 ? raw : null
+}
+
 /** 'pending' | 'promoted' | 'held' | null — the supersession gate an edge sits behind. */
 export function supersedeGate(edge: EdgeView | null | undefined): string | null {
   const gate = edge?.attrs?.supersede_gate
@@ -1210,6 +1227,12 @@ export interface MergeDiffRow {
  *  telling us in its own words what it could not find. Both are computed; nothing is authored. */
 export interface LiveMergeEvidence {
   confidence: number | null
+  /** The resolver's own stated ground for leaving this an open question rather than merging it —
+   *  `attrs.reason` on the candidate edge, verbatim. Distinct from `matchedOn`/`differsOn`, which
+   *  argue how strong the resemblance is: this says which rail withheld the fusion and what would
+   *  settle it, i.e. it is the only part of the card that carries an instruction. `null` when the
+   *  resolver recorded none — never a stand-in sentence. */
+  reason: string | null
   matchedOn: MergeSignalRow[]
   differsOn: string[]
   /** T10 — the same lines as `differsOn`, each carrying its provenance (see MergeDiffRow).
@@ -1557,7 +1580,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
         left: { id: edge.source, label: left.label },
         right: { id: edge.target, label: right.label },
         dots,
-        merge: { confidence: edge.merge_confidence ?? null, matchedOn, differsOn, differs, consequence, unknowns, left, right },
+        merge: { confidence: edge.merge_confidence ?? null, reason: identityReason(edge), matchedOn, differsOn, differs, consequence, unknowns, left, right },
       },
     })
   }

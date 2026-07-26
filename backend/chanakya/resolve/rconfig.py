@@ -199,13 +199,28 @@ _EARNED_IDENTITY = "earned_identity"
 #: The three band-ceiling keys, named once so the reader, the validator and the tests agree.
 _CEILING_KEYS = ("name_ceiling", "colocation_ceiling", "contrast_ceiling")
 #: Ceilings whose withheld pair must still ESCALATE even when the declared band takes it off the queue. The
-#: distinction is whose evidence is being set aside: the name cap withholds attention from a string
-#: coincidence the resolver itself noticed, which has genuinely earned none; the contrast ceiling withholds a
-#: pair a SOURCE explicitly distinguished while the score says they are one thing — an extraction error or a
-#: deception, and always a finding. ``possible`` stays a legal, honoured value for it (an operator's declared
-#: triage choice), and the pair is escalated as a named Known Gap on each endpoint instead of a queue item, so
-#: refusing the fusion never costs the escalation. Read by ``resolve._contrast_ceilings``' caller.
-CEILINGS_THAT_MUST_ESCALATE = frozenset({"contrast_ceiling"})
+#: distinction is whose evidence is being set aside, and it is a judgement about the COST of silence rather
+#: than about the strength of the signal:
+#:
+#: * ``name_ceiling`` is OUT. It withholds attention from a string coincidence the resolver itself noticed,
+#:   which has genuinely earned none. Measured on the shipped corpus: 331 of the 355 retained watch-list pairs
+#:   are name-capped and every one of them renders the SAME sentence, so escalating them would put ~660
+#:   identically-worded Known Gaps onto 183 nodes. That is not an escalation, it is the "a reason on every
+#:   pair is as useless as a reason on none" failure — it would bury the 14 findings that are real.
+#: * ``contrast_ceiling`` is IN: a SOURCE explicitly distinguished a pair the score reads as one thing — an
+#:   extraction error or a deception, and always a finding.
+#: * ``colocation_ceiling`` is IN, and for a stronger reason than the contrast rail. Two formations agreeing
+#:   on nothing but where they are standing is the costliest over-merge this system has: fusing them makes
+#:   their two sites one unit's before-and-after, so the supersede path DRAWS a relocation nobody reported,
+#:   pops the pair out of the queue as machine-adjudicated, and deletes the honest Known Gap. Withholding the
+#:   queue place is a defensible triage choice; withholding the RECORD as well would leave the highest-blast-
+#:   radius pair in the system invisible. Measured cost of including it on the shipped corpus: zero pairs (the
+#:   shipped ``colocation_ceiling: probable`` keeps the queue place, so nothing is re-routed).
+#:
+#: ``possible`` stays a legal, honoured value for every one of them (an operator's declared triage choice),
+#: and an escalating pair is rendered as a named Known Gap on each endpoint instead of a queue item, so
+#: refusing the fusion never costs the escalation.
+CEILINGS_THAT_MUST_ESCALATE = frozenset({"contrast_ceiling", "colocation_ceiling"})
 
 
 @dataclass(frozen=True)

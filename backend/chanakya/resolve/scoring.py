@@ -796,6 +796,33 @@ def identity_claim_ids(graph: EntityGraph, a: str, b: str) -> list[str]:
     return out
 
 
+def licensing_claim_ids(graph: EntityGraph, a: str, b: str) -> list[str]:
+    """Every claim in which a source spoke to a≡b — identity assertions **and** coreference.
+
+    The CITATION channel, as distinct from the score-mirroring :func:`identity_claim_ids` above. They are
+    deliberately different sets, because they answer different questions:
+
+    * ``identity_claim_ids`` mirrors ``source_asserted`` exactly, so the signal bar and its evidence handle
+      can never disagree about what that number counted. Coreference is rightly excluded there — it feeds a
+      different lane, and citing it under ``source_asserted`` would make the number over-claim.
+    * this one answers "how do you know that?" about the PROPOSAL. A raise-only ``NAME_VARIANT`` coreference
+      can never fuse, so the referral is its entire product — and the document's own sentence is the only
+      thing that lets an analyst judge the proposal, or judge whether the REFUSAL was right, in one read.
+      Excluding it left the drawer on exactly those proposals citing nothing, so the analyst was asked to
+      trust the resolver's paraphrase of the evidence for the resolver's own proposal.
+
+    Nothing is over-claimed by the wider set: it is rendered onto the candidate edge's ``claim_ids``, served
+    by ``GET /evidence/{edge_id}`` — a provenance list, not a score. Replay order, de-duplicated (gate G2).
+    """
+    out = identity_claim_ids(graph, a, b)
+    for e in graph.edges:
+        if e.predicate != COREF_PREDICATE or e.claim_id is None:
+            continue
+        if {e.subject, e.object} == {a, b} and e.claim_id not in out:
+            out.append(e.claim_id)
+    return out
+
+
 def _relational_counts(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """May the shared-neighbourhood term contribute for this pair? (Both types must allow it.)"""
     ntx = cfg.node_types

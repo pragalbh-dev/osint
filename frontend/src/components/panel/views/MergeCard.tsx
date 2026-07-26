@@ -69,6 +69,12 @@ export interface MergeCardData {
   /** T10 — a quiet footnote under "Matched on" saying which rows are somebody's assertion and which
    *  are the resolver's own computation. Live only; omitted ⇒ nothing renders. */
   matchedNote?: string
+  /** The resolver's own stated ground for withholding the fusion (`attrs.reason`, verbatim). Rendered
+   *  above the two cases because it is the only line on the card that says what to DO — "adjudicate two
+   *  stated countries", "add a normalisation row", "look for a unit-level discriminator" are different
+   *  next actions, and a confidence number collapses all of them. Omitted ⇒ nothing renders; we never
+   *  substitute a generic sentence for a ground the resolver did not record. */
+  whyOpen?: string
   differsOn: readonly MergeCardDiff[]
   /** what the merge demonstrably does — counted, never estimated */
   ifYou: readonly string[]
@@ -240,6 +246,15 @@ export function MergeCardView({
           <div className="mt-[7px] text-[10.5px] leading-[1.45] text-text-faint">{data.matchedNote}</div>
         )}
       </div>
+
+      {data.whyOpen && (
+        <div className="mb-[14px] rounded border border-line bg-[var(--fill-subtle)] px-[14px] py-[13px]">
+          <div className="mb-2 text-[10.5px] tracking-[0.06em] text-text-faint">
+            Why this is still a question
+          </div>
+          <div className="text-[13px] leading-[1.55] text-text">{data.whyOpen}</div>
+        </div>
+      )}
 
       <div className="rounded border-[1.5px] border-problem bg-[var(--fill-problem)] px-[14px] py-[13px]">
         <div className="mb-2 text-[10.5px] tracking-[0.06em] text-problem">Differs on</div>

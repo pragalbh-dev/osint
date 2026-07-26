@@ -22,6 +22,15 @@ class AliasIndex:
     def __init__(self, require_distinct_forms: bool = True) -> None:
         self._class_of: dict[str, str] = {}  # normalised name → class root (a normalised name)
         self.distinct: set[frozenset[str]] = set()  # learned do-not-merge {normA, normB}
+        # …and the same learned do-not-merge for the pairs the NAME-keyed set above cannot express.
+        # When an analyst rejects two mentions whose names normalise to ONE string, ``{normA, normB}``
+        # collapses to a one-element frozenset: it names a single string, so it can neither identify which
+        # two records were separated nor be read back as a pair. That is precisely the highest-stakes
+        # rejection in this system — two batteries carrying the same descriptor in one cantonment — and it
+        # is the one the name table is structurally blind to. Keyed on ENTITY IDS, the only key that tells
+        # the two mentions apart. Populated only for the same-name case; a different-name rejection stays
+        # name-keyed so it keeps generalising to future mentions of those names.
+        self.distinct_eids: set[frozenset[str]] = set()  # learned do-not-merge {eidA, eidB}
         # G19 (RK-COREF/S3): require the two forms to be genuinely DIFFERENT, i.e. a real alias link.
         # See :meth:`equivalent` — this is the fix for a hole the docstring already promised was closed.
         self._require_distinct_forms = require_distinct_forms
@@ -125,8 +134,47 @@ def build(
         if verdict == "accept":
             idx.link(a, b)
         elif verdict == "bar":
-            idx.distinct.add(frozenset((a, b)))
+            if a != b:
+                idx.distinct.add(frozenset((a, b)))
+            else:
+                # Two mentions that normalise to ONE name. A name-keyed bar cannot say which two records
+                # the analyst separated (and ``{a, a}`` is a one-element set that later unpacks to nothing),
+                # so the decision is recorded against the entity ids instead. Dropping it here is not an
+                # option: this is a human's explicit refusal, and losing it would leave the pair free to
+                # fuse on the next rebuild — the exact over-merge the analyst just declined.
+                eids = _adjudication_eids(d)
+                if eids is not None:
+                    idx.distinct_eids.add(frozenset(eids))
     return idx
+
+
+def _adjudication_eids(d: DecisionRecord) -> tuple[str, str] | None:
+    """The ENTITY-ID pair a merge adjudication concerns, or ``None`` if the record carries only names.
+
+    The mirror of :func:`_effect_pair`'s name-first read: here the ids are what is wanted, so ``pair`` /
+    ``same_as`` / ``members`` are consulted and ``names`` deliberately is not. Used only for a same-name
+    rejection, where the ids are the sole way to distinguish the two records.
+    """
+    eff = d.effects if isinstance(d.effects, dict) else {}
+    for key in ("record_distinct", "split_merge"):
+        payload = eff.get(key)
+        if not isinstance(payload, dict):
+            continue
+        for field in ("pair", "same_as", "members"):
+            val = payload.get(field)
+            if not isinstance(val, (list, tuple)):
+                continue
+            try:  # arity by unpacking, as :func:`_effect_pair` does — no literal (gate G6)
+                x, y = val
+            except ValueError:
+                continue
+            if isinstance(x, str) and isinstance(y, str) and x and y and x != y:
+                return x, y
+    # legacy / direct-construction shape — the pair states ids where no ``effects`` were recorded.
+    pair = _pair(d)
+    if pair is not None and pair[0] != pair[1]:
+        return pair
+    return None
 
 
 def _adjudication(d: DecisionRecord) -> tuple[str, tuple[str, str]] | None:
