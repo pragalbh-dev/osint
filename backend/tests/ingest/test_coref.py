@@ -61,48 +61,39 @@ def _offline_geocoder(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture(scope="module")
 def config() -> ConfigBundle:
-    """The real deployment config this process is pointed at.
+    """The real deployment config this process is pointed at — the shipped one, on which the pass is LIVE.
 
-    Normally that is the shipped one, on which the pass is dormant. It is **not** assumed to be: the suite
-    can be run against a shadow deployment with the S3 stage flag forced on (``--earned-identity=on``),
-    which is how flag-ON is measured without editing the tree. So a beat that needs the pass *off* pins it
-    off with :func:`_disabled` rather than leaning on ambient config, and the separate statement "the repo
-    ships it off" is asserted where it belongs — against the file itself, in
-    :func:`test_the_shipped_config_ships_the_stage_flag_off`.
+    A beat that needs the pass off pins it off with :func:`_disabled` rather than leaning on ambient config:
+    the producer block ships declared, so ambient dormancy is not a thing to inherit any more.
     """
     return ConfigStore.seed_from(settings.config_dir()).snapshot()
 
 
 def _enabled(config: ConfigBundle, **knobs: Any) -> ConfigBundle:
-    """The same config with the pass switched on — **both** switches, in one motion.
+    """The same config with the pass's own knobs set — ONE switch, which is the producer block itself.
 
-    Since RK-COREF (S3) the producer block in ``config/credibility.yaml`` is declared and populated, and the
-    pass is gated on the stage flag ``resolution.earned_identity.enabled`` instead. That is deliberate: it
-    keeps the flag boundary in one place (so a flag-off re-extract records byte-identical bundles) and it
-    stops a second extraction call per document switching on as a side effect of reading another config file.
-    So a test that wants the pass live has to flip both, exactly as an operator does.
+    The pass used to ride the S3 stage flag as well, so a test (like an operator) had to flip two unrelated
+    files to make a declared capability run. That flag is deleted: ``credibility.coreference`` is the whole
+    declaration.
 
     An *empty* categories list still reads as dormant (the ``attribution_proposer`` precedent), so the default
     here spells the categories out, exactly as the shipped block does.
     """
     knobs.setdefault("categories", list(coref.EVIDENCE_CATEGORIES))
     credibility = config.credibility.model_copy(update={"coreference": knobs})
-    block = {**(getattr(config.resolution, "earned_identity", None) or {}), "enabled": True}
-    resolution = config.resolution.model_copy(update={"earned_identity": block})
-    return config.model_copy(update={"credibility": credibility, "resolution": resolution})
+    return config.model_copy(update={"credibility": credibility})
 
 
 def _disabled(config: ConfigBundle) -> ConfigBundle:
-    """The same config with the S3 stage flag pinned **off** — an explicit flag-off baseline.
+    """The same config with the producer block REMOVED — the honest "this deployment does not run pass 2".
 
-    The mirror of :func:`_enabled`, and the reason it exists: a beat that means "pass 2 did not run" must
-    say so, not inherit it from whatever config the process was pointed at. Ambient dormancy silently turns
-    every such beat into an exhausted-queue error the moment the suite is run flag-on, which says nothing
-    about the code under test.
+    The mirror of :func:`_enabled`. It used to pin a stage flag off instead, which is why it stopped working:
+    the flag is gone and the shipped producer block is declared, so the only way to express "pass 2 did not
+    run" is the absence of the block that declares it. A beat that means that must say it rather than inherit
+    it from whatever config the process was pointed at.
     """
-    block = {**(getattr(config.resolution, "earned_identity", None) or {}), "enabled": False}
-    return config.model_copy(update={"resolution": config.resolution.model_copy(
-        update={"earned_identity": block})})
+    return config.model_copy(update={"credibility": config.credibility.model_copy(
+        update={"coreference": None})})
 
 
 def _doc() -> loaders.LoadedDoc:
@@ -138,22 +129,28 @@ def _coref_edges(claims: list[ClaimRecord]) -> list[ClaimRecord]:
 
 # ── dormancy: the slice changes nothing until a deployment opts in ─────────────────────────────
 
-def test_the_shipped_config_ships_the_stage_flag_off() -> None:
-    """The repo's own ``config/resolution.yaml`` ships ``earned_identity.enabled: false``.
+def test_the_shipped_config_declares_the_producer_block_and_no_stage_flag() -> None:
+    """The repo ships the pass LIVE, and there is no second switch anywhere that could keep it dormant.
 
-    Split out of the dormancy beat below and asserted against the **file**, not a snapshot, on purpose. It is
-    a claim about what this repository ships, and it must stay checkable even while the suite is being run
-    against a flag-on shadow deployment — which is exactly when a snapshot-based version of it would either
-    lie or fail for the wrong reason.
+    Asserted against the **files**, not a snapshot: it is a claim about what this repository ships. The pass
+    used to be gated on ``resolution.earned_identity.enabled``, which shipped ``false``, so a declared and
+    populated producer block emitted nothing — a configured capability that looked broken. Both halves are
+    checked, because either one alone would let the old arrangement come back.
     """
+    credibility = yaml.safe_load((REPO_ROOT / "config" / "credibility.yaml").read_text(encoding="utf-8"))
     resolution = yaml.safe_load((REPO_ROOT / "config" / "resolution.yaml").read_text(encoding="utf-8"))
-    assert resolution["earned_identity"]["enabled"] is False, (
-        "the RK-COREF (S3) stage flag must ship OFF; turning it on is a separate, deliberate decision"
+
+    assert credibility.get("coreference", {}).get("categories"), (
+        "the producer block must declare its categories — the block IS the switch now"
+    )
+    assert "enabled" not in (resolution.get("earned_identity") or {}), (
+        "resolution.earned_identity re-grew an `enabled` flag; the identity machinery is unconditional and a "
+        "switch that can turn it off is the arrangement that shipped the fabrication path open"
     )
 
 
-def test_dormant_with_the_flag_off_makes_no_second_call(config: ConfigBundle) -> None:
-    """The stage flag off ⇒ exactly ONE extraction call, no coref claims.
+def test_no_producer_block_means_no_second_call(config: ConfigBundle) -> None:
+    """No producer block ⇒ exactly ONE extraction call, no coref claims.
 
     A scripted client raises when over-drawn, so a single queued response *is* the assertion that pass 2
     never fired. This module keeps that property (``pytestmark`` above opts out of the off-queue side

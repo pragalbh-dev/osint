@@ -26,7 +26,7 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 
 from chanakya.resolve.rconfig import ResolveConfig
-from chanakya.schemas import Partition
+from chanakya.schemas import Partition, pair_key
 from chanakya.schemas.base import Record
 
 # ``type_of`` may be a plain callable ``entity_id -> type`` or a mapping; both are accepted (contract).
@@ -66,14 +66,38 @@ class CoveragePolicy(Record):
     critical_veto_min_grade: str | None = None
     surface_wall_bridges: bool = True
     coverage_gap_ratio: float | None = None
-    # RK-COREF (S3). Residual fragmentation IS a coverage gap — that is the design's own position ("it
-    # reflects genuine evidential uncertainty") — but only if the reader can see WHICH refusals produced it.
-    # Three of S3's mechanisms deliberately withhold a merge, so a tail read without them looks like a
-    # collection problem when part of it is a stated policy. Absent ⇒ the flag is off and no cap applied.
-    earned_identity: bool = False
+    # Residual fragmentation IS a coverage gap — that is the design's own position ("it reflects genuine
+    # evidential uncertainty") — but only if the reader can see WHICH refusals produced it. Three mechanisms
+    # deliberately withhold a merge, so a tail read without them looks like a collection problem when part of
+    # it is a stated policy. A ceiling reads ``None`` when it is undeclared, and ``confirmed`` when it is
+    # declared but permits the fusion.
     name_ceiling: str | None = None
     colocation_ceiling: str | None = None
     contrast_ceiling: str | None = None
+
+
+class WithheldLink(Record):
+    """A retained identity link withheld from the analyst's queue — with the grounds (D4 / G19).
+
+    The ``possible`` tier is not drawn (by design: a watch-list link is not a finding). That made it a place
+    where a *decision* could be stored and never read: a pair a cap refused kept its confidence and its
+    breakdown and, for a type whose only honest identity signal is its name, nothing that said why. Counts
+    alone cannot answer the question the coverage report exists to answer — how much of this residual
+    fragmentation is missing collection and how much is stated policy — so the withheld links are listed
+    with their reasons.
+
+    **EVERY retained pair is listed, not only the ones a CAP withheld.** The list used to be built from
+    ``candidate_reasons`` alone, and a reason is recorded when some *mechanism* withheld the pair. A pair
+    that simply scored into the band on its own evidence had nothing to record, so it was dropped from the
+    only channel that carries this tier anywhere — measured: 24 of 355 reached no surface at all,
+    indistinguishable from pairs the resolver never scored. "No cap fired" is not a reason to be invisible;
+    it is itself the reason, and :func:`_own_evidence_reason` states it from the pair's own numbers.
+    """
+
+    a: str = ""
+    b: str = ""
+    confidence: float | None = None
+    reason: str = ""
 
 
 class IdentityCoverage(Record):
@@ -90,6 +114,9 @@ class IdentityCoverage(Record):
     collection_gaps: list[str] = []
     #: The effective gap ratio used to compute ``collection_gaps`` — echoed for transparency.
     coverage_gap_ratio: float | None = None
+    #: Retained (``possible``-tier) links a cap withheld, each with the reason. Sorted; empty when no cap
+    #: fired. This is how a withheld pair reaches a human at all: it is never drawn as an edge.
+    withheld: list[WithheldLink] = []
     #: The full set of policy dials that produced this summary.
     policy: CoveragePolicy = CoveragePolicy()
 
@@ -160,6 +187,16 @@ def identity_coverage(
             if unresolved / max(counts.confirmed, 1) >= ratio:
                 collection_gaps.append(etype)
 
+    withheld = [
+        WithheldLink(
+            a=a, b=b,
+            confidence=partition.merge_confidence.get(pair_key(a, b)),
+            reason=partition.candidate_reasons.get(pair_key(a, b))
+            or _own_evidence_reason(partition.merge_confidence.get(pair_key(a, b)), cfg),
+        )
+        for a, b in sorted(partition.possible)
+    ]
+
     return IdentityCoverage(
         confirmed=len(partition.same_as),
         probable=len(partition.candidates),
@@ -167,7 +204,47 @@ def identity_coverage(
         by_type=dict(sorted(by_type.items())),
         collection_gaps=collection_gaps,
         coverage_gap_ratio=ratio,
+        withheld=withheld,
         policy=_policy(cfg, ratio),
+    )
+
+
+def _own_evidence_reason(confidence: float | None, cfg: ResolveConfig | None) -> str:
+    """The ground for a pair that reached the watch-list on nothing but its own score.
+
+    **The filter this replaces was a quiet drop.** ``withheld`` was built only for pairs with a *recorded*
+    reason, and a reason is recorded when some mechanism withheld the pair — a cap, a wall, a raise. A pair
+    that simply scored into ``[possible_floor, hitl_low)`` on its own evidence had nothing to record, so it
+    was dropped from the ONLY channel that carries the watch-list at all: measured, 24 of 355 retained pairs
+    reached no surface anywhere. "No cap fired" is not a reason to be invisible; it is itself the reason, and
+    it is a perfectly good one — the resolver saw a resemblance and it was not enough.
+
+    Derived from the pair's own numbers rather than fixed, so it says something different for a pair at 0.28
+    than for one at 0.44 — a single sentence repeated across the tier would be the failure this exists to
+    avoid.
+    """
+    bar = cfg.hitl_low if cfg is not None and cfg.scorable else None
+    floor = cfg.possible_floor if cfg is not None else None
+    score = f"{confidence:.2f}" if confidence is not None else "an unrecorded"
+    reach = f" of the {bar:.2f} needed for a review-queue place" if bar is not None else " of the review bar"
+    # Only claim the floor was cleared when it demonstrably was: a pair BELOW it is on this list because
+    # something withheld it, and telling the analyst it "cleared the floor" would be a false statement in
+    # the very field that exists to stop those.
+    below_floor = floor is not None and confidence is not None and confidence < floor
+    if below_floor:
+        return (
+            f"withheld from the review queue with no grounds recorded: identity confidence {score}{reach}, "
+            f"and below the {floor:.2f} retention floor too — so the pair is on this list because some "
+            "mechanism held it back, not because it scored its way here, and that mechanism recorded no "
+            "reason. Reported rather than dropped: an unexplained withholding is itself worth an analyst's "
+            "attention, and it is a defect in the withholding rail rather than a statement about the pair."
+        )
+    keep = f", above the {floor:.2f} retention floor" if floor is not None else ""
+    return (
+        f"reached the review band on its own evidence and stopped short of the bar: identity confidence "
+        f"{score}{reach}{keep}. No cap, wall or stated assertion is involved — the resolver found some "
+        "resemblance and not enough of it. Retained on the watch-list rather than proposed as a merge, and "
+        "listed here so that decision is visible: it is a judgement about the evidence, not an absence of one."
     )
 
 
@@ -186,7 +263,6 @@ def _policy(cfg: ResolveConfig | None, effective_ratio: float | None) -> Coverag
         critical_veto_min_grade=cfg.critical_veto_min_grade,
         surface_wall_bridges=cfg.surface_wall_bridges,
         coverage_gap_ratio=effective_ratio,
-        earned_identity=cfg.earned_identity_on,
         name_ceiling=cfg.earned_identity.name_ceiling or None,
         colocation_ceiling=cfg.earned_identity.colocation_ceiling or None,
         contrast_ceiling=cfg.earned_identity.contrast_ceiling or None,

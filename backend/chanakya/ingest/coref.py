@@ -814,23 +814,15 @@ def _coref_locator(ref: Any) -> str:
 # ── config + the public pass ────────────────────────────────────────────────────────────────────────
 
 def _coref_cfg(config: ConfigBundle) -> dict[str, Any]:
-    """The pass's knobs from ``credibility.yaml → coreference`` (hot-config). ``{}`` ⇒ dormant.
+    """The pass's knobs from ``credibility.yaml → coreference`` (hot-config). ``{}`` ⇒ not configured.
 
-    **Both switches, one motion — and the S3 stage flag is what turns the motion.** The producer block is now
-    declared and populated (it was commented out on the stated condition "turn it on together with that honor
-    policy, not before", and S3 *is* that policy), but the pass stays dormant until
-    ``resolution.earned_identity.enabled`` is on. Two reasons, and the second is the practical one:
-
-    * it keeps the flag boundary in exactly **one** place, so flag-off is byte-identical on the *ingest* path
-      too — a re-extract with the flag off records the same bundles, which is what makes the frozen corpus a
-      stable baseline to dual-run against;
-    * the pass costs a **second extraction call per document**. That is a real, stated cost, and it should
-      not switch on as a side effect of reading a different config file.
+    **One switch, and it is this block.** The pass used to ride the S3 staging flag as well, so a deployment
+    that had declared the producer block still emitted nothing until a second, unrelated file was edited —
+    two switches for one motion, which is how a configured capability comes to look broken. The block itself
+    is the declaration: it names the categories, the cost guard and the mention budget, and an absent block
+    is an honest "this deployment does not run the second extraction pass" (the cost is a real one — one
+    extra extraction call per document).
     """
-    from chanakya.resolve.rconfig import EarnedIdentity
-
-    if not EarnedIdentity.from_resolution(config.resolution).enabled:
-        return {}
     return dict(getattr(config.credibility, "coreference", None) or {})
 
 
@@ -882,7 +874,7 @@ def propose_coreference(claims: list[ClaimRecord], *, loaded: LoadedDoc, source_
     )
     accepted = valid_clusters(raw, mentions, loaded.text, distinctions, categories)
     earned = _earned_identity(config)
-    contrasts = valid_contrasts(raw, mentions, loaded.text) if earned.enabled else []
+    contrasts = valid_contrasts(raw, mentions, loaded.text)
     if not accepted and not contrasts:
         return []
     from chanakya.ingest.extract import _sanitize_doc_token
@@ -920,7 +912,7 @@ def revised_pass1(fallback: list[ClaimRecord]) -> list[ClaimRecord]:
 
 
 def _earned_identity(config: ConfigBundle) -> Any:
-    """The S3 knob block, read through RESOLVE's typed reader so there is one definition of the flag."""
+    """The identity tunables, read through RESOLVE's typed reader so the two sides share one definition."""
     from chanakya.resolve.rconfig import EarnedIdentity
 
     return EarnedIdentity.from_resolution(config.resolution)

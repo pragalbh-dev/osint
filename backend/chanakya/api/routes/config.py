@@ -144,10 +144,27 @@ def post_config(section: str, body: ConfigWrite, state: AppState = Depends(get_s
         )
 
     before_ids = _observable_ids(state) if resolved == "observables" else set()
+    # VALIDATE BEFORE COMMITTING — the whole reduction, not just the pydantic parse.
+    #
+    # Pydantic validity is the first layer only: the readers that compile a section into its runtime form
+    # (``ResolveConfig`` and the load-time validators behind it — a band ceiling outside the vocabulary, a
+    # retired stage marker, a bad attribute role) raise on a section that is perfectly well-formed YAML and
+    # semantically impossible. Those raise inside ``rebuild()``. With the commit outside the try/except, an
+    # invalid POST committed the section to the LIVE store, returned an unhandled 500, and then every
+    # subsequent config write and every rebuild 500ed too — hot config bricked until someone happened to
+    # re-POST a valid section. That inverts the one contract this route exists to keep: nothing a user does
+    # in-app may require a restart.
+    #
+    # So the candidate bundle is reduced first and committed only if the reduction succeeds. A rejected POST
+    # leaves the running system byte-identical: same sections, same version, same view. Rolling back after
+    # the fact would have left the version bumped twice and a window in which the live store held a section
+    # nobody had validated.
     try:
-        version = state.config.set_section(resolved, body.value)
+        candidate = state.config.candidate(resolved, body.value)
+        state.dry_run(candidate)
     except (KeyError, ValueError, ValidationError) as exc:
         raise HTTPException(422, detail=f"invalid config for section {resolved!r}: {exc}") from exc
+    version = state.config.commit(candidate)
 
     if resolved == "observables":
         _arm_new_observables(state, before_ids)

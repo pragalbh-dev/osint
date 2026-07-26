@@ -36,7 +36,6 @@ from chanakya.schemas import OntologyConfig
 from tests.resolve._helpers import entity, mk_config, triple
 
 EARNED = {
-    "enabled": True,
     "name_ceiling": "possible",
     "wall_predicates": ["based-at", "operated-by"],
     "wall_scope_attr": "site_type",
@@ -51,7 +50,6 @@ ONTOLOGY = OntologyConfig(
                  "instance_key_tag": "site_type"},
                 {"name": "operated-by", "from": "unit", "to": "operator"}],
     layer_routing={
-        "enabled": False,
         "site_type_vocabulary": ["garrison", "airfield", "emplacement"],
         "site_type_aliases": {"air base": "airfield"},
         "absent_bucket": "unknown",

@@ -82,9 +82,18 @@ def test_a_design_pair_collapses_on_the_name_plus_one_more_signal() -> None:
 
     Two variant mentions of one name that also agree on a durable declared attribute must fuse. Without
     this, spine/13 §6's lever 2 cannot exist and the anchor layer never crystallizes.
+
+    The agreeing attribute is an ``export_designator`` and no longer ``family``, and the swap is the spec
+    getting stricter rather than looser: a FAMILY is a class every member shares by definition, so "both are
+    HQ-9 family" was never the "one more signal" this rung asks for — it is available between any two mentions
+    of the same kind of thing, which is exactly how it came to switch the name cap off for HQ-9 ↔ HQ-9A. An
+    export designator names one production line, so its agreement individuates.
     """
     part = rc.part_of(
-        _named_pair("variant", "Type Nine", attrs_a={"family": "HQ-9"}, attrs_b={"family": "HQ-9"}),
+        _named_pair(
+            "variant", "Type Nine",
+            attrs_a={"export_designator": "FD-2000"}, attrs_b={"export_designator": "FD-2000"},
+        ),
         rc.bundle(),
     )
 

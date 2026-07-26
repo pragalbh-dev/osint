@@ -58,15 +58,13 @@ PLAIN_NAME = "Type Nine SAM"
 #: attribute at all. ``origin_country`` is the one sources actually write (on manufacturers and trading
 #: organisations), and it was missing from ``Entity.namespace``'s key list. So G19 was green while the harm
 #: it names was happening on the live attribute: two same-named trading organisations, one stated CHINA and
-#: one stated Pakistan, fused at ``confirmed`` in **both** flag directions, where the identical pair keyed
-#: on ``country`` was refused **with the stage flag on**. A gate that keys on an attribute nothing states
-#: certifies a guard nothing reaches.
+#: one stated Pakistan, fused at ``confirmed``, where the identical pair keyed on ``country`` was refused. A
+#: gate that keys on an attribute nothing states certifies a guard nothing reaches.
 #:
-#: **What these cases certify, and what they do not.** Every fixture here runs **flag-ON**. The refusal they
-#: pin does not exist flag-OFF for *either* key — ``fusion_blocked`` early-returns on
-#: ``cfg.earned_identity_on``, so the shipped default has no cross-namespace wall on the fusion path at all.
-#: That is a disclosed, deliberate gap owned by the S3 cutover (DECISIONS.md, RK-COREF S3 blocker 2), not
-#: something adding ``origin_country`` closed. Measured both ways, both keys: flag-off fuses, flag-on refuses.
+#: The refusal these cases pin is now the SHIPPED behaviour for both keys. It used to exist only with the S3
+#: stage flag on — ``fusion_blocked`` early-returned on it — so the shipped default had no cross-namespace
+#: wall on the fusion path for any key at all. That flag is deleted; ungating this refusal was the point of
+#: the change (DECISIONS.md → DEFAULT-ON).
 NS_KEYS = ("country", "origin_country")
 
 
@@ -174,13 +172,16 @@ def test_an_exact_name_match_inside_one_namespace_still_bootstraps() -> None:
     """The mirror for Phase 1: the exact-name + namespace branch must survive the alias fix.
 
     D-13.10 caps name *alone*, so this pair also agrees on a durable declared attribute — the "one more
-    trivially-available signal" that clears the cap at the design layer.
+    trivially-available signal" that clears the cap at the design layer. That attribute is an
+    ``export_designator`` (one production line) and deliberately not ``family``: a class every member of the
+    family shares cannot be the extra signal, or the cap is off for every same-kind pair in the corpus.
     """
     part = rc.part_of(
         [
-            rc.ent("a", "variant", ALIASED_NAME, attrs={"country": PAKISTAN, "family": "HQ-9"}, doc="d1"),
-            rc.ent("b", "variant", ALIASED_NAME, attrs={"country": PAKISTAN, "family": "HQ-9"},
-                   doc="d2", sid="mid"),
+            rc.ent("a", "variant", ALIASED_NAME,
+                   attrs={"country": PAKISTAN, "export_designator": "FD-2000"}, doc="d1"),
+            rc.ent("b", "variant", ALIASED_NAME,
+                   attrs={"country": PAKISTAN, "export_designator": "FD-2000"}, doc="d2", sid="mid"),
         ],
         rc.bundle(),
     )
