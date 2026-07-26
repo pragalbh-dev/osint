@@ -90,7 +90,7 @@ def test_a_sighting_plus_an_induction_does_derive_one_attribution() -> None:
 
     assert [(e.source, e.target) for e in derived] == [(UNIT_A, SITE)], (
         f"one candidate formation derived {[(e.source, e.target) for e in derived]} — §7 RK-LAYER 4 has "
-        f"rebuild() materialize the derived `based-at` from the triangle. {rk.flag_report()}"
+        f"rebuild() materialize the derived `based-at` from the triangle."
     )
 
 
@@ -115,8 +115,8 @@ def test_two_candidate_formations_are_never_silently_truncated() -> None:
     attributions_one = [(e.source, e.target) for e in rk.edges_of(one, BASING)]
     attributions_two = [(e.source, e.target) for e in rk.edges_of(two, BASING)]
     assert attributions_one, (
-        f"the single-candidate control derived nothing, so the differential below is vacuous. "
-        f"{rk.flag_report()}"
+        "the single-candidate control derived nothing, so the differential below is vacuous. "
+        ""
     )
 
     two_attributions = len(attributions_two) >= 2
@@ -128,7 +128,7 @@ def test_two_candidate_formations_are_never_silently_truncated() -> None:
         f"single-candidate control (gaps: {_gap_texts(two)}) — the second candidate was discarded with no "
         "record at all. D2: 'two attributions, or one plus an explicit named gap. Never a silent pick.' "
         "Every other rejection path in the old pass appended a SkipRecord; the truncation appended nothing, "
-        f"which is exactly the invisibility this clause closes. {rk.flag_report()}"
+        f"which is exactly the invisibility this clause closes."
     )
 
 
@@ -158,7 +158,7 @@ def test_a_truncated_attribution_names_which_candidate_it_dropped() -> None:
         f"the attribution was truncated to {sorted(drawn)} and nothing names the dropped candidate(s) "
         f"{dropped}. Gaps: {_gap_texts(view)}; derived-edge attrs: "
         f"{[e.attrs for e in rk.edges_of(view, BASING)]} — D2 requires the dropped candidate to be "
-        f"recorded, not merely the existence of ambiguity. {rk.flag_report()}"
+        f"recorded, not merely the existence of ambiguity."
     )
 
 

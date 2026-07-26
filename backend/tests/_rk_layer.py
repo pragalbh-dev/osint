@@ -374,75 +374,48 @@ def layer_accessors() -> dict[str, Any]:
     return found
 
 
-# ── the S2 feature flag (§7 RK-LAYER: "Behind a flag, dual-run only") ───────────────────────────
+# ── the staging flag is GONE, and asking for it is an ERROR ──────────────────────────────────────
+#
+# ``FLAG_TOKENS`` / ``flag_candidates`` / ``enable_layer_routing`` / ``flag_report`` lived here to *discover*
+# the stage flags in the shipped config and switch them on for a behavioural test. There are no stage flags
+# to discover: the layer split and the earned-identity machinery are unconditional, so the shipped bundle IS
+# the behavioural bundle and a fixture that "turns the stage on" would be turning on something that is not a
+# stage. The discovery harness is deleted rather than left returning an empty dict — a helper that always
+# finds nothing reads as a broken search, not as an absent feature.
+#
+# Deleting it is only half. Both fixture builders here take ``**credibility`` and ``CredibilityConfig`` is
+# ``extra="allow"``, so ``fixture_config(flag_on=False)`` did not fail when the parameter died — it filed a
+# field named ``flag_on`` onto the credibility config, where nothing reads it. The caller believed it had
+# pinned a stage; it had set a knob that does not exist, silently, and would have gone on believing it. That
+# is the harness form of the exact defect this whole change is about: a surface bound BY NAME-GUESSING, which
+# grades a stand-in while its failure text names the shipped code. So the retired names are refused
+# explicitly, by name, with what to do instead.
 
-#: Tokens any plausible spelling of the S2 flag would carry. Generous by design: the spec says only
-#: "behind a flag", so a miss here is reported as a naming ambiguity, never a silent pass.
-FLAG_TOKENS: tuple[str, ...] = (
-    "layer", "straddle", "presence", "materiali", "instance_routing", "two_layer", "rk_layer",
-    "rk2", "s2", "citizen", "split_straddl",
-    # RK-COREF (S3). THE STANDING RULE, learned the expensive way: **when a stage adds a flag, its tokens
-    # land in the same commit.** Without these the discovery mechanism worked perfectly and found S2's flag
-    # instead, so every behavioural S3 test silently ran against the flag-OFF graph and failed for the wrong
-    # reason — 32 failures that said nothing about the implementation. Same coupling class as a hand-copied
-    # config knob: the fixture and the config drifted, and only the fixture knew.
-    "earned", "identity", "s3", "rk_coref", "coref",
-)
-
-#: Keys that carry the token but are demonstrably NOT the S2 flag (they predate it).
-_FLAG_DENY = frozenset({"derived_layer"})
-
-
-def flag_candidates(bundle: ConfigBundle | None = None) -> dict[str, bool]:
-    """``"section.key" -> value`` for every boolean config key that could be the S2 flag."""
-    cfg = bundle or shipped_bundle()
-    out: dict[str, bool] = {}
-    for section, model in cfg.model_dump().items():
-        if not isinstance(model, dict):
-            continue
-        for key, value in model.items():
-            name = str(key).lower()
-            if name in _FLAG_DENY or not any(tok in name for tok in FLAG_TOKENS):
-                continue
-            if isinstance(value, bool):
-                out[f"{section}.{key}"] = value
-            elif isinstance(value, dict):
-                for sub, subval in value.items():
-                    if isinstance(subval, bool):
-                        out[f"{section}.{key}.{sub}"] = subval
-    return out
+#: Retired staging-flag keywords, with their replacement. Any fixture builder taking ``**credibility``
+#: must run :func:`reject_dead_stage_kwargs` before the extras reach the config.
+DEAD_STAGE_KWARGS = {
+    "flag_on": (
+        "the identity machinery is unconditional, so there is no stage for a fixture to pin — the shipped "
+        "bundle IS the live one. Drop the keyword. (It used to call enable_layer_routing; once the flag died "
+        "`**credibility` absorbed it into a credibility field nobody reads, so every caller silently got the "
+        "opposite of an explicit pin.)"
+    ),
+    "earned_identity_on": (
+        "the flag accessor is deleted; the shipped bundle is live. Vary a TUNABLE instead (a ceiling, a grade "
+        "floor, a predicate list) via _rk_coref.with_resolution(earned_identity={...})."
+    ),
+}
 
 
-def enable_layer_routing(bundle: ConfigBundle) -> ConfigBundle:
-    """Turn every discovered S2 flag ON, in place, and return the bundle.
-
-    When no flag is discoverable the bundle is returned unchanged: the behavioural tests then assert the
-    target behaviour anyway, and their failure message says what could not be found. That is deliberate —
-    an undiscoverable flag must surface as a loud, actionable failure, never as a green test.
-    """
-    for dotted in flag_candidates(bundle):
-        section, *path = dotted.split(".")
-        target = getattr(bundle, section)
-        for step in path[:-1]:
-            target = getattr(target, step) if not isinstance(target, dict) else target[step]
-        leaf = path[-1]
-        if isinstance(target, dict):
-            target[leaf] = True
-        else:
-            setattr(target, leaf, True)
-    return bundle
+class DeadStageKwarg(TypeError):
+    """A fixture builder was handed a staging-flag keyword that no longer binds to anything."""
 
 
-def flag_report() -> str:
-    """The message a behavioural failure appends, so an implementer can see what was searched."""
-    found = flag_candidates()
-    return (
-        f"discovered S2 flag candidates in the shipped config: {found or 'NONE'} "
-        f"(searched boolean keys carrying any of {list(FLAG_TOKENS)}). §7 RK-LAYER runs this stage "
-        "'behind a flag, dual-run only'; if the flag exists under another name, this suite cannot turn it "
-        "on and the assertion below is testing the flag-off graph."
-    )
-
+def reject_dead_stage_kwargs(where: str, kwargs: dict[str, Any]) -> None:
+    """Fail loudly for a retired staging-flag keyword, rather than filing it as a credibility extra."""
+    for dead, why in sorted(DEAD_STAGE_KWARGS.items()):
+        if dead in kwargs:
+            raise DeadStageKwarg(f"{where}({dead}=…) no longer binds to anything: {why}")
 
 # ── reading the layer off a materialized view element ───────────────────────────────────────────
 
@@ -469,12 +442,14 @@ def view_layer(element: NodeView | EdgeView) -> Any:
 def _shipped_supersede_floor() -> dict[str, Any]:
     """The shipped ``supersede_floor``, READ rather than hand-copied.
 
-    A hand-written copy silently omits any knob added later — which is exactly what happened: S2 added
-    ``require_earned_identity`` to the shipped config, the copy did not have it, and R1.4(a)'s guard
-    short-circuited so the fixture could never turn it on. This module's own docstring already says knobs are
-    "copied verbatim from the shipped ``credibility.yaml`` rather than re-typed, so a fixture cannot pass or
-    fail on a mis-guessed knob name"; this makes that true of the floor too. Falls back to the historical
-    literals only if the shipped block is missing, so the helper cannot mask a deleted config section.
+    A hand-written copy silently omits any knob added later — which is exactly what happened once: a knob was
+    added to the shipped floor, the copy did not have it, and R1.4(a)'s guard short-circuited so the fixture
+    could never exercise it. (That knob, ``require_earned_identity``, is since deleted outright — a boolean
+    with no number to tune was a switch for turning a prohibition off, and the prohibition is unconditional.)
+    This module's own docstring already says knobs are "copied verbatim from the shipped ``credibility.yaml``
+    rather than re-typed, so a fixture cannot pass or fail on a mis-guessed knob name"; this makes that true of
+    the floor too. Falls back to the historical literals only if the shipped block is missing, so the helper
+    cannot mask a deleted config section.
     """
     shipped = getattr(shipped_bundle().credibility, "supersede_floor", None)
     if isinstance(shipped, dict) and shipped:
@@ -501,7 +476,6 @@ HITL_RESOLUTION = ResolutionConfig(
 
 def fixture_config(
     *,
-    flag_on: bool = True,
     resolution: ResolutionConfig | None = None,
     supersede_floor: dict[str, Any] | None = None,
     **credibility: Any,
@@ -510,7 +484,10 @@ def fixture_config(
 
     The basing-proposer knobs are copied verbatim from the shipped ``credibility.yaml`` rather than
     re-typed, so a fixture cannot pass or fail on a mis-guessed knob name.
+
+    Raises :class:`DeadStageKwarg` for a retired staging-flag keyword — see :data:`DEAD_STAGE_KWARGS`.
     """
+    reject_dead_stage_kwargs("fixture_config", credibility)
     shipped = shipped_bundle()
     proposer = getattr(shipped.credibility, "basing_proposer", None)
     cred: CredibilityConfig = cred_config(
@@ -527,7 +504,7 @@ def fixture_config(
                                        source("adv", "weak")]),
         resolution=resolution or ResolutionConfig(),
     )
-    return enable_layer_routing(bundle) if flag_on else bundle
+    return bundle
 
 
 def entity_claim(

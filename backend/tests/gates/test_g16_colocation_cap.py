@@ -23,7 +23,6 @@ from tests.resolve._helpers import entity, mk_config, triple
 
 #: Everything the cap needs, and nothing else — so a failure names the mechanism rather than the config.
 EARNED = {
-    "enabled": True,
     "name_ceiling": "possible",
     "colocation_ceiling": "probable",
     "formation_types": ["unit"],
@@ -170,14 +169,48 @@ def test_a_presence_level_merge_in_the_same_case_is_not_capped() -> None:
     )
 
 
-# ── flag-off: the over-merge is still reachable, which is what makes the boundary real ─────────────
+# ── the ceiling's VALUE means what it says ─────────────────────────────────────────────────────────
 
-def test_with_the_stage_flag_off_the_pre_s3_behaviour_is_preserved() -> None:
-    """Flag off ⇒ nothing here applies. Asserted, not assumed — a leaking boundary voids the dual-run."""
-    part = resolve(_two_colocated_formations(),
-                   mk_config(attribute_roles=ROLES, name_alone_caps_at_possible=True))
+def test_a_ceiling_declared_confirmed_PERMITS_the_fusion() -> None:
+    """``colocation_ceiling: confirmed`` lifts the cap — the value is honoured, not merely truthy.
+
+    The three ceilings were read as a truthiness test, so ANY non-empty value withheld identically:
+    ``confirmed`` behaved exactly like ``probable``, and the only way to lift a cap was to DELETE the key. A
+    config author who wrote ``confirmed`` — "co-location may confirm a formation on this deployment" — got the
+    opposite of what they asked for, silently, in the block whose header promises to hold every cap. Config
+    that reads as a decision the code never took is worse than a missing feature.
+
+    Asserted on the outcome rather than on the reader, because the reader is not where the harm was: the cap
+    must actually not fire.
+    """
+    part = resolve(_two_colocated_formations(), _cfg(earned={"colocation_ceiling": "confirmed"}))
     reasons = " ".join(part.candidate_reasons.values())
 
     assert "co-location is not identity" not in reasons, (
-        "the co-location cap fired with the flag OFF — S3's flag-off view must be byte-identical to S2's"
+        "the co-location cap fired at ceiling `confirmed` — the declared value is being read as a bare "
+        "truthiness test, which is what made `confirmed` and `probable` indistinguishable"
     )
+
+
+def test_an_undeclared_ceiling_leaves_the_cap_with_nothing_to_apply() -> None:
+    """The absent case is the same as every other absent threshold in the reader: the mechanism is inert."""
+    part = resolve(_two_colocated_formations(), _cfg(earned={"colocation_ceiling": ""}))
+
+    assert "co-location is not identity" not in " ".join(part.candidate_reasons.values())
+
+
+def test_a_ceiling_outside_the_BAND_VOCABULARY_is_rejected_at_load() -> None:
+    """The other half: a value the code does not honour must be refused, not read as a withholding cap.
+
+    Honouring ``confirmed`` is only safe if an unrecognised string cannot quietly take the withholding path —
+    otherwise a typo (``possibly``, ``none``, ``off``) still caps, and the config still says something the code
+    does not do.
+    """
+    from chanakya.resolve.rconfig import CeilingValueError, ResolveConfig
+
+    for bad in ("possibly", "none", "off", "true"):
+        try:
+            ResolveConfig.from_bundle(_cfg(earned={"colocation_ceiling": bad}))
+        except CeilingValueError:
+            continue
+        raise AssertionError(f"colocation_ceiling={bad!r} loaded silently instead of being refused")

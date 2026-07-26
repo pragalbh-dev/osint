@@ -39,6 +39,27 @@ _MATERIALIZES = "materializes"
 _REQUIRES_STATED = "requires_stated_endpoints"
 
 
+def presence_citizen(ontology: OntologyConfig, declared: object) -> str | None:
+    """The instance citizen a split/materialization mints — ``declared``, else ``layer_routing.presence_type``.
+
+    **One name for one dial.** ``layer_routing.presence_type`` documents itself as "the instance citizen the
+    build materializes … nothing here is a code literal (G6)", and it was parsed into a field that nothing
+    ever read: the citizen came from the ``node_type: presence`` written out again on each ``instance_split``
+    and ``materializes`` declaration. So the value existed in four places, the one an operator would edit was
+    the one with no consumer, and editing it changed nothing — the same "two names for one dial in two
+    places, and the copy a reader edits is the copy that does not run" defect the three band ceilings already
+    cost this project a stage to find.
+
+    Resolved in the reader's favour rather than deleted, because the shared value genuinely belongs in one
+    place: the per-declaration ``node_type`` is now an override for a type that needs a *different* citizen,
+    and omitting it — which every shipped declaration now does — reads the one declared default. Delete
+    ``presence_type`` from config and the splits stop declaring a citizen, which is what makes it a dial.
+    """
+    if isinstance(declared, str) and declared.strip():
+        return declared
+    return LayerRouting.from_ontology(ontology).presence_type or None
+
+
 @dataclass(frozen=True)
 class Materialization:
     """One edge's declared instance materialization (A4 / D-13.6 / spine/13 §5.3).
@@ -172,7 +193,7 @@ class EdgeLaneIndex:
             spec = getattr(e, _MATERIALIZES, None)
             if isinstance(spec, dict):
                 end = str(spec.get("end") or _FROM_END)
-                node_type = spec.get("node_type")
+                node_type = presence_citizen(ontology, spec.get("node_type"))
                 link = spec.get("link")
                 if end in (_FROM_END, _TO_END) and isinstance(node_type, str) and isinstance(link, str):
                     self._materializes[e.name] = Materialization(end=end, node_type=node_type, link=link)
@@ -466,10 +487,11 @@ class NodeTypeIndex:
                 self._layer[t.name] = t.layer
             per_attr = {a.name: a.layer for a in t.attrs if isinstance(a.layer, str)}
             if per_attr:
-                self._attr_layer[t.name] = dict(per_attr)  # type: ignore[arg-type]
+                self._attr_layer[t.name] = dict(per_attr)
             split = getattr(t, _INSTANCE_SPLIT, None)
             if isinstance(split, dict):
-                node_type, link = split.get("node_type"), split.get("link")
+                node_type = presence_citizen(ontology, split.get("node_type"))
+                link = split.get("link")
                 if isinstance(node_type, str) and isinstance(link, str):
                     self._splits[t.name] = Materialization(
                         end=_FROM_END, node_type=node_type, link=link
@@ -586,22 +608,23 @@ class NodeTypeIndex:
         return None
 
 
-# ── layer routing: the one flag, and its knobs (A2/A3/A4 — RK-LAYER/S2) ──────────────────────────
+# ── layer routing: the type/instance split and its knobs (A2/A3/A4) ──────────────────────────────
 #
 # Read from ``config/ontology.yaml``'s top-level ``layer_routing`` block (a plain YAML mapping —
-# ``OntologyConfig`` is ``extra="allow"``, the same precedent the ``materiality`` block already sets). One
-# flag turns on the whole type/instance split at rebuild time, because the pieces are one change to what a
-# node *is* and half of it would be incoherent. Every value is config-authored; nothing here is a code
-# literal beyond the key names and the fail-safe fallbacks (gate G6).
+# ``OntologyConfig`` is ``extra="allow"``, the same precedent the ``materiality`` block already sets). The
+# split runs **unconditionally**: the staging flag that gated it is deleted, because the pieces are one
+# change to what a node *is*, and a system that can be switched between two answers to that question has
+# two ontologies. Each mechanism is bounded by what these knobs — and the node/edge type declarations they
+# read — actually declare; nothing here is a code literal beyond the key names and the fail-safe fallbacks
+# (gate G6).
 
 _LAYER_ROUTING = "layer_routing"
 
 
 @dataclass(frozen=True)
 class LayerRouting:
-    """``config/ontology.yaml → layer_routing``, compiled. Absent block ⇒ :attr:`enabled` False ⇒ inert."""
+    """``config/ontology.yaml → layer_routing``, compiled. An absent block leaves every knob unset."""
 
-    enabled: bool = False
     presence_type: str = ""
     design_link_edge: str = ""
     provisional_prefix: str = "presence"
@@ -617,9 +640,8 @@ class LayerRouting:
     #: let an unstated ``site_type`` buy a second concurrent basing for free. Note this is only the first
     #: third of the third state — see :meth:`normalise_tag`.
     absent_bucket: str = "unknown"
-    #: Bundle-filename suffixes the boot/seed loader **skips** while routing is on, so a frozen derived
-    #: conclusion cannot be replayed alongside the live derivation of the same fact. Empty (routing off) ⇒
-    #: the loader globs exactly as it always did, which is what keeps the flag-off view byte-identical.
+    #: Bundle-filename suffixes the boot/seed loader **skips**, so a frozen derived conclusion cannot be
+    #: replayed alongside the live derivation of the same fact. Empty ⇒ the loader globs everything.
     superseded_derived_bundle_suffixes: tuple[str, ...] = ()
     #: ``derived_layer`` markers the **rebuild** declines to read as evidence — the backstop for a store
     #: that already holds such claims, where the file-level skip above never ran.
@@ -641,7 +663,6 @@ class LayerRouting:
             if isinstance(aliases, dict) else ()
         )
         return cls(
-            enabled=bool(block.get("enabled", False)),
             presence_type=str(block.get("presence_type") or ""),
             design_link_edge=str(block.get("design_link_edge") or ""),
             provisional_prefix=str(block.get("provisional_prefix") or "presence"),
@@ -654,12 +675,14 @@ class LayerRouting:
         )
 
     def retired_bundle_suffixes(self) -> tuple[str, ...]:
-        """Bundle suffixes a loader should skip — ``()`` unless routing is on (the flag gate, in one place).
+        """Bundle suffixes a loader should skip — the declared list, read through one accessor.
 
         Callers hand the result straight to ``ingest.seed.seed_store_from_bundles(skip_suffixes=…)``, so the
-        flag boundary is applied here rather than re-derived at every seed call site.
+        decision lives here rather than being re-derived at every seed call site. A frozen bundle whose
+        conclusion the rebuild now derives itself is stale *output*, not evidence: replaying it would
+        double-count the derivation and let a conclusion outlive its premises.
         """
-        return self.superseded_derived_bundle_suffixes if self.enabled else ()
+        return self.superseded_derived_bundle_suffixes
 
     def normalise_tag(self, value: object) -> tuple[str, bool]:
         """A stated ``instance_key_tag`` value → ``(bucket, mapped)`` — C7's normalisation prerequisite.

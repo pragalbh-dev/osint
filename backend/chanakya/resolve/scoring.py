@@ -136,19 +136,18 @@ def attribute_is_conflict(a: Entity, b: Entity, attr: str, cfg: ResolveConfig) -
     # and an exact-match wall on those "SHATTERS legitimate merges", which is why both slots were demoted to
     # the inert ``supporting`` role. Folding into the declared equivalence class first is what lets them be
     # walls again. Two values that normalise to one class are NOT a conflict.
-    if cfg.earned_identity_on:
-        ca, mapped_a = cfg.earned_identity.normalise_value(attr, va)
-        cb, mapped_b = cfg.earned_identity.normalise_value(attr, vb)
-        if mapped_a and mapped_b and ca == cb:
-            return False  # 'PAF' ≡ 'Pakistan Air Force' — a spelling, not a disagreement
-        if attr in cfg.earned_identity.normalization_required_attrs and not (mapped_a and mapped_b):
-            # THE THIRD STATE. An unnormalizable stated value on a slot we intend to wall on is neither a
-            # conflict nor an agreement: we cannot read it. Reporting "no conflict" here is only the first
-            # third — the caller must also refuse the FUSION and raise a named gap
-            # (``resolve._unnormalized_discriminator_blocks``). A gap that does not bind the fusion path is
-            # decoration, and the rk-14 probe is exactly that bug: the prototype named the missing operator
-            # gap and then asserted the assessment anyway, drawing a cross-army relocation.
-            return False
+    ca, mapped_a = cfg.earned_identity.normalise_value(attr, va)
+    cb, mapped_b = cfg.earned_identity.normalise_value(attr, vb)
+    if mapped_a and mapped_b and ca == cb:
+        return False  # 'PAF' ≡ 'Pakistan Air Force' — a spelling, not a disagreement
+    if attr in cfg.earned_identity.normalization_required_attrs and not (mapped_a and mapped_b):
+        # THE THIRD STATE. An unnormalizable stated value on a slot we intend to wall on is neither a
+        # conflict nor an agreement: we cannot read it. Reporting "no conflict" here is only the first
+        # third — the caller must also refuse the FUSION and raise a named gap
+        # (``resolve._unnormalized_discriminator_blocks``). A gap that does not bind the fusion path is
+        # decoration, and the rk-14 probe is exactly that bug: the prototype named the missing operator
+        # gap and then asserted the assessment anyway, drawing a cross-army relocation.
+        return False
     if cfg.attribute_perishable(a.etype, attr) is True:
         series = a.attr_history.get(attr, []) + b.attr_history.get(attr, [])
         if classify_succession(series).status == ORDERED:
@@ -166,9 +165,9 @@ def unnormalizable_critical_values(a: Entity, b: Entity, cfg: ResolveConfig) -> 
     prototype was right about that), and the pair must not be allowed to *confirm* instead (that is where it
     was wrong). So this returns the slots that are unreadable, and the caller owes the pair a **block** plus
     a reason. Only fires where both sides state the attribute — a slot nobody states is *unknown*, and
-    absence has never been disagreement here. Empty tuple ⇒ nothing to refuse (flag off ⇒ always empty).
+    absence has never been disagreement here. Empty tuple ⇒ nothing to refuse.
     """
-    if not cfg.earned_identity_on or a.etype != b.etype:
+    if a.etype != b.etype:
         return ()
     out: list[str] = []
     for attr in cfg.earned_identity.normalization_required_attrs:
@@ -191,9 +190,9 @@ def constitutive_difference(a: Entity, b: Entity, cfg: ResolveConfig) -> tuple[s
     never read as staleness. This is the negative half of the rung C6 adds; the positive half (agreement on
     a constitutive attribute can *confirm*) rides :meth:`ResolveConfig.attribute_confirms_identity`.
 
-    Same-type only, absence is never disagreement, values normalised first (C7). Flag off ⇒ always empty.
+    Same-type only, absence is never disagreement, values normalised first (C7).
     """
-    if not cfg.earned_identity_on or a.etype != b.etype:
+    if a.etype != b.etype:
         return ()
     return tuple(
         attr for attr in cfg.constitutive_attrs(a.etype) if attribute_is_conflict(a, b, attr, cfg)
@@ -377,6 +376,8 @@ def has_durable_identity_support(a: Entity, b: Entity, cfg: ResolveConfig) -> bo
     if a.etype != b.etype:
         return False  # role attrs + perishability are per-type; a cross-type pair has no durable attr agreement
     for attr in _identity_relevant_attrs(a.etype, cfg):
+        if cfg.attribute_is_taxonomic(a.etype, attr):
+            continue  # a class every member shares is not durable identity support — it is not support at all
         va = a.attrs.get(attr)
         # C6: ``attribute_confirms_identity`` is the four-value read of the same question the boolean
         # ``perishable is not True`` asked — and byte-identical on the two roles that existed before. What it
@@ -594,6 +595,13 @@ def _discriminator_agreement(
         seen_id.add(k)
         if a.attrs.get(k) is None or b.attrs.get(k) is None:
             continue  # not stated on both sides ⇒ not part of the agreement ratio (absence ≠ evidence)
+        if cfg.attribute_is_taxonomic(a.etype, k):
+            # A CLASS label, not an identity. Every member of a class shares it BY DEFINITION, so its
+            # agreement individuates nothing — and this ratio is precisely what lifts the name cap, the only
+            # remaining guard on the widest fusion lane. Excluded from the ratio entirely (it neither raises
+            # nor lowers it): a taxonomic DISAGREEMENT is already carried by the wall (a critical role) or the
+            # soft conflict penalty (a supporting role), so no negative evidence is lost here.
+            continue
         if durable_only and cfg.attribute_perishable(a.etype, k) is True:
             continue
         present += 1
@@ -788,6 +796,33 @@ def identity_claim_ids(graph: EntityGraph, a: str, b: str) -> list[str]:
     return out
 
 
+def licensing_claim_ids(graph: EntityGraph, a: str, b: str) -> list[str]:
+    """Every claim in which a source spoke to a≡b — identity assertions **and** coreference.
+
+    The CITATION channel, as distinct from the score-mirroring :func:`identity_claim_ids` above. They are
+    deliberately different sets, because they answer different questions:
+
+    * ``identity_claim_ids`` mirrors ``source_asserted`` exactly, so the signal bar and its evidence handle
+      can never disagree about what that number counted. Coreference is rightly excluded there — it feeds a
+      different lane, and citing it under ``source_asserted`` would make the number over-claim.
+    * this one answers "how do you know that?" about the PROPOSAL. A raise-only ``NAME_VARIANT`` coreference
+      can never fuse, so the referral is its entire product — and the document's own sentence is the only
+      thing that lets an analyst judge the proposal, or judge whether the REFUSAL was right, in one read.
+      Excluding it left the drawer on exactly those proposals citing nothing, so the analyst was asked to
+      trust the resolver's paraphrase of the evidence for the resolver's own proposal.
+
+    Nothing is over-claimed by the wider set: it is rendered onto the candidate edge's ``claim_ids``, served
+    by ``GET /evidence/{edge_id}`` — a provenance list, not a score. Replay order, de-duplicated (gate G2).
+    """
+    out = identity_claim_ids(graph, a, b)
+    for e in graph.edges:
+        if e.predicate != COREF_PREDICATE or e.claim_id is None:
+            continue
+        if {e.subject, e.object} == {a, b} and e.claim_id not in out:
+            out.append(e.claim_id)
+    return out
+
+
 def _relational_counts(a: Entity, b: Entity, cfg: ResolveConfig) -> bool:
     """May the shared-neighbourhood term contribute for this pair? (Both types must allow it.)"""
     ntx = cfg.node_types
@@ -836,17 +871,12 @@ def merge_score(
         SOURCE_ASSERTED: source_asserted_score(graph, a.eid, b.eid, cfg.identity_source_weight),
     }
     total = sum(cfg.weight(sig) * parts[sig] for sig in SIGNALS)
-    out = {**parts, "total": _clamp(total)}
-    if cfg.earned_identity_on:
-        # D-13.20's split, recorded beside the fused term rather than instead of it: ``attribute`` keeps its
-        # whole weight and its whole value, so the total is untouched, and the caps get the two numbers they
-        # need. Added only with the flag on so ``merge_breakdown`` (which the view serialises verbatim on a
-        # candidate edge and a merge's ``resolved_from``) stays byte-identical with the flag off. ``SIGNALS``
-        # is deliberately NOT extended — ``identity_ledger`` iterates it, and a sub-signal is a decomposition
-        # of one line of evidence, not a second independent one, so counting it twice would over-claim.
-        out[NAME] = name
-        out[DISCRIMINATOR] = discriminator
-    return out
+    # D-13.20's split, recorded beside the fused term rather than instead of it: ``attribute`` keeps its
+    # whole weight and its whole value, so the total is untouched, and the caps get the two numbers they
+    # need. ``SIGNALS`` is deliberately NOT extended — ``identity_ledger`` iterates it, and a sub-signal is a
+    # decomposition of one line of evidence, not a second independent one, so counting it twice would
+    # over-claim.
+    return {**parts, "total": _clamp(total), NAME: name, DISCRIMINATOR: discriminator}
 
 
 def _clamp(x: float) -> float:

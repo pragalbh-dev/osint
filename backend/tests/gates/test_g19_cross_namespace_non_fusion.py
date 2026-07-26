@@ -21,13 +21,13 @@ honestly inert on the corpus rather than hidden to keep anything green.
 
 from __future__ import annotations
 
-from chanakya.resolve import ResolveConfig, resolve
+from chanakya.resolve import resolve
 from chanakya.resolve.aliases import AliasIndex
 from tests.resolve._helpers import entity, mk_config, triple
 
-#: The stage block, in the shape the shipped config declares it. Only what each test needs is set — an absent
-#: knob is inert by construction, which is how a test proves *which* mechanism did the work.
-EARNED = {"enabled": True, "name_ceiling": "possible"}
+#: The identity tunables, in the shape the shipped config declares them. Only what each test needs is set —
+#: an absent knob has nothing to apply, which is how a test proves *which* mechanism did the work.
+EARNED = {"name_ceiling": "possible"}
 
 
 def _cfg(**over):
@@ -161,28 +161,84 @@ def test_the_same_pair_in_ONE_namespace_still_fuses() -> None:
     )
 
 
-# ── flag-off: the holes are still open, which is what makes the flag boundary real ────────────────
+# ── the ESCALATE half: a refusal that reaches nobody is half the non-negotiable ────────────────────
 
-def test_the_alias_reflexivity_fix_is_not_flag_gated() -> None:
-    """The reflexivity hole is a **bug**, so its fix ships in the default — not behind the stage flag.
+def test_the_cross_type_refusal_names_what_is_missing_for_BOTH_mentions() -> None:
+    """Refusing to fuse is only half of it: the analyst has to RECEIVE the refusal.
 
-    I first gated it, on the reasoning that flag-off must reproduce pre-S3 behaviour exactly. The independent
-    suite rejected that, and it is right: ``AliasIndex.equivalent`` never did what its own docstring promised,
-    and a fix that applies only when a stage flag is on leaves the hole open in the configuration everything
-    actually runs in. Measured byte-inert on both real surfaces and the golden fixture — nothing in this
-    corpus relied on a name being its own alias — so there was never a byte-identity cost to pay.
+    The cross-type wall un-fuses the pair and then routes **neither** half anywhere — the two mentions end up
+    with no edge between them, no merge-queue item (T3b-A: a type mismatch is not a merge question) and, before
+    this, no gap either. That is indistinguishable from two mentions that never resembled each other, which is
+    exactly the state a system that must say what it cannot assess may not be in.
 
-    The *caps* stay flag-gated, because they change what an earned signal may do. A method doing what it says
-    is not a policy.
+    So the refusal raises a NAMED GAP, one per endpoint, and the gap states the real ground: two sources
+    disagree about what kind of thing this is. That is an evidentiary contradiction — the thing this system
+    exists to surface — and neither fusing it (asserting a type neither source states) nor dropping the
+    resemblance silently would surface it.
     """
+    # A SOURCE asserts the identity, which is how a cross-type pair reaches the fusion path at all (type is a
+    # blocking key, so two differently-typed mentions never share a token block). That is also the sharp real
+    # case: the document says these are one thing and the schema says they are two kinds of thing.
     claims = [
         entity("c1", "component", "HT-233"),
         entity("v1", "variant", "HT-233"),
+        triple("c1", "same-as", "v1"),
     ]
-    off = mk_config(alias_table={"HT-233": ["H-200"]}, name_alone_caps_at_possible=True)
-    assert ResolveConfig.from_bundle(off).earned_identity_on is False
+    part = resolve(claims, _cfg())
 
-    assert not resolve(claims, off).same_as, (
-        "with the stage flag off a cross-TYPE pair still fused through the reflexive alias branch — the bug "
-        "fix must hold in the shipped default, or G19's Phase-1 half is closed only where it is least needed"
+    assert not part.same_as, f"a cross-TYPE pair fused: {part.same_as} (G19)"
+    refusals = part.identity_refusals
+    assert refusals, (
+        "the pair was refused and NOTHING was raised: no merge, no queue item, no gap. A refusal the analyst "
+        "never receives is the escalate half of the non-negotiable missing"
     )
+    key = "|".join(sorted(("c1", "v1")))
+    assert key in refusals, f"the refusal is not keyed to the refused pair: {sorted(refusals)}"
+    what = refusals[key]
+    assert "component" in what and "variant" in what, (
+        f"the gap does not name the two conflicting typings, so it cannot be acted on: {what!r}"
+    )
+
+
+def test_a_low_scoring_cross_type_coincidence_raises_NOTHING() -> None:
+    """The biting clause on the gap: it is a finding only where the evidence otherwise FUSED the pair.
+
+    T3b-A stands — asking an analyst whether an air-defence sector is the same thing as an air-defence centre
+    "is not triage, it is noise" — so a cross-type pair the evidence never claimed was one thing earns no gap.
+    Without this the register fills with every same-token coincidence in the graph and stops being read.
+    """
+    claims = [
+        entity("c2", "component", "Zulu Radar"),
+        entity("v2", "variant", "Anvil Missile"),
+        triple("c2", "same-as", "v2"),
+    ]
+    part = resolve(claims, _cfg())
+
+    assert not part.same_as
+    assert not part.identity_refusals, (
+        f"a cross-type pair nothing licensed a fusion for still raised a gap: {part.identity_refusals}"
+    )
+
+
+def test_the_cross_namespace_refusal_also_names_what_is_missing() -> None:
+    """Both halves of the wall owe a gap — the namespace half reaches the queue AND the gap register.
+
+    The queue item says "these two look alike, decide"; the gap says "this profile's operator is an open
+    question". They are different statements to different surfaces and the analyst needs both: a reviewer
+    working the merge queue sees the pair, a reviewer reading the node sees that its operator is unsettled.
+    """
+    claims = [
+        entity("v_cn", "variant", "HQ-9", country="China"),
+        entity("v_pk", "variant", "HQ-9", country="Pakistan"),
+        entity("c_shared", "component", "HT-233"),
+        triple("v_cn", "equips", "c_shared"),
+        triple("v_pk", "equips", "c_shared"),
+    ]
+    part = resolve(claims, _cfg())
+
+    assert not part.same_as
+    key = "|".join(sorted(("v_cn", "v_pk")))
+    assert key in part.identity_refusals, (
+        f"the cross-namespace refusal raised no gap: {sorted(part.identity_refusals)}"
+    )
+    assert "operator" in part.identity_refusals[key].lower()

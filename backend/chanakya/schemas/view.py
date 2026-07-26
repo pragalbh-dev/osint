@@ -177,9 +177,20 @@ class KnownGap(Record):
     id: str
     what_missing: str  # rendered from a template keyed off the unmet slot (never regenerated prose)
     observability_ceiling: ObservabilityCeiling
-    next_coverage_due: str | None = None  # only meaningful for a *confirmable* ceiling
+    next_coverage_due: str | None = None  # a DATE, and only when a source's numeric cadence produced one
+    # …and the second clause of the non-negotiable, in words the analyst can act on. ALWAYS populated:
+    # "names what is missing AND when next coverage is due" was met by a bare ``next_coverage_due: null``
+    # on 34 of 37 gaps, which states nothing — it is indistinguishable from a field nobody filled in.
+    # Derived by ``sufficiency.coverage_statement``, never authored and never invented: it names the date
+    # and the interval where one exists, and where none does it says which source class could close the gap
+    # and why that class has no revisit date. An honest "no scheduled coverage" is compliant; a null is not.
+    coverage_statement: str = ""
     related_ref: str | None = None  # the node/edge this gap hangs off
     missing_slots: list[str] = []
+    # Other gap ids that raised this IDENTICAL statement about this same node and were collapsed into it.
+    # Several raw pairs can canonicalise onto one node, and rendering one finding five times reads as five
+    # findings; the raw ids are kept here so the presentation collapses without the record doing so.
+    also_raised_as: list[str] = []
 
 
 class AlertProvenance(Record):

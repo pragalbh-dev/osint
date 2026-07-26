@@ -16,24 +16,9 @@ from chanakya.resolve.rconfig import ResolveConfig
 from chanakya.settings import config_dir
 
 
-def _bundle(*, earned: bool = False):
-    """The shipped bundle with the RK-COREF stage flag pinned **explicitly** to ``earned``.
-
-    Both directions are pinned, never inherited. The ``off`` side used to read ambient config, which meant
-    that under a flag-ON run (``pytest --earned-identity=on``, the shadow-config switch) the "flag off"
-    assertions below were measuring a flag-ON bundle — so a flag-on run reported agreement it had not
-    tested, and the one interesting question ("does this row really ride the flag?") went unasked in the
-    only run mode that could answer it.
-    """
-    bundle = ConfigStore.seed_from(config_dir()).snapshot()
-    block = {**(getattr(bundle.resolution, "earned_identity", None) or {}), "enabled": earned}
-    resolution = bundle.resolution.model_copy(update={"earned_identity": block})
-    return bundle.model_copy(update={"resolution": resolution})
-
-
 def _cfg() -> ResolveConfig:
-    """The shipped config with the stage flag pinned OFF."""
-    return ResolveConfig.from_bundle(_bundle())
+    """The shipped config. There is no stage flag left to pin it either side of."""
+    return ResolveConfig.from_bundle(ConfigStore.seed_from(config_dir()).snapshot())
 
 
 def test_unit_alert_posture_declared_supporting_and_perishable() -> None:
@@ -47,30 +32,52 @@ def test_unit_alert_posture_declared_supporting_and_perishable() -> None:
     assert "alert_posture" not in cfg.critical_role_attrs("unit")
 
 
-def test_unit_service_branch_is_promoted_to_critical_by_earned_identity() -> None:
-    """RK-COREF (S3) promotes it — and C7's value normalisation is the prerequisite that made that legal.
+def test_the_two_operator_scoped_slots_are_critical() -> None:
+    """``unit.service_branch`` and ``trading_org.origin_country`` are WALLS — and normalisation is why.
 
-    It was ``supporting`` (i.e. inert) for one stated reason: the corpus writes the branch unnormalised
-    ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an exact-match wall on those "SHATTERS legitimate
-    merges". ``value_normalization`` removes that objection, so a genuinely different service branch is now a
-    genuinely different unit. The row carries ``requires: earned_identity``, so the promotion rides the stage
-    flag: **flag off it still reads exactly as it did**, which is what this asserts on both sides.
+    Both were ``supporting`` (i.e. inert) for one stated reason: the corpus writes them unnormalised
+    ('Air Force' / 'PAF' / 'Pakistan Air Force'; 'CHINA' vs 'China'), and an exact-match wall on those
+    "SHATTERS legitimate merges". ``value_normalization`` removes that objection and now runs
+    unconditionally, so a genuinely different service branch is a different unit and a genuinely different
+    country of origin is a different company.
+
+    ``origin_country`` is asserted here because it was the slot left behind: its normalisation rows shipped
+    while the promotion did not, so the prerequisite existed and the wall did not. For an operator-scoped
+    order of battle two same-named organisations in two countries is the costliest over-merge there is.
     """
-    off = _cfg()
-    assert "service_branch" not in off.critical_role_attrs("unit"), (
-        "the promotion is live with the stage flag off — flag-off behaviour would not be flag-off"
+    cfg = _cfg()
+    assert "service_branch" in cfg.critical_role_attrs("unit")
+    assert cfg.attribute_perishable("unit", "service_branch") is False
+    assert "origin_country" in cfg.critical_role_attrs("trading_org")
+    # …and the normalisation prerequisite the promotions rest on is declared for BOTH slots.
+    normalization = dict(cfg.earned_identity.value_normalization)
+    assert "service_branch" in normalization and "origin_country" in normalization, (
+        "a slot was promoted to a wall without the value-normalisation classes that make the wall safe — "
+        "that is the exact-match shattering the finding in config/resolution.yaml warns about"
     )
-    # The row PREDATES S3, so flag-off it must read exactly as it always did — still declared, still
-    # supporting, still durable. An `earned_role` override is used precisely so the row is not dropped:
-    # dropping it would remove the attribute from the agreement ratio and move flag-off scoring.
-    assert "service_branch" in off.supporting_role_attrs("unit")
-    assert off.attribute_perishable("unit", "service_branch") is False
+    assert "service_branch" in cfg.earned_identity.normalization_required_attrs
+    assert "origin_country" in cfg.earned_identity.normalization_required_attrs
 
-    on = ResolveConfig.from_bundle(_bundle(earned=True))
-    assert "service_branch" in on.critical_role_attrs("unit"), (
-        "with the stage flag on the branch is still only `supporting`, so C7's normalisation bought nothing "
-        "and the wall D5 describes remains unreachable"
+
+def test_no_row_carries_a_retired_stage_marker() -> None:
+    """``requires:`` / ``earned_role:`` are gone, and a row that re-grows one fails to LOAD.
+
+    The markers were the stage flag at row granularity. With the machinery unconditional they can only mean
+    "this row is for the other behaviour", and a silently ignored ``earned_role: critical`` would quietly
+    demote a wall its author meant to declare — so the reader raises instead of ignoring. Asserted through the
+    loader, so it covers the shipped file and any future edit to it.
+    """
+    from chanakya.resolve.rconfig import AttributeRoleError, _validate_attribute_roles
+
+    _validate_attribute_roles(  # the shipped block loads (this call is what ResolveConfig makes)
+        ConfigStore.seed_from(config_dir()).snapshot().resolution.attribute_roles
     )
+    for marker in ({"requires": "earned_identity"}, {"earned_role": "critical"}):
+        try:
+            _validate_attribute_roles({"unit": {"service_branch": {"role": "supporting", **marker}}})
+        except AttributeRoleError:
+            continue
+        raise AssertionError(f"a row carrying {marker} loaded silently instead of failing loudly")
 
 
 def test_variant_operator_branch_still_critical_and_untouched() -> None:

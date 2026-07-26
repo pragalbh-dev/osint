@@ -48,6 +48,36 @@ def test_resolution_edges_emitted_for_candidates_and_distinct() -> None:
     assert sa.confidence is None  # no assertion_confidence on a resolution edge (G5)
 
 
+def test_candidate_same_as_carries_the_REASON_it_is_an_open_question() -> None:
+    """The resolver's reason has to reach the surface an analyst opens, not just the Partition.
+
+    Every withholding mechanism computes an analyst-facing rationale — the co-location cap's "here is the
+    discriminator nobody stated", the cross-type/cross-namespace refusal, the below-floor critical conflict,
+    the licensing coreference quote — and ``Partition.candidate_reasons`` carried all of them to exactly one
+    consumer: the test suite. The drawn candidate edge showed a score and no grounds, so the queue asked
+    "are these the same?" with no way to see why the machine would not answer. "Escalate to the analyst" is
+    not satisfied by a value in a dict.
+    """
+    ids = {"a", "b"}
+    ck = pair_key("a", "b")
+    part = Partition(
+        candidates=[("a", "b")],
+        candidate_reasons={ck: "co-location is not identity, capped at 'probable' — …"},
+        merge_confidence={ck: 0.61},
+    )
+    edge = next(e for e in _resolution_edges(ids, part) if e.type == "same-as")
+    assert edge.attrs["reason"].startswith("co-location is not identity"), (
+        "the candidate edge does not carry its reason — the grounds for the refusal never reach the drawer"
+    )
+
+
+def test_candidate_same_as_carries_no_reason_key_when_there_is_no_reason() -> None:
+    """An ordinary scored look-alike has no *stated* ground, and inventing one would be the worse failure."""
+    part = Partition(candidates=[("a", "b")], merge_confidence={pair_key("a", "b"): 0.5})
+    edge = next(e for e in _resolution_edges({"a", "b"}, part) if e.type == "same-as")
+    assert "reason" not in edge.attrs
+
+
 def test_candidate_same_as_cites_the_claims_that_assert_the_identity() -> None:
     """T10 — the ``source_asserted`` score has a sentence behind it, and the edge must carry it.
 

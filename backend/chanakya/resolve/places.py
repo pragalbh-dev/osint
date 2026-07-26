@@ -18,10 +18,9 @@ from dataclasses import dataclass
 
 from geopy.distance import geodesic
 
-from chanakya.schemas import PlaceEntry, pair_key
+from chanakya.schemas import PlaceEntry
 
 from .aliases import AliasIndex
-from .cluster import ResolveResult
 from .entities import Entity, EntityGraph, unordered_pairs
 from .geo import LOCATION_ATTRS, Coords, location_attr, parse_coords
 from .normalize import normalize
@@ -35,7 +34,6 @@ __all__ = [
     "Coords",
     "LocationMention",
     "PlaceMatch",
-    "augment",
     "location_attr",
     "parse_coords",
     "place_distinct_pairs",
@@ -314,56 +312,50 @@ def place_matches(graph: EntityGraph, cfg: ResolveConfig) -> dict[str, PlaceMatc
     return out
 
 
+def place_wall_reason(place_a: str, place_b: str) -> str:
+    """Analyst-facing ground for a gazetteer place wall — a DERIVED finding about the two PLACES.
+
+    The curated fact is ``place_a`` ≠ ``place_b`` in the gazetteer. That two *mentions* are held apart is the
+    resolver's inference from it, via each mention's place match, so this text names the gazetteer pair and
+    the inference — and never claims a human ruled on these two mentions. Thirteen of the thirty walls drawn
+    on the booted corpus come from this rail and every one of them was rendering "explicit do-not-merge
+    (hard veto)", the identical string used for a genuinely curated analyst veto.
+    """
+    return (
+        f"held apart by the curated place gazetteer: these two mentions resolve to two places the gazetteer "
+        f"records as distinct ({place_a} ≠ {place_b}). Two ports on one shipping neighbourhood, or two "
+        f"revetment complexes inside one district, look alike in every name and neighbourhood signal — the "
+        f"gazetteer is the only rail that separates them, so it is hard and it holds transitively. DERIVED: "
+        f"the curated fact is that the two PLACES differ; that these two mentions are therefore different "
+        f"things is the resolver's inference from each mention's place match. If a mention is matched to the "
+        f"wrong place, fix the match (or record an analyst merge) — the gazetteer entry is not the error."
+    )
+
+
 def place_distinct_pairs(
     graph: EntityGraph, cfg: ResolveConfig, place_of: dict[str, PlaceMatch] | None = None
-) -> set[frozenset[str]]:
-    """Entity pairs whose gazetteer places are mutually ``distinct_from`` → a **hard veto**.
+) -> tuple[set[frozenset[str]], dict[frozenset[str], str]]:
+    """Entity pairs whose gazetteer places are mutually ``distinct_from`` → a **hard veto**, with grounds.
 
     Computed BEFORE ``resolve_entities`` so the Karachi-Port ≠ Port-Qasim trap vetoes an *entity*-level
     merge too (two ports that share a shipping neighbourhood must still never fuse), not merely surface
     as an edge afterwards. Folded into the veto set, so it also blocks transitive fusion in ``finalise``.
+
+    Returns ``(walls, reasons)`` — see :func:`place_wall_reason` for why this rail owes a reason of its own.
     """
     if not cfg.places.places or not cfg.scorable:
-        return set()
+        return set(), {}
     distinct_places = _distinct_place_pairs(cfg)
     if place_of is None:
         place_of = place_matches(graph, cfg)
     out: set[frozenset[str]] = set()
+    reasons: dict[frozenset[str], str] = {}
     for a, b in unordered_pairs(sorted(place_of)):
         if frozenset((place_of[a].place_id, place_of[b].place_id)) in distinct_places:
-            out.add(frozenset((a, b)))
-    return out
-
-
-def augment(
-    result: ResolveResult,
-    graph: EntityGraph,
-    cfg: ResolveConfig,
-    alias_idx: AliasIndex,
-    veto: set[frozenset[str]],
-    place_of: dict[str, PlaceMatch] | None = None,
-) -> None:
-    """Fuse **place-type** mentions of one gazetteer node; emit same_as / candidates (not distinct).
-
-    Location resolution is about PLACE identity: two place-type mentions of one gazetteer node are the
-    same place. It never fuses a non-place entity (a unit is *located at* a base, it is not the base),
-    never fuses two distinct co-located assets (different types), and **honours the veto + learned
-    ``barred``** (co-location ≠ identity — a confident wrong merge corrupts the ORBAT, spine/03). The
-    gazetteer ``distinct_from`` trap is enforced upstream as a hard veto (:func:`place_distinct_pairs`),
-    so it is not re-emitted here. Raw pairs only; ``finalise`` builds the flat canonical map. No-op when
-    the gazetteer is empty (F0's golden config) → golden unchanged (gate G2).
-    """
-    auto, hitl = place_merge_pairs(graph, cfg, alias_idx, veto, place_of)
-    for a, b in sorted(auto):
-        key = pair_key(a, b)
-        result.same_as.append((a, b))  # two mentions of one place (Rahwali DMS ≡ relative form)
-        result.merge_confidence[key] = 1.0
-        result.merge_breakdown[key] = {"place": 1.0, "total": 1.0}
-    for a, b in sorted(hitl):
-        key = pair_key(a, b)
-        result.candidates.append((a, b))
-        result.merge_confidence[key] = cfg.hitl_low
-        result.merge_breakdown[key] = {"place": cfg.hitl_low, "total": cfg.hitl_low}
+            pair = frozenset((a, b))
+            out.add(pair)
+            reasons[pair] = place_wall_reason(*sorted((place_of[a].place_id, place_of[b].place_id)))
+    return out, reasons
 
 
 def place_merge_pairs(
@@ -375,12 +367,11 @@ def place_merge_pairs(
 ) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
     """The place-identity decisions as ``(auto, hitl)`` pair lists — the same rules, without emitting.
 
-    Factored out so the decisions can be taken **before** ``resolve_entities`` instead of only after it
-    (RK-COREF item 11 / the ordering bug plan §5b names). :func:`augment` consumes this, so there is exactly
-    one definition of "which place mentions are one place"; what changes is only *when* a caller may ask.
+    The decisions are taken **before** ``resolve_entities`` (RK-COREF item 11 / the ordering bug plan §5b
+    names): the ``auto`` pairs join the Phase-1 bootstrap and the ``hitl`` pairs the raise-only queue.
 
-    **Why the ordering is load-bearing.** ``places.augment`` ran *after* ``resolve_entities``, so a place
-    merge was invisible to ``relational_score``: two units based at differently-named-but-identical sites
+    **Why the ordering is load-bearing.** The post-fixpoint emitter this replaced (``places.augment``, now
+    deleted) ran *after* ``resolve_entities``, so a place merge was invisible to ``relational_score``: two units based at differently-named-but-identical sites
     did **not** share a neighbour key, because the two site mentions had not been unified when the fixpoint
     computed the neighbourhood. spine/13 §6 lever 2 names places as the clean anchor the instance layer
     crystallizes onto — mechanically they were not one. Together with **F9** (only *completed* merges carry

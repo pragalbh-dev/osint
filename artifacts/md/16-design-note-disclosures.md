@@ -188,3 +188,45 @@ graded behaviour degrades *gracefully* would be wrong in specific, nameable ways
   rewarding a distinctive name is outstanding. The contract is recorded so it is testable when added: all else
   equal, the name component must be monotonically non-increasing in how often the matched tokens occur across
   the inventory.
+
+## HITL, identity and supersession — owed from the DEFAULT-ON close-out (2026-07-26)
+
+- **A machine cap can overrule an explicit human ACCEPT — deliberately, and it is the safe direction.** Our
+  stated HITL rule is that an analyst override *mutates graph state, not just a log*. There is one live
+  exception: on the two co-located batteries, an analyst pressing **accept** gets `applied=false`, because
+  the co-location cap refuses the fusion. That cap is the anti-fabrication machinery — fusing those two
+  units is exactly what would make their two sites read as one unit's before-and-after and draw a
+  **relocation that never happened**. So the refusal is correct, and it is *acknowledged* with a receipt
+  naming the ground rather than silently ignored. But it is an inversion of our own rule and should be
+  **explained as deliberate rather than discovered by a reviewer clicking accept.** The general principle we
+  actually implement is narrower and worth stating as such: a human override mutates state **wherever
+  mutating it cannot manufacture an assessment**; where it can, the system refuses *and says so*.
+- **A retirement is visible; how thinly it is evidenced is not.** `stale` means "we knew this and the world
+  moved on" — a claim about the past — so it is now conditioned on the assertion having reached the
+  confirmed *magnitude*. It is **not** conditioned on having had more than one independent look, because
+  that bar would reclassify our own flagship relocation beat from history to open question. The shortfall is
+  recorded in the stage's gate vector, but that field reaches no analyst surface, so what the analyst sees
+  is *that* an assertion was retired, not that the retirement rests on a single source. Stated as a partial
+  close, because the honest version of "we condition staleness on the evidence" has a footnote.
+- **Several credibility and identity beats are tested on fixtures and inert on the frozen corpus.** The
+  overruled-proposal record that rides a wall, the supersede path itself, and the hero relocation beat (held
+  behind an unauthored site-class alias map) all pass their tests and do nothing on the real data. A green
+  suite is not evidence that these have run in anger. We would rather name the gap than let a passing test
+  count as a demonstration.
+- **A computed judgement that never reaches the human is this system's characteristic failure.** Twice in
+  one integration pass, the defect was not a wrong answer but a right answer with no route to the analyst —
+  a decision recorded and not applied, a gap register that stated nothing about coverage, a watch-list tier
+  no surface fetched. It is worth saying in the note that this, rather than hallucination, is the failure
+  mode an auditable OSINT system has to be engineered against, and that our tests now assert *arrival* on a
+  surface rather than mere computation.
+- **A machine cap can now overrule an explicit human instruction, and we chose to keep it that way**
+  (noted 2026-07-26, user-aware; owed a design-note paragraph). An analyst who *accepts* the merge on the
+  flagship pair — the Army PAAD unit and "the PAF HQ-9B fire unit" — gets `applied: false`, with the
+  co-location cap named as the ground. That sits against our own stated HITL rule that overrides mutate
+  graph state: here the override is **refused**, not applied. We keep it because that refusal is the exact
+  mechanism preventing the fabricated relocation the system exists to avoid, and because it is acknowledged
+  with a specific checkable reason rather than failing silently. Honest framing for the note: **HITL is not
+  unconditional authority — an analyst can overrule a machine *inference*, but cannot instruct the system to
+  assert an identity the evidence forbids; the disagreement is surfaced rather than settled by seniority.**
+  State it as a deliberate asymmetry, not an oversight, and say plainly that the *reject* direction does
+  propagate, mutates the graph, and survives a rebuild.

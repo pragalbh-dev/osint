@@ -58,19 +58,21 @@ def mk_config(
     relational_support_k: int | None = None,
     auto_merge_by_type: dict[str, float] | None = None,
     possible_floor: float | None = None,
+    hitl_low: float | None = None,
     name_alone_caps_at_possible: bool = False,
     earned_identity: dict[str, Any] | None = None,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
     # The gate FAILS CLOSED on an empty marker vocabulary — an unconfigured conjunct must never license the
     # strongest fusion path in the system. So a fixture that opts into authoritative coreference has to
-    # declare what licenses one, exactly as the shipped config does. Only the vocabulary is supplied here;
-    # the stage flag is not, so a legacy opt-in still gets legacy behaviour everywhere else.
+    # declare what licenses one, exactly as the shipped config does.
     if coref_authoritative_evidence and earned_identity is None:
         earned_identity = {"equivalence_markers": ["also known as", "aka", "formerly"]}
     bands = dict(BANDS)
     if possible_floor is not None:
         bands["possible_floor"] = possible_floor
+    if hitl_low is not None:
+        bands["hitl_low"] = hitl_low
     resolution = ResolutionConfig(
         coref_authoritative_evidence=coref_authoritative_evidence or [],
         entity_geo_conflict_max_km=entity_geo_conflict_max_km or {},

@@ -11,6 +11,6 @@ Frozen signature: ``check(assertion, claims, config) -> SufficiencyEval``.
 
 from __future__ import annotations
 
-from .checker import check
+from .checker import check, coverage_statement
 
-__all__ = ["check"]
+__all__ = ["check", "coverage_statement"]

@@ -107,37 +107,67 @@ def test_identity_status_labels_the_three_lists() -> None:
 # ── the name-alone policy dial (banked D4 correction) ───────────────────────────────────────────────
 
 def _name_alone_claims() -> list:
-    # Two variants that share ONLY a name signal: an identity attr agrees (export_designator) so the
-    # attribute score reaches 1.0, but there is NO shared neighbourhood and NO source assertion. They
-    # share the "HQ-9" token (so they are compared) but do not normalise-equal / alias (so no bootstrap).
+    # Two variants that share NOTHING BUT THEIR NAMES: no agreeing stated attribute, no shared
+    # neighbourhood, no source assertion. They share the "HQ-9" token (so they are compared) but do not
+    # normalise-equal / alias (so no bootstrap).
+    #
+    # The fixture used to make an identity attribute AGREE (``export_designator``) to push the fused
+    # ``attribute`` term to 1.0. That is no longer a name-alone pair and must not be capped: the name /
+    # discriminator split (D-13.20) exists precisely so an agreeing stated discriminator is "one more
+    # trivially-available signal" that clears the cap, and the old fused test could not tell the two apart —
+    # it fired on a pair with a real discriminator and spared a pair with a strong name and a weak one. So the
+    # discriminator is removed and the review band is lowered instead, which is what makes a bare name match
+    # reach the queue at all.
     return [
-        entity("var_a", "variant", "HQ-9 Alpha", export_designator="HQ-9/P"),
-        entity("var_b", "variant", "HQ-9 Beta", export_designator="HQ-9/P"),
+        entity("var_a", "variant", "HQ-9 Alpha"),
+        entity("var_b", "variant", "HQ-9 Beta"),
     ]
-
-
-_NAME_ALONE_RULES = {"variant": {"identity": ["export_designator"]}}
 
 
 def test_name_alone_dial_off_keeps_the_pair_a_candidate() -> None:
     """Default OFF preserves current banding — a name-only pair still reaches the analyst (probable)."""
-    cfg = mk_config(attribute_rules=_NAME_ALONE_RULES, possible_floor=0.25)  # dial defaults off
+    cfg = mk_config(possible_floor=0.25, hitl_low=0.30)  # dial defaults off
     part = resolve(_name_alone_claims(), cfg)
     assert frozenset({"var_a", "var_b"}) in _as_pairs(part.candidates)
     assert frozenset({"var_a", "var_b"}) not in _as_pairs(part.possible)
     key = pair_key("var_a", "var_b")
-    # sanity: it IS name-alone (only the attribute signal fired)
+    # sanity: it IS name-alone — the NAME sub-signal fired and nothing else did
     bd = part.merge_breakdown[key]
-    assert bd["attribute"] > 0 and bd["relational"] == 0 and bd["source_asserted"] == 0
+    assert bd["name"] > 0 and bd["discriminator"] == 0
+    assert bd["relational"] == 0 and bd["source_asserted"] == 0
 
 
 def test_name_alone_dial_on_caps_the_pair_at_possible() -> None:
-    """ON: a pair whose only nonzero identity signal is ``attribute`` cannot reach probable/HITL."""
+    """ON: a pair whose only nonzero identity signal is the NAME cannot reach probable/HITL."""
     cfg = mk_config(
-        attribute_rules=_NAME_ALONE_RULES,
         possible_floor=0.25,
+        hitl_low=0.30,
         name_alone_caps_at_possible=True,
     )
     part = resolve(_name_alone_claims(), cfg)
     assert frozenset({"var_a", "var_b"}) in _as_pairs(part.possible)
     assert frozenset({"var_a", "var_b"}) not in _as_pairs(part.candidates)
+
+
+def test_an_agreeing_discriminator_clears_the_name_alone_cap() -> None:
+    """The other half of the split (D-13.20): ONE more trivially-available signal lifts the cap.
+
+    Same pair, same dial, plus an agreeing stated discriminator. Under the pre-split fused ``attribute``
+    term this pair was indistinguishable from the bare name coincidence above — both read as "name alone" —
+    so the cap fired on it too. It must now reach the analyst's queue.
+    """
+    cfg = mk_config(
+        attribute_rules={"variant": {"identity": ["export_designator"]}},
+        possible_floor=0.25,
+        hitl_low=0.30,
+        name_alone_caps_at_possible=True,
+    )
+    claims = [
+        entity("var_a", "variant", "HQ-9 Alpha", export_designator="HQ-9/P"),
+        entity("var_b", "variant", "HQ-9 Beta", export_designator="HQ-9/P"),
+    ]
+    part = resolve(claims, cfg)
+    bd = part.merge_breakdown[pair_key("var_a", "var_b")]
+    assert bd["discriminator"] > 0, "fixture drift: the discriminator did not agree"
+    assert frozenset({"var_a", "var_b"}) in _as_pairs(part.candidates)
+    assert frozenset({"var_a", "var_b"}) not in _as_pairs(part.possible)

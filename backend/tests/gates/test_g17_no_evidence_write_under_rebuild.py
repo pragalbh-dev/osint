@@ -185,7 +185,6 @@ def _ontology() -> OntologyConfig:
                 {"name": "instance-of", "from": "presence", "to": "variant", "freshness_class": "durable"},
             ],
             "layer_routing": {
-                "enabled": True,
                 "presence_type": "presence",
                 "design_link_edge": "instance-of",
                 "provisional_prefix": "presence",
@@ -303,14 +302,23 @@ def test_the_derived_edge_cannot_reach_confirmed() -> None:
         assert "derived-inference" in edge.confidence.integrity_flags
 
 
-def test_the_derivation_is_flag_gated() -> None:
-    """With layer routing off, nothing is derived — the flag-off safety property, stated locally."""
+def test_the_derivation_is_bounded_by_its_DECLARATION_not_by_a_flag() -> None:
+    """An ontology that declares no ``materializes`` derives nothing — the bound is the declaration.
+
+    This used to assert the flag-off property ("routing disabled ⇒ nothing derived"). The flag is deleted, so
+    the honest version of the same safety statement is that the derivation only fires where the ontology says
+    an edge materializes an instance: strip the declaration and the premise pair yields no presence and no
+    derived basing, with nothing switched off anywhere.
+    """
     ontology = _ontology().model_dump(by_alias=True)
-    ontology["layer_routing"]["enabled"] = False
+    for edge in ontology.get("edge_types", []):
+        edge.pop("materializes", None)
     config = _config().model_copy(update={"ontology": OntologyConfig.model_validate(ontology)})
     view = rebuild(_premise_pair(), [], config)
-    assert not [e for e in view.edges if e.type == "based-at"]
-    assert not [n for n in view.nodes if n.type == "presence"]
+    assert not [n for n in view.nodes if n.type == "presence"], (
+        "a presence was materialized for an edge whose ontology declares no `materializes` — the routing is "
+        "inventing structure the declaration does not license"
+    )
 
 
 def test_the_derivation_module_constructs_no_claim_record() -> None:
@@ -337,10 +345,22 @@ def test_the_derivation_module_constructs_no_claim_record() -> None:
     )
 
 
-def test_layer_routing_is_off_by_default_in_the_shipped_ontology() -> None:
-    """The flag ships **off**: the stage's safety property is a property of the config, not of a habit."""
+def test_the_shipped_ontology_declares_no_routing_enable_FLAG() -> None:
+    """There is no ``layer_routing.enabled``, in the config OR on the compiled reader.
+
+    It used to ship ``false``, which meant the type/instance split — including the two prohibitions that stop
+    the build fabricating a relocation over an unearned identity — was declared and dormant in the shipped
+    deployment. This asserts the switch cannot come back by either route: not as a config key, and not as an
+    attribute on ``LayerRouting`` that some later branch could read.
+    """
+    import yaml
+
     from chanakya.config.store import ConfigStore
     from chanakya.settings import config_dir
 
+    declared = yaml.safe_load((config_dir() / "ontology.yaml").read_text(encoding="utf-8"))
+    assert "enabled" not in (declared.get("layer_routing") or {}), (
+        "config/ontology.yaml re-grew layer_routing.enabled — the split is unconditional"
+    )
     routing = LayerRouting.from_ontology(ConfigStore.seed_from(config_dir()).snapshot().ontology)
-    assert routing.enabled is False
+    assert not hasattr(routing, "enabled"), "LayerRouting re-grew an `enabled` field"

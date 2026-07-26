@@ -31,7 +31,8 @@
 #     fires on a layer MISMATCH — the moment such a type carried an `instance` attribute it would generate
 #     a phantom split. `meta` says "outside the two-layer routing": never split, never materialized,
 #     never bound across. It is stated here rather than left implicit.
-# All of this is INERT unless `layer_routing.enabled` (bottom of this file) is true.
+# All of this is live at every rebuild; what each mechanism does is bounded by the declarations here and
+# in the `layer_routing` block at the bottom of this file.
 #
 # Ratified data-agent decisions applied (tmp/conv/DATA-C-corpus-and-oracle-observations.md):
 #   - supplies-component reserved for Manufacturer->Component; the Component->Variant hero edge is `equips`.
@@ -77,7 +78,7 @@
 # a node ATTRIBUTE on the endpoint the key drops (here the site's `site_type`) whose NORMALISED CLASS tags
 # the bucket, so `edge:<unit>:based-at:garrison` and `edge:<unit>:based-at:dispersal_site` are different
 # instances and only a genuine same-class change is a supersede. Read via `EdgeLaneIndex.instance_key_tag`
-# and applied only when layer_routing is enabled (flag-off keys are byte-unchanged).
+# and applied at every rebuild.
 #   THE RAW STATED STRING IS NEVER THE KEY (ruling L1). `site_type` is free text and its stated values
 #   conflate four concepts, so a raw-string key would both fail to wall a real conflict and silently kill a
 #   real relocation. The key is the normalised class from the closed vocabulary in `layer_routing` below,
@@ -113,7 +114,7 @@ node_types:
     # functional_role identifiers: acquisition | battle_management | engagement_fire_control | interceptor
     # instance_split: a component mention carrying an INSTANCE attribute (an operator) is a lumped mention;
     # the instance half becomes a provisional PRESENCE linked back to the shared design by `instance-of`.
-    instance_split: {node_type: presence, link: instance-of}
+    instance_split: {link: instance-of}   # citizen = layer_routing.presence_type (one name, one place)
     attrs:
       - {name: component_class, layer: design}
       - {name: functional_role, layer: design}
@@ -128,7 +129,7 @@ node_types:
     # family retained as an attr (e.g. "HQ-9"); operator_branch replaces the old `branch`.
     # `operator_branch` is the canonical straddle case of spine/13 §5.1: an operator is an INSTANCE fact
     # riding on a DESIGN node. See `instance_split` above/below for what the build does with it.
-    instance_split: {node_type: presence, link: instance-of}
+    instance_split: {link: instance-of}   # citizen = layer_routing.presence_type (one name, one place)
     attrs:
       - {name: family, layer: design}
       - {name: base_designator, layer: design}
@@ -350,7 +351,7 @@ edge_types:
   # one source of truth). manufactures is TIGHTENED to Mfr->Variant (D-A) so Mfr->Component is unambiguously
   # supplies-component; the oracle's two manufactures->component edges reconcile separately (answer_key task).
   - {name: based-at,             from: unit,                  to: basing_site,             extractor: true, freshness_class: perishable, instance_key: [from], instance_key_tag: site_type}    # FORMATION->Site (field 30d / garrison 18mo); FUNCTIONAL — key the supersede instance on the unit alone so a relocation's before/after co-locate (D-P4.4), TAGGED by the site's site_type so a garrison + a forward site are two valid basings rather than a manufactured relocation (R1.3/C1)
-  - {name: observed-at,          from: [variant, component],  to: basing_site,             extractor: true, freshness_class: perishable, materializes: {end: from, node_type: presence, link: instance-of}}   # EQUIPMENT->Site — the OBSERVED-occupancy lane (D-P4.2): "a TEL cluster / fire unit was seen at site Y on DATE". Deliberately a SEPARATE edge from `based-at`: what a satellite frame (or a write-up reading one) can honestly state is that *equipment* is at a place, not that a *named formation* is based there. (A source that *names a formation* at a site DOES state a basing — that is a stated `based-at`, this edge's sibling, extractor-emitted; only equipment-at-site is an `observed-at`.) When the formation is unstated, attributing the observed occupancy to a unit is a derived inference (ingest/basing.py) that keeps its own, lower confidence — never fused into one flat basing assertion (the d11 recycled-image and d20 grade-E relocation-spoof traps punish exactly that fusion). NOT functional (a variant is fielded at many sites at once), so the default (from,to) instance key stands. MATERIALIZES (A4/D-13.6, spine/13 §5.3): this edge needs an INSTANCE subject but a source states only the design ("HQ-9/P at Rahwali"), so the build must NOT point it at the shared design node — at rebuild it materializes a provisional PRESENCE as the subject and links that presence back to the design with `instance-of`. NOTE the domain deliberately still reads `[variant, component]`: per A4/D-13.6 the endpoint LAYER is static while endpoint IDENTITY is resolved at rebuild, so this declaration describes WHAT A SOURCE STATES (equipment at a place) and the presence lives in the DERIVED layer. Rewriting the domain to `presence` would make the ontology describe the build's output instead of the source's assertion. The `materializes` key is EXPLICIT, per-edge and opt-in rather than derived from the endpoint layers, because the endpoint layers cannot express the gap — the domain is design-typed while the semantics require an instance subject. Opt-in is also the fail-safe direction: an edge that declares nothing mints nothing, so no new edge type silently starts minting instances.
+  - {name: observed-at,          from: [variant, component],  to: basing_site,             extractor: true, freshness_class: perishable, materializes: {end: from, link: instance-of}}   # EQUIPMENT->Site — the OBSERVED-occupancy lane (D-P4.2): "a TEL cluster / fire unit was seen at site Y on DATE". Deliberately a SEPARATE edge from `based-at`: what a satellite frame (or a write-up reading one) can honestly state is that *equipment* is at a place, not that a *named formation* is based there. (A source that *names a formation* at a site DOES state a basing — that is a stated `based-at`, this edge's sibling, extractor-emitted; only equipment-at-site is an `observed-at`.) When the formation is unstated, attributing the observed occupancy to a unit is a derived inference (ingest/basing.py) that keeps its own, lower confidence — never fused into one flat basing assertion (the d11 recycled-image and d20 grade-E relocation-spoof traps punish exactly that fusion). NOT functional (a variant is fielded at many sites at once), so the default (from,to) instance key stands. MATERIALIZES (A4/D-13.6, spine/13 §5.3): this edge needs an INSTANCE subject but a source states only the design ("HQ-9/P at Rahwali"), so the build must NOT point it at the shared design node — at rebuild it materializes a provisional PRESENCE as the subject and links that presence back to the design with `instance-of`. NOTE the domain deliberately still reads `[variant, component]`: per A4/D-13.6 the endpoint LAYER is static while endpoint IDENTITY is resolved at rebuild, so this declaration describes WHAT A SOURCE STATES (equipment at a place) and the presence lives in the DERIVED layer. Rewriting the domain to `presence` would make the ontology describe the build's output instead of the source's assertion. The `materializes` key is EXPLICIT, per-edge and opt-in rather than derived from the endpoint layers, because the endpoint layers cannot express the gap — the domain is design-typed while the semantics require an instance subject. Opt-in is also the fail-safe direction: an edge that declares nothing mints nothing, so no new edge type silently starts minting instances.
   - {name: inducted-into,        from: variant,               to: unit,                    extractor: true, freshness_class: semi-durable}  # Variant->Unit — ORGANIZATIONAL evidence (the premise that earns a formation), NOT a located presence. Declares no `materializes` deliberately: "the HQ-9/P has entered service with Army Air Defence" is a holding statement about a design, not a sighting, so it mints nothing (spine/13 §5.3's contrast case).
   - {name: imported-by,          from: contract_import_event, to: unit,                    extractor: true, freshness_class: durable, requires_stated_endpoints: [to]}       # Contract->Unit. D12: no customs/BoL document names the receiving UNIT, yet this edge was the easy one to assert while the document's actual spine (event<->consignee/shipper) was unrepresentable — a schema that makes the sourced relation inexpressible and the unsourced one easy PRESSURES EXTRACTION TOWARD FABRICATION. `customs-party` below closes the expressiveness half; `requires_stated_endpoints: [to]` closes the other half: the unit must have been STATED, never materialized from the edge itself.
   - {name: exported-by,          from: contract_import_event, to: manufacturer,            extractor: true, freshness_class: durable, supplier_end: to}    # Contract->Manufacturer/export-agent (supplier = the exporter/OEM at the `to` end)
@@ -426,10 +427,14 @@ event_types:
 materiality:
   function_attr: functional_role
 
-# ── LAYER ROUTING (A2/A3/A4 — RK-LAYER/S2) ──────────────────────────────────────────────────────────
-# THE ONE FLAG for everything the type/instance split changes at rebuild time. `enabled: false` means the
-# build behaves exactly as it did before this stage: every declaration above is read, nothing is routed,
-# split, materialized or derived, and the view is byte-identical. `enabled: true` turns on, together:
+# ── LAYER ROUTING (A2/A3/A4) ─────────────────────────────────────────────────────────────────────────
+# Everything the type/instance split changes at rebuild time. THERE IS NO ENABLE FLAG: it used to ship
+# `enabled: false`, i.e. the six mechanisms below — including two that close a fabrication path — were
+# declared and dormant in the shipped build. These are one change to what a node IS, and a system that can be
+# switched between two answers to that question has two ontologies, so the switch is deleted rather than
+# defaulted true. What each mechanism DOES is bounded by the declarations in this block and by the per-type
+# `layer` / `materializes` / `instance_split` / `instance_key_tag` declarations above — an ontology that
+# declares none of them routes nothing, which is a fact about the ontology and not a switch. The six:
 #   1. the STRADDLE SPLIT — a design-layer node carrying an instance-layer attribute is split into a
 #      design node + a linked provisional instance (only where the node type declares `instance_split`);
 #      where no citizen is declared the unrouted straddle is RECORDED on the node, never guessed;
@@ -442,10 +447,10 @@ materiality:
 #   4. `instance_key_tag` — the site_type-tagged supersede bucket for `based-at` (R1.3/C1);
 #   5. `requires_stated_endpoints` — an edge whose declared-stated endpoint was only materialized is
 #      withheld with a named gap (D12);
-#   6. the EARNED-IDENTITY gate on supersede promotion (R1.4, see credibility.yaml supersede_floor).
-# It is one flag on purpose: these are one change to what a node IS, and half of it would be incoherent.
+#   6. the EARNED-IDENTITY prohibitions on supersede promotion (R1.4, see credibility.yaml
+#      supersede_floor): a promotion over an unearned identity is held for the analyst, and a retirement
+#      never restates an honest `insufficient` as `stale`.
 layer_routing:
-  enabled: false
   # The instance citizen the build materializes, and the edge it is linked to its design by. Both name
   # declarations above; nothing here is a code literal (G6).
   presence_type: presence

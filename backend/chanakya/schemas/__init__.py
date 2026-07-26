@@ -8,6 +8,8 @@ F0-amendment PR (master §2 Rule 3).
 from __future__ import annotations
 
 from .api_models import (
+    AdjudicationReceipt,
+    AdjudicationView,
     AnswerHop,
     AskAnswer,
     AskRequest,
@@ -130,6 +132,6 @@ __all__ = [
     "EntitiesConfig", "EntityEntry",
     # api
     "AskRequest", "PriorTurn", "AskAnswer", "AnswerHop", "RefusalPayload", "ProvenanceDrawer", "ReviewQueueItem",
-    "ReviewContext", "ReviewType", "HitlDecision", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
+    "ReviewContext", "ReviewType", "HitlDecision", "AdjudicationReceipt", "AdjudicationView", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
     "ConfigWriteResult", "HealthResponse",
 ]

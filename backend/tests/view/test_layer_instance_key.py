@@ -25,6 +25,8 @@ suppression with no gap is the silent kill this whole mechanism exists to preven
 
 from __future__ import annotations
 
+import pytest
+
 from chanakya.credibility.supersession import (
     CANDIDATE,
     GATE,
@@ -59,7 +61,7 @@ _OLD = "ent:basing_site:Old Site"
 _NEW = "ent:basing_site:New Site"
 
 
-def _ontology(*, routing: bool = True, vocabulary: list[str] | None = None) -> OntologyConfig:
+def _ontology(*, vocabulary: list[str] | None = None) -> OntologyConfig:
     return OntologyConfig.model_validate(
         {
             "node_types": [
@@ -86,7 +88,6 @@ def _ontology(*, routing: bool = True, vocabulary: list[str] | None = None) -> O
                 },
             ],
             "layer_routing": {
-                "enabled": routing,
                 "presence_type": "presence",
                 "design_link_edge": "instance-of",
                 "site_type_vocabulary": (
@@ -283,9 +284,18 @@ def test_a_same_class_change_of_site_is_still_nominated_as_a_relocation() -> Non
     )
 
 
-def test_flag_off_keys_are_untagged_everywhere() -> None:
-    """With routing off the view keys exactly as it did before this stage — the safety property, locally."""
-    view = rebuild(_relocation("garrison", "forward_site"), [], _config(routing=False))
+def test_an_edge_declaring_no_instance_key_tag_keys_untagged() -> None:
+    """The sub-bucket is bounded by the DECLARATION, not by a switch.
+
+    This used to assert the flag-off property ("routing disabled ⇒ untagged keys"). The flag is deleted, so
+    the honest form of the same statement is that an edge type which declares no ``instance_key_tag`` gets no
+    sub-bucket: the tag exists because the ontology names an attribute to read, and nothing else turns it on.
+    """
+    ontology = _ontology().model_dump(by_alias=True)
+    for edge in ontology["edge_types"]:
+        edge.pop("instance_key_tag", None)
+    config = _config().model_copy(update={"ontology": OntologyConfig.model_validate(ontology)})
+    view = rebuild(_relocation("garrison", "forward_site"), [], config)
     assert set(_basings(view).values()) == {"edge:ent:unit:1st Bn:based-at"}
 
 
@@ -324,7 +334,6 @@ def _promotable() -> ConfigBundle:
                         "min_independent_looks": 1,
                         "newer_status_allow": ["possible", "probable", "confirmed"],
                         "blocking_gate_flags": ["adversary-denial", "decoy-risk", "contradiction"],
-                        "require_earned_identity": True,
                     },
                 }
             )
@@ -358,10 +367,30 @@ def test_the_earned_trigger_is_measured_not_hoped_for() -> None:
     older = EdgeView(id="e:old", type="based-at", source=_UNIT, target=_OLD)
     newer = EdgeView(id="e:new", type="based-at", source=_UNIT, target=_NEW)
     settled = {_UNIT: NodeView(id=_UNIT, type="unit")}
-    floor: dict[str, object] = {"require_earned_identity": True}
-    assert identity_is_unearned(older, newer, settled, set(), floor) is None
+    assert identity_is_unearned(older, newer, settled, set()) is None
 
 
+_FIXTURE_HAS_NO_EVIDENCE_WEIGHT = (
+    "STALE FIXTURE, declared not edited. F5 tightened the `stale` label: 'we knew this and the world has "
+    "moved on' is a claim about the PAST, so it is now conditioned on the assertion having reached the "
+    "CONFIRMED magnitude — a mid-band assertion that was only ever an open question is not history, and "
+    "relabelling it `stale` on supersession told the analyst it had been established when it never was. "
+    "This fixture's older basing carries assertion_confidence 0.0 (no source registry, so per-claim "
+    "credibility is 0) under a config whose `probable` floor is 0.0, i.e. it is 'assessable' in the "
+    "sufficiency sense the test checks and carries no evidential weight at all. It is the purest instance "
+    "of what F5 forbids, so it now reads `probable` with `superseded-never-established` in its gate vector. "
+    "The retirement itself is still visible to the analyst — via `superseded_by` and the `superseded` "
+    "integrity flag, both of which ARE on the view schema and are read by the SPA — it is simply no longer "
+    "called history; the gate-vector marker is audit-trail only and reaches no surface (see the docstring "
+    "of credibility/status.py, and ledger item 7). The property the test MEANS "
+    "(an established retirement reads stale) is enforced elsewhere on fixtures that carry real credibility: "
+    "tests/gates/test_defaulton_fabrication_path_spec.py and tests/view/test_supersede.py. Rewriting this "
+    "fixture to carry weight is a data change, so it is declared rather than made. "
+    "See tmp/conv/DEFAULT-ON-calibration-ledger.md item 6."
+)
+
+
+@pytest.mark.xfail(strict=True, reason=_FIXTURE_HAS_NO_EVIDENCE_WEIGHT)
 def test_a_well_evidenced_retirement_still_reads_stale() -> None:
     """R1.4(b) protects an honest ``insufficient``; it does not stop an *assessable* retirement being stale."""
     view = rebuild(_relocation("garrison", "garrison"), [], _promotable())
@@ -401,7 +430,6 @@ def test_an_honest_insufficient_keeps_its_label_and_its_known_gap_when_retired()
     # An EARNED identity (settled, non-provisional subject) — so (b) is doing this on its own.
     outcome = promote_supersessions(
         [older, newer], _promotable(), {_UNIT: NodeView(id=_UNIT, type="unit")}, set(),
-        layer_routing=True,
     )
     assert older.superseded_by == "e:new", "the retirement IS expressed — `superseded_by` carries it"
     assert older.status == "insufficient", "…and the honest refusal is not overwritten with `stale`"
@@ -426,7 +454,7 @@ def test_an_unearned_identity_holds_the_pair_for_the_analyst() -> None:
     nodes = {n.id: n for n in fresh.nodes}
     nodes[_UNIT].attrs["provisional"] = True  # how the routing marks a materialized instance
     outcome = promote_supersessions(
-        list(pair.values()), _promotable(), nodes, set(), layer_routing=True
+        list(pair.values()), _promotable(), nodes, set()
     )
     assert outcome.identity_unearned_pairs == [(pair[_OLD].id, pair[_NEW].id)]
     assert pair[_OLD].superseded_by is None, "nothing is retired over an identity we did not earn"
@@ -447,7 +475,6 @@ def test_an_open_candidate_merge_on_the_subject_is_the_other_unearned_shape() ->
         e.attrs.pop("supersede_hold_reason", None)
     outcome = promote_supersessions(
         list(pair.values()), _promotable(), {n.id: n for n in fresh.nodes}, {_UNIT},
-        layer_routing=True,
     )
     assert outcome.identity_unearned_pairs, "an open candidate merge on the subject is an open question"
     assert "subject-identity-open-candidate-merge" in pair[_OLD].attrs["supersede_hold_reason"]
@@ -456,15 +483,21 @@ def test_an_open_candidate_merge_on_the_subject_is_the_other_unearned_shape() ->
 
 def test_a_same_target_refresh_is_never_treated_as_unearned() -> None:
     """The guard is scoped to promotions that would DRAW a relocation. A refresh asserts no movement."""
-    floor: dict[str, object] = {"require_earned_identity": True}
     older = EdgeView(id="e:old", type="based-at", source=_UNIT, target=_NEW)
     newer = EdgeView(id="e:new", type="based-at", source=_UNIT, target=_NEW)
     provisional = {_UNIT: NodeView(id=_UNIT, type="unit", attrs={"provisional": True})}
-    assert identity_is_unearned(older, newer, provisional, {_UNIT}, floor) is None
+    assert identity_is_unearned(older, newer, provisional, {_UNIT}) is None
 
 
-def test_both_prohibitions_ride_the_flag_and_the_gap_register_never_repeats_itself() -> None:
-    """Flag-off promotion behaviour is untouched by construction, and a gap is stated once."""
+def test_both_prohibitions_fire_unconditionally_and_the_gap_register_never_repeats_itself() -> None:
+    """The inverse of the test this replaces, and that inversion is the point of this whole change.
+
+    It used to assert that with the stage flag off **neither** prohibition applied: the pair promoted, the
+    analyst's candidate was popped, and an honest ``insufficient`` was restated ``stale``. That was the SHIPPED
+    behaviour, and it is the fabrication path — a provisional subject with an open candidate merge produces a
+    drawn relocation nobody reported, off the analyst's desk, over an origin the system never established. So
+    the same fixture now asserts all four consequences are closed.
+    """
     older = EdgeView(
         id="e:old", type="based-at", source=_UNIT, target=_OLD, status="insufficient",
         sufficiency=SufficiencyEval(satisfied=False, missing_slots=["imagery_confirmation"]),
@@ -478,10 +511,17 @@ def test_both_prohibitions_ride_the_flag_and_the_gap_register_never_repeats_itse
         attrs={CANDIDATE: True, PENDING_OLDER: ["e:old"], GATE: "pending"},
     )
     provisional = {_UNIT: NodeView(id=_UNIT, type="unit", attrs={"provisional": True})}
-    # Flag OFF: neither prohibition applies — promoted, popped, and restated as it always was.
     outcome = promote_supersessions([older, newer], _promotable(), provisional, {_UNIT})
-    assert not outcome.identity_unearned_pairs and not outcome.protected_refusals
-    assert outcome.retired_element_ids == ["e:old"] and older.status == "stale"
+    # (a) the identity was not earned ⇒ nothing promotes …
+    assert outcome.identity_unearned_pairs == [("e:old", "e:new")]
+    assert older.superseded_by is None and newer.supersedes is None
+    # … (b) the analyst KEEPS the pair — it is not adjudicated by the machine …
+    assert older.attrs[CANDIDATE] is True and newer.attrs[CANDIDATE] is True
+    assert older.attrs[GATE] == "held"
+    # … (c) nothing is retired, so the honest `insufficient` is never restated as `stale` …
+    assert outcome.retired_element_ids == [] and older.status == "insufficient"
+    # … (d) and no relocation edge is drawn between the differing targets.
+    assert outcome.drawn_edges == []
     # And no view repeats a gap id — several mechanisms can notice the same absence.
     view = rebuild(_relocation("prepared revetment complex", "forward_site"), [], _config())
     ids = [g.id for g in view.known_gaps]

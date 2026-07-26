@@ -59,8 +59,6 @@ _MIN_BAND = "min_band"  # names a key in credibility.thresholds — never a bare
 _MIN_LOOKS = "min_independent_looks"
 _BLOCKING = "blocking_gate_flags"
 _ALLOWED_STATUS = "newer_status_allow"
-# R1.4 — the EARNED-IDENTITY gate on the promotion (see :func:`_identity_failures`).
-_REQUIRE_EARNED = "require_earned_identity"
 _PROVISIONAL = "provisional"           # a build-materialized instance: identity not earned, by definition
 
 
@@ -125,7 +123,6 @@ def identity_is_unearned(
     newer: EdgeView,
     nodes: dict[str, NodeView] | None,
     unsettled_identities: set[str],
-    floor: dict[str, object],
 ) -> str | None:
     """R1.4 — is this promotion's *subject identity* still an open question? A reason string, or ``None``.
 
@@ -164,9 +161,11 @@ def identity_is_unearned(
 
     The co-location-specific half of this (making such a merge fail to *fuse* in the first place) is the
     identity layer's job; this is the downstream backstop that keeps a human in the loop if it does.
+
+    **Unconditional.** This used to early-return on a ``supersede_floor.require_earned_identity`` boolean —
+    a knob with no number to tune, i.e. a switch for turning the prohibition off — and on a stage flag above
+    that. Neither survives: a gate that closes a fabrication path is not a policy dial.
     """
-    if not bool(floor.get(_REQUIRE_EARNED)):
-        return None
     if newer.target == older.target:
         return None  # a same-target refresh asserts no movement; there is nothing to fabricate
     node = (nodes or {}).get(newer.source)
@@ -266,8 +265,6 @@ def promote_supersessions(
     config: ConfigBundle,
     nodes: dict[str, NodeView] | None = None,
     unsettled_identities: set[str] | None = None,
-    *,
-    layer_routing: bool = False,
 ) -> SupersedeOutcome:
     """Promote each ordered candidate pair that clears the floor; leave the rest for HITL.
 
@@ -277,14 +274,21 @@ def promote_supersessions(
 
     ``nodes`` and ``unsettled_identities`` supply R1.4's two inputs: whether the subject is a
     build-materialized provisional instance, and whether its identity is still an open ``candidate`` merge.
-    Both optional and default-``None`` so every existing caller is unchanged; absent (or with the gate
-    unconfigured) the behaviour is exactly the pre-S2 one.
+    A caller that supplies neither can only report the *credibility* half — so ``rebuild()`` always supplies
+    both, and the defaults exist for a direct programmatic call, not as a way of switching the guard off.
 
-    ``layer_routing`` is the stage flag: **both** of R1.4's prohibitions ride it, like everything else S2
-    changes, so flag-off promotion behaviour is untouched by construction. They are independent of each other
-    — (a) :func:`identity_is_unearned` guards *identity*, (b) :func:`protects_an_honest_refusal` guards the
-    origin's *evidential status* — and neither is conditioned on the other. An earned relocation whose origin
-    was never established is still promoted, retired and drawn; it simply does not read ``stale``.
+    **R1.4's two prohibitions are UNCONDITIONAL**, and that is the whole point of them. They used to ride a
+    stage flag that shipped off, which left the fabrication path open in the shipped build: a sub-confirmed
+    or provisional identity promoted anyway, the analyst's candidate was popped off the queue as
+    "machine-adjudicated", the retired assertion was restated as ``stale`` — asserting it had once been
+    established — and a differing target drew a relocation edge nobody reported. One identity error became a
+    positively-asserted movement assessment with the human removed. A safety gate behind a switch is not a
+    safety gate.
+
+    The two are independent of each other — (a) :func:`identity_is_unearned` guards *identity*, (b)
+    :func:`protects_an_honest_refusal` guards the origin's *evidential status* — and neither is conditioned
+    on the other. An earned relocation whose origin was never established is still promoted, retired and
+    drawn; it simply does not read ``stale``.
     """
     outcome = SupersedeOutcome()
     floor = _floor(config)
@@ -304,13 +308,10 @@ def promote_supersessions(
             # R1.4(a) — clearing the CREDIBILITY floor is not enough. Promoting also retires the older
             # position, takes the pair off the analyst's desk and draws a relocation, and that is only the
             # machine's call over an identity it earned.
-            if layer_routing:
-                unearned = identity_is_unearned(
-                    older, newer, nodes, unsettled_identities or set(), floor
-                )
-                if unearned is not None:
-                    failures = [*failures, unearned]
-                    outcome.identity_unearned_pairs.append((older.id, newer.id))
+            unearned = identity_is_unearned(older, newer, nodes, unsettled_identities or set())
+            if unearned is not None:
+                failures = [*failures, unearned]
+                outcome.identity_unearned_pairs.append((older.id, newer.id))
         if failures:
             older.attrs[GATE] = GATE_HELD
             newer.attrs[GATE] = GATE_HELD
@@ -336,7 +337,7 @@ def promote_supersessions(
         # label — but an assertion that was never established cannot go *stale*, because `stale` means
         # "was confirmed, has since aged out". So an honest `insufficient` keeps its label and (in the
         # pipeline) its Known Gap. Every assessable retirement restates to `stale` exactly as before.
-        if layer_routing and protects_an_honest_refusal(older):
+        if protects_an_honest_refusal(older):
             outcome.protected_refusals.append(older.id)
         else:
             _restate(older, config)

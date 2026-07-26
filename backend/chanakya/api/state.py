@@ -27,7 +27,7 @@ from chanakya import settings
 from chanakya.config import ConfigStore
 from chanakya.observe import evaluate
 from chanakya.ontology import LayerRouting
-from chanakya.schemas import Alert, ClaimRecord, GraphView
+from chanakya.schemas import Alert, ClaimRecord, ConfigBundle, GraphView
 from chanakya.store import DecisionLog, EvidenceLog
 from chanakya.view import rebuild
 
@@ -75,6 +75,21 @@ class AppState:
             self.current_view = view
             self.prev_view = None
             self.ready = True
+
+    def dry_run(self, snapshot: ConfigBundle) -> GraphView:
+        """Reduce the logs against a CANDIDATE config without installing it or swapping the view.
+
+        The pre-commit gate behind the hot-config contract. ``rebuild()`` is a pure function of (logs,
+        config), so a candidate section can be exercised through the *whole* reduction — including the
+        load-time validators that only fire when a reader compiles the section into its runtime form — before
+        anything is committed. Raises whatever the reduction raises, and the caller turns that into a clean
+        rejection.
+
+        Nothing here mutates: no version bump, no view swap, no alert. The cost is one extra rebuild per
+        config write, which is what a write that cannot brick the running system costs.
+        """
+        with self._lock:
+            return rebuild(self.evidence, self.decision, snapshot)
 
     def rebuild_and_swap(self) -> list[Alert]:
         """Rebuild in-process from the (mutated) logs + live config, fire MONITOR on the delta, and

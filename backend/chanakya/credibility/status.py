@@ -2,7 +2,8 @@
 
 The third SCORE stage (master §4.3): turns per-claim credibilities + independence groups + the
 deception/freshness/sufficiency gates into a **pooled `assertion_confidence`** and a **status label**,
-plus the exact gate vector (for the provenance drawer). Pure and config-driven (gate G6): the two
+plus the exact gate vector (an audit-trail record of which gates fired — see the note under **stale**;
+it is NOT wired to the provenance drawer, despite what this line used to say). Pure and config-driven (gate G6): the two
 cutoffs, the minimum independent-look count, and everything else come from ``config.credibility``.
 
 Pooling — noisy-OR *across* independent groups, ``c_g`` = the strongest look in a group, scaled by the
@@ -19,6 +20,22 @@ Status — gates are applied here, **never** folded into the arithmetic (spine/0
   newer fact is right; the old one isn't wrong, it's history"; spine/04). Labelling it *insufficient*
   would claim we cannot assess it, when in fact we have good evidence that the world moved on — the
   opposite of what the evidence says, and the more misleading of the two errors.
+  **Conditioned on the assertion having been ESTABLISHED** — having reached the ``confirmed`` magnitude.
+  "We knew this and the world has moved on" is a claim about the past, and an assertion that never reached
+  the confirmed bar was never known, so ageing it invents a history. A mid-band assertion (probable floor
+  ≤ conf < confirmed) is an open question, not history: it falls through to the ordinary ladder and records
+  ``superseded-never-established`` in its gate vector. One that reached the magnitude on a **single**
+  independent look does read ``stale`` (this is the flagship relocation's shape) and records
+  ``superseded-single-look`` — a stated partial close, see the inline note.
+
+  **Where those two markers actually go, stated exactly, because an earlier draft of this docstring
+  overclaimed it.** ``gate_vector`` is a field of *this stage's* output record (``schemas/stage_io``) and
+  has **no consumer outside this module** — it is not on ``NodeView``/``EdgeView``, not in ``GraphView``,
+  not on the API and not in the SPA. So both markers are an **audit-trail** entry, readable by someone
+  reading the stage record, and NOT a signal that reaches the analyst's screen. What the analyst does see
+  on a retired edge is ``superseded_by`` and ``integrity_flags: ['superseded']``, which are on the view
+  schema and are read by the SPA — i.e. *that* it was retired is visible; *how thinly the retirement is
+  evidenced* is not. That is a real residual of the partial close, not a closed loop.
 * **insufficient** — a required evidence *kind* is missing (``sufficiency.satisfied`` is False). Off the
   confidence scale; dominates everything below it, because if we structurally can't assess we say so
   (the non-negotiable).
@@ -126,7 +143,34 @@ def assign_status(
             and not gated_unknown
         )
 
-        if SUPERSEDED in flags:
+        # Was this assertion ever ESTABLISHED — i.e. did it ever reach the CONFIRMED magnitude? `stale` says
+        # "we knew this and the world has moved on", which is a claim about the past: something never
+        # established was never known, so ageing it asserts a history it does not have.
+        #
+        # An earlier fix put the bar at the `probable` floor, which closed only the bottom of the hole. A
+        # mid-band assertion at 0.5–0.8 was never confirmed — it was an open question the whole time — and it
+        # was still relabelled from `probable` to `stale` the moment something superseded it, which reads to
+        # an analyst as settled history when what it actually is is a lead that never got corroborated and
+        # has now been overtaken. That band is closed here: the bar is the CONFIRMED cut.
+        #
+        # DELIBERATELY NOT ``strong``. Tightening it to the full confirmed bar (magnitude AND
+        # ``min_independent_groups``) would also strip `stale` from an assertion that reached the confirmed
+        # magnitude on a single independent look — and that is the shape of this project's flagship
+        # relocation beat, whose whole point is that a retired position reads as history rather than as an
+        # open question. Rather than flip that silently, the shortfall is RECORDED: such an assertion still
+        # reads `stale` and its gate vector carries ``superseded-single-look``, so that the retirement rests
+        # on one look is on the record, and a second independent look is the next collection move.
+        #
+        # RECORDED, NOT SURFACED — say it plainly rather than let the sentence above imply otherwise.
+        # ``gate_vector`` has no consumer outside this module (see the module docstring), so that marker does
+        # NOT reach the analyst; only the fact of the retirement does, via ``superseded_by`` and the
+        # ``superseded`` integrity flag. So this is a stated partial close on TWO counts: the bar is not the
+        # full confirmed bar, and the shortfall that leaves is audit-trail-only. Closing the second half means
+        # putting the gate vector on the view schema — a new analyst surface, so it is filed, not started.
+        # Moot on the frozen corpus today: nothing there exercises the supersede path at all.
+        established = confirmed_cut is not None and conf >= confirmed_cut and not capped and not gated_unknown
+
+        if SUPERSEDED in flags and established:
             # History, not a gap: a floor-clearing newer fact retired this one. Wins over `insufficient`
             # (and over the magnitude ladder) because its confidence has legitimately decayed away — an
             # `insufficient` label here would report missing coverage we are not in fact missing.
@@ -154,6 +198,19 @@ def assign_status(
         else:
             status = _POSSIBLE
             gate_vector.append("below-probable-floor")
+
+        # A retirement that could NOT be labelled `stale` above is still a fact about this assertion, and the
+        # analyst has to be able to see why the graph shows an assertion that a newer one has overtaken while
+        # it does not read as history. Silence here would be the same "retained but never surfaced" failure
+        # one layer down: the gate fired and nothing recorded it.
+        if SUPERSEDED in flags and not established:
+            gate_vector.append("superseded-never-established")
+        elif SUPERSEDED in flags and min_groups is not None and _effective_looks(a.groups) < min_groups:
+            # It DID reach the confirmed magnitude, so it reads `stale` (above) — but on a single look, and
+            # that is a coverage shortfall the analyst must be able to see rather than infer. "This was
+            # established and is now history" is a strong statement to make off one source; the next
+            # collection move is a second, independent look, not a stronger reading of the one we have.
+            gate_vector.append("superseded-single-look")
 
         for flag in (_ADVERSARY_DENIAL, _DECOY_RISK):
             if flag in flags:

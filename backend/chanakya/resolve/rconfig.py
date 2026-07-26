@@ -9,7 +9,7 @@ the identity elements of sum/product — ever appear as literals, which G6 expli
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 from chanakya.credibility.scoring import reliability
@@ -64,18 +64,28 @@ TIME_ROLES_CONFIRMING = (TIME_DURABLE, TIME_CONSTITUTIVE, TIME_IDENTIFYING)
 #: stage that introduces it (plan §5a-bis), and a silently-tolerated old form biases every later author.
 _LEGACY_PERISHABLE_KEY = "perishable"
 _TIME_ROLE_KEY = "time_role"
-#: Per-ROW stage gate on an ``attribute_roles`` entry: ``requires: earned_identity`` ⇒ the row is consumed
-#: only while that flag is on. It is the stage flag at row granularity, and it exists so C6's two new
-#: ``time_role`` values can live in the ONE ``attribute_roles`` block a reader and an auditor inspect, rather
-#: than in a parallel overlay nobody would find — ruling M3's whole point being that a vocabulary declared
-#: anywhere other than the types that need it is inert config with a longer name. Dies with the flag at S4.
-_REQUIRES_KEY = "requires"
-_REQUIRES_EARNED = "earned_identity"
-#: A per-FIELD stage override on an ``attribute_roles`` entry: ``earned_role`` replaces ``role`` while the flag
-#: is on. Used where the row **predates** S3 and must keep its earlier declaration flag-off — gating such a row
-#: wholesale would delete a pre-S3 declaration and silently move flag-off scoring, because a dropped row leaves
-#: the agreement ratio. ``requires:`` is for rows that are wholly new and have no earlier form to preserve.
-_EARNED_ROLE_KEY = "earned_role"
+
+# ── the THIRD axis: is this attribute IDENTITY-BEARING, or does it merely name a CLASS? ───────────
+#
+# ``role`` says what a stated DISAGREEMENT does (wall / soft penalty / nothing) and ``time_role`` says what
+# TIME does to it. Neither says what an *agreement* is worth — and the two were read as if agreement always
+# meant "one entity", which is false for a whole family of attributes: **every member of a class shares its
+# class by definition**. "Both are HQ-9 family", "both are S-band", "both are Pakistan Air Force" says the
+# two mentions belong to the same set; it says nothing about them being the same *thing*. Treated as an
+# agreeing discriminator, a class label switched OFF the name cap — the only remaining guard on the widest
+# fusion lane — so two entities fused at ``confirmed`` with no queue item, no watch-list entry, no wall and
+# no gap. A taxonomic attribute is therefore excluded from every POSITIVE identity signal (the discriminator
+# ratio, the durable-support test) while keeping its negative consequences in full: a stated difference on a
+# critical taxonomic attribute is still a hard wall, and on a supporting one still a soft penalty. Absence of
+# the key ⇒ identity-bearing, which is the direction an author can safely forget.
+_TAXONOMIC_KEY = "taxonomic"
+#: The two retired STAGE MARKERS. ``requires: earned_identity`` gated a row on the S3 staging flag and
+#: ``earned_role:`` overrode a row's ``role`` while that flag was on. The flag is gone — the machinery is
+#: unconditional — so a row carrying either marker is a row whose author still believes there are two
+#: behaviours to choose between. Both are **loud validation errors**, on the same doctrine as the boolean
+#: ``perishable:`` above: a tolerated staging marker is a compatibility mode with a shorter name, and a
+#: silently-ignored ``earned_role: critical`` would quietly *demote* a wall the author meant to declare.
+_RETIRED_STAGE_KEYS = ("requires", "earned_role")
 
 #: Identity *bands*, by name. A ceiling is declared as a band NAME and never as a float: analyst B's
 #: arithmetic (rk-spike-DECISIONS §b) showed any ×coefficient can drop a pair **two** bands — out of the
@@ -85,60 +95,152 @@ BAND_CONFIRMED = "confirmed"
 BAND_PROBABLE = "probable"
 BAND_POSSIBLE = "possible"
 BANDS_BY_STRENGTH = (BAND_CONFIRMED, BAND_PROBABLE, BAND_POSSIBLE)
+#: The ceilings that WITHHOLD fusion. ``confirmed`` is the fusion band itself, so a ceiling declared there
+#: permits the merge and the cap does not fire (see :func:`ceiling_withholds`).
+_WITHHOLDING_CEILINGS = frozenset({BAND_PROBABLE, BAND_POSSIBLE})
 
 
 class AttributeRoleError(ValueError):
     """A declared ``attribute_roles`` entry uses the retired boolean ``perishable`` key, or a bad role."""
 
 
-# ── the RK-COREF (S3) stage flag and its knobs ───────────────────────────────────────────────────
+class CeilingValueError(ValueError):
+    """A declared band ceiling is not one of :data:`BANDS_BY_STRENGTH`."""
+
+
+class StageBlockError(ValueError):
+    """The identity block declares a key that has no consumer — a validated no-op advertising a capability."""
+
+
+def ceiling_withholds(ceiling: str) -> bool:
+    """Does this declared band ceiling **withhold fusion**? — the one reading of a ceiling's value.
+
+    A ceiling names the strongest band a pair may reach. ``confirmed`` *is* the band a fusion lands in, so
+    a ceiling declared there permits the merge and the cap does not fire; ``probable`` and ``possible`` both
+    withhold it, and which of the two decides whether the withheld pair also earns a queue place. An
+    **undeclared** ceiling (``""``) is an unconfigured cap, exactly like every absent threshold in this
+    reader.
+
+    This exists because the three ceilings were read as a **truthiness test**: any non-empty value withheld
+    identically, so ``confirmed`` behaved exactly like ``probable`` and an author who wrote ``confirmed`` —
+    meaning "co-location may confirm a formation" — silently got the opposite. Values that do not mean what
+    they say are worse than a missing feature: the config reads as a decision the code never took. Paired
+    with :func:`validate_ceilings`, which rejects any value outside the vocabulary rather than treating an
+    unrecognised string as a withholding cap.
+    """
+    return ceiling in _WITHHOLDING_CEILINGS
+
+
+#: Keys the identity block must NOT declare, with what to do instead. ``attribute_roles`` was compiled here
+#: AND validated, and never merged into the effective roles: a validated seam that did nothing. Deleting the
+#: compile is only half the fix — a silently-ignored key still advertises a capability, so declaring one is a
+#: loud error naming its real home.
+_NO_SUCH_KNOB = {
+    "attribute_roles": (
+        "attribute roles are declared ONCE, in the top-level `attribute_roles` block. A second copy here was "
+        "compiled and validated and then never merged into the effective roles, so rows written here loaded "
+        "cleanly and did nothing"
+    ),
+    "enabled": (
+        "the identity machinery is unconditional — there is no stage to enable. A switch that can turn it off "
+        "is the arrangement that shipped the fabrication path open"
+    ),
+}
+
+
+def validate_stage_block(block: Any) -> None:
+    """Reject an ``earned_identity`` key with no consumer — loudly, at construction."""
+    if not isinstance(block, dict):
+        return
+    for key, why in sorted(_NO_SUCH_KNOB.items()):
+        if key in block:
+            raise StageBlockError(f"earned_identity.{key} is not read: {why}.")
+
+
+def validate_ceilings(block: Any) -> None:
+    """Reject a band ceiling outside :data:`BANDS_BY_STRENGTH` — loudly, at construction.
+
+    The other half of the "values mean what they say" fix. Honouring the declared values makes ``confirmed``
+    lift the cap; rejecting unknown values is what stops a typo (``probably``, ``possibly``, ``none``) from
+    reading as a withholding cap on a truthiness test — the exact failure mode this pair of functions
+    closes, in the direction the reader cannot infer.
+    """
+    if not isinstance(block, dict):
+        return
+    for key in _CEILING_KEYS:
+        value = block.get(key)
+        if value in (None, ""):
+            continue
+        if str(value) not in BANDS_BY_STRENGTH:
+            raise CeilingValueError(
+                f"earned_identity.{key} declares {value!r}, which is not one of "
+                f"{list(BANDS_BY_STRENGTH)}. A ceiling names the strongest band a pair may reach: "
+                f"'confirmed' permits the merge (the cap does not fire), 'probable' withholds it and "
+                f"guarantees the pair a place in the analyst's queue with its reason, 'possible' withholds "
+                f"it and retains the link on the watch-list."
+            )
+
+
+# ── EARNED IDENTITY: the knobs that decide what earns identity ───────────────────────────────────
 #
 # Read from ``config/resolution.yaml``'s top-level ``earned_identity`` block (``ResolutionConfig`` is
-# ``extra="allow"``, the same precedent ``llm_candidate_gen`` sets). **One flag**, mirroring S2's
-# ``layer_routing.enabled``, because the pieces are one change to *what earns identity* and half of them
-# would be incoherent: promoting coreference to a required tier without the decline mechanism, or binding
-# the caps to the bootstrap without the per-layer profile, each makes the system worse than either end
-# state. Flag OFF ⇒ every mechanism below is inert and the graph is byte-identical to S2's flag-off view.
+# ``extra="allow"``, the same precedent ``llm_candidate_gen`` sets). This machinery is **unconditional**:
+# the staging flag that used to gate it is deleted, not defaulted-on, because a flag that can be switched
+# off is a second behaviour to maintain and the arrangement it made possible was measured to be the
+# dangerous one — the authorisation to bootstrap a coreference bind reached the resolver while every cap,
+# wall and decline that bounds it early-returned. There is now one behaviour, so there is no arrangement in
+# which permission runs without restraint.
 #
-# **Inertness means the AUTHORISATIONS too, not only the restraints.** The review measured the one place
-# that broke it: :attr:`ResolveConfig.coref_authoritative_evidence` unioned the stage's
-# ``authoritative_categories`` into the resolver with no flag test, while the co-location cap, the name
-# cap, the contrast ceiling, the relationship wall, the referent decline and the doc-scoping of a bind all
-# early-returned when the flag was off. Flag-off therefore ran S3's *permission* with none of S3's
-# *limits* — the one arrangement strictly worse than either end state. Any future knob that grants a
-# capability belongs behind the same flag test as the knob that bounds it; a stage flag that gates only
-# the restraints is an anti-safety device.
-#
-# Every threshold, cap, floor, category list and vocabulary here is **config**, never a code literal
-# (gate G6). Absent block ⇒ :attr:`enabled` False ⇒ inert.
+# What remains here is **tunables**: thresholds, caps, floors, category lists and vocabularies. Every one is
+# config, never a code literal (gate G6), and an absent knob degrades the way every other absent knob in
+# this reader does — the mechanism that reads it has nothing to apply.
 
 _EARNED_IDENTITY = "earned_identity"
+#: The three band-ceiling keys, named once so the reader, the validator and the tests agree.
+_CEILING_KEYS = ("name_ceiling", "colocation_ceiling", "contrast_ceiling")
+#: Ceilings whose withheld pair must still ESCALATE even when the declared band takes it off the queue. The
+#: distinction is whose evidence is being set aside, and it is a judgement about the COST of silence rather
+#: than about the strength of the signal:
+#:
+#: * ``name_ceiling`` is OUT. It withholds attention from a string coincidence the resolver itself noticed,
+#:   which has genuinely earned none. Measured on the shipped corpus: 331 of the 355 retained watch-list pairs
+#:   are name-capped and every one of them renders the SAME sentence, so escalating them would put ~660
+#:   identically-worded Known Gaps onto 183 nodes. That is not an escalation, it is the "a reason on every
+#:   pair is as useless as a reason on none" failure — it would bury the 14 findings that are real.
+#: * ``contrast_ceiling`` is IN: a SOURCE explicitly distinguished a pair the score reads as one thing — an
+#:   extraction error or a deception, and always a finding.
+#: * ``colocation_ceiling`` is IN, and for a stronger reason than the contrast rail. Two formations agreeing
+#:   on nothing but where they are standing is the costliest over-merge this system has: fusing them makes
+#:   their two sites one unit's before-and-after, so the supersede path DRAWS a relocation nobody reported,
+#:   pops the pair out of the queue as machine-adjudicated, and deletes the honest Known Gap. Withholding the
+#:   queue place is a defensible triage choice; withholding the RECORD as well would leave the highest-blast-
+#:   radius pair in the system invisible. Measured cost of including it on the shipped corpus: zero pairs (the
+#:   shipped ``colocation_ceiling: probable`` keeps the queue place, so nothing is re-routed).
+#:
+#: ``possible`` stays a legal, honoured value for every one of them (an operator's declared triage choice),
+#: and an escalating pair is rendered as a named Known Gap on each endpoint instead of a queue item, so
+#: refusing the fusion never costs the escalation.
+CEILINGS_THAT_MUST_ESCALATE = frozenset({"contrast_ceiling", "colocation_ceiling"})
 
 
 @dataclass(frozen=True)
 class EarnedIdentity:
-    """``config/resolution.yaml → earned_identity``, compiled. Absent ⇒ :attr:`enabled` False ⇒ inert.
+    """``config/resolution.yaml → earned_identity``, compiled — the identity tunables, always live.
 
-    "Inert" is a claim about **every** field below, the permissive ones included. Each consumer must test
-    :attr:`enabled` before reading — the one field that did not (:attr:`authoritative_categories`) made the
-    flag-off deployment less safe than the flag-on one, because it granted S3's bootstrap authority while
-    every S3 cap and wall stayed switched off. Compiling a field here is not what makes it inert; the
-    consumer's flag test is.
+    Every field is read unconditionally by its consumer. A field left undeclared makes *that* mechanism
+    inert (no cap to apply, no vocabulary to match, no floor to clear) — which is a statement about the
+    configuration in front of you, never about a stage being switched off.
     """
-
-    enabled: bool = False
 
     # ── D-13.17: which coreference categories may BOOTSTRAP, and behind what floor ────────────────
     #: Categories allowed to bootstrap **once their per-link deterministic gate passes** (C5).
     #: ``NAME_VARIANT`` is deliberately absent — see the config comment.
     #:
-    #: Read **only when** :attr:`enabled`, and that gating is load-bearing rather than tidy: this is the
-    #: only knob in the block that *grants* rather than *bounds*, so an ungated read hands flag-off runs
-    #: the authorisation without the co-location cap, the contrast ceiling or the document-scoping that
-    #: exist to bound it. Measured on the shipped bundle before the gate went in: two co-located
-    #: formations and an explicitly-contrasted pair each fused at ``confirmed`` flag-off, where the
-    #: flag-on run held both at ``probable``. The pre-S3 top-level ``coref_authoritative_evidence`` knob is
-    #: separate and stays flag-independent — an operator who wrote it meant it; it ships ``[]``.
+    #: This is the only knob in the block that *grants* rather than *bounds*, and it is now read on exactly
+    #: the same terms as the caps and walls that bound it — one behaviour, so the authorisation can never
+    #: run without the restraint (the arrangement that was measured to fuse two co-located formations and an
+    #: explicitly-contrasted pair at ``confirmed``). The pre-existing top-level
+    #: ``coref_authoritative_evidence`` knob is a separate operator declaration; it ships ``[]``.
     authoritative_categories: tuple[str, ...] = ()
     #: STANAG floor the *asserting document's* source must clear for a bind to be authoritative. Not
     #: optional: an authoritative bind fuses at 1.0 and bypasses banding, so it acts **harder** than the
@@ -172,6 +274,12 @@ class EarnedIdentity:
     # ``tests/config/test_resolution_stage_block_is_the_only_declaration.py`` fails if a shadow copy
     # reappears.
     #
+    #
+    # All three are read through :func:`ceiling_withholds`, so the declared value *means what it says*:
+    # ``confirmed`` permits the fusion (the cap does not fire), ``probable`` withholds it and guarantees a
+    # queue place, ``possible`` withholds it and retains the link on the watch-list. They used to be read as
+    # a truthiness test, which made ``confirmed`` behave exactly like ``probable``.
+    #
     #: Ceiling for a pair carried by the NAME sub-signal alone, at **every** layer.
     name_ceiling: str = ""
     #: Ceiling for a formation pair whose only agreement is co-location (D-13.14 / G16).
@@ -202,10 +310,15 @@ class EarnedIdentity:
     #: fusion, plus a named gap. A gap that does not bind the fusion path is decoration (rk-14 probe).
     normalization_required_attrs: tuple[str, ...] = ()
 
-    # ── C6: the per-(type, attribute) overlay that only exists with the flag on ───────────────────
-    #: Extra ``attribute_roles`` rows merged over the base block when :attr:`enabled`. Kept separate so
-    #: the *base* block stays exactly what the flag-off view scores on — the flag boundary in one place.
-    attribute_roles_overlay: dict[str, dict[str, Any]] = field(default_factory=dict)
+    # ── DELETED: ``attribute_roles`` overlay ──────────────────────────────────────────────────────
+    #
+    # An ``earned_identity.attribute_roles`` overlay was compiled here AND validated in
+    # ``ResolveConfig.__init__`` — and never merged into the effective roles :meth:`attribute_roles`
+    # returns. It existed so C6's rows could live "flag-on only"; the rows in fact live in the one base
+    # block (ruling M3's whole point), so the overlay never carried a row and could not have. A *validated*
+    # no-op is worse than an absent feature: the validation is what makes it read as a live extension seam,
+    # so an author who wrote rows there would get a clean load and no effect. Deleted rather than wired —
+    # wiring a second declaration site for attribute roles is exactly the drift M3 rejected.
 
     @classmethod
     def from_resolution(cls, resolution: ResolutionConfig) -> EarnedIdentity:
@@ -240,11 +353,8 @@ class EarnedIdentity:
                 for attr, classes in sorted(norm_raw.items())
                 if isinstance(classes, dict)
             )
-        overlay_raw = block.get("attribute_roles")
-        overlay = (
-            {str(t): dict(rows) for t, rows in overlay_raw.items() if isinstance(rows, dict)}
-            if isinstance(overlay_raw, dict) else {}
-        )
+        validate_stage_block(block)
+        validate_ceilings(block)
         grade = block.get("bind_min_grade")
         weights = getattr(resolution, "merge_weights", None) or {}
 
@@ -253,7 +363,6 @@ class EarnedIdentity:
             return float(v) if v is not None else 1.0
 
         return cls(
-            enabled=bool(block.get("enabled", False)),
             authoritative_categories=_strs("authoritative_categories"),
             bind_min_grade=str(grade).strip().upper() if grade else None,
             equivalence_markers=_strs("equivalence_markers"),
@@ -274,7 +383,6 @@ class EarnedIdentity:
             wall_scope_attr=_str("wall_scope_attr"),
             value_normalization=normalization,
             normalization_required_attrs=_strs("normalization_required_attrs"),
-            attribute_roles_overlay=overlay,
         )
 
     def normalise_value(self, attr: str, value: object) -> tuple[str, bool]:
@@ -329,6 +437,14 @@ def _validate_attribute_roles(roles: Any) -> None:
         for attr, spec in sorted(attrs.items()):
             if not isinstance(spec, dict):
                 continue
+            retired = [k for k in _RETIRED_STAGE_KEYS if k in spec]
+            if retired:
+                raise AttributeRoleError(
+                    f"attribute_roles.{entity_type}.{attr} declares the retired stage marker(s) "
+                    f"{retired} — the earned-identity machinery is unconditional, so a row cannot be "
+                    f"gated on a stage or carry a second role for 'when the stage is on'. Flatten the row: "
+                    f"drop 'requires:', and replace 'earned_role: X' with 'role: X'."
+                )
             if _LEGACY_PERISHABLE_KEY in spec:
                 raise AttributeRoleError(
                     f"attribute_roles.{entity_type}.{attr} declares the retired boolean "
@@ -342,6 +458,14 @@ def _validate_attribute_roles(roles: Any) -> None:
                 raise AttributeRoleError(
                     f"attribute_roles.{entity_type}.{attr} declares {_TIME_ROLE_KEY}={role!r}, which is "
                     f"not one of {list(TIME_ROLES)} (C6)."
+                )
+            taxonomic = spec.get(_TAXONOMIC_KEY)
+            if taxonomic is not None and not isinstance(taxonomic, bool):
+                raise AttributeRoleError(
+                    f"attribute_roles.{entity_type}.{attr} declares {_TAXONOMIC_KEY}={taxonomic!r}; it takes "
+                    f"true or false only. 'true' means the attribute names a CLASS every member shares, so "
+                    f"its agreement is not evidence of identity (it stays a wall / a penalty when it "
+                    f"disagrees); omit it for an identity-bearing attribute."
                 )
 
 
@@ -381,7 +505,6 @@ class ResolveConfig:
         # ``perishable:`` key must be a **loud** error at construction (the same loudness S1 gave a bare
         # ``attrs`` string), not a value silently read as ``None`` deep inside the scorer.
         _validate_attribute_roles(self._extra("attribute_roles", {}))
-        _validate_attribute_roles(self._earned.attribute_roles_overlay)
 
     @classmethod
     def from_bundle(cls, config: ConfigBundle) -> ResolveConfig:
@@ -394,29 +517,23 @@ class ResolveConfig:
     def _place_extra(self, name: str, default: Any) -> Any:
         return getattr(self._p, name, default)
 
-    # ── the RK-COREF (S3) stage flag ──────────────────────────────────────────────────────────
+    # ── the earned-identity tunables ──────────────────────────────────────────────────────────
     @property
     def earned_identity(self) -> EarnedIdentity:
-        """The S3 knob block. ``.enabled`` False ⇒ every S3 mechanism is inert (flag-off byte-identity)."""
+        """The identity tunables (caps, ceilings, vocabularies, floors) — always live."""
         return self._earned
 
     @property
-    def earned_identity_on(self) -> bool:
-        """The one flag test, so the boundary is read from exactly one place."""
-        return self._earned.enabled
-
-    @property
     def namespace_normaliser(self) -> Any:
-        """C7's value normaliser for the **namespace** key, or ``None`` with the flag off.
+        """C7's value normaliser for the **namespace** key.
 
         Namespaces are derived from raw stated attrs (``Entity.namespace``), so normalising only at
         conflict-detection time would fix the wall and leave the *blocking* split — 'PAF' and 'Pakistan Air
         Force' would still sit in two different namespaces, which is half of D4 left open. Handed to
         ``Entity.namespace`` / ``namespace_compatible`` as a plain callable so ``resolve.entities`` never has
-        to import this reader.
+        to import this reader. With no ``value_normalization`` declared the callable folds and nothing else,
+        which is exactly what ``Entity.namespace`` does unaided.
         """
-        if not self._earned.enabled:
-            return None
         earned = self._earned
 
         def _norm(attr: str, value: Any) -> str:
@@ -427,13 +544,11 @@ class ResolveConfig:
 
     @property
     def layer_routing(self) -> LayerRouting:
-        """S2's layer block — read here **only** for its ``site_type`` vocabulary + normaliser.
+        """The layer block — read here **only** for its ``site_type`` vocabulary + normaliser.
 
         G18's ``based-at`` half fires within one *site class* (C1), and the closed vocabulary plus its
         fail-safe already live there (ruling L1). Reading them rather than declaring a second copy is the
-        point: C1 is "one declaration, two consumers", and two vocabularies would drift. Note this reads the
-        vocabulary irrespective of ``layer_routing.enabled`` — the *declaration* is unconditional; what S2's
-        flag gates is the *keying*, which is a different consumer.
+        point: C1 is "one declaration, two consumers", and two vocabularies would drift.
         """
         ontology = self._bundle.ontology if self._bundle is not None else OntologyConfig()
         return LayerRouting.from_ontology(ontology)
@@ -642,30 +757,20 @@ class ResolveConfig:
     def coref_authoritative_evidence(self) -> set[str]:
         """Which in-document coreference evidence categories may **bootstrap** (auto-merge).
 
-        Two lists feed this, and they answer to different switches:
+        Two declarations feed it and both are plain operator declarations: the top-level
+        ``coref_authoritative_evidence`` (ships ``[]``) and ``earned_identity.authoritative_categories``.
+        They are unioned unconditionally, which is safe for exactly one reason — the caps, walls, decline and
+        document-scoping that bound a bind are unconditional too. When this authorisation was live while
+        those restraints early-returned on a stage flag, the measured result was two co-located formations
+        fused at ``confirmed``, an explicitly-contrasted pair fused at ``confirmed``, and a bind licensed by
+        one document spreading onto a profile built from another.
 
-        * the **legacy top-level** ``coref_authoritative_evidence`` — the pre-S3 operator knob, honoured
-          whatever the stage flag says, because an operator who wrote it meant it. It ships ``[]``.
-        * ``earned_identity.authoritative_categories`` — the **stage's** opt-in, read **only while the
-          stage flag is on**, exactly like every restraint S3 introduces.
-
-        That gating is the load-bearing part, and it was measured missing. S3 authorises two categories;
-        S3's caps, walls, decline and doc-scoping all early-return with the flag off. Union the two lists
-        unconditionally and the shipped **flag-off** deployment gets the authorisation without a single one
-        of the restraints — strictly *less* safe than flag-on. Measured on the shipped bundle: two
-        co-located formations fused at ``confirmed`` (flag-on: ``probable``, capped), a pair the document
-        explicitly contrasts fused at ``confirmed`` (flag-on: ``probable``), and a bind licensed by one
-        document spread onto a profile built from another. Authorisation and restraint now flip together.
-
-        A category listed by either route still clears every other rail — the ``distinct-from`` veto, type
-        and namespace agreement, the hard-attribute-contradiction check (``scoring.has_hard_conflict``) —
-        and **its own per-link deterministic gate plus a source-grade floor** (D-13.17). Those are properties
-        of the *pair* and stay flag-independent: a bind is licensed by evidence or it is not. What the stage
-        flag decides is the prior question — whether the operator has authorised the category at all.
+        A listed category still clears every other rail — the ``distinct-from`` veto, type and namespace
+        agreement, the hard-attribute-contradiction check (``scoring.has_hard_conflict``) — and **its own
+        per-link deterministic gate plus a source-grade floor** (D-13.17). Those are properties of the pair:
+        a bind is licensed by evidence or it is not.
         """
         legacy = {str(c) for c in self._extra("coref_authoritative_evidence", [])}
-        if not self.earned_identity_on:
-            return legacy
         return legacy | set(self._earned.authoritative_categories)
 
     # ── open-world name triggers (P3.3: containment / acronym expansion) ──────────────────────
@@ -711,7 +816,7 @@ class ResolveConfig:
         }
 
     def unique_id_keys(self, entity_type: str) -> list[tuple[str, ...]]:
-        """The **composite AND-keys** that uniquely identify this type (D-13.20), or ``[]`` with the flag off.
+        """The **composite AND-keys** that uniquely identify this type (D-13.20); ``[]`` if none declared.
 
         **The load-bearing call: a shared designation is NOT a unique identifier.** Designations are reused
         across armies and across time — "3rd Battalion" names a different unit in two services and a
@@ -725,13 +830,9 @@ class ResolveConfig:
         preserves the asymmetry the codebase already embodies for bills of lading, which must not be "fixed":
         **differing identifiers veto; shared ones do not confirm** unless the whole AND-key agrees.
 
-        A bare-string row is read as a 1-tuple, so the legacy flat shape keeps its old meaning; the shipped
-        config declares only composites. Gated on the stage flag because ``hard_id_fields`` is empty today,
-        so declaring it at all would otherwise move the flag-off graph (the spike measured
-        ``_shared_unique_id`` as permanently False for exactly this reason).
+        A bare-string row is read as a 1-tuple, so a flat declaration keeps its plain meaning; the shipped
+        config declares only composites.
         """
-        if not self._earned.enabled:
-            return []
         rows = self._extra("hard_id_fields", {}).get("unique", {}).get(entity_type, [])
         out: list[tuple[str, ...]] = []
         for row in rows if isinstance(rows, (list, tuple)) else []:
@@ -792,27 +893,13 @@ class ResolveConfig:
         *agreement* and its *difference* mean over time — read by :meth:`attribute_time_role`. An
         attribute not listed here is **neutral** — no identity effect.
 
-        Two stage markers, and the difference between them matters. A row carrying
-        ``requires: earned_identity`` is consumed **only while that flag is on** — for rows S3 introduces, which
-        have no earlier form. A row carrying ``earned_role:`` keeps its declared ``role`` flag-off and takes the
-        override flag-on — for rows that **predate** S3, where dropping the row would delete a pre-S3
-        declaration and move flag-off scoring by removing it from the agreement ratio. That
-        marker is what lets C6's declarations live in this one block rather than in a parallel overlay: a new
-        ``identifying`` or ``constitutive`` row *is* a behavioural change (it enters the agreement ratio and
-        the durable-support test), so it cannot be consumed unconditionally without moving the flag-off graph
-        — but hiding it elsewhere is exactly the inertness ruling M3 was written to prevent.
+        **Every declared row is consumed.** The two row-level staging markers (``requires: earned_identity``,
+        which gated a row on a stage flag, and ``earned_role:``, which gave a row a second role for "when the
+        stage is on") are deleted, and a row still carrying either fails validation loudly rather than being
+        silently ignored — see :func:`_validate_attribute_roles`. One block, one declaration per row, one
+        behaviour.
         """
-        rows = dict(self._extra("attribute_roles", {}).get(entity_type, {}))
-        if not self._earned.enabled:
-            return {
-                attr: spec for attr, spec in rows.items()
-                if not (isinstance(spec, dict) and spec.get(_REQUIRES_KEY) == _REQUIRES_EARNED)
-            }
-        return {
-            attr: ({**spec, "role": spec[_EARNED_ROLE_KEY]}
-                   if isinstance(spec, dict) and spec.get(_EARNED_ROLE_KEY) else spec)
-            for attr, spec in rows.items()
-        }
+        return dict(self._extra("attribute_roles", {}).get(entity_type, {}))
 
     def _role_attrs(self, entity_type: str, role: str) -> list[str]:
         """Attributes of ``entity_type`` declared with ``role``, sorted (deterministic — gate G2)."""
@@ -830,6 +917,34 @@ class ResolveConfig:
     def supporting_role_attrs(self, entity_type: str) -> list[str]:
         """Compiler: attrs whose disagreement is a SOFT penalty in ``attribute_score``, never a wall."""
         return self._role_attrs(entity_type, ROLE_SUPPORTING)
+
+    def attribute_is_taxonomic(self, entity_type: str, attr: str) -> bool:
+        """Does this attribute name a **class** rather than bear identity? (the third axis, ``taxonomic:``)
+
+        A taxonomic attribute is one every member of the class shares by definition — a design family, a
+        component class, a radar band, a service branch, a country of origin. Its *agreement* carries no
+        individuating information, so it is excluded from every positive identity signal: it may not raise
+        the ``discriminator`` sub-signal (:func:`scoring._discriminator_agreement`) and it may not supply
+        durable identity support (:func:`scoring.has_durable_identity_support`). Its NEGATIVE consequences
+        are untouched — a stated difference on a critical taxonomic attribute is still a hard wall, on a
+        supporting one still a soft penalty.
+
+        This is the guard the name cap needed. The cap ("the only thing joining this pair is what it is
+        called") lifts on any agreeing discriminator, and a class label agreeing is the one thing that is
+        *always* available between two mentions of the same kind of thing — so a co-stated ``family`` turned
+        the cap off and fused two variants at ``confirmed`` with nothing else agreeing. Undeclared ⇒ False
+        (identity-bearing), the direction an author can safely forget.
+        """
+        spec = self.attribute_roles(entity_type).get(attr)
+        return isinstance(spec, dict) and spec.get(_TAXONOMIC_KEY) is True
+
+    def taxonomic_attrs(self, entity_type: str) -> list[str]:
+        """Attributes of ``entity_type`` declared ``taxonomic: true``, sorted (deterministic — gate G2)."""
+        roles = self.attribute_roles(entity_type)
+        return sorted(
+            a for a, spec in roles.items()
+            if isinstance(spec, dict) and spec.get(_TAXONOMIC_KEY) is True
+        )
 
     def attribute_time_role(self, entity_type: str, attr: str) -> str | None:
         """The declared ``time_role`` of an attribute (C6) — one of :data:`TIME_ROLES`, or ``None``.
@@ -875,7 +990,6 @@ class ResolveConfig:
 
         A constitutive attribute cannot change without the thing being a *different* instance, so a stated
         difference is anti-identity evidence in its own right, whatever the attribute's ``role`` says.
-        Consumed only with the S3 flag on (:meth:`earned_identity_on`).
         """
         roles = self.attribute_roles(entity_type)
         return sorted(

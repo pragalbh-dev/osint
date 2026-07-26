@@ -30,6 +30,7 @@ from chanakya.credibility import (
     score_claims,
 )
 from chanakya.edge_direction import canonicalize_claims
+from chanakya.hitl.receipt import stamp_unapplied
 from chanakya.materiality import precompute
 from chanakya.ontology import EdgeLaneIndex, LayerRouting, NodeTypeIndex
 from chanakya.resolve import (
@@ -58,12 +59,17 @@ from chanakya.schemas import (
     Partition,
     PlacesConfig,
     SourceRegistryEntry,
+    SufficiencyEval,
     Triple,
     canonical_iso_bounds,
     pair_key,
     report_bounded_validity,
 )
-from chanakya.sufficiency import check
+from chanakya.sufficiency import check, coverage_statement
+
+#: The sufficiency slot an identity refusal is missing. One name, used by the node's ``missing_slots`` and by
+#: the per-endpoint ``gap:identity:`` record, so the refuse half and the escalate half say the same word.
+IDENTITY_SLOT = "identity" 
 from chanakya.timeref import effective_as_of, is_available_by
 
 from . import basing as derived_basing
@@ -223,6 +229,44 @@ def _merge_provenance(nodes: dict[str, NodeView], partition: Partition) -> None:
         node.attrs.setdefault("resolved_from", []).append(entry)
 
 
+def _stamp_coverage(gaps: list[KnownGap], config: ConfigBundle, as_of: str | None) -> None:
+    """Give every Known Gap its coverage statement — and a derived date where the registry supports one."""
+    sources = config.sources.as_map()
+    for gap in gaps:
+        gap.next_coverage_due, gap.coverage_statement = coverage_statement(
+            next_coverage_due=gap.next_coverage_due,
+            missing_slots=list(gap.missing_slots),
+            ceiling=gap.observability_ceiling,
+            sources=sources,
+            unscheduled_phrase=config.templates.unscheduled_coverage_phrase,
+            as_of=as_of,
+        )
+
+
+def _collapse_restatements(gaps: list[KnownGap]) -> list[KnownGap]:
+    """One (node, statement) = one Known Gap, however many raw pairs independently raised it.
+
+    Deterministic: the first occurrence in the already-deterministic build order survives and collects the
+    suppressed ids on ``also_raised_as``, so nothing about *what raised it* is discarded — only the
+    repetition is. A gap with no ``related_ref`` is never collapsed: it hangs off nothing, so two of them
+    are not two renderings of one node's problem.
+    """
+    survivors: dict[tuple[str, str], KnownGap] = {}
+    out: list[KnownGap] = []
+    for gap in gaps:
+        if not gap.related_ref:
+            out.append(gap)
+            continue
+        key = (gap.related_ref, gap.what_missing)
+        first = survivors.get(key)
+        if first is None:
+            survivors[key] = gap
+            out.append(gap)
+        elif gap.id != first.id:
+            first.also_raised_as = sorted({*first.also_raised_as, gap.id})
+    return out
+
+
 def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView]:
     """Render the resolver's *undecided* + *veto* decisions: candidate ``same-as`` + ``distinct-from`` edges.
 
@@ -231,50 +275,153 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
     ``assertion_confidence``, gate G5). Auto-merges do *not* appear here (they collapse to one node —
     see :func:`_merge_provenance`); only pairs an analyst still has to adjudicate, and explicit
     do-not-merge traps, surface as edges. An edge is emitted only when *both* endpoints exist as nodes.
+
+    **The endpoints are CANONICALISED first, and that is a bug fix, not a tidy-up.** The resolver keys its
+    decisions on RAW entity ids; ``_assemble`` names nodes by their CANONICAL id. Testing raw membership
+    against a canonical node set therefore silently dropped every decision whose endpoint had itself been
+    merged — measured on the booted corpus: 20 of 42 candidate merges and 11 of 76 walls were nowhere on the
+    analyst's surface, including both cross-country walls. Worse, the better resolution got the more decisions
+    vanished (more merges ⇒ more raw ids that are no longer node ids), and ``POST /hitl/merge`` 404s without
+    the drawn edge — so those pairs were un-adjudicable: the analyst could not act even on the ones they
+    somehow knew about. Several raw pairs can collapse onto one canonical pair, so each canonical pair is
+    emitted ONCE, taking the strongest case (highest identity confidence) and the first non-empty reason in
+    sorted raw order — deterministic (gate G2).
+
+    **One pair may not carry both verdicts.** ``finalise`` already drops a candidate the resolver walled,
+    but it does that over RAW ids while this function draws CANONICAL pairs — and two *different* raw pairs
+    routinely collapse onto one canonical pair, one of them a candidate and the other a wall. Measured on
+    the booted corpus: after an analyst rejected a merge, 7 of 14 pairs were drawn with a ``same-as``
+    proposal and a ``distinct-from`` wall over the identical endpoints, so the graph asserted "same" and
+    "not same" about one pair at once and the SPA (which derives its review queue purely from live
+    ``same-as`` edges) kept asking a question the analyst had already answered. The wall wins — it is hard
+    and transitive, so the fusion could never be applied anyway and offering it is offering a button that
+    cannot work. The suppressed proposal is not lost: its confidence and its ground ride the wall edge as
+    ``suppressed_candidate``, so the analyst can still see that the resolver had a case and what overruled it.
     """
     out: list[EdgeView] = []
-    for a, b in sorted(partition.candidates):
-        if a in node_ids and b in node_ids:
-            key = pair_key(a, b)
-            breakdown = partition.merge_breakdown.get(key, {})
-            # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
-            # which independent identity signals corroborated this candidate. Only when a signal fired.
-            attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
-            ledger = identity_ledger(breakdown)
-            if ledger:
-                attrs["identity_ledger"] = ledger
-            out.append(
-                EdgeView(
-                    id=f"same-as:{key}",
-                    type="same-as",
-                    source=a,
-                    target=b,
-                    merge_confidence=partition.merge_confidence.get(key),
-                    # The claims in which a source asserts the identity — the evidence *behind* the
-                    # ``source_asserted`` term of the breakdown beside it. G4 still exempts this edge
-                    # (it may legitimately have none: most candidates are scored on name + neighbourhood
-                    # alone), but where a source did speak, the analyst must be able to read it — and
-                    # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
-                    claim_ids=list(partition.identity_claims.get(key, [])),
-                    attrs=attrs,
-                )
+    walled: dict[tuple[str, str], list[str]] = {
+        (a, b): raw_keys for a, b, raw_keys in _canonical_decisions(partition.distinct_from, node_ids, partition)
+    }
+    suppressed: dict[tuple[str, str], dict[str, Any]] = {}
+    for a, b, raw_keys in _canonical_decisions(partition.candidates, node_ids, partition):
+        if (a, b) in walled:
+            best_w = min(raw_keys, key=lambda k: (-partition.merge_confidence.get(k, 0.0), k))
+            why = next((r for r in (partition.candidate_reasons.get(k) for k in raw_keys) if r), None)
+            suppressed[(a, b)] = {
+                "merge_confidence": partition.merge_confidence.get(best_w),
+                "reason": why,
+                "note": "the resolver scored these two as a possible identity and a hard do-not-merge wall "
+                        "overrules it, so no merge is offered — the wall's own ground is on this edge. "
+                        "Overturning it means overturning the wall, not accepting the merge.",
+            }
+            continue
+        # The strongest case among the raw pairs that collapsed onto this canonical pair — the analyst is
+        # owed the best evidence for the proposal, not an arbitrary one. Deterministic: highest identity
+        # confidence, ties broken lexicographically (gate G2).
+        best = min(raw_keys, key=lambda k: (-partition.merge_confidence.get(k, 0.0), k))
+        key = pair_key(a, b)
+        breakdown = partition.merge_breakdown.get(best, {})
+        # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
+        # which independent identity signals corroborated this candidate. Only when a signal fired.
+        attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
+        ledger = identity_ledger(breakdown)
+        if ledger:
+            attrs["identity_ledger"] = ledger
+        # WHY this pair is an open question rather than a merge — the cap's own words, the stated
+        # critical disagreement, the licensing coreference quote, the bridged wall. The resolver has
+        # always computed it; nothing rendered it, so the one surface an analyst actually opens showed a
+        # score and no grounds. "Escalate to the analyst" is not satisfied by a value in a dict.
+        # Read over EVERY collapsed raw pair, not just the strongest: whichever of them the resolver gave a
+        # reason to, that reason is this pair's ground, and losing it to the confidence tie-break would
+        # re-open exactly the hole this render exists to close.
+        reason = next(
+            (r for r in (partition.candidate_reasons.get(k) for k in [best, *raw_keys]) if r), None
+        )
+        if reason:
+            attrs["reason"] = reason
+        out.append(
+            EdgeView(
+                id=f"same-as:{key}",
+                type="same-as",
+                source=a,
+                target=b,
+                merge_confidence=partition.merge_confidence.get(best),
+                # The claims in which a source asserts the identity — the evidence *behind* the
+                # ``source_asserted`` term of the breakdown beside it. G4 still exempts this edge
+                # (it may legitimately have none: most candidates are scored on name + neighbourhood
+                # alone), but where a source did speak, the analyst must be able to read it — and
+                # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
+                # Unioned across the collapsed raw pairs (order-preserving): no asserting sentence is
+                # dropped because two mentions of one side resolved together.
+                claim_ids=_merged_claim_ids(partition.identity_claims, raw_keys),
+                attrs=attrs,
             )
-    for a, b in sorted(partition.distinct_from):
-        if a in node_ids and b in node_ids:
-            # G18: a wall the system DERIVED carries its own grounds. A curated do-not-merge needs none — an
-            # analyst wrote it — but a stated-relationship conflict at overlapping times is a *finding*, and
-            # a finding with no readable grounds is indistinguishable from a missing edge. No wall reason ⇒
-            # the generic label, byte-unchanged (gate G2).
-            reason = partition.wall_reasons.get(pair_key(a, b)) or "explicit do-not-merge (hard veto)"
-            out.append(
-                EdgeView(
-                    id=f"distinct-from:{pair_key(a, b)}",
-                    type="distinct-from",
-                    source=a,
-                    target=b,
-                    attrs={"reason": reason},
-                )
+        )
+    for (a, b), raw_keys in sorted(walled.items()):
+        # G18/B4: EVERY rail that can draw a wall states its own ground, and a DERIVED finding never claims
+        # to be a curated one. The fallback below is reached only if a rail draws a wall and records no
+        # ground — a defect rather than a state — so it says that plainly instead of asserting "explicit",
+        # which would misattribute a machine inference to a person.
+        reason = next(
+            (r for r in (partition.wall_reasons.get(k) for k in raw_keys) if r),
+            "held apart by a hard do-not-merge wall whose ground was not recorded by the rail that raised "
+            "it — this is a defect in that rail, not a statement about the pair. Treat the wall as holding "
+            "and report the missing ground.",
+        )
+        wall_attrs: dict[str, Any] = {"reason": reason}
+        if (a, b) in suppressed:
+            wall_attrs["suppressed_candidate"] = suppressed[(a, b)]
+        out.append(
+            EdgeView(
+                id=f"distinct-from:{pair_key(a, b)}",
+                type="distinct-from",
+                source=a,
+                target=b,
+                attrs=wall_attrs,
             )
+        )
+    return out
+
+
+def _canonical_decisions(
+    pairs: list[tuple[str, str]], node_ids: set[str], partition: Partition
+) -> list[tuple[str, str, list[str]]]:
+    """Resolver decisions keyed on RAW entity ids → the CANONICAL pairs the analyst can actually see.
+
+    Returns ``(canonical_a, canonical_b, [raw pair_keys])``, sorted. The resolver decides over raw ids while
+    ``_assemble`` names nodes by canonical id, so a raw-vs-canonical membership test dropped every decision
+    whose endpoint had itself been merged — silently, and *more* of them the better resolution got. Two
+    filters remain, and both are real rather than artefacts:
+
+    * ``ca == cb`` — the two mentions ended up as ONE node along some other chain, so there is no pair left
+      to draw and nothing to adjudicate;
+    * an endpoint that is not a node at all — a registry seed or a mention no claim ever instantiated. There
+      is nothing to hang an edge on, and inventing a node for it would fabricate an entity.
+
+    Several raw pairs can collapse onto one canonical pair; the caller gets all of their keys so it can pick
+    the strongest confidence and keep whichever of them carries a reason.
+    """
+    canon = partition.entity_canonical
+    grouped: dict[tuple[str, str], list[str]] = {}
+    for a, b in sorted(pairs):
+        ca, cb = canon.get(a, a), canon.get(b, b)
+        if ca == cb or ca not in node_ids or cb not in node_ids:
+            continue
+        grouped.setdefault(tuple(sorted((ca, cb))), []).append(pair_key(a, b))  # type: ignore[arg-type]
+    return [(a, b, keys) for (a, b), keys in sorted(grouped.items())]
+
+
+def _merged_claim_ids(claims: dict[str, list[str]], raw_keys: list[str]) -> list[str]:
+    """Union of the identity claims across every raw pair that collapsed onto one canonical pair.
+
+    Order-preserving and duplicate-free, so ``GET /evidence/{edge_id}`` serves every sentence that asserted
+    this identity and never the same one twice.
+    """
+    out: list[str] = []
+    for key in raw_keys:
+        for cid in claims.get(key, []):
+            if cid not in out:
+                out.append(cid)
     return out
 
 
@@ -323,8 +470,8 @@ def _assemble(
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
     edge_groups: dict[str, list[ClaimRecord]] = defaultdict(list)
-    # Layer routing (A2/A3/A4) is OFF unless the ontology says otherwise, and when off every branch below
-    # falls through to the pre-S2 path — which is what makes the flag-off view byte-identical (gate G2).
+    # Layer routing (A2/A3/A4) always runs; what it *does* is whatever the ontology declares (an ontology
+    # that declares no `materializes`, no `instance_split` and no `instance_key_tag` routes nothing).
     # `outcome` is an OUT-parameter rather than a fourth return value on purpose: the 3-tuple signature is
     # what every existing caller (and every independently-authored test) already binds.
     routing = routing or LayerRouting()
@@ -421,7 +568,7 @@ def _assemble(
     # Runs after every entity claim has folded, so a node's full attribute set is visible: the trigger is a
     # property of the whole node, not of whichever claim happened to arrive first. Before the edges are
     # keyed, so a split node's edges attach to the right half.
-    if routing.enabled and node_types is not None:
+    if node_types is not None:
         split_straddlers(nodes, node_types, routing, outcome)
 
     ep_types = endpoint_node_types or {}
@@ -430,7 +577,7 @@ def _assemble(
         # Remap endpoints through the merge map so build_instance_edges (which reads the raw
         # subject/object) attaches the edge to the canonical nodes. No-op when nothing merged.
         subj, obj = to_canonical(payload.subject), to_canonical(payload.object)
-        if routing.enabled and lane is not None and node_types is not None:
+        if lane is not None and node_types is not None:
             # A4/D-13.6 — endpoint identity is resolved HERE, in the derived layer, never baked into the
             # immutable claim: an instance-layer edge materializes the instance it implies, a holding edge
             # mints nothing, and an edge whose ontology demands a STATED endpoint is withheld rather than
@@ -496,9 +643,8 @@ def _assemble(
                     claim_ids=list(e.claim_ids),
                 )
 
-    if routing.enabled:
-        apply_design_citations(nodes, outcome)
-        label_provisional_instances(nodes, outcome)
+    apply_design_citations(nodes, outcome)
+    label_provisional_instances(nodes, outcome)
 
     # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
     for node in nodes.values():
@@ -733,17 +879,16 @@ def _drop_superseded_derivations(claims: list[ClaimRecord], config: ConfigBundle
     """Ignore frozen ``inference`` claims whose derivation ``rebuild()`` now performs itself (A4/D-13.6).
 
     The offline basing pass used to **mint** its conclusion into the append-only log. That pass is deleted,
-    and with layer routing on the same edge is materialized in the derived layer every rebuild — so those
-    frozen claims are not evidence, they are stale *output* of a mechanism that no longer exists. Reading
-    them as evidence would double-count the derivation and let a conclusion outlive its premises.
+    and the same edge is materialized in the derived layer every rebuild — so those frozen claims are not
+    evidence, they are stale *output* of a mechanism that no longer exists. Reading them as evidence would
+    double-count the derivation and let a conclusion outlive its premises.
 
     This is a **derived-layer read**, not a retraction: the claims stay in the log, still replayable, still
     inspectable, exactly as ``as_of`` rewinding and HITL exclusion leave their inputs alone. Which
-    ``derived_layer`` values are superseded is declared in config, and with routing **off** the list is
-    never consulted — which is why the flag-off view still contains those edges, byte-identically.
+    ``derived_layer`` values are superseded is declared in config; an empty declaration retires nothing.
     """
     routing = LayerRouting.from_ontology(config.ontology)
-    if not (routing.enabled and routing.superseded_derived_layers):
+    if not routing.superseded_derived_layers:
         return claims
     retired = set(routing.superseded_derived_layers)
     return [
@@ -803,20 +948,18 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # 2b. the DERIVED basing edge (A4/D-13.6/G17) — `<unit, based-at, site>` materialized here, citing its
     #     two premise claim-atoms, with no mint and no append. It runs before scoring so the derived edge is
     #     priced by the same machinery as every other edge (and capped by its gate flag, never confirmed).
-    derivation = derived_basing.BasingDerivation()
-    if routing.enabled:
-        derivation = derived_basing.derive(
-            nodes, edges, claims_by_id, config, lane, node_types, routing
+    derivation = derived_basing.derive(
+        nodes, edges, claims_by_id, config, lane, node_types, routing
+    )
+    edges.extend(derivation.edges)
+    # 2c. NOW that every basing of every subject exists — stated and derived — apply the `site_type`
+    #     sub-bucket, or take the third state (R1.3/C1/L1/C7). This is the only point at which the
+    #     per-subject decision can be made correctly.
+    derivation.gaps.extend(
+        retag_instances(
+            edges, nodes, lane, routing, order_instance_edges, derived_basing.edge_bounds
         )
-        edges.extend(derivation.edges)
-        # 2c. NOW that every basing of every subject exists — stated and derived — apply the `site_type`
-        #     sub-bucket, or take the third state (R1.3/C1/L1/C7). This is the only point at which the
-        #     per-subject decision can be made correctly.
-        derivation.gaps.extend(
-            retag_instances(
-                edges, nodes, lane, routing, order_instance_edges, derived_basing.edge_bounds
-            )
-        )
+    )
     derived_edge_ids = {e.id for e in derivation.edges}
 
     # 3. credibility (per-claim) — decisions carry analyst integrity flags (origin-wide, incl. future claims)
@@ -835,6 +978,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     as_of = effective_as_of(config, resolved)
 
     assertions: list[AssertionInput] = []
+    #: Elements whose sufficiency failed ONLY because their identity is refused — their gap is the richer
+    #: `gap:identity:` one, so the generic per-element gap is skipped rather than duplicated.
+    identity_gap_suppressed: set[str] = set()
     for eid, el in elements.items():
         groups = group_by_independence(el.claim_ids, claims_by_id, sources, config)
         el.supporting_claims = groups
@@ -880,6 +1026,58 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         a.sufficiency = check(a, claims_by_id, config)
         assertions.append(a)
 
+    # 4b. G19's REFUSE half, on the node itself — the half that never fired.
+    #
+    # An identity refusal says two sources disagree about what KIND of thing a mention is (or which operator
+    # it belongs to). Until this ran, the only consequence was a Known Gap: the same rebuild published
+    # `ent:variant:HT-233` as a first-class ORBAT variant at status CONFIRMED while emitting a gap saying that
+    # mention's type is contradicted. Confirmed asserts "we have established this"; what we have established
+    # is that two sources disagree about what it is.
+    #
+    # Routed through ``sufficiency`` rather than a second status writer, because assessability is exactly what
+    # sufficiency is for (⊥ magnitude, spine/04 §3.7) and the machine must keep sole ownership of the label
+    # (G5). `insufficient` then dominates, and the node says "insufficient evidence to assess" with `identity`
+    # named as the missing slot.
+    #
+    # **It lands on the reading that is NOT better attested, and the asymmetry is deliberate.** A refusal hangs
+    # off both endpoints because both mentions are un-anchored by it, but the two are not equally in doubt: one
+    # side is a well-corroborated component with several independent looks, the other a single-claim mention a
+    # lone extraction typed differently. Marking both unassessable would let one flaky mention shatter a
+    # well-corroborated node — the failure `critical_veto_min_grade` exists to prevent one rail over. So the
+    # weaker reading (fewer effective independent looks) carries the refusal; on a tie neither reading wins and
+    # both carry it. The better-attested side is NOT let off: it keeps the per-endpoint `gap:identity:` record,
+    # so the disagreement reaches the analyst on both nodes either way.
+    _by_id = {a.element_id: a for a in assertions}
+    _looks = {a.element_id: sum(g.weight for g in a.groups) for a in assertions}
+    for _pair_ref in sorted(partition.identity_refusals):
+        _ends = [
+            partition.entity_canonical.get(e, e)
+            for e in _pair_ref.split("|")
+        ]
+        _ends = [e for e in dict.fromkeys(_ends) if e in nodes and e in _by_id]
+        if not _ends:
+            continue
+        _weakest = min(_looks.get(e, 0.0) for e in _ends)
+        for _eid in _ends:
+            if _looks.get(_eid, 0.0) > _weakest:
+                continue  # the better-attested reading keeps its assessment (and its gap)
+            _a = _by_id[_eid]
+            _slots = list(_a.sufficiency.missing_slots) if _a.sufficiency else []
+            if IDENTITY_SLOT not in _slots:
+                _slots.append(IDENTITY_SLOT)
+            if _a.sufficiency is None or _a.sufficiency.satisfied:
+                # The richer `gap:identity:<pair>:<node>` gap below already names what is missing and what
+                # would settle it, so the generic per-element gap would be the same finding twice — and a
+                # register that lists one finding twice teaches an analyst to skim it.
+                identity_gap_suppressed.add(_eid)
+            _a.sufficiency = SufficiencyEval(
+                satisfied=False,
+                missing_slots=_slots,
+                next_coverage_due=_a.sufficiency.next_coverage_due if _a.sufficiency else None,
+                ceiling=(_a.sufficiency.ceiling if _a.sufficiency else None) or "confirmable",
+                template_id=_a.sufficiency.template_id if _a.sufficiency else None,
+            )
+
     # 5. status (batch) — reads a.sufficiency + a.gate_flags for the gate machine
     assessments = assign_status(assertions, config)
 
@@ -900,7 +1098,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                 freshness_factor=a.freshness.decay_factor if a.freshness else None,
                 assertion_confidence=assess.assertion_confidence,
             )
-        if suff is not None and not suff.satisfied:
+        if suff is not None and not suff.satisfied and a.element_id not in identity_gap_suppressed:
             known_gaps.append(
                 KnownGap(
                     id=f"gap:{a.element_id}",
@@ -918,20 +1116,18 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     #     Promoting writes the superseded_by/supersedes link, re-runs the status machine over the
     #     retired edge (→ stale, via the `superseded` gate flag) and draws the node→node `supersedes`
     #     edge; failing the floor leaves the pair as `candidate_supersede` for the analyst.
-    # R1.4's two prohibitions both ride the stage flag, like everything else S2 changes — flag-off promotion
-    # behaviour is untouched by construction rather than by argument. (A safety fix behind a flag is only
-    # acceptable because the whole stage is: the flag is the stage's cutover, not a way of keeping the fix
-    # off.) The two are independent: (a) asks whether this is one unit, (b) whether we ever established the
-    # origin at all.
+    # R1.4's two prohibitions are unconditional. They are what closes the fabrication path: without them a
+    # sub-confirmed identity promotes, the analyst's candidate is popped off the queue, the retired assertion
+    # is restated `stale` (asserting it was once established) and a differing target draws a relocation
+    # nobody reported. The two are independent: (a) asks whether this is one unit, (b) whether we ever
+    # established the origin at all.
     #
     # "Unsettled" is the OPEN CANDIDATE MERGE — every endpoint of a same-as the resolver put in front of the
     # analyst and nobody has adjudicated. Deliberately not the node's assessed status: the legitimate
     # flagship relocation sits at *probable*, so reading the confidence label would suppress the beat this is
     # meant to leave working. The question is whether the IDENTITY DECISION is still open.
     unsettled = {eid for pair in partition.candidates for eid in pair}
-    supersede_outcome = promote_supersessions(
-        edges, config, nodes, unsettled, layer_routing=routing.enabled
-    )
+    supersede_outcome = promote_supersessions(edges, config, nodes, unsettled)
     edges.extend(supersede_outcome.drawn_edges)
     # A retired assertion is history, not a coverage gap: drop the "insufficient evidence" Known Gap it
     # raised while it was still being assessed as a live fact. The gap would tell an analyst to go
@@ -953,6 +1149,51 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
             if edge.id in absorbed:
                 edge.attrs["retired_known_gap"] = absorbed[edge.id]
         known_gaps = [g for g in known_gaps if g.related_ref not in retired]
+    # G19's escalate half: a pair the evidence otherwise FUSED, refused by a type or namespace
+    # contradiction. One gap PER ENDPOINT (the pair is what is contradicted, but a gap hangs off a node and
+    # each of the two mentions is separately un-anchored by the refusal), so neither half is left with no
+    # edge, no queue item and no record — which is what the cross-type refusal used to do.
+    #
+    # The endpoints are CANONICALISED before the membership test, for the same reason as the drawn resolution
+    # edges: a refusal is keyed on RAW entity ids while nodes are named by canonical id, so a raw endpoint
+    # that had itself been merged failed ``in nodes`` and its gap was dropped — 5 of the 14 endpoints on the
+    # booted corpus. The escalate half then fired for the pair and reached the analyst for one of its two
+    # mentions, or for neither.
+    for pair_ref, what_missing in sorted(partition.identity_refusals.items()):
+        seen_refs: set[str] = set()
+        for endpoint in pair_ref.split("|"):
+            ref = partition.entity_canonical.get(endpoint, endpoint)
+            if ref in nodes and ref not in seen_refs:
+                seen_refs.add(ref)
+                known_gaps.append(
+                    KnownGap(
+                        id=f"gap:identity:{pair_ref}:{ref}",
+                        related_ref=ref,
+                        what_missing=what_missing,
+                        observability_ceiling="confirmable",
+                        missing_slots=[IDENTITY_SLOT],
+                    )
+                )
+    # …and the escalation for a pair a cap withheld from the QUEUE on a ground a source stated
+    # (``withheld_escalations``). Same per-endpoint rendering as the refusal above and the same
+    # canonicalisation, but it never touches either node's status: the pair being held apart is the correct
+    # outcome here, and what is open is only WHY the source and the score disagree. Empty on the shipped
+    # config (`contrast_ceiling: probable` keeps the queue place, so nothing is re-routed).
+    for pair_ref, what_missing in sorted(partition.withheld_escalations.items()):
+        seen_refs = set()
+        for endpoint in pair_ref.split("|"):
+            ref = partition.entity_canonical.get(endpoint, endpoint)
+            if ref in nodes and ref not in seen_refs:
+                seen_refs.add(ref)
+                known_gaps.append(
+                    KnownGap(
+                        id=f"gap:withheld:{pair_ref}:{ref}",
+                        related_ref=ref,
+                        what_missing=what_missing,
+                        observability_ceiling="confirmable",
+                        missing_slots=[IDENTITY_SLOT],
+                    )
+                )
     # The routing's + derivation's own named gaps: an unrouted straddle, a suppressed supersede, a withheld
     # relation, a truncated formation attribution. Appended AFTER the retirement filter — these are not
     # assertions that could be retired, they are statements about what the build could not conclude.
@@ -965,6 +1206,14 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # the precedence, and it is deterministic (gate G2).
     _seen_gaps: set[str] = set()
     known_gaps = [g for g in known_gaps if not (g.id in _seen_gaps or _seen_gaps.add(g.id))]
+    # …and the SAME dedup rule applied to what the analyst actually reads, not just to the id. An identity
+    # gap is keyed by the raw pair that raised it, so five raw pairs that canonicalise onto one node produce
+    # five DIFFERENT ids carrying one identical sentence — measured: 14 identity gaps on the booted corpus
+    # were 4 distinct (node, statement) pairs, one node receiving the same sentence five times in a single
+    # drawer. Five renderings of one finding read as five findings, which is precisely how a register
+    # teaches an analyst to skim it. The suppressed ids are kept on the survivor (``also_raised_as``) so the
+    # raw provenance is not lost — this collapses the presentation, never the record.
+    known_gaps = _collapse_restatements(known_gaps)
 
     view = GraphView(
         nodes=list(nodes.values()),
@@ -975,6 +1224,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 7. materiality precompute — inside rebuild, tracks config automatically (spine/09)
     view = precompute(view, config)
+    # 7b. The second clause of the non-negotiable, in words: EVERY gap states when next coverage is due, or
+    #     states honestly that none is scheduled and what would close it. Derived here, once, over the
+    #     FINISHED list — after materiality, which raises candidate-chokepoint gaps of its own — so no gap
+    #     producer can forget it. Measured before this existed: 34 of 37 gaps carried a bare ``null``, which
+    #     tells the analyst nothing and is indistinguishable from a field nobody filled in.
+    _stamp_coverage(view.known_gaps, config, effective_as_of(config, resolved))
 
     # 8. HITL decision effects last (an override wins over the machine — gate G12)
     view = apply_decision_effects(view, decisions)
@@ -982,6 +1237,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # 8b. render the resolver's decisions as edges — candidate same-as (HITL band) + distinct-from
     #     traps. Added AFTER scoring so they're never assigned a truth status (G5); G4-exempt.
     view.edges.extend(_resolution_edges({n.id for n in view.nodes}, partition))
+
+    # 8c. …and where an analyst already ruled on one of those pairs and the resolver did NOT apply it, say
+    #     so ON THE EDGE. The receipt in the POST response is transient — a page reload loses it, and the
+    #     analyst is then asked the identical question with no record that they answered it. Replayed from
+    #     the append-only log on every rebuild, so the acknowledgement is as durable as the decision.
+    stamp_unapplied(view, decisions)
 
     # 9. deterministic ordering + diagnostic meta (no clock, no RNG — G2)
     view = sorted_view(view)
