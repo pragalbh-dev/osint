@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import type { AskAnswer, GraphView, ProvenanceDrawer } from './types'
+import { isAnchorFault } from './types'
 import {
   alertToFiring,
   askToAnswerModel,
   claimElementIndex,
   clusterAreaPins,
+  drawerIdentity,
+  identityReason,
   credibilityToDots,
   dateValueToString,
   displayNameOf,
@@ -1656,5 +1659,170 @@ describe('orderReviewQueue / groupReviewQueue', () => {
   it('puts a crisp two-record decision ahead of the systemic cluster', () => {
     const kinds = groups.map((g) => g.kind)
     expect(kinds.lastIndexOf('cluster')).toBe(kinds.length - 1)
+  })
+})
+
+// ─────────── identity decisions: a wall's ground, and an instruction we did not apply ───────────
+// The resolver's own ground is the whole content of a `distinct-from`: it carries no confidence, no
+// signal breakdown and no review card, so if these adapters drop it the analyst is left with a bare
+// line between two nodes — a machine inference rendered as an unexplained fact. And a `same-as` the
+// analyst already ruled on, which the resolver did not apply, must say so or the queue asks the same
+// question forever. Both are read off the view edge, so a dropped/renamed attr key is a silent loss.
+describe('identity decisions (wall ground · un-applied adjudication)', () => {
+  const WALL_REASON =
+    'held apart because the two records geocode to gazetteer anchors declared distinct-from each other'
+  const CANDIDATE_REASON =
+    'capped at possible: the co-location ceiling holds this pair below the auto-merge floor'
+  const UNAPPLIED_GROUND =
+    'the pair is still an open identity question on the resolver’s own grounds: the co-location cap holds'
+
+  const IVIEW: GraphView = {
+    nodes: [
+      { id: 'unit_a', type: 'unit', name: 'HQ-9/P battery (Rawalpindi)', status: 'probable' },
+      { id: 'unit_b', type: 'unit', name: 'HQ-9/P battery (Rahwali)', status: 'probable' },
+      { id: 'org_x', type: 'trading_org', name: 'Star Traders (Karachi)', status: 'possible' },
+      { id: 'org_y', type: 'trading_org', name: 'Star Traders (Lahore)', status: 'possible' },
+    ],
+    edges: [
+      {
+        id: 'distinct-from:unit_a|unit_b',
+        type: 'distinct-from',
+        source: 'unit_a',
+        target: 'unit_b',
+        status: null,
+        attrs: {
+          reason: WALL_REASON,
+          suppressed_candidate: {
+            merge_confidence: 0.62,
+            reason: 'both mentions normalise to one name and share a neighbourhood',
+            note: 'the wall overrules the proposal, so no merge is offered',
+          },
+        },
+      },
+      {
+        id: 'same-as:org_x|org_y',
+        type: 'same-as',
+        source: 'org_x',
+        target: 'org_y',
+        merge_confidence: 0.55,
+        attrs: {
+          reason: CANDIDATE_REASON,
+          breakdown: { name_similarity: 0.9, source_asserted: 0 },
+          adjudication_not_applied: {
+            decision: 'reject',
+            actor: 'analyst',
+            instruction: 'do not merge these two records',
+            applied: false,
+            ground: UNAPPLIED_GROUND,
+          },
+        },
+      },
+      { id: 'e-plain', type: 'based-at', source: 'unit_a', target: 'org_x', status: 'confirmed' },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  it('returns the resolver ground VERBATIM off either kind of identity edge', () => {
+    expect(identityReason(IVIEW.edges[0])).toBe(WALL_REASON)
+    expect(identityReason(IVIEW.edges[1])).toBe(CANDIDATE_REASON)
+    // no ground recorded ⇒ null, never a stand-in sentence of ours
+    expect(identityReason(IVIEW.edges[2])).toBeNull()
+    expect(identityReason({ id: 'x', type: 'distinct-from', source: 'a', target: 'b' })).toBeNull()
+  })
+
+  it('builds the drawer identity block for a WALL, with named endpoints and the case it overruled', () => {
+    const wall = drawerIdentity(IVIEW, 'distinct-from:unit_a|unit_b')!
+    expect(wall.kind).toBe('wall')
+    expect(wall.reason).toBe(WALL_REASON)
+    expect(wall.leftName).toBe('HQ-9/P battery (Rawalpindi)')
+    expect(wall.rightName).toBe('HQ-9/P battery (Rahwali)')
+    // the analyst must learn there WAS a case for merging, and that this wall overrules it
+    expect(wall.suppressedCandidateReason).toContain('normalise to one name')
+    expect(wall.suppressedCandidateNote).toContain('no merge is offered')
+  })
+
+  it('builds it for a CANDIDATE too, and carries an instruction the resolver did not apply', () => {
+    const cand = drawerIdentity(IVIEW, 'same-as:org_x|org_y')!
+    expect(cand.kind).toBe('candidate')
+    expect(cand.reason).toBe(CANDIDATE_REASON)
+    expect(cand.unappliedDecision).toBe('reject')
+    expect(cand.unappliedGround).toBe(UNAPPLIED_GROUND)
+    expect(cand.suppressedCandidateReason).toBeNull()
+  })
+
+  it('is undefined for a non-identity edge, an unknown ref, or an identity edge with no ground', () => {
+    expect(drawerIdentity(IVIEW, 'e-plain')).toBeUndefined()
+    expect(drawerIdentity(IVIEW, 'nope')).toBeUndefined()
+    expect(drawerIdentity(null, 'distinct-from:unit_a|unit_b')).toBeUndefined()
+    const bare: GraphView = {
+      ...IVIEW,
+      edges: [{ id: 'w', type: 'distinct-from', source: 'unit_a', target: 'unit_b' }],
+    }
+    expect(drawerIdentity(bare, 'w')).toBeUndefined()
+  })
+
+  it('reaches the drawer model — the block the LiveDrawer renders is on the model', () => {
+    const drawer: ProvenanceDrawer = {
+      subject_ref: 'distinct-from:unit_a|unit_b',
+      status: null,
+      claims: [],
+      clusters: [],
+    }
+    const model = evidenceToDrawerModel(drawer, IVIEW)
+    expect(model.identity?.kind).toBe('wall')
+    expect(model.identity?.reason).toBe(WALL_REASON)
+    // and no identity block on an element that is not an identity decision
+    expect(evidenceToDrawerModel({ ...drawer, subject_ref: 'unit_a' }, IVIEW).identity).toBeUndefined()
+  })
+
+  it('tells the merge card the analyst already answered — decision, ground and a badge', () => {
+    const merge = viewToReviewQueue(IVIEW).find((i) => i.reviewType === 'merge')!
+    expect(merge.context.merge?.alreadyDecided).toEqual({
+      decision: 'reject',
+      ground: UNAPPLIED_GROUND,
+    })
+    expect(merge.badges.some((b) => b.includes('reject') && b.includes('not applied'))).toBe(true)
+    // …and the wall is never offered as a merge question
+    expect(viewToReviewQueue(IVIEW).filter((i) => i.reviewType === 'merge')).toHaveLength(1)
+  })
+
+  it('never invents an un-applied adjudication from a half-recorded one', () => {
+    const half: GraphView = {
+      ...IVIEW,
+      edges: [
+        {
+          ...IVIEW.edges[1],
+          attrs: { ...IVIEW.edges[1].attrs, adjudication_not_applied: { decision: 'reject' } },
+        },
+      ],
+    }
+    const merge = viewToReviewQueue(half).find((i) => i.reviewType === 'merge')!
+    expect(merge.context.merge?.alreadyDecided).toBeNull()
+    expect(merge.badges.some((b) => b.includes('not applied'))).toBe(false)
+  })
+})
+
+// ─────────── anchor honesty: what counts as a FAULT (AH-2) ───────────
+// The rail and the Watch panel both render loudness from `severity`, never from the length of the
+// miss list: a declared entity awaiting coverage is this system's own boot state, and shouting about
+// it teaches the analyst to ignore the surface. An unknown/absent severity must still read as a
+// fault — an underclaim is as dishonest as an overclaim.
+describe('isAnchorFault', () => {
+  const base = { observable_id: 'obs', unresolved_anchors: ['site_x'], watched_node_count: 2, watching_nothing: false, warning: 'w' }
+
+  it('treats an anchor awaiting coverage as NOT a fault', () => {
+    expect(isAnchorFault({ ...base, severity: 'pending_coverage' })).toBe(false)
+  })
+
+  it('treats dangling / watching-nothing / unscoped as faults', () => {
+    expect(isAnchorFault({ ...base, severity: 'dangling' })).toBe(true)
+    expect(isAnchorFault({ ...base, severity: 'watching_nothing', watching_nothing: true })).toBe(true)
+    expect(isAnchorFault({ ...base, severity: 'unscoped', watched_node_count: null })).toBe(true)
+  })
+
+  it('defaults an unstated severity to a fault rather than quietly to fine', () => {
+    expect(isAnchorFault(base)).toBe(true)
   })
 })
