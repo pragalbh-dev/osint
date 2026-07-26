@@ -246,6 +246,9 @@ TRIGGER_EXACT_NAME = "exact-normalised-name"
 TRIGGER_CONTAINMENT = "name-containment-or-acronym"
 TRIGGER_COREF = "authoritative-coreference"
 TRIGGER_PLACE = "curated-gazetteer-anchor"
+#: ONE surface string that two mint sites keyed under two different base types, refined back to one type. Not a
+#: name coincidence in any sense the cap is about — there is a single mention here, recorded twice.
+TRIGGER_REKEY = "refined-type-rekey"
 #: The triggers that are *nothing but a name*. D-13.20 puts name at the bottom of the discriminator ladder,
 #: ceiling ``possible``.
 NAME_TRIGGERS = frozenset({TRIGGER_EXACT_NAME, TRIGGER_CONTAINMENT})
@@ -257,7 +260,9 @@ NAME_TRIGGERS = frozenset({TRIGGER_EXACT_NAME, TRIGGER_CONTAINMENT})
 #: clause is D3: the cap used to be consulted **only** in the post-fixpoint collection loop, so the Phase-2
 #: fixpoint that actually unions never saw it, and a near-identical name auto-merged at a lowered per-type
 #: floor without anything else agreeing.
-EARNED_TRIGGERS = frozenset({TRIGGER_UNIQUE_ID, TRIGGER_ALIAS, TRIGGER_COREF, TRIGGER_PLACE})
+EARNED_TRIGGERS = frozenset(
+    {TRIGGER_UNIQUE_ID, TRIGGER_ALIAS, TRIGGER_COREF, TRIGGER_PLACE, TRIGGER_REKEY}
+)
 
 
 def _name_cap_reason(trigger: str | None, ceiling: str) -> str:
@@ -492,6 +497,7 @@ def resolve_entities(
     raise_walls: Mapping[Pair, str] | None = None,
     raise_ceilings: Mapping[Pair, str] | None = None,
     place_identity: set[Pair] | None = None,
+    rekey_identity: set[Pair] | None = None,
 ) -> ResolveResult:
     """Run the full two-phase resolution over the entity graph; returns the partition + decisions.
 
@@ -537,6 +543,7 @@ def resolve_entities(
     # ``authoritative``, because labelling a curated-gazetteer anchor "authoritative coreference" in an
     # analyst-facing reason would be a lie about where the evidence came from.
     place_identity = place_identity or set()
+    rekey_identity = rekey_identity or set()
     res = ResolveResult()
     if not cfg.scorable:
         return res  # no bands configured ⇒ inert (identity partition) — no code literal needed
@@ -548,7 +555,8 @@ def resolve_entities(
     pairs = sorted(
         tuple(sorted(p))
         for p in _candidate_pairs(
-            graph, cfg, alias_idx, raise_only | authoritative | place_identity | set(raise_walls), toks
+            graph, cfg, alias_idx,
+            raise_only | authoritative | place_identity | rekey_identity | set(raise_walls), toks
         )
     )
 
@@ -630,6 +638,8 @@ def resolve_entities(
             return TRIGGER_COREF
         if pair in place_identity:
             return TRIGGER_PLACE
+        if pair in rekey_identity:
+            return TRIGGER_REKEY
         if alias_idx.equivalent(na, nb):
             return TRIGGER_ALIAS
         if bool(na) and na == nb and ea.namespace(nsn) == eb.namespace(nsn):

@@ -289,6 +289,7 @@ def _resolve(
         graph, cfg, alias_idx, veto, raise_only, coref_authoritative,
         raise_walls=crit_raises, raise_ceilings=raise_ceilings,
         place_identity=place_authoritative,
+        rekey_identity=_refined_rekey_pairs(graph),
     )
     result.candidates.extend(ambiguous)  # an endpoint with >1 irreconcilable match is adjudicated, never guessed
     # G18: the wall must be READABLE. A wall nobody can read is indistinguishable from a missing edge, so the
@@ -609,6 +610,62 @@ def _refine_node_types(
             if eid in minted:
                 minted[eid] = new_type
     return refined
+
+
+#: The id namespace every claim-minted entity carries: ``ent:<base type>:<name>``.
+_MINTED_ID_PREFIX = "ent"
+
+
+def _refined_rekey_pairs(graph: EntityGraph) -> set[Pair]:
+    """ONE surface string that two mint sites keyed under two different base types → one entity (T3b-A tail).
+
+    An entity id is an opaque handle minted from the base type the *claim* declared: ``ent:<base>:<name>``.
+    :func:`_refine_node_types` then re-types the entity in place and deliberately leaves the id alone (ids are
+    referenced by frozen bundles). Where two claims mention the same string under two different base types —
+    a province arriving once as a ``based-at`` object (range ``basing_site``) and once as an
+    ``area_of_operations`` — refinement makes their TYPES agree while their ids stay in two namespaces, and
+    nothing merged them.
+
+    Measured, booted corpus: FIVE duplicate place nodes (Punjab, Sindh, and three air-defence sectors), each
+    splitting one place's geocode from its edges — one copy carries the gazetteer coordinates, the other
+    carries the connections. Zero at baseline: the exact-name bootstrap used to fuse them, and the name cap —
+    correctly, for a name coincidence — now withholds a pair that agrees on nothing but its name.
+
+    This is not a name coincidence, and that is the whole point. There is ONE mention string here, recorded
+    twice by two mint sites; the "two" entities are a keying artefact of the base type each claim happened to
+    declare. So it is an EARNED trigger (``TRIGGER_REKEY``), like an alias link or a curated place anchor, and
+    the cap does not touch it. It is also strictly narrower than the exact-name bootstrap it revives: the names
+    must be byte-equal, the refined types must be equal, and at least one side's id namespace must disagree
+    with its own refined type — i.e. refinement must actually have moved something. Vetoes are unaffected (the
+    trigger is consulted after them, in both phases).
+    """
+    by_key: dict[tuple[str, str], list[str]] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        if _minted_id_namespace(eid) is None:
+            continue  # a registry stable id / a synthesised id has no base-type namespace to disagree with
+        by_key.setdefault((ent.name, ent.etype), []).append(eid)
+    out: set[Pair] = set()
+    for (_name, etype), eids in sorted(by_key.items()):
+        if not eids or eids[1:] == []:
+            continue  # a single id for this (name, type) — nothing duplicated
+        if all(_minted_id_namespace(eid) == etype for eid in eids):
+            continue  # nothing was refined: two same-named, same-typed ids cannot both be the mint's own key
+        out.update(frozenset(p) for p in unordered_pairs(sorted(eids)))
+    return out
+
+
+def _minted_id_namespace(eid: str) -> str | None:
+    """The BASE TYPE an ``ent:<type>:<name>`` id was minted under, or ``None`` for any other id shape.
+
+    A registry stable id (``var_hq9p``) or a synthesised id (``presence:…@…``) has no mint-time type namespace,
+    so there is nothing for a refinement to disagree with. Parsed by ``partition`` rather than an indexed
+    split so the id's shape needs no positional literal (gate G6 counts numbers in this package).
+    """
+    prefix, sep, rest = eid.partition(":")
+    base_type, sep2, name = rest.partition(":")
+    if not sep or not sep2 or prefix != _MINTED_ID_PREFIX or not base_type or not name:
+        return None
+    return base_type
 
 
 # ── T3b-C: the hard-identifier rail (a bill of lading is an identity, not a name) ───────────────

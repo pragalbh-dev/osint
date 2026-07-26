@@ -269,3 +269,28 @@ def test_the_refusal_does_not_shatter_the_better_attested_reading(booted) -> Non
             f"{best} is the better-attested side of the refusal {pair_ref!r} and carries NO identity gap — "
             "keeping its assessment must not mean keeping the disagreement quiet."
         )
+
+
+# ── 5. one place, one node: an id-namespace artefact is not two entities ──────────────────────────
+
+def test_no_place_is_split_across_two_id_namespaces(booted) -> None:
+    """Five duplicate place nodes, each splitting one place's geocode from its edges. Zero at baseline.
+
+    An entity id is minted from the base type the CLAIM declared (``ent:<base>:<name>``) and node-type
+    refinement re-types the entity while deliberately leaving the id alone. So a province arriving once as a
+    ``based-at`` object (range ``basing_site``) and once as an ``area_of_operations`` ended up as two nodes
+    whose ids disagree with their own shared type — one carrying the gazetteer coordinates, the other the
+    connections. There is only ONE mention string here; the pair is a keying artefact, not a name coincidence,
+    which is why it is an earned trigger rather than something the name cap should have been withholding.
+    """
+    view, _partition = booted
+    by_identity: dict[tuple[str, str], list[str]] = {}
+    for node in view.nodes:
+        if node.name:
+            by_identity.setdefault((node.type, node.name.lower()), []).append(node.id)
+
+    split = {key: ids for key, ids in sorted(by_identity.items()) if len(ids) > 1}
+    assert not split, (
+        f"{len(split)} entities are split across two ids of the same type and name — one place, two nodes, "
+        f"and the analyst has to guess which one holds the truth: {split}"
+    )

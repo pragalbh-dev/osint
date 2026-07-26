@@ -206,3 +206,66 @@ def _entities(etype: str, name: str, attrs: dict):
 def _no_clock_dependence() -> None:
     """These properties are pure functions of (claims, config) — nothing here reads a clock."""
     return None
+
+
+# ── 4. the mirror: a MISSING discriminator is not permission either ──────────────────────────────
+
+def _fragment_pair() -> list:
+    """Two same-named FRAGMENTS, each bound to a sibling mention that states a different service branch.
+
+    The shape fragmentation creates. Neither fragment states ``service_branch``, so the hard
+    critical-attribute wall — which requires the attribute stated on BOTH sides, because absence is never a
+    conflict — cannot fire on the pair itself. The two branches are stated one merge away, by the sibling each
+    fragment is bound to through an explicit in-document equivalence.
+    """
+    out = [
+        rc.ent("a1", "unit", "Ninth Battery", doc="d1"),
+        rc.ent("asrc", "unit", "PAF Ninth Air Defence Battery", attrs={"service_branch": "PAF"}, doc="d1"),
+        rc.coref(
+            "a1", "asrc", evidence=rc.EXPLICIT_EQUIVALENCE, cid="c-a", doc="d1",
+            quote="Ninth Battery, i.e. the PAF Ninth Air Defence Battery",
+        ),
+        rc.ent("b1", "unit", "Ninth Battery", doc="d2", sid="mid"),
+        rc.ent(
+            "bsrc", "unit", "Army Ninth Air Defence Battery",
+            attrs={"service_branch": "Pakistan Army"}, doc="d2", sid="mid",
+        ),
+        rc.coref(
+            "b1", "bsrc", evidence=rc.EXPLICIT_EQUIVALENCE, cid="c-b", doc="d2", sid="mid",
+            quote="Ninth Battery, i.e. the Army Ninth Air Defence Battery",
+        ),
+    ]
+    return out + rc.shared_neighbours("a1", "b1")
+
+
+def test_a_fragment_is_not_the_seam_a_cross_branch_fusion_goes_through() -> None:
+    """A missing discriminator must not read as permission.
+
+    The pair scores into the AUTO band (identical names, a full shared neighbourhood) and states nothing about
+    its service branch, so the pairwise wall is silent — this is the shape that makes a cross-service merge
+    look available once fragments exist. It must not fuse: the branches are stated one merge away, and the
+    wall's transitivity is what carries that (a union joining two clusters a hard wall holds apart is refused
+    in both phases). Asserted as the PROPERTY rather than the rail, so it cannot be broken by moving which
+    rail catches it.
+    """
+    part = rc.part_of(_fragment_pair(), rc.bundle())
+
+    assert rc.fused(part, "a1", "asrc") and rc.fused(part, "b1", "bsrc"), (
+        "the fixture is not exercising the case — each fragment must first resolve onto the sibling that "
+        f"states its branch. same_as={part.same_as}"
+    )
+    assert rc.signals(part, "a1", "b1").get("total", 0.0) >= 0.85 - 1e-9, (
+        "the fixture no longer reaches the fusion band, so it cannot show a fusion being withheld: "
+        f"signals={rc.signals(part, 'a1', 'b1')}"
+    )
+    assert not rc.fused(part, "a1", "b1"), (
+        "two fragments fused across a stated service-branch difference held by their own clusters. Neither "
+        "mention states the branch, so absence read as permission — and a cross-service fusion is the "
+        "costliest over-merge in an operator-scoped ORBAT."
+    )
+    assert rc.status(part, "a1", "b1") in ("probable", "possible"), (
+        f"the withheld pair reads {rc.status(part, 'a1', 'b1')!r} — refused and then dropped from every list."
+    )
+    assert rc.visible_rationale(part, "a1", "b1").strip(), (
+        "the withheld pair carries no readable ground at all"
+    )
