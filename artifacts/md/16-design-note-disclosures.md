@@ -219,3 +219,14 @@ graded behaviour degrades *gracefully* would be wrong in specific, nameable ways
   no surface fetched. It is worth saying in the note that this, rather than hallucination, is the failure
   mode an auditable OSINT system has to be engineered against, and that our tests now assert *arrival* on a
   surface rather than mere computation.
+- **A machine cap can now overrule an explicit human instruction, and we chose to keep it that way**
+  (noted 2026-07-26, user-aware; owed a design-note paragraph). An analyst who *accepts* the merge on the
+  flagship pair — the Army PAAD unit and "the PAF HQ-9B fire unit" — gets `applied: false`, with the
+  co-location cap named as the ground. That sits against our own stated HITL rule that overrides mutate
+  graph state: here the override is **refused**, not applied. We keep it because that refusal is the exact
+  mechanism preventing the fabricated relocation the system exists to avoid, and because it is acknowledged
+  with a specific checkable reason rather than failing silently. Honest framing for the note: **HITL is not
+  unconditional authority — an analyst can overrule a machine *inference*, but cannot instruct the system to
+  assert an identity the evidence forbids; the disagreement is surfaced rather than settled by seniority.**
+  State it as a deliberate asymmetry, not an oversight, and say plainly that the *reject* direction does
+  propagate, mutates the graph, and survives a rebuild.
