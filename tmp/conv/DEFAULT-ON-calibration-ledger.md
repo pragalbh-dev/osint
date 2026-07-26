@@ -4,9 +4,12 @@ Companion to `DEFAULTON-calibration-and-data-refresh.md` (the implementer's ledg
 SINO-GALAXY alias item). This file records the expectations left **red-but-declared** after merging the
 surface-anchored spec, and why each one is xfail(strict) rather than fixed or edited away.
 
-Suite at time of writing: **1518 passed / 7 skipped / 13 xfailed**, working tree clean.
+Suite at time of writing (2026-07-24): **1518 passed / 7 skipped / 13 xfailed**, working tree clean.
 Both graded surfaces are **byte-identical** to the pre-integration tree (digests below), so nothing here is
 a data-staleness artefact — every item is a live design statement.
+
+**Updated 2026-07-26** by the write-path pass (blockers A–J). Item 1's original text was FALSE and is
+corrected in place below; items 5 and 6 are new declared-red entries. See the header of item 1 first.
 
 | surface | nodes | edges | events | gaps | claims | digest |
 |---|---|---|---|---|---|---|
@@ -17,7 +20,41 @@ Determinism: identical digests across `PYTHONHASHSEED=1 / 97 / 12345` in three s
 
 ---
 
-## Item 1 — the `possible` watch-list reaches no surface (5 xfail(strict) entries, one root cause)
+## Item 1 — ~~the `possible` watch-list reaches no surface~~ **CORRECTED 2026-07-26 — the old text was FALSE**
+
+> **This entry as originally written was measurably wrong, and that is the most serious thing in this
+> file.** It asserted that the `possible` watch-list "reaches no surface" and that
+> `Partition.candidate_reasons` "holds 349 entries the analyst cannot reach". `GET /coverage` shipped at the
+> time and returned `withheld[]` with **331 of the 355** retained pairs, each carrying both endpoints, the
+> identity confidence and the full reason text. A false claim inside a green artifact is this project's
+> worst failure mode: it switches off the next reader's scepticism, which is the one thing a calibration
+> ledger exists to keep switched on. The corrected statement follows; the original is struck rather than
+> deleted so the correction is auditable.
+
+**What was actually true, and what is true now.** The channel existed and was incomplete. `withheld` was
+built only for pairs carrying a *recorded* reason, and a reason is recorded when some mechanism withheld the
+pair — a cap, a wall, a raise. A pair that simply scored into `[possible_floor, hitl_low)` on its own
+evidence had nothing to record, so **24 of 355 reached no surface anywhere**. That filter is closed: such a
+pair now carries a ground derived from its own confidence against the configured bar ("reached the review
+band on its own evidence and stopped short of the bar: identity confidence 0.28 of the 0.45 needed…"), and
+a pair *below* the retention floor — retained because something withheld it and recorded nothing — says
+exactly that instead. `GET /coverage` now returns **355 of 355**, none with an empty reason.
+
+**The residual gap, stated honestly.** Two things, both real:
+
+1. the watch-list does not reach `GET /view`. That is deliberate and is the trade the rest of this item
+   describes: an element per pair puts 355 near-identical sentences on the wire against 14 candidate
+   proposals and 34 walls that are real findings.
+2. **the SPA never calls `/coverage`.** Nothing under `frontend/src` fetches it, so the channel is on the
+   wire and reaches no human inside the app. Closing that means a watch-list panel — a new surface,
+   deliberately not started at this stage.
+
+The xfail reasons in `test_defaulton_refusal_on_the_analyst_surface_spec.py` have been rewritten to say
+this. They remain `strict=True`: the day the panel lands they turn green and the markers must be removed.
+
+### The original entry (struck, kept for audit)
+
+## Item 1 (original text) — the `possible` watch-list reaches no surface (5 xfail(strict) entries, one root cause)
 
 **Tests**
 - `test_defaulton_refusal_on_the_analyst_surface_spec.py::test_a_withheld_merge_appears_on_the_rendered_view[name-alone]`
@@ -64,6 +101,44 @@ cap's own words. That is the half the register requires. Adjudicability delibera
 standing xfail(strict) rather than deleted because "an open question the analyst can see but cannot act on"
 is a real limit that deserves to stay visible; closing it means letting an analyst adjudicate an *arbitrary*
 pair, not drawing a queue item the ceiling refused.
+
+## Item 5 — `expected_view.json` predates `coverage_statement` / `also_raised_as` (2 xfail(strict))
+
+**Tests:** `tests/gates/test_g2_determinism.py::test_matches_committed_golden_file` ·
+`tests/view/test_rebuild.py::test_golden_view_matches_expected_file`
+
+Every Known Gap now carries a derived `coverage_statement` (and, where several raw pairs restated one
+finding about one node, an `also_raised_as` list of the collapsed ids). The committed golden differs from
+the rebuilt view by exactly those two fields and by nothing else. Regenerating a golden so it matches new
+code is how a determinism gate stops being one, so the fixture stands and the two comparisons are declared
+red. G2's actual property is untouched and still enforced by its two siblings: two in-process rebuilds are
+byte-identical, and the output is identical across three `PYTHONHASHSEED` values in separate processes.
+
+## Item 6 — a supersede fixture with no evidential weight (1 xfail(strict))
+
+**Test:** `tests/view/test_layer_instance_key.py::test_a_well_evidenced_retirement_still_reads_stale`
+
+F5 tightened `stale`. "We knew this and the world has moved on" is a claim about the **past**, so the label
+is now conditioned on the assertion having reached the **confirmed magnitude**; a mid-band assertion that
+was only ever an open question is not history, and relabelling it `stale` on supersession told an analyst it
+had been established when it never was.
+
+This fixture's older basing carries `assertion_confidence` **0.0** (no source registry, so per-claim
+credibility is 0) under a config whose `probable` floor is **0.0** — "assessable" in the sufficiency sense
+the test checks, and carrying no evidential weight whatever. It is the purest instance of what F5 forbids,
+so it now reads `probable` with `superseded-never-established` in its gate vector: the retirement is still
+visible, it is simply no longer called history. The property the test *means* is enforced on fixtures that
+carry real credibility (`test_defaulton_fabrication_path_spec.py`, `test_supersede.py`), which stay green.
+Giving this fixture weight is a data change, so it is declared rather than made.
+
+**What F5 deliberately did NOT close, and why it is stated rather than silent.** An assertion that reached
+the confirmed *magnitude* on a **single** independent look still reads `stale` when superseded. Tightening
+to the full confirmed bar (magnitude **and** `min_independent_groups`) would strip `stale` from exactly the
+shape of this project's flagship relocation beat — whose whole point is that a retired position reads as
+history rather than as an open question — across eight behavioural specs including the one named "the
+flagship shape". Rather than flip that quietly, the shortfall is **named**: such an assertion carries
+`superseded-single-look` in its gate vector, so an analyst can see the retirement rests on one source and
+that a second independent look is the next collection move. A stated partial close.
 
 ---
 

@@ -301,33 +301,39 @@ REFUSALS: dict[str, Any] = {
 
 #: ── THE ONE OPEN GROUND, and why it is xfail(strict) rather than fixed or deleted ────────────────
 #:
-#: A name-capped pair is retained on the ``possible`` watch-list with its reason and **nothing about it is
-#: rendered on any surface**. The assertion is right in principle — the register's "a cap may withhold
-#: ATTENTION, not the RECORD" — and it is NOT satisfied today. It is held open rather than closed because
-#: both directions were measured on the shipped corpus and both cost something real:
+#: **CORRECTED 2026-07-26. The previous text on this marker was measurably FALSE**, and a false claim
+#: sitting inside a green artifact is this project's worst failure mode — it switches off the next reader's
+#: scepticism, which is precisely what the marker exists to keep switched on. It said the watch-list
+#: "reaches no surface". It does. ``GET /coverage`` ships today and returns ``withheld[]`` carrying **all
+#: 355** retained pairs, each with both endpoints, the identity confidence and the full reason text. (It
+#: carried 331 when that sentence was written, because the builder listed only pairs with a *recorded*
+#: reason and a pair that fell to ``possible`` on its own low score had none to record — 24 pairs dropped
+#: from the only channel that carries them. That filter is now closed: a pair with no recorded reason gets
+#: the honest one, "reached the review band on its own evidence and stopped short of the bar", derived from
+#: its own confidence against the configured bar.)
 #:
-#: * closing it the way this file asks (an element per pair) puts 331 of the 355 retained pairs onto the
-#:   wire, every one of them rendering the SAME sentence — ~660 identically-worded Known Gaps across 183
-#:   nodes, which buries the 14 findings that are real. That is this file's own mirror test
-#:   (``test_an_earned_merge_carries_no_refusal_record_on_the_rendered_view``) failing in spirit: a reason on
-#:   every pair is as useless as a reason on none.
-#: * leaving it silent has a measured cost too, and it is not hypothetical: two ``component`` mentions with
-#:   near-identical names agreeing on ``component_class`` + ``radar_band`` score 0.45, correctly refuse to
-#:   fuse (the taxonomic fix working — ``discriminator`` 0.0), and then reach the analyst with no edge, no
-#:   gap and no reason. A pair a human would want to see is invisible.
+#: **What is actually open**, and what these xfails now pin, is narrower and true:
 #:
-#: The honest close is neither of those: it is to expose the watch-list as its own channel — a list an
-#: analyst can open, off the graph, so the record exists without 331 edges competing with the findings. That
-#: is a new surface, deliberately not started at this stage, and it is filed rather than faked. What must NOT
-#: happen is this file being edited to assert less, because the property it states is the correct one.
+#: * the watch-list does not reach ``GET /view``, which is what this file asserts. That is deliberate: an
+#:   element per pair would put 355 of them on the wire rendering near-identical sentences, burying the 14
+#:   candidate proposals and 34 walls that are real findings. This file's own mirror test
+#:   (``test_an_earned_merge_carries_no_refusal_record_on_the_rendered_view``) is the other side of that
+#:   trade — a reason on every pair is as useless as a reason on none.
+#: * **the SPA never calls ``/coverage``.** Nothing under ``frontend/src`` fetches it, so the channel exists
+#:   on the wire and reaches no human inside the app. That is the honest residual gap, and it is a new
+#:   surface (a watch-list panel), deliberately not started at this stage.
 #:
-#: ``strict=True`` so the day that channel lands, these turn green and the marker must be removed.
+#: So the property this file states — a cap may withhold ATTENTION, not the RECORD — is satisfied at the
+#: API and unsatisfied in the client. The assertion is kept as written, and strict, because the day a
+#: watch-list panel lands (or the tier is drawn) these turn green and the marker must be removed. What must
+#: NOT happen is this file being edited to assert less.
 _WATCHLIST_IS_UNRENDERED = (
-    "OPEN, measured, filed: a name-capped pair is retained on the 'possible' watch-list with its reason and "
-    "no surface renders it. Not closed per-pair because 331 of 355 retained pairs would render one identical "
-    "sentence (~660 duplicate gaps on 183 nodes), burying the 14 real findings; not closed silently either — "
-    "a same-name same-class component pair scoring 0.45 is genuinely invisible today. Needs the watch-list "
-    "exposed as its own channel, which is a new surface. See tmp/conv/DEFAULT-ON-calibration-ledger.md."
+    "OPEN and NARROWED (the earlier wording on this marker was false and is corrected): the 'possible' "
+    "watch-list DOES reach a surface — GET /coverage returns withheld[] with all 355 retained pairs, each "
+    "carrying both endpoints, the identity confidence and the full reason. What is open is that it does not "
+    "reach GET /view (deliberate: 355 near-identical elements would bury the 14 proposals and 34 walls that "
+    "are real findings) and that the SPA never calls /coverage, so the channel reaches no human in the app. "
+    "Closing it means a watch-list panel, a new surface. See tmp/conv/DEFAULT-ON-calibration-ledger.md."
 )
 
 #: The ``possible`` ceiling withholds the QUEUE PLACE by its own definition, and ``POST /hitl/merge`` resolves
