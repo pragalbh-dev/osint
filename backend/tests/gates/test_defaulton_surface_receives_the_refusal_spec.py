@@ -201,3 +201,71 @@ def test_a_capped_pair_is_retained_with_its_reason_rather_than_dropped(booted) -
         if partition.candidate_reasons.get(pair_key(a, b)):
             reasons += 1
     assert reasons, "not one retained watch-list link carries a reason — the cap became a silent filter"
+
+
+# ── 4. the refusal reaches the NODE's own status, not only the gap register ───────────────────────
+
+def test_a_node_whose_type_is_contradicted_is_never_confirmed(booted) -> None:
+    """The refuse half, on the node. It fired nowhere: the same rebuild published `ent:variant:HT-233` as a
+    first-class ORBAT variant at status CONFIRMED while emitting a Known Gap saying that mention's TYPE is
+    contradicted. "Confirmed" asserts we have established this; what we have established is that two sources
+    disagree about what it is.
+
+    Asserted over every refusal on the corpus, not just that one node, and only for the reading the refusal
+    actually lands on — the weaker-attested side (see ``rebuild`` step 4b: one flaky mention must not shatter a
+    well-corroborated node, which is why the better-attested reading keeps its assessment and its gap).
+    """
+    view, partition = booted
+    nodes = {n.id: n for n in view.nodes}
+    refused_nodes = set()
+    for pair_ref in partition.identity_refusals:
+        ends = [_canonical(partition, e) for e in pair_ref.split("|")]
+        refused_nodes.update(e for e in ends if e in nodes)
+    assert refused_nodes, "no identity refusal reaches a node on this corpus — the property is untested"
+
+    unassessable = [
+        nid for nid in sorted(refused_nodes)
+        if nodes[nid].sufficiency is not None and not nodes[nid].sufficiency.satisfied
+    ]
+    assert unassessable, (
+        f"every node under an identity refusal still reads as assessable ({sorted(refused_nodes)}) — the "
+        "escalate half fired and the refuse half did not."
+    )
+    for nid in unassessable:
+        node = nodes[nid]
+        assert node.status == "insufficient", (
+            f"{nid} carries an unmet identity requirement yet reads status={node.status!r}. "
+            "'insufficient' dominates by design: if we structurally cannot assess, we say so."
+        )
+        assert "identity" in node.sufficiency.missing_slots, (
+            f"{nid} is unassessable but does not NAME identity as what is missing — the non-negotiable "
+            f"requires naming it. missing_slots={node.sufficiency.missing_slots}"
+        )
+
+
+def test_the_refusal_does_not_shatter_the_better_attested_reading(booted) -> None:
+    """The mirror, and the calibration: a single mis-typed mention may not unassess a corroborated node.
+
+    ``comp_ht233`` is the hero chokepoint — five claims, several independent looks — and one lone extraction
+    typed the same string as a *variant*. Downgrading the corroborated side to "cannot assess" would be the
+    "one flaky source shatters a well-corroborated cluster" failure that ``critical_veto_min_grade`` exists to
+    prevent one rail over. It keeps its assessment; it does NOT get to keep quiet about the disagreement, so
+    the gap must still hang off it.
+    """
+    view, partition = booted
+    nodes = {n.id: n for n in view.nodes}
+    gap_refs = {g.related_ref for g in view.known_gaps if g.id.startswith("gap:identity:")}
+    looks = {
+        n.id: sum(g.weight for g in n.supporting_claims) for n in view.nodes
+    }
+    for pair_ref in sorted(partition.identity_refusals):
+        ends = [e for e in dict.fromkeys(_canonical(partition, e) for e in pair_ref.split("|")) if e in nodes]
+        if len(ends) < 2:
+            continue
+        best = max(ends, key=lambda e: looks.get(e, 0.0))
+        if looks[best] == min(looks.get(e, 0.0) for e in ends):
+            continue  # a tie: neither reading wins, both carry the refusal
+        assert best in gap_refs, (
+            f"{best} is the better-attested side of the refusal {pair_ref!r} and carries NO identity gap — "
+            "keeping its assessment must not mean keeping the disagreement quiet."
+        )

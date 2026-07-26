@@ -58,12 +58,17 @@ from chanakya.schemas import (
     Partition,
     PlacesConfig,
     SourceRegistryEntry,
+    SufficiencyEval,
     Triple,
     canonical_iso_bounds,
     pair_key,
     report_bounded_validity,
 )
 from chanakya.sufficiency import check
+
+#: The sufficiency slot an identity refusal is missing. One name, used by the node's ``missing_slots`` and by
+#: the per-endpoint ``gap:identity:`` record, so the refuse half and the escalate half say the same word.
+IDENTITY_SLOT = "identity" 
 from chanakya.timeref import effective_as_of, is_available_by
 
 from . import basing as derived_basing
@@ -905,6 +910,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     as_of = effective_as_of(config, resolved)
 
     assertions: list[AssertionInput] = []
+    #: Elements whose sufficiency failed ONLY because their identity is refused — their gap is the richer
+    #: `gap:identity:` one, so the generic per-element gap is skipped rather than duplicated.
+    identity_gap_suppressed: set[str] = set()
     for eid, el in elements.items():
         groups = group_by_independence(el.claim_ids, claims_by_id, sources, config)
         el.supporting_claims = groups
@@ -950,6 +958,58 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         a.sufficiency = check(a, claims_by_id, config)
         assertions.append(a)
 
+    # 4b. G19's REFUSE half, on the node itself — the half that never fired.
+    #
+    # An identity refusal says two sources disagree about what KIND of thing a mention is (or which operator
+    # it belongs to). Until this ran, the only consequence was a Known Gap: the same rebuild published
+    # `ent:variant:HT-233` as a first-class ORBAT variant at status CONFIRMED while emitting a gap saying that
+    # mention's type is contradicted. Confirmed asserts "we have established this"; what we have established
+    # is that two sources disagree about what it is.
+    #
+    # Routed through ``sufficiency`` rather than a second status writer, because assessability is exactly what
+    # sufficiency is for (⊥ magnitude, spine/04 §3.7) and the machine must keep sole ownership of the label
+    # (G5). `insufficient` then dominates, and the node says "insufficient evidence to assess" with `identity`
+    # named as the missing slot.
+    #
+    # **It lands on the reading that is NOT better attested, and the asymmetry is deliberate.** A refusal hangs
+    # off both endpoints because both mentions are un-anchored by it, but the two are not equally in doubt: one
+    # side is a well-corroborated component with several independent looks, the other a single-claim mention a
+    # lone extraction typed differently. Marking both unassessable would let one flaky mention shatter a
+    # well-corroborated node — the failure `critical_veto_min_grade` exists to prevent one rail over. So the
+    # weaker reading (fewer effective independent looks) carries the refusal; on a tie neither reading wins and
+    # both carry it. The better-attested side is NOT let off: it keeps the per-endpoint `gap:identity:` record,
+    # so the disagreement reaches the analyst on both nodes either way.
+    _by_id = {a.element_id: a for a in assertions}
+    _looks = {a.element_id: sum(g.weight for g in a.groups) for a in assertions}
+    for _pair_ref in sorted(partition.identity_refusals):
+        _ends = [
+            partition.entity_canonical.get(e, e)
+            for e in _pair_ref.split("|")
+        ]
+        _ends = [e for e in dict.fromkeys(_ends) if e in nodes and e in _by_id]
+        if not _ends:
+            continue
+        _weakest = min(_looks.get(e, 0.0) for e in _ends)
+        for _eid in _ends:
+            if _looks.get(_eid, 0.0) > _weakest:
+                continue  # the better-attested reading keeps its assessment (and its gap)
+            _a = _by_id[_eid]
+            _slots = list(_a.sufficiency.missing_slots) if _a.sufficiency else []
+            if IDENTITY_SLOT not in _slots:
+                _slots.append(IDENTITY_SLOT)
+            if _a.sufficiency is None or _a.sufficiency.satisfied:
+                # The richer `gap:identity:<pair>:<node>` gap below already names what is missing and what
+                # would settle it, so the generic per-element gap would be the same finding twice — and a
+                # register that lists one finding twice teaches an analyst to skim it.
+                identity_gap_suppressed.add(_eid)
+            _a.sufficiency = SufficiencyEval(
+                satisfied=False,
+                missing_slots=_slots,
+                next_coverage_due=_a.sufficiency.next_coverage_due if _a.sufficiency else None,
+                ceiling=(_a.sufficiency.ceiling if _a.sufficiency else None) or "confirmable",
+                template_id=_a.sufficiency.template_id if _a.sufficiency else None,
+            )
+
     # 5. status (batch) — reads a.sufficiency + a.gate_flags for the gate machine
     assessments = assign_status(assertions, config)
 
@@ -970,7 +1030,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                 freshness_factor=a.freshness.decay_factor if a.freshness else None,
                 assertion_confidence=assess.assertion_confidence,
             )
-        if suff is not None and not suff.satisfied:
+        if suff is not None and not suff.satisfied and a.element_id not in identity_gap_suppressed:
             known_gaps.append(
                 KnownGap(
                     id=f"gap:{a.element_id}",
@@ -1043,7 +1103,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                         related_ref=ref,
                         what_missing=what_missing,
                         observability_ceiling="confirmable",
-                        missing_slots=["identity"],
+                        missing_slots=[IDENTITY_SLOT],
                     )
                 )
     # The routing's + derivation's own named gaps: an unrouted straddle, a suppressed supersede, a withheld
