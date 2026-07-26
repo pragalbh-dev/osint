@@ -1585,7 +1585,7 @@ instruction and did not tell the truth about what it did with it.**
 | **A watch-list pair with no recorded reason gets its own honest ground** ("reached the review band on its own evidence and stopped short of the bar…", derived from its confidence against the configured bar) | `GET /coverage` is the ONLY channel carrying the `possible` tier, and it listed only pairs a *mechanism* had withheld — so 24 of 355 reached no surface at all. "No cap fired" is not a reason to be invisible; it is itself the reason | Continuing to omit them to avoid over-claiming a cap. The ground says explicitly that no cap was involved, so the over-claim is avoided without the drop |
 | **A fragment proposed against BOTH sides of a hard wall says so**, and names the discriminator it is silent on | A single-claim unit stating no `service_branch` was a live candidate against both an Air Force and an Army formation the critical-attribute rail holds apart. **A missing discriminator must not read as permission to cross a wall** | Withholding those pairs. Settling which formation a mention names is exactly the judgement a human is in the loop for; what was missing is that the two proposals are mutually exclusive |
 | **`stale` is conditioned on the assertion having reached the CONFIRMED magnitude** | "We knew this and the world has moved on" is a claim about the **past**. A mid-band assertion (probable floor ≤ conf < confirmed) was an open question the whole time, and relabelling it `stale` on supersession told the analyst it had been established when it never was | Leaving the bar at the `probable` floor (closes only the bottom of the hole) |
-| **…but NOT on `min_independent_groups` — a stated partial close** | Tightening to the full confirmed bar strips `stale` from an assertion that reached the magnitude on a **single** look, which is the shape of this project's flagship relocation beat, across eight behavioural specs including the one named "the flagship shape". Rather than flip that quietly, the shortfall is **named**: such an assertion carries `superseded-single-look` in its gate vector | Flipping it silently, or claiming the defect fully closed |
+| **…but NOT on `min_independent_groups` — a stated partial close** | Tightening to the full confirmed bar strips `stale` from an assertion that reached the magnitude on a **single** look, which is the shape of this project's flagship relocation beat, across eight behavioural specs including the one named "the flagship shape". Rather than flip that quietly, the shortfall is **recorded**: such an assertion carries `superseded-single-look` in its gate vector. **Recorded, not surfaced** — `gate_vector` has no consumer outside its producing module, so that marker is audit-trail only (ledger item 7); what the analyst sees is *that* it was retired (`superseded_by`, `integrity_flags`), not how thinly | Flipping it silently, or claiming the defect fully closed |
 | **The SPA renders a wall's ground** (`drawerIdentity` → the provenance drawer) and marks a queue item the analyst already answered that was not applied | `identityReason()` existed and was wired at exactly one call site, so a *wall's* ground reached no SPA surface at all — and a wall carries no confidence and no card, so the ground is the whole finding | Carrying it only on the API and filing the SPA half. Most walls here are DERIVED inferences the analyst is in the loop to check |
 
 **Corrected in our own records (this is the point of the entry).** `tmp/conv/DEFAULT-ON-calibration-ledger.md`
@@ -1601,3 +1601,109 @@ scepticism, which is the one thing a calibration ledger exists to keep switched 
 property is still enforced by its siblings (two in-process rebuilds byte-identical, identical across three
 `PYTHONHASHSEED`s). One supersede fixture carrying `assertion_confidence` 0.0 under a `probable` floor of 0.0
 → 1 `xfail(strict)`. Ledger items 5 and 6.
+
+---
+
+## FINAL TRIAGE — identity is UNCONDITIONAL, and an analyst's decision now MUTATES the graph (2026-07-26, `defaulton/rk-impl` → `design/resolution-redesign`)
+
+The close-out of the DEFAULT-ON pass. Everything below was re-verified at triage against the running code
+and a live boot, not accepted from the implementer's or the verifier's report.
+
+### 1. Identity is unconditional — the flags are DELETED, and reintroducing one is a loud error
+
+Both staging switches are **gone from the tree**, not defaulted to on. More importantly the loophole is
+patched in both directions, so the flag cannot come back by accident:
+
+- `supersede_floor.require_earned_identity` — deleted. `config/credibility.yaml` now carries an explicit
+  *"There is NO KNOB here"* note in its place, and `credibility/supersession.py` states the doctrine: **a
+  gate that closes a fabrication path is not a policy dial.** It was a boolean with no number to tune, i.e.
+  a switch for turning a prohibition off.
+- The row-level markers `requires: earned_identity` and `earned_role:` — deleted, and registered in
+  `resolve/rconfig.py` as `_RETIRED_STAGE_KEYS`. A row carrying either is now a **construction-time
+  `StageBlockError`**, on the stated ground that *a tolerated staging marker is a compatibility mode with a
+  shorter name*, and that a silently-ignored `earned_role: critical` would quietly **demote a wall the
+  author meant to declare**. Same doctrine applied to `earned_identity.*` keys with no consumer: refused at
+  load rather than ignored.
+
+That is the difference between "the flag defaults to on" and "there is no flag": the second cannot drift.
+
+### 2. The analyst's decision lands — the HITL rule, mechanised
+
+The project's HITL rule is that **overrides mutate graph state, not just a log**. Measured on the real
+booted corpus, that was false in the most literal way available: a `reject` on the headline pair returned
+`200` and left `GET /view` **byte-identical**. Three independent causes, all closed and all pinned by a new
+corpus-driven gate spec (`tests/gates/test_the_analyst_decision_lands_spec.py`, 11 tests):
+
+- the learned bar was keyed on **display names**, which are not the resolver's entity names — so it mapped
+  back to zero entities. Now keyed on **entity ids**, always.
+- the analyst's wall only decorated `wall_grounds` and never joined **`veto`**, the hard+transitive channel —
+  so the resolver went on proposing the fusion the human had just refused.
+- a refused instruction said nothing at all. `POST /hitl/merge` now returns an `AdjudicationReceipt` whose
+  verdict is **derived by reading the rebuilt view**, never from "did the write succeed"; and an un-applied
+  instruction is **stamped on the drawn edge**, so the acknowledgement survives a reload.
+
+Measured, before → after, across all 14 candidate pairs: reject — 1 wholly inert, 8 still drawn, 0
+acknowledged → **0 inert, 0 still drawn, 14/14 acknowledged**. Accept — 3 silently inert → **14/14
+acknowledged**, with the 4 the cross-type rail correctly declines reporting `applied=false` and naming both
+ontology types. Contradictory identity edges (one canonical pair asserted both same and not-same): **7 of 14
+→ 0**, and still 0 after working the whole queue to empty and restarting over the accumulated log.
+
+### 3. Rulings issued, and what they cost
+
+| Ruling | What it settles |
+|---|---|
+| **A missing discriminator is not permission to cross a wall** | A fragment proposed against *both* sides of a hard wall now says so, names the twin proposal, states at most one can be true, and names the declared-critical attribute it is silent on (`service_branch` for the PAAD case). Both pairs stay adjudicable — deciding which formation a mention names is exactly the human's job |
+| **An assertion that never reached `confirmed` cannot age into history** | `stale` means "we knew this and the world moved on" — a claim about the **past**. A mid-band assertion was an open question the whole time. **Partial close, stated twice over** — see §5 |
+| **Declared-empty ≠ absent** in the slot→source-class map | Absent means *nobody declared who could close it*. Conflating the two let an identity question inherit the satellite constellation's 7-day revisit and be reported as a collection date no satellite pass can keep |
+| **"No cap fired" is not a reason to be invisible** | 24 of 355 watch-list pairs reached no surface anywhere because only *mechanism*-withheld pairs recorded a reason. They now carry a ground derived from their own confidence, which states explicitly that no cap/wall/assertion was involved |
+| **One (node, statement) is one Known Gap** | Five renderings of one finding read as five findings. Collapsed in *presentation only*; the suppressed ids ride the survivor as `also_raised_as` |
+| **A gate that closes a fabrication path is not a policy dial** | §1 — why the two flags were deleted rather than defaulted |
+
+### 4. Corrected in our own records — twice, and the second one is ours
+
+The pass's own headline was correcting a **false claim in a green artifact** (ledger item 1 asserted the
+`possible` watch-list "reaches no surface"; `GET /coverage` had shipped and returned 331 of 355 pairs with
+endpoints, confidence and full reason text).
+
+At triage the verifier found that this pass had then introduced **a fresh instance of the same thing**:
+`gate_vector` is computed, and consumed by exactly one unit test — it is not on `NodeView`/`EdgeView`, not
+in `GraphView`, not on the API, not in the SPA. Four strings claimed it let an analyst *see* how thinly a
+retirement is evidenced, including `status.py`'s docstring line "for the provenance drawer". **All four are
+corrected in place** (new ledger item 7); no behaviour was changed. What genuinely is visible on a retired
+edge is `superseded_by` and `integrity_flags: ['superseded']`, both on the view schema and both read by the
+SPA — so *that* it was retired reaches the analyst, *how thinly* does not. This is **pre-existing** (every
+older marker is equally invisible) and **moot on both graded boots** (nothing exercises the supersede path
+there), so it is filed, not built: putting the gate vector on the view schema is a new analyst surface, and
+the endgame rule is *don't start new capability*.
+
+Recording this because it is the second time in one pass that the failure was **a computed judgement that
+never reaches the human**. That is the shape to look for here, and a green suite does not catch it.
+
+### 5. Stated honestly: what is NOT closed, and what this corpus never exercises
+
+- **The `stale` tightening is a partial close, on two counts.** It is conditioned on the confirmed
+  *magnitude* but **not** on `min_independent_groups`, because the full bar flips this project's flagship
+  relocation beat from "history" to "open question" across eight behavioural specs. And the compensating
+  marker (`superseded-single-look`) is **audit-trail only**, per §4. Both halves are named rather than
+  papered over. Closing the first is a one-line change plus a decision about those eight specs.
+- **A machine cap can overrule an explicit human ACCEPT.** On the headline pair, `accept` returns
+  `applied=false` — the co-location cap wins. This is the **safe** direction and is precisely what prevents
+  the fabricated relocation, and it is acknowledged with an accurate ground rather than silently ignored.
+  But it *is* a case where an override does not mutate state, which is the inverse of the HITL rule, so it
+  is a deliberate exception to be **explained on the call, not discovered live**.
+- **Unexercised on the frozen corpus** — stated so nobody reads a passing suite as evidence these work:
+  `attrs.suppressed_candidate` fires on **0 of 34** walls at boot and 0 of 48 after working the queue; the
+  supersede path is touched by **zero** elements on either boot (183/111 keyless, 196/123 full); the hero
+  relocation beat remains **held** behind the unauthored `site_type_aliases` map (a DATA judgement, filed).
+  These are tested on fixtures and inert on the real data — the "graded beats inert" category.
+- **The frontend is unverified by any compiler.** `frontend/node_modules` is absent in the worktree, so
+  neither `npm run typecheck` nor vitest ran against the SPA changes. They are additive and every new read
+  is a `typeof`-guarded cast, but **run `npm ci && npm run typecheck` before the demo** — this is the one
+  claim in the pass that nobody has tested.
+
+### 6. Owed to the design note
+
+Filed into `artifacts/md/16-design-note-disclosures.md`: the HITL inversion (a cap overruling a human
+accept, and why that is the safe direction); the `stale` partial close and its audit-trail-only marker; and
+the honest statement that several credibility/identity beats pass on fixtures while being inert on the
+frozen corpus.

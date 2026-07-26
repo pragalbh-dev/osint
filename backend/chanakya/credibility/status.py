@@ -2,7 +2,8 @@
 
 The third SCORE stage (master §4.3): turns per-claim credibilities + independence groups + the
 deception/freshness/sufficiency gates into a **pooled `assertion_confidence`** and a **status label**,
-plus the exact gate vector (for the provenance drawer). Pure and config-driven (gate G6): the two
+plus the exact gate vector (an audit-trail record of which gates fired — see the note under **stale**;
+it is NOT wired to the provenance drawer, despite what this line used to say). Pure and config-driven (gate G6): the two
 cutoffs, the minimum independent-look count, and everything else come from ``config.credibility``.
 
 Pooling — noisy-OR *across* independent groups, ``c_g`` = the strongest look in a group, scaled by the
@@ -23,10 +24,18 @@ Status — gates are applied here, **never** folded into the arithmetic (spine/0
   "We knew this and the world has moved on" is a claim about the past, and an assertion that never reached
   the confirmed bar was never known, so ageing it invents a history. A mid-band assertion (probable floor
   ≤ conf < confirmed) is an open question, not history: it falls through to the ordinary ladder and records
-  ``superseded-never-established`` in its gate vector, so the retirement is still visible. One that reached
-  the magnitude on a **single** independent look does read ``stale`` (this is the flagship relocation's
-  shape) and carries ``superseded-single-look`` so the coverage shortfall is named — a stated partial
-  close, see the inline note.
+  ``superseded-never-established`` in its gate vector. One that reached the magnitude on a **single**
+  independent look does read ``stale`` (this is the flagship relocation's shape) and records
+  ``superseded-single-look`` — a stated partial close, see the inline note.
+
+  **Where those two markers actually go, stated exactly, because an earlier draft of this docstring
+  overclaimed it.** ``gate_vector`` is a field of *this stage's* output record (``schemas/stage_io``) and
+  has **no consumer outside this module** — it is not on ``NodeView``/``EdgeView``, not in ``GraphView``,
+  not on the API and not in the SPA. So both markers are an **audit-trail** entry, readable by someone
+  reading the stage record, and NOT a signal that reaches the analyst's screen. What the analyst does see
+  on a retired edge is ``superseded_by`` and ``integrity_flags: ['superseded']``, which are on the view
+  schema and are read by the SPA — i.e. *that* it was retired is visible; *how thinly the retirement is
+  evidenced* is not. That is a real residual of the partial close, not a closed loop.
 * **insufficient** — a required evidence *kind* is missing (``sufficiency.satisfied`` is False). Off the
   confidence scale; dominates everything below it, because if we structurally can't assess we say so
   (the non-negotiable).
@@ -148,10 +157,17 @@ def assign_status(
         # ``min_independent_groups``) would also strip `stale` from an assertion that reached the confirmed
         # magnitude on a single independent look — and that is the shape of this project's flagship
         # relocation beat, whose whole point is that a retired position reads as history rather than as an
-        # open question. Rather than flip that silently, the shortfall is NAMED: such an assertion still
-        # reads `stale` and its gate vector carries ``superseded-single-look``, so an analyst can see that
-        # the retirement rests on one look and that a second, independent one is the next collection move.
-        # This is a stated partial close, not a complete one.
+        # open question. Rather than flip that silently, the shortfall is RECORDED: such an assertion still
+        # reads `stale` and its gate vector carries ``superseded-single-look``, so that the retirement rests
+        # on one look is on the record, and a second independent look is the next collection move.
+        #
+        # RECORDED, NOT SURFACED — say it plainly rather than let the sentence above imply otherwise.
+        # ``gate_vector`` has no consumer outside this module (see the module docstring), so that marker does
+        # NOT reach the analyst; only the fact of the retirement does, via ``superseded_by`` and the
+        # ``superseded`` integrity flag. So this is a stated partial close on TWO counts: the bar is not the
+        # full confirmed bar, and the shortfall that leaves is audit-trail-only. Closing the second half means
+        # putting the gate vector on the view schema — a new analyst surface, so it is filed, not started.
+        # Moot on the frozen corpus today: nothing there exercises the supersede path at all.
         established = confirmed_cut is not None and conf >= confirmed_cut and not capped and not gated_unknown
 
         if SUPERSEDED in flags and established:

@@ -126,8 +126,10 @@ had been established when it never was.
 This fixture's older basing carries `assertion_confidence` **0.0** (no source registry, so per-claim
 credibility is 0) under a config whose `probable` floor is **0.0** — "assessable" in the sufficiency sense
 the test checks, and carrying no evidential weight whatever. It is the purest instance of what F5 forbids,
-so it now reads `probable` with `superseded-never-established` in its gate vector: the retirement is still
-visible, it is simply no longer called history. The property the test *means* is enforced on fixtures that
+so it now reads `probable` with `superseded-never-established` in its gate vector. The retirement is still
+visible to the analyst — through `superseded_by` and the `superseded` integrity flag, which are on the view
+schema and read by the SPA — it is simply no longer called history. (The gate-vector marker itself reaches
+no surface; see item 7.) The property the test *means* is enforced on fixtures that
 carry real credibility (`test_defaulton_fabrication_path_spec.py`, `test_supersede.py`), which stay green.
 Giving this fixture weight is a data change, so it is declared rather than made.
 
@@ -136,9 +138,44 @@ the confirmed *magnitude* on a **single** independent look still reads `stale` w
 to the full confirmed bar (magnitude **and** `min_independent_groups`) would strip `stale` from exactly the
 shape of this project's flagship relocation beat — whose whole point is that a retired position reads as
 history rather than as an open question — across eight behavioural specs including the one named "the
-flagship shape". Rather than flip that quietly, the shortfall is **named**: such an assertion carries
-`superseded-single-look` in its gate vector, so an analyst can see the retirement rests on one source and
-that a second independent look is the next collection move. A stated partial close.
+flagship shape". Rather than flip that quietly, the shortfall is **recorded**: such an assertion carries
+`superseded-single-look` in its gate vector, so it is on the record that the retirement rests on one source
+and that a second independent look is the next collection move. A stated partial close — and see item 7 for
+the second, sharper half of what it does not close.
+
+## Item 7 — `gate_vector` is computed and reaches NO analyst surface (not a new defect; a corrected claim)
+
+**Found by the verifier of the DEFAULT-ON pass, confirmed independently at final triage.** `gate_vector` is
+produced in `backend/chanakya/credibility/status.py`, declared on `StatusOut` in `backend/chanakya/schemas/
+stage_io.py`, and consumed by **exactly one** thing in the repository: a unit test reading the stage output
+directly (`backend/tests/credibility/test_freshness_class_defaults.py:90`). It is **not** on `NodeView` or
+`EdgeView`, not in `GraphView`, not on any API response, and nothing under `frontend/src` mentions it.
+
+**Why it is in the calibration ledger.** Item 6 above and three strings in the tree — `status.py`'s module
+docstring (twice, including "for the provenance drawer"), the inline note beside the `established` test, and
+the `xfail(strict)` reason on `test_a_well_evidenced_retirement_still_reads_stale` — asserted that
+`superseded-single-look` / `superseded-never-established` let *an analyst see* how thinly a retirement is
+evidenced. **They cannot.** All four strings are corrected in place at final triage; no behaviour changed.
+
+**This is PRE-EXISTING and NOT a regression.** Every older marker (`capped-at-probable`,
+`single-independent-look`, `below-probable-floor`, `aging-not-fresh`) is equally invisible, and has been for
+as long as the field has existed. It is also **moot on both graded surfaces today**: zero elements on the
+keyless boot (183/111) and zero on the full-corpus boot (196/123) exercise the supersede path at all.
+
+**What IS visible, verified:** a retired edge carries `superseded_by` (`schemas/view.py:149`) and
+`integrity_flags: ['superseded']` (`schemas/view.py:52`), and the SPA reads both (`api/types.ts`,
+`components/stage/MapView.tsx`). So *that* an assertion was retired reaches the analyst; *how thinly the
+retirement is evidenced* does not.
+
+**Not closed, deliberately.** Putting the gate vector on the view schema is a new analyst-facing surface, and
+the endgame rule is "don't start new capability" — so it is filed here rather than started. It is worth
+noticing that this is the **same failure shape** as the blockers this pass just fixed (a computed judgement
+that never reaches the human), which is precisely why it is written down rather than left in a docstring.
+
+**Numbering note.** This ledger runs 1, 2, 5, 6, 7 — items **3 and 4 do not exist**. Two candidate entries
+were drafted during the pass and resolved as real fixes rather than calibration items before the file was
+written, and the numbers were not reused so that nothing already cited by a marker string would shift. A
+reader counting entries against the 16 `xfail(strict)` markers should not go looking for the missing two.
 
 ---
 
