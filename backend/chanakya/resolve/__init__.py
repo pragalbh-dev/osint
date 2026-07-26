@@ -343,6 +343,12 @@ def _resolve(
         existing = result.candidate_reasons.get(pair_key(a, b))
         result.candidate_reasons[pair_key(a, b)] = f"{existing}\n\nALSO: {why}" if existing else why
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
+    # F4 — a MISSING discriminator is not permission to cross a wall. AFTER ``finalise``, so the pairs and
+    # the walls are both canonical and the caution names the records the analyst is actually looking at
+    # (before it, the raw ids that later merge away would be quoted at them). It APPENDS to whatever reason
+    # the caps already wrote rather than competing with them in a precedence chain — the two say different
+    # things and the analyst needs both.
+    _flag_two_hop_wall_bridges(result, graph, cfg)
 
     partition = _to_partition(claims, result, mention, minted, place_of, lane, graph)
     # The resolver's own typing, for Stage-4 coverage (D11): every entity id the partition can reference
@@ -782,6 +788,78 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> tuple[set[Pair],
 
 
 # ── D5/D6/3A: the declared-critical-attribute rail, credibility-gated (a serial/branch clash walls) ──
+
+def _flag_two_hop_wall_bridges(result: ResolveResult, graph: EntityGraph, cfg: ResolveConfig) -> None:
+    """Say so when ONE fragment is proposed as the same entity as BOTH sides of a hard wall (F4).
+
+    **The measured shape.** ``ent:unit:Pakistan Army Air Defence (PAAD) unit`` is a single-claim mention
+    that states no ``service_branch``. It is a live queue candidate against ``unit_hq9b`` (branch *Air
+    Force*) AND against ``unit_paad`` (branch *Pakistan Army*) — two formations the critical-attribute rail
+    holds apart with a hard do-not-merge wall. Each card read as an ordinary merge question, so a branchless
+    fragment was an adjudicable bridge across a curated wall, and the absence of the one field that would
+    decide it was doing the work of permission.
+
+    The D9 alarm does not catch this and is right not to: it fires on a DIRECT straddle (the union itself
+    fusing two walled clusters), and neither of these unions does that — ``finalise`` would refuse whichever
+    came second. So the wall holds mechanically. What was missing is that the analyst was never told the two
+    proposals are mutually exclusive, nor that the fragment is silent on the discriminator.
+
+    Nothing is withheld here: both pairs stay adjudicable, because settling which formation the mention names
+    is exactly the judgement a human is in the loop for. What changes is that the card says what it is. The
+    missing attribute is NAMED where the two walled ends genuinely disagree on a declared-critical field and
+    the fragment states none — derived from the three records, never a fixed sentence.
+    """
+    walls = {frozenset(p) for p in result.distinct_from}
+    counterparts: dict[str, set[str]] = {}
+    for a, b in result.candidates:
+        counterparts.setdefault(a, set()).add(b)
+        counterparts.setdefault(b, set()).add(a)
+
+    def shown(eid: str) -> str:
+        """Name the record the ANALYST is looking at. Matching stays on raw ids — several raw mentions can
+        collapse onto one drawn node and a canonical-only scan would miss the straddle — but quoting a raw
+        id that merged away names something the analyst cannot find on the graph."""
+        return result.canonical.get(eid, eid)
+
+    for fragment in sorted(counterparts):
+        for x, y in unordered_pairs(sorted(counterparts[fragment])):
+            if frozenset((x, y)) not in walls:
+                continue
+            missing = _undecided_discriminators(graph, cfg, fragment, x, y)
+            names = (
+                f" '{shown(fragment)}' states no {', '.join(missing)}, which is the field that would decide it."
+                if missing
+                else ""
+            )
+            for other, twin in ((x, y), (y, x)):
+                key = pair_key(*sorted((fragment, other)))
+                caution = (
+                    f"CAUTION — this is a two-step bridge across a hard wall. '{shown(fragment)}' is ALSO "
+                    f"proposed as the same entity as '{shown(twin)}', and '{shown(other)}' and "
+                    f"'{shown(twin)}' are held apart by a do-not-merge wall. At most one of the two proposals "
+                    "can be true, so accepting this one is choosing a side, not confirming a resemblance."
+                    + names + " A missing discriminator is not permission to cross a wall: if nothing states "
+                    "which of the two this mention belongs to, the correct outcome is to leave it as its own "
+                    "record."
+                )
+                existing = result.candidate_reasons.get(key)
+                result.candidate_reasons[key] = f"{existing}\n\nALSO: {caution}" if existing else caution
+
+
+def _undecided_discriminators(
+    graph: EntityGraph, cfg: ResolveConfig, fragment: str, x: str, y: str
+) -> list[str]:
+    """Declared-critical attributes on which the two walled ends disagree and the fragment is silent."""
+    ef, ex, ey = graph.entities.get(fragment), graph.entities.get(x), graph.entities.get(y)
+    if ef is None or ex is None or ey is None:
+        return []
+    out = []
+    for attr in sorted(set(cfg.critical_role_attrs(ex.etype)) | set(cfg.critical_role_attrs(ey.etype))):
+        vx, vy = (ex.attrs or {}).get(attr), (ey.attrs or {}).get(attr)
+        if vx and vy and vx != vy and not (ef.attrs or {}).get(attr):
+            out.append(attr)
+    return out
+
 
 def _critical_attribute_walls(
     graph: EntityGraph, cfg: ResolveConfig
