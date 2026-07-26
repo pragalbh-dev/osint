@@ -171,26 +171,117 @@ def _cadence_days(cadence: str | None) -> int | None:
     return None
 
 
+def _providers(
+    missing: list[str], sources: dict[str, SourceRegistryEntry]
+) -> list[SourceRegistryEntry]:
+    """Every registered source whose class could close one of the missing slots (deduplicated, sorted).
+
+    **A slot ABSENT from** :data:`_SLOT_SOURCE_TYPES` **contributes nothing**, and that distinction is
+    load-bearing rather than a tidy-up. A declared-but-empty tuple means "any source class can close this"
+    (``independent_origin_groups``); an *absent* slot means nobody has declared who could close it at all —
+    ``identity``, ``named_supplier``, ``site_type``. Collapsing the two would let an identity question
+    inherit the satellite constellation's 7-day revisit and be reported as "next coverage due <date>", which
+    is a fabricated collection promise: no satellite pass settles which of two batteries a mention names.
+    """
+    out: dict[str, SourceRegistryEntry] = {}
+    for slot in missing:
+        if slot not in _SLOT_SOURCE_TYPES:
+            continue
+        provider_types = _SLOT_SOURCE_TYPES[slot]
+        for s in sources.values():
+            if not provider_types or s.source_type in provider_types:
+                out[s.source_id] = s
+    return [out[k] for k in sorted(out)]
+
+
 def _next_coverage_due(
     missing: list[str], sources: dict[str, SourceRegistryEntry], as_of: str | None
 ) -> str | None:
     """Earliest next revisit that could close a missing slot: ``as_of + min(cadence)`` over its providers."""
     if as_of is None:
         return None
-    intervals: list[int] = []
-    for slot in missing:
-        provider_types = _SLOT_SOURCE_TYPES.get(slot)
-        candidates = [
-            s for s in sources.values()
-            if provider_types is None or not provider_types or s.source_type in provider_types
-        ]
-        for s in candidates:
-            days = _cadence_days(s.cadence)
-            if days is not None:
-                intervals.append(days)
+    intervals = [d for s in _providers(missing, sources) if (d := _cadence_days(s.cadence)) is not None]
     if not intervals:
         return None
     return (date.fromisoformat(as_of) + timedelta(days=min(intervals))).isoformat()
+
+
+# ── the SECOND clause of the non-negotiable, stated in words ────────────────────────────────────
+#
+# "Names what is missing AND when next coverage is due" — and 34 of the 37 Known Gaps the booted corpus
+# hands an analyst carried ``next_coverage_due: null``. A null is not a statement: to the analyst it is
+# indistinguishable from a field nobody filled in, and it certainly does not say when to look again.
+#
+# The remedy is emphatically NOT to invent a cadence — a fabricated collection date would itself be a
+# fabrication, and the worst kind, because it is actionable. So every gap now carries a coverage STATEMENT
+# that is derived, never authored: where a real revisit interval exists it names the date, the interval and
+# the source class it came from; where none exists it says which class could close the slot and why that
+# class has no revisit date (it publishes event-driven / continuously / irregularly), or — for a gap raised
+# by a stage that tasks no collection at all — that it stands as an untasked collection requirement. An
+# honest "no scheduled coverage" is compliant; a silent null is not.
+
+#: How a non-numeric cadence reads. Keys are the ``sources.yaml`` vocabulary; anything else falls through
+#: to the value itself, so a new cadence word degrades to being quoted rather than being dropped.
+_CADENCE_PROSE = {
+    "event-driven": "only when an event prompts one to publish",
+    "continuous": "continuously and unpredictably, with no scheduled revisit",
+    "irregular": "irregularly, on no declared schedule",
+    "per-tender": "only when a tender is issued",
+}
+
+
+def _class_phrase(missing: list[str], provs: list[SourceRegistryEntry]) -> str:
+    """How to NAME the providers: a declared-empty slot means "any class", not a nine-item enumeration."""
+    if any(slot in _SLOT_SOURCE_TYPES and not _SLOT_SOURCE_TYPES[slot] for slot in missing):
+        return "any registered source class"
+    return ", ".join(sorted({s.source_type for s in provs}))
+
+
+def coverage_statement(
+    *,
+    next_coverage_due: str | None,
+    missing_slots: list[str],
+    ceiling: str | None,
+    sources: dict[str, SourceRegistryEntry],
+    unscheduled_phrase: str,
+    as_of: str | None = None,
+) -> tuple[str | None, str]:
+    """``(next_coverage_due, statement)`` — the second clause of the non-negotiable, for EVERY gap.
+
+    A date is DERIVED here when the gap's producer did not compute one but the registry supports one
+    (``as_of`` + the shortest numeric cadence among the classes declared able to close the missing slot).
+    A date is never *invented*: where no declared provider is on a revisit interval, the returned date stays
+    ``None`` and the statement says why in words the analyst can act on — which class could close it and how
+    that class publishes, or that nothing is tasked against the gap at all.
+    """
+    provs = _providers(missing_slots, sources) if missing_slots else []
+    due = next_coverage_due or _next_coverage_due(missing_slots, sources, as_of)
+    classes = _class_phrase(missing_slots, provs)
+    if ceiling == "never-observable":
+        return None, (
+            "no coverage is due, and none ever will be: this is declared NEVER-OBSERVABLE in open sources, "
+            "so it is a structural limit rather than a collection lapse. It closes only if the observability "
+            "ceiling itself changes — not by looking again."
+        )
+    if due:
+        intervals = [d for s in provs if (d := _cadence_days(s.cadence)) is not None]
+        every = f"a {min(intervals)}-day revisit interval" if intervals else "a declared revisit interval"
+        return due, (
+            f"next coverage due {due} — the earliest revisit of a source class that could close this gap "
+            f"({classes}), on {every} declared in the source registry."
+        )
+    if provs:
+        how = sorted({_CADENCE_PROSE.get(s.cadence or "", f"on a '{s.cadence}' schedule") for s in provs})
+        return None, (
+            f"no scheduled coverage: the source class that can close this gap ({classes}) publishes "
+            f"{'; '.join(how)}, so there is no revisit date to state. It closes when such a source next "
+            "speaks to this point — not on any date the registry can predict."
+        )
+    return None, (
+        f"{unscheduled_phrase}. No source class in the registry is declared able to close this gap, so no "
+        "revisit interval applies: it closes only if a NEW source appears that speaks to it, or an analyst "
+        "adjudicates it directly. An open collection requirement, not a date to wait for."
+    )
 
 
 # ── the stage entrypoint ────────────────────────────────────────────────────────────────────────

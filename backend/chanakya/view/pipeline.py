@@ -65,7 +65,7 @@ from chanakya.schemas import (
     pair_key,
     report_bounded_validity,
 )
-from chanakya.sufficiency import check
+from chanakya.sufficiency import check, coverage_statement
 
 #: The sufficiency slot an identity refusal is missing. One name, used by the node's ``missing_slots`` and by
 #: the per-endpoint ``gap:identity:`` record, so the refuse half and the escalate half say the same word.
@@ -227,6 +227,44 @@ def _merge_provenance(nodes: dict[str, NodeView], partition: Partition) -> None:
             if ledger:
                 entry["identity_ledger"] = ledger
         node.attrs.setdefault("resolved_from", []).append(entry)
+
+
+def _stamp_coverage(gaps: list[KnownGap], config: ConfigBundle, as_of: str | None) -> None:
+    """Give every Known Gap its coverage statement — and a derived date where the registry supports one."""
+    sources = config.sources.as_map()
+    for gap in gaps:
+        gap.next_coverage_due, gap.coverage_statement = coverage_statement(
+            next_coverage_due=gap.next_coverage_due,
+            missing_slots=list(gap.missing_slots),
+            ceiling=gap.observability_ceiling,
+            sources=sources,
+            unscheduled_phrase=config.templates.unscheduled_coverage_phrase,
+            as_of=as_of,
+        )
+
+
+def _collapse_restatements(gaps: list[KnownGap]) -> list[KnownGap]:
+    """One (node, statement) = one Known Gap, however many raw pairs independently raised it.
+
+    Deterministic: the first occurrence in the already-deterministic build order survives and collects the
+    suppressed ids on ``also_raised_as``, so nothing about *what raised it* is discarded — only the
+    repetition is. A gap with no ``related_ref`` is never collapsed: it hangs off nothing, so two of them
+    are not two renderings of one node's problem.
+    """
+    survivors: dict[tuple[str, str], KnownGap] = {}
+    out: list[KnownGap] = []
+    for gap in gaps:
+        if not gap.related_ref:
+            out.append(gap)
+            continue
+        key = (gap.related_ref, gap.what_missing)
+        first = survivors.get(key)
+        if first is None:
+            survivors[key] = gap
+            out.append(gap)
+        elif gap.id != first.id:
+            first.also_raised_as = sorted({*first.also_raised_as, gap.id})
+    return out
 
 
 def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView]:
@@ -1168,6 +1206,14 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # the precedence, and it is deterministic (gate G2).
     _seen_gaps: set[str] = set()
     known_gaps = [g for g in known_gaps if not (g.id in _seen_gaps or _seen_gaps.add(g.id))]
+    # …and the SAME dedup rule applied to what the analyst actually reads, not just to the id. An identity
+    # gap is keyed by the raw pair that raised it, so five raw pairs that canonicalise onto one node produce
+    # five DIFFERENT ids carrying one identical sentence — measured: 14 identity gaps on the booted corpus
+    # were 4 distinct (node, statement) pairs, one node receiving the same sentence five times in a single
+    # drawer. Five renderings of one finding read as five findings, which is precisely how a register
+    # teaches an analyst to skim it. The suppressed ids are kept on the survivor (``also_raised_as``) so the
+    # raw provenance is not lost — this collapses the presentation, never the record.
+    known_gaps = _collapse_restatements(known_gaps)
 
     view = GraphView(
         nodes=list(nodes.values()),
@@ -1178,6 +1224,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 7. materiality precompute — inside rebuild, tracks config automatically (spine/09)
     view = precompute(view, config)
+    # 7b. The second clause of the non-negotiable, in words: EVERY gap states when next coverage is due, or
+    #     states honestly that none is scheduled and what would close it. Derived here, once, over the
+    #     FINISHED list — after materiality, which raises candidate-chokepoint gaps of its own — so no gap
+    #     producer can forget it. Measured before this existed: 34 of 37 gaps carried a bare ``null``, which
+    #     tells the analyst nothing and is indistinguishable from a field nobody filled in.
+    _stamp_coverage(view.known_gaps, config, effective_as_of(config, resolved))
 
     # 8. HITL decision effects last (an override wins over the machine — gate G12)
     view = apply_decision_effects(view, decisions)
