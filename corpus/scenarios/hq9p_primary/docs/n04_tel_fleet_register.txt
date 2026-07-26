@@ -1,0 +1,72 @@
+PAKISTAN MILITARY VEHICLE REGISTER — WORKING COMPILATION
+Air Defence section · heavy transporter and launcher vehicles
+Compiled from contributor photographs. Rolling document, last edit 02 April 2025.
+
+HOW THIS LIST WORKS. Every entry is backed by at least one photograph held in the group archive; the
+archive reference is given. Where two contributors read a plate differently the entry records both
+readings. Nothing is listed on the strength of a description alone. A unit is listed against a vehicle
+only where a source we can point at puts it there.
+
+PLATE FORMAT NOTE. Pakistan Army heavy vehicles in this arm carry a four-digit number followed by a
+two-letter arm code, stencilled in white on the cab door and repeated smaller on the rear. We read the
+"AD" code as Air Defence. That reading is our own inference from where these vehicles turn up and is not
+confirmed by any published scheme.
+
+---
+
+ENTRY AD/2025/017
+  Plate (cab door)      : 8477 AD
+  Vehicle type          : 8x8 heavy transporter-erector-launcher, canisterised, four canisters
+  Chassis data plate    : partially legible. Suffix read as "...-0173". Prefix disputed: contributor RK
+                          reads "WS2400", contributor HZ reads "TAS5380". Two different chassis families
+                          from the same Chinese manufacturer group. Recorded as prefix UNRESOLVED,
+                          suffix 0173.
+  Sighting 1            : 18 Feb 2025 — static display, Pano Aqil Cantonment, Sukkur District, on the
+                          occasion of a visiting-officer inspection. Plate fully legible, photographed
+                          square-on at approximately 12 m. Archive ref PMV-A-4471.
+  Sighting 2            : 22/03/2025 — road move, Ghotki bypass on the N-5, travelling north-east, third
+                          vehicle in a six-vehicle serial with a military police escort. Plate legible in
+                          two frames of a five-frame burst. Archive ref PMV-A-4602.
+  Points of agreement between the two sets:
+                          plate legible and identical in both; chassis suffix 0173 legible in both; a weld
+                          repair on the left rear mudguard visible in PMV-A-4471 and again in PMV-A-4602.
+  Unit marking          : none legible in any frame held. The February display was not captioned by unit
+                          in any material we hold.
+  Correction log        : first published 24 Mar as plate "8417 AD" from the road-move frames alone.
+                          Corrected 27 Mar after PMV-A-4471 was re-examined at full resolution: at full
+                          resolution the third digit reads 7, not 1, and both frames read 8477. The form
+                          8417 AD circulated for three days and may still be quoted elsewhere; this list
+                          holds no entry and no photograph under that plate.
+
+ENTRY AD/2025/018
+  Plate (cab door)      : 8471 AD
+  Vehicle type          : as above
+  Chassis data plate    : not legible in the single available frame
+  Sighting 1            : 18 Feb 2025 — static display, Pano Aqil Cantonment. Parked alongside 8477 AD.
+                          Archive ref PMV-A-4473.
+  Frame note            : both plates are legible in PMV-A-4473, side by side, and differ in the third
+                          digit.
+  Unit marking          : none legible.
+
+ENTRY AD/2025/019
+  Plate (cab door)      : 8477 AD
+  Vehicle type          : 8x8 heavy TEL, canisterised
+  Sighting 1            : 18 Feb 2025 — static display, Panu Aqil Cantt.
+  Archive ref           : PMV-A-4471
+  [ENTRY NOTE — entered from a contributor submission that used the "Panu Aqil" spelling. The archive
+  reference submitted with it, PMV-A-4471, is the reference already carried at entry AD/2025/017, and the
+  plate, the date and the occasion as submitted are the same. Retained struck-through rather than deleted,
+  per house practice: this list annotates entries, it does not remove them.]
+
+---
+
+COMMENTARY (contributor thread, lightly edited)
+
+The 22 March road move is the interesting one. Open order-of-battle references place two long-range air
+defence regiments at Pano Aqil Cantonment — 22 Air Defence Regiment and 47 Air Defence Regiment — and a
+launcher photographed at the cantonment in February turning up on the Ghotki road in March is the first
+time we have had one plate in two places. Several people have since told us the regiment has moved. We
+hold no photograph of the cantonment positions on or after 22 March, and we have no frame of the vehicle
+carrying a unit marking. We have been asked repeatedly which regiment 8477 AD belongs to; most of the
+asking assumes 22 AD Regt because that is the one people have heard of. No frame in the archive carries a
+unit marking on this vehicle, and no captioned material we hold names a formation against it.

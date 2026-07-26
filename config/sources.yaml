@@ -50,6 +50,37 @@ sources:
   # (R≈0.85) AND the proposer's reference_source_classes default — see tmp/conv DATA→INGEST note.
   - {source_id: d25_hq9_site_fingerprint, source_type: curated-register, reliability_grade: B, primary_origin_id: osint_sam_recognition_ref, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf"}
 
+  # ── RK-DATA identity-coverage additions (n01–n06, 2026-07-26) ──────────────────────────────────
+  # Authored to give the identity machinery input it has never had on the real corpus: numbered/designated
+  # formations, an equipment serial that individuates one launcher across two sightings, coreference-bearing
+  # prose (including the ambiguous and anti-coreference cases), and the ORBAT-undercount trap the
+  # co-location cap exists to catch. Spec: tmp/conv/RK-DATA-authoring-spec.md.
+  # The trap pair is the UNDESIGNATED air defence battery at Pano Aqil that n01 §3.7 and n02 each report
+  # once, independently — same name, same station, same branch, no designator and no parent on either side.
+  # It is NOT the 22/47 regiment pair, which several rails separate on their own and which therefore tests
+  # nothing about the cap. See spec §4 for the rail-by-rail argument.
+  # These carry NO claims until the re-record extracts them, which is inert and expected.
+  - {source_id: n01_orbat_register, source_type: curated-register, reliability_grade: B, bias_vector: third-party, cadence: "365d", citation_url: "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt", report_date: "2025-03-31"}
+  - {source_id: n02_ispr_panoaqil, source_type: official, reliability_grade: B, bias_vector: operator-state, cadence: "event-driven", citation_url: "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt", report_date: "2025-02-18"}
+  # No report_date: the read-out states three imagery pass dates and no document date. Per the ING-7 rule a
+  # date is stamped only from a verbatim, unambiguous statement — an inferred one would be a fabrication.
+  - {source_id: n03_panoaqil_imagery, source_type: satellite, reliability_grade: B, bias_vector: third-party, cadence: "7d", citation_url: "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt"}
+  # DELIBERATE SPLIT between class and grade. STANAG `C` is earned by this document's PROCESS, not by any
+  # authority: every entry is photo-backed, the disagreeing plate readings are published rather than
+  # resolved silently, and the 8417→8477 misreading carries its own correction log. Grade C is what lets a
+  # photographed, corrected plate reading clear the `bind_min_grade`/`critical_veto_min_grade` floors, which
+  # is right — the plate is a directly observed fact. It does NOT buy the doc authority: R≈0.56, so nothing
+  # it *concludes* travels far.
+  # CLASS CORRECTED (rev 4, on a MEASUREMENT). This was filed `named-social`, on the reasoning that a
+  # contributor vehicle compilation has a social source's (lack of) standing. That was wrong for a reason
+  # the reasoning could not see: `source_type` is not only the credibility class, it is also what selects
+  # the EXTRACTION SCHEMA. Filed as social, this register was handed the social-post tool — handle,
+  # timestamp, status URL, body — which it cannot fill, and the document extracted **zero claims**. It was
+  # mute. `contributor-register` (new row in credibility.yaml) is the shape it actually is.
+  - {source_id: n04_tel_fleet_register, source_type: contributor-register, reliability_grade: C, bias_vector: third-party, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt", report_date: "2025-04-02"}
+  - {source_id: n05_regiment_lineage_note, source_type: official, reliability_grade: B, bias_vector: operator-state, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt"}
+  - {source_id: n06_battalion_count_recount, source_type: think-tank, reliability_grade: B, bias_vector: third-party, cadence: "irregular", citation_url: "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt", report_date: "2025-05-12"}
+
   # ── hq9p_chaff (27) ────────────────────────────────────────────────────────────────────────────
   - {source_id: ce01_reshare_c, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/ce01_reshare_c.txt", images: ["corpus/scenarios/hq9p_chaff/docs/ce01_reshare_c.png"]}
   - {source_id: ce02_reshare_d, source_type: named-social, reliability_grade: E, primary_origin_id: origin_parade_img, bias_vector: third-party, coordinated_inauthenticity_flag: true, cadence: "continuous", citation_url: "corpus/scenarios/hq9p_chaff/docs/ce02_reshare_d.txt", images: ["corpus/scenarios/hq9p_chaff/docs/ce02_reshare_d.png"], report_date: "2025-05-11"}

@@ -96,6 +96,36 @@ d16 (D5), d20 (D8). D8 beats even our current design and ships with its fix (con
 
 ---
 
+## RK-DATA identity-coverage additions — `n01`–`n06` (2026-07-26, `hq9p_primary`)
+
+Six documents added to close three measured, verified gaps: across the whole frozen corpus there were
+**zero numbered/designated formations** (the `unit` type held only services and commands), **zero equipment
+serials or registrations**, and **zero coreference annotations** — so the discriminator ladder, the
+coreference binding tier and gates G16/G18/G19 were fixture-only. **Additive:** no existing doc, claim
+bundle or `answer_key.json` was touched. They carry no claims until the re-record extracts them.
+
+| # | Doc | Type | What it carries | Why it exists |
+|---|---|---|---|---|
+| n01 | orbat_register | curated-register (B / third-party) | Numbered AD regiments with parent brigades and garrisons: **22 AD Regt** (3 AD Bde) and **47 AD Regt** (11 AD Bde), **both at Pano Aqil Cantonment**; 22's B Bty detached forward to Ghotki *while* RHQ stays at the garrison | The first formation-shaped input: `designator` + `parent_unit` + `service_branch`. Half of the co-location trap, and the C1 concurrency stated in the source's own voice |
+| n02 | ispr_panoaqil | official (B / operator-state) | 2nd interest-independent look at the **stated** basing `22 AD Regt @ Pano Aqil`; clean EXPLICIT_EQUIVALENCE (*"also known as the Indus Gunners"*, *"hereinafter referred to as the Regiment"*) | Lets a **stated** `based-at` reach `confirmed` rather than only the capped derived kind; the coref bind tier's first real input |
+| n03 | panoaqil_imagery | satellite (B / third-party) | **Two occupied emplacements 5.6 km apart** at one cantonment, different radar planforms; plus the Ghotki dispersal pad, ~27 km. Names **no** formation; enumerates the three readings it cannot choose between | The co-location engine. Nothing in the corpus previously produced two similar co-located bodies |
+| n04 | tel_fleet_register | named-social (**C** — process, not authority) | TEL plate **8477 AD** photographed at Pano Aqil (18 Feb) and on the Ghotki road (22 Mar), tied by plate + chassis suffix + a weld repair; near-miss **8471 AD** in the same frame; an **ambiguous anaphor** | The first equipment fingerprint that individuates one object across two sightings — the strongest honest merge evidence there is |
+| n05 | regiment_lineage_note | official (B / operator-state) | **Anti-coreference**: 22 AD Regt *is not* 22 Medium Regiment (same service, same number, different arm) and *is not* 47 AD Regt; plus a true redesignation same-as (*"formerly 22 Light Anti-Aircraft Regiment"*) | Live test of `hard_id_fields.unique.unit = [service_branch, designator]`: a bare-number designator would match across two arms and lift every cap |
+| n06 | battalion_count_recount | think-tank (B / third-party) | Traces "approximately 4 battalions" to one SIPRI estimate retold three times; counts independently from imagery → **not fewer than three, upper bound open**; declines to endorse the published figure | The other half of d23's circular-corroboration test: three citations = one look, and a genuine second look that **disagrees** → the count is a named gap, not a number |
+
+**The trap in one line:** two truthful reports of similar co-located units are enough to make a naive
+resolver fuse 22 and 47, turn their two positions into one unit's before/after, **draw a relocation that
+never happened**, mark the pair machine-adjudicated so it leaves the analyst's queue, and delete the honest
+Known Gap on the count. Correct output: **two units not one** (co-location cap holds at `probable`), **no
+relocation anywhere in the cluster**, and **a named gap** on how many fire units are at Pano Aqil.
+
+Also delivered in the same pass: `layer_routing.site_type_aliases` (three entries) — which restores the
+flagship Rawalpindi→Rahwali relocation and de-conflicts the Karachi garrison and Sargodha dispersal basings
+into concurrently-valid ones. Full spec, per-document corruption operators, and the must-produce /
+must-refuse statement for each: **`tmp/conv/RK-DATA-authoring-spec.md`**.
+
+---
+
 ## The graph this builds (answer-key ground truth)
 
 **18 nodes** (manufacturer/component/variant/unit/basing_site/sustainment/known_gap/import_event) ·

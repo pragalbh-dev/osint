@@ -1,0 +1,917 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        25
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_state": "INTERMITTENT occupancy: equipment present on some frames and absent on others (two of six)",
+        "site_type": "prepared position"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "prepared position (intermittent occupancy)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l1-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        25
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_state": "PERSISTENT occupancy — equipment present on every usable frame across at least four passes spanning at least six months (three of six)",
+        "site_type": "prepared position"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "prepared position (persistent occupancy)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l1-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        25
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_state": "prepared and never observed occupied on any frame we hold (one of six)",
+        "site_type": "prepared position"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "prepared position (prepared, unoccupied)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        223,
+        248
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "backgrounder"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "our own 2023 backgrounder"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        770,
+        796
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "aggregator"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Jane's-adjacent aggregator"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "Jane's-adjacent aggregator",
+        "regional trade blog"
+      ],
+      "_object_mention": "n06-battalion-count-recount-l17-3",
+      "_subject_mention": "n06-battalion-count-recount-l17",
+      "source_quote": "a Jane's-adjacent aggregator, a regional trade blog, and a Quetta-based English-language defence site"
+    },
+    "claim_id": "n06-battalion-count-recount-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        770,
+        796
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "regional trade blog",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "Jane's-adjacent aggregator"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n06-battalion-count-recount-l17",
+      "n06-battalion-count-recount-l17-3"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l17-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        798,
+        819
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "trade blog"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "regional trade blog"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "regional trade blog",
+        "Quetta-based English-language defence site"
+      ],
+      "_object_mention": "n06-battalion-count-recount-l17-5",
+      "_subject_mention": "n06-battalion-count-recount-l17-3",
+      "source_quote": "a Jane's-adjacent aggregator, a regional trade blog, and a Quetta-based English-language defence site"
+    },
+    "claim_id": "n06-battalion-count-recount-l17-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        800,
+        819
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Quetta-based English-language defence site",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "regional trade blog"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n06-battalion-count-recount-l17-3",
+      "n06-battalion-count-recount-l17-5"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l17-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        825,
+        869
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "defence website"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Quetta-based English-language defence site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        872,
+        940
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "arms transfers register"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "SIPRI Arms Transfers Database"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l34",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1905,
+        1966
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9 family"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l47",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 47,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2745,
+        2754
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "the cantonment at Pano Aqil in northern Sindh",
+          "raw": "the cantonment at Pano Aqil in northern Sindh",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "carries two of our six prepared positions, about five and a half kilometres apart; both were occupied on every pass in the most recent collection",
+        "site_type": "cantonment"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l49",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 49,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2958,
+        2974
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "engagement radar",
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "engagement radar"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l51",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 51,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3010,
+        3098
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "echelon": "regiment",
+        "home_garrison": "Pano Aqil cantonment"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "long-range air defence regiments"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l51-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 51,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3010,
+        3098
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "order-of-battle references"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Order-of-battle references"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "long-range air defence regiments",
+        "air defence battery"
+      ],
+      "_object_mention": "n06-battalion-count-recount-l52",
+      "_subject_mention": "n06-battalion-count-recount-l51",
+      "source_quote": "Order-of-battle references place two long-range air defence regiments at that cantonment, and separately record an air defence battery there that they are unable to allocate to either regiment."
+    },
+    "claim_id": "n06-battalion-count-recount-l51-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 51,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3047,
+        3079
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "air defence battery",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "long-range air defence regiments"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n06-battalion-count-recount-l51",
+      "n06-battalion-count-recount-l52"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n06-battalion-count-recount-l52",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n06_battalion_count_recount.txt",
+      "frame": null,
+      "line": 52,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3125,
+        3144
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "alert_posture": "unable to allocate to either regiment",
+        "echelon": "battery",
+        "home_garrison": "Pano Aqil cantonment"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "air defence battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-12",
+      "kind": "exact",
+      "raw": "2025-05-12"
+    },
+    "resolved_ref": null,
+    "source_id": "n06_battalion_count_recount",
+    "targets": null
+  }
+]

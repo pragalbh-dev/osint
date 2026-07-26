@@ -36,9 +36,14 @@ def test_staged_ingest_adds_the_relocation_evidence(scenario: harness.ScenarioIn
     assert len(after.edges) > len(before.edges)
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "DATA REFRESH (calibration ledger): the relocation is HELD, not promoted, because `unit_hq9b` now carries four derived `based-at` edges whose stated `site_type` strings are 'centre', 'deployment site', 'airfield' and 'prepared revetment complex / airfield site', and `layer_routing.site_type_aliases` in config/ontology.yaml is EMPTY — so none but 'airfield' normalises into the closed vocabulary. Ruling L1/C1 then applies the third state PER SUBJECT: no de-confliction (one shared bucket), NO FUSION (every supersede nomination on that subject is withdrawn, `supersede_suppressed: instance-key-tag-unmappable`), and a NAMED GAP (`gap:edge:unit_hq9b:based-at:site_type`). That is the target behaviour and its own corpus gate asserts it (tests/view/test_rk_layer_supersede_identity.py::test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown passes): a change of site whose kind-of-place we cannot read may not be asserted as a movement. It was invisible before only because the layer-routing stage flag shipped off. TO CLOSE: the DATA pass populates `layer_routing.site_type_aliases` mapping the corpus's stated site_type strings onto the closed vocabulary (ruling L1 step 4 assigns that mapping to DATA, and it is a domain judgement about the kind-of-place axis, not a threshold an implementer may guess), then re-record. Do NOT close it by weakening the third state."
-))
+# CLOSED 2026-07-26 by RK-DATA, exactly as the retired marker's own "TO CLOSE" instruction specified: the
+# DATA pass populated `layer_routing.site_type_aliases` (three entries — 'centre'->garrison,
+# 'deployment site'->dispersal_site, 'prepared revetment complex / airfield site'->airfield), so all four of
+# `unit_hq9b`'s stated site classes now normalise. The third state was NOT weakened; it still applies to
+# every value that carries no kind-of-place content. Rawalpindi and Rahwali land in one `airfield` instance
+# bucket and the relocation promotes; the Karachi `garrison` and Sargodha `dispersal_site` basings sit in
+# buckets of their own and stay concurrently valid, which is what C1 is for. Rationale and the measured
+# before/after: tmp/conv/RK-DATA-authoring-spec.md §2.
 def test_relocation_alert_fires_once_with_before_after_and_provenance(alerts: list) -> None:
     """Exactly one alert: the watched unit moved from one site to another, with the claims behind both."""
     assert len(alerts) == 1, [a.observable_id for a in alerts]
@@ -61,9 +66,10 @@ def test_relocation_alert_fires_once_with_before_after_and_provenance(alerts: li
     )
 
 
-@pytest.mark.xfail(strict=True, reason=(
-    "DATA REFRESH (calibration ledger): the relocation is HELD, not promoted, because `unit_hq9b` now carries four derived `based-at` edges whose stated `site_type` strings are 'centre', 'deployment site', 'airfield' and 'prepared revetment complex / airfield site', and `layer_routing.site_type_aliases` in config/ontology.yaml is EMPTY — so none but 'airfield' normalises into the closed vocabulary. Ruling L1/C1 then applies the third state PER SUBJECT: no de-confliction (one shared bucket), NO FUSION (every supersede nomination on that subject is withdrawn, `supersede_suppressed: instance-key-tag-unmappable`), and a NAMED GAP (`gap:edge:unit_hq9b:based-at:site_type`). That is the target behaviour and its own corpus gate asserts it (tests/view/test_rk_layer_supersede_identity.py::test_the_flagship_relocation_is_held_while_its_site_classes_are_unknown passes): a change of site whose kind-of-place we cannot read may not be asserted as a movement. It was invisible before only because the layer-routing stage flag shipped off. TO CLOSE: the DATA pass populates `layer_routing.site_type_aliases` mapping the corpus's stated site_type strings onto the closed vocabulary (ruling L1 step 4 assigns that mapping to DATA, and it is a domain judgement about the kind-of-place axis, not a threshold an implementer may guess), then re-record. Do NOT close it by weakening the third state."
-))
+# CLOSED 2026-07-26 by RK-DATA — same cause and same fix as the marker retired above. Note what this
+# assertion is now worth: with the site classes readable, the alert set is checked to be exactly the watched
+# unit, so a mapping that over-mapped (sending unrelated strings to one class and manufacturing collateral
+# relocations) would fail HERE rather than passing quietly. That is why the unmapped values stayed unmapped.
 def test_the_only_alert_is_the_watched_unit(alerts: list) -> None:
     """No collateral firing: one subject, and it is the declared watched instance (not, say, a factory
     whose street address resolved differently between the two rebuilds)."""
