@@ -12,9 +12,11 @@ from typing import Any, Literal
 
 from .base import Record
 from .claim import ClaimRecord, SourceRegistryEntry
+from .decision import Actor
 from .view import (
     ConfidenceBreakdown,
     Freshness,
+    GraphView,
     IndependenceGroup,
     KnownGap,
     Status,
@@ -154,7 +156,42 @@ class HitlDecision(Record):
     subject: str
     decision: str  # the chosen option
     rationale: str | None = None
-    actor: str = "analyst"
+    # Typed at the BOUNDARY, so an unknown actor is a clean 422 naming the three legal values rather than
+    # an unhandled ``pydantic.ValidationError`` raised deep in ``hitl/writeback.build_record`` and served
+    # as a 500 with a traceback. The log's ``DecisionRecord.actor`` was always this Literal; accepting a
+    # bare ``str`` here only moved the failure somewhere it could not be reported, which makes a REJECTED
+    # adjudication indistinguishable from a server fault — the same confusion class as a dropped decision.
+    actor: Actor = "analyst"
+
+
+class AdjudicationReceipt(Record):
+    """The acknowledgement an analyst gets back for a ``POST /hitl/*`` instruction (the escalate half).
+
+    A ``200`` and a rebuilt view used to be the whole response, so an instruction the resolver declined to
+    apply looked exactly like one it had applied. Every field here is derived by READING the rebuilt view
+    (:mod:`chanakya.hitl.receipt`), never by assuming the write succeeded.
+    """
+
+    event_id: str = ""
+    pair: list[str] = []  # the two ids the instruction was about, as the analyst clicked them
+    instruction: str = ""  # what the chosen option was asking the graph to do, in words
+    decision: str = ""  # the option chosen
+    actor: str = ""
+    rationale: str | None = None
+    recorded: bool = True  # the append-only log always keeps it, applied or not
+    applied: bool = False  # did the REBUILT view actually take it
+    ground: str = ""  # how it was applied, or — when it was not — on what ground
+    effect_ref: str | None = None  # the view element that now carries it (a wall), or the still-open edge
+
+
+class AdjudicationView(GraphView):
+    """``POST /hitl/*`` response: the rebuilt view **plus** the receipt for the instruction just given.
+
+    A strict superset of :class:`GraphView`, so a client that binds to the view is unaffected and a client
+    that reads the acknowledgement gets it in the same round-trip.
+    """
+
+    adjudication: AdjudicationReceipt | None = None
 
 
 # ── POST /ingest ───────────────────────────────────────────────────────────────────────────────

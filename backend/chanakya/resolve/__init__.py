@@ -205,7 +205,18 @@ def _resolve(
     rel_walls, rel_wall_reasons, rel_raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
     stated_walls_2 = _claim_distinct_pairs(graph, cfg, alias_idx)
     ident_walls, ident_wall_reasons = _identifier_veto(graph, cfg)
-    veto |= stated_walls_2 | ident_walls | crit_walls | rel_walls
+    # THE ANALYST'S OWN WALL, and it joins ``veto`` — the hard, transitive channel — instead of merely
+    # decorating ``wall_grounds`` below. Registering the ground without registering the wall is how a
+    # human's REJECT became a comment: the pair kept its place in the review queue, the resolver went on
+    # proposing the fusion, and (wherever some other rail had drawn a wall of its own) the graph asserted
+    # "same" and "not same" about one pair at once. Computed HERE, after ``_link_endpoints``, because the
+    # endpoints an analyst adjudicates are routinely mentions only *minted* into entities by that pass —
+    # the headline pair's Army-side unit among them, so a pre-mint read finds nothing to hold apart.
+    analyst_walls = {
+        frozenset(pair)
+        for pair in cluster.learned_distinct_eid_pairs(alias_idx, graph, cfg.transliteration)
+    }
+    veto |= stated_walls_2 | ident_walls | crit_walls | rel_walls | analyst_walls
     crit_raises = {**crit_raises, **rel_raises}
     # …and the grounds for the four rails resolved after the endpoint pass, least-specific first. The two
     # that had a producer (critical attribute, relationship) keep their existing precedence — relationship
@@ -217,12 +228,7 @@ def _resolve(
     wall_grounds.update(rel_wall_reasons)
     # The most specific ground there is: a HUMAN decided this pair apart (a `merge_adjudication` reject/split
     # replayed from the decision log). It outranks every derived rail — an override is not a finding (G12).
-    wall_grounds.update(
-        {
-            frozenset(pair): _analyst_wall_reason()
-            for pair in cluster.learned_distinct_eid_pairs(alias_idx, graph, cfg.transliteration)
-        }
-    )
+    wall_grounds.update({p: _analyst_wall_reason() for p in analyst_walls})
 
     # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.

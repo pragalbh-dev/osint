@@ -22,14 +22,24 @@ class AliasIndex:
     def __init__(self, require_distinct_forms: bool = True) -> None:
         self._class_of: dict[str, str] = {}  # normalised name → class root (a normalised name)
         self.distinct: set[frozenset[str]] = set()  # learned do-not-merge {normA, normB}
-        # …and the same learned do-not-merge for the pairs the NAME-keyed set above cannot express.
-        # When an analyst rejects two mentions whose names normalise to ONE string, ``{normA, normB}``
-        # collapses to a one-element frozenset: it names a single string, so it can neither identify which
-        # two records were separated nor be read back as a pair. That is precisely the highest-stakes
-        # rejection in this system — two batteries carrying the same descriptor in one cantonment — and it
-        # is the one the name table is structurally blind to. Keyed on ENTITY IDS, the only key that tells
-        # the two mentions apart. Populated only for the same-name case; a different-name rejection stays
-        # name-keyed so it keeps generalising to future mentions of those names.
+        # …and the same learned do-not-merge keyed on ENTITY IDS, which is the key the analyst actually
+        # decided on.
+        #
+        # THE DEFECT THIS CLOSES (measured on the booted corpus, and the worst one found in this effort).
+        # The id-keyed set used to be populated ONLY when the two names normalised to one string, on the
+        # theory that a different-name rejection is fully expressed by the name pair. It is not. The names
+        # that reach this replay come from the analyst's surface — ``GET /view`` node labels — and a view
+        # label is a *display* name (``config/entities.yaml`` ``display_name``), whereas the resolver's own
+        # entity carries its registry/mention name. For the project's headline pair they differ: the view
+        # says "the PAF HQ-9B fire unit", the resolver's entity ``unit_hq9b`` is named "PAF HQ-9B fire-unit
+        # (relocation subject)". The normalised forms never met, so the name-keyed bar mapped back to NO
+        # entities, and the analyst's REJECT of the two co-located batteries — the single adjudication this
+        # system exists to make possible — left ``GET /view`` byte-identical: no wall, no gap, and the same
+        # fusion still proposed on the next rebuild.
+        #
+        # An id is exact and needs no round-trip through a label, so every bar is recorded here. The
+        # name-keyed bar is still recorded alongside it whenever the two names genuinely differ, because
+        # that one *generalises* — it keeps barring future mentions that spell themselves the same way.
         self.distinct_eids: set[frozenset[str]] = set()  # learned do-not-merge {eidA, eidB}
         # G19 (RK-COREF/S3): require the two forms to be genuinely DIFFERENT, i.e. a real alias link.
         # See :meth:`equivalent` — this is the fix for a hole the docstring already promised was closed.
@@ -134,29 +144,53 @@ def build(
         if verdict == "accept":
             idx.link(a, b)
         elif verdict == "bar":
+            # ALWAYS record the id-keyed bar: the ids are what the analyst adjudicated and the only key
+            # that cannot be lost to a display-name/entity-name mismatch (see ``distinct_eids`` above).
+            # Dropping it is not an option — this is a human's explicit refusal, and losing it leaves the
+            # pair free to fuse on the next rebuild, the exact over-merge the analyst just declined.
+            eids = _adjudication_eids(d)
+            if eids is not None:
+                idx.distinct_eids.add(frozenset(eids))
+            # …and the name-keyed bar too when the two names genuinely differ, because that one keeps
+            # generalising to future mentions spelled the same way. When they normalise to ONE string it
+            # is skipped: ``{a, a}`` is a one-element set that can neither name the two records nor be
+            # read back as a pair.
             if a != b:
                 idx.distinct.add(frozenset((a, b)))
-            else:
-                # Two mentions that normalise to ONE name. A name-keyed bar cannot say which two records
-                # the analyst separated (and ``{a, a}`` is a one-element set that later unpacks to nothing),
-                # so the decision is recorded against the entity ids instead. Dropping it here is not an
-                # option: this is a human's explicit refusal, and losing it would leave the pair free to
-                # fuse on the next rebuild — the exact over-merge the analyst just declined.
-                eids = _adjudication_eids(d)
-                if eids is not None:
-                    idx.distinct_eids.add(frozenset(eids))
     return idx
+
+
+def adjudicated_pair(d: DecisionRecord) -> tuple[str, tuple[str, str]] | None:
+    """``("accept" | "bar", (id_a, id_b))`` for a ``merge_adjudication`` record — the ID-keyed read.
+
+    The one public reader of "what did the analyst instruct, about which two entities". Kept here beside
+    the replay it mirrors so the rail that APPLIES an adjudication and the rail that ACKNOWLEDGES it can
+    never disagree about which pair a record concerns — the shape of the defect this whole change is
+    about. Returns ``None`` for a record that is not a merge adjudication or carries no recoverable pair.
+    """
+    if d.type != "merge_adjudication":
+        return None
+    adj = _adjudication(d)
+    if adj is None:
+        return None
+    eids = _adjudication_eids(d)
+    if eids is None:
+        return None
+    return adj[0], eids
 
 
 def _adjudication_eids(d: DecisionRecord) -> tuple[str, str] | None:
     """The ENTITY-ID pair a merge adjudication concerns, or ``None`` if the record carries only names.
 
     The mirror of :func:`_effect_pair`'s name-first read: here the ids are what is wanted, so ``pair`` /
-    ``same_as`` / ``members`` are consulted and ``names`` deliberately is not. Used only for a same-name
-    rejection, where the ids are the sole way to distinguish the two records.
+    ``same_as`` / ``members`` are consulted and ``names`` deliberately is not — an id is exact, whereas a
+    name has to survive a round-trip through whatever label the analyst's surface happened to render.
     """
     eff = d.effects if isinstance(d.effects, dict) else {}
-    for key in ("record_distinct", "split_merge"):
+    # ``grow_alias`` (the ACCEPT effect) is read here too. The replay itself only ever needs ids for a bar,
+    # but the acknowledgement rail needs to say which two entities an *accept* was about — and an accept the
+    # resolver declines to apply is precisely the case that used to return 200 and say nothing.
+    for key in ("record_distinct", "split_merge", "grow_alias"):
         payload = eff.get(key)
         if not isinstance(payload, dict):
             continue

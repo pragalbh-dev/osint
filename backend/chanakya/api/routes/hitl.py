@@ -23,7 +23,8 @@ from chanakya.hitl import (
     build_status_override_item,
     dispose,
 )
-from chanakya.schemas import GraphView, HitlDecision, ReviewQueueItem
+from chanakya.hitl.receipt import receipt_fields
+from chanakya.schemas import AdjudicationReceipt, AdjudicationView, GraphView, HitlDecision, ReviewQueueItem
 
 router = APIRouter()
 
@@ -44,6 +45,27 @@ def _apply(state: AppState, item: ReviewQueueItem, decision: HitlDecision) -> Gr
     dispose(item, decision.decision, writeback, actor=decision.actor, rationale=decision.rationale)
     state.rebuild_and_swap()
     return state.view()
+
+
+def _acknowledge(
+    view: GraphView, state: AppState, item: ReviewQueueItem, decision: HitlDecision, a: str, b: str
+) -> AdjudicationView:
+    """Wrap the rebuilt view with the receipt for the instruction just given (:mod:`chanakya.hitl.receipt`).
+
+    THE ESCALATE HALF ON THE WRITE PATH. Returning ``200`` + the view was the whole response, so an
+    instruction the resolver declined to apply was indistinguishable from one it applied — measured: three
+    of fourteen accepts on the booted corpus left the view byte-identical and said nothing. The refusals
+    themselves are correct (the cross-type rail is doing its job); a silent refusal is not. The receipt is
+    derived by READING the rebuilt view, so it reports what happened rather than what was attempted.
+    """
+    records = list(state.decision.replay())
+    record = records[-1] if records else None  # the one `dispose` just appended
+    fields = (
+        receipt_fields(view, record, a, b, decision.decision)
+        if record is not None
+        else {"decision": decision.decision, "actor": decision.actor, "pair": [a, b], "recorded": False}
+    )
+    return AdjudicationView(**view.model_dump(), adjudication=AdjudicationReceipt(**fields))
 
 
 @router.post("/hitl/status", response_model=GraphView)
@@ -86,8 +108,8 @@ def hitl_alert(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
     return view
 
 
-@router.post("/hitl/merge", response_model=GraphView)
-def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> GraphView:
+@router.post("/hitl/merge", response_model=AdjudicationView)
+def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> AdjudicationView:
     view = state.view()
     edge = next(
         (e for e in view.edges if e.id == decision.subject and e.type == "same-as"),
@@ -110,4 +132,4 @@ def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
         merge_score=edge.merge_confidence or 0.0,
         band="needs-you",
     )
-    return _apply(state, item, decision)
+    return _acknowledge(_apply(state, item, decision), state, item, decision, edge.source, edge.target)

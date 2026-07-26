@@ -15,6 +15,8 @@ from .api_models import (
     ConfigWrite,
     ConfigWriteResult,
     HealthResponse,
+    AdjudicationReceipt,
+    AdjudicationView,
     HitlDecision,
     IngestRequest,
     IngestResult,
@@ -130,6 +132,6 @@ __all__ = [
     "EntitiesConfig", "EntityEntry",
     # api
     "AskRequest", "PriorTurn", "AskAnswer", "AnswerHop", "RefusalPayload", "ProvenanceDrawer", "ReviewQueueItem",
-    "ReviewContext", "ReviewType", "HitlDecision", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
+    "ReviewContext", "ReviewType", "HitlDecision", "AdjudicationReceipt", "AdjudicationView", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
     "ConfigWriteResult", "HealthResponse",
 ]

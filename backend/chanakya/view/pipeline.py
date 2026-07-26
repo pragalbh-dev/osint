@@ -30,6 +30,7 @@ from chanakya.credibility import (
     score_claims,
 )
 from chanakya.edge_direction import canonicalize_claims
+from chanakya.hitl.receipt import stamp_unapplied
 from chanakya.materiality import precompute
 from chanakya.ontology import EdgeLaneIndex, LayerRouting, NodeTypeIndex
 from chanakya.resolve import (
@@ -247,9 +248,35 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
     somehow knew about. Several raw pairs can collapse onto one canonical pair, so each canonical pair is
     emitted ONCE, taking the strongest case (highest identity confidence) and the first non-empty reason in
     sorted raw order — deterministic (gate G2).
+
+    **One pair may not carry both verdicts.** ``finalise`` already drops a candidate the resolver walled,
+    but it does that over RAW ids while this function draws CANONICAL pairs — and two *different* raw pairs
+    routinely collapse onto one canonical pair, one of them a candidate and the other a wall. Measured on
+    the booted corpus: after an analyst rejected a merge, 7 of 14 pairs were drawn with a ``same-as``
+    proposal and a ``distinct-from`` wall over the identical endpoints, so the graph asserted "same" and
+    "not same" about one pair at once and the SPA (which derives its review queue purely from live
+    ``same-as`` edges) kept asking a question the analyst had already answered. The wall wins — it is hard
+    and transitive, so the fusion could never be applied anyway and offering it is offering a button that
+    cannot work. The suppressed proposal is not lost: its confidence and its ground ride the wall edge as
+    ``suppressed_candidate``, so the analyst can still see that the resolver had a case and what overruled it.
     """
     out: list[EdgeView] = []
+    walled: dict[tuple[str, str], list[str]] = {
+        (a, b): raw_keys for a, b, raw_keys in _canonical_decisions(partition.distinct_from, node_ids, partition)
+    }
+    suppressed: dict[tuple[str, str], dict[str, Any]] = {}
     for a, b, raw_keys in _canonical_decisions(partition.candidates, node_ids, partition):
+        if (a, b) in walled:
+            best_w = min(raw_keys, key=lambda k: (-partition.merge_confidence.get(k, 0.0), k))
+            why = next((r for r in (partition.candidate_reasons.get(k) for k in raw_keys) if r), None)
+            suppressed[(a, b)] = {
+                "merge_confidence": partition.merge_confidence.get(best_w),
+                "reason": why,
+                "note": "the resolver scored these two as a possible identity and a hard do-not-merge wall "
+                        "overrules it, so no merge is offered — the wall's own ground is on this edge. "
+                        "Overturning it means overturning the wall, not accepting the merge.",
+            }
+            continue
         # The strongest case among the raw pairs that collapsed onto this canonical pair — the analyst is
         # owed the best evidence for the proposal, not an arbitrary one. Deterministic: highest identity
         # confidence, ties broken lexicographically (gate G2).
@@ -292,7 +319,7 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
                 attrs=attrs,
             )
         )
-    for a, b, raw_keys in _canonical_decisions(partition.distinct_from, node_ids, partition):
+    for (a, b), raw_keys in sorted(walled.items()):
         # G18/B4: EVERY rail that can draw a wall states its own ground, and a DERIVED finding never claims
         # to be a curated one. The fallback below is reached only if a rail draws a wall and records no
         # ground — a defect rather than a state — so it says that plainly instead of asserting "explicit",
@@ -303,13 +330,16 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
             "it — this is a defect in that rail, not a statement about the pair. Treat the wall as holding "
             "and report the missing ground.",
         )
+        wall_attrs: dict[str, Any] = {"reason": reason}
+        if (a, b) in suppressed:
+            wall_attrs["suppressed_candidate"] = suppressed[(a, b)]
         out.append(
             EdgeView(
                 id=f"distinct-from:{pair_key(a, b)}",
                 type="distinct-from",
                 source=a,
                 target=b,
-                attrs={"reason": reason},
+                attrs=wall_attrs,
             )
         )
     return out
@@ -1155,6 +1185,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # 8b. render the resolver's decisions as edges — candidate same-as (HITL band) + distinct-from
     #     traps. Added AFTER scoring so they're never assigned a truth status (G5); G4-exempt.
     view.edges.extend(_resolution_edges({n.id for n in view.nodes}, partition))
+
+    # 8c. …and where an analyst already ruled on one of those pairs and the resolver did NOT apply it, say
+    #     so ON THE EDGE. The receipt in the POST response is transient — a page reload loses it, and the
+    #     analyst is then asked the identical question with no record that they answered it. Replayed from
+    #     the append-only log on every rebuild, so the acknowledgement is as durable as the decision.
+    stamp_unapplied(view, decisions)
 
     # 9. deterministic ordering + diagnostic meta (no clock, no RNG — G2)
     view = sorted_view(view)
