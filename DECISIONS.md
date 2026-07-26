@@ -1707,3 +1707,90 @@ Filed into `artifacts/md/16-design-note-disclosures.md`: the HITL inversion (a c
 accept, and why that is the safe direction); the `stale` partial close and its audit-trail-only marker; and
 the honest statement that several credibility/identity beats pass on fixtures while being inert on the
 frozen corpus.
+
+---
+
+## RK-DATA — identity coverage authored, and the `site_type` map landed (2026-07-26, `rkdata/author`)
+
+Three anti-fabrication mechanisms were built, tested on fixtures, and **provably inert on the real corpus
+for want of input**. Verified independently before writing anything, across both scenarios (30 claim
+bundles / 492 claims / 72 doc files): **zero** numbered or designated formations — the `unit` type held only
+services and commands — **zero** equipment serials or registrations, and **zero** coreference annotations.
+So the discriminator ladder, the coreference binding tier and gates G16/G18/G19 had nothing real to grip.
+Six additive documents (`n01`–`n06`, `hq9p_primary`) close that. Full spec, per-document corruption
+operators and the must-produce / must-refuse statement for each: `tmp/conv/RK-DATA-authoring-spec.md`.
+
+### 1. `layer_routing.site_type_aliases` — three entries, and the omissions matter as much
+
+**Choice.** Populated the map ruling L1 step 4 assigns to DATA: `centre`→`garrison`,
+`deployment site`→`dispersal_site`, `prepared revetment complex / airfield site`→`airfield`. Measured on a
+real rebuild: all four of `unit_hq9b`'s stated site classes now normalise, the flagship
+**Rawalpindi→Rahwali relocation is restored** (`edge:unit_hq9b:based-at:airfield`, one supersede drawn), and
+the **Karachi `garrison` and Sargodha `dispersal_site` basings de-conflict into concurrently-valid ones** —
+no relocation between them. This closes the "hero relocation beat remains held behind the unauthored
+`site_type_aliases` map" item filed in the FINAL TRIAGE §5 inert list above.
+
+**Principle.** *Keep config in config; the honest fix is a fixed value in a config file.* The mapping is a
+domain judgement about the kind-of-place axis, which is why the ruling assigned it to DATA rather than
+letting an implementer guess a threshold.
+
+**Alternative rejected.** Mapping all fifteen stated values. Nine of them carry **no kind-of-place content
+at all** — they state how we learned of the site (`observed-imagery-site`, `stated_destination`), what is
+parked there (`HQ-9/P site`, `air defense node`, `long-range SAM battery position`), an area class
+(`candidate coverage area`, `air defence belt`, `forward SAM deployment area`) or an operator class
+(`Pakistan Army/PAF joint-use facility`, whose only place-kind noun is the generic "facility"). Mapping
+those would infer a kind of place from something that is not one, which is the exact over-merge direction
+the fail-safe leans against, and two of them would have manufactured collateral relocations. They keep the
+honest third state — held, no fusion, named gap — and the config comment names each omission and why.
+
+**Two strict-xfail markers retired** in `backend/tests/acceptance/test_relocation_beat.py`, exactly as their
+own "TO CLOSE" text instructed. The third state was **not** weakened.
+
+**Residual, stated not hidden.** `site_rahwali` is described two ways in the corpus (`airfield` in d18,
+`Pakistan Army/PAF joint-use facility` in d19) and which lands on the node depends on claim ordering. If the
+re-record picks the operator-class string the flagship silently returns to held-with-a-gap — safe, but a
+silent demo regression. Fix it on the data side; do not close it by mapping an operator-class string.
+
+### 2. The ORBAT undercount trap — the thing the corpus most lacked
+
+**Choice.** Authored two genuinely different, individuated batteries **co-located at one garrison** (22 AD
+Regt under 3 AD Bde and 47 AD Regt under 11 AD Bde, both at Pano Aqil Cantonment), reported across separate
+documents that never state the distinguishing field in the same place. **No planted lie — every report is
+accurate.** They share design, site, operator branch and equipment class, i.e. every one of
+`colocation_predicates` **by construction**, which is exactly what a naive resolver reads as overwhelming
+identity evidence.
+
+**Why it is anti-fabrication machinery and not ORBAT hygiene.** Fusing them makes their two positions one
+unit's before-and-after; `based-at` is functional and unit-keyed, so the supersede path then **draws a
+relocation that never happened**, marks the pair machine-adjudicated so it leaves the analyst's queue, and
+**deletes the honest Known Gap** on the count. One identity error becomes a fabricated movement assessment
+with the human removed from the loop.
+
+**The correct output, stated so it can be graded:** two units not one (co-location cap holds at `probable`,
+reinforced by n05's same-document stated contrast); **no relocation anywhere in the cluster**; and a
+**named gap** on how many long-range fire units are at that cantonment, naming what is missing — an ORBAT
+source attaching a formation to a *position*, or an equipment identifier tying a vehicle to a *unit*.
+
+### 3. Two judgement calls a reviewer should re-derive rather than accept
+
+- **`n04` splits source class from source grade** — `named-social` (a contributor vehicle register; low
+  authority, R≈0.35, so nothing it *concludes* travels far) with STANAG **C** earned by its *process*:
+  every entry photo-backed, disagreeing plate readings published rather than resolved silently, and the
+  `8417`→`8477` misreading carrying its own correction log. Grade C is what lets a photographed, corrected
+  plate reading clear the `bind_min_grade` / `critical_veto_min_grade` floors — right, because directness is
+  the one thing that source class genuinely has.
+- **d23's circular-corroboration chain was NOT extended with a fourth echo.** A fourth reshare exercises no
+  mechanism the existing three don't, and the corpus already carries a six-post echo burst. What d23 lacked
+  was the *other* side: a genuinely independent second look that **disagrees** (`n06`), which converts it
+  from a single-mechanism test into a graded one — three citations collapse to one look, and a real second
+  look in contradiction makes the count a **named gap with two sourced assessments attached**, never an
+  average and never "trust the higher grade".
+
+### 4. Not touched
+
+`answer_key.json`, every existing document, every existing claim bundle (all 492 frozen claims intact),
+`SCENARIO_MANIFEST.json` (generation output; the re-record regenerates it), and `config/places.yaml`. The
+new documents carry **no claims until the re-record extracts them**, which is inert and expected. The
+`superseded_derived_bundle_suffixes` comment says "RK-DATA removes the bundles from the corpus" — **not
+done here**, because deleting claim bundles is outside this pass's mandate; the flag-gated skip already
+handles it.

@@ -1,0 +1,114 @@
+SOUTH ASIAN GROUND FORCES REGISTER
+Series 7 — Pakistan · Volume 3: Army Air Defence and Corps Troops
+
+Compiled reference extract. Subscriber distribution. Not for onward release.
+Compilation closing date: 31 March 2025. Entries marked (u) are unconfirmed at the closing date and are
+carried forward from the previous compilation without re-verification.
+
+EDITORIAL NOTE ON THIS EXTRACT
+
+This volume covers the Pakistan Army's air defence arm only. Coverage of the Pakistan Air Force's own
+surface-to-air units is in Series 7 Volume 5 and is NOT reproduced here; readers should note that the PAF
+operates its own numbered air defence squadron series which overlaps numerically with the Army's regiment
+numbering, and that a bare number quoted in press reporting is therefore not sufficient on its own to
+identify a formation. Where this register gives a number it is always qualified by arm and by service.
+
+Garrison entries state the formation's permanent home station — the garrison — and not its deployed or
+exercise location, which changes and is not tracked at this level except where a standing detachment is
+recorded in the notes. Where a formation is recorded at a garrison the entry reflects the compiler's best
+reading of army list extracts, cantonment board notices, gazette entries and open ceremonial reporting;
+several are inferential and are marked accordingly.
+
+Two general cautions apply to this whole volume. First, currency: an entry is as at the compilation closing
+date above, and the arm has been in a period of re-equipment since the early 2020s, so re-designations and
+re-roles will have occurred that this compilation does not yet reflect. Second, equipment: the register
+records the class of system a formation is understood to hold, not its scale of issue. Battery and launcher
+counts are not published by the Pakistan Army for air defence formations and this register does not
+estimate them.
+
+---
+
+SECTION 3.4 — AIR DEFENCE FORMATIONS, SOUTHERN AND CENTRAL SECTORS
+
+3 Air Defence Brigade
+  Headquarters: Karachi (Malir)
+  Subordinate formations recorded:
+    - 22 Air Defence Regiment
+        Garrison: Pano Aqil Cantonment, Sukkur District, Sindh
+        Arm/service: Pakistan Army, Air Defence
+        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family; the register records the class,
+          not the sub-variant, as open reporting does not consistently separate HQ-9/P from HQ-9BE)
+        Notes: Re-equipped from a legacy medium-range fit. One battery (B Battery) has been detached
+          forward to the Ghotki dispersal site since February 2025 and, at the closing date, remains so
+          detached; regimental headquarters and the remaining batteries continue to be held at the Pano
+          Aqil garrison through the same period. Both locations are therefore current simultaneously and
+          the detachment should not be read as a move of the regiment.
+    - 9 Air Defence Regiment (u)
+        Garrison: Hyderabad Cantonment, Sindh
+        Equipment: short-range/point defence, mixed legacy
+        Notes: Carried forward unverified. One earlier compilation places this regiment at Badin; the
+          discrepancy is unresolved and neither placement should be relied on.
+
+11 Air Defence Brigade
+  Headquarters: Sukkur
+  Subordinate formations recorded:
+    - 47 Air Defence Regiment
+        Garrison: Pano Aqil Cantonment, Sukkur District, Sindh
+        Arm/service: Pakistan Army, Air Defence
+        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)
+        Notes: Raised or re-roled in the air defence long-range role in the early 2020s; the raising date
+          is given variously as 2021 and 2022 across the sources consulted and is not settled here. The
+          regiment is recorded at the same cantonment as 22 Air Defence Regiment. The two are separate
+          regiments under separate brigades and are not to be treated as one formation reported twice;
+          the compiler notes that field reporting from the Pano Aqil area routinely describes "an air
+          defence regiment" at the cantonment without saying which, and that such reporting cannot be
+          allocated between them on the information it carries.
+    - 33 Air Defence Regiment (u)
+        Garrison: Panu Aqil (sic — see spelling note below)
+        Equipment: not recorded
+        Notes: This entry is retained from the 2019 compilation and the compiler has been unable to
+          re-verify it. It may be a duplicate of one of the two entries above arising from the spelling
+          variance, or it may be a genuine third formation. It is carried as unconfirmed for that reason
+          and should not be counted.
+
+SPELLING NOTE. The cantonment at issue appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and
+occasionally as "Pano Akil" in older gazetteer material. All refer to the same cantonment in Sukkur
+District. This register standardises on Pano Aqil in headings but reproduces the spelling of the source in
+quoted or carried-forward entries, which is why the 33 Air Defence Regiment entry above differs.
+
+---
+
+SECTION 3.9 — CONSOLIDATED INDEX, AIR DEFENCE REGIMENTS (by number)
+
+  9  Air Defence Regiment ................. Hyderabad Cantonment (u)
+  22 Air Defence Regiment ................. Pano Aqil Cantonment
+  22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as
+                                            the preceding line; retained because the two renderings appear
+                                            in different source documents and readers searching on one form
+                                            will not find the other]
+  33 Air Defence Regiment ................. Panu Aqil (u)
+  47 Air Defence Regiment ................. Pano Aqil Cantonment
+  56 Air Defence Regiment ................. Multan Cantonment (u)
+
+Readers should not infer from the adjacency of the 22 and 47 entries that the two are related beyond
+sharing a cantonment. They report to different brigade headquarters, as Section 3.4 records.
+
+---
+
+SECTION 3.11 — WHAT THIS REGISTER DOES NOT CARRY
+
+The compiler wishes to be explicit about three things this volume cannot tell the reader.
+
+It does not carry battery or launcher counts for any air defence formation, for the reason given above.
+Where a secondary source quotes a battalion or battery total for the Pakistani long-range surface-to-air
+holding, that figure does not originate here.
+
+It does not carry vehicle registrations, equipment serials or fleet numbering. Some of that material
+circulates in enthusiast and spotter compilations; this register does not reproduce it and takes no view
+on its accuracy.
+
+It does not carry current deployed locations, only garrisons and standing detachments recorded in the
+notes. A formation observed at a firing position or a dispersal area is not thereby re-garrisoned, and a
+reader treating an observed position as a change of garrison will misread this register.
+
+Compilation team, 31/03/25. Corrections to the series editor.

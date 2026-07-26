@@ -491,7 +491,33 @@ layer_routing:
   # synonyms need an entry. DATA owns filling this in for the values the corpus actually states (ruling L1
   # step 4); S2 declares the slot and the fail-safe. Until it lands, unmapped values take the third state
   # below — which is the honest behaviour, not a bug.
-  site_type_aliases: {}
+  #
+  # RK-DATA (2026-07-26), ruling L1 step 4. Filled from the values the FROZEN corpus actually states — each
+  # row is a domain read of the KIND-OF-PLACE content of one stated string, never a guess about the site it
+  # happened to describe. A string carrying no kind-of-place content is deliberately LEFT OUT and keeps the
+  # honest third state; the omissions are as load-bearing as the entries, so they are named here:
+  #   'observed-imagery-site', 'stated_destination'  -> HOW WE LEARNED of the site (provenance axis)
+  #   'HQ-9/P site', 'air defense node',
+  #   'long-range SAM battery position'              -> WHAT IS PARKED there (equipment/function axis)
+  #   'candidate coverage area', 'air defence belt',
+  #   'forward SAM deployment area'                  -> an AREA class (that is a different node type)
+  #   'Pakistan Army/PAF joint-use facility'         -> an OPERATOR class; its only place-kind noun
+  #                                                     ("facility") is generic — a depot, a plant and an
+  #                                                     airfield are all facilities — so it does not
+  #                                                     resolve, and it must not be forced.
+  # Mapping any of those would infer a kind of place from something that is not one, which is the exact
+  # over-merge direction C1's fail-safe leans against.
+  site_type_aliases:
+    # d02 (ISPR): "Army Air Defence Centre, Karachi". A corps/arm "Centre" in Pakistan Army usage is the
+    # permanent home establishment of the arm — a home station, not a C2 node. `command_centre` would read
+    # the word "centre" in the wrong sense.
+    "centre": garrison
+    # d23 (trade press): a site a battery is described as deployed TO, as against its home station.
+    "deployment site": dispersal_site
+    # d17 (imagery read-out): two axes in one string. "prepared revetment complex" is the emplacement WITHIN
+    # the place; "airfield site" is the place — PAF Base Nur Khan. The place-kind noun governs, which is
+    # also what makes Rawalpindi->Rahwali one instance (both airfields) rather than two unrelated buckets.
+    "prepared revetment complex / airfield site": airfield
   # THE THIRD STATE (C7). A value that is ABSENT or does not map into the vocabulary must not be guessed at.
   # It gets NO de-confliction — it collapses to `absent_bucket`, one shared bucket, because the evasion
   # direction here is over-merge and a bucket of its own would let an unstated site_type buy a second
