@@ -65,13 +65,35 @@ class ConfigStore:
 
     # ── hot writes (bump version) ──────────────────────────────────────────────────────────────
 
-    def set_section(self, name: str, value: dict[str, Any] | Any) -> int:
-        """Replace a whole section (hot). Returns the new version. Triggers a rebuild upstream."""
+    def candidate(self, name: str, value: dict[str, Any] | Any) -> ConfigBundle:
+        """The bundle a :meth:`set_section` WOULD commit — parsed and versioned, but **not** stored.
+
+        The pre-commit half of the hot-config contract. Pydantic parsing is only the *first* layer of
+        validation: the readers that compile a section into its runtime form (``ResolveConfig`` and the
+        load-time validators behind it) raise on a section that is structurally valid YAML and semantically
+        impossible. Those raise inside ``rebuild()``, i.e. AFTER the section is already live — so an invalid
+        POST used to commit, 500, and leave the store holding a section that made every subsequent config
+        write and every rebuild 500 too. Hot config bricked until someone re-POSTed a good section, which is
+        the exact opposite of "nothing a user does in-app requires a restart".
+
+        Handing the caller a candidate bundle lets it run the full reduction against it and commit only if
+        that succeeds. Deliberately not a rollback: a rollback leaves the version bumped twice and a window
+        in which the live store holds a section nobody validated.
+        """
         if name not in CONFIG_SECTIONS:
             raise KeyError(f"unknown config section {name!r}; expected one of {list(CONFIG_SECTIONS)}")
         model = CONFIG_SECTIONS[name]
         parsed = value if isinstance(value, model) else model.model_validate(value)
-        self._bundle = self._bundle.model_copy(update={name: parsed, "version": self._bundle.version + 1})
+        return self._bundle.model_copy(update={name: parsed, "version": self._bundle.version + 1})
+
+    def set_section(self, name: str, value: dict[str, Any] | Any) -> int:
+        """Replace a whole section (hot). Returns the new version. Triggers a rebuild upstream."""
+        self._bundle = self.candidate(name, value)
+        return self._bundle.version
+
+    def commit(self, bundle: ConfigBundle) -> int:
+        """Install an already-validated candidate bundle (see :meth:`candidate`). Returns its version."""
+        self._bundle = bundle
         return self._bundle.version
 
     def update_credibility(self, patch: dict[str, Any]) -> int:
