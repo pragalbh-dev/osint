@@ -131,10 +131,22 @@ def test_the_shipped_bakeoff_config_loads_and_declares_the_disciplines() -> None
     assert providers == ["anthropic", "google", "openai"]
     assert len({c.id for c in cfg.candidates}) == 3
     assert not any(c.multimodal == "none" for c in cfg.candidates)   # text-only is a disqualifier
-    # the two non-negotiables are weighted at least as heavily as anything else that is scored
-    top = max(cfg.weights.values())
-    assert cfg.weights["citation_faithfulness"] >= top - 0.51
-    assert cfg.weights["extract_only_stated"] >= top - 0.51
+    # A NON-NEGOTIABLE IS A VETO, NEVER ALSO A PRICE. Every metric named in `non_negotiable_floors` must
+    # carry ZERO composite weight, because a weight is something a good-enough model can outbid: a
+    # candidate far enough ahead on recall could buy past a worse fabrication record and then re-freeze the
+    # graded oracle. The config used to argue exactly this under `trap_avoidance` and then weight the other
+    # two non-negotiables at 4.5 each — which also double-counted, since citation faithfulness strictly
+    # contains extract-only-stated. Asserted here so the doctrine cannot quietly reverse.
+    assert cfg.non_negotiable_metrics, "the bake-off must declare at least one non-negotiable"
+    for name in cfg.non_negotiable_metrics:
+        assert cfg.weight_for(name) == 0.0, (
+            f"{name} is declared non-negotiable AND weighted {cfg.weight_for(name)} in the composite. A "
+            "non-negotiable inside a composite is only a heavy weight, and any weight is a price."
+        )
+    # ...and every non-negotiable is still REPORTED and still vetoes, so dropping the weight is not the
+    # same as dropping the criterion.
+    assert set(cfg.non_negotiable_metrics) >= {"citation_faithfulness", "extract_only_stated",
+                                               "trap_avoidance"}
 
 
 def test_every_shipped_candidate_carries_a_concretely_pinned_model_id() -> None:

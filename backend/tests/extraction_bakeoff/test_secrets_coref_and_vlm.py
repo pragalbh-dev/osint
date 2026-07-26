@@ -18,7 +18,7 @@ from chanakya.config.store import ConfigStore
 from eval.extraction import coref_channel, secrets, vlm_probe
 from eval.extraction.policy import Candidate
 
-from .fixtures import RoutedScriptedClient, bakeoff_config
+from .fixtures import RoutedScriptedClient, bakeoff_config, registry
 
 # ── secrets: names may travel, values may not ─────────────────────────────────────────────────────
 
@@ -194,11 +194,34 @@ def test_a_gold_slice_with_no_cluster_labels_also_refuses_up_front() -> None:
     unlabeled = [SimpleNamespace(coref_cluster=None)]
     labeled = [SimpleNamespace(coref_cluster="c1")]
     required = bakeoff_config(required_metrics=["coref_binding"])
+    known = registry(licensed=["c1"])
 
     with pytest.raises(coref_channel.CorefChannelDormant, match="no coref_cluster labels"):
-        coref_channel.require_gold_labels(unlabeled, required)
-    coref_channel.require_gold_labels(labeled, required)          # labeled slice: no refusal
-    coref_channel.require_gold_labels(unlabeled, bakeoff_config())  # not required: not this check's call
+        coref_channel.require_gold_labels(unlabeled, required, registry=known)
+    coref_channel.require_gold_labels(labeled, required, registry=known)   # labeled slice: no refusal
+
+
+def test_cluster_labels_without_a_licensing_registry_refuse_up_front() -> None:
+    """A label alone does not say whether binding it is right or wrong, and guessing costs the project.
+
+    ``coref_cluster`` means "one referent" on most rows and "hold these APART" on the rows the gold marks
+    ANTI_COREF. Without the registry the scorer cannot tell them apart, and the direction of the mistake is
+    not symmetric: guessing "identity" credits an over-merge as a correct binding, on the top-weighted
+    criterion. So a slice that carries labels but no registry — or one whose claims use a tag the registry
+    does not declare — is refused before a single call is bought.
+    """
+    from types import SimpleNamespace
+
+    labeled = [SimpleNamespace(coref_cluster="c1")]
+    required = bakeoff_config(required_metrics=["coref_binding"])
+
+    with pytest.raises(coref_channel.CorefChannelDormant, match="no `coref_registry`"):
+        coref_channel.require_gold_labels(labeled, required, registry=None)
+    with pytest.raises(coref_channel.CorefChannelDormant, match="does not declare"):
+        coref_channel.require_gold_labels(labeled, required, registry=registry(licensed=["other"]))
+    # ...but only when the metric is REQUIRED. A bake-off that never asks for coref binding is not owed a
+    # registry, and refusing there would block a run over an input it will never read.
+    coref_channel.require_gold_labels(labeled, bakeoff_config())
 
 
 # ── the VLM imagery gate ──────────────────────────────────────────────────────────────────────────

@@ -402,13 +402,16 @@ def test_with_both_halves_of_the_substrate_present_the_required_metric_no_longer
     assert channel.tool_name == "cluster_coreferences"
     assert channel.cluster_field == "clusters[].member_ids"
 
+    # Both mentions sit in ONE cluster on purpose: a cluster of size 1 has nothing to bind, so the metric
+    # would (correctly) report an empty positive denominator rather than the "nobody bound anything" case
+    # this test is about. `write_claim_gold` emits the licensing registry for the tags it sees.
     labeled_gold = write_claim_gold(tmp_path / "gold_labeled.json", [
         {"gold_id": "g1", "source_id": "doc1", "form": "entity", "entity_type": "manufacturer",
          "name": "North Ridge Foundry", "doc_ref": {"file": "doc1.txt", "span": [0, 47]},
          "kind": "observation", "coref_cluster": "c1"},
         {"gold_id": "g2", "source_id": "doc1", "form": "entity", "entity_type": "component",
          "name": "Type-7 Coupler", "doc_ref": {"file": "doc1.txt", "span": [29, 47]},
-         "kind": "observation", "coref_cluster": "c2"},
+         "kind": "observation", "coref_cluster": "c1"},
     ])
 
     config = bakeoff_config(required_metrics=["coref_binding"])

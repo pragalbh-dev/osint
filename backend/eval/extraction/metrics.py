@@ -13,7 +13,9 @@ The metrics, and what each really measures:
 * **surface P/R/F1** — the matcher's alignment (see :mod:`matcher`; its leniency is the measurement). The
   precision denominator excludes the spans the gold declares NEUTRAL — see :mod:`negative_gold`; leaving
   them in charges a candidate for reading the document correctly, and does so in proportion to how much of
-  it the candidate read.
+  it the candidate read. What the exclusions cannot reach is the rest of the gap between 65 curated gold
+  rows and ~150–210 emissions a run, so the precision line carries a *measured* statement of its own
+  ceiling in ``detail`` and no composite weight.
 * **trap avoidance** — the fabrication line at the places the gold knows the answer: did the model stay
   silent where the document asserts nothing? Declared a *veto* rather than a weight, because a
   non-negotiable inside a composite is only a heavy weight, and any weight is a price.
@@ -22,8 +24,12 @@ The metrics, and what each really measures:
 * **citation faithfulness** — does the claim's cited span exist, sit in bounds, and lexically contain the
   claim's own surfaces? A *proxy* for entailment, and named as one: it asks "is the cited text about
   this?", not "does the cited text entail this". An optional judge seam is provided for the real thing.
+  It **strictly contains** ``extract_only_stated`` (widen the haystack from span to document and the two
+  are byte-identical on every recorded run), so its ``detail`` splits its failures into invention and
+  mis-location, and only one of the pair carries composite weight.
 * **extract-only-stated** — the fabrication line. Does the model assert surfaces that appear nowhere in
-  the document? This is the metric the project's non-negotiable rule cares about most.
+  the document? This is the metric the project's non-negotiable rule cares about most — and it is a
+  **veto**, not a price: see the weights block in ``config/bakeoff.yaml``.
 * **discriminator capture / fabrication-avoidance (A7)** — of the identity discriminators the source
   states, how many did the model carry? And of the ones the source does *not* state, how many did it
   correctly leave empty? The second is a fabrication measure: A7's contract is "absence means unknown,
@@ -35,13 +41,16 @@ The metrics, and what each really measures:
 * **kind tagging** — low weight, self-correcting (D-13.5), reported for completeness.
 * **coref binding** — top-weighted. RK-COREF (S3) has landed, so the substrate exists: extraction pass 2
   offers the model a real mention-cluster field and stamps the accepted cluster's referent atom onto
-  ``ClaimRecord.referent_id``. The pass is flag-gated, and :mod:`eval.extraction.coref_channel` checks
-  the flag *before* any budget is spent, so "unmeasured" here means the models bound nothing — never a
-  silent schema gap.
+  ``ClaimRecord.referent_id``. :mod:`eval.extraction.coref_channel` checks the channel *before* any budget
+  is spent, so "unmeasured" here means the models bound nothing — never a silent schema gap. It is scored
+  against the gold's **licensing registry**, not against the bare cluster label: a label the gold marks
+  ANTI_COREF means "hold these apart", and crediting a bind over one would pay a model for the over-merge
+  this project exists to prevent.
 """
 
 from __future__ import annotations
 
+from collections import Counter
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -51,7 +60,7 @@ from rapidfuzz import fuzz
 from chanakya.schemas import GraphView
 from eval.gold.adapter import EmittedSpan
 
-from .gold import SubOracle
+from .gold import CorefRegistry, SubOracle
 from .matcher import MatchResult, normalizations, similarity
 from .negative_gold import NegativeGold
 from .policy import MatchPolicy, Pricing
@@ -129,7 +138,11 @@ def _rate(numerator: int, denominator: int, name: str, reason: str, **kw: Any) -
 
 # ── surface P / R / F1 ────────────────────────────────────────────────────────────────────────────
 
-def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
+def surface_metrics(
+    match: MatchResult,
+    doc_texts: Mapping[str, str] | None = None,
+    policy: MatchPolicy | None = None,
+) -> dict[str, MetricValue]:
     """Precision / recall / F1 from the alignment. Degenerate slices report unavailable, not 0.0.
 
     The precision denominator is whatever :attr:`~eval.extraction.matcher.MatchResult.precision_denominator`
@@ -137,8 +150,34 @@ def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
     names every key that left the denominator. There is deliberately no second, "raw" precision metric:
     two precision lines on one scorecard is an invitation to quote whichever one flatters, and the honest
     one is the one that does not charge a model for reading the document correctly.
+
+    WHAT PRECISION HERE CANNOT MEAN, STATED WHERE THE NUMBER IS PRINTED
+    ──────────────────────────────────────────────────────────────────
+    The gold curates 65 claims; the recorded runs emit 150–210 per run. Every emission the gold does not
+    happen to label is charged as a false positive, so this denominator penalises **thoroughness** as
+    readily as invention — and it does not cancel between candidates, because it scales with how much of
+    each document a model read.
+
+    Hand ``doc_texts`` and ``policy`` and the detail carries the measurement that separates the two:
+    ``charged_false_positives_grounded_in_own_document`` is how many of the charged emissions the
+    harness's *own* grounding test (the one behind ``extract_only_stated``, a declared non-negotiable)
+    finds stated in the document they cite. On the recorded runs that is 94.8% and 97.9% — i.e. almost the
+    whole false-positive mass is gold coverage, not fabrication. That is why ``surface_precision`` and
+    ``surface_f1`` carry no composite weight (see ``config/bakeoff.yaml``): the fabrication they are
+    imagined to proxy is measured directly and non-negotiably elsewhere, and compositing an artefact
+    imports it into the verdict. The number stays reported — the fix for a metric whose ceiling is a
+    property of the answer file is to state the ceiling, not to excuse the emissions, which would simply
+    assume the conclusion and inflate precision toward 1.0.
     """
-    detail = {
+    charged = [e for e in match.unmatched_extracted if e.key not in set(match.precision_exclusions)]
+    grounded_fp: int | None = None
+    if doc_texts is not None and policy is not None:
+        grounded_fp = sum(
+            1 for e in charged
+            if (texts := [doc_texts[r.file] for r in e.refs if r.file in doc_texts])
+            and _lexically_grounded(e, "\n".join(texts), policy)
+        )
+    detail: dict[str, Any] = {
         "matched": len(match.pairs),
         "gold_total": match.gold_total,
         "extracted_total": match.extracted_total,
@@ -147,6 +186,13 @@ def surface_metrics(match: MatchResult) -> dict[str, MetricValue]:
         "missed_gold": [g.key for g in match.missed_gold],
         "unmatched_extracted": [e.key for e in match.unmatched_extracted],
         "rejections": dict(match.rejections),
+        "charged_false_positives": len(charged),
+        "charged_false_positives_grounded_in_own_document": grounded_fp,
+        "grounding_note": (
+            "not measured — surface_metrics was called without doc_texts/policy" if grounded_fp is None
+            else "these emissions are stated by the document they cite under the harness's own grounding "
+                 "test, so they are gold coverage rather than fabrication; see the docstring"
+        ),
     }
     if match.gold_total == 0:
         reason = "the gold slice is empty — nothing to score against"
@@ -294,12 +340,34 @@ def citation_faithfulness(
     excluded from the denominator and **reported** in ``detail['not_char_addressable']``. Counting them
     as passes would launder the imagery lane; counting them as failures would punish a model for the
     locator shape our own pipeline chose.
+
+    THIS METRIC STRICTLY CONTAINS :func:`extract_only_stated`, AND SAYS SO
+    ─────────────────────────────────────────────────────────────────────
+    A cited span is part of its document, so "the span carries this claim" implies "the document carries
+    this claim". Widen the haystack from the span to the whole document and this test *is*
+    ``extract_only_stated`` — measured on the recorded runs, not approximately but to the last digit, on
+    every one of ten runs. The two lines are therefore one test at two locality settings, and both were
+    weighted 4.5 and both declared non-negotiable, so a single string-containment measurement carried
+    26.9% of the composite and vetoed twice.
+
+    The fix is in the weights (``config/bakeoff.yaml``: a non-negotiable is a veto, never also a price)
+    rather than here, because the conjunction is the honest thing to *measure* — an unsourced or mis-cited
+    claim is a traceability failure whether or not it was invented. What is added here is the
+    decomposition, so a reader can see which half of a failure they are looking at:
+    ``ungrounded_anywhere`` is invention (also the whole of ``extract_only_stated``'s failure set), while
+    ``grounded_elsewhere_in_document`` is a real claim pointed at the wrong place — a provenance defect,
+    not a fabrication, and the only part of this line that is not a second reading of the other.
     """
     graded = 0
     faithful = 0
     unsourced: list[str] = []
     oob: list[str] = []
     not_addressable: list[str] = []
+    ungrounded_anywhere: list[str] = []
+    mis_cited: list[str] = []
+
+    def _supported(claim: SurfaceClaim, haystack: str) -> bool:
+        return judge(claim, haystack) if judge is not None else _lexically_grounded(claim, haystack, policy)
 
     for claim in claims:
         if not claim.refs:
@@ -317,9 +385,16 @@ def citation_faithfulness(
             continue
         graded += 1
         cited = "\n".join(slices)
-        ok = judge(claim, cited) if judge is not None else _lexically_grounded(claim, cited, policy)
-        if ok:
+        if _supported(claim, cited):
             faithful += 1
+            continue
+        # It failed the span. Which failure is it — invented, or merely mis-located? Reported, never
+        # scored differently: the value below is unchanged.
+        whole = "\n".join(doc_texts[ref.file] for ref in claim.refs if ref.file in doc_texts)
+        if whole and _supported(claim, whole):
+            mis_cited.append(claim.key)
+        else:
+            ungrounded_anywhere.append(claim.key)
 
     detail = {
         "graded": graded,
@@ -327,7 +402,13 @@ def citation_faithfulness(
         "unsourced": unsourced,
         "span_out_of_bounds": oob,
         "not_char_addressable": not_addressable,
+        "grounded_elsewhere_in_document": mis_cited,
+        "ungrounded_anywhere": ungrounded_anywhere,
         "method": "entailment-judge" if judge is not None else "lexical proxy (span contains the surfaces)",
+        "note": (
+            "`ungrounded_anywhere` is the same failure set extract_only_stated scores; "
+            "`grounded_elsewhere_in_document` is what this line measures that that one does not"
+        ),
     }
     return _rate(
         faithful, graded, "citation_faithfulness",
@@ -546,7 +627,61 @@ def discriminator_metrics(tally: DiscriminatorTally) -> dict[str, MetricValue]:
 
 # ── coref binding ─────────────────────────────────────────────────────────────────────────────────
 
-def coref_binding(match: MatchResult) -> MetricValue:
+#: The claim forms on which the extraction path can stamp a ``referent_id`` at all.
+#:
+#: Not a convenience filter — a structural one. ``chanakya.ingest.coref`` mints the referent atom onto
+#: pass-1 claims with ``payload.form == "entity"`` and nothing else, by explicit design: a relationship
+#: claim names *two* mentions and therefore has no single referent. A triple- or event-form gold row can
+#: consequently never carry a system referent, so admitting it as a B-cubed item scores our own claim
+#: representation rather than the model — and drags every gold cluster's recall to 1/k for a decision no
+#: candidate made. Measured on the shipped slice, 36 of the 51 cluster-tagged gold rows are triple- or
+#: event-form and are structurally unscoreable in exactly this way.
+BINDABLE_FORMS: frozenset[str] = frozenset({"entity"})
+
+#: What the metric reports when it has no *positive* substrate: no gold cluster the gold licenses as one
+#: referent carries two or more scoreable claims, so there is no binding for anybody to get right or
+#: wrong and B-cubed would read 1.000 for every candidate by construction. That number would be a
+#: fabrication dressed as a measurement, on the criterion this bake-off weights highest — so the metric
+#: refuses it and (being declared REQUIRED) blocks the verdict instead.
+NO_BINDING_SUBSTRATE = (
+    "NO POSITIVE SUBSTRATE: not one gold cluster the registry licenses as a single referent carries two "
+    "or more claims of a form the extraction path can stamp a referent on, so there is no binding to "
+    "score. B-cubed over singletons is 1.000 by construction, for every candidate, whatever it did — a "
+    "number, but not a measurement. The cause is structural and lives in the reference side, not in any "
+    "candidate: the gold clusters MENTIONS while the system indexes CLAIMS, and referent ids are minted "
+    "on entity-form claims only."
+)
+
+#: What the metric reports when it is handed cluster labels but no registry to interpret them with.
+#:
+#: Refusing is the only safe answer, and the direction is deliberate. ``coref_cluster`` means "one
+#: referent" on most rows and "hold these APART" on the rows the gold marks ANTI_COREF; without the
+#: registry the scorer cannot tell them apart, and the failure mode of guessing "identity" is that it pays
+#: a model for the over-merge this project exists to prevent. In the real run this never surfaces —
+#: :func:`eval.extraction.coref_channel.require_gold_labels` refuses before a single call is bought.
+NO_LICENSING_REGISTRY = (
+    "NO LICENSING REGISTRY: the alignment carries gold cluster labels but no coref registry was supplied, "
+    "so nothing says which labels license a binding and which are ANTI_COREF groups that must be held "
+    "apart. Scoring anyway would credit an over-merge as a correct binding. Not a candidate's score and "
+    "not a zero — the gold's `coref_registry` is missing from this measurement."
+)
+
+
+def _bcubed(items: Sequence[tuple[str, str]]) -> tuple[float, float, float]:
+    """Standard B-cubed precision / recall / F1 over ``(gold cluster, system cluster)`` items."""
+    precisions: list[float] = []
+    recalls: list[float] = []
+    for gold_c, sys_c in items:
+        same_sys = [g for g, s in items if s == sys_c]
+        same_gold = [s for g, s in items if g == gold_c]
+        precisions.append(sum(1 for g in same_sys if g == gold_c) / len(same_sys))
+        recalls.append(sum(1 for s in same_gold if s == sys_c) / len(same_gold))
+    p = sum(precisions) / len(precisions)
+    r = sum(recalls) / len(recalls)
+    return p, r, (2 * p * r / (p + r) if (p + r) else 0.0)
+
+
+def coref_binding(match: MatchResult, registry: CorefRegistry | None = None) -> MetricValue:
     """B-cubed F1 of the system's document-local coref clusters against the gold's.
 
     Over the aligned (gold, extracted) pairs, each item's B-cubed precision is |same system cluster ∧
@@ -554,15 +689,35 @@ def coref_binding(match: MatchResult) -> MetricValue:
     is the F1 of their means.
 
     The substrate is ``ClaimRecord.referent_id``, minted by RK-COREF (S3)'s extraction pass 2 — a second
-    forced-tool call whose schema carries the model's own mention clustering. That pass ships behind a
-    flag; :mod:`eval.extraction.coref_channel` checks it is live *before* any API budget is spent, so a
+    forced-tool call whose schema carries the model's own mention clustering.
+    :mod:`eval.extraction.coref_channel` checks the channel is live *before* any API budget is spent, so a
     dormant channel is caught as a precondition rather than surfacing here as a mystery blank.
 
     It deliberately does **not** fall back to "every claim is its own cluster", which would score a real
     number (and a flattering one for a model that never co-refers) off a decision no model made.
+
+    THREE THINGS THIS GETS RIGHT THAT AN OBVIOUS IMPLEMENTATION DOES NOT
+    ───────────────────────────────────────────────────────────────────
+    1. **An anti-coreference cluster is never credited.** ``registry`` carries the gold's own licensing
+       decision per cluster (:class:`~eval.extraction.gold.CorefRegistry`), and a cluster it does not
+       license is expanded into one gold singleton per claim before anything is scored. So holding those
+       mentions apart is *correct* and binding them costs B-cubed precision — which is the only reading
+       consistent with the gold's declared ``anti_coref`` semantics ("scoring_role: penalise_binding").
+       Without it, the shipped slice pays a model **+0.273 / +0.280** for over-merging three separately
+       identified import events and two contrastively enumerated sites: 29× the composite gap that
+       decided the last verdict, on the top-weighted criterion, for the archetypal harm.
+    2. **An absent referent is its own singleton, not a shared cluster.** ``referent_id`` is ``None`` for
+       every claim a model deliberately declined to bind, and ``None == None``, so comparing the raw field
+       merges every such claim into one enormous system cluster and reports a careful model as having
+       massively over-merged. Standard B-cubed treats an unclustered mention as a singleton; measured on
+       the recorded runs the one-line correction moves 0.3511 → 0.7993 and 0.3658 → 0.7765, and B-cubed
+       precision becomes exactly 1.000 in all ten runs — neither model over-merged a single graded pair,
+       which the uncorrected metric showed none of.
+    3. **No positive substrate ⇒ UNMEASURED, never 1.000.** See :data:`NO_BINDING_SUBSTRATE`.
     """
-    graded = [p for p in match.pairs if p.gold.coref_cluster is not None]
-    if not graded:
+    registry = registry or CorefRegistry(licensed={}, declared=False)
+    labeled_pairs = [p for p in match.pairs if p.gold.coref_cluster is not None]
+    if not labeled_pairs:
         # Two very different causes, and they may not share one string. "The gold carries no labels" is a
         # fact about the slice that no candidate can fix; "nothing aligned" is a fact about THIS
         # candidate's extraction. Reporting the first when the second is true points an operator at the
@@ -582,23 +737,64 @@ def coref_binding(match: MatchResult) -> MetricValue:
             f"none of the {len(match.pairs)} aligned gold claim(s) carry coref_cluster labels, so "
             f"binding cannot be scored on this alignment",
         )
-    if not any(p.extracted.referent_id for p in graded):
-        return MetricValue.unavailable("coref_binding", NO_CLUSTERING)
 
-    items = [(p.gold.coref_cluster, p.extracted.referent_id) for p in graded]
-    precisions: list[float] = []
-    recalls: list[float] = []
-    for gold_c, sys_c in items:
-        same_sys = [g for g, s in items if s == sys_c]
-        same_gold = [s for g, s in items if g == gold_c]
-        precisions.append(sum(1 for g in same_sys if g == gold_c) / len(same_sys))
-        recalls.append(sum(1 for s in same_gold if s == sys_c) / len(same_gold))
-    p = sum(precisions) / len(precisions)
-    r = sum(recalls) / len(recalls)
-    f1 = 2 * p * r / (p + r) if (p + r) else 0.0
-    return MetricValue.measured(
-        "coref_binding", f1, detail={"bcubed_precision": p, "bcubed_recall": r, "graded": len(graded)}
+    if not registry.declared:
+        return MetricValue.unavailable("coref_binding", NO_LICENSING_REGISTRY)
+
+    graded = [p for p in labeled_pairs if p.gold.form in BINDABLE_FORMS]
+    unscoreable_form = len(labeled_pairs) - len(graded)
+    if not graded:
+        return MetricValue.unavailable(
+            "coref_binding",
+            f"all {unscoreable_form} cluster-labeled gold claim(s) on this alignment are of a form the "
+            f"extraction path never stamps a referent on (scoreable forms: {sorted(BINDABLE_FORMS)}), so "
+            "there is no system clustering that could be compared. Not a candidate's score and not a zero",
+            detail={"unscoreable_by_form": unscoreable_form},
+        )
+
+    # An anti-coreference cluster is a group the gold says must be held APART. Expanding it into one gold
+    # singleton per claim is what makes holding them apart correct and binding them a precision error.
+    items: list[tuple[str, str]] = []
+    anti_coref_claims = 0
+    for p in graded:
+        cluster = p.gold.coref_cluster
+        assert cluster is not None
+        if registry.is_anti_coref(cluster):
+            anti_coref_claims += 1
+            gold_label = f"__anti_coref__{cluster}::{p.gold.key}"
+        else:
+            gold_label = cluster
+        # Standard B-cubed: a claim the model left unbound is a singleton of its own, never a shared
+        # "None" cluster.
+        system_label = p.extracted.referent_id or f"__unbound__{p.extracted.key}"
+        items.append((gold_label, system_label))
+
+    bound = sum(1 for p in graded if p.extracted.referent_id)
+    gold_sizes = Counter(gold_label for gold_label, _ in items)
+    multi_mention = {label: n for label, n in gold_sizes.items() if n >= 2}
+    precision, recall, f1 = _bcubed(items)
+    over_bound = sum(
+        1
+        for i, (gold_a, sys_a) in enumerate(items)
+        for gold_b, sys_b in items[i + 1:]
+        if sys_a == sys_b and gold_a != gold_b
     )
+    detail = {
+        "bcubed_precision": precision,
+        "bcubed_recall": recall,
+        "graded": len(graded),
+        "bound": bound,
+        "unscoreable_by_form": unscoreable_form,
+        "anti_coref_claims_held_as_singletons": anti_coref_claims,
+        "gold_clusters_with_2plus_scoreable_claims": len(multi_mention),
+        "over_bound_pairs": over_bound,
+    }
+
+    if not multi_mention:
+        return MetricValue.unavailable("coref_binding", NO_BINDING_SUBSTRATE, detail=detail)
+    if not bound:
+        return MetricValue.unavailable("coref_binding", NO_CLUSTERING, detail=detail)
+    return MetricValue.measured("coref_binding", f1, detail=detail)
 
 
 # ── kind tagging ──────────────────────────────────────────────────────────────────────────────────
@@ -714,7 +910,10 @@ def cost_metric(usage: Mapping[str, int] | None, pricing: Pricing | None) -> Met
 
 
 __all__ = [
+    "BINDABLE_FORMS",
+    "NO_BINDING_SUBSTRATE",
     "NO_CLUSTERING",
+    "NO_LICENSING_REGISTRY",
     "DiscriminatorTally",
     "EntailmentJudge",
     "MetricValue",

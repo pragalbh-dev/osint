@@ -43,9 +43,9 @@ from __future__ import annotations
 from .compare import NO_DIFFERENCE_PHRASE, Verdict, compare_metric, decide
 from .coref_channel import CorefChannel, CorefChannelDormant, without_channel
 from .gates import GateReport, GateResult, ImageryObservations, dry_gates, evaluate_gates
-from .gold import load_claim_gold, load_sub_oracle
+from .gold import CorefRegistry, load_claim_gold, load_coref_registry, load_sub_oracle
 from .matcher import MatchResult, match_claims
-from .metrics import NO_CLUSTERING, MetricValue
+from .metrics import NO_BINDING_SUBSTRATE, NO_CLUSTERING, NO_LICENSING_REGISTRY, MetricValue
 from .negative_gold import NegativeGold, emitted_spans, load_negative_gold
 from .policy import BakeoffConfig, Candidate, MatchPolicy, load_bakeoff_config
 from .recording import RecordingExtractionClient
@@ -57,7 +57,10 @@ from .surface import SurfaceClaim, from_claim_record
 from .vlm_probe import ImageryEvidence, gate_from_evidence, observations_for, probe_candidate
 
 __all__ = [
+    "NO_BINDING_SUBSTRATE",
     "NO_CLUSTERING",
+    "NO_LICENSING_REGISTRY",
+    "CorefRegistry",
     "NO_DIFFERENCE_PHRASE",
     "BakeoffConfig",
     "BakeoffInputs",
@@ -90,6 +93,7 @@ __all__ = [
     "load_bakeoff_config",
     "load_env_file",
     "load_claim_gold",
+    "load_coref_registry",
     "load_negative_gold",
     "load_sub_oracle",
     "match_claims",

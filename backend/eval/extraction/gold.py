@@ -61,6 +61,7 @@ An endpoint that resolves to neither raises — a silently dropped edge is a sil
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -71,6 +72,26 @@ SUB_ORACLE_SCHEMA = "rk-bakeoff-sub-oracle/1."
 
 _FORMS = {"triple", "entity", "event"}
 _POLARITIES = {"positive", "negative"}
+
+#: The licensing categories the gold's own vocabulary uses to say "these mentions ARE one referent".
+#: A cluster must name one of these to be treated as an identity cluster at all.
+IDENTITY_LICENCES: tuple[str, ...] = ("EXPLICIT_EQUIVALENCE", "UNAMBIGUOUS_ANAPHOR", "NAME_VARIANT")
+
+#: Markers that say "these mentions are NOT one referent" — an anti-coreference trap, an unresolved pair,
+#: or a contrastive enumeration. Any of these VETOES the identity reading above, whichever licence the
+#: cluster also names: ``NAME_VARIANT (n/a — distinct handles)`` names a licence and then withdraws it.
+#: Matched against the cluster's licensing category, its referent type **and** its own tag, because the
+#: gold states the same fact in all three places and a rule that read only one would go quiet if the
+#: wording of that one changed.
+#:
+#: Matched only AFTER the identity licences have been struck out of the text — see
+#: :func:`_licenses_identity`. ``UNAMBIGUOUS_ANAPHOR`` contains the substring ``AMBIGUOUS``, so a naive
+#: scan flips the gold's single most common *positive* licence into a veto and reports twenty clusters as
+#: traps. That is the failure this ordering exists to prevent, and it is why the licences are removed
+#: first rather than the markers being made cleverer.
+ANTI_IDENTITY_MARKERS: tuple[str, ...] = (
+    "ANTI_COREF", "ANTI-COREF", "ANTICOREF", "AMBIGUOUS", "CONTRASTIVE", "N/A", " VS ",
+)
 
 #: Strings a labeled slice may use to mean "the source does not state this". Treated exactly as ``null``.
 #: A gold file that writes the absence out as a word instead of a null must not be read as *stating* the
@@ -202,6 +223,91 @@ def load_claim_gold(path: str | Path) -> list[SurfaceClaim]:
     return claims
 
 
+# ── the coref registry: what a cluster LABEL means ────────────────────────────────────────────────
+
+@dataclass(frozen=True)
+class CorefRegistry:
+    """Which of the gold's cluster labels license a *binding*, and which forbid one.
+
+    ``SurfaceClaim.coref_cluster`` is one field carrying two opposite meanings. On most rows it says
+    "these mentions are one referent"; on the rows the gold's registry marks ``ANTI_COREF`` or
+    ``AMBIGUOUS`` it says the exact opposite — "these mentions must be held APART" — and the registry is
+    the only place that distinction is written down.
+
+    Reading the label without the registry is not a small imprecision. Measured on the shipped slice, the
+    **only** two clusters carrying more than one entity-form claim are both anti-coreference traps
+    (``d05-C4-events``, three separately-identified import events; ``d19-C4-othersites``, two contrastively
+    enumerated sites), so a B-cubed metric that treats a shared label as a shared referent pays a model
+    **+0.273 / +0.280** for committing the over-merge this project exists to prevent — on the criterion
+    weighted highest. Hence the allow-list: a cluster licenses a binding only when the gold says it does.
+    """
+
+    #: Cluster tag → does the gold license binding its mentions into one referent?
+    licensed: dict[str, bool]
+    #: True when the gold file actually declared a ``coref_registry`` block.
+    declared: bool = True
+
+    def is_anti_coref(self, cluster: str | None) -> bool:
+        """Would binding this cluster's mentions be an over-merge the gold forbids?
+
+        An unknown cluster reads as **not licensed**. That direction is chosen deliberately: the failure
+        this guards against is crediting a forbidden bind, and an unknown label is exactly the shape a
+        renamed or newly-added anti-coref cluster would arrive in.
+        """
+        if cluster is None:
+            return False
+        return not self.licensed.get(cluster, False)
+
+    @property
+    def anti_coref_clusters(self) -> frozenset[str]:
+        return frozenset(tag for tag, ok in self.licensed.items() if not ok)
+
+
+def _licenses_identity(cluster: dict[str, Any]) -> bool:
+    """Does this registry entry declare its mentions to be ONE referent?
+
+    Allow-list, then veto — never the other way round. A deny-list alone would silently license any
+    cluster whose category the gold spells in a way this scorer has not seen, and "silently licensed" is
+    the direction that credits an over-merge.
+    """
+    text = " ".join(str(cluster.get(k) or "") for k in ("licensing_category", "referent_type", "cluster"))
+    upper = f" {text.upper()} "
+    if not any(licence in upper for licence in IDENTITY_LICENCES):
+        return False
+    # Strike the licences out before scanning for a veto: `UNAMBIGUOUS_ANAPHOR` *contains* `AMBIGUOUS`,
+    # and a scan over the raw text therefore reads the gold's commonest identity licence as its own denial.
+    residue = upper
+    for licence in IDENTITY_LICENCES:
+        residue = residue.replace(licence, " ")
+    return not any(marker in residue for marker in ANTI_IDENTITY_MARKERS)
+
+
+def load_coref_registry(path: str | Path) -> CorefRegistry:
+    """Load the gold's ``coref_registry`` and classify every cluster as licensed / anti-coreference.
+
+    A gold file with no registry block loads as ``declared=False`` with an empty mapping, which — by the
+    unknown-reads-as-unlicensed rule above — would make *every* cluster anti-coref. That is why
+    :func:`eval.extraction.coref_channel.require_gold_labels` refuses such a file up front rather than
+    letting the metric quietly report nothing: an absent registry is a missing input, not a result.
+    """
+    p = Path(path)
+    raw = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(raw, dict):
+        raise ValueError(f"{p}: claim gold must be a JSON object, got {type(raw).__name__}")
+    block = raw.get("coref_registry")
+    if block is None:
+        return CorefRegistry(licensed={}, declared=False)
+    if not isinstance(block, list):
+        raise ValueError(f"{p}: 'coref_registry' must be an array, got {type(block).__name__}")
+    licensed: dict[str, bool] = {}
+    for i, cluster in enumerate(block):
+        if not isinstance(cluster, dict) or not cluster.get("cluster"):
+            raise ValueError(f"{p}: coref_registry[{i}] has no 'cluster' tag, so its licensing decision "
+                             "could never be attached to a labeled claim")
+        licensed[str(cluster["cluster"])] = _licenses_identity(cluster)
+    return CorefRegistry(licensed=licensed, declared=True)
+
+
 # ── the sub-oracle ────────────────────────────────────────────────────────────────────────────────
 
 class OracleNode:
@@ -300,11 +406,15 @@ def load_sub_oracle(path: str | Path) -> SubOracle:
 
 
 __all__ = [
+    "ANTI_IDENTITY_MARKERS",
     "CLAIM_GOLD_SCHEMA",
+    "IDENTITY_LICENCES",
     "SUB_ORACLE_SCHEMA",
+    "CorefRegistry",
     "OracleEdge",
     "OracleNode",
     "SubOracle",
     "load_claim_gold",
+    "load_coref_registry",
     "load_sub_oracle",
 ]

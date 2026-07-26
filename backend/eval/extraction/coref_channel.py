@@ -265,29 +265,55 @@ def require(config: Any, bakeoff_config: Any) -> CorefChannel:
     return channel
 
 
-def require_gold_labels(gold: Iterable[Any], bakeoff_config: Any) -> None:
+def require_gold_labels(gold: Iterable[Any], bakeoff_config: Any, registry: Any = None) -> None:
     """The other half of the same precondition: does the labeled slice carry clusters to score against?
 
     Binding needs both sides — a system clustering *and* a gold one. The channel check above covers the
     system side; this covers the reference side, and for the same reason: discovering it after N paid runs
     buys a measurement that was impossible before the first call. Nothing here reads a *value* — only
-    whether any labeled claim carries a cluster label at all, which is a property of the file's
-    completeness, not of its answers.
+    whether the labels and the registry that gives them meaning are both present, which is a property of
+    the file's completeness, not of its answers.
 
     ``gold`` is the loaded slice as :func:`eval.extraction.gold.load_claim_gold` returns it — a sequence of
-    :class:`~eval.extraction.surface.SurfaceClaim`.
+    :class:`~eval.extraction.surface.SurfaceClaim`. ``registry`` is
+    :func:`eval.extraction.gold.load_coref_registry` over the same file.
+
+    **Why the registry is a precondition and not an optional extra.** ``coref_cluster`` carries two
+    opposite meanings — "one referent" on most rows, "hold these APART" on the rows the registry marks
+    ANTI_COREF — and only the registry says which. A run scored without it credits an over-merge as a
+    correct binding, which is the archetypal harm this project exists to prevent, and it does so silently.
+    A cluster used by a labeled claim but absent from the registry is refused for the same reason: an
+    unregistered tag is exactly the shape a renamed anti-coref cluster arrives in.
     """
     required = tuple(getattr(bakeoff_config, "required_metrics", ()) or ())
     if METRIC not in required:
         return
-    if any(getattr(c, "coref_cluster", None) for c in gold):
-        return
-    raise CorefChannelDormant(
-        f"{METRIC} is declared in required_metrics but the labeled slice carries no coref_cluster labels, "
-        "so there is nothing to score a clustering against. Either the gold gains the labels or "
-        f"{METRIC} comes out of required_metrics as a deliberate, recorded decision to rank without the "
-        "top-weighted criterion. Do not re-weight it to zero — that turns an honest gap into a silent one."
-    )
+    used = {c for claim in gold if (c := getattr(claim, "coref_cluster", None))}
+    if not used:
+        raise CorefChannelDormant(
+            f"{METRIC} is declared in required_metrics but the labeled slice carries no coref_cluster "
+            "labels, so there is nothing to score a clustering against. Either the gold gains the labels "
+            f"or {METRIC} comes out of required_metrics as a deliberate, recorded decision to rank without "
+            "the top-weighted criterion. Do not re-weight it to zero — that turns an honest gap into a "
+            "silent one."
+        )
+    if registry is None or not getattr(registry, "declared", False):
+        raise CorefChannelDormant(
+            f"{METRIC} is declared in required_metrics and the slice carries {len(used)} cluster label(s), "
+            "but the gold declares no `coref_registry`, so nothing says which of those labels license a "
+            "binding and which are ANTI_COREF traps that must be held apart. Scoring without it credits an "
+            "over-merge as a correct binding — the archetypal harm — and does so silently. The gold must "
+            "carry the registry."
+        )
+    unregistered = sorted(used - set(getattr(registry, "licensed", {})))
+    if unregistered:
+        raise CorefChannelDormant(
+            f"{METRIC} is declared in required_metrics but the labeled claims use cluster tag(s) "
+            f"{unregistered} that the gold's `coref_registry` does not declare, so their licensing "
+            "decision is unknown. An unregistered tag is exactly the shape a renamed anti-coreference "
+            "cluster arrives in, and guessing it licenses a binding is how a scorer starts paying for an "
+            "over-merge."
+        )
 
 
 __all__ = ["METRIC", "NO_CATEGORIES", "NO_SCHEMA_FIELD", "PRODUCER_UNCONFIGURED",

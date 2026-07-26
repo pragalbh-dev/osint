@@ -79,22 +79,74 @@ weights:
   # referent id this metric scores. It is flag-gated — see `required_metrics` below.
   coref_binding: 5.0
   discriminator_capture: 4.5
-  citation_faithfulness: 4.5    # non-negotiable
-  extract_only_stated: 4.5      # non-negotiable
   # A7's other half: of the discriminators the source does NOT state, how many did the model correctly
   # leave empty? Inventing an operator or a location is the same failure as inventing a claim, so this
   # is weighted alongside the fabrication line rather than treated as a nicety.
   discriminator_fabrication_avoidance: 4.0
   structured_output_reliability: 3.0
-  surface_f1: 3.0
+  surface_recall: 3.0
   graph_recall: 3.0
   determinism: 2.0
   kind_tagging: 0.5             # low — it self-corrects (D-13.5)
-  # NOT LISTED, ON PURPOSE:
-  #   trap_avoidance     — a veto, not a weight. See gates.non_negotiable_floors above.
-  #   identity_over_read — N=2. The gold's own reporting rule is "report the raw count, never a
-  #                        two-decimal rate, and never rank on it", so it is emitted as a `count`, which
-  #                        the composite refuses structurally (only 0..1 rates are composited).
+  # NOT LISTED, ON PURPOSE — every one of these is REPORTED, none is composited:
+  #   citation_faithfulness — a veto, not a weight. See (1) below.
+  #   extract_only_stated   — a veto, not a weight. See (1) below.
+  #   trap_avoidance        — a veto, not a weight. See gates.non_negotiable_floors above.
+  #   surface_f1,
+  #   surface_precision     — the precision term is ~95–98% gold-coverage artefact. See (2) below.
+  #   graph_node_recall,
+  #   graph_edge_recall     — already inside `graph_recall`; weighting them too pays for them twice.
+  #   identity_over_read    — N=2. The gold's own reporting rule is "report the raw count, never a
+  #                           two-decimal rate, and never rank on it", so it is emitted as a `count`,
+  #                           which the composite refuses structurally (only 0..1 rates are composited).
+  #
+  # REVISED 2026-07-26 (RK-BAKEOFF scorer repair), on two findings measured against the recorded runs.
+  # Both changes are stated with their DIRECTION, because both were made after the numbers were known and
+  # a reader is owed the chance to check them for motivated reasoning.
+  #
+  # (1) A NON-NEGOTIABLE IS A VETO, NEVER ALSO A PRICE. This block used to weight `citation_faithfulness`
+  #     and `extract_only_stated` at 4.5 each while the comment under `trap_avoidance` argued — correctly
+  #     — that "a non-negotiable inside a composite is only a heavy weight, and any weight is a price a
+  #     good-enough model can pay". The doctrine was right and was applied to one of the three. It is now
+  #     applied to all three: every declared non-negotiable carries weight 0 and vetoes instead.
+  #
+  #     What forced the issue is that the two were also THE SAME MEASUREMENT. Widen citation
+  #     faithfulness's haystack from the cited span to the whole cited document and it is byte-identical
+  #     to extract-only-stated on all ten recorded runs — one string-containment test, two names, 9.0 of
+  #     33.5 composite weight (26.9%) and two vetoes fired by one number. The conjunction is still worth
+  #     MEASURING (a mis-cited true claim is a traceability failure, not a fabrication), so both lines
+  #     stay, both stay vetoes, and `citation_faithfulness.detail` now splits its failures into invention
+  #     vs mis-location so a reader can see which half is the duplicate.
+  #
+  #     Direction: on the recorded runs both metrics favour gemini. Removing them from the composite does
+  #     NOT weaken that — it strengthens it. A weight is a price a rival can outbid; a veto cannot be, and
+  #     `compare.decide` applies the veto to whoever leads the composite. This gives the model that is
+  #     better on the non-negotiables MORE power over the verdict, not less.
+  #
+  # (2) SURFACE F1 IS HALF AN ARTEFACT, SO IT IS REPLACED BY THE HALF THAT IS NOT. The gold curates 65
+  #     claims; the recorded runs emit 150–210 each, and 94.8% / 97.9% of the emissions charged as false
+  #     positives are stated by the document they cite under the harness's OWN grounding test — the test
+  #     behind `extract_only_stated`, which reads 0.955/0.985 on the same runs. So surface precision here
+  #     is largely a measure of what the answer file happens to cover; it scales with how much of a
+  #     document a model reads, so it does not cancel between candidates; and F1 harmonic-means a valid
+  #     recall against it. Recall's denominator is the gold's own curated set and has no such defect.
+  #
+  #     So `surface_recall` takes the 3.0 and `surface_f1` is reported at weight 0 beside
+  #     `surface_precision`. The obvious objection — "recall alone rewards emitting everything" — is
+  #     answered by the three lines that already punish emitting what the document does not say:
+  #     `extract_only_stated` and `trap_avoidance` (vetoes) and `discriminator_fabrication_avoidance`
+  #     (4.0). What recall-without-precision rewards on THIS gold is reading more of a real document,
+  #     which is what the project wants from an extractor.
+  #
+  #     Direction: `surface_recall` separates in favour of opus (+0.068 against a 0.046 margin) where
+  #     `surface_f1` separates nobody. Stated plainly rather than buried. It cannot be tuning-to-win:
+  #     `coref_binding` is REQUIRED and now honestly UNMEASURED, so the verdict is INSUFFICIENT_CRITERIA
+  #     and no weighting can name a winner at all.
+  #
+  # NOT CHANGED, and why: `graph_node_recall` separates cleanly (+0.069) and stays at 0 because
+  # `graph_recall` — composited at 3.0 — already contains it, and paying for the nodes twice is the same
+  # double-count as (1). `discriminator_capture` keeps 4.5 despite never clearing its own margin;
+  # re-weighting a metric for being noisy is tuning to this sample, not a correction.
 
 # ── Required criteria: no winner may be named while any of these is UNMEASURED ─────────────────────
 # A weight and a requirement are different things. A weighted metric that cannot be scored is excluded
@@ -107,15 +159,26 @@ weights:
 # The block lifts by itself: measure them and the verdict proceeds. Removing a name from this list is a
 # decision to rank without it, and should be made deliberately rather than to make a red run go green.
 #
-# `coref_binding` no longer blocks for want of a channel — S3 built one. It blocks for want of the
-# channel being SWITCHED ON: extraction pass 2 is dormant unless `resolution.earned_identity.enabled` is
-# true, and that ships FALSE. So the bake-off must be run with the flag on, which costs a second
-# extraction call per document and is a deliberate operator decision, not a default. The harness checks
-# this as a PRECONDITION (eval/extraction/coref_channel.py) before spending a single API call, and names
-# the flag when it refuses — so the failure mode is a loud refusal up front, never N paid runs followed
-# by a blank cell.
+# `coref_binding` no longer blocks for want of a channel — S3 built one, and pass 2 is now unconditional.
+# On the CURRENT labeled slice it blocks for a reason that lives in the reference side and cannot be
+# fixed by any candidate or by any weight (measured 2026-07-26, and left blocking on purpose):
+#
+#   The gold clusters MENTIONS; the system indexes CLAIMS; and `chanakya.ingest.coref` mints a referent
+#   only onto ENTITY-form claims, because a relationship claim names two mentions and has no single
+#   referent. 36 of the 51 cluster-tagged gold rows are triple- or event-form and are therefore
+#   structurally unscoreable. Of what remains, the ONLY two clusters carrying 2+ entity claims are both
+#   ANTI_COREF traps — groups a correct system must hold APART — so once the scorer stops crediting a
+#   forbidden bind (which used to pay +0.273/+0.280, on the top-weighted line, for the archetypal harm),
+#   every remaining positive cluster has exactly ONE scoreable claim and B-cubed is 1.000 by construction
+#   for everybody.
+#
+# So the metric reports UNMEASURED with an empty positive denominator, and that blocks the verdict. That
+# is the right outcome and it is NOT to be papered over by re-weighting the criterion to something that
+# produces a number: a fabricated 1.000 on the criterion weighted highest is exactly the failure this
+# harness exists to refuse. What lifts it is a gold that carries 2+ entity-form mentions inside a
+# licensed identity cluster — a data-side fix, filed for the gold hand.
 required_metrics:
-  - coref_binding           # measurable with resolution.earned_identity.enabled: true (ships false)
+  - coref_binding           # UNMEASURED on this slice — empty positive denominator; see above
   - discriminator_capture   # needs A7 discriminators graded against the labeled slice
 
 # ── The claim-match policy: what counts as the same claim ──────────────────────────────────────────

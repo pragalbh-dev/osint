@@ -7,9 +7,11 @@ number here matched a real document it would be a leak, not a convenience.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
+from eval.extraction.gold import CorefRegistry
 from eval.extraction.policy import BakeoffConfig, MatchPolicy
 from eval.extraction.surface import SpanRef, SurfaceClaim
 
@@ -105,9 +107,48 @@ def bakeoff_config(**overrides: Any) -> BakeoffConfig:
 
 # ── the labeled inputs, written to disk in the declared schemas ────────────────────────────────────
 
-def write_claim_gold(path: Path, claims: list[dict[str, Any]]) -> Path:
-    path.write_text(json.dumps(
-        {"schema_version": "rk-bakeoff-claim-gold/1.0", "claims": claims}, indent=2), encoding="utf-8")
+def coref_registry_rows(licensed: Sequence[str] = (),
+                        anti_coref: Sequence[str] = ()) -> list[dict[str, Any]]:
+    """Registry entries in the adapter's own shape: which cluster tags license a binding, which forbid one.
+
+    A cluster label alone is ambiguous — on most rows it means "one referent", on an ``ANTI_COREF`` row it
+    means "hold these APART" — so a gold fixture carrying labels without a registry is an incomplete slice,
+    not a convenient one, and the scorer refuses it. Written through the gold's own vocabulary
+    (``licensing_category``) rather than a boolean, so fixtures exercise the same classification the real
+    file goes through.
+    """
+    return [
+        *({"cluster": tag, "source_id": "doc1", "licensing_category": "EXPLICIT_EQUIVALENCE",
+           "referent_type": "fixture", "mentions": []} for tag in licensed),
+        *({"cluster": tag, "source_id": "doc1", "licensing_category": "ANTI_COREF (fixture)",
+           "referent_type": "fixture (contrastive)", "mentions": []} for tag in anti_coref),
+    ]
+
+
+def registry(licensed: Sequence[str] = (), anti_coref: Sequence[str] = ()) -> CorefRegistry:
+    """A loaded :class:`~eval.extraction.gold.CorefRegistry` for the metric-level tests."""
+    return CorefRegistry(
+        licensed={**{tag: True for tag in licensed}, **{tag: False for tag in anti_coref}},
+        declared=True,
+    )
+
+
+def write_claim_gold(path: Path, claims: list[dict[str, Any]], *,
+                     licensed_clusters: Sequence[str] | None = None,
+                     anti_coref_clusters: Sequence[str] = ()) -> Path:
+    """Write a claim-gold file. Cluster labels come with the registry that gives them meaning.
+
+    ``licensed_clusters`` defaults to every tag the claims actually use, so a fixture that labels clusters
+    gets a coherent slice by default; pass ``anti_coref_clusters`` to declare some of them traps.
+    """
+    used = [c["coref_cluster"] for c in claims if c.get("coref_cluster")]
+    anti = list(anti_coref_clusters)
+    licensed = list(licensed_clusters) if licensed_clusters is not None else [
+        tag for tag in dict.fromkeys(used) if tag not in anti]
+    payload: dict[str, Any] = {"schema_version": "rk-bakeoff-claim-gold/1.0", "claims": claims}
+    if licensed or anti:
+        payload["coref_registry"] = coref_registry_rows(licensed, anti)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
 
 
@@ -125,7 +166,9 @@ def negative_row(gold_id: str, span: tuple[int, int], *, file: str = "doc1.txt")
 
 
 def write_adapted_gold(path: Path, claims: list[dict[str, Any]],
-                       negative: dict[str, list[dict[str, Any]]] | None = None) -> Path:
+                       negative: dict[str, list[dict[str, Any]]] | None = None, *,
+                       licensed_clusters: Sequence[str] | None = None,
+                       anti_coref_clusters: Sequence[str] = ()) -> Path:
     """The **adapted** claim gold: positive claims plus the four typed negative buckets.
 
     This is the shape ``eval.gold.adapter`` emits and the shape the runner reads for both halves — the
@@ -133,11 +176,18 @@ def write_adapted_gold(path: Path, claims: list[dict[str, Any]],
     a fixture that carries only ``claims`` is a slice with no fabrication line, not a slice with a clean one.
     """
     buckets = {**EMPTY_NEGATIVE, **(negative or {})}
-    path.write_text(json.dumps({
+    used = [c["coref_cluster"] for c in claims if c.get("coref_cluster")]
+    anti = list(anti_coref_clusters)
+    licensed = list(licensed_clusters) if licensed_clusters is not None else [
+        tag for tag in dict.fromkeys(used) if tag not in anti]
+    payload: dict[str, Any] = {
         "schema_version": "rk-bakeoff-claim-gold/1.0",
         "claims": claims,
         "negative_gold": {name: {"rows": rows} for name, rows in buckets.items()},
-    }, indent=2), encoding="utf-8")
+    }
+    if licensed or anti:
+        payload["coref_registry"] = coref_registry_rows(licensed, anti)
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return path
 
 

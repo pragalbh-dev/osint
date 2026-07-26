@@ -42,7 +42,7 @@ from . import metrics as M
 from . import resume as R
 from .compare import MetricComparison, Verdict, composite_series, decide, per_metric_comparisons
 from .gates import GateReport, dry_gates, evaluate_gates
-from .gold import SubOracle, load_claim_gold, load_sub_oracle
+from .gold import CorefRegistry, SubOracle, load_claim_gold, load_coref_registry, load_sub_oracle
 from .matcher import match_claims
 from .negative_gold import NegativeGold, emitted_spans, load_negative_gold
 from .policy import BakeoffConfig, Candidate
@@ -142,6 +142,7 @@ def score_run(
     doc_texts: Mapping[str, str],
     config: BakeoffConfig,
     view: GraphView,
+    coref_registry: CorefRegistry | None = None,
     provenance: R.RunProvenance | None = None,
     calls_bought: int = 0,
 ) -> RunScore:
@@ -157,7 +158,7 @@ def score_run(
     match = match.with_precision_exclusions(negative.excluded_keys(emitted))
 
     values: dict[str, M.MetricValue] = {}
-    values.update(M.surface_metrics(match))
+    values.update(M.surface_metrics(match, doc_texts, config.match_policy))
     values["trap_avoidance"] = M.trap_avoidance(negative, emitted)
     values["identity_over_read"] = M.identity_over_read(negative, emitted)
     values["citation_faithfulness"] = M.citation_faithfulness(surfaces, doc_texts, config.match_policy)
@@ -165,7 +166,7 @@ def score_run(
     values["structured_output_reliability"] = M.structured_output_reliability(recorder.calls)
     values.update(M.discriminator_metrics(
         M.tally_discriminators(raw_payloads, gold, config.match_policy)))
-    values["coref_binding"] = M.coref_binding(match)
+    values["coref_binding"] = M.coref_binding(match, coref_registry)
     values["kind_tagging"] = M.kind_tagging(match)
     values.update(M.graph_recall(view, oracle, config.match_policy))
     values["latency_s"] = M.latency_metric(recorder.total_latency_s(), len(recorder.calls))
@@ -195,6 +196,7 @@ def run_candidate(
     negative: NegativeGold,
     oracle: SubOracle,
     evidence: Mapping[str, ImageryEvidence],
+    coref_registry: CorefRegistry | None = None,
     require_key: bool = True,
     store: R.ResumeStore,
     pacer: RequestPacer,
@@ -273,7 +275,7 @@ def run_candidate(
         runs.append(score_run(
             candidate=candidate, run_index=run_index, claims=flat, raw_payloads=payloads,
             recorder=recorder, gold=gold, negative=negative, oracle=oracle, doc_texts=doc_texts,
-            config=config, view=view, provenance=provenance,
+            config=config, view=view, coref_registry=coref_registry, provenance=provenance,
             calls_bought=sum(len(entry.calls)
                              for doc, entry in zip(inputs.docs, ordered, strict=True)
                              if doc.source_id in bought_ids),
@@ -405,7 +407,8 @@ def run_bakeoff(
     """
     coref_channel.require(inputs.config, config)
     gold = load_claim_gold(inputs.gold_path)
-    coref_channel.require_gold_labels(gold, config)
+    coref_registry = load_coref_registry(inputs.gold_path)
+    coref_channel.require_gold_labels(gold, config, registry=coref_registry)
     # The typed negative gold rides in the same adapted file as the positive claims, so this is the path
     # the caller already supplied — never a second input an operator has to remember.
     negative = load_negative_gold(inputs.gold_path)
@@ -419,7 +422,7 @@ def run_bakeoff(
     wanted = set(candidates) if candidates else None
     scores = [
         run_candidate(cand, inputs, config, client_factory, gold=gold, negative=negative, oracle=oracle,
-                      evidence=records, require_key=require_key, store=store,
+                      evidence=records, coref_registry=coref_registry, require_key=require_key, store=store,
                       pacer=_pacer_for(cand, config, pace=pace), producer=producer)
         for cand in config.candidates
         if wanted is None or cand.id in wanted
