@@ -36,7 +36,10 @@ help:  ## Show this help
 install:  ## Create the venv and install backend + dev deps
 	$(PY) -m venv $(VENV)
 	$(VPY) -m pip install --upgrade pip
-	$(VPY) -m pip install -e "$(BACKEND)[dev]"
+# `[openai]` rides along with `[dev]`: the OpenAI extraction client's offline tests monkeypatch the real
+# SDK module, and RK-BAKEOFF's KEYLESS==LIVE gate proves a provider is live-capable by importing it. Both
+# need the package present, and neither should be allowed to skip quietly.
+	$(VPY) -m pip install -e "$(BACKEND)[dev,openai]"
 
 lint:  ## ruff (lint)
 	cd $(BACKEND) && .venv/bin/ruff check .

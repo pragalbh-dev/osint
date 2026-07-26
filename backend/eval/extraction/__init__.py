@@ -15,7 +15,6 @@ permanently. Two disciplines are therefore built into the types rather than left
 Module map::
 
     policy.py     the declared knobs (config/bakeoff.yaml): replication, margin, weights, match policy
-    gpt_client.py the OpenAI ExtractionClient — text + PDF-page multimodal + standalone VLM imagery
     recording.py  the instrumented client wrapper: raw payloads, latency, usage, call reliability
     surface.py    the comparison unit — a claim reduced to what is comparable across extractors
     gold.py       loaders + declared schemas for the labeled claim gold and the per-slice sub-oracle
@@ -30,6 +29,13 @@ Module map::
     coref_channel.py  is there a model-facing coref output channel, and is it switched on?
     vlm_probe.py  the deliberate imagery experiment that turns the VLM gate from UNKNOWN into evidence
     render.py     markdown + JSON output, gates printed above every score
+
+**No candidate's extraction client lives here, and that is a rule rather than an accident.** All three
+sit beside each other in :mod:`chanakya.ingest.client`, on the shipped ingest path, because the
+KEYLESS==LIVE gate asks whether the *same code* that freezes the seed bundles is the code the live system
+runs. A client parked in this tree could be measured but could never be the seed producer, so its
+candidate was structurally unable to win — the harness would have been running a two-horse race wearing
+three declarations. This package measures models; it does not host them.
 """
 
 from __future__ import annotations
@@ -38,7 +44,6 @@ from .compare import NO_DIFFERENCE_PHRASE, Verdict, compare_metric, decide
 from .coref_channel import CorefChannel, CorefChannelDormant, with_channel_on
 from .gates import GateReport, GateResult, ImageryObservations, dry_gates, evaluate_gates
 from .gold import load_claim_gold, load_sub_oracle
-from .gpt_client import OpenAIExtractionClient
 from .matcher import MatchResult, match_claims
 from .metrics import NO_CLUSTERING, MetricValue
 from .negative_gold import NegativeGold, emitted_spans, load_negative_gold
@@ -70,7 +75,6 @@ __all__ = [
     "MetricSeries",
     "MetricValue",
     "NegativeGold",
-    "OpenAIExtractionClient",
     "RecordingExtractionClient",
     "RunScore",
     "SurfaceClaim",

@@ -13,6 +13,13 @@ two ways out, turning reasoning off would benchmark a deliberately weakened GPT 
 the client moved endpoint instead. Everything these tests are *for* survived that move: the forced single
 tool, the verbatim schema, the absent sampling knobs, absent usage staying ``None``, and both raise paths.
 Only the wire spelling changed.
+
+**These tests moved with the client, from ``tests/extraction_bakeoff`` to here.** The client was promoted
+out of ``backend/eval`` onto the shipped ingest path (:mod:`chanakya.ingest.client`), because a client
+that only exists beside the harness measuring it can never be the producer that freezes the seed bundles,
+and so can never satisfy KEYLESS==LIVE. Every property below is unchanged; the only edits are the import
+and the token-cap constant, which is now the module's shared :data:`~chanakya.ingest.client.MAX_TOKENS`
+rather than a private duplicate that happened to hold the same number.
 """
 
 from __future__ import annotations
@@ -24,7 +31,7 @@ from typing import Any
 
 import pytest
 
-from eval.extraction.gpt_client import MAX_COMPLETION_TOKENS, OpenAIExtractionClient
+from chanakya.ingest.client import MAX_TOKENS, OpenAIExtractionClient
 
 SCHEMA = {"type": "object", "properties": {"orgs": {"type": "array"}}}
 
@@ -117,7 +124,7 @@ def test_text_extraction_forces_exactly_one_named_tool(sink) -> None:
     # identity, not equality: the caller's schema is forwarded verbatim, never rebuilt or "helped"
     assert kwargs["tools"][0]["parameters"] is SCHEMA
     assert kwargs["model"] == "gpt-5.6-sol"
-    assert kwargs["max_output_tokens"] == MAX_COMPLETION_TOKENS
+    assert kwargs["max_output_tokens"] == MAX_TOKENS
 
 
 def test_the_all_optional_schema_is_never_sent_as_strict(sink) -> None:

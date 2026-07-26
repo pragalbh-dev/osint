@@ -246,7 +246,7 @@ def to_candidate(c: Mapping[str, Any]) -> P.Candidate:
         model_id=str(c.get("model_id", "pinned-model-1.0")),
         # A client under `chanakya.ingest` is on the shipped path; one under `eval` is not — which is
         # exactly what `live_in_shipped_image=False` asserts.
-        client_module="chanakya.ingest.client" if live else "eval.extraction.gpt_client",
+        client_module="chanakya.ingest.client" if live else "eval.extraction.some_candidate_client",
         client_class="TestClient",
         sdk_module="json",  # always importable: this binding is not testing SDK availability
         key_env="PATH",     # always set: key provisioning is a separate gate, exercised separately

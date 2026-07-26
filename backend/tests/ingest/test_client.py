@@ -18,11 +18,13 @@ import pytest
 import respx
 
 from chanakya.ingest.client import (
+    DEFAULT_OPENAI_MODEL,
     MODEL,
     AnthropicExtractionClient,
     ExtractionCall,
     ExtractionClient,
     GeminiExtractionClient,
+    OpenAIExtractionClient,
     ScriptedExtractionClient,
     build_extraction_client,
 )
@@ -78,8 +80,14 @@ def test_scripted_client_raises_when_exhausted() -> None:
 # ── build_extraction_client (keyed → live client; keyless → None) ─────────────────────────────────
 
 def test_build_client_keyless_returns_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keyless means *no* provider key, so every one of the three has to be cleared here.
+
+    Missing ``OPENAI_API_KEY`` from this list would leave the keyless-boot claim untested on a machine that
+    happens to carry an OpenAI key — the claim being that a reviewer with no key falls through to the
+    frozen bundles rather than to a live extractor."""
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     assert build_extraction_client() is None
 
 
@@ -105,6 +113,23 @@ def test_build_client_model_id_override(monkeypatch: pytest.MonkeyPatch) -> None
     client = build_extraction_client(model_id="claude-opus-4-8-custom")
     assert isinstance(client, AnthropicExtractionClient)
     assert client.model_id == "claude-opus-4-8-custom"
+
+
+def test_build_client_falls_through_to_openai(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Third in precedence, and third on purpose: appending rather than inserting leaves every existing
+    keyed deployment resolving to exactly the client it resolved to before."""
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai")
+    client = build_extraction_client()
+    assert isinstance(client, OpenAIExtractionClient)
+    assert client.model_id == DEFAULT_OPENAI_MODEL
+
+
+def test_the_openai_default_model_is_a_pinned_id_not_a_floating_alias() -> None:
+    """A ``-latest`` style id would let the frozen seed silently stop equalling what live produces, which
+    is the failure KEYLESS==LIVE exists to prevent. There is deliberately nothing here to fall back to."""
+    assert not DEFAULT_OPENAI_MODEL.endswith(("-latest", ":latest", "@latest", "latest"))
 
 
 # ── AnthropicExtractionClient (respx-mocked round-trip, offline) ──────────────────────────────────

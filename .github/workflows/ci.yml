@@ -24,8 +24,12 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      # `[openai]` alongside `[dev]`: the OpenAI extraction client's offline tests monkeypatch the real SDK
+      # module, and RK-BAKEOFF's KEYLESS==LIVE gate proves a provider is live-capable by importing it.
+      # Without the package those tests would error at collection and the gate would read FAIL for a reason
+      # that is about this runner rather than about the code.
       - name: Install backend + dev deps
-        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev,openai]"
 
       - name: Ruff (lint)
         run: ruff check .

@@ -259,14 +259,17 @@ candidates:
     # `-luna`, `-terra` and nothing else), so this IS the concrete id — there is no more specific one to
     # pin to.
     model_id: gpt-5.6-sol
-    # NOTE: this client lives under `backend/eval`, so it FAILS the KEYLESS==LIVE gate as configured.
-    # That is the honest state today, not an oversight: to win, the client has to move to
-    # `chanakya/ingest` first (which also means adding `openai` to the shipped image's dependencies —
-    # a deliberate decision, not a config edit). See gates.production_client_package.
-    client_module: eval.extraction.gpt_client
+    # PROMOTED 2026-07-26. This client previously lived under `backend/eval` and therefore FAILED the
+    # KEYLESS==LIVE gate — a candidate that could be measured but could never be the producer freezing the
+    # seed bundles, i.e. one that could not win whatever it scored. The fix was made where the gate
+    # pointed, not to the gate: the client moved to `chanakya/ingest/client.py` beside the Gemini and
+    # Anthropic clients, and `openai` was added to the shipped image's dependencies (pyproject `[openai]`
+    # extra, installed in the Dockerfile) so it can actually run live in the container. Only now is
+    # `freezes_seed: true` a true statement about this candidate rather than an aspiration.
+    client_module: chanakya.ingest.client
     client_class: OpenAIExtractionClient
     sdk_module: openai
     key_env: OPENAI_API_KEY
     multimodal: native
-    freezes_seed: false
+    freezes_seed: true
     pricing: null

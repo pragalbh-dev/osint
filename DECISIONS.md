@@ -1664,3 +1664,38 @@ and `make check`) · mypy back to the base 289 · 1222 backend + 196 frontend te
 **Still true, still disclosed:** the lens half reaches no UI surface (see AH-1's disclosure) — it is honest
 in `GET /view?subject=` and in ASK's tool reads only. ASK has no observable/alert tool, so it cannot see the
 *observable* half either; both are roadmap, not build.
+
+### RK-BAKEOFF — the GPT candidate promoted to a production client, so the bake-off is a real three-way (2026-07-26)
+
+All three candidates worked — each passed a live smoke call and the recorded imagery gate on a real corpus
+frame — but `openai-gpt-5-6-sol` **could not win**, and not for any reason about the model. Its client had
+been written at `backend/eval/extraction/gpt_client.py`, in the tree that *measures* candidates, and
+`openai` was declared nowhere in the shipped image. That fails `keyless_equals_live`, and the gate is right
+to fail it: KEYLESS==LIVE is the promise that a reviewer with no API key gets the same graph the live system
+produces, and it holds only when the frozen seed bundles were produced by the same code the live extractor
+runs. Code parked beside the harness can be measured; it can never be the producer that freezes the seed.
+
+So the bake-off was quietly a two-horse race wearing three declarations, and the fix belonged where the
+gate pointed — never at the gate.
+
+| Decision | Call | Reasoning |
+|---|---|---|
+| **The client moved onto the shipped ingest path** | `OpenAIExtractionClient` now lives in `chanakya/ingest/client.py` beside `GeminiExtractionClient` and `AnthropicExtractionClient`; `build_extraction_client` gained an OpenAI branch, **appended** after Gemini and Anthropic | Placement is the gate's whole subject. Appending rather than inserting means every existing keyed deployment resolves to exactly the client it resolved to before — the promotion adds a provider, it does not re-point production |
+| **`openai` was added to the shipped image, not just the dev box** | New `[openai]` extra in `backend/pyproject.toml`, installed by the Dockerfile (`pip install "/src/backend[gemini,openai]"`) alongside `[gemini]`. The floor is `>=1.66` — the Responses API — because an older SDK installs cleanly and then 500s on the first live call | A provider whose SDK is missing from the container cannot run live in it, so it cannot be the code that froze the seed. This is the second half of the same gate, and it is a real dependency decision rather than a config edit |
+| **`[openai]` rides along with `[dev]` in CI and `make install`** | `pip install -e ".[dev,openai]"` | The client's offline tests monkeypatch the real SDK module, and the gate proves live-capability *by importing*. Without the package the tests would error at collection and the gate would read FAIL for a reason about the runner rather than the code — either one is a measuring instrument reporting on itself |
+| **Only now is `freezes_seed: true` true** | The candidate's declaration in `config/bakeoff.yaml` flipped `client_module` to `chanakya.ingest.client` and `freezes_seed` to `true`, with the reason recorded inline | The flag was `false` because the placement made it false. Flipping it *first* would have been the bent-gate version of this change: a declaration asserting a property the code did not have |
+| **The pinned id survived the move, and no reasoning knob came with it** | The class still takes `model_id` with **no default** (a wrong-but-plausible id cannot ride along); `DEFAULT_OPENAI_MODEL = "gpt-5.6-sol"` is the pinned id the factory passes. No sampling parameter and no `reasoning`/`reasoning_effort` is sent on any call | The provider's own suggested workaround for function tools on `/v1/chat/completions` is "set `reasoning_effort` to `none`" — which would benchmark a deliberately weakened model under a pinned id, and would ship that weakened model to production. The client uses `/v1/responses` instead and the model keeps its native reasoning |
+
+**Nothing about the gate changed.** `gates.py`, `production_client_package` and the pass/fail semantics are
+byte-identical; the candidate passes because the condition is now satisfied, not because it was loosened.
+
+**Verified.** `preflight` reports **3/3 ELIGIBLE** — all three PASS `vlm_imagery_path` (on the already-paid
+recorded probe), `keyless_equals_live`, `pinned_model_id` and `exercisable`; the three non-negotiable metric
+gates remain ahead of every candidate, as they should. Full suite **1792 passed / 7 skipped / 2 xfailed**,
+`ruff` clean, mypy unchanged at its pre-existing baseline. **Zero API calls were made** for this change.
+
+**Corrects an earlier ledger line.** The 2026-07-25 RK-BAKEOFF integration entry says "on the shipped config
+`openai-gpt-5-6-sol` fails `keyless_equals_live`, so this is a third of the budget", and its cost estimate
+is built on two candidates being paid for. That is no longer the state: a real run now spends on **three**
+candidates, so the projection returns to roughly **3 × 5 × 8–15 = 120–225 calls**, ~195 at the measured
+13-calls-per-run pattern. The driver's skip-the-blocked behaviour is unchanged and simply has nobody to skip.

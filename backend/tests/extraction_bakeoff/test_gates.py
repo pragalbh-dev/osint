@@ -52,7 +52,9 @@ def test_a_failing_image_call_fails_the_gate() -> None:
 # ── KEYLESS == LIVE ───────────────────────────────────────────────────────────────────────────────
 
 def test_a_client_outside_the_shipped_ingest_path_cannot_freeze_the_seed() -> None:
-    cand, cfg = _candidate(client_module="eval.extraction.gpt_client")
+    # Any module outside `chanakya.ingest` does it; the gate is a placement check, not an import.
+    # (This was `eval.extraction.gpt_client` until that client was promoted onto the shipped path.)
+    cand, cfg = _candidate(client_module="eval.extraction.some_candidate_client")
     gate = gate_keyless_equals_live(cand, cfg)
     assert gate.status == "FAIL" and "freezes the seed bundles" in gate.detail
 
