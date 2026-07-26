@@ -2006,3 +2006,99 @@ fix (the metric runs the same shape check, with a schema-free fallback for alrea
 on another branch, so it ships as `tmp/conv/eval-structured-output-sees-truncation.patch` — verified to
 re-score those two runs 1.0000 → 0.9333 and to leave the other ten untouched. It imports
 `chanakya.toolargs`, so it can only land after this branch merges.
+
+## INGEST — the extraction prompt now asks for what we score (2026-07-26, `fix/extraction-prompt-asks-for-what-we-score`)
+
+**PRE-REGISTERED.** This entry was written **before** any re-run. The three defects below are the only ones
+a replay cannot validate — changing a prompt changes model behaviour, so measuring the change needs new
+calls. The predictions in §4 are therefore the falsifiable record: if `discriminator_capture` does not rise,
+the diagnosis of defect 1 was **wrong**, and that must be discoverable afterwards rather than explained away.
+
+**The prompt is shared by all three bake-off candidates and is not per-model**, so nothing here is an
+advantage for one of them; it is a change to the instrument, and both candidates must be re-baselined.
+
+### 1. We scored a field the prompt never requested and the schema described as inert
+
+`_SYSTEM_BASE` was ~350 words that instructed at paragraph length on signature geometry, quotes, dates and
+aliases, and contained **zero** occurrences of `context`, `discriminat*`, `operator`, `geography` or "tell
+apart". The four discriminators reached the model only as field descriptions on an optional nested block —
+whose class docstring **ships verbatim inside the tool schema**, Sphinx markup and all, ending with
+"Populated by the model from S1; read by nothing yet." 13.4% of the composite weight sat on a field we never
+asked for and explicitly called dead. Both candidates scored a perfect 1.000 on structured-output
+compliance: they filled exactly what we asked for.
+
+Fixed by **asking**, in the register the rest of the prompt uses: what a discriminator is *for*
+(individuation — the detail that lets a reader tell two similar things apart), the four slots by their
+meaning, and the absence rule in the same breath, because an invented discriminator is worse than a missing
+one and there is a separately scored line for that exact trade.
+
+**A general rule falls out of this, and it is the more valuable half.** Pydantic ships every class docstring
+and field description into the tool schema, so **those strings are model-facing text, not developer notes**.
+Internal reasoning, decision ids and Sphinx roles now live in `#` comments, which pydantic does not ship —
+enforced by a test over every tool schema. Side effect worth stating: the model-facing JSON *shrank* (prose
+15.0k → 13.3k bytes, imagery 14.5k → 11.9k) while the prompt grew ~140 words, so the instruction we added
+was paid for by commentary the model could never use.
+
+### 2. An enum whose legal values lived nowhere the model could see them
+
+`CoreferenceCluster.evidence` shipped as a bare nullable string. The three category names existed only in
+the pass-2 system prompt, so a candidate that answered correctly in a slightly different shape
+(`EXPLICIT_EQUIVALENCE — CLIAD is the parenthetical acronym for…`) had its cluster dropped, silently: 7 for
+GPT-5.6, 0 for the two we shipped, so a real schema defect but not part of the shared floor.
+
+The literal type is now the single definition — `model_json_schema()` turns it into an `enum` the model can
+see, and the accepted set is *derived from it* (`get_args`), so offered and accepted values can never drift
+apart again. That drift was the root cause, not the missing enum.
+
+**And the drop is now audible.** A label outside the three the schema names logs a **warning** — that is the
+case where the model may have been right in a shape we refuse. A label that is legal but disabled on this
+deployment logs an **info** naming the config key, because policy working as configured is not a defect.
+Neither aborts the document's pass: the surrounding rails are row-at-a-time, and one bad row must not
+discard the good ones. *Stated limitation:* a log line is the loudest channel that exists here today —
+there is no per-document ingest diagnostics record for a dropped-cluster count to land in, and inventing one
+was out of scope.
+
+### 3. Claim granularity was unspecified, and recall is scored against a fixed convention
+
+Measured: ~208 claims/run against ~149 for the other candidate, and one candidate's own count swung 174→227
+across five runs of the *same* documents. Two reasonable extractors can differ severalfold purely on how
+finely a sentence is split, and nothing said which we wanted.
+
+What is stated is the **unit of analysis** this project already has a position on (spine/02: one source, one
+date, one subject-predicate-object) as a rule applicable to an unseen document: one item per stated fact; a
+thing named several times in one document is one item, not one per mention; a relationship is one item per
+stated subject-relation-object; a thing and a relationship about it are different kinds of item, not a
+duplicate. **This is deliberately not "emit fewer claims".** Bundling two stated facts into one item breaks
+the rule exactly as splitting one fact into two does, and a test asserts the prompt contains no terseness
+instruction.
+
+### 4. Pre-registered predictions (the falsifiable part)
+
+| line | prediction | why |
+|---|---|---|
+| `discriminator_capture` | **UP**, and materially — the mechanism is "never asked" | if it does not move, defect 1 was misdiagnosed and the field descriptions were already sufficient |
+| `discriminator_fabrication_avoidance` | **FLAT** (must not fall) | the absence rule ships in the same sentence as the ask; a fall means asking harder bought capture with invention, and the ask must then be narrowed |
+| claim-count variance across runs of one document | **DOWN** | the grain rule removes the split/lump degree of freedom; this is the prediction that most directly tests defect 3 |
+| `surface_recall` | **FLAT, or slightly up** | nothing was capped; the grain rule can merge repeated mentions that were already folded by `dedup_within_doc`, so little should change |
+| `surface_precision` / `surface_f1` | **UP slightly, for the wrong reason** | fewer split-duplicates shrinks a denominator the 65-row gold cannot cover anyway; do **not** read this as an extraction improvement |
+| `structured_output_reliability` | **FLAT at 1.000** | a longer prompt is the one thing that could spend it; if it falls, the additions are too long and the discriminator ask (which is mandatory) keeps priority over the grain rule |
+| `extract_only_stated` / `citation_faithfulness` | **FLAT** | nothing changed about quoting or grounding; a fall would mean the discriminator ask is pulling values from outside the cited span |
+| `coref_binding` | **FLAT** (still UNMEASURABLE on this gold) | the enum fix cost the two shipped candidates 0; it should show on a GPT-class candidate only |
+| `trap_avoidance` | **FLAT** | untouched, and its basis is a known defect |
+
+### 5. Rejected as overfitting — named, because each was tempting
+
+* **"Do not create entities from abstract nominalizations."** The diagnosis flags this one itself. It would
+  raise `extract_only_stated` (18 of one candidate's 47 failures are `known_gap` nominal labels), and on
+  inspection those labels are *faithful* — the instruction's real effect would be to make output match this
+  gold's phrasing, turning the next bake-off into a measurement of our own prompt patch.
+* **Teaching the gold's vocabulary** — the registry's licensing-category phrasings, `"Karachi (city
+  precision only)"`, "prefer `observed-at` over `SightingEvent`". Annotator bookkeeping; raises agreement
+  without improving one extraction decision on an unseen document.
+* **"Put the full mention noun phrase in `name`."** Would take `entity:variant` 0/4 → 4/4. The bare
+  designator is the better answer for entity resolution, the graph, and the label an analyst reads.
+* **Any terseness or emission cap.** The fastest route to a better F1, and the opposite of what an OSINT
+  extractor is for. A test now asserts the prompt contains no such instruction.
+* **Making the model emit explicit singleton clusters** so `referent_id` is never `None`. 0.35 → ~0.80 with
+  no scorer change, and it destroys the abstention signal this system is built on. The defect is in how the
+  scorer reads absence.

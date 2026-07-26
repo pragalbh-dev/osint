@@ -44,10 +44,11 @@ byte-stable and the keyless seed path inherits it unchanged (both paths call ``e
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal, get_args
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from chanakya import coref_gate, edge_direction
 from chanakya.ingest.client import ExtractionClient
@@ -56,6 +57,8 @@ from chanakya.schemas import ClaimRecord, ConfigBundle, make_claim_id
 from chanakya.schemas.claim import EntityDescriptor, Extraction, Triple
 from chanakya.schemas.ids import make_referent_id
 from chanakya.schemas.values import DateValue
+
+_log = logging.getLogger("chanakya.ingest.coref")
 
 # ── the dedicated lane + its tier-3 keys ────────────────────────────────────────────────────────────
 
@@ -106,11 +109,17 @@ GATE_FAIL = "FAIL"
 #: quote and can never auto-merge. A ceiling cannot shatter an existing cluster; a veto can.
 CONTRAST_PREDICATE = "coref-distinct-from"
 
-#: The only evidence kinds a cluster may claim. Anything else is dropped.
+#: The only evidence kinds a cluster may claim — **one definition, shipped to the model AND enforced here.**
+#: These three names used to live only in the system prompt while the tool schema declared ``evidence`` a bare
+#: nullable string, so a model that answered correctly in a slightly different shape (the label with its
+#: reasoning appended) had its cluster dropped silently; one bake-off candidate lost 7 that way. The literal
+#: type is what ``model_json_schema()`` turns into an ``enum`` the model can see, and :data:`EVIDENCE_CATEGORIES`
+#: is derived from it so the offered values and the accepted values can never drift apart again.
+EvidenceCategory = Literal["EXPLICIT_EQUIVALENCE", "NAME_VARIANT", "UNAMBIGUOUS_ANAPHOR"]
 EXPLICIT_EQUIVALENCE = "EXPLICIT_EQUIVALENCE"
 NAME_VARIANT = "NAME_VARIANT"
 UNAMBIGUOUS_ANAPHOR = "UNAMBIGUOUS_ANAPHOR"
-EVIDENCE_CATEGORIES: tuple[str, ...] = (EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR)
+EVIDENCE_CATEGORIES: tuple[str, ...] = get_args(EvidenceCategory)
 
 #: Type stamped on a mention the document never declared as an entity (a bare relation endpoint — the
 #: descriptive/elliptical reference this pass exists to rescue). It may join a typed cluster; two
@@ -130,7 +139,17 @@ class CoreferenceCluster(BaseModel):
     """One group of mentions the document treats as a single entity (multi-member only)."""
 
     member_ids: list[int] = []
-    evidence: str | None = None
+    evidence: EvidenceCategory | None = Field(
+        default=None,
+        description=(
+            "WHICH KIND of stated evidence licenses this grouping — exactly one of these three labels, "
+            "with nothing added to it: EXPLICIT_EQUIVALENCE (the document says they are the same thing — an "
+            "alias, an apposition, an acronym expansion, 'formerly'), NAME_VARIANT (the same proper name in "
+            "a trivially different surface form — spacing, casing, punctuation, an obvious transliteration "
+            "variant), UNAMBIGUOUS_ANAPHOR (a back-reference that in context can point to only one "
+            "already-introduced mention). The wording that shows it goes in `licensing_quotes`, not here."
+        ),
+    )
     #: **A SET of verbatim spans from this one document** (ruling M2), not a single contiguous span. The
     #: frozen corpus contains equivalences documents genuinely *assert* whose two surface forms sit tens of
     #: lines apart, or in different fields of one record — so no single span can contain both, and a
@@ -141,13 +160,13 @@ class CoreferenceCluster(BaseModel):
     licensing_quotes: list[str] = []
 
 
+# D-13.19's contrastive channel. Optional by design, and absence means ``unknown`` rather than "no contrast":
+# a *required* field would push the extractor to invent one. It is not derivable downstream — the mention shape
+# carries no spans and pass 1 collapses one name to one claim per document, so nothing later can re-read the
+# syntax. (Docstrings and field descriptions in this module ship verbatim inside the tool schema, so internal
+# reasoning and decision ids live in comments like this one; the docstring is text for the model.)
 class CoreferenceContrast(BaseModel):
-    """Two mentions this ONE document syntactically **distinguishes** (D-13.19's contrastive channel).
-
-    Optional by design, and absence means ``unknown`` rather than "no contrast": a *required* field would
-    push the extractor to invent one. It is not derivable downstream — the mention shape carries no spans
-    and pass 1 collapses one name to one claim per document, so nothing later can re-read the syntax.
-    """
+    """Two mentions this ONE document sets apart in its own wording."""
 
     left_id: int | None = None
     right_id: int | None = None
@@ -202,8 +221,9 @@ error (a human or a later document can still join them). Merging two DIFFERENT e
 that is hard to undo. When you are not sure, keep them separate.
 
 OUTPUT (fill the tool): report only the clusters with more than one member. For each, give the member
-mention-ids, the evidence category (EXPLICIT_EQUIVALENCE / NAME_VARIANT / UNAMBIGUOUS_ANAPHOR), and the
-exact verbatim quote(s) from the document that license the grouping. Quote as many spans as it takes: if the
+mention-ids, the evidence category as exactly one of the three labels above and nothing else (no reasoning
+appended to the label — that belongs in the quotes), and the exact verbatim quote(s) from the document that
+license the grouping. Quote as many spans as it takes: if the
 document states the equivalence across two fields or two paragraphs, give BOTH spans rather than paraphrasing
 one. Every span must be copied verbatim. If you cannot quote any licensing span, do not report the cluster.
 Any mention you do not name stays its own singleton.
@@ -419,7 +439,26 @@ def valid_clusters(raw: Any, mentions: list[Mention], text: str,
         if not isinstance(entry, dict):
             continue
         evidence = entry.get("evidence")
-        if not isinstance(evidence, str) or evidence not in categories:
+        # A dropped cluster is a discarded answer, so the two reasons for dropping one are separated and
+        # both are said out loud. An evidence label outside the three the schema NAMES is a payload we
+        # cannot interpret — it warns, because that is the case where the model may well have been right in
+        # a shape we refuse (measured: 7 such clusters in one bake-off run, lost with no trace). A label
+        # that is legal but not enabled on this deployment is policy working as configured, so it is a
+        # lower-severity note. Neither is worth aborting a document's whole pass for: the rest of this
+        # function is a row-at-a-time rail, and one bad row must not discard the good ones.
+        if not isinstance(evidence, str) or evidence not in EVIDENCE_CATEGORIES:
+            _log.warning(
+                "coref cluster dropped: evidence=%r is not one of %s. The tool schema names the legal "
+                "labels; a label with anything appended to it is not one of them.",
+                evidence, list(EVIDENCE_CATEGORIES),
+            )
+            continue
+        if evidence not in categories:
+            _log.info(
+                "coref cluster dropped: %s is a legal category but is not enabled on this deployment "
+                "(config/credibility.yaml -> coreference.categories = %s).",
+                evidence, list(categories),
+            )
             continue
         # M2/M13: the ordered span SET, with EVERY member verbatim-checked. One unverifiable span rejects
         # the whole cluster — a partly-invented licence is an invented licence.

@@ -122,28 +122,36 @@ Format = Literal[
 # lane instead of a different type-specific field per node type. Entity-yielding mentions only, because a
 # discriminator exists to tell two candidate *nodes* apart: a relationship / event mention names two or more
 # things and already carries its own date and place, and ``SourceMention`` is excluded because a source's
-# identity is its registry ``source_id``, never a discriminated name. Because the transforms read by key,
-# nothing consumes ``context`` until RK-COREF (S3) — adding it changes no behaviour.
+# identity is its registry ``source_id``, never a discriminated name.
+#
+# **The rationale for the four slots lives HERE, in a comment, and not in the class docstring** — because
+# pydantic ships every class docstring and ``Field(description=…)`` **verbatim inside the tool schema**, so
+# the docstring is model-facing text, not developer text. The version that shipped until now carried Sphinx
+# roles, two internal doc references, and the sentence "Populated by the model from S1; read by nothing yet"
+# — i.e. we told the model the field was inert and then scored it. Rule for this whole module: a docstring or
+# field description is an instruction to a reader who has never seen this codebase; internal reasoning,
+# decision ids and cross-references go in ``#`` comments, which pydantic does not ship.
+#
+# Why one shared lane: the extractor could otherwise only state a discriminator through whichever
+# type-specific attribute happens to exist (``service_branch`` on a unit, ``location_text`` on a site,
+# nothing at all on a component), so the resolver would have to pattern-match a different field name per
+# node type — an untyped bag wearing typed clothes. One uniformly-named lane is what lets the identity judge
+# read a discriminator *structurally* (spine/13 §10, plan §4 A7); the slots are declared against
+# :class:`chanakya.schemas.AttrDef`'s ``discriminator`` on the ontology side. Every slot stays **optional**:
+# a required discriminator would force the model to invent an operator or a location the source never
+# stated — a fabricated assessment, the one disqualifying failure (master non-negotiable). Values are the
+# source's own words, copied; normalisation is RESOLVE's, the extractor stays extract-raw.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
 class MentionContext(BaseModel):
-    """**A7's four structured discriminators** for one named mention — operator, geography, designation, time.
+    """The identifying context for ONE named thing — who operates it, where it is, what it is formally
+    called, and when the document says that was true.
 
-    The context that tells two same-named things apart: *whose* it is, *where* it is, what it is *called*,
-    and *when* the statement was true. Today the extractor can only state these through whichever
-    type-specific attribute happens to exist (``service_branch`` on a unit, ``location_text`` on a site,
-    nothing at all on a component), so the resolver would have to pattern-match a different field name per
-    node type to find them — an untyped bag wearing typed clothes. One shared, uniformly-named lane is what
-    lets the identity judge read a discriminator *structurally* (spine/13 §10, plan §4 A7); the slots are
-    declared against :class:`chanakya.schemas.AttrDef`'s ``discriminator`` on the ontology side.
-
-    **Every field is optional and absence means ``unknown``.** A required discriminator would force the
-    model to invent an operator or a location the source never stated — a fabricated assessment, which is
-    the one disqualifying failure (master non-negotiable). Values are the source's own words, copied, never
-    normalised or inferred here (normalisation is RESOLVE's; the extractor stays extract-raw).
-
-    Populated by the model from S1; **read by nothing yet** — RK-COREF (S3) is where discriminators enter
-    the identity judgement, so S1 deliberately changes no behaviour by adding them.
+    These are the details a reader uses to tell two similar things apart: two battalions of the same type,
+    two sites near the same town, two firms with near-identical names. Fill each slot ONLY from what THIS
+    document states about THIS thing, in the document's own words, and leave a slot empty when the document
+    says nothing. An empty slot is a real answer — it means "this document does not say". An invented one is
+    not: a guessed operator, place or designator manufactures identity evidence about a thing.
     """
 
     operator: str | None = Field(
@@ -284,21 +292,23 @@ class EventMention(BaseModel):
     source_quote: str | None = None
 
 
+# ``relation`` is typed ``str`` here; the *allowed values* are narrowed to the extractor-edge enum in the
+# tool schema at build time (:func:`_constrain_relation_enum`). The model's verb is only a hint — the
+# transform re-lanes the fact onto the edge its endpoint types imply (:meth:`_Emitter.relation`).
+#
+# ``date_text`` is the **valid-time** slot (EVAL RCA D-P4.6): *when the source says the relationship was
+# true*, not when the document was published. Every other mention type already has one
+# (``EventMention.date_text`` / ``SightingMention.time_text`` / ``PassMention.pass_date``); without it a
+# *perishable* relationship — where a unit is based, what a magazine currently holds — could never age, be
+# ordered against a later statement of the same fact, or be superseded. It stays **optional**: an identity or
+# durable relationship legitimately carries no date, and forcing one would only invite a fabricated date on
+# the ~78 identity claims that have none (D-P4.6 rejects "every relation gets a date").
+# :meth:`_Emitter.relation` resolves the fallback ladder and records which rung fired.
 class RelationMention(BaseModel):
-    """A relationship the source *explicitly states*, keyed by a generic edge TYPE (never inferred).
+    """One relationship this document *states outright*, as subject → relation → object.
 
-    ``relation`` is typed ``str`` here; the *allowed values* are narrowed to the extractor-edge enum in
-    the tool schema at build time (:func:`_constrain_relation_enum`). The model's verb is only a hint —
-    the transform re-lanes the fact onto the edge its endpoint types imply (:meth:`_Emitter.relation`).
-
-    ``date_text`` is the **valid-time** slot (EVAL RCA D-P4.6): *when the source says the relationship
-    was true*, not when the document was published. Every other mention type already has one
-    (``EventMention.date_text`` / ``SightingMention.time_text`` / ``PassMention.pass_date``); without it
-    a *perishable* relationship — where a unit is based, what a magazine currently holds — could never
-    age, be ordered against a later statement of the same fact, or be superseded. It stays **optional**:
-    an identity or durable relationship legitimately carries no date, and forcing one would only invite
-    a fabricated date on the ~78 identity claims that have none (D-P4.6 rejects "every relation gets a
-    date"). :meth:`_Emitter.relation` resolves the fallback ladder and records which rung fired.
+    Use the relation names the tool offers. Never infer a relationship the document does not state, and
+    never join two things merely because they appear near each other.
     """
 
     relation: str | None = None
@@ -316,8 +326,11 @@ class RelationMention(BaseModel):
     source_quote: str | None = None
 
 
+# Carries both halves: the ``aliases`` slot becomes a ``same-as`` claim, the ``distinctions`` slot a
+# ``distinct-from``. One shape, because the model's job is identical either way — copy the two names the
+# document itself links, plus the wording that links them.
 class AliasMention(BaseModel):
-    """A stated identity/non-identity between two named things → a ``same-as`` / ``distinct-from`` claim."""
+    """Two named things THIS document itself states are the same thing — or states are not."""
 
     name_a: str | None = None
     name_b: str | None = None
@@ -487,15 +500,18 @@ class GapMention(BaseModel):
     source_quote: str | None = None
 
 
+# The honestly-observable occupancy layer (D-P4.2). A satellite write-up can state that a launcher cluster /
+# radar / system type was *seen at* a named place on a named pass; it almost never states that a *designated
+# formation* is based there. So this is deliberately equipment→site (``observed-at``), a lane of its own — the
+# derived unit-attribution (``based-at``) is minted separately, from this plus a formation reference, at its
+# own lower confidence (:mod:`chanakya.ingest.basing`). Fusing the two into one confident basing assertion is
+# exactly what the corpus's recycled-image and relocation-spoof traps are built to punish.
 class OccupancyMention(BaseModel):
-    """Equipment **observed at a site** on a date — the honestly-observable occupancy layer (D-P4.2).
+    """Equipment the report says was OBSERVED AT a named place on a named date.
 
-    A satellite write-up can state that a launcher cluster / radar / system type was *seen at* a named
-    place on a named pass; it almost never states that a *designated formation* is based there. So this
-    is deliberately equipment→site (``observed-at``), a lane of its own — the derived unit-attribution
-    (``based-at``) is minted separately, from this plus a formation reference, at its own lower
-    confidence (:mod:`chanakya.ingest.basing`). Fusing the two into one confident basing assertion is
-    exactly what the corpus's recycled-image and relocation-spoof traps are built to punish.
+    What the imagery itself supports: a launcher cluster, a radar or a system type *seen at* a site on a
+    pass. Record what was seen and where — do not upgrade it into a statement that a named formation is
+    based there unless the report says so in those words.
     """
 
     observed: str | None = None       # what was seen, as the source names it (a system type, a radar, a TEL)
@@ -505,15 +521,13 @@ class OccupancyMention(BaseModel):
     source_quote: str | None = None
 
 
+# ``occupancy`` / ``units`` / ``relations`` close EVAL RCA §2.3: this schema had **no relationship slot at
+# all**, so the relocation documents (d17/d18) were *structurally* incapable of stating that anything was
+# anywhere — 21 claims between them, zero relationships. Occupancy is the lane the imagery genuinely supports;
+# ``relations`` additionally lets a write-up that plainly names a formation at a site say so directly (D-P4.1
+# overturns the old blanket no-extract rule for basing). The co-located .png runs the VLM path in imagery.py.
 class ImageryGeoint(BaseModel):
-    """Satellite GEOINT analyst *prose* (the co-located .png runs the VLM path in imagery.py).
-
-    ``occupancy`` / ``units`` / ``relations`` close EVAL RCA §2.3: this schema had **no relationship
-    slot at all**, so the relocation documents (d17/d18) were *structurally* incapable of stating that
-    anything was anywhere — 21 claims between them, zero relationships. Occupancy is the lane the
-    imagery genuinely supports; ``relations`` additionally lets a write-up that plainly names a
-    formation at a site say so directly (D-P4.1 overturns the old blanket no-extract rule for basing).
-    """
+    """A satellite-imagery analyst report in prose — the site, its dated passes, and what they showed."""
 
     site: SiteMention | None = None
     observations: list[PassMention] = []
@@ -546,7 +560,33 @@ _SYSTEM_BASE = (
     "the source gives them: a stated alias, 'formerly', 'see also', spelling variant, or 'also known as' "
     "is an alias pair — NEVER merge two differently-named things into one, and never resolve a hidden or "
     "unstated identity. Use the generic type slots provided; put whatever names/designations the source "
-    "uses as values. When you record a relationship the source dates — where something is based or was "
+    "uses as values. "
+    # ── the discriminator ask. The four slots used to reach the model ONLY as field descriptions on an
+    # optional nested block whose own docstring said it was read by nothing — so this instruction is the
+    # difference between a scored field being requested and being merely available. Deliberately says what a
+    # discriminator is FOR (individuation) rather than listing values: the point generalises to a document no
+    # annotator has touched. Absence-stays-absent is stated in the same breath, because a *fabricated*
+    # discriminator is worse than a missing one — it manufactures identity evidence.
+    "Wherever a named thing offers a `context` block, fill it: the details THIS document gives that would "
+    "let a reader tell that thing apart from a similarly-named one — who operates or owns it, where it is "
+    "(at the precision the document gives), the formal designator or reference number it carries, and when "
+    "the document says that description held. Treat this as part of naming a thing: two same-named things "
+    "stay two things only if their context is on the record. Fill only what this document states about THAT "
+    "thing and leave the rest empty — a guessed operator, place or designator is worse than a blank one, "
+    "because it manufactures identity evidence. "
+    # ── the unit of analysis. Two reasonable extractors differed severalfold on claim count (~208 vs ~149
+    # per run) and one model's own count swung 174→227 across five runs of the same documents, purely on how
+    # finely a sentence was split — because nothing said what one item IS. This states the project's own unit
+    # (one source, one date, one subject-predicate-object) as a rule a model can apply to an unseen document.
+    # It is NOT an instruction to emit less: bundling two stated facts into one item breaks it just as
+    # splitting one fact into two does.
+    "GRAIN — one item per stated fact. Where the SAME name appears several times in one document that is "
+    "ONE item carrying its clearest quote, not one item per mention; two DIFFERENT names always stay two "
+    "items, however obviously they look related. A relationship or event is one item per stated "
+    "subject-relation-object with its own date and quote: a sentence stating two facts gives two items, one "
+    "fact stated twice gives one. A thing and a relationship about that thing are different kinds of item, "
+    "not a duplicate. "
+    "When you record a relationship the source dates — where something is based or was "
     "seen, when a system entered service, when a shipment moved — copy the source's own date wording "
     "into that relation's `date_text`; leave it empty when the source gives no such date. "
     "A physical/visual SIGNATURE can describe either one specific SITE (that site's own observed layout) or "
