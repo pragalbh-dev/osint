@@ -26,6 +26,7 @@ from typing import TYPE_CHECKING, Any
 
 from chanakya.observe import explain
 from chanakya.schemas import ConfigBundle, GraphView, ObservableDef
+from chanakya.toolargs import describe_violations, structural_violations
 
 from .client import build_default_client
 from .context import ToolContext, normalize
@@ -140,6 +141,19 @@ def propose_observable_from_text(
     payload: dict[str, Any] | None = resp.tool_calls[0].input if resp.tool_calls else _parse_json(resp.text)
     if not payload:
         return ObservableProposal(draft=None, reason="Could not interpret the request into an observable draft.")
+
+    # ``mentions`` is a list of entity names. Arriving as a *string* (a tool call truncated at the token
+    # budget), the filter below would iterate its characters and every one of them is a ``str``, so the
+    # proposer would go on to resolve "[", "{", "H"… and hand the analyst a draft built from punctuation.
+    # A malformed payload is refused with its reason, exactly as an uninterpretable one is — this path
+    # never guesses (see :mod:`chanakya.toolargs`).
+    malformed = structural_violations(payload, DRAFT_TOOL["input_schema"])
+    if malformed:
+        return ObservableProposal(
+            draft=None,
+            reason=f"The model's draft came back malformed ({describe_violations(malformed)}). "
+                   "Retry the request, or define the observable explicitly.",
+        )
 
     mentions = [m for m in payload.get("mentions", []) if isinstance(m, str)]
     trigger_on = payload.get("trigger_on", "state_change")
