@@ -111,8 +111,18 @@ def test_the_coverage_report_lists_the_withheld_links_with_their_reasons() -> No
     assert withheld.confidence is not None
 
 
-def test_an_ordinary_sub_review_link_is_listed_without_a_reason_rather_than_a_made_up_one() -> None:
-    """A pair that is merely low-scoring was withheld by nothing, and must not be reported as capped."""
+def test_an_ordinary_sub_review_link_is_listed_with_its_own_ground_and_no_invented_cap() -> None:
+    """A merely low-scoring pair IS listed — and its ground says so, without claiming a cap that never fired.
+
+    **Re-pointed 2026-07-26, and it asserts MORE than it did.** It used to require ``withheld == []`` for
+    this pair, on the reasoning that nothing refused it so claiming a ground would over-claim. The first
+    half of that is right and is still enforced below; the second half had a measured cost. ``withheld`` is
+    the ONLY channel that carries the ``possible`` watch-list anywhere — it is not drawn on ``GET /view`` by
+    design — so "no recorded reason" meant "reaches no surface at all": 24 of 355 retained pairs on the
+    booted corpus were invisible to the analyst and byte-indistinguishable from pairs the resolver never
+    scored. "No cap fired" is not a reason to disappear; it is itself the reason, and a perfectly good one.
+    The pair is now listed with a ground derived from its own confidence against the configured bar, and
+    the over-claim this test exists to prevent is checked directly: the ground must not assert a cap."""
     claims = [
         entity("unit_a", "unit", "Zulu"),
         entity("unit_b", "unit", "Kappa"),
@@ -128,7 +138,18 @@ def test_an_ordinary_sub_review_link_is_listed_without_a_reason_rather_than_a_ma
     summary = identity_coverage(part, {"unit_a": "unit", "unit_b": "unit"})
 
     assert ("unit_a", "unit_b") in part.possible
-    assert summary.withheld == [], (
-        f"a merely low-scoring link is reported as withheld-by-a-cap: {summary.withheld}. Nothing refused it, "
-        "so claiming a ground would be an over-claim about the system's own decision"
+    listed = [w for w in summary.withheld if {w.a, w.b} == {"unit_a", "unit_b"}]
+    assert listed, (
+        f"a merely low-scoring link reaches NO surface: withheld={summary.withheld}. GET /coverage is the "
+        "only channel carrying the possible tier, so a pair omitted from it is invisible to the analyst — "
+        "indistinguishable from one the resolver never scored. A cap may withhold ATTENTION, not the RECORD."
+    )
+    ground = listed[0].reason
+    assert ground, "the pair is listed with an empty ground, which states nothing"
+    assert not any(word in ground.lower() for word in ("capped at", "cap refused", "withheld by a cap")), (
+        f"the ground claims a cap that never fired: {ground!r}. Nothing refused this pair — it simply "
+        "scored short of the bar, and saying anything stronger over-claims the system's own decision."
+    )
+    assert "stopped short of the bar" in ground, (
+        f"the ground does not state what actually happened to this pair: {ground!r}"
     )
