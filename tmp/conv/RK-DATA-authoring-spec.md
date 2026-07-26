@@ -12,6 +12,37 @@ and when.
 
 ---
 
+## 0a. What rev 3 changed, and why
+
+A second adversarial pass walked the rails against the shipped config and code rather than against this
+document. Its verdict: the rev-2 design is right, and **two defects stopped it working**. Both are closed
+here, and both were confirmed by measurement before being acted on — not accepted on assertion.
+
+1. **The branch wording did not fold, and it defeated the trap.** n02's "Corps of Army Air Defence" returns
+   `mapped=False` from the shipped `value_normalization` map. `service_branch` is a
+   `normalization_required_attrs` slot, so `unnormalizable_critical_values` fires, the pair is refused on the
+   **normalisation rail**, and `colocation_ceiling` is never consulted — the exact vacuity rev 2 existed to
+   remove, reintroduced by a wording choice. Same root cause in n05, three more times, with a knock-on rev 2
+   missed: n01 states 22 AD Regt's branch in a form that **does** fold, so leaving n05 unfolded split one
+   regiment across two branch values. All four values restated in forms the shipped normaliser folds, with
+   **no new alias row**. Measured fold table in §4.3.
+2. **Documents still stated the answer, and the worst one defeated the trap outright.** n06 §3 wrote "we
+   record the number of units at that cantonment as OPEN" — verbatim the conclusion the trap requires the
+   system to derive, which lets the system source it from a document and turns the centrepiece into a
+   reading-comprehension test. Removed, along with n06 §3's stated positions-are-not-units rule, three
+   adjudications in n03, three in n04, and one in n05. **Each was replaced with its observational form**
+   wherever a real document of that type would carry the observation; deleted outright only where the
+   sentence was a conclusion with no observation under it. Per-document reasoning in §3.3–§3.6.
+
+Two further items. The **two `site_type` alias rows** rev 2 added are withdrawn: they were keyed to phrases
+n03 uses verbatim, written by the same hand in the same pass, so they could not miss and therefore measured
+nothing (§2.2). And the **harm description** is corrected at the source: `resolution.yaml`'s comment on
+`colocation_ceiling` claimed the harm is a fabricated relocation, which **this trap cannot produce** — both
+mentions are at one site, so there is no before/after to order. The comment now separates the always-present
+undercount from the different-sites-only relocation, and §4.4 does not inherit the stronger claim.
+
+---
+
 ## 0. What rev 2 changed, and why
 
 An adversarial review checked the hard constraints with git rather than trusting rev 1, and found two things
@@ -80,21 +111,30 @@ with no relocation between them. Full `backend/tests/view`, `tests/config`, `tes
 the re-record gives it the operator-class string, the flagship silently returns to held-with-a-gap. That is
 *safe* but it is a silent demo regression. Check it; do not close it by mapping an operator-class string.
 
-### 2.2 The two rows added in rev 2 (PREDICTED, not measured)
+### 2.2 The two rows added in rev 2, and WITHDRAWN in rev 3
 
-The review's point on n03 is the sharp one: rev 1's n03 supplied the closed vocabulary as clean labelled
-fields (`Position type: emplacement`), which hands the extractor the controlled value verbatim. **Needing no
-alias row is not a win — it means the alias machinery was never exercised.** n03 now writes its site kinds
-the way an imagery desk writes them, and two rows are declared for the phrases it uses:
+Rev 2 added `revetted launch position → emplacement` and `unimproved hardstand → dispersal_site`, keyed to
+phrases n03 uses **verbatim**. The review's follow-up is right and the rows are withdrawn.
 
-| Phrase in n03 | → class |
-|---|---|
-| `revetted launch position` | `emplacement` |
-| `unimproved hardstand` | `dispersal_site` |
+The rev-2 reasoning was sound as far as it went: rev 1's n03 supplied the closed vocabulary as clean labelled
+fields (`Position type: emplacement`), handing the extractor the controlled value, and needing no alias row
+is not a win. But the remedy reproduced the defect one level down. Both sides of those two rows — the key,
+and the document the key reads — were written by the same hand in the same pass, so the row **could not
+miss**. A row that cannot miss measures nothing about whether the alias step absorbs a string it did not
+anticipate; it records only that a phrase was copied correctly, while still fixing what n03 is allowed to say.
 
-Both are kind-of-place phrases and nothing else, which is the only test a row has to pass. These rows are
-**predictions about what extraction will emit**, not records of a string the store has seen. If the
-re-record emits different strings, add the rows it actually emits.
+**Is the machinery therefore a no-op? No — but the *test* was.** The map still has to fire for n03's prose to
+classify at all, and n03 contains no controlled value anywhere, so the vocabulary is not literally in the
+document. What was vacuous is the *evidence* the rows were added to supply. That is a smaller defect than the
+one rev 2 fixed, and it is fixable without touching the machinery.
+
+**The fix is consistency with this file's own doctrine.** §2.3 applies *measure-first* to `cantonment`
+because a predicted row could do damage. Applying measure-first to the row that could break the flagship, and
+predict-and-mirror to the two rows that make our own new document look exercised, is the tell. So n03's site
+kinds take the **third state** — no de-confliction, no fusion, named gap, safe by construction — until the
+re-record shows what extraction actually emits, and the rows that landed are added then (§7 check 5). The
+alias machinery is still exercised by the three §2.1 rows, each measured against a string the store had
+actually emitted from a document nobody wrote for the purpose. Cost of the withdrawal: nil.
 
 ### 2.3 The row deliberately NOT added
 
@@ -178,7 +218,16 @@ made n02 the third document stating that regiment's garrison — the review's po
 there could not distinguish working independence logic from three claims being counted. It is now a
 live-firing validation release which, **in line with real ISPR practice, does not identify the parent
 formation**: "an air defence battery at Pano Aqil Cantonment", equipped with the long-range system on the
-Corps of Army Air Defence inventory. This is **carrier #2 of the co-location trap** (§4).
+**Pakistan Army Air Defence** inventory. This is **carrier #2 of the co-location trap** (§4).
+
+**Rev 3 — the branch wording, and why it is not cosmetic.** Rev 2 wrote that inventory as "Corps of Army Air
+Defence". Measured against the shipped `earned_identity.value_normalization`, that string returns
+`mapped=False`, which puts `service_branch` — a `normalization_required_attrs` slot — into C7's third state
+and makes `unnormalizable_critical_values` fire. The pair is then refused by the **normalisation rail**, and
+`colocation_ceiling` is never consulted. A safe outcome, and a **vacuous** one: the trap exists to be held by
+the cap, and any other rail intercepting it first is exactly the defect rev 2 was written to remove. Rev 3
+states the branch in a form the shipped normaliser folds and adds **no new alias row** to make the prose work
+(see §4.3 for the measurement).
 
 Consequence, stated plainly: 22 AD Regt's garrison basing is now stated by **two** sources, not three — n01
 (third-party curated register) and n05 (operator-state official sheet). Two independent looks is a real test
@@ -203,7 +252,8 @@ of the independence logic; three was not.
 inferring one). Operators 2, 5, 8.
 
 **Rewritten in rev 2.** The labelled `Position type:` fields are gone — they handed over the closed
-vocabulary verbatim; site kinds are now in the desk's own prose and need the two alias rows in §2.2. The
+vocabulary verbatim; site kinds are now in the desk's own prose (rev 3 withdraws the two alias rows rev 2
+declared for that prose — §2.2 — so they take the third state until measured). The
 terminal §5 "what this report does not establish" lecture is gone; what survives is a **collection-notes
 section in imagery idiom** — what is legible in the frames, and what was not collected.
 
@@ -215,15 +265,33 @@ error and the three-unit distance drift are carried in place.
 
 **Must produce:**
 - `observed-at` occupancy evidence — equipment at a place — materialising **presences**.
-- Site classes `emplacement` (×2) and `dispersal_site` via the §2.2 alias rows.
+- Site classes for the three positions, **or C7's third state** if the emitted strings do not map. §2.2's two
+  predicted alias rows are withdrawn in rev 3; the rows that actually land are added after the re-record.
 - A **named gap on the unit count at Pano Aqil**, sourced to this document's own collection notes.
 
 **Must refuse:**
 - To attribute either cantonment position, or the Ghotki hardstand, to **any named regiment**. No
   `inducted-into` edge runs from anything observed here to 22 or 47 AD Regt, so no derivation can reach one.
-- To read the occupied Ghotki hardstand as evidence that either cantonment position was vacated — the
-  collection notes say no pass shows either unoccupied.
+- To read the occupied Ghotki hardstand as evidence that either cantonment position was vacated — §2's
+  per-pass occupancy for all three positions is the evidence, and the system draws the concurrency itself.
 - To resolve `069°80'20"E` as a real coordinate.
+
+**Rev 3 — three adjudications stripped from a document type that only OBSERVES.** An imagery desk records
+what is in the frame and what is on the working sheets; it does not rule.
+
+- *"…which is the same distance in a different unit and not a second measurement."* This adjudicates the
+  corroboration-counting question — whether 14.6 nm and 17 statute miles are one look or two — which is the
+  system's to answer. Replaced with the observation: the 11 Mar working sheet **gives the figure as** 14.6 nm.
+  Both renderings are on the record; the arithmetic is the reader's.
+- *"A minute value of 80 does not exist; the first form is the one this desk holds."* This resolves the
+  malformed coordinate that **this document's own must-refuse says the system must refuse to resolve** — the
+  document supplying the very ruling it forbids. Replaced with: both strings reproduced as they appear, the
+  second noted as having circulated internally, and "this desk has not reconciled the two." The primary
+  `Centre of signature` line stays, because *this is the coordinate we measured* is an observation, not a
+  reconciliation.
+- *"…including the passes on which the Ghotki hardstand is occupied."* A trailing clause that pre-argues the
+  anti-relocation reading. Deleted, not replaced: §2 already states per-pass occupancy at all three
+  positions, so the concurrency is fully derivable and the system now has to derive it.
 
 **Rewritten must-refuse (review Finding 3).** Rev 1 said "MUST REFUSE to attribute either emplacement to any
 unit". That **contradicts the system's own design**. `backend/chanakya/view/basing.py` deliberately
@@ -282,6 +350,24 @@ names both 22 and 47 Air Defence Regiment, then discusses "the regiment".
 - Recognition that `8417 AD` and the struck-through `AD/2025/019` are the same vehicle and the same
   photograph — one vehicle, two sightings.
 
+**Rev 3 — three adjudications stripped; a spotter records, it does not conclude.** The observational fields
+carry the same information and force the same answer, which is the point: the document supplies the evidence,
+the system supplies the identity.
+
+- *"Not a second vehicle and not a second sighting"* (the `AD/2025/019` tag). Replaced with what the register
+  actually holds: the archive reference submitted with the duplicate entry, `PMV-A-4471`, **is the reference
+  already carried at `AD/2025/017`**, and the plate, date and occasion as submitted are the same. Identical
+  archive ref is stronger coreference evidence than the verdict was, and it is an observation. The tag also
+  drops from `[DUPLICATE — …]` to `[ENTRY NOTE — …]`; "duplicate" is itself the conclusion.
+- *"…it refers to this vehicle and there is no vehicle 8417 AD"* (correction log). The second half is an
+  assertion about the world this register cannot make. Replaced with an assertion about its own holdings:
+  "this list holds no entry and no photograph under that plate." The first half — at full resolution the
+  third digit reads 7 — is retained, because what a frame shows at full resolution is exactly what a spotter
+  register is for.
+- *"Nothing in the archive answers it."* Replaced with the observation underneath it: no frame in the archive
+  carries a unit marking on this vehicle, and no captioned material names a formation against it. Same
+  refusal, sourced rather than declared.
+
 **Must refuse:**
 - To bind "the regiment" to either 22 or 47 AD Regt. Two type-compatible antecedents ⇒ refusal, both mentions
   stay singletons, the pair goes to the analyst.
@@ -307,8 +393,33 @@ entries**: a principal entry, a lineage entry, a section listing the other forma
 a related entry for the same station, and a station-name note. The prose that told the reader what to
 conclude is deleted. The plants the review rated strongest are kept intact.
 
+**Rev 3 — three unfoldable branch values fixed, and one adjudication stripped.** n05 wrote `Pakistan Army,
+Corps of Army Air Defence` on both regiments and `Pakistan Army, Pakistan Artillery` on 22 Medium Regiment.
+None of the three normalises (measured, §4.3), so all three would have taken C7's third state. The knock-on
+was worse than the sheet itself: n01 states 22 AD Regt's branch as `Pakistan Army, Air Defence`, which
+**does** fold, so leaving n05 unfolded split **one regiment across two branch values** — a fabricated
+distinction between two documents that agree. Both AD regiments now read `Pakistan Army, Air Defence`,
+matching n01 exactly. 22 Medium Regiment reads `Pakistan Army` in the labelled slot with its arm carried in
+the entry name (`22 Medium Regiment (Artillery)`), because no `Pakistan Army, <arm>` string folds except the
+air-defence one — the arm belongs in the designation on a nomenclature sheet anyway, and putting it in a
+labelled attribute slot would only reintroduce the unfoldable value under a different key.
+
+**Rev 3 — the "cannot be allocated" instruction, stripped.** The 47 AD Regt note ended "Reporting of 'the air
+defence regiment at Pano Aqil' is received in staff correspondence without further particulars and **cannot
+be allocated between the two on what it carries**." The review judged this arguably in-idiom for a
+nomenclature sheet. **Decision: strip it.** The idiom argument is real but loses on what it costs. A
+nomenclature sheet's job is to say what the names are; this clause reaches past nomenclature into an
+*allocation verdict about incoming reporting* — which is the precise question the trap requires the system to
+hold open. Leaving it lets the system SOURCE non-allocability from a document instead of deriving it from the
+absence of a designator, the same failure mode as n06's OPEN sentence, only quieter. And removing it costs
+nothing: the observation the verdict rested on — such reporting arrives without a regimental number and
+without a brigade — is retained verbatim, and it is what a real sheet would carry. Compare n01 §3.7, which is
+**kept**: "the compiler has not been able to allocate the battery and carries it here unallocated" is a
+register reporting its own holdings, which is why the entry sits in an unallocated section at all. Reporting
+your own state is evidence; ruling on someone else's reporting is adjudication.
+
 **(a) The designator collision — kept, and it is the live test.** `22 Air Defence Regiment` (Pakistan Army,
-Corps of Army Air Defence), `22 Medium Regiment` (Pakistan Army, Pakistan Artillery, Okara) and a PAF
+Air Defence), `22 Medium Regiment (Artillery)` (Pakistan Army, Okara) and a PAF
 `22 Air Defence Squadron` are recorded as separate entries. **This is a live test of
 `hard_id_fields.unique.unit = [service_branch, designator]`.** If extraction emits `designator` as the bare
 number `22`, then `(Pakistan Army, 22)` is a complete composite AND-key shared across two different arms and
@@ -358,8 +469,28 @@ sentence near-verbatim. The system has to draw the conclusion.
 Also kept: SIPRI's own two properties (delivery figures are *estimates*; the register counts **transfers**,
 not **fielded** units), the withdrawal of the programme's own 2023 backgrounder, the imagery count (six
 prepared positions: three persistent, two intermittent, one never occupied), the result stated as a floor
-with **no** upper bound at all, and Pano Aqil as the worked example with the unit count recorded as **OPEN**
-— now also noting the unallocated battery n01 §3.7 carries.
+with **no** upper bound at all, and Pano Aqil as the worked example — now also noting the unallocated battery
+n01 §3.7 carries.
+
+**Rev 3 — §3 no longer states the answer, and this was the worst of the group.** Two sentences are deleted:
+
+- *"We record the number of units at that cantonment as OPEN."* This is **verbatim the epistemic conclusion
+  the trap requires the system to derive**. With it in the corpus the system can SOURCE the open count from a
+  document rather than derive it from the absence of any allocating evidence, and the centrepiece stops
+  testing the co-location cap and starts testing reading comprehension. Nothing replaces it — the open count
+  is an output, not an observation, so there is no observational form to substitute.
+- *"A prepared position is a place; a fire unit is a formation… One station can also host more than one unit,
+  in which case two positions are two units."* This hands over the positions-are-not-units distinction that
+  the paper's own §4 "must produce" list requires the SYSTEM to make. A methodological rule stated in the
+  source is not the system drawing a distinction; it is the system copying one.
+
+§3 is now **`3. THE PANO AQIL POSITIONS`** and reports only what the programme observed: two of its six
+positions at that cantonment, ~5.5 km apart, both occupied on every pass in the most recent collection,
+differing in engagement radar planform; two regiments and one unallocated battery recorded there by ORBAT
+references; no source attaching any position to a named formation; no frame carrying a unit marking or a
+formation caption. §4's result (a floor of three, no upper bound, and the alternatives it cannot rule out
+between) is untouched — a paper stating its own count is in-idiom for the type; stating the *analyst's*
+verdict about a cantonment it did not count is not.
 
 **Must produce:**
 - `approximately 4 battalions` resolved to **one origin group**, not three looks.
@@ -409,8 +540,14 @@ same branch, the same equipment class, and the same words for the thing.
 
 **It establishes that more than one such sub-unit is at that cantonment.** n01 §3.4 places two long-range AD
 regiments there and records that both hold batteries at the cantonment; n03 shows two occupied revetted
-launch positions 5.6 km apart with different radar fits, occupied on every pass; n06 records the unit count
-at that cantonment as OPEN.
+launch positions 5.6 km apart with different radar fits, occupied on every pass; n06 independently counts two
+prepared positions at that cantonment, both occupied on every pass of its most recent collection, differing
+in radar planform, with no source attaching either to a named formation.
+
+**In rev 3 no document states the conclusion.** Rev 2 had n06 write "we record the number of units at that
+cantonment as OPEN", which let the system *source* the open count instead of deriving it (§3.6). That
+sentence is gone. Everything above is an observation; the openness of the count is now an output the machine
+owes, and if it does not produce it, the trap has caught a real failure rather than a copying failure.
 
 **It does not establish which battery either mention is.** No document allocates either one. So the two
 mentions are genuinely either one battery reported twice or two batteries reported once each, and **nothing
@@ -427,7 +564,8 @@ For each mechanism that could refuse the pair, why it does not fire. Read agains
 | Rail | Fires? | Why not |
 |---|---|---|
 | `cross_identity` — type | **no** | Both mentions are `unit`. |
-| `cross_identity` — namespace | **no** | Both state `service_branch` Pakistan Army, which C7 folds to one value, so `namespace_compatible` holds and the bootstrap's stricter `==` holds too. |
+| `cross_identity` — namespace | **no** | Both state `service_branch` in a form the shipped normaliser folds to the single canonical `pakistan army`, so `namespace_compatible` holds and the bootstrap's stricter `==` holds too. **Measured** — see the fold table below. |
+| C7 normalisation rail (`unnormalizable_critical_values`) | **no**, in rev 3 | Rev 2's n02 wrote `Corps of Army Air Defence`, which the shipped map does **not** fold. `service_branch` is a `normalization_required_attrs` slot, so the third state fired, the pair was refused for unreadability, and the cap was never reached. Both sides now state a **mapped** value. |
 | `name_ceiling: possible` | **no** | `_name_alone` requires `RELATIONAL == 0`. The two share resolved neighbours (the Pano Aqil Cantonment site; the long-range design), so `RELATIONAL > 0` and the name cap is structurally unreachable. **This is the rail rev 1's trap was said to ride, and it cannot fire on any co-located pair.** |
 | `contrast_ceiling` — stated contrast | **no** | No document distinguishes these two mentions; neither has a name to distinguish. n01 §3.7 states non-*allocation* (to the two regiments), which is not a statement of non-identity between the two battery mentions. |
 | G18 relationship-conflict wall (`based-at`, `operated-by`) | **no** | Both are at the **same** site under the same operator, so there is no stated conflict at overlapping times to wall on. This is why the pair must sit at one site rather than one-per-emplacement: two different sites would wall, and the wall — not the cap — would be doing the work. |
@@ -438,6 +576,35 @@ For each mechanism that could refuse the pair, why it does not fire. Read agains
 | `agreeing_discriminators(formation_discriminators)` | **no** | `formation_discriminators` is `[equipment_fingerprint, parent_unit]`. Neither is stated on either side, and absence never lifts. (`designator`, `echelon` and `home_garrison` are deliberately excluded from that list, so their presence or agreement lifts nothing.) |
 | `_conflict_penalty` | **no** | Nothing disagrees, so the score is not suppressed — which is the point: this pair *scores*. |
 | **`colocation_ceiling: probable`** | **YES** | `colocation_only` returns a non-empty shared-predicate tuple: both are `unit` (in `formation_types`, not `presence_types`), `RELATIONAL > 0`, every shared predicate is inside `colocation_predicates`, no shared unique id, no agreeing discriminator. **Sole restraint.** |
+
+**The branch fold, measured against the shipped config.** Loaded via
+`ResolveConfig.from_bundle(ConfigStore.seed_from('config').snapshot())` and evaluated with
+`earned_identity.normalise_value('service_branch', …)`. `fold-only` is `resolve.entities.fold_value`, the
+weaker key `Entity.namespace` uses when the C7 normaliser is not in hand.
+
+| Stated value | canonical | mapped | fold-only |
+|---|---|---|---|
+| `Corps of Army Air Defence` — **rev 2 n02** | `corps of army air defence` | **False** | `corps of army air defence` |
+| `Pakistan Army, Corps of Army Air Defence` — **rev 2 n05 ×2** | `pakistan army corps of army air defence` | **False** | `pakistan army corps of army air defence` |
+| `Pakistan Army, Pakistan Artillery` — **rev 2 n05** | `pakistan army pakistan artillery` | **False** | `pakistan army pakistan artillery` |
+| `Pakistan Army, Air Defence` — **n01, and rev 3 n05 ×2** | `pakistan army` | True | `pakistan army air defence` |
+| `Pakistan Army Air Defence` — **rev 3 n02** | `pakistan army` | True | `pakistan army air defence` |
+| `Pakistan Army` — **rev 3 n05 (22 Medium)** | `pakistan army` | True | `pakistan army` |
+| `Pakistan Air Force` — n05 (22 AD Sqn) | `pakistan air force` | True | `pakistan air force` |
+| `Pakistan Army, Artillery` — *considered and rejected* | `pakistan army artillery` | **False** | `pakistan army artillery` |
+| `Air Defence` — *considered and rejected* | `air defence` | **False** | `air defence` |
+
+Two sides fold to one value: **n01 §3.7 `Pakistan Army, Air Defence` and n02 `Pakistan Army Air Defence`
+both return canonical `pakistan army`, mapped `True`.** `Pakistan Army Air Defence` was chosen over the
+equally-valid `Army Air Defence` because it also folds to the **same fold-only key** as n01's form
+(`pakistan army air defence`), so the two mentions share a namespace on the un-normalised path as well — the
+choice is robust to whether the C7 normaliser is in hand at namespace-derivation time, where `Army Air
+Defence` would only be robust with it.
+
+**No alias row was added.** Every value used is already in the shipped `value_normalization` map for
+`service_branch`. The two rejected rows above are why n05's 22 Medium Regiment carries its arm in the entry
+name rather than in the labelled slot: no `Pakistan Army, <arm>` string folds except the air-defence one, and
+inventing a row so our prose could keep its preferred shape is the move this whole pass exists to stop.
 
 **And the pair does reach the fusion line, so the cap has something to do.** Identical normalised names in one
 namespace is `TRIGGER_EXACT_NAME`, a **Phase-1 bootstrap** trigger that merges at hardcoded confidence 1.0 and
@@ -450,7 +617,15 @@ not.**
 
 **No relocation is drawn.** Both mentions are at the same site, so a fused node has one basing and there is no
 before/after for the supersede path to order. Rev 1 claimed a fabricated relocation here; that was wrong, and
-this is the honest replacement — the undercount the trap is named for:
+this is the honest replacement — the undercount the trap is named for.
+
+**This section does not inherit the config comment's claim.** `resolution.yaml`'s note on `colocation_ceiling`
+described the harm as a formation over-merge making two sites one unit's before/after, with the supersede path
+drawing a relocation and deleting the retired edge's Known Gap. That is a real harm of the cap's *general*
+case and it is **conditional on the two mentions being at different sites** — which this trap, by
+construction, is not. The comment has been amended to separate the two: the undercount is what always
+follows; the fabricated relocation is the extra harm available only across two sites. What this trap produces
+is the first list, in full, and none of the second.
 
 1. **The count is silently halved.** One `unit` node stands where the corpus's own sources put two or more
    sub-units at that cantonment. This is the same failure class `basing.py`'s `_truncation_gap` docstring
@@ -462,9 +637,11 @@ this is the honest replacement — the undercount the trap is named for:
    equipment and sourcing particulars; n02's carries an operator-state firing record. Fused, one node claims
    both provenance chains as one battery's, and the register's own "could not allocate" flag is closed by
    machine rather than by evidence.
-4. **It propagates into the count answer.** n06 uses Pano Aqil as its worked example and records the unit
-   count there as OPEN. A fused node makes that cantonment read as one unit, contradicting the corpus's own
-   recorded OPEN and pushing the fire-unit floor in the direction a reader will then quote.
+4. **It propagates into the count answer.** n06 uses Pano Aqil as its worked example and counts two occupied
+   prepared positions there, attaching neither to a formation. A fused node makes that cantonment read as one
+   unit, against the corpus's own observations, and pushes the fire-unit floor in the direction a reader will
+   then quote. In rev 3 n06 no longer *states* that the count is open, so this is the system's own reading of
+   the observations being wrong — not a document being contradicted.
 
 **What the system must produce:** the pair **withheld from fusion**, recorded at ceiling `probable` on rail
 `colocation_ceiling`, **in the analyst's queue** with the reason naming what would lift it
@@ -525,11 +702,40 @@ follow, in order. Checks 1 and 2 decide whether the centrepiece is live at all.
    silently**. Both n01 §3.7 and n02 state the station and the equipment class, so there are two chances at a
    shared neighbour — but it must be verified, not assumed. If it fails, the fix is on the data side (make
    both documents state the same site), never by weakening a cap.
+
+   **And the shared neighbour must be ONE node, not two names for one place.** If the two Pano Aqil site
+   mentions do not themselves fuse — n01 §3.7 writes "Pano Aqil Cantonment, Sukkur District, Sindh", n02
+   writes "Pano Aqil Cantonment, Sukkur District" — then the two batteries hold `based-at` edges to two
+   *different* objects, and G18 compares them. `_same_place` is the only escape and it is narrow (same id,
+   same gazetteer `place_id`, or alias-equivalent normalised names). Failing that, the C1 scope test cannot
+   de-conflict either: **`cantonment` is deliberately unmapped** (§2.3), so `normalise_tag` returns
+   `(absent_bucket, False)` on both sides, `known_a and known_b` is False, the differing-class escape is
+   skipped, and — with the dates overlapping — `_relationship_walls` records a **RAISE**, C7's third state.
+   `raise_walls` is a block-merge-and-review set consulted at the **top of the Phase-1 loop**, before
+   `bootstrap_trigger` and therefore before `fusion_blocked`, so the pair is intercepted *ahead of the cap*
+   and the trap is inert again — a safe outcome that tests the wrong thing. Verify the two site mentions
+   resolve to one node; if they do not, the fix is on the data side (make both documents write the station
+   identically, or seed the alias), never by mapping `cantonment` to buy a de-confliction.
 2. **Which rail actually fires on the trap pair?** Grade the *rail*, not just the outcome. Expected: ceiling
    `probable`, rail `colocation_ceiling`, with a queue place. `name_ceiling` (ceiling `possible`,
    watch-listed, off the queue) is a **safe** outcome but means the trap is inert — the pair shared nothing.
    `cross_identity` means the two mentions were typed or namespaced apart. No record at all means they fused,
    which is the failure §4.4 describes.
+
+   **2a. Is every shared predicate inside `colocation_predicates`?** The same dangerous direction as check 1,
+   by a second door. `colocation_only` also returns `None` when
+   `shared.issubset(set(earned.colocation_predicates))` is False — "some shared link is NOT a co-location
+   link ⇒ real relational evidence" — so **one shared neighbour on an off-list predicate silences the cap
+   entirely**, and the pair then falls through to a path with no ceiling on it. Measured against the shipped
+   ontology, the unit-reachable predicates NOT on the list are exactly two: **`imported-by`**
+   (`contract_import_event → unit`) and **`sustained-by`** (`unit → interceptor_stockpile | techdata_authority`,
+   polymorphic object). Neither battery document names a contract or a stockpile, and `imported-by` carries
+   `requires_stated_endpoints: [to]`, so this should not fire — but "should not" is what check 1 says too.
+   Enumerate the shared-neighbour predicate set for the pair and confirm it is a subset of
+   `[based-at, observed-at, instance-of, operated-by, equips, inducted-into]`. If an off-list predicate has
+   crept in, the cap is silently gone; the fix is to find out which document put it there, not to widen the
+   list — widening it would tell the cap that a shared supply relationship is mere co-location, which is the
+   opposite of true.
 3. **What does `designator` extraction emit for `22 Air Defence Regiment`?** (§3.5.) A bare `22` makes
    `(Pakistan Army, 22)` a complete composite AND-key across two different arms and lifts every cap — the
    finding n05 was authored to surface. Also confirm **no `designator` is invented for the undesignated
@@ -552,10 +758,12 @@ follow, in order. Checks 1 and 2 decide whether the centrepiece is live at all.
      regiment node acquires induction reach, it can pick up derived basings at Karachi (`centre` → `garrison`)
      *and* at Pano Aqil — two basings in **one** class bucket, which is a supersede, which is a **relocation
      that never happened**. Enumerate every unit's basings per class bucket after the re-record.
-5. **Do the two new alias rows match what extraction emits?** (§2.2.) `revetted launch position` and
-   `unimproved hardstand` are predictions from n03's wording. If different strings land, add the rows that
-   landed; if a near-variant lands unmapped, the third state applies — held, no fusion, named gap: safe, but
-   the site classes go inert. Do not weaken the third state.
+5. **What `site_type` strings does n03 actually emit, and which rows should exist?** (§2.2.) The two
+   predicted rows are **withdrawn**, so n03's three positions currently land in the third state — held, no
+   de-confliction, no fusion, named gap: safe, and the site classes are inert until measured. Record the
+   exact strings the re-record emits, then add a row **only** for a string that is a kind-of-place phrase and
+   nothing else. Do not re-add a row keyed to wording we wrote for the purpose without saying so, and do not
+   weaken the third state to make the classes appear.
 6. **Is `8477 AD` / `8471 AD` ever proposed as a pair?** (§3.4.) The keep-separate is only gradeable if the
    resolver proposes it. If blocking never brings them together, record that plainly — it is not a win.
 7. **Confirm 22 AD Regt's garrison basing now has exactly two independent looks** (n01, n05), not three

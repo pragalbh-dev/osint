@@ -33,10 +33,10 @@ ENTRY AD/2025/017
   Unit marking          : none legible in any frame held. The February display was not captioned by unit
                           in any material we hold.
   Correction log        : first published 24 Mar as plate "8417 AD" from the road-move frames alone.
-                          Corrected 27 Mar after PMV-A-4471 was re-examined at full resolution: the third
-                          digit is a 7, not a 1. Both frames now agree on 8477. The erroneous form
-                          8417 AD circulated for three days and may still be quoted elsewhere; it refers
-                          to this vehicle and there is no vehicle 8417 AD.
+                          Corrected 27 Mar after PMV-A-4471 was re-examined at full resolution: at full
+                          resolution the third digit reads 7, not 1, and both frames read 8477. The form
+                          8417 AD circulated for three days and may still be quoted elsewhere; this list
+                          holds no entry and no photograph under that plate.
 
 ENTRY AD/2025/018
   Plate (cab door)      : 8471 AD
@@ -54,10 +54,11 @@ ENTRY AD/2025/019
   Vehicle type          : 8x8 heavy TEL, canisterised
   Sighting 1            : 18 Feb 2025 — static display, Panu Aqil Cantt.
   Archive ref           : PMV-A-4471
-  [DUPLICATE — same vehicle and same photograph as entry AD/2025/017, entered a second time from a
-  contributor submission that used the "Panu Aqil" spelling and was not caught by the de-duplication pass.
-  Retained struck-through rather than deleted, per house practice. Not a second vehicle and not a second
-  sighting.]
+  [ENTRY NOTE — entered from a contributor submission that used the "Panu Aqil" spelling and was not caught
+  by the de-duplication pass. The archive reference submitted with it, PMV-A-4471, is the reference already
+  carried at entry AD/2025/017, and the plate, the date and the occasion as submitted are the same. Retained
+  struck-through rather than deleted, per house practice: this list annotates entries, it does not remove
+  them.]
 
 ---
 
@@ -69,4 +70,5 @@ launcher photographed at the cantonment in February turning up on the Ghotki roa
 time we have had one plate in two places. Several people have since told us the regiment has moved. We
 hold no photograph of the cantonment positions on or after 22 March, and we have no frame of the vehicle
 carrying a unit marking. We have been asked repeatedly which regiment 8477 AD belongs to; most of the
-asking assumes 22 AD Regt because that is the one people have heard of. Nothing in the archive answers it.
+asking assumes 22 AD Regt because that is the one people have heard of. No frame in the archive carries a
+unit marking on this vehicle, and no captioned material we hold names a formation against it.

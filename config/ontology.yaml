@@ -518,16 +518,18 @@ layer_routing:
     # the place; "airfield site" is the place — PAF Base Nur Khan. The place-kind noun governs, which is
     # also what makes Rawalpindi->Rahwali one instance (both airfields) rather than two unrelated buckets.
     "prepared revetment complex / airfield site": airfield
-    # n03 (imagery read-out). PREDICTED from the document's wording, not measured — n03 carries no claims
-    # until the re-record, so these two rows declare how the phrases MAP; they are not a record of a string
-    # the store has seen. Both are kind-of-place phrases and nothing else, which is the only test a row has
-    # to pass. n03 was rewritten to stop handing the extractor the controlled value verbatim ('Position
-    # type: emplacement' / 'dispersal site'): a corpus that needs no alias row never exercises the alias
-    # machinery at all, and these rows are that machinery being exercised. If the re-record emits different
-    # strings, add the rows it actually emits — do not weaken the third state, and do not map a phrase whose
-    # place-kind noun is generic.
-    "revetted launch position": emplacement
-    "unimproved hardstand": dispersal_site
+  # DELIBERATELY NOT MAPPED: n03's site kinds. Two rows keyed to 'revetted launch position' and 'unimproved
+  # hardstand' were carried here and are WITHDRAWN. They were predicted from n03's wording by the hand that
+  # wrote n03 in the same pass, so key and document were authored together and the row could not miss. A row
+  # that cannot miss measures nothing about whether the alias step absorbs a string it did not anticipate; it
+  # records only that a phrase was copied correctly, while still fixing what n03 is allowed to say — the
+  # closed vocabulary handed over one level of indirection later. The three rows above are different in kind:
+  # each was measured against a string the store had actually emitted, from a document nobody wrote for the
+  # purpose. Applying measure-first to `cantonment` below and predict-and-mirror to the two rows that make
+  # our own new document look exercised is the inconsistency. Same discipline here: n03's site kinds take the
+  # third state until the re-record shows what extraction emits, and the rows that landed are added then.
+  # Cost of the withdrawal is nil — the alias machinery is still exercised by the three measured rows.
+  #
   # DELIBERATELY NOT MAPPED: 'cantonment'. It is a real kind-of-place noun and it would map cleanly to
   # `garrison` — and n01/n02/n05 use it constantly. It is left out because it is ALSO the noun several
   # EXISTING documents use around the two ends of the flagship relocation (Rawalpindi Cantonment,

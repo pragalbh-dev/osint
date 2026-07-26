@@ -633,10 +633,21 @@ earned_identity:
   name_ceiling: possible
   # CO-LOCATION caps a FORMATION merge at `probable` (D-13.14 / G16). Shared design + site + operator is a
   # presence-level fact; confirming a *formation* needs a unit-level discriminator. This is anti-fabrication
-  # machinery, not OOB hygiene: `based-at` is functional and unit-keyed, so a formation over-merge makes two
-  # sites one unit's before/after, the supersede path then DRAWS a relocation, removes the analyst, and
-  # deletes the retired edge's Known Gap. One identity error becomes a fabricated movement assessment with
-  # the human taken out of the loop.
+  # machinery, not OOB hygiene — and the harm has TWO forms, of which only the first is always present:
+  #
+  #   ALWAYS — the UNDERCOUNT. One `unit` node stands where the corpus's own sources put two or more
+  #   formations. The fused pair is machine-adjudicated, so it leaves the review queue and the open
+  #   allocation question stops being asked; the register's own "could not allocate" flag is closed by
+  #   machine rather than by evidence; and the two mentions' separate provenance chains are inherited by one
+  #   node as if they were one formation's. The system answers, in its own voice, a question every source it
+  #   holds declined to answer, with the human taken out of the one decision that was actually theirs.
+  #
+  #   ONLY WHEN THE TWO MENTIONS ARE AT DIFFERENT SITES — a fabricated RELOCATION on top. `based-at` is
+  #   functional and unit-keyed, so an over-merge across two sites makes them one unit's before/after, the
+  #   supersede path DRAWS a movement that never happened and deletes the retired edge's Known Gap. This is
+  #   the stronger claim and it is conditional: a same-site over-merge produces exactly one basing, so there
+  #   is no before/after for supersede to order and no relocation follows. Do not read the relocation as the
+  #   general case — the undercount is.
   colocation_ceiling: probable
   # A same-document STATED-CONTRAST pair caps at `probable` — it reaches the analyst with its licensing
   # quote and can never auto-merge. `possible` is REJECTED AT LOAD for this key (and only this key): it would

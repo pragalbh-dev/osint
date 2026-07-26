@@ -15,9 +15,9 @@ NORTH POSITION
 
 SOUTH-EAST POSITION
   Centre of signature: 27°50'30"N 069°08'20"E
-  [The 19 Mar working sheet carries this on a later line as 27°50'30"N 069°80'20"E. A minute value of 80
-  does not exist; the first form is the one this desk holds. Noted because the erroneous form circulated
-  internally before it was caught.]
+  [The 19 Mar working sheet carries this position on a later line as 27°50'30"N 069°80'20"E. Both strings
+  are reproduced here as they appear in the material. The second circulated internally before this summary
+  was compiled. This desk has not reconciled the two.]
   On the south-eastern margin of the cantonment, outside the training-area boundary and inside the wider
   cantonment land envelope. Also a revetted launch position, of comparable construction to the north.
 
@@ -25,8 +25,8 @@ SOUTH-EAST POSITION
 
 GHOTKI POSITION
   Centre of signature: 28°00'15"N 069°18'40"E, off a metalled track in Ghotki District, approximately
-  27 km NNE of the north position (approximately 17 statute miles; the 11 Mar working sheet gives 14.6 nm,
-  which is the same distance in a different unit and not a second measurement). An unimproved hardstand:
+  27 km NNE of the north position (approximately 17 statute miles; the 11 Mar working sheet gives the
+  figure as 14.6 nm). An unimproved hardstand:
   no permanent structures, no perimeter, hardstanding only.
 
 2. OBSERVED SIGNATURES
@@ -66,8 +66,7 @@ graded and empty. There is no imagery over any of the three positions between No
 
 - No unit marking, vehicle registration or formation caption is legible at any of the three positions in
   any frame in this collection. No document held by this desk names a formation at any of them.
-- No pass in this collection shows either cantonment position unoccupied, including the passes on which
-  the Ghotki hardstand is occupied.
+- No pass in this collection shows either cantonment position unoccupied.
 - No SAR pass; EO only. No RF/SIGINT correlation available to this desk.
 - Radar type identification at all three positions is by planform only.
 
