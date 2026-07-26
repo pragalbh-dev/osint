@@ -81,6 +81,7 @@ export function mergeCardDataFromItem(item: LiveReviewItem): MergeCardData {
       : 'Every row here the resolver computed from the two records; no source asserts the identity.',
     differsOn,
     whyOpen: m?.reason ?? undefined,
+    alreadyDecided: m?.alreadyDecided ?? undefined,
     ifYou: m?.consequence ?? [],
     unknowns: m?.unknowns ?? [],
     options: item.options.map((o) => ({ key: o.key, label: o.label })),

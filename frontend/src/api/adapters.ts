@@ -540,10 +540,27 @@ export interface LiveDrawerSupersession {
   newerEdgeId: string | null
 }
 
+/** The identity decision an open `same-as` / `distinct-from` element IS — with its stated GROUND.
+ *
+ *  A wall carries no confidence, no signal breakdown and no card; the ground is the whole finding, and
+ *  without it the analyst sees two nodes with a line between them and no way to tell a curated human
+ *  decision from a geodesic arithmetic result. */
+export interface LiveDrawerIdentity {
+  kind: 'wall' | 'candidate'
+  reason: string // the resolver's own words, verbatim — never paraphrased into ours
+  leftName: string
+  rightName: string
+  suppressedCandidateReason: string | null // a scored resemblance this wall overruled, if any
+  suppressedCandidateNote: string | null
+  unappliedDecision: string | null // an analyst instruction the resolver did NOT apply…
+  unappliedGround: string | null // …and the ground it was not applied on
+}
+
 export interface LiveDrawerModel {
   subjectRef: string
   subject?: LiveDrawerSubject
   supersession?: LiveDrawerSupersession
+  identity?: LiveDrawerIdentity
   status: Status
   sources: number // count of DISTINCT source_id across claims
   looks: number // clusters.length (independent looks)
@@ -776,6 +793,51 @@ export function drawerSupersession(
   }
 }
 
+/** The identity decision the drawer's subject IS, when the subject is an identity edge.
+ *
+ *  `identityReason()` existed and was wired at exactly ONE call site — the `same-as` branch of
+ *  `viewToReviewQueue` — so a WALL's ground reached no surface at all. That is the wrong half to drop: a
+ *  candidate `same-as` at least arrives with a merge score and a signal breakdown, whereas a
+ *  `distinct-from` is drawn with no number and no card, and its ground is the entire content of the
+ *  finding. Most of the walls on the booted corpus are DERIVED (a gazetteer separation, a hard identifier,
+ *  a stated attribute conflict, another analyst's reject) — machine inferences the analyst is in the loop
+ *  precisely to check, rendered until now as a bare line between two nodes.
+ *
+ *  Read off the view rather than the `/evidence` payload because the reason already rides the edge there;
+ *  routing it through a second channel would only create a second place for the two to disagree. */
+export function drawerIdentity(
+  view: GraphView | null | undefined,
+  ref: string,
+): LiveDrawerIdentity | undefined {
+  const edge = view?.edges.find(
+    (e) => e.id === ref && (e.type === 'distinct-from' || e.type === 'same-as'),
+  )
+  if (!edge) return undefined
+  const reason = identityReason(edge)
+  if (!reason) return undefined
+  const resolve = nameResolver(view)
+  const attrs = edge.attrs ?? {}
+  const suppressed = attrs.suppressed_candidate as
+    | { reason?: string | null; note?: string | null }
+    | undefined
+  const unapplied = attrs.adjudication_not_applied as
+    | { decision?: string; actor?: string; ground?: string; instruction?: string }
+    | undefined
+  return {
+    kind: edge.type === 'distinct-from' ? 'wall' : 'candidate',
+    reason,
+    leftName: resolve(edge.source),
+    rightName: resolve(edge.target),
+    // A wall that overruled a scored resemblance says so, in the resolver's own words for the proposal
+    // it suppressed — otherwise the analyst sees a wall and never learns there was a case against it.
+    suppressedCandidateReason: typeof suppressed?.reason === 'string' ? suppressed.reason : null,
+    suppressedCandidateNote: typeof suppressed?.note === 'string' ? suppressed.note : null,
+    // …and an instruction the analyst already gave that the resolver did NOT apply, with its ground.
+    unappliedDecision: typeof unapplied?.decision === 'string' ? unapplied.decision : null,
+    unappliedGround: typeof unapplied?.ground === 'string' ? unapplied.ground : null,
+  }
+}
+
 /** Structured /evidence/{id} response → display model for the live provenance drawer.
  *
  *  `view` is optional: with it the drawer can state the PROPOSITION under assessment (and, for a
@@ -873,6 +935,7 @@ export function evidenceToDrawerModel(data: ProvenanceDrawer, view?: GraphView |
     subjectRef: data.subject_ref,
     subject,
     supersession: drawerSupersession(view, data.subject_ref),
+    identity: drawerIdentity(view, data.subject_ref),
     status: data.status ?? 'insufficient',
     sources: sourceIds.size,
     looks: clusters.length,
@@ -1233,6 +1296,12 @@ export interface LiveMergeEvidence {
    *  settle it, i.e. it is the only part of the card that carries an instruction. `null` when the
    *  resolver recorded none — never a stand-in sentence. */
   reason: string | null
+  /** An instruction the analyst ALREADY gave on this pair that the resolver did not apply, and the
+   *  ground it was not applied on (`attrs.adjudication_not_applied`, replayed from the decision log on
+   *  every rebuild). Without it the card asks the identical question with no memory that it was already
+   *  answered, which is how a review loop turns into a treadmill. `null` when the pair is genuinely
+   *  un-adjudicated. */
+  alreadyDecided: { decision: string; ground: string } | null
   matchedOn: MergeSignalRow[]
   differsOn: string[]
   /** T10 — the same lines as `differsOn`, each carrying its provenance (see MergeDiffRow).
@@ -1541,6 +1610,16 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
       }))
     const differs = mergeDifferences(leftNode, rightNode, breakdown)
     const differsOn = differs.map((row) => row.text)
+    // An instruction the analyst already gave on this pair that the resolver did not apply. The pair is
+    // still a live question — the refusal may be entirely correct (the cross-type rail, for one) — but
+    // re-asking it with no acknowledgement is the queue asking the same question forever.
+    const decided = edge.attrs?.adjudication_not_applied as
+      | { decision?: string; ground?: string }
+      | undefined
+    const alreadyDecided =
+      typeof decided?.decision === 'string' && typeof decided?.ground === 'string'
+        ? { decision: decided.decision, ground: decided.ground }
+        : null
 
     const joinedClaims = new Set([...(leftNode?.claim_ids ?? []), ...(rightNode?.claim_ids ?? [])]).size
     const reconnects = (degree.get(edge.source) ?? 0) + (degree.get(edge.target) ?? 0)
@@ -1571,7 +1650,11 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
           ? `identity match ${edge.merge_confidence.toFixed(2)} · ${matchedOn.length} of ${Object.keys(breakdown).length || 4} signals`
           : 'identity match not recorded',
       badge: band,
-      badges: [band, ...(left.chokepoint || right.chokepoint ? ['Touches a chokepoint'] : [])],
+      badges: [
+        band,
+        ...(left.chokepoint || right.chokepoint ? ['Touches a chokepoint'] : []),
+        ...(alreadyDecided ? [`You answered “${alreadyDecided.decision}” — not applied`] : []),
+      ],
       material: left.chokepoint || right.chokepoint,
       confidence: edge.merge_confidence ?? null,
       options: MERGE_OPTIONS,
@@ -1580,7 +1663,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
         left: { id: edge.source, label: left.label },
         right: { id: edge.target, label: right.label },
         dots,
-        merge: { confidence: edge.merge_confidence ?? null, reason: identityReason(edge), matchedOn, differsOn, differs, consequence, unknowns, left, right },
+        merge: { confidence: edge.merge_confidence ?? null, reason: identityReason(edge), alreadyDecided, matchedOn, differsOn, differs, consequence, unknowns, left, right },
       },
     })
   }

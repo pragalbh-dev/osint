@@ -386,6 +386,58 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
         )
       })()}
 
+      {/* The identity decision's GROUND, when the open element IS a wall or a candidate. A
+          `distinct-from` carries no confidence, no signal bars and no card — the ground is the whole
+          finding, and most walls here are DERIVED (a gazetteer separation, a hard identifier, a stated
+          attribute conflict, an analyst's own reject). Rendered verbatim: paraphrasing would put our
+          words between the analyst and the rail that actually fired. */}
+      {model.identity && (
+        <Section>
+          <Kicker>
+            {model.identity.kind === 'wall' ? 'Held apart because' : 'Still a question because'}
+          </Kicker>
+          <div
+            style={{
+              font: '12px/1.5 ui-monospace,Menlo,monospace',
+              color: 'var(--text-faint)',
+              marginBottom: 6,
+            }}
+          >
+            {model.identity.leftName} ↮ {model.identity.rightName}
+          </div>
+          <div style={{ font: '12.5px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
+            {model.identity.reason}
+          </div>
+          {model.identity.suppressedCandidateReason && (
+            <div
+              style={{
+                font: '12px/1.55 ui-sans-serif,system-ui,sans-serif',
+                color: 'var(--text-dim)',
+                marginTop: 10,
+              }}
+            >
+              <strong>There was a case for merging, and this wall overrules it.</strong>{' '}
+              {model.identity.suppressedCandidateReason}
+              {model.identity.suppressedCandidateNote ? ` — ${model.identity.suppressedCandidateNote}` : ''}
+            </div>
+          )}
+          {model.identity.unappliedGround && (
+            <div
+              style={{
+                font: '12px/1.55 ui-sans-serif,system-ui,sans-serif',
+                color: 'var(--text-dim)',
+                marginTop: 10,
+              }}
+            >
+              <strong>
+                Your &ldquo;{model.identity.unappliedDecision}&rdquo; was recorded and NOT applied.
+              </strong>{' '}
+              {model.identity.unappliedGround}
+            </div>
+          )}
+        </Section>
+      )}
+
       {/* the sufficiency check — the pack's own copy ("To raise this", doc 09 §hierarchy
           item 7). It names the next action and its date rather than the shortfall. */}
       {why && (

@@ -75,6 +75,10 @@ export interface MergeCardData {
    *  next actions, and a confidence number collapses all of them. Omitted ⇒ nothing renders; we never
    *  substitute a generic sentence for a ground the resolver did not record. */
   whyOpen?: string
+  /** An instruction the analyst ALREADY gave on this pair that the resolver did not apply, with the
+   *  ground. Rendered above everything else, because being asked a question you already answered is the
+   *  first thing you need told. Omitted ⇒ nothing renders. */
+  alreadyDecided?: { decision: string; ground: string }
   differsOn: readonly MergeCardDiff[]
   /** what the merge demonstrably does — counted, never estimated */
   ifYou: readonly string[]
@@ -246,6 +250,18 @@ export function MergeCardView({
           <div className="mt-[7px] text-[10.5px] leading-[1.45] text-text-faint">{data.matchedNote}</div>
         )}
       </div>
+
+      {data.alreadyDecided && (
+        <div className="mb-[14px] rounded border-[1.5px] border-problem bg-[var(--fill-problem)] px-[14px] py-[13px]">
+          <div className="mb-2 text-[10.5px] tracking-[0.06em] text-problem">
+            You already answered this — and it was not applied
+          </div>
+          <div className="text-[13px] leading-[1.55] text-text">
+            Your “{data.alreadyDecided.decision}” is recorded in the decision log and the graph did not take
+            it. {data.alreadyDecided.ground}
+          </div>
+        </div>
+      )}
 
       {data.whyOpen && (
         <div className="mb-[14px] rounded border border-line bg-[var(--fill-subtle)] px-[14px] py-[13px]">
