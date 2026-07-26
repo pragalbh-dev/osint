@@ -53,8 +53,12 @@ sources:
   # ── RK-DATA identity-coverage additions (n01–n06, 2026-07-26) ──────────────────────────────────
   # Authored to give the identity machinery input it has never had on the real corpus: numbered/designated
   # formations, an equipment serial that individuates one launcher across two sightings, coreference-bearing
-  # prose (including the ambiguous and anti-coreference cases), and the two-batteries-at-one-garrison
-  # ORBAT-undercount trap the co-location cap exists to catch. Spec: tmp/conv/RK-DATA-authoring-spec.md.
+  # prose (including the ambiguous and anti-coreference cases), and the ORBAT-undercount trap the
+  # co-location cap exists to catch. Spec: tmp/conv/RK-DATA-authoring-spec.md.
+  # The trap pair is the UNDESIGNATED air defence battery at Pano Aqil that n01 §3.7 and n02 each report
+  # once, independently — same name, same station, same branch, no designator and no parent on either side.
+  # It is NOT the 22/47 regiment pair, which several rails separate on their own and which therefore tests
+  # nothing about the cap. See spec §4 for the rail-by-rail argument.
   # These carry NO claims until the re-record extracts them, which is inert and expected.
   - {source_id: n01_orbat_register, source_type: curated-register, reliability_grade: B, bias_vector: third-party, cadence: "365d", citation_url: "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt", report_date: "2025-03-31"}
   - {source_id: n02_ispr_panoaqil, source_type: official, reliability_grade: B, bias_vector: operator-state, cadence: "event-driven", citation_url: "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt", report_date: "2025-02-18"}

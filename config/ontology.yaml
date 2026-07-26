@@ -518,6 +518,24 @@ layer_routing:
     # the place; "airfield site" is the place — PAF Base Nur Khan. The place-kind noun governs, which is
     # also what makes Rawalpindi->Rahwali one instance (both airfields) rather than two unrelated buckets.
     "prepared revetment complex / airfield site": airfield
+    # n03 (imagery read-out). PREDICTED from the document's wording, not measured — n03 carries no claims
+    # until the re-record, so these two rows declare how the phrases MAP; they are not a record of a string
+    # the store has seen. Both are kind-of-place phrases and nothing else, which is the only test a row has
+    # to pass. n03 was rewritten to stop handing the extractor the controlled value verbatim ('Position
+    # type: emplacement' / 'dispersal site'): a corpus that needs no alias row never exercises the alias
+    # machinery at all, and these rows are that machinery being exercised. If the re-record emits different
+    # strings, add the rows it actually emits — do not weaken the third state, and do not map a phrase whose
+    # place-kind noun is generic.
+    "revetted launch position": emplacement
+    "unimproved hardstand": dispersal_site
+  # DELIBERATELY NOT MAPPED: 'cantonment'. It is a real kind-of-place noun and it would map cleanly to
+  # `garrison` — and n01/n02/n05 use it constantly. It is left out because it is ALSO the noun several
+  # EXISTING documents use around the two ends of the flagship relocation (Rawalpindi Cantonment,
+  # Gujranwala Cantonment), and site_type strings are re-derived at every re-record. Mapping it on
+  # prediction could hand site_rawalpindi the class `garrison` while site_rahwali keeps `airfield`, split
+  # the flagship's two ends into different buckets, and kill the supersede silently. The unmapped third
+  # state is safe by construction (no de-confliction, no fusion, named gap). Measure first, then map — see
+  # the re-record checks in tmp/conv/RK-DATA-authoring-spec.md §7.
   # THE THIRD STATE (C7). A value that is ABSENT or does not map into the vocabulary must not be guessed at.
   # It gets NO de-confliction — it collapses to `absent_bucket`, one shared bucket, because the evasion
   # direction here is over-merge and a bucket of its own would let an unstated site_type buy a second

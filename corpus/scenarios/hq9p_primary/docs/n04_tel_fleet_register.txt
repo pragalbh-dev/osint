@@ -3,16 +3,14 @@ Air Defence section · heavy transporter and launcher vehicles
 Compiled from contributor photographs. Rolling document, last edit 02 April 2025.
 
 HOW THIS LIST WORKS. Every entry is backed by at least one photograph held in the group archive; the
-archive reference is given. Where two contributors read a plate differently the entry records both readings
-and, if the disagreement is settled, how. Nothing is listed on the strength of a description alone. We do
-not list a vehicle against a unit unless a source we can point at puts it there, and for air defence
-vehicles that is almost never — see the note at the foot of this section, which is the single most
-important thing on the page and is routinely ignored by people quoting us.
+archive reference is given. Where two contributors read a plate differently the entry records both
+readings. Nothing is listed on the strength of a description alone. A unit is listed against a vehicle
+only where a source we can point at puts it there.
 
 PLATE FORMAT NOTE. Pakistan Army heavy vehicles in this arm carry a four-digit number followed by a
-two-letter arm code, stencilled in white on the cab door and repeated smaller on the rear. We read the "AD"
-code as Air Defence. That reading is our own inference from where these vehicles turn up and is not
-confirmed by any published scheme; treat the letters as an observed marking, not as a decoded one.
+two-letter arm code, stencilled in white on the cab door and repeated smaller on the rear. We read the
+"AD" code as Air Defence. That reading is our own inference from where these vehicles turn up and is not
+confirmed by any published scheme.
 
 ---
 
@@ -20,24 +18,25 @@ ENTRY AD/2025/017
   Plate (cab door)      : 8477 AD
   Vehicle type          : 8x8 heavy transporter-erector-launcher, canisterised, four canisters
   Chassis data plate    : partially legible. Suffix read as "...-0173". Prefix disputed: contributor RK
-                          reads "WS2400", contributor HZ reads "TAS5380". The two are different chassis
-                          families from the same Chinese manufacturer group and the frames do not settle
-                          it. Recorded as prefix UNRESOLVED, suffix 0173.
+                          reads "WS2400", contributor HZ reads "TAS5380". Two different chassis families
+                          from the same Chinese manufacturer group. Recorded as prefix UNRESOLVED,
+                          suffix 0173.
   Sighting 1            : 18 Feb 2025 — static display, Pano Aqil Cantonment, Sukkur District, on the
                           occasion of a visiting-officer inspection. Plate fully legible, photographed
                           square-on at approximately 12 m. Archive ref PMV-A-4471.
   Sighting 2            : 22/03/2025 — road move, Ghotki bypass on the N-5, travelling north-east, third
                           vehicle in a six-vehicle serial with a military police escort. Plate legible in
                           two frames of a five-frame burst. Archive ref PMV-A-4602.
-  Same vehicle?         : YES. The plate is legible and identical in both sets, the chassis suffix 0173 is
-                          legible in both, and a distinctive weld repair on the left rear mudguard visible
-                          in PMV-A-4471 is visible in PMV-A-4602. Three independent points of agreement on
-                          the same physical vehicle. We are as confident of this as this register ever gets.
+  Points of agreement between the two sets:
+                          plate legible and identical in both; chassis suffix 0173 legible in both; a weld
+                          repair on the left rear mudguard visible in PMV-A-4471 and again in PMV-A-4602.
+  Unit marking          : none legible in any frame held. The February display was not captioned by unit
+                          in any material we hold.
   Correction log        : first published 24 Mar as plate "8417 AD" from the road-move frames alone.
                           Corrected 27 Mar after PMV-A-4471 was re-examined at full resolution: the third
-                          digit is a 7, not a 1. Both frames now agree on 8477. The erroneous form 8417 AD
-                          circulated for three days and may still be quoted elsewhere; it refers to this
-                          same vehicle and there is no vehicle 8417 AD.
+                          digit is a 7, not a 1. Both frames now agree on 8477. The erroneous form
+                          8417 AD circulated for three days and may still be quoted elsewhere; it refers
+                          to this vehicle and there is no vehicle 8417 AD.
 
 ENTRY AD/2025/018
   Plate (cab door)      : 8471 AD
@@ -45,20 +44,20 @@ ENTRY AD/2025/018
   Chassis data plate    : not legible in the single available frame
   Sighting 1            : 18 Feb 2025 — static display, Pano Aqil Cantonment. Parked alongside 8477 AD.
                           Archive ref PMV-A-4473.
-  Same vehicle as 017?  : NO. Both plates are legible in the same frame, side by side, and they differ in
-                          the third digit. This entry exists partly to make that explicit, because 8471 and
-                          8477 are exactly the pair our own 8417 misreading above would have muddled.
+  Frame note            : both plates are legible in PMV-A-4473, side by side, and differ in the third
+                          digit. This entry exists partly to record that, because 8471 and 8477 are the
+                          pair our own 8417 misreading would have muddled.
+  Unit marking          : none legible.
 
 ENTRY AD/2025/019
   Plate (cab door)      : 8477 AD
   Vehicle type          : 8x8 heavy TEL, canisterised
   Sighting 1            : 18 Feb 2025 — static display, Panu Aqil Cantt.
   Archive ref           : PMV-A-4471
-  [DUPLICATE — this is the same vehicle and the same photograph as entry AD/2025/017, entered a second
-  time from a contributor submission that used the "Panu Aqil" spelling and was not caught by the
-  de-duplication pass. Retained struck-through rather than deleted, per house practice, so that anyone
-  holding a copy of the earlier edition can see what happened to it. Do not count it as a second vehicle
-  and do not count it as a second sighting.]
+  [DUPLICATE — same vehicle and same photograph as entry AD/2025/017, entered a second time from a
+  contributor submission that used the "Panu Aqil" spelling and was not caught by the de-duplication pass.
+  Retained struck-through rather than deleted, per house practice. Not a second vehicle and not a second
+  sighting.]
 
 ---
 
@@ -67,25 +66,7 @@ COMMENTARY (contributor thread, lightly edited)
 The 22 March road move is the interesting one. Open order-of-battle references place two long-range air
 defence regiments at Pano Aqil Cantonment — 22 Air Defence Regiment and 47 Air Defence Regiment — and a
 launcher photographed at the cantonment in February turning up on the Ghotki road in March is the first
-time we have had the same vehicle in two places. What it tells us is that this launcher moved. What people
-immediately started saying it tells us is that the regiment moved, and that does not follow from anything
-here: one launcher is not a regiment, we do not know which of the two regiments this vehicle belongs to,
-and we have no photograph of the cantonment emplacements on or after 22 March to say whether anything was
-left behind. Someone with satellite access can answer that and we cannot.
-
-We have been asked several times which regiment 8477 AD belongs to — most of the asking assumes 22 AD Regt
-because that is the one people have heard of. We do not know. The vehicle carries no
-unit marking we can read, the February display was not captioned by unit in any material we hold, and both
-regiments are at the same cantonment. Anyone telling you which one it is, on the evidence in this register,
-is telling you something this register does not contain.
-
----
-
-NOTE ON UNIT ATTRIBUTION (the bit people skip)
-
-A vehicle register can tell you that a specific vehicle exists, what it looks like, and where and when it
-was photographed. Two sightings of one plate is good evidence that one vehicle was in two places. It is not
-evidence about formations. Air defence vehicles in this country are not photographed with unit markings, so
-every unit attribution you see attached to a plate in a secondary compilation was inferred by somebody from
-location, and location is exactly what is ambiguous when two regiments share a cantonment. We would rather
-publish a vehicle with no unit against it for years than guess once.
+time we have had one plate in two places. Several people have since told us the regiment has moved. We
+hold no photograph of the cantonment positions on or after 22 March, and we have no frame of the vehicle
+carrying a unit marking. We have been asked repeatedly which regiment 8477 AD belongs to; most of the
+asking assumes 22 AD Regt because that is the one people have heard of. Nothing in the archive answers it.

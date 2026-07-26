@@ -1,98 +1,70 @@
 COUNTING WHAT YOU CAN SEE
-An independent re-derivation of the Pakistani long-range SAM holding, and a note on where the published
-figure came from
+An independent re-derivation of the Pakistani long-range SAM holding
 
 Occasional Paper 2025/06 · South Asia Air and Missile Defence Programme
-Published 12 May 2025. Supersedes the figure quoted in our own 2023 backgrounder, which we now withdraw
-for the reason given in Section 1.
+Published 12 May 2025. Supersedes the figure quoted in our own 2023 backgrounder, which is withdrawn.
 
 SUMMARY
 
-The figure "approximately 4 battalions" is quoted almost universally for Pakistan's long-range
-surface-to-air holding. We set out to check it and could not. This paper does two things: it traces the
-published figure to its origin, and it reports a separate count derived from imagery, arrived at without
-reference to the published figure. The two do not agree, and we are not able to reconcile them. Our
-position is that the holding is not fewer than three fire units and that the upper bound is unresolved.
-We do not endorse "approximately 4 battalions" and we ask that this paper not be cited as if we did.
+The figure "approximately 4 battalions" is quoted widely for Pakistan's long-range surface-to-air holding.
+This paper traces where that figure is published, and reports a separate count derived from imagery and
+arrived at without reference to it. Our result is that the holding is not fewer than three fire units. We
+do not adopt the published figure.
 
-1. WHERE THE PUBLISHED FIGURE COMES FROM
+1. WHERE THE PUBLISHED FIGURE IS CARRIED
 
 We identified three outlets carrying "approximately 4 battalions" for the Pakistani holding: a
-Jane's-adjacent aggregator, a regional trade blog, and a Quetta-based English-language defence site. In the
-ordinary way of things, three outlets agreeing looks like corroboration.
+Jane's-adjacent aggregator, a regional trade blog, and a Quetta-based English-language defence site.
 
-It is not corroboration. All three attribute the figure to the SIPRI Arms Transfers Database. None of the
-three states any collection of its own — no imagery, no interview, no document, no independent count. Two
-of the three reproduce the surrounding sentence near-verbatim from the earliest of them. What the reader is
-looking at is one figure, from one source, printed three times.
+All three attribute the figure to the SIPRI Arms Transfers Database. None of the three reports imagery, an
+interview, a document or a count of its own. Two of the three reproduce the surrounding sentence
+near-verbatim from the earliest of them; the wording of the third differs but the figure and the
+attribution are the same.
 
-Two further things about that one source are worth stating, because they are dropped in the retelling.
-SIPRI describes its delivery figures as estimates and says so on the record. And SIPRI's register counts
-what was TRANSFERRED, which is a different quantity from what is FIELDED: transferred equipment can be in
-training establishments, in depot, written off, or held in reserve, and a register of transfers has no way
-to distinguish those from equipment on an operational fire unit. Neither caveat survives into any of the
-three secondary versions. Our own 2023 backgrounder repeated the figure with neither caveat, which is why
-we are withdrawing it.
-
-We want to be precise about what we are and are not saying. We are not saying the figure is wrong. We are
-saying that its being printed three times is not a reason to believe it, and that anyone treating the three
-as three looks has miscounted their evidence before they have started counting anything else.
+Two properties of the SIPRI register are relevant and are not reproduced in any of the three. SIPRI
+describes its delivery figures as estimates. And the register records what was TRANSFERRED, which is a
+different quantity from what is FIELDED: transferred equipment can sit in training establishments, in
+depot, written off, or in reserve, and a register of transfers does not separate those from equipment on
+an operational fire unit. Our own 2023 backgrounder repeated the figure with neither property attached,
+which is why it is withdrawn here.
 
 2. WHAT WE COUNTED, AND HOW
 
 We reviewed archived commercial electro-optical imagery over Pakistan for the period 2019 to March 2025,
 tasked and untasked, against a published signature description for the HQ-9 family. Our unit of counting
-was the PREPARED POSITION: a graded, revetted emplacement whose layout matches the reference signature.
-The method, the frame list and the per-position tables are in the appendix, which is not distributed with
-the public version of this paper; a summary is below.
+was the PREPARED POSITION: a graded, revetted position whose layout matches the reference signature. The
+method, the frame list and the per-position tables are in the appendix, which is not distributed with the
+public version of this paper.
 
-We identified six prepared positions of the relevant signature type.
+We identified six prepared positions of the relevant signature type. Of those six, three showed PERSISTENT
+occupancy — equipment present on every usable frame across at least four passes spanning at least six
+months. Two showed INTERMITTENT occupancy: equipment present on some frames and absent on others, with no
+pattern we could resolve against exercise or maintenance cycles we had no access to. One was prepared and
+never observed occupied on any frame we hold.
 
-Of those six, three showed PERSISTENT occupancy — equipment present on every usable frame across at least
-four passes spanning at least six months. Two showed INTERMITTENT occupancy: equipment present on some
-frames and absent on others, with no pattern we could resolve against exercise or maintenance cycles that
-we had no access to. One was prepared and never observed occupied on any frame we hold.
+3. POSITIONS AND UNITS
 
-3. WHY SIX POSITIONS IS NOT SIX UNITS, AND WHY THREE IS NOT THREE
+A prepared position is a place; a fire unit is a formation. One fire unit can hold more than one prepared
+position — a home position and one or more dispersal or alternate positions is standard practice, and a
+unit rotating between them presents as two positions with intermittent occupancy, which is the pattern two
+of our six show. One station can also host more than one unit, in which case two positions are two units.
 
-A prepared position is a place. A fire unit is a formation. The relationship between them is many-to-many
-and imagery does not resolve it.
+The case in our set where this bites hardest is the cantonment at Pano Aqil in northern Sindh. Two
+prepared positions about five and a half kilometres apart were both occupied on every pass in the most
+recent collection. Order-of-battle references place two long-range air defence regiments at that
+cantonment, and separately record an air defence battery there that they are unable to allocate to either
+regiment. No source available to us attaches any position at that cantonment to any named formation. The
+two positions differ in one observable — the engagement radar planform is not the same at both — and a
+unit converting onto a new fit will also show two planforms. We record the number of units at that
+cantonment as OPEN.
 
-One fire unit routinely holds more than one prepared position — a garrison emplacement and one or more
-dispersal or alternate positions is standard practice, and a unit rotating between them will present as
-two positions with intermittent occupancy, which is exactly the pattern two of our six show. Conversely one
-cantonment can host two units, in which case two positions are two units and not one unit's alternates.
+4. RESULT
 
-The clearest case in our set is the cantonment at Pano Aqil in northern Sindh, where two prepared positions
-about five and a half kilometres apart were both occupied on every pass in the most recent collection.
-Order-of-battle references place two long-range air defence regiments at that cantonment. Two positions and
-two regiments looks like an answer; it is not one, because no source available to us attaches either
-position to either regiment, and a coincidence of counts is not an attribution. The two positions differ in
-one observable — the engagement radar planform is not the same at both — and that difference is real, but
-a unit converting onto a new fit will also show two planforms, so it does not settle it either. We record
-the number of units at that cantonment as OPEN, which is not the same as recording it as two.
-
-We therefore state our result as a floor and not as a figure. Not fewer than three fire units, on the
-strength of three persistently occupied positions. Upper bound unresolved, because the three remaining
-positions cannot be allocated between additional units, alternate positions of the first three, and
-training or depot holdings, and because our imagery coverage of Pakistan is not complete and we have no
-way to bound what we have not looked at.
-
-4. THE HONEST COMPARISON
-
-The published figure is approximately four battalions, from one estimate, retold three times, counting
-transfers. Our figure is not fewer than three fire units, from our own imagery, counting occupied
-positions, with the upper bound open. These are two different quantities measured two different ways and
-the fact that "three" and "four" are adjacent numbers should not be mistaken for agreement between them.
-
-If the two are ever to be reconciled it will be by an order-of-battle source that names formations and
-attaches them to stations, or by an equipment identifier that ties specific vehicles to specific units.
-Neither exists in the open literature for this holding at the time of writing. Until one does, a reader
-who needs a number should use ours, should use it as a floor, and should carry the open upper bound with
-it every time — a floor quoted without its open bound becomes a figure within about two citations, which
-is how the four got where it is.
+Not fewer than three fire units, on the strength of three persistently occupied positions. We state no
+upper bound: the three remaining positions cannot be allocated between additional units, alternate
+positions of the first three, and training or depot holdings, and our imagery coverage of Pakistan is not
+complete.
 
 ---
 Correspondence to the programme. Appendix A (frame list, per-position tables, signature reference) is
-available to accredited researchers on request; it is not attached to the public text. Figures in this
-paper are as at 31 March 2025 and are not updated after that date.
+available to accredited researchers on request. Figures in this paper are as at 31 March 2025.

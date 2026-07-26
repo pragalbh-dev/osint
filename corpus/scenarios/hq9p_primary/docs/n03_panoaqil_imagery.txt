@@ -2,121 +2,73 @@ UNCLASSIFIED // FOR OFFICIAL USE ONLY // OSINT-DERIVED
 
 IMAGERY ANALYSIS SUMMARY
 Ref: IA-2025-0411-PK-AD-SIND
-Subject: Two separate long-range SAM emplacements, Pano Aqil Cantonment and environs, Sukkur District,
-         Sindh, Pakistan; plus one occupied dispersal site, Ghotki District
+Subject: Long-range SAM signatures, Pano Aqil Cantonment and environs, Sukkur District, Sindh, Pakistan
 Imagery basis: commercial EO, three passes (11 Mar 2025, 2025-03-19, 27/03/2025); one archival frame
          (Nov 2023) pulled for change detection
 
-1. WHY THIS REPORT EXISTS
+1. POSITIONS
 
-Routine survey tasking over northern Sindh returned two spatially separate prepared emplacements, both
-carrying signatures consistent with a Chinese-origin long-range surface-to-air system of the HQ-9 family.
-They are not one position imaged twice. They are 5.6 km apart, they differ in layout and in at least one
-major vehicle type, and they were both occupied on all three passes. This desk is reporting them as two
-emplacements because that is what the imagery supports, and is deliberately NOT reporting how many units
-they represent, because the imagery does not support that at all. Section 5 states that limitation in
-full; readers taking anything from this report should take Section 5 with it.
+NORTH POSITION
+  Centre of signature: 27°51'40"N 069°05'10"E (WGS-84, from image metadata and manual pixel measurement;
+  estimated CE90 ~12 m, not independently surveyed). Inside the northern training-area boundary of Pano
+  Aqil Cantonment. A revetted launch position, graded and banked, on cleared ground.
 
-2. LOCATIONS
-
-EMPLACEMENT ONE ("north emplacement")
-  Centre of signature: 27°51'40"N 069°05'10"E (WGS-84, derived from image metadata and manual pixel
-  measurement; estimated CE90 ~12 m, not independently surveyed)
-  Setting: inside the northern training-area boundary of Pano Aqil Cantonment, which is the garrison of the
-  formations held there.
-  Position type: emplacement — prepared and revetted, on cleared and graded ground.
-
-EMPLACEMENT TWO ("south-east emplacement")
+SOUTH-EAST POSITION
   Centre of signature: 27°50'30"N 069°08'20"E
-  [The 19 Mar working sheet records this as 27°50'30"N 069°08'20"E and, on a later line, as
-  27°50'30"N 069°80'20"E. The second is a transcription error — a minute value of 80 does not exist — and
-  the first is correct. Noted here because the erroneous form was circulated internally before it was
-  caught.]
-  Setting: on the south-eastern margin of the cantonment, outside the training-area boundary but inside
-  the wider cantonment land envelope.
-  Position type: emplacement — again prepared and revetted, of comparable construction to the north.
+  [The 19 Mar working sheet carries this on a later line as 27°50'30"N 069°80'20"E. A minute value of 80
+  does not exist; the first form is the one this desk holds. Noted because the erroneous form circulated
+  internally before it was caught.]
+  On the south-eastern margin of the cantonment, outside the training-area boundary and inside the wider
+  cantonment land envelope. Also a revetted launch position, of comparable construction to the north.
 
-OCCUPIED DISPERSAL SITE (separate, reported here for completeness)
-  Centre of signature: 28°00'15"N 069°18'40"E
-  Setting: a graded pad off a metalled track in Ghotki District, approximately 27 km NNE of the north
-  emplacement (approximately 17 statute miles; the 11 Mar working sheet gives 14.6 nm, which is the same
-  distance in a different unit and was not a second measurement).
-  Position type: dispersal site — no permanent structures, no perimeter, hardstanding only. This is not an
-  emplacement in the sense used for the two positions above and is not a garrison.
+  Separation between the two, centre to centre: 5.6 km.
 
-3. OBSERVED SIGNATURES
+GHOTKI POSITION
+  Centre of signature: 28°00'15"N 069°18'40"E, off a metalled track in Ghotki District, approximately
+  27 km NNE of the north position (approximately 17 statute miles; the 11 Mar working sheet gives 14.6 nm,
+  which is the same distance in a different unit and not a second measurement). An unimproved hardstand:
+  no permanent structures, no perimeter, hardstanding only.
 
-NORTH EMPLACEMENT
+2. OBSERVED SIGNATURES
+
+NORTH POSITION
   - Six elongated canister-type objects in a fan around a central hardstand, spacing and dimensions
     consistent with published HQ-9-family transporter-erector-launcher geometry.
   - One large octagonal-planform radar-type object on a separate prepared hardstand approximately 340 m
-    east of the launcher fan. Planform and mount geometry are consistent with the HT-233-type engagement
-    radar associated with this family. Type identification is by planform comparison only and is not a
-    positive identification.
+    east of the launcher fan. Planform and mount geometry consistent with the HT-233-type engagement radar
+    associated with this family. Identification is by planform comparison only.
   - Two soft-skin utility vehicles, one probable command/communications shelter, generator trailers.
   - Occupied on all three passes. Object count stable at six across all three.
 
-SOUTH-EAST EMPLACEMENT
+SOUTH-EAST POSITION
   - Four elongated canister-type objects in a shallower arc, same object dimensions as at the north
-    emplacement within measurement error.
-  - One radar-type object of a VISIBLY DIFFERENT planform: rectangular rather than octagonal, on a lower
-    mount, sited approximately 210 m north of the launcher arc. It is not the same class of object as the
-    radar at the north emplacement. This desk is not naming it; it is noted in some open literature that
-    Pakistani long-range air defence holdings include more than one engagement/acquisition radar fit, and
-    a rectangular planform is consistent with several of them.
+    position within measurement error.
+  - One radar-type object of a different planform: rectangular rather than octagonal, on a lower mount,
+    approximately 210 m north of the launcher arc. Not the same class of object as the radar at the north
+    position. This desk is not naming it; open literature notes that Pakistani long-range air defence
+    holdings include more than one engagement/acquisition radar fit, and a rectangular planform is
+    consistent with several of them.
   - One additional large vehicle, function not determined, present on the 11 Mar pass and absent on the
     other two.
   - Occupied on all three passes. Object count stable at four across all three.
 
-DISPERSAL SITE, GHOTKI
+GHOTKI POSITION
   - Four canister-type objects, one rectangular-planform radar-type object, two soft-skin vehicles.
-  - Occupied on all three passes. Not present on the Nov 2023 archival frame, on which the pad is graded
-    but empty — so the occupancy post-dates that frame; the imagery cannot date it more closely than that.
+  - Occupied on all three passes.
 
-4. CHANGE DETECTION AGAINST THE ARCHIVAL FRAME
+3. CHANGE DETECTION AGAINST THE ARCHIVAL FRAME
 
-On the Nov 2023 frame the north emplacement is present and occupied with the same six-object fan. The
-south-east emplacement is present as prepared, graded ground with revetments cut, but is EMPTY. The
-dispersal site is graded and empty as noted above. The reasonable readings of that are that the south-east
-emplacement was occupied at some point between Nov 2023 and Mar 2025 by equipment that came from
-somewhere, and this desk cannot say from where. It has not been imaged in the interval.
+On the Nov 2023 frame the north position is present and occupied with the same six-object fan. The
+south-east position is present as graded ground with revetments cut, and is empty. The Ghotki hardstand is
+graded and empty. There is no imagery over any of the three positions between Nov 2023 and Mar 2025.
 
-5. WHAT THIS REPORT DOES NOT ESTABLISH — READ THIS BEFORE CITING ANYTHING ABOVE
+4. COLLECTION NOTES AND GAPS
 
-This report names no formation. Overhead imagery shows equipment at a place; it does not show whose
-equipment it is, and this desk has no basis to attach any unit identity to either emplacement or to the
-dispersal site. Nothing in Section 3 should be quoted as a unit location.
-
-More importantly, the report does NOT establish how many units are represented. Two occupied emplacements
-5.6 km apart, both under one cantonment, are consistent with at least three readings this desk cannot
-choose between:
-
-  (a) two separate units, one at each emplacement;
-  (b) one unit holding two emplacements, which is normal practice for a formation of more than one
-      battery and would be entirely unremarkable;
-  (c) one unit at one emplacement and equipment of a training, conversion or depot establishment at the
-      other.
-
-The differing radar planform is a real observed difference and it is the best discriminator in this
-collection, but it does not settle the question either: one unit can hold two radar fits during a
-conversion, and two units can share one fit. Anyone wanting a unit count for Pano Aqil needs a source
-this desk does not have — an order-of-battle reference, a formation-level statement, or an equipment
-identifier that ties a specific vehicle to a specific unit. Absent that, the count at this cantonment is
-open, and should be recorded as open rather than as one or as two.
-
-The same caution applies with more force to the Ghotki dispersal site. That it is occupied by equipment of
-the same general class as the two cantonment emplacements is not evidence that it came from either of
-them, and it is certainly not evidence that either emplacement has been vacated — both were occupied on
-every pass in this collection, including the passes on which the dispersal site was occupied. A reading
-that treats the dispersal occupancy as a move away from the cantonment is contradicted by this collection's
-own frames.
-
-6. COLLECTION GAPS
-
-- No SAR pass; EO only.
-- No RF/SIGINT correlation attempted or available to this desk.
-- No imagery between Nov 2023 and Mar 2025 over any of the three positions.
-- Radar type identification at both emplacements is by planform only.
-- No basis of any kind for unit attribution at any of the three positions.
+- No unit marking, vehicle registration or formation caption is legible at any of the three positions in
+  any frame in this collection. No document held by this desk names a formation at any of them.
+- No pass in this collection shows either cantonment position unoccupied, including the passes on which
+  the Ghotki hardstand is occupied.
+- No SAR pass; EO only. No RF/SIGINT correlation available to this desk.
+- Radar type identification at all three positions is by planform only.
 
 END OF SUMMARY
