@@ -26,7 +26,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from chanakya.schemas import DecisionRecord, GraphView, pair_key
+from chanakya.schemas import DecisionRecord, GraphView
 
 #: What each verdict was asking the graph to do, in the analyst's own terms — used in the receipt so the
 #: acknowledgement restates the instruction rather than merely echoing an option string.
@@ -174,7 +174,9 @@ def stamp_unapplied(view: GraphView, decisions: list[DecisionRecord]) -> None:
     half of the queue defect. Mutates ``view`` in place, from the append-only decision log, on every
     rebuild; later records win, so a re-adjudication replaces the earlier note rather than stacking.
     """
-    from chanakya.resolve.aliases import adjudicated_pair  # local: avoids a resolve↔hitl import cycle
+    from chanakya.resolve.aliases import (
+        adjudicated_pair,  # local: avoids a resolve↔hitl import cycle
+    )
 
     by_edge: dict[str, dict[str, Any]] = {}
     for record in decisions:
@@ -208,8 +210,3 @@ def _verdict_name(record: DecisionRecord, bar_or_accept: str) -> str:
     if isinstance(chosen, str) and chosen:
         return chosen
     return "accept" if bar_or_accept == "accept" else "reject"
-
-
-def pair_handle(a: str, b: str) -> str:
-    """The drawn ``same-as`` edge id for a pair — the handle ``POST /hitl/merge`` resolves its subject by."""
-    return f"same-as:{pair_key(a, b)}"

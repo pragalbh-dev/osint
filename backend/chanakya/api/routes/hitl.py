@@ -7,6 +7,12 @@ set directly (G5):** ``dispose`` only appends a ``DecisionRecord``; the followin
 :meth:`AppState.rebuild_and_swap` lets ``rebuild()`` apply the recorded ``effects`` — so propagation is
 structural and needs **no restart** (G12, §1 invariant 3). The response is the rebuilt view, so the UI
 sees the propagated change in one round-trip.
+
+``/hitl/merge`` returns that view **plus an acknowledgement** (:class:`AdjudicationView`): what was
+received, whether the rebuilt graph actually took it, and — when it did not — on what ground. A bare ``200``
+made a refused instruction indistinguishable from an applied one, which is the escalate half of the
+non-negotiable missing on the write path. The verdict is derived by READING the rebuilt view
+(:mod:`chanakya.hitl.receipt`), never by assuming the write succeeded.
 """
 
 from __future__ import annotations
@@ -24,7 +30,13 @@ from chanakya.hitl import (
     dispose,
 )
 from chanakya.hitl.receipt import receipt_fields
-from chanakya.schemas import AdjudicationReceipt, AdjudicationView, GraphView, HitlDecision, ReviewQueueItem
+from chanakya.schemas import (
+    AdjudicationReceipt,
+    AdjudicationView,
+    GraphView,
+    HitlDecision,
+    ReviewQueueItem,
+)
 
 router = APIRouter()
 
@@ -120,9 +132,12 @@ def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
             404, detail={"error": "no candidate same-as edge for subject", "id": decision.subject}
         )
     breakdown = edge.attrs.get("breakdown") or {}
-    # Carry each node's NAME, not just its id: RESOLVE's learned alias table is keyed on normalised
-    # names, so an accept/reject only links/bars on the next rebuild if the record ships the names (the
-    # ids alone never bite — aliases.build has no graph to map an id back to a name). See build_merge_item.
+    # Carry each node's NAME **as well as** its id. The id is what actually binds the decision — it is
+    # exact, and it is what the analyst clicked — and the name is carried beside it because RESOLVE's alias
+    # table is keyed on normalised names, so a *different-name* accept/reject also generalises to future
+    # mentions spelled that way. It used to be the name ALONE, which is what made the headline reject a
+    # no-op: these labels are DISPLAY names (``config/entities.yaml``), and for ``unit_hq9b`` the display
+    # name and the resolver's entity name differ, so the bar mapped back to no entities at all.
     labels = {n.id: n.name for n in view.nodes}
     item = build_merge_item(
         item_id=decision.item_id or f"merge:{edge.id}",

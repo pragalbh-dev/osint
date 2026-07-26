@@ -8,6 +8,8 @@ F0-amendment PR (master §2 Rule 3).
 from __future__ import annotations
 
 from .api_models import (
+    AdjudicationReceipt,
+    AdjudicationView,
     AnswerHop,
     AskAnswer,
     AskRequest,
@@ -15,8 +17,6 @@ from .api_models import (
     ConfigWrite,
     ConfigWriteResult,
     HealthResponse,
-    AdjudicationReceipt,
-    AdjudicationView,
     HitlDecision,
     IngestRequest,
     IngestResult,
