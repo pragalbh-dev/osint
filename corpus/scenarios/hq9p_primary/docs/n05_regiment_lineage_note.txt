@@ -9,7 +9,7 @@ PRINCIPAL ENTRY
   22 Air Defence Regiment
   Arm/service        : Pakistan Army, Air Defence
   Designation        : 22 Air Defence Regiment, also known as the Indus Gunners
-  Garrison           : Pano Aqil Cantonment, Sukkur District, Sindh
+  Garrison           : Pano Aqil Cantonment
   Higher formation   : 3 Air Defence Brigade
   Equipment          : long-range surface-to-air system of Chinese origin. Scales of issue, battery
                        organisation and holdings are not recorded on this sheet.
@@ -42,18 +42,17 @@ RELATED ENTRY, SAME STATION
 
   47 Air Defence Regiment
   Arm/service        : Pakistan Army, Air Defence
-  Garrison           : Pano Aqil Cantonment, Sukkur District, Sindh
+  Garrison           : Pano Aqil Cantonment
   Higher formation   : 11 Air Defence Brigade
-  Note               : a separate regiment with its own lineage, its own commanding officer and its own
-                       establishment, administered separately from 22 Air Defence Regiment notwithstanding
-                       the shared station and the shared equipment class. Staff correspondence referring to
-                       "the air defence regiment at Pano Aqil" is received on this sheet without a
-                       regimental number and without a brigade.
+  Note               : a lineage, a commanding officer and an establishment table are held under this
+                       entry on this sheet. Staff correspondence referring to "the air defence regiment at
+                       Pano Aqil" is received on this sheet without a regimental number and without a
+                       brigade.
 
 STATION NAME
 
   Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses
-  "Pano Akil". This sheet standardises on Pano Aqil.
+  "Pano Akil". This sheet standardises on Pano Aqil. The cantonment is in Sukkur District, Sindh.
 
 SOURCING
 

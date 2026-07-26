@@ -1789,8 +1789,172 @@ source attaching a formation to a *position*, or an equipment identifier tying a
 ### 4. Not touched
 
 `answer_key.json`, every existing document, every existing claim bundle (all 492 frozen claims intact),
-`SCENARIO_MANIFEST.json` (generation output; the re-record regenerates it), and `config/places.yaml`. The
-new documents carry **no claims until the re-record extracts them**, which is inert and expected. The
+and `SCENARIO_MANIFEST.json` (generation output; the re-record regenerates it). ~~`config/places.yaml`~~ and
+~~"the new documents carry no claims"~~ are **both superseded by RK-DATA rev 4 below** — the missing
+gazetteer row for the station was the defect that made the trap vacuous, and the six documents have since
+been extracted with a real key. The
 `superseded_derived_bundle_suffixes` comment says "RK-DATA removes the bundles from the corpus" — **not
 done here**, because deleting claim bundles is outside this pass's mandate; the flag-gated skip already
 handles it.
+
+---
+
+## RK-DATA rev 4 — the co-location trap, proved by experiment (2026-07-26, `rkdata/author`)
+
+Two earlier versions of this trap were **vacuous**, and both times a reviewer found a different rail
+intercepting the pair before the co-location cap could. The third reviewer found the last one the only way
+it could be found — by **running the experiment** rather than reasoning about rails. This entry records
+what that measured, what changed, and the result, because the label now carries two rounds of credibility.
+
+### 1. The defect: a station with no identity anchor
+
+`Pano Aqil` in any spelling appeared **nowhere** in `config/places.yaml`, while every other station this
+corpus uses — Nur Khan, Rahwali, Karachi, Sargodha, Gujranwala — has a gazetteer row. Consequence, measured:
+two mentions of one station could only meet on their *name*; `name_ceiling: possible` fires on a name-alone
+pair; the stations stayed two nodes; the batteries standing at them shared no neighbour;
+`colocation_only()` early-returns on `bd[RELATIONAL] <= 0`; **the cap never ran.** Worse than a miss — the
+NAME ceiling withholds the pair from the analyst's queue as well as from fusion, so the trap produced no
+HITL item at all, the exact opposite of its purpose.
+
+### 2. The fix, and why this form
+
+`pl_pano_aqil`, `precision_class: site` — the standing Rahwali Cantonment already has, and the load-bearing
+field: `site` is inside `place_identity_precision_classes`, so "both resolved here" may become "both are
+this place". A cantonment is a *thing*, not an area of rough whereabouts. The `site` radius is jitter
+absorption around the centre, **not** the cantonment's extent, so the two revetted launch positions the
+imagery read-out fixes 2.3 km and 3.4 km away stay their own emplacements and are raised for an analyst
+rather than swallowed into the station.
+
+**One variant is deliberately withheld** — `Panu Aqil` — on the `pl_nurkhan`/"Chaklala" pattern. Chosen
+because it is the only spelling the corpus uses as a real location *value* rather than only inside a
+spelling note (the register's carried-forward 33 AD Regt entry; the vehicle register's duplicate entry
+AD/2025/019), so the withholding costs something real and is therefore a test. It is off the trap's path.
+
+### 3. Two rows written, then WITHDRAWN on measurement — the finding is worth more than the rows
+
+`pl_sukkur` and `pl_ghotki` were written as ordinary AREA anchors on the same reasoning the file already
+carries for Karachi and Punjab: the documents state "Sukkur District, Sindh" verbatim, so the claim should
+land somewhere. **Measured, they did active harm.** INGEST freezes a location phrase onto the entity, and
+for a station written "Pano Aqil Cantonment, Sukkur District, Sindh" the phrase it froze was the ADMIN
+PARENT. With a Sukkur row present the geocoder stamped the *city's* coordinate onto a station-level node;
+`resolve_place` then matched the node's own toponym against `pl_pano_aqil` and **dropped the match**,
+because the attached coordinate sat ~30 km away, outside the `site` radius. The station stopped resolving
+to any anchor at all.
+
+**The general rule this yields:** an area alias that can capture the admin-parent tail of a SITE-level
+address will hand that site the area's coordinate, and a coarse coordinate on a fine node is not a harmless
+approximation — **it is a veto on the node's own name.** The proper fix (prefer an exact curated toponym
+over a coarser geocode of the same mention) is a place-layer change, not a gazetteer row. Roadmap.
+
+### 4. The experiment, and its actual output
+
+2×2 on the real corpus with real keyed extractions and the shipped config. Only two things varied: the
+ceiling, and whether `pl_pano_aqil` exists.
+
+| | `colocation_ceiling: probable` (shipped) | `colocation_ceiling: confirmed` (relaxed) |
+|---|---|---|
+| **anchor present (shipped)** | **not fused, QUEUED** — reason names the cap and names `equipment_fingerprint` / `parent_unit` as what would lift it | **FUSED** |
+| **anchor removed (control)** | not fused, **not queued** — watch-list only, reason = name cap | not fused, **not queued** — name cap |
+
+Top row is the bar, met: **the cap is the sole load-bearing restraint.** Bottom row reproduces the
+reviewer's defect exactly and is the proof the anchor is what closes it. `relational` on the pair: **0.167
+with the anchor, 0.0 without.** The transliteration demo is live rather than inert — with the anchor,
+"Pano Aqil" / "Pano Aqil Cantonment" / "Pano Aqil Cantt" fold onto one station; without it they are three
+stations. The withheld "Panu Aqil" stays its own un-anchored node, still to be earned.
+
+### 5. What this cost, stated plainly
+
+- **The six `n0*` documents now carry claims.** They were extracted with a real key (`claude-opus-4-8`,
+  `--offline` geocoder) into six new `n0*.json` bundles. No existing bundle, document or `answer_key.json`
+  was touched.
+- **Three document changes were needed beyond the anchor**, and all three remove *extraction artefacts*
+  rather than add evidence: §3.7 of the register now uses the same labelled-field convention as §3.4 (as
+  prose it produced an entity with no edges at all); both battery mentions state the station in a form the
+  extractor turns into a `based-at` rather than only a `home_garrison` attribute; and the two documents
+  deliberately render the station *differently* (register "Pano Aqil Cantonment", ISPR "Pano Aqil Cantt")
+  so the site merge can only happen through the gazetteer.
+- **Known limitation, measured and NOT closed.** `places.place_matches` runs *before* endpoint minting, so
+  a station named only as the object of a `based-at` never reaches the gazetteer even when its string is a
+  seeded alias — which is why "Pano Aqil Cantonment, Sukkur District, Sindh" is still its own node. A
+  RESOLVE pass-ordering issue, not a gazetteer one. Roadmap.
+- **`coref_authoritative_evidence` is empty in the shipped config**, so a document's own coreference between
+  a long mention and its later short form never binds. Noted because it was the first route tried for
+  giving the trap pair a shared neighbour, and it is inert by configuration, not by accident.
+
+### 6. Surviving adjudications stripped from the documents
+
+The reviewer found three places where a document *argued the conclusion* instead of reporting an
+observation. All replaced with observational forms, none deleted outright:
+
+- `n05` — the 47 AD Regt note no longer says the regiment is "administered separately from 22 Air Defence
+  Regiment notwithstanding the shared station and the shared equipment class". It now records only what a
+  lineage sheet holds: a lineage, a commanding officer and an establishment table under that entry.
+- `n04` — the duplicate entry's note no longer says the submission "was not caught by the de-duplication
+  pass" ("failing to catch" presupposes there was a duplicate, which is the verdict). It states the
+  observables only: same archive reference, same plate, same date, same occasion.
+- `n04` — the frame note no longer explains *why* the entry exists ("8471 and 8477 are the pair our own
+  8417 misreading would have muddled"). It records what the frame shows: both plates legible side by side,
+  differing in the third digit.
+
+### 7. A separate defect the experiment surfaced: `n04` was extracting ZERO claims
+
+Found while making the corpus consistent, unrelated to the trap, and it had nothing to do with the
+document. `source_type` is not only the credibility class — it is also what **selects the extraction
+schema**. `n04` was filed `named-social` on the (recorded, deliberate) reasoning that a contributor vehicle
+compilation has a social source's lack of standing. Filed as social, the register was handed the
+**social-post tool** — handle, timestamp, status URL, body — which it cannot fill. The document extracted
+**zero claims**: the plate-discrimination beat, the disputed chassis reading, the `8417`→`8477` correction
+log and the duplicate entry were all mute.
+
+**Fix: a new `contributor-register` row in `source_class_factors`** (`authority 0.20 / process 0.70 /
+directness 0.75` ⇒ **R≈0.56**), and `n04` retyped onto it. The two existing rungs were both wrong in a way
+that could not be fixed by picking between them: `named-social` has the right authority and the wrong form,
+`curated-register` has the right form and SIPRI's authority — filing a hobbyist compilation as a treaty
+database is credibility inflation in an anti-fabrication system, which is the wrong direction to err. The
+new rung gives credit for **method and for having taken the photograph, never for standing**. Measured
+after the change: **19 claims**, including the plate distinct-from pair and the `WS2400`/`TAS5380` chassis
+disagreement. `reliability_grade: C` is unchanged.
+
+### 8. A stale acceptance assertion, narrowed — and why this is not "editing a test to go green"
+
+Running the suite over the new bundles turned one acceptance test red, and it took three document rewrites
+to work out that **the data was not the problem**: each time a pair was removed, the same shape reappeared
+from a different document ("Ghotki position" ⇄ its coordinate form, then "Pano Aqil Cantonment" ⇄ its admin
+form, then "Okara Cantonment" ⇄ "Okara Cantonment, Punjab"). That is a structural pattern, not a bad string,
+and chasing it further would have been exactly the "make the demo deterministic" smell CLAUDE.md warns about.
+
+`test_no_source_asserted_signal_means_no_citation_to_click` asserted **"`source_asserted == 0` ⇒ the edge
+cites nothing at all."** That mirrored the era when a candidate edge's `claim_ids` were
+`scoring.identity_claim_ids` (the set that mirrors the score). `resolve.__init__` was later changed **on
+purpose** to render `scoring.licensing_claim_ids` instead, and its own comment states the reason: a
+raise-only coreference proposal *is* a source speaking to the pair, the referral is its entire product, and
+under the narrower set it reached the analyst **with an empty drawer** — the one-click-to-source
+non-negotiable failing on the one card where the sentence is the whole case. `licensing_claim_ids`'
+docstring says the same thing from the other side.
+
+So the assertion contradicted the shipped design, and had been passing only because the frozen corpus
+happened to contain no coref-only candidate pair. The RK-DATA documents — the first written in a register
+style that names a place both bare and with an admin tail, and the first carrying explicit coreference
+prose — are simply the first to reach it.
+
+**Narrowed, not deleted.** The test now pins the invariant the design actually holds: an edge scoring no
+identity signal may cite a **coreference** claim, but must never cite a claim in which a source *asserted*
+the identity — that would be the number and its evidence handle contradicting each other, which is what the
+test was written to prevent. Renamed to `test_a_zero_score_never_cites_an_identity_assertion` so the name
+states the invariant rather than the old mechanism. **The production code is untouched.**
+
+### 9. Two more document defects the suite caught, both mine, both fixed in the documents
+
+- **`n03` used ALL-CAPS position headings.** Entity ids are case-sensitive, so "SOUTH-EAST POSITION" (the
+  heading) and "south-east position" (the prose) became two nodes of the same type and name — which is
+  precisely what `test_no_place_is_split_across_two_id_namespaces` exists to catch. Headings normalised to
+  sentence case.
+- **`n03` stated each position's coordinate on the position's own line**, and the extractor folded the
+  coordinate into the *name* ("Ghotki position, 28°00'15\"N 069°18'40\"E"), minting a duplicate of every
+  position. The read-out now carries a **CENTRES OF SIGNATURE table** with the three coordinates listed
+  against their position names — a better shape for an imagery read-out anyway, and it decouples the name
+  from the fix. The 19 Mar transposed-longitude discrepancy is preserved verbatim in the table's note.
+- Related, and the reason the "Pano Aqil Cantonment, Sukkur District, Sindh" alias rows are now inert:
+  `n01` and `n05` now write the station in the **standardised form their own spelling notes say they use**
+  ("Pano Aqil Cantonment"), with the district stated once per document rather than repeated in every
+  `Garrison:` field. One station, one string, and the register stops contradicting its own conventions.

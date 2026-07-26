@@ -1,14 +1,90 @@
 # RK-DATA — identity-coverage authoring spec
 
-**Branch:** `rkdata/author` · worktree `wt-RK-DATA` · 2026-07-26 (rev 2, after adversarial review)
+**Branch:** `rkdata/author` · worktree `wt-RK-DATA` · 2026-07-26 (**rev 4** — the first revision whose trap is
+measured end-to-end rather than argued from a code read; start at §0b)
 **What this is:** six new corpus documents, five config mappings, and — the part that matters more than the
 documents — **the statement of what the system must produce and what it must refuse for each**. That
 specification is what the re-record and the oracle regeneration grade against.
 
 **Additive only.** No existing document, no existing claim bundle, and `answer_key.json` were edited or
-deleted. The new documents carry **no claims until the re-record extracts them**. Everything in §3 and §4 is
-therefore a **specification and a code-read argument, not a measurement**; §7 lists what has to be measured
-and when.
+deleted. As of rev 4 the six new documents **do** carry claims: they were extracted with a real key
+(`claude-opus-4-8`, `--offline` geocoder) into six new `n0*.json` bundles beside the frozen ones. §3 and §4
+below remain a specification and a code-read argument written before that; **§0b is the measurement, and
+where the two disagree the measurement wins.**
+
+---
+
+## 0b. What rev 4 changed — and the first version of this trap that is MEASURED, not argued
+
+Rev 3 was still vacuous, and a third adversarial pass found it the only way it could be found: by **running
+the experiment** instead of walking the rails on paper. Its finding was that relaxing the co-location cap
+changed nothing, so the cap was not the restraint — the pair was being intercepted upstream by the NAME cap,
+which is strictly worse, because `name_ceiling: possible` withholds the pair from the analyst's queue as well
+as from fusion. Rev 4 closes that, and everything below is a measurement on the real corpus, real keyed
+extractions, and the shipped config.
+
+**The root cause: the station had no identity anchor.** `Pano Aqil` in any spelling appeared nowhere in
+`config/places.yaml`, while every other station the corpus uses (Nur Khan, Rahwali, Karachi, Sargodha,
+Gujranwala) has a row. Two mentions of one station could therefore only meet on their *name*; a name-alone
+pair is capped at `possible`; the two stations stayed two nodes; the batteries standing at them shared no
+neighbour; `colocation_only()` early-returns on `bd[RELATIONAL] <= 0`; the cap never ran.
+
+**The fix: `pl_pano_aqil`, precision_class `site`** — the same standing Rahwali Cantonment has, and the field
+that matters, because `site` is inside `place_identity_precision_classes` and may therefore constitute
+identity. Four spellings seeded; **`Panu Aqil` deliberately withheld** on the `pl_nurkhan`/"Chaklala" pattern,
+chosen because it is the only variant the corpus uses as a real location *value* rather than only inside a
+spelling note. It is off the trap's path, so the cap remains the restraint.
+
+**Two area anchors were written and then WITHDRAWN on measurement** (`pl_sukkur`, `pl_ghotki`). With a Sukkur
+row present the geocoder stamped the *city's* coordinate onto the station node — INGEST had frozen the admin
+tail "Sukkur District, Sindh" as that node's location phrase — and that coordinate, ~30 km from the station,
+then contradicted the station's own toponym and killed the match outright. A coarse coordinate on a fine node
+is not a harmless approximation; it is a veto on the node's own name. Full note in `config/places.yaml`.
+
+**Three document changes were needed beyond the anchor, all of them removing extraction artefacts rather
+than adding evidence:** §3.7 of the register now uses the same labelled-field convention as §3.4 (it was
+prose, and produced an entity with no edges at all); both battery mentions now state the station in a form
+the extractor turns into a `based-at` rather than only a `home_garrison` attribute; and the two documents
+deliberately render the station *differently* — the register writes "Pano Aqil Cantonment", ISPR writes
+"Pano Aqil Cantt" — so that the site merge can only happen through the gazetteer.
+
+**THE EXPERIMENT (2×2; only two things varied — the ceiling, and whether `pl_pano_aqil` exists):**
+
+| | `colocation_ceiling: probable` (shipped) | `colocation_ceiling: confirmed` (relaxed) |
+|---|---|---|
+| **anchor present (shipped)** | **not fused, QUEUED**, reason = co-location cap, naming `equipment_fingerprint`/`parent_unit` as what would lift it | **FUSED** |
+| **anchor removed (control)** | not fused, **not queued** — watch-list only, reason = name cap | not fused, **not queued** — name cap |
+
+The top row is the bar, met: the cap is the sole load-bearing restraint. The bottom row is the reviewer's
+defect reproduced exactly, and is the proof that the anchor is what closes it. `relational` on the pair:
+**0.167 with the anchor, 0.0 without.**
+
+**And the transliteration demo is live rather than inert.** With the anchor, "Pano Aqil" / "Pano Aqil
+Cantonment" / "Pano Aqil Cantt" fold onto one station node; without it they are three separate stations. The
+withheld "Panu Aqil" stays its own un-anchored node, exactly as intended — it has to be earned.
+
+**A separate defect the experiment surfaced: `n04` extracted ZERO claims.** `source_type` also selects the
+extraction schema, so filing the vehicle register as `named-social` handed it the social-post tool
+(handle/timestamp/status-URL/body), which it cannot fill — the plate-discrimination beat, the disputed
+chassis reading and the correction log were all mute. Fixed with a new `contributor-register` source class
+(R≈0.56 — credit for method and for having taken the photograph, never for standing); measured after: 19
+claims. Unrelated to the trap; see `DECISIONS.md` §7 of the rev-4 entry.
+
+**Three defects the SUITE caught, and one stale assertion.** `n03`'s ALL-CAPS position headings split every
+position into two case-variant nodes; `n03`'s per-position coordinate lines made the extractor fold the fix
+into the position's *name* (now a CENTRES OF SIGNATURE table); and `n01`/`n05` repeated the full admin form
+in every `Garrison:` field, against their own spelling notes, minting a long-form duplicate of the station.
+All three fixed in the documents. The fourth was **not** a data defect:
+`test_no_source_asserted_signal_means_no_citation_to_click` asserted an invariant `resolve` had deliberately
+superseded (candidate edges cite `licensing_claim_ids`, which includes a raise-only coreference, precisely
+so such a proposal does not reach the analyst with an empty drawer). Narrowed to what the design does hold —
+a zero-scoring edge may cite a coreference claim but never an identity assertion — and renamed. Production
+code untouched. `DECISIONS.md` §§8-9 of the rev-4 entry.
+
+**Known limitation, measured, not closed.** `places.place_matches` runs *before* endpoint minting, so a
+station named only as the object of a `based-at` never reaches the gazetteer even when its string is a seeded
+alias — which is why "Pano Aqil Cantonment, Sukkur District, Sindh" is still its own node. That is a RESOLVE
+pass-ordering issue, not a gazetteer one, and it is on the roadmap.
 
 ---
 
@@ -679,8 +755,9 @@ paper deliberately states no upper bound at all.
 - Every **existing** document and every existing claim bundle — untouched. All 492 frozen claims intact. Only
   the six `n0*.txt` documents I authored were rewritten.
 - `SCENARIO_MANIFEST.json` — untouched (`n_docs` is generation output; the re-record regenerates it).
-- `config/places.yaml` — untouched. The new sites carry explicit coordinates in their own documents; adding
-  gazetteer entries would pre-solve part of what the coordinate canonicaliser should be doing.
+- ~~`config/places.yaml` — untouched.~~ **SUPERSEDED IN REV 4 — see §0b.** That call was wrong, and it was
+  the defect that kept the trap vacuous: every other station in this corpus has a gazetteer row and this one
+  did not, so the station could only be recognised by the string it was written in.
 - `layer_routing.superseded_derived_bundle_suffixes` says "RK-DATA removes the bundles from the corpus".
   **I have not**, because the hard constraint forbids deleting claim bundles. The flag-gated skip already
   handles it; removal is a separate, explicitly-authorised pass.

@@ -21,6 +21,14 @@ source_class_factors:
   customs-tender:        {authority: 0.55, process: 0.55, directness: 0.55, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.61
   exporter-state-media:  {authority: 0.60, process: 0.80, directness: 0.50, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.70 (Global Times; authored, not doc-anchored)
   named-social:          {authority: 0.15, process: 0.10, directness: 0.70, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.35
+  # An enthusiast/spotter COMPILATION with a stated method — no standing whatever, but its own photographs
+  # and a published correction log. The table had no rung for this shape and the nearest two were both
+  # wrong: `named-social` has the right authority but the wrong FORM (and, measured, `source_type` also
+  # selects the extraction schema, so filing a register as social routed it to the social-post tool and the
+  # document extracted ZERO claims), while `curated-register` has the right form and SIPRI's authority,
+  # which would score a hobbyist compilation like a treaty database. Low authority, high process, high
+  # directness — the credit is for method and for having taken the photograph, never for standing.
+  contributor-register:  {authority: 0.20, process: 0.70, directness: 0.75, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.56
   anon-social:           {authority: 0.05, process: 0.05, directness: 0.20, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.25
 
 integrity_penalties:

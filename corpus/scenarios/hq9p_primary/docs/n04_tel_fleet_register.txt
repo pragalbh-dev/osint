@@ -45,8 +45,7 @@ ENTRY AD/2025/018
   Sighting 1            : 18 Feb 2025 — static display, Pano Aqil Cantonment. Parked alongside 8477 AD.
                           Archive ref PMV-A-4473.
   Frame note            : both plates are legible in PMV-A-4473, side by side, and differ in the third
-                          digit. This entry exists partly to record that, because 8471 and 8477 are the
-                          pair our own 8417 misreading would have muddled.
+                          digit.
   Unit marking          : none legible.
 
 ENTRY AD/2025/019
@@ -54,11 +53,10 @@ ENTRY AD/2025/019
   Vehicle type          : 8x8 heavy TEL, canisterised
   Sighting 1            : 18 Feb 2025 — static display, Panu Aqil Cantt.
   Archive ref           : PMV-A-4471
-  [ENTRY NOTE — entered from a contributor submission that used the "Panu Aqil" spelling and was not caught
-  by the de-duplication pass. The archive reference submitted with it, PMV-A-4471, is the reference already
-  carried at entry AD/2025/017, and the plate, the date and the occasion as submitted are the same. Retained
-  struck-through rather than deleted, per house practice: this list annotates entries, it does not remove
-  them.]
+  [ENTRY NOTE — entered from a contributor submission that used the "Panu Aqil" spelling. The archive
+  reference submitted with it, PMV-A-4471, is the reference already carried at entry AD/2025/017, and the
+  plate, the date and the occasion as submitted are the same. Retained struck-through rather than deleted,
+  per house practice: this list annotates entries, it does not remove them.]
 
 ---
 

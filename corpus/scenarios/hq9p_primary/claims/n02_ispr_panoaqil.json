@@ -1,0 +1,810 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        13
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "alert_posture": "presently deployed forward on operational tasking away from its station",
+        "service_branch": "Pakistan Army Air Defence"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "a further air defence sub-unit of the Sukkur sector"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        37,
+        75
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "official-PR"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Inter-Services Public Relations (ISPR)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        221,
+        243
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "alert_posture": "first firing serial since conversion",
+        "home_garrison": "Pano Aqil Cantt",
+        "service_branch": "Pakistan Army Air Defence"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "An air defence battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "Pano Aqil field firing ranges",
+        "Pano Aqil Cantt"
+      ],
+      "_object_mention": "n02-ispr-panoaqil-l12-2",
+      "_subject_mention": "n02-ispr-panoaqil-l12",
+      "source_quote": "carried out a live-firing\nvalidation serial at the Pano Aqil field firing ranges. The battery is based at Pano Aqil Cantt."
+    },
+    "claim_id": "n02-ispr-panoaqil-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        250,
+        372
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantt",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "Pano Aqil field firing ranges"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n02-ispr-panoaqil-l12",
+      "n02-ispr-panoaqil-l12-2"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        301,
+        330
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Pano Aqil, Sukkur District",
+          "raw": "Pano Aqil, Sukkur District",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "field firing ranges"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil field firing ranges"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l12-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        332,
+        372
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_state": "battery based here",
+        "site_type": "cantonment"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil Cantt"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n02-ispr-panoaqil-l12-2",
+      "_subject_mention": "n02-ispr-panoaqil-l11"
+    },
+    "claim_id": "n02-ispr-panoaqil-l12-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        332,
+        372
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantt",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "An air defence battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        506,
+        549
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "operator_branch": "Pakistan Army Air Defence"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "the long-range surface-to-air weapon system"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        506,
+        549
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "18 Feb 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "ExerciseEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Pano Aqil field firing ranges",
+        "raw": "Pano Aqil field firing ranges",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "the long-range surface-to-air weapon system",
+        "An air defence battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-02-18",
+        "kind": "exact",
+        "raw": "18 Feb 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "report_time",
+      "_object_mention": "n02-ispr-panoaqil-l11",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "n02-ispr-panoaqil-l15",
+      "source_quote": "The battery is equipped with the long-range surface-to-air weapon system taken onto the inventory of Pakistan Army Air Defence"
+    },
+    "claim_id": "n02-ispr-panoaqil-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        506,
+        549
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "An air defence battery",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "the long-range surface-to-air weapon system"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_subject_mention": "n02-ispr-panoaqil-l15"
+    },
+    "claim_id": "n02-ispr-panoaqil-l15-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        506,
+        549
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence",
+      "object_value": null,
+      "predicate": "operated-by",
+      "subject": "the long-range surface-to-air weapon system"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "An air defence battery",
+        "a further air defence sub-unit of the Sukkur sector"
+      ],
+      "_object_mention": "n02-ispr-panoaqil-l1",
+      "_subject_mention": "n02-ispr-panoaqil-l11",
+      "source_quote": "a further air\ndefence sub-unit of the Sukkur sector is presently deployed forward on operational tasking away from its\nstation"
+    },
+    "claim_id": "n02-ispr-panoaqil-l23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1251,
+        1377
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "a further air defence sub-unit of the Sukkur sector",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "An air defence battery"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n02-ispr-panoaqil-l11",
+      "n02-ispr-panoaqil-l1"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Panu Aqil",
+        "Pano Aqil"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "the station is rendered \"Panu Aqil\" in the Urdu release and\n\"Pano Aqil\" in the English release. Both are the same station."
+      ],
+      "_coref_referent": "ref:n02-ispr-panoaqil-c1",
+      "source_quote": "the station is rendered \"Panu Aqil\" in the Urdu release and\n\"Pano Aqil\" in the English release. Both are the same station."
+    },
+    "claim_id": "n02-ispr-panoaqil-l39",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 39,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1938,
+        2060
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Panu Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n02-ispr-panoaqil-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "n02-ispr-panoaqil-l39-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n02_ispr_panoaqil.txt",
+      "frame": null,
+      "line": 39,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1963,
+        1972
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-4-8"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Panu Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "2025-02-18"
+    },
+    "resolved_ref": null,
+    "source_id": "n02_ispr_panoaqil",
+    "targets": null
+  }
+]

@@ -12,10 +12,13 @@ standing detachment.
 
 SECTION 3.4 — AIR DEFENCE FORMATIONS, SOUTHERN AND CENTRAL SECTORS
 
+Stations in this section are given in the standardised form of the spelling note below; Pano Aqil
+Cantonment is in Sukkur District, Sindh.
+
 3 Air Defence Brigade
   Headquarters: Karachi (Malir)
     - 22 Air Defence Regiment
-        Garrison: Pano Aqil Cantonment, Sukkur District, Sindh
+        Garrison: Pano Aqil Cantonment
         Arm/service: Pakistan Army, Air Defence
         Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family; the register records the class,
           not the sub-variant)
@@ -31,7 +34,7 @@ SECTION 3.4 — AIR DEFENCE FORMATIONS, SOUTHERN AND CENTRAL SECTORS
 11 Air Defence Brigade
   Headquarters: Sukkur
     - 47 Air Defence Regiment
-        Garrison: Pano Aqil Cantonment, Sukkur District, Sindh
+        Garrison: Pano Aqil Cantonment
         Arm/service: Pakistan Army, Air Defence
         Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)
         Notes: Raised or re-roled in the long-range air defence role in the early 2020s; the raising date is
@@ -51,14 +54,19 @@ standardises on Pano Aqil in headings and reproduces the source spelling in carr
 
 SECTION 3.7 — SUB-UNITS RECORDED WITHOUT ALLOCATION
 
-Sub-units the compiler holds evidence for but cannot place under a parent formation. Listed so the material
-is not lost; not counted in Section 3.4.
+Sub-units held at a recorded station for which no source consulted gives a parent formation. Recorded on
+the same conventions as Section 3.4; not counted in Section 3.4.
 
-  An air defence battery at Pano Aqil Cantonment, Sukkur District, Sindh. Pakistan Army, Air Defence.
-  Echelon: battery. Equipment recorded as long-range surface-to-air, Chinese-origin. Sourced to cantonment
-  board correspondence of January 2025 and to two local press items, none of which gives a regimental
-  number. Both regiments at Section 3.4 hold batteries at this cantonment. The compiler has not been able
-  to allocate the battery to either of them and carries it here unallocated.
+    - An air defence battery, unallocated
+        Garrison: Pano Aqil Cantonment
+        Arm/service: Pakistan Army, Air Defence
+        Echelon: battery
+        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)
+        Notes: The battery is based at Pano Aqil Cantonment. Sourced to
+          cantonment board correspondence of January 2025 and to two local press items, none of which
+          gives a regimental number. Both regiments at Section 3.4 hold batteries at this cantonment. The
+          compiler has not been able to allocate the battery to either of them and carries it here
+          unallocated.
 
 ---
 
