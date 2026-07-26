@@ -258,3 +258,15 @@ identity-bearing rows (`variant.export_designator`, `component.model_designation
 rung that can legitimately clear the name cap. Two property specs that had used `family` as their "one more
 trivially-available signal" now use `export_designator`: the swap makes the spec *stricter*, since a family is
 shared by every member of the family.
+
+---
+
+## Item 4 — no new expected-red; two items filed elsewhere
+
+The blocker sweep after the flag deletion (taxonomic attributes, surface rendering of refusals, per-rail wall
+grounds, the config-brick, the confirmed phantom, the queue basis, and the four smaller items) added **no new
+xfail** beyond Item 3. Two things that are NOT implementer decisions were filed instead:
+
+* `tmp/conv/DEFAULTON-to-INGEST-branch-in-the-name.md` — a unit whose service branch is only in its NAME, so
+  the critical-attribute wall cannot test it. Extraction item; the pair is refused and queued meanwhile.
+* Item 3 above — the SINO-GALAXY alias-table row.
