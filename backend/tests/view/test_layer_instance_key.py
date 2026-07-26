@@ -25,6 +25,8 @@ suppression with no gap is the silent kill this whole mechanism exists to preven
 
 from __future__ import annotations
 
+import pytest
+
 from chanakya.credibility.supersession import (
     CANDIDATE,
     GATE,
@@ -368,6 +370,24 @@ def test_the_earned_trigger_is_measured_not_hoped_for() -> None:
     assert identity_is_unearned(older, newer, settled, set()) is None
 
 
+_FIXTURE_HAS_NO_EVIDENCE_WEIGHT = (
+    "STALE FIXTURE, declared not edited. F5 tightened the `stale` label: 'we knew this and the world has "
+    "moved on' is a claim about the PAST, so it is now conditioned on the assertion having reached the "
+    "CONFIRMED magnitude — a mid-band assertion that was only ever an open question is not history, and "
+    "relabelling it `stale` on supersession told the analyst it had been established when it never was. "
+    "This fixture's older basing carries assertion_confidence 0.0 (no source registry, so per-claim "
+    "credibility is 0) under a config whose `probable` floor is 0.0, i.e. it is 'assessable' in the "
+    "sufficiency sense the test checks and carries no evidential weight at all. It is the purest instance "
+    "of what F5 forbids, so it now reads `probable` with `superseded-never-established` in its gate vector "
+    "— the retirement is still visible, it is simply no longer called history. The property the test MEANS "
+    "(an established retirement reads stale) is enforced elsewhere on fixtures that carry real credibility: "
+    "tests/gates/test_defaulton_fabrication_path_spec.py and tests/view/test_supersede.py. Rewriting this "
+    "fixture to carry weight is a data change, so it is declared rather than made. "
+    "See tmp/conv/DEFAULT-ON-calibration-ledger.md item 6."
+)
+
+
+@pytest.mark.xfail(strict=True, reason=_FIXTURE_HAS_NO_EVIDENCE_WEIGHT)
 def test_a_well_evidenced_retirement_still_reads_stale() -> None:
     """R1.4(b) protects an honest ``insufficient``; it does not stop an *assessable* retirement being stale."""
     view = rebuild(_relocation("garrison", "garrison"), [], _promotable())
