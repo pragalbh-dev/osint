@@ -174,7 +174,11 @@ class CoreferenceContrast(BaseModel):
 
 
 class CoreferenceClusters(BaseModel):
-    """The pass-2 output: only the merges (+ any explicit contrasts). Unnamed mentions stay singletons."""
+    """Report ONLY the groupings this document licenses, plus any contrasts it draws in its own wording.
+
+    A mention you do not name is left on its own. That is the safe answer — say nothing rather than guess a
+    grouping.
+    """
 
     clusters: list[CoreferenceCluster] = []
     contrasts: list[CoreferenceContrast] = []

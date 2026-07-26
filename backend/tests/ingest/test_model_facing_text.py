@@ -18,15 +18,25 @@ this codebase. Three defects of that kind were measured in the extractor bake-of
 These tests assert the *ask*, never a phrasing the gold happens to use. Asking for what we grade is the
 precondition for the measurement meaning anything; wording the ask to match one answer key is overfitting,
 so nothing here checks a value, a vocabulary, or a count.
+
+**The guards below are written to hold over the WHOLE surface, not over the handful of strings that happened
+to be fixed.** Five docstrings were rewritten when this rule was found; dumping every description in every
+schema then turned up more of the same kind, in the two imagery tools nobody had thought to look at. So the
+checks are properties of *every* description on *every* surface — it exists, and it does not talk about our
+own machinery — rather than assertions pinned to the five. ``_surfaces`` is the one place that has to stay
+current; everything else follows from it.
 """
 
 from __future__ import annotations
 
 import json
 import logging
+import re
 
-from chanakya.ingest import coref
+from chanakya.ingest import coref, imagery
+from chanakya.ingest.dedup import dedup_within_doc
 from chanakya.ingest.extract import _SYSTEM_BASE, _SYSTEM_PROMPTS, SCHEMAS
+from chanakya.schemas import ClaimRecord, DocRef, Triple
 
 #: Markup and internal references that mean nothing to a model reading the tool schema cold.
 _CODEBASE_ONLY = (
@@ -34,9 +44,52 @@ _CODEBASE_ONLY = (
     "spine/", "plan §", "EVAL RCA", "D-P4", "D-13", "read by nothing",
 )
 
+#: Names of **our own machinery**. A description that reaches for one of these is describing what the
+#: pipeline does with the value instead of what the document must say — the general form of the defect that
+#: shipped "read by nothing yet" to the model, and of the over-merge licence that told the extractor what the
+#: resolver would do if a field came back blank. The model cannot act on any of it, and where it *can*, the
+#: action is to game a downstream consequence. Word-boundary matched, case-insensitive.
+_PIPELINE_INTERNAL = (
+    r"same-as", r"distinct-from", r"polarit\w*", r"\bnodes?\b", r"\bedges?\b", r"\breferents?\b",
+    r"\bresolver\b", r"\bontolog\w+", r"\bdownstream\b", r"\bpipeline\b", r"\bschema\b",
+    r"the graph\b", r"pass[- ]2", r"read by nothing",
+    # "claim" is this project's unit of analysis, not a word the model needs; it is also how the two
+    # taxonomy-flavoured descriptions gave themselves away ("the many-claims-per-row unit"). The model-facing
+    # verb for what a document does is "states".
+    r"\bclaims?\b",
+)
+
+#: Ways of asking a model to rank the spans it cites. There is no such choice to make: a within-document
+#: restatement folds in ``dedup_within_doc``, which keeps the **union** of every span cited — asserted for
+#: real in ``test_the_pipeline_keeps_every_cited_span_so_the_prompt_never_ranks_them``. An instruction to pick
+#: the best one invites the model to paraphrase or splice, against two quote-grounded floor metrics.
+_QUOTE_RANKING = ("clearest quote", "best quote", "most representative quote", "single best", "strongest quote")
+
+
+def _descriptions(schema: dict) -> list[tuple[str, str]]:
+    """Every ``description`` in a tool schema, with the JSON path it sits on.
+
+    Titles are excluded: pydantic derives those from the class/field name, so they are not prose anyone wrote.
+    """
+    out: list[tuple[str, str]] = []
+
+    def walk(node: object, path: str) -> None:
+        if isinstance(node, dict):
+            for key, value in node.items():
+                if key == "description" and isinstance(value, str):
+                    out.append((path or "/", value))
+                else:
+                    walk(value, f"{path}/{key}")
+        elif isinstance(node, list):
+            for item in node:
+                walk(item, path)
+
+    walk(schema, "")
+    return out
+
 
 def _model_facing_text(schema: dict) -> str:
-    """Every description string in a tool schema — the prose the provider actually shows the model."""
+    """Every description *and title* in a tool schema — the prose the provider actually shows the model."""
     out: list[str] = []
 
     def walk(node: object) -> None:
@@ -52,6 +105,22 @@ def _model_facing_text(schema: dict) -> str:
 
     walk(schema)
     return "\n".join(out)
+
+
+def _surfaces() -> dict[str, type]:
+    """**Every** schema a model is ever shown — the audit is only as wide as this function.
+
+    The six extraction tools, the coreference tool, and the two imagery tools. The imagery pair was missed on
+    the first pass of this rule (the audit stopped at the seven text schemas) and was carrying exactly the
+    same defects: doubled-backtick markup, and a docstring explaining which *stage* owns identification to a
+    model that has only a picture. Any new forced tool belongs here on the day it is written.
+    """
+    return {
+        **SCHEMAS,
+        "cluster_coreferences": coref.CoreferenceClusters,
+        "read_overhead_image": imagery.ImageryObservation,
+        "corroborate_signature": imagery.SignatureCorroboration,
+    }
 
 
 # ── defect 1: ask for the discriminators, in the prompt ────────────────────────────────────────────
@@ -102,6 +171,31 @@ def test_the_prompt_forbids_inventing_a_discriminator_in_the_same_breath() -> No
     )
 
 
+def test_the_ask_never_tells_the_model_what_a_blank_field_will_cause() -> None:
+    """No downstream consequence, in either direction — that is what turns an ask into an incentive.
+
+    The first draft of this paragraph read "two same-named things stay two things only if their context is on
+    the record", one sentence from "leave the rest empty". As an instruction that says: *leave it blank and
+    they get merged* — a standing reason to fill a field we also forbid guessing at, pointed straight at the
+    archetypal harm (fabricated identity evidence, offered as the way to prevent a wrong fusion). The
+    extractor reports what the document says; what a sparse record implies is the resolver's problem, and a
+    model told about that consequence can act on it.
+    """
+    lowered = _SYSTEM_BASE.lower()
+    assert "not a judgement about whether two things are the same" in lowered, (
+        "the prompt asks for identity context without saying that judging identity is NOT the extractor's "
+        "job here. Without that, 'fill the context' reads as 'influence the merge'"
+    )
+    for consequence in (
+        "stay two things only if", "only if their context", "unless their context",
+        "if you leave it empty", "if the context is blank", "will be merged", "will be treated as the same",
+    ):
+        assert consequence not in lowered, (
+            f"the prompt tells the model what happens downstream when a context slot is blank ({consequence!r}). "
+            "Any such clause is a reason to fill a field the next sentence forbids guessing at."
+        )
+
+
 # ── defect 3: the unit of analysis ─────────────────────────────────────────────────────────────────
 
 def test_the_prompt_states_the_unit_of_analysis() -> None:
@@ -143,6 +237,60 @@ def test_the_grain_rule_cannot_be_read_as_a_licence_to_over_merge() -> None:
         "the grain rule does not carry its own exception. The identity paragraph above it says the same "
         "thing, but a rule about collapsing repeats must name the limit where the reader will be applying it"
     )
+
+
+def test_the_identity_paragraph_and_the_grain_rule_cover_disjoint_cases() -> None:
+    """Two adjacent rules, one shared case — a repeated name. They must not answer it differently.
+
+    The identity paragraph is about WHAT IS THE SAME THING; the grain rule is about HOW MANY ITEMS to emit.
+    Left unscoped they collide on the same sentence of a document: "two same-named things can be two things"
+    against "a repeated name is ONE item". A model handed that conflict resolves it differently run to run,
+    which surfaces as claim-count instability — the exact metric the grain rule was added to improve. So the
+    grain rule names its own scope, and it states the case where a document keeps two same-named things apart.
+    """
+    lowered = _SYSTEM_BASE.lower()
+    assert "about how many items to emit, not about which things are the same" in lowered, (
+        "the grain rule does not say what it is about, so it reads as an identity rule that contradicts the "
+        "identity paragraph one sentence above it"
+    )
+    assert "holds two same-named things apart" in lowered, (
+        "the grain rule collapses every repeat of a name, with no exception for the document that itself "
+        "separates two things of the same name — the one case where the two rules genuinely disagree"
+    )
+
+
+def test_the_pipeline_keeps_every_cited_span_so_the_prompt_never_ranks_them() -> None:
+    """The grain rule must not ask for a "clearest" quote — nothing in this system chooses between spans.
+
+    ``dedup_within_doc`` folds a within-document restatement into one claim carrying the **union** of the
+    spans cited, precisely so no cited span is discarded. So "one item carrying its clearest quote" described
+    something the pipeline does not do, and asked a model to rank spans against two quote-grounded floor
+    metrics (``extract_only_stated``, ``citation_faithfulness``) — where the cheapest way to make one span
+    cover a whole fact is to splice or paraphrase it. This test asserts both halves: the behaviour, and the
+    absence of the ask.
+    """
+    def restatement(span: tuple[int, int]) -> ClaimRecord:
+        return ClaimRecord(
+            claim_id="tmp",
+            source_id="src-a",
+            doc_ref=DocRef(file="d01.txt", span=span, line=1),
+            kind="observation",  # type: ignore[arg-type]
+            polarity="positive",  # type: ignore[arg-type]
+            asserts="relationship",
+            payload=Triple(subject="hq-9", predicate="based-at", object="site-7"),
+        )
+
+    folded = dedup_within_doc([restatement((0, 10)), restatement((40, 50))])
+    assert len(folded) == 1 and [r.span for r in folded[0].doc_refs()] == [(0, 10), (40, 50)], (
+        "the fold no longer keeps every stated span, so a prompt clause telling the model to choose one "
+        "would now be describing real behaviour — re-read this test's reasoning before changing the prompt"
+    )
+    lowered = _SYSTEM_BASE.lower()
+    for ranking in _QUOTE_RANKING:
+        assert ranking not in lowered, (
+            f"the prompt asks the model to rank the spans it cites ({ranking!r}). There is no such choice: "
+            "the fold above keeps them all, and asking for a best one invites a spliced quote"
+        )
 
 
 # ── defect 2: the enum lives where the model can see it ────────────────────────────────────────────
@@ -223,14 +371,99 @@ def test_no_internal_cross_reference_reaches_the_model() -> None:
     case the shipped text told the model the field it was filling was read by nothing. Internal reasoning
     belongs in ``#`` comments, which pydantic does not ship.
     """
-    surfaces = {**SCHEMAS, "cluster_coreferences": coref.CoreferenceClusters}
-    for name, model in surfaces.items():
+    for name, model in _surfaces().items():
         text = _model_facing_text(model.model_json_schema())
         leaked = sorted({token for token in _CODEBASE_ONLY if token in text})
         assert not leaked, (
             f"the {name} tool schema ships codebase-only text to the model: {leaked}. Move the reasoning "
             "into a comment above the class — a docstring here is model-facing text."
         )
+
+
+def test_no_description_describes_our_own_machinery() -> None:
+    """The general form of the defect — and the check that catches the ones nobody happened to rewrite.
+
+    Five docstrings were rewritten when this rule was found; dumping all seven schemas turned up more of the
+    same kind ("the many-claims-per-row unit", "the perishable sustainment node", "→ a negative-polarity
+    observation claim", "the pass-2 output"). None of it is actionable by a reader who has only the document
+    in front of them, and where it *is* actionable — a description of what the pipeline will do with the value
+    — it invites the model to aim at that outcome instead of at the document. So this is asserted as a
+    property of every description on the surface rather than of the five that were noticed.
+    """
+    for name, model in _surfaces().items():
+        for path, text in _descriptions(model.model_json_schema()):
+            hits = sorted({
+                match.group(0)
+                for pattern in _PIPELINE_INTERNAL
+                for match in re.finditer(pattern, text, flags=re.IGNORECASE)
+            })
+            assert not hits, (
+                f"{name}{path} describes our machinery to the model: {hits}\n  {text!r}\n"
+                "Say what the document must state for this field to be filled. What the pipeline then does "
+                "with it belongs in a `#` comment, which pydantic does not ship."
+            )
+
+
+def test_every_object_on_the_surface_carries_a_usable_description() -> None:
+    """A class added with no docstring ships to the model as a bare title. Nothing warns you.
+
+    The defect this file exists for was a description that said the wrong thing; the adjacent one is a
+    description that says nothing, which is how a field ends up scored and unexplained. Every object in every
+    tool schema must carry a description, and it must be an instruction rather than a stub.
+    """
+    for name, model in _surfaces().items():
+        schema = model.model_json_schema()
+        objects = {"": schema, **{f"/$defs/{k}": v for k, v in schema.get("$defs", {}).items()}}
+        for path, node in objects.items():
+            described = (node.get("description") or "").strip()
+            assert len(described) > 30, (
+                f"{name}{path or ' (the tool itself)'} reaches the model with no usable description "
+                f"({described!r}). A model fills what it can read; an undescribed object is a guess we then "
+                "score."
+            )
+
+
+def test_the_two_alias_lanes_cannot_be_confused_for_each_other() -> None:
+    """``aliases`` and ``distinctions`` share ONE shape and say opposite things. Only the field name differs.
+
+    ``distinctions`` is the veto rail: it is what stops two same-named, co-located things being fused into one
+    unit's before-and-after — a fabricated movement, machine-adjudicated off the analyst's queue. A pair
+    misfiled into ``aliases`` does not merely lose the veto, it asserts the reverse of what the document said.
+    So the direction cannot live only in the shared class docstring, where neither field can be told from the
+    other: each field states its own direction, and the shared docstring says the field is what decides.
+    """
+    lanes: list[tuple[str, dict]] = []
+    for name, model in _surfaces().items():
+        schema = model.model_json_schema()
+        # Both levels: a lane hangs off the tool itself (prose, tender) and off a nested row (customs).
+        for where, node in [(name, schema), *[(f"{name}/{k}", v) for k, v in schema.get("$defs", {}).items()]]:
+            props = node.get("properties", {})
+            if "aliases" in props or "distinctions" in props:
+                lanes.append((where, props))
+    assert len(lanes) >= 3, (
+        f"only {len(lanes)} alias lanes found on the whole surface — the walk has stopped seeing the nested "
+        "ones, so this guard would pass while a lane went undescribed"
+    )
+
+    for name, props in lanes:
+        for field in ("aliases", "distinctions"):
+            if field not in props:
+                continue
+            described = (props[field].get("description") or "")
+            assert len(described.strip()) > 30, (
+                f"{name}.{field} reaches the model with no direction of its own ({described!r}). Both fields "
+                "hold the same shape; the field description is the ONLY thing that says which way the "
+                "link runs"
+            )
+        if "distinctions" in props:
+            assert props["aliases"]["description"] != props["distinctions"]["description"], (
+                f"{name} gives its same-as and its not-the-same lane identical descriptions, so the veto rail "
+                "is indistinguishable from its opposite"
+            )
+            assert "NOT the same" in props["distinctions"]["description"], (
+                f"{name}.distinctions never says it records a NON-identity. It is the veto rail; it has to "
+                "read as the opposite of the field beside it"
+            )
 
 
 def test_every_format_prompt_inherits_the_shared_base() -> None:

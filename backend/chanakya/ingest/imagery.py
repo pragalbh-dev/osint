@@ -92,12 +92,15 @@ class FeatureMention(BaseModel):
     note: str | None = None
 
 
+# No system/variant field and no lat/lon field, deliberately (G11): identification is corroboration's job and
+# is never a pixel-leap, and geolocation is authoritative from the text. The docstring says what to report
+# rather than which stage owns what — it ships verbatim in the tool schema, so it is text for the model.
 class ImageryObservation(BaseModel):
-    """A subject-blind read of one overhead frame — *only* what is literally visible.
+    """A read of one overhead frame — *only* what is literally visible in it.
 
-    No system/model/variant/country field (identification is corroboration's job, never a pixel-leap);
-    no coordinate field (geolocation is authoritative from text). The count is a range or an abstention,
-    never a single confident integer.
+    Do not name a weapon system, model, variant or country, and do not give coordinates: none of that is
+    visible in pixels, and being told what the frame is *supposed* to show is not seeing it. Count as a range,
+    or decline to count — never a single confident number for objects you cannot individually resolve.
     """
 
     geometry_tokens: list[str] = []  # generic shape tokens: "radial-revetments", "central-radar-berm", …
@@ -115,11 +118,15 @@ class ImageryObservation(BaseModel):
     frame_kind: str | None = None  # coarse framing: "overhead" | "oblique" | "ground" | "map" | …
 
 
+# Not a forced classification: ``consistent=False`` — or the field left unset — yields **no** inference at all,
+# which is the honest answer whenever the observed features are insufficient. The docstring states that as
+# permission the model can act on, because it is the model that has to be willing to use it.
 class SignatureCorroboration(BaseModel):
-    """The guided-LLM judgement: is the observed signature *consistent with* the reference geometry?
+    """Is the observed signature *consistent with* the reference geometry?
 
-    Not a forced classification — the model may set ``consistent=False`` (or leave it unset) when the
-    observed features are insufficient or do not match, which yields **no** inference.
+    This is not a forced choice. Answer false, or leave it unset, whenever the observed features are too few,
+    too coarse or too unlike the reference to support a judgement — "cannot assess" is a real answer here and
+    is preferred to a strained match.
     """
 
     consistent: bool | None = None

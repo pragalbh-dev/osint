@@ -147,11 +147,10 @@ class MentionContext(BaseModel):
     """The identifying context for ONE named thing — who operates it, where it is, what it is formally
     called, and when the document says that was true.
 
-    These are the details a reader uses to tell two similar things apart: two battalions of the same type,
-    two sites near the same town, two firms with near-identical names. Fill each slot ONLY from what THIS
-    document states about THIS thing, in the document's own words, and leave a slot empty when the document
-    says nothing. An empty slot is a real answer — it means "this document does not say". An invented one is
-    not: a guessed operator, place or designator manufactures identity evidence about a thing.
+    These are what a reader uses to tell two similar things apart: two battalions of the same type, two sites
+    near one town, two firms with near-identical names. Fill each slot only from what THIS document states
+    about THIS thing, in its own words. An empty slot is a real answer — it means "this document does not
+    say"; an invented one manufactures identity evidence about a thing.
     """
 
     operator: str | None = Field(
@@ -220,7 +219,7 @@ class UnitMention(BaseModel):
 
 
 class VariantMention(BaseModel):
-    """A named weapon-system / variant the source states (the *value* is the source's, never fixed)."""
+    """A named weapon system or variant, under the designation the source itself uses."""
 
     name: str | None = None
     family: str | None = None
@@ -326,19 +325,44 @@ class RelationMention(BaseModel):
     source_quote: str | None = None
 
 
-# Carries both halves: the ``aliases`` slot becomes a ``same-as`` claim, the ``distinctions`` slot a
-# ``distinct-from``. One shape, because the model's job is identical either way — copy the two names the
-# document itself links, plus the wording that links them.
+# ONE shape carrying BOTH halves: the ``aliases`` slot becomes a ``same-as`` claim, the ``distinctions`` slot
+# a ``distinct-from`` — the veto rail that stops two co-located same-named things being fused into one unit's
+# before-and-after. The shape is shared because the model's mechanical job is identical either way (copy the
+# two names the document links, plus the wording that links them), but the *direction* is not, and it is
+# carried by the field name alone. So the direction is stated on each field
+# (``_ALIASES_DESC`` / ``_DISTINCTIONS_DESC``) and this docstring says the field decides it, rather than
+# describing one direction and leaving the model to infer the other. A ``distinct-from`` pair misfiled as an
+# alias does not merely lose a veto — it asserts the opposite of what the document said.
 class AliasMention(BaseModel):
-    """Two named things THIS document itself states are the same thing — or states are not."""
+    """A pair of names THIS document itself links, plus the wording that links them.
+
+    Which way the link runs — the same thing, or explicitly NOT the same thing — is decided by *which field*
+    you put the pair in, not by anything here.
+    """
 
     name_a: str | None = None
     name_b: str | None = None
     source_quote: str | None = None
 
 
+#: The two directions, stated on the field, because the shape cannot tell them apart (see ``AliasMention``).
+_ALIASES_DESC = (
+    "Pairs of names this document states are the SAME thing — a stated alias, 'also known as', 'formerly', "
+    "an acronym beside its expansion, a spelling variant. Only a link the document makes in its own words."
+)
+_DISTINCTIONS_DESC = (
+    "The OPPOSITE field to `aliases`: pairs this document states are NOT the same thing — 'not related to', "
+    "'distinct from', 'no interoperability with'. Only when the document asserts the separation. The two "
+    "fields say opposite things; never file a pair in the wrong one."
+)
+
+
+# Becomes a negative-polarity observation claim. The docstring says what to look for in the document, never
+# what the record turns into — the model can act on the first and not on the second.
 class DenialMention(BaseModel):
-    """A stated *negation* / observed absence → a negative-polarity observation claim."""
+    """A statement that something is NOT so — a denial, or an absence the observer reports ('no launchers
+    present', 'nothing unusual to report'). A stated absence is evidence: record it with the wording that
+    denies it."""
 
     subject: str | None = None
     predicate: str | None = None
@@ -347,7 +371,8 @@ class DenialMention(BaseModel):
 
 
 class ProseClaim(BaseModel):
-    """Analytic / official prose (curated-register, trade-media, think-tank, official-PR, exporter media)."""
+    """Analytic or official prose — a report, register entry, trade-press or think-tank piece, or an official
+    or company statement."""
 
     sources: list[SourceMention] = []
     manufacturers: list[OrgMention] = []
@@ -357,8 +382,8 @@ class ProseClaim(BaseModel):
     basing_sites: list[SiteMention] = []
     events: list[EventMention] = []
     relations: list[RelationMention] = []
-    aliases: list[AliasMention] = []
-    distinctions: list[AliasMention] = []
+    aliases: list[AliasMention] = Field(default=[], description=_ALIASES_DESC)
+    distinctions: list[AliasMention] = Field(default=[], description=_DISTINCTIONS_DESC)
     denials: list[DenialMention] = []
 
 
@@ -375,13 +400,14 @@ class NoticeMention(BaseModel):
 
 
 class NotamNavWarning(BaseModel):
-    """ICAO NOTAM / NAVAREA navigational-warning strings (official, machine-formatted)."""
+    """ICAO NOTAM / NAVAREA navigational warnings, in their official machine-formatted strings."""
 
     notices: list[NoticeMention] = []
 
 
 class GdRow(BaseModel):
-    """One customs Goods-Declaration / bill-of-lading row — the many-claims-per-row unit."""
+    """One customs goods-declaration / bill-of-lading row: one shipment, its parties, ports, dates and
+    cargo. A row states many separate facts — record each in its own field."""
 
     gd_no: str | None = None
     bl_no: str | None = None
@@ -398,18 +424,20 @@ class GdRow(BaseModel):
     destination_ref: str | None = None  # a STATED onward destination (kept as its own place, never resolved)
     destination_quote: str | None = None
     freight_forwarder: str | None = None
-    aliases: list[AliasMention] = []  # stated same-as within the row (spelling variants, "formerly")
+    # Same-as only: a customs row states spelling variants of one party, never a "not related" separation.
+    aliases: list[AliasMention] = Field(default=[], description=_ALIASES_DESC)
     source_quote: str | None = None
 
 
 class CustomsGdBol(BaseModel):
-    """Customs GD / bill-of-lading extract, record-per-line + annotations (customs-tender family)."""
+    """A customs goods-declaration / bill-of-lading extract — one row per shipment, plus any annotations."""
 
     rows: list[GdRow] = []
 
 
 class StockpileMention(BaseModel):
-    """A stated interceptor / spares stockpile posture — the perishable sustainment node (depth, resupply)."""
+    """A stated stock of interceptors or spares — how deep the magazine is and how long resupply takes. A
+    posture that changes, so copy any date wording the document gives it."""
 
     name: str | None = None
     stocked_round: str | None = None
@@ -420,7 +448,8 @@ class StockpileMention(BaseModel):
 
 
 class TechDataMention(BaseModel):
-    """A stated technical-data / design-authority holding — the durable sustainment node (TDP, calibration)."""
+    """Who holds the technical data or design authority for a system — a technical data package, firmware,
+    crypto keys or a calibration reference — and whether the document says control rests abroad."""
 
     name: str | None = None
     holds: str | None = None  # TDP | firmware | crypto-keys | calibration-ref (as the source states it)
@@ -430,7 +459,7 @@ class TechDataMention(BaseModel):
 
 
 class TenderProcurement(BaseModel):
-    """A procurement tender skeleton — numbered clauses + [REDACTED] (customs-tender family)."""
+    """A procurement tender document — numbered clauses, often with passages redacted."""
 
     tender_id: str | None = None
     procuring_org: UnitMention | None = None
@@ -444,14 +473,15 @@ class TenderProcurement(BaseModel):
     # `sustained-by` edge is SCORE's derived synthesis, NOT emitted here (Phase-4 boundary).
     stockpile: StockpileMention | None = None
     techdata_authority: TechDataMention | None = None
-    aliases: list[AliasMention] = []
-    distinctions: list[AliasMention] = []  # explicit "no interoperability" / "not related" → distinct-from
+    aliases: list[AliasMention] = Field(default=[], description=_ALIASES_DESC)
+    distinctions: list[AliasMention] = Field(default=[], description=_DISTINCTIONS_DESC)
     relations: list[RelationMention] = []
     source_quote: str | None = None
 
 
 class SightingMention(BaseModel):
-    """A sighting a social post claims — a system/unit doing something somewhere at some time."""
+    """A sighting the post asserts — a system or unit doing something, somewhere, at some time, in the
+    poster's own words. Recording it is not endorsing it."""
 
     system: str | None = None
     unit: str | None = None
@@ -474,13 +504,13 @@ class PostMention(BaseModel):
 
 
 class SocialPost(BaseModel):
-    """Handle + datetime + status-URL + body, multi-post (named-social / anon-social)."""
+    """Social-media posts — one entry per post: the handle, the timestamp, the status URL and the body."""
 
     posts: list[PostMention] = []
 
 
 class PassMention(BaseModel):
-    """One imagery pass/observation — a dated read of object(s) at a resolution, with a count."""
+    """One imagery pass — a dated read of the objects seen, with a count and the resolution it was read at."""
 
     pass_date: str | None = None
     object_type: str | None = None
@@ -567,25 +597,45 @@ _SYSTEM_BASE = (
     # discriminator is FOR (individuation) rather than listing values: the point generalises to a document no
     # annotator has touched. Absence-stays-absent is stated in the same breath, because a *fabricated*
     # discriminator is worse than a missing one — it manufactures identity evidence.
+    #
+    # It states NOTHING about what the resolver later does with a filled or empty block. The first version of
+    # this paragraph did ("two same-named things stay two things only if their context is on the record"),
+    # which reads as: leave it blank and they get merged — i.e. a standing reason to fill the field, sitting
+    # one sentence from the rule not to. Pointing a model at a downstream consequence it can influence is how
+    # you buy capture with invention; the consequences of sparse evidence are the resolver's problem, and the
+    # extractor is told only to report what the document says.
     "Wherever a named thing offers a `context` block, fill it: the details THIS document gives that would "
     "let a reader tell that thing apart from a similarly-named one — who operates or owns it, where it is "
     "(at the precision the document gives), the formal designator or reference number it carries, and when "
-    "the document says that description held. Treat this as part of naming a thing: two same-named things "
-    "stay two things only if their context is on the record. Fill only what this document states about THAT "
-    "thing and leave the rest empty — a guessed operator, place or designator is worse than a blank one, "
-    "because it manufactures identity evidence. "
+    "the document says that description held. Recording that context is part of naming the thing precisely; "
+    "it is not a judgement about whether two things are the same, which is not yours to make here. Fill only "
+    "what this document states about THAT thing and leave the rest empty — a guessed operator, place or "
+    "designator is worse than a blank one, because it manufactures identity evidence. "
     # ── the unit of analysis. Two reasonable extractors differed severalfold on claim count (~208 vs ~149
     # per run) and one model's own count swung 174→227 across five runs of the same documents, purely on how
     # finely a sentence was split — because nothing said what one item IS. This states the project's own unit
     # (one source, one date, one subject-predicate-object) as a rule a model can apply to an unseen document.
     # It is NOT an instruction to emit less: bundling two stated facts into one item breaks it just as
     # splitting one fact into two does.
-    "GRAIN — one item per stated fact. Where the SAME name appears several times in one document that is "
-    "ONE item carrying its clearest quote, not one item per mention; two DIFFERENT names always stay two "
-    "items, however obviously they look related. A relationship or event is one item per stated "
-    "subject-relation-object with its own date and quote: a sentence stating two facts gives two items, one "
-    "fact stated twice gives one. A thing and a relationship about that thing are different kinds of item, "
-    "not a duplicate. "
+    #
+    # It opens by naming its own scope, because the paragraph above it is about IDENTITY and this one is about
+    # HOW MANY ITEMS, and the two touch the same case: a name that appears twice. Read as identity rules they
+    # contradict each other — "two same-named things can be two things" against "a repeated name is one item"
+    # — and a model left to reconcile them picks differently run to run, which shows up as claim-count
+    # instability, the exact thing the grain rule exists to remove. So the cases are made disjoint out loud.
+    #
+    # No clause tells the model to pick a "best" quote. It used to say "ONE item carrying its clearest quote",
+    # which is not the project's unit of analysis (spine/02) and is not what the pipeline does:
+    # ``dedup.dedup_within_doc`` folds restatements and keeps the **union** of every stated span, precisely so
+    # no cited span is discarded. Asking a model to rank spans invites it to paraphrase or splice one.
+    "GRAIN — this rule is about HOW MANY items to emit, not about which things are the same. One item per "
+    "stated fact. Where the SAME name appears several times in one document for the same thing, that is ONE "
+    "item, not one item per mention; two DIFFERENT names always stay two items, however obviously they look "
+    "related; and where this document itself holds two same-named things apart — a different operator, place "
+    "or designator — those are two items, each with its own context. A relationship or event is one item per "
+    "stated subject-relation-object with its own date and quote: a sentence stating two facts gives two "
+    "items, one fact stated twice gives one. A thing and a relationship about that thing are different kinds "
+    "of item, not a duplicate. "
     "When you record a relationship the source dates — where something is based or was "
     "seen, when a system entered service, when a shipment moved — copy the source's own date wording "
     "into that relation's `date_text`; leave it empty when the source gives no such date. "
