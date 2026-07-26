@@ -266,3 +266,33 @@ def test_unknown_tool_and_missing_params(view, claims, config) -> None:
     assert "error" in run_tool(ctx, "graph_frobnicate", {})
     r = run_tool(ctx, "graph_get_node", {})
     assert "error" in r and "node_id" in r["error"]
+
+
+def test_a_list_param_arriving_as_text_is_a_named_error_not_an_empty_traversal(
+    view, claims, config
+) -> None:
+    """The ASK-side face of the truncated-payload defect (see tests/ingest/test_truncated_tool_payload).
+
+    ``neighbors`` does ``allow = set(edge_types)``. Handed a truncated string instead of a list, that is
+    a set of *characters*, no edge type matches, and the traversal returns nothing — a provider defect
+    presented to the analyst as "there is nothing there". Here the planner gets a named, actionable
+    error instead, which is this dispatcher's existing convention for a call it cannot honour.
+    """
+    ctx = _ctx(view, claims, config)
+    truncated = '["based-at", "supplie'
+    r = run_tool(ctx, "graph_neighbors", {"node_id": "unit_paad", "edge_types": truncated})
+    assert "error" in r and "edge_types" in r["error"] and "malformed" in r["error"]
+    assert r["suggestion"]
+    # and the well-formed call it should have been is untouched
+    ok = run_tool(ctx, "graph_neighbors", {"node_id": "unit_paad", "edge_types": ["based-at"]})
+    assert "error" not in ok
+
+
+def test_a_polymorphic_constraint_value_is_not_flagged(view, claims, config) -> None:
+    """The shape check must not fire on a schema that legitimately allows a scalar OR a list."""
+    ctx = _ctx(view, claims, config)
+    for value in ("confirmed", 3, ["confirmed", "probable"], True):
+        r = run_tool(ctx, "graph_query_graph",
+                     {"pattern": "component", "constraints": [{"attr": "status", "op": "in",
+                                                               "value": value}]})
+        assert "malformed arguments" not in str(r.get("error", ""))

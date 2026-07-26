@@ -21,9 +21,11 @@ from typing import Any
 from rapidfuzz import fuzz, process
 
 from chanakya.schemas import DateValue, EdgeView, NodeView, canonical_iso_bounds
+from chanakya.toolargs import describe_violations, structural_violations
 
 from . import analyses
 from .context import ToolContext, normalize, squash
+from .tool_specs import TOOL_SPECS
 
 # ── tuning knobs (agent-local; gate G6 scopes credibility/resolve/materiality/observe, not agent) ──
 DEFAULT_TOP_K = 3          # spine/09 beam ≈ 3
@@ -658,11 +660,25 @@ _FUNCS = {
 }
 
 
+_SCHEMAS: dict[str, dict[str, Any]] = {
+    str(spec["name"])[len("graph_"):]: spec["input_schema"]
+    for spec in TOOL_SPECS
+    if isinstance(spec.get("input_schema"), dict)
+}
+
+
 def run_tool(ctx: ToolContext, name: str, params: dict[str, Any]) -> dict[str, Any]:
     """Validate + route a single tool call, returning a structured result or an actionable error dict.
 
     Never raises for a tool-level problem (bad name/params/no-match): the planner reads the ``error`` +
     ``suggestion`` and adapts. Tool names are namespaced ``graph_*`` on the wire; we strip the prefix.
+
+    That includes a **structurally malformed** argument — a list-typed param arriving as text, which is
+    what a tool call truncated at the token budget leaves behind. Unchecked, ``set(edge_types)`` over a
+    string becomes a set of *characters* and the traversal returns nothing, so a provider defect is
+    presented to the analyst as "no path exists". Here it becomes a named error the planner can act on;
+    the extraction seam answers the same defect by raising, because a one-shot forced call has no
+    conversation to correct in (see :mod:`chanakya.toolargs`).
     """
     bare = name[len("graph_") :] if name.startswith("graph_") else name
     fn = _FUNCS.get(bare)
@@ -671,6 +687,11 @@ def run_tool(ctx: ToolContext, name: str, params: dict[str, Any]) -> dict[str, A
     missing = [p for p in _REQUIRED.get(bare, []) if p not in params or params[p] in (None, "")]
     if missing:
         return {"error": f"{bare} missing required param(s): {', '.join(missing)}", "suggestion": "supply them"}
+    malformed = structural_violations(params, _SCHEMAS.get(bare, {}))
+    if malformed:
+        return {"error": f"{bare} malformed arguments: {describe_violations(malformed)}",
+                "suggestion": "re-issue the call with each argument in its declared JSON type "
+                              "(a list param must be a list, not a string containing one)"}
     try:
         return fn(ctx, **params)  # type: ignore[operator]
     except ToolError as exc:

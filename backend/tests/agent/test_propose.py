@@ -76,3 +76,24 @@ def test_live_proposer_runs(view, config) -> None:
     p = propose_observable_from_text("watch HQ-9BE and the PAF HQ-9B squadron for relocations", view, config)
     # live: either a draft or an honest reason, never a crash.
     assert p.draft is not None or p.reason
+
+
+def test_a_truncated_mentions_list_is_refused_not_resolved_character_by_character(view, config) -> None:
+    """The proposer's face of the truncated-payload defect (tests/ingest/test_truncated_tool_payload).
+
+    ``mentions`` filtered with ``isinstance(m, str)`` accepts *characters* just as happily as names, so a
+    list that came back as text would have the proposer resolving "[", "H", "Q"… and handing the analyst
+    a draft assembled from punctuation. It is refused with a reason instead — this path never guesses.
+    """
+    from chanakya.agent.client import LLMResponse, ToolCall
+
+    truncated = LLMResponse(
+        tool_calls=[ToolCall(id="draft", name="draft_observable",
+                             input={"mentions": '["HQ-9BE", "PAF HQ-9B Squa',
+                                    "trigger_on": "occupancy_state_change"})],
+        stop_reason="tool_use",
+    )
+    p = propose_observable_from_text("watch them", view, config, llm=planner(truncated))
+    assert p.draft is None
+    assert "malformed" in p.reason and "mentions" in p.reason
+    assert not p.resolved and not p.unresolved

@@ -1958,3 +1958,51 @@ states the invariant rather than the old mechanism. **The production code is unt
   `n01` and `n05` now write the station in the **standardised form their own spelling notes say they use**
   ("Pano Aqil Cantonment"), with the district stated once per document rather than repeated in every
   `Garrison:` field. One station, one string, and the register stops contradicting its own conventions.
+
+## INGEST — a malformed tool payload is now a visible failure, not silence (2026-07-26, `fix/ingest-payload-validation`)
+
+**The defect.** The extraction client returned `dict(block.input)` with no validation. When a provider
+filled a list-typed field with a **truncated JSON string**, every consumer downstream iterated its
+characters, dropped each on an `isinstance(..., dict)` guard, and emitted nothing — with no exception, no
+log, and `error: null` on the record. Measured on the persisted three-way extraction run: 2 of 81
+coreference calls, and what they carried was the single best coreference answer either model produced.
+An extraction that had the right answer became indistinguishable from one that found nothing, which is
+the exact confusion this system's non-negotiable forbids.
+
+**Decisions taken.**
+
+1. **Validate the *shape* of every returned tool payload against the schema we offered** — one shared
+   check (`chanakya/toolargs.py`) at the seam, rather than a guard at each of the sites that could be bitten.
+2. **Check the container/scalar boundary and nothing else.** A declared list arriving as text is a
+   structural defect that silently becomes character iteration; a declared integer arriving as `"7"` is a
+   content mismatch the downstream rails already reject visibly, one row at a time. Narrow enough that it
+   cannot fire on a well-formed payload — verified against all 174 recorded payloads of the persisted run
+   (6 tools, 3 models), where it flags exactly the 2 known-bad calls and nothing else.
+3. **Raise at the extraction seam; return an actionable error at the ASK seam.** Not one policy, because
+   the two seams differ: a one-shot forced call whose output is frozen onto a `ClaimRecord` has no
+   conversation to correct in, and raising is what that file already does when the forced tool call is
+   missing. The ReAct dispatcher already has an `{"error","suggestion"}` channel the planner adapts to, so
+   a malformed call is re-issued instead of the answer dying.
+4. **No retry, and no repair.** A truncated payload is retryable *in principle*, but re-rolling a returned
+   response is sampling until the answer is liked — and in a bake-off it would mean measuring a client that
+   quietly re-rolls. The real remedy for a token-budget truncation (a larger budget, a narrower input) is
+   the caller's, not the transport's. Re-parsing a JSON-ish string back into shape is the same coercion
+   the seam already refuses.
+5. **A forced call that stopped at `max_tokens` is rejected on that signal alone.** This is the one change
+   that can fire on a payload whose shape looks fine: a call cut off between two complete list entries.
+   Today such a call is silently accepted as complete, so a partial extraction is being stamped with full
+   provenance. Behaviour change accepted deliberately.
+
+**Blast radius closed:** both live providers and the scripted replay in `ingest/client.py`; all seven
+`graph_*` tools via `run_tool` (`edge_types`/`edge_whitelist`/`constraints` as text silently produced an
+*empty traversal*, presented to the analyst as "no path exists"); and the observable proposer, where a
+truncated `mentions` list was worse than silent — its characters pass the `isinstance(m, str)` filter, so
+it would resolve `"["`, `"H"`, `"Q"` and hand the analyst a tripwire drafted from punctuation. All five
+ingest passes are covered by the single client fix.
+
+**Owed to the eval, not applied here.** `structured_output_reliability` scored a perfect 1.000 on the very
+runs this destroyed, because it checks only that the call returned and invented no *top-level* key. The
+fix (the metric runs the same shape check, with a schema-free fallback for already-recorded bundles) lives
+on another branch, so it ships as `tmp/conv/eval-structured-output-sees-truncation.patch` — verified to
+re-score those two runs 1.0000 → 0.9333 and to leave the other ten untouched. It imports
+`chanakya.toolargs`, so it can only land after this branch merges.

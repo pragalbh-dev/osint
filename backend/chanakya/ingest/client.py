@@ -16,6 +16,15 @@ shape is different, so this is a *separate* seam, not a reuse of that one:
 
 Rules honoured here (master §, spine/08–09, INGEST contract):
 
+* **A malformed reply raises; it is never coerced.** A response without the forced tool call raises, and
+  a filled-arguments payload whose *shape* contradicts the schema we offered raises too
+  (:class:`~chanakya.toolargs.MalformedToolPayload`) — including the case where the provider stopped at
+  the token budget, whose fragment is an incomplete answer rather than a short one. Both are the same
+  principle: coercion turns a malformed reply into an empty extraction that is indistinguishable from an
+  honest "found nothing", and this system's one non-negotiable is that a gap must be *explicit*. A
+  truncated call is retryable in principle, but this seam does not retry — re-rolling a *returned*
+  response is sampling until the answer is liked, and the real remedy (a bigger budget, or a narrower
+  input) belongs to the caller, not the transport. See :mod:`chanakya.toolargs`.
 * **No sampling params.** Neither the Gemini nor the Anthropic call passes ``temperature`` / ``top_p`` /
   ``top_k`` (400 on Opus 4.8; deliberately omitted for Gemini too) — ``model_conf`` is held at 1.0.
 * **Forced single tool.** Exactly one tool is offered per call and the model is *required* to call it
@@ -37,6 +46,8 @@ import os
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
+
+from chanakya.toolargs import validate_tool_arguments
 
 # ── model + call defaults (config-adjacent constants, no magic numbers buried in logic) ───────────
 
@@ -120,27 +131,37 @@ class ScriptedExtractionClient:
     "LLM/VLM paths tested with mocked/scripted clients"). ``extract`` and ``read_image`` draw from the
     *same* FIFO queue, so a doc that runs text-then-image dequeues in that order. Ignores the live inputs
     (it is a pure replay) and raises if the caller asks for more calls than were recorded.
+
+    Replayed payloads are shape-checked against the caller's schema exactly as a live provider's are: a
+    recorded bundle is a *provider answer we froze*, so a structurally invalid one must fail here rather
+    than replay as a silent empty extraction. ``validate=False`` opts a test double out when it is
+    deliberately feeding a malformed payload to exercise a downstream rail.
     """
 
-    def __init__(self, responses: Sequence[dict[str, Any]], *, model_id: str = "scripted") -> None:
+    def __init__(self, responses: Sequence[dict[str, Any]], *, model_id: str = "scripted",
+                 validate: bool = True) -> None:
         self._queue: list[dict[str, Any]] = list(responses)
         self._i = 0
         self.model_id = model_id
+        self._validate = validate
 
-    def _next(self) -> dict[str, Any]:
+    def _next(self, *, tool_name: str, input_schema: dict[str, Any]) -> dict[str, Any]:
         if self._i >= len(self._queue):
             raise RuntimeError(
                 "ScriptedExtractionClient exhausted: more extraction calls were requested than recorded"
             )
         out = self._queue[self._i]
         self._i += 1
-        return out
+        if not self._validate:
+            return out
+        return validate_tool_arguments(out, input_schema=input_schema, tool_name=tool_name,
+                                       provider="scripted")
 
     def extract(
         self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
         images: Sequence[tuple[bytes, str]] = (),
     ) -> dict[str, Any]:
-        return self._next()
+        return self._next(tool_name=tool_name, input_schema=input_schema)
 
     def read_image(
         self,
@@ -151,7 +172,20 @@ class ScriptedExtractionClient:
         image: bytes,
         media_type: str,
     ) -> dict[str, Any]:
-        return self._next()
+        return self._next(tool_name=tool_name, input_schema=input_schema)
+
+
+def _finish_reason(candidate: Any) -> str | None:
+    """Gemini's ``finish_reason`` as a plain string (it ships as an enum), or ``None`` if unreported.
+
+    Only used to recognise a *truncated* forced call: a candidate that ended because the output budget
+    ran out left an incomplete argument object behind, which is not something the payload's own shape can
+    always reveal (a list cut between two complete entries still parses).
+    """
+    raw = getattr(candidate, "finish_reason", None)
+    if raw is None:
+        return None
+    return str(getattr(raw, "name", raw))
 
 
 # ── Gemini client (PRIMARY, live) ──────────────────────────────────────────────────────────────────
@@ -204,7 +238,10 @@ class GeminiExtractionClient:
             for part in getattr(content, "parts", None) or []:
                 fn_call = getattr(part, "function_call", None)
                 if fn_call is not None and fn_call.name == tool_name:
-                    return dict(fn_call.args or {})
+                    return validate_tool_arguments(
+                        dict(fn_call.args or {}), input_schema=input_schema, tool_name=tool_name,
+                        provider="Gemini", stop_reason=_finish_reason(candidate),
+                    )
         raise RuntimeError(f"Gemini returned no forced function call for tool {tool_name!r}")
 
     def extract(
@@ -265,7 +302,11 @@ class AnthropicExtractionClient:
         )
         for block in response.content:
             if getattr(block, "type", None) == "tool_use" and block.name == tool_name:
-                return dict(block.input)
+                return validate_tool_arguments(
+                    dict(block.input) if isinstance(block.input, dict) else block.input,
+                    input_schema=input_schema, tool_name=tool_name, provider="Anthropic",
+                    stop_reason=getattr(response, "stop_reason", None),
+                )
         raise RuntimeError(f"Anthropic returned no forced tool_use for tool {tool_name!r}")
 
     @staticmethod
