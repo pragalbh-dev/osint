@@ -1106,6 +1106,26 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
                         missing_slots=[IDENTITY_SLOT],
                     )
                 )
+    # …and the escalation for a pair a cap withheld from the QUEUE on a ground a source stated
+    # (``withheld_escalations``). Same per-endpoint rendering as the refusal above and the same
+    # canonicalisation, but it never touches either node's status: the pair being held apart is the correct
+    # outcome here, and what is open is only WHY the source and the score disagree. Empty on the shipped
+    # config (`contrast_ceiling: probable` keeps the queue place, so nothing is re-routed).
+    for pair_ref, what_missing in sorted(partition.withheld_escalations.items()):
+        seen_refs = set()
+        for endpoint in pair_ref.split("|"):
+            ref = partition.entity_canonical.get(endpoint, endpoint)
+            if ref in nodes and ref not in seen_refs:
+                seen_refs.add(ref)
+                known_gaps.append(
+                    KnownGap(
+                        id=f"gap:withheld:{pair_ref}:{ref}",
+                        related_ref=ref,
+                        what_missing=what_missing,
+                        observability_ceiling="confirmable",
+                        missing_slots=[IDENTITY_SLOT],
+                    )
+                )
     # The routing's + derivation's own named gaps: an unrouted straddle, a suppressed supersede, a withheld
     # relation, a truncated formation attribution. Appended AFTER the retirement filter — these are not
     # assertions that could be retired, they are statements about what the build could not conclude.

@@ -52,6 +52,7 @@ import pytest
 import yaml
 
 from chanakya.resolve.rconfig import BANDS_BY_STRENGTH, ResolveConfig
+from chanakya.schemas import pair_key
 from tests import _rk_coref as rc
 from tests import _rk_layer as rk
 
@@ -352,4 +353,53 @@ def test_every_declared_stage_tunable_actually_reaches_behaviour() -> None:
         f"these declared config keys never reach behaviour: {inert}. Each one is parsed, validated and "
         "documented as controlling something, and then read by nobody — a dial with a label and no shaft. "
         "The remedy may be deletion; it may not be leaving the file claiming a control that does not exist."
+    )
+
+
+# ── a ceiling may withhold the QUEUE place, never the escalation ─────────────────────────────────
+
+def test_a_contrast_capped_out_of_the_queue_still_escalates() -> None:
+    """``contrast_ceiling: possible`` is a legal triage choice, and it may not delete the analyst's record.
+
+    The value withholds the fusion (right) *and* the queue place, so the pair was filed on the silent
+    watch-list — refuse half held, escalate half lost. The distinction is whose evidence is being set aside: a
+    NAME coincidence the resolver itself noticed has earned no attention, while here a SOURCE went out of its
+    way to distinguish two mentions the identity score reads as one entity. That is an extraction error or a
+    deliberate conflation, and both are findings.
+
+    So the escalation is re-routed rather than dropped: the pair leaves the queue and each endpoint carries a
+    named ``withheld_escalations`` record, which ``rebuild()`` renders as a Known Gap. Deliberately a separate
+    channel from ``identity_refusals`` — that one unassesses the node, and holding this pair apart is the
+    CORRECT outcome, so neither node's status may move.
+    """
+    part = rc.part_of(_contrasted_claims(), _live(contrast_ceiling="possible"))
+    key = pair_key("a", "b")
+
+    assert not rc.fused(part, "a", "b"), "the refuse half broke: the contrast pair fused"
+    assert key not in {pair_key(x, y) for x, y in part.candidates}, (
+        "the fixture is not exercising the case — at ceiling 'possible' the pair must be off the queue"
+    )
+    assert part.withheld_escalations.get(key), (
+        "the pair was withheld from the analyst's QUEUE and no escalation was recorded — the refusal holds "
+        f"and nobody is told. withheld_escalations={part.withheld_escalations}"
+    )
+    what_missing = part.withheld_escalations[key]
+    assert "adjudication" in what_missing.lower() or "analyst" in what_missing.lower(), (
+        f"the escalation does not say who has to act or what would settle it: {what_missing!r}"
+    )
+
+
+def test_the_queueing_ceiling_needs_no_re_routed_escalation() -> None:
+    """The mirror: at ``probable`` the pair keeps its queue place, so the channel stays empty.
+
+    Emitting both would tell the analyst the same thing twice — once as a queue item and once as a gap — which
+    is how a register earns being skimmed.
+    """
+    part = rc.part_of(_contrasted_claims(), _live(contrast_ceiling="probable"))
+
+    assert pair_key("a", "b") in {pair_key(x, y) for x, y in part.candidates}, (
+        "at ceiling 'probable' the contrast pair must be guaranteed its queue place"
+    )
+    assert not part.withheld_escalations, (
+        f"a queued pair also produced a re-routed escalation: {part.withheld_escalations}"
     )

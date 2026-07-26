@@ -79,6 +79,15 @@ class Partition(Record):
     # could not be decided about it and what would settle it. Only for pairs the evidence otherwise fused: a
     # low-scoring cross-type coincidence is noise and earns nothing (T3b-A).
     identity_refusals: dict[str, str] = {}
+    # pair_key(a, b) → what is MISSING for a pair a cap withheld from the analyst's QUEUE while the ground for
+    # withholding it came from a SOURCE's own statement. The escalate half for a triage decision that removes
+    # the queue item: `contrast_ceiling: possible` refuses the fusion (right) and files the pair on the silent
+    # watch-list (wrong — a document going out of its way to distinguish two things the score says are one is
+    # either an extraction error or deception, and both are findings). Rendered as one Known Gap PER ENDPOINT,
+    # exactly like ``identity_refusals`` — but deliberately a SEPARATE channel, because this one must NOT touch
+    # the node's status: the pair being held apart is the correct outcome and neither node is unassessable.
+    # Empty on the shipped config (`contrast_ceiling: probable` ⇒ the pair keeps its queue place).
+    withheld_escalations: dict[str, str] = {}
     # pair_key(a, b) → why a hard WALL holds this pair apart, in words an analyst can act on (G18, S3).
     # A curated ``distinct_from`` needs no explanation — an analyst wrote it. A wall the system *derived*
     # does: a stated relationship conflict at overlapping times is a finding, and a finding with no stated

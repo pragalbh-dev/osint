@@ -94,6 +94,10 @@ class ResolveResult:
     # never having looked alike. ``rebuild()`` renders one Known Gap **per endpoint** so each node says, in
     # its own drawer, what could not be decided about it and what would settle it.
     identity_refusals: dict[str, str] = field(default_factory=dict)
+    # pair_key → what is MISSING for a pair a cap withheld from the QUEUE on a ground a SOURCE stated. See
+    # ``Partition.withheld_escalations``: a separate channel from ``identity_refusals`` because it must not
+    # touch either node's status — holding the pair apart is the correct outcome here.
+    withheld_escalations: dict[str, str] = field(default_factory=dict)
     merge_confidence: dict[str, float] = field(default_factory=dict)
     merge_breakdown: dict[str, dict[str, float]] = field(default_factory=dict)
 

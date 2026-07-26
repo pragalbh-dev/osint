@@ -198,6 +198,14 @@ def validate_ceilings(block: Any) -> None:
 _EARNED_IDENTITY = "earned_identity"
 #: The three band-ceiling keys, named once so the reader, the validator and the tests agree.
 _CEILING_KEYS = ("name_ceiling", "colocation_ceiling", "contrast_ceiling")
+#: Ceilings whose withheld pair must still ESCALATE even when the declared band takes it off the queue. The
+#: distinction is whose evidence is being set aside: the name cap withholds attention from a string
+#: coincidence the resolver itself noticed, which has genuinely earned none; the contrast ceiling withholds a
+#: pair a SOURCE explicitly distinguished while the score says they are one thing — an extraction error or a
+#: deception, and always a finding. ``possible`` stays a legal, honoured value for it (an operator's declared
+#: triage choice), and the pair is escalated as a named Known Gap on each endpoint instead of a queue item, so
+#: refusing the fusion never costs the escalation. Read by ``resolve._contrast_ceilings``' caller.
+CEILINGS_THAT_MUST_ESCALATE = frozenset({"contrast_ceiling"})
 
 
 @dataclass(frozen=True)

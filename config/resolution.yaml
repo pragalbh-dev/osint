@@ -639,7 +639,11 @@ earned_identity:
   # the human taken out of the loop.
   colocation_ceiling: probable
   # A same-document STATED-CONTRAST pair caps at `probable` — it reaches the analyst with its licensing
-  # quote and can never auto-merge. Ungraded on purpose: a band ceiling cannot *shatter* an existing
+  # quote and can never auto-merge. `possible` is REJECTED AT LOAD for this key (and only this key): it would
+  # withhold the queue place as well as the fusion, so a pair whose own document distinguishes it while the
+  # score says otherwise — an extraction error or a deception, always a finding — would be filed on the silent
+  # watch-list. Keeping the refusal and dropping the escalation is exactly the half-contract this system may
+  # not ship. Ungraded on purpose: a band ceiling cannot *shatter* an existing
   # cluster (it withholds one new fusion; the cluster can still form transitively through other pairs), so
   # the harm a grade gate would have defended against does not exist here. ABSENCE of contrast is NEUTRAL —
   # never a prior *for* merging either.

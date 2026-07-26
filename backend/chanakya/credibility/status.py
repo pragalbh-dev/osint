@@ -19,6 +19,11 @@ Status — gates are applied here, **never** folded into the arithmetic (spine/0
   newer fact is right; the old one isn't wrong, it's history"; spine/04). Labelling it *insufficient*
   would claim we cannot assess it, when in fact we have good evidence that the world moved on — the
   opposite of what the evidence says, and the more misleading of the two errors.
+  **Conditioned on the assertion having been ESTABLISHED** (at or above the ``probable`` floor): "we knew
+  this and the world has moved on" is a claim about the past, and an assertion that never reached the
+  assessed picture was never known, so ageing it invents a history. One that fails the condition falls
+  through to the ordinary ladder and records ``superseded-never-established`` in its gate vector, so the
+  retirement is still visible.
 * **insufficient** — a required evidence *kind* is missing (``sufficiency.satisfied`` is False). Off the
   confidence scale; dominates everything below it, because if we structurally can't assess we say so
   (the non-negotiable).
@@ -126,7 +131,14 @@ def assign_status(
             and not gated_unknown
         )
 
-        if SUPERSEDED in flags:
+        # Was this assertion ever ESTABLISHED — i.e. did it reach the assessed picture at all? `stale` says
+        # "we knew this and the world has moved on", which is a claim about the past. An assertion that never
+        # cleared the `probable` floor was never known, so ageing it asserts a history it does not have. The
+        # caller-side guard covered only the `insufficient` sub-case; this covers the whole of it, in the one
+        # place that owns the label.
+        established = probable_cut is not None and conf >= probable_cut
+
+        if SUPERSEDED in flags and established:
             # History, not a gap: a floor-clearing newer fact retired this one. Wins over `insufficient`
             # (and over the magnitude ladder) because its confidence has legitimately decayed away — an
             # `insufficient` label here would report missing coverage we are not in fact missing.
@@ -154,6 +166,13 @@ def assign_status(
         else:
             status = _POSSIBLE
             gate_vector.append("below-probable-floor")
+
+        # A retirement that could NOT be labelled `stale` above is still a fact about this assertion, and the
+        # analyst has to be able to see why the graph shows an assertion that a newer one has overtaken while
+        # it does not read as history. Silence here would be the same "retained but never surfaced" failure
+        # one layer down: the gate fired and nothing recorded it.
+        if SUPERSEDED in flags and not established:
+            gate_vector.append("superseded-never-established")
 
         for flag in (_ADVERSARY_DENIAL, _DECOY_RISK):
             if flag in flags:

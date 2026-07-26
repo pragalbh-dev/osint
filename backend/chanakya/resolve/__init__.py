@@ -49,7 +49,13 @@ from .entities import (
 from .normalize import normalize
 from .places import location_attr
 from .propose import propose_candidates
-from .rconfig import ResolveConfig, ceiling_withholds, grade_meets_floor
+from .rconfig import (
+    BAND_POSSIBLE,
+    CEILINGS_THAT_MUST_ESCALATE,
+    ResolveConfig,
+    ceiling_withholds,
+    grade_meets_floor,
+)
 from .scoring import (
     COREF_CLUSTER_ATTR,
     COREF_CONTRAST_PREDICATE,
@@ -249,6 +255,21 @@ def _resolve(
     contrast_caps = _contrast_ceilings(graph, cfg, alias_idx)
     crit_raises = {**crit_raises, **coref_declined, **contrast_caps}
     raise_ceilings = {p: cfg.earned_identity.contrast_ceiling for p in contrast_caps}
+    # …and if the declared band takes the pair OFF THE QUEUE, the escalation is re-routed rather than lost.
+    #
+    # ``contrast_ceiling: possible`` is a legal, honoured operator choice and it withholds the queue place as
+    # well as the fusion — so the pair was filed on the silent watch-list. For a NAME coincidence that triage
+    # is right (it has earned no attention); here the ground is a SOURCE going out of its way to distinguish
+    # two mentions the score says are one thing, which is either an extraction error or deception and always a
+    # finding. The refuse half held and the escalate half was lost. Each endpoint now gets a named Known Gap
+    # instead of a queue item, through a channel deliberately separate from ``identity_refusals``: that one
+    # unassesses the node, and here holding the pair apart is the CORRECT outcome — neither node is in doubt.
+    contrast_withheld = (
+        contrast_caps
+        if cfg.earned_identity.contrast_ceiling == BAND_POSSIBLE
+        and "contrast_ceiling" in CEILINGS_THAT_MUST_ESCALATE
+        else {}
+    )
     # D-13.17/C4: the licensing evidence, finally SURFACED. It was stamped on the claim and read nowhere, so
     # every justification of raise-only ("the analyst is handed the exact sentence") described a screen nobody
     # could see — and with the gates in place this queue is load-bearing, not a fallback.
@@ -292,6 +313,17 @@ def _resolve(
     # and ``finalise`` prunes any entry whose endpoints ended up in one cluster along some other chain.
     for pair, what_missing in sorted(walled_assertions.items(), key=lambda kv: sorted(kv[0])):
         result.identity_refusals.setdefault(pair_key(*sorted(pair)), what_missing)
+    # The re-routed escalation for a source-stated contrast the declared band took off the queue (above).
+    for pair, why in sorted(contrast_withheld.items(), key=lambda kv: sorted(kv[0])):
+        result.withheld_escalations.setdefault(
+            pair_key(*sorted(pair)),
+            "a SOURCE distinguishes this mention from another that the identity score reads as the SAME "
+            "entity, and the configured band withholds the pair from the review queue — so this record is the "
+            "escalation. The merge is refused (correctly). What is missing is a decision on WHY the two "
+            "readings disagree: an enumeration listing one thing twice, an extraction error, or a deliberate "
+            "conflation. Needed: an analyst adjudication, or a second source that settles whether these are "
+            f"one thing. The document's own words: {why}",
+        )
     # A raised coreference link keeps its licensing evidence on the queue item — BESIDE any reason the
     # resolver already recorded, never instead of it. The two answer different questions and the analyst needs
     # both: the resolver's reason says why the merge was WITHHELD (a critical conflict, a cap), the coref
@@ -1876,6 +1908,7 @@ def _to_partition(
         candidates=result.candidates,
         candidate_reasons=result.candidate_reasons,
         identity_refusals=result.identity_refusals,
+        withheld_escalations=result.withheld_escalations,
         possible=result.possible,
         distinct_from=result.distinct_from,
         wall_reasons={k: v for k, v in result.wall_reasons.items()},
