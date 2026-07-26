@@ -1,0 +1,1826 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        237,
+        449
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "suspected; previously flagged in open-source discussion threads as associated with"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d17b-withheld-gap-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "_undated_perishable": true,
+      "source_quote": "This report provides a visual update on a suspected forward SAM deployment area previously flagged in open-source discussion threads as associated with the HQ-9P long-range air defense system fielded by Pakistan."
+    },
+    "claim_id": "d17b-withheld-gap-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        237,
+        449
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan",
+      "object_value": null,
+      "predicate": "operated-by",
+      "subject": "HQ-9P long-range air defense system"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "NAME_VARIANT",
+      "_coref_forms": [
+        "HQ-9P",
+        "HQ-9/P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "'NAME_VARIANT' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another predicate — immune to the very cap that replaced it",
+      "_coref_quotes": [
+        "HQ-9P",
+        "HQ-9/P"
+      ],
+      "_coref_referent": "ref:d17b-withheld-gap-c1",
+      "_object_mention": "d17b-withheld-gap-l40",
+      "_subject_mention": "d17b-withheld-gap-l9",
+      "source_quote": "HQ-9P"
+    },
+    "claim_id": "d17b-withheld-gap-l9-3",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "frame": null,
+        "line": 9,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          393,
+          398
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "frame": null,
+        "line": 30,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2720,
+          2726
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d17b-withheld-gap-l9",
+      "d17b-withheld-gap-l40"
+    ],
+    "referent_id": "ref:chunk0-d17b-withheld-gap-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l9-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        520,
+        548
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "near the port road turnoff, not the garrison itself",
+          "raw": "near the port road turnoff, not the garrison itself",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "negative TEL presence observation",
+        "site_signature_geometry": "previously noted perimeter berm and access road configuration largely unchanged from the 2024-11 baseline; two of the hardstand pads; the northern or southern pad clusters; cleared laydown area; fenced compound",
+        "site_type": "suspected forward SAM deployment area"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        878,
+        945
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "northern tree line"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "northern tree line"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "launcher"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "transporter-erector-launchers (TELs)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "transporter-erector-launchers (TELs)",
+        "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-06-11 (single pass, ~1030 local)",
+        "occupancy_state": "not visible"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "transporter-erector-launchers (TELs)"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "transporter-erector-launchers (TELs)"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar trailer"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "radar trailer"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "possible radar trailer footprint",
+        "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2024",
+        "year": 2024
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2024-11 pass",
+        "occupancy_state": "showed"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "radar trailer footprint",
+        "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-06-11 (single pass, ~1030 local)",
+        "occupancy_state": "empty"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2024",
+        "year": 2024
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "possible radar trailer footprint"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "possible radar trailer footprint"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2024",
+          "year": 2024
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "radar trailer footprint"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "radar trailer footprint"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1631,
+        1760
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "dimensions": "TEL-consistent dimensions",
+        "object_type": "canvas-covered or tarped objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "canvas-covered or tarped objects"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1761,
+        1973
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "roughly 20% of the perimeter"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "roughly 20% of the perimeter"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l24",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1975,
+        2250
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "generator trailer"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "generator trailers"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l24-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1975,
+        2250
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "missile canister",
+        "functional_role": "spares handling"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "missile canister"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l24-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1975,
+        2250
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "generator trailers"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "generator trailers"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l24-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1975,
+        2250
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "tented storage typically associated with missile canister or spares handling"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "tented storage typically associated with missile canister or spares handling"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l24-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1975,
+        2250
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "unusual vehicle staging"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "unusual vehicle staging"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "light vehicles",
+        "source_quote": "Compound-level activity is otherwise sparse: two light vehicles parked near what is assessed as an administration or guard structure, and what appears to be routine grounds maintenance debris near the western fence line, unchanged in character from prior imagery."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l26",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2252,
+        2515
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-06-11 (single pass, ~1030 local)",
+        "occupancy_state": "two parked"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l26-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2252,
+        2515
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 2.0
+        },
+        "object_type": "light vehicles"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "light vehicles"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l30",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 30,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3014,
+        3252
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "coordinates"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "coordinates"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l34",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3544,
+        3810
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "follow-up tasking"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "follow-up tasking"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l34-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3544,
+        3810
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "second vendor imagery"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "second vendor imagery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l38",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 38,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3826,
+        3882
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "SAR cross-check"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "SAR cross-check"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l39",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 39,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3885,
+        3979
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "obscured tree-line segment"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "obscured tree-line segment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l40",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 40,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3982,
+        4173
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "rests on prior open-source association rather than confirmed order-of-battle documentation"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d17b-withheld-gap-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l40-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 40,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3982,
+        4173
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "confirmed order-of-battle documentation; unit markings or signage"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "confirmed order-of-battle documentation; unit markings or signage"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l41",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 41,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4176,
+        4314
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "direct pixel-level comparison"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "direct pixel-level comparison"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "0360adabf9dc4af5c34c5f77a5a84ab0baaa75025802a8115fdfa68808a3dffe",
+        "pdq_quality": 100,
+        "phash": "dd3f7208fdc4a2a0",
+        "sha256": "3e87315fe312358e6ecdefb5c2ffb91a2d9797db8348c3d7d137889d00db3ed4"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d17b-withheld-gap-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "caption_vs_image_consistency": "No caption provided.",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": "small vehicles, structures, and construction objects",
+          "value": null
+        },
+        "description": "A nadir overhead frame shows a dense urban district surrounding a large irregular bare-earth parcel. The parcel contains a prominent circular looped paved or graded feature divided by a narrow north-south linear strip, with curved side segments and several rectangular pads or spurs. Multiple parallel diagonal linear features cross the parcel's northern section. Scattered small buildings, foundations, temporary-looking structures, and construction materials occupy the rest of the site. Broad paved roads and intersections border the area, while dense rows of rectangular buildings, additional construction lots, a small athletic court, and a landscaped institutional-looking compound fill the surroundings.",
+        "frame_kind": "single nadir overhead urban image",
+        "geometry_tokens": [
+          "large circular loop",
+          "central linear divider",
+          "curved access paths",
+          "rectangular building footprints",
+          "grid road network",
+          "irregular construction parcel",
+          "parallel linear tracks"
+        ],
+        "gsd_note": "Resolution permits recognition of roads, buildings, graded paths, and construction patterns, but not fine object classification.",
+        "observed_features": [
+          {
+            "arrangement": "center of dense urban blocks",
+            "feature": "graded open area",
+            "note": "Mostly bare earth with a prominent circular paved or graded layout.",
+            "shape": "large irregular polygon"
+          },
+          {
+            "arrangement": "central, roughly symmetric around a narrow north-south strip",
+            "feature": "looped path or roadway",
+            "note": "Several short rectangular spurs or pads connect to the loop.",
+            "shape": "broad circle with bilateral curved segments"
+          },
+          {
+            "arrangement": "diagonal across the northern part of the central parcel",
+            "feature": "linear corridors",
+            "note": "Appear as tracks, trenches, or graded alignments; exact function is unclear.",
+            "shape": "multiple narrow parallel lines"
+          },
+          {
+            "arrangement": "bordering the parcel on north, east, and west",
+            "feature": "roads",
+            "note": "Dense surrounding street grid with visible vehicles too small for reliable counting.",
+            "shape": "wide straight paved corridors with intersections"
+          },
+          {
+            "arrangement": "dense rows around the central open parcel",
+            "feature": "buildings",
+            "note": "Several roofs are blue or light-colored; construction-stage structures are visible within and beside the parcel.",
+            "shape": "rectangular low- and mid-rise blocks"
+          },
+          {
+            "arrangement": "east, southwest, and within the central parcel",
+            "feature": "construction areas",
+            "note": "Contain foundations, partial structures, temporary sheds, and disturbed soil.",
+            "shape": "irregular bare-earth lots"
+          },
+          {
+            "arrangement": "west of the central parcel",
+            "feature": "sports court or track",
+            "note": "Green interior with a reddish perimeter.",
+            "shape": "small rounded rectangle"
+          },
+          {
+            "arrangement": "southeast of the central parcel",
+            "feature": "landscaped compound",
+            "note": "Symmetric garden-like layout around several rectangular buildings.",
+            "shape": "rectangular plots and paths"
+          }
+        ],
+        "occupancy_state": "Urban area appears occupied and in use; central and adjacent parcels show active or recent construction, though individual people are not discernible.",
+        "resolution_sufficiency": "sufficient for broad site geometry and major features; insufficient for reliable identification or counting of small objects",
+        "site_signature_geometry": "A nadir overhead frame shows a dense urban district surrounding a large irregular bare-earth parcel. The parcel contains a prominent circular looped paved or graded feature divided by a narrow north-south linear strip, with curved side segments and several rectangular pads or spurs. Multiple parallel diagonal linear features cross the parcel's northern section. Scattered small buildings, foundations, temporary-looking structures, and construction materials occupy the rest of the site. Broad paved roads and intersections border the area, while dense rows of rectangular buildings, additional construction lots, a small athletic court, and a landscaped institutional-looking compound fill the surroundings.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d17b_withheld_gap"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  }
+]

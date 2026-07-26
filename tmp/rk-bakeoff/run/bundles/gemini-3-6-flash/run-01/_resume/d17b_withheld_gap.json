@@ -1,0 +1,195 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "image",
+      "latency_s": 10.22867951495573,
+      "offered_fields": [
+        "caption",
+        "caption_vs_image_consistency",
+        "count_abstained",
+        "count_object",
+        "description",
+        "features",
+        "frame_kind",
+        "geometry_tokens",
+        "gsd_note",
+        "object_count_max",
+        "object_count_min",
+        "occupancy_state",
+        "resolution_sufficiency"
+      ],
+      "payload": {
+        "caption": "Overhead view of an urban area containing a central compound with a distinctive circular track network and surrounding high-density residential developments.",
+        "caption_vs_image_consistency": "consistent",
+        "count_abstained": false,
+        "count_object": "vehicles or small structures",
+        "description": "The frame shows an open central facility enclosed within a dense urban landscape characterized by high-rise residential blocks and an orthogonal road grid. Within the central compound, a prominent circular road network features symmetric radial loops, inner paths, and drive-through style pads or revetment outlines arranged around a linear central axis. South of this circular pattern are several low-rise rectangular structures, open paved courtyards, and multiple small rectangular objects (possibly vehicles or small utility structures) parked in orderly rows. A diagonal linear track corridor borders the north-eastern edge of the inner compound.",
+        "features": [
+          {
+            "arrangement": "symmetric",
+            "feature": "circular track and radial loops",
+            "note": "Large outer ring road containing inner radial pathways and symmetrical lobes/pads.",
+            "shape": "circular"
+          },
+          {
+            "arrangement": "clustered",
+            "feature": "rectangular structures and courtyards",
+            "note": "Low-rise buildings positioned south of the circular layout.",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "linear rows",
+            "feature": "small vehicles or utility objects",
+            "note": "Rows of small dark rectangular objects situated along access tracks south of the circular loop.",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "orthogonal grid",
+            "feature": "multi-lane perimeter roads",
+            "note": "Paved multi-lane roads surrounding the site boundary.",
+            "shape": "linear"
+          }
+        ],
+        "frame_kind": "electro-optical",
+        "geometry_tokens": [
+          "circular_layout",
+          "radial_paths",
+          "rectangular_buildings",
+          "road_grid",
+          "paved_pads",
+          "linear_corridor"
+        ],
+        "gsd_note": "Resolution sufficient to resolve road networks, building footprints, and small vehicle-sized objects.",
+        "object_count_max": 40,
+        "object_count_min": 10,
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient"
+      },
+      "tool_name": "read_overhead_image",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 23.087975198868662,
+      "offered_fields": [
+        "assessed_types",
+        "collection_gaps",
+        "components",
+        "observations",
+        "occupancy",
+        "relations",
+        "site",
+        "source_quote",
+        "units"
+      ],
+      "payload": {
+        "assessed_types": [
+          {
+            "confidence_language": "suspected",
+            "context": {
+              "designation": "HQ-9P",
+              "operator": "Pakistan"
+            },
+            "family": "long-range air defense system",
+            "name": "HQ-9P",
+            "operator_branch": "Pakistan",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan"
+          }
+        ],
+        "collection_gaps": [
+          {
+            "description": "Partial cloud cover (~15%) causing partial obscuration along northern tree line, limiting analyst confidence along roughly 20% of the perimeter during single-pass collection",
+            "next_coverage_due": "within the next 5–7 days",
+            "source_quote": "Given the partial cloud obscuration and single-pass nature of this collection, a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding"
+          }
+        ],
+        "components": [
+          {
+            "functional_role": "transporter-erector-launcher",
+            "name": "transporter-erector-launchers (TELs)",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "functional_role": "radar",
+            "name": "radar trailer",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "observations": [
+          {
+            "count_state": "absent",
+            "location_text": "hardstands or along the access spur",
+            "object_count_text": "No transporter-erector-launchers (TELs) are visible",
+            "object_type": "transporter-erector-launchers (TELs)",
+            "pass_date": "2025-06-11",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "count_state": "present",
+            "location_text": "cleared laydown area",
+            "object_count_text": "possible radar trailer footprint",
+            "object_type": "radar trailer footprint",
+            "pass_date": "2024-11",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "occupancy": [
+          {
+            "observed": "transporter-erector-launchers (TELs)",
+            "observed_date": "2025-06-11",
+            "occupancy_state": "absent",
+            "site": "the old Rawalpindi-area site",
+            "source_quote": "Current imagery is assessed as a negative TEL presence observation for the pass window noted."
+          }
+        ],
+        "relations": [
+          {
+            "object": "Pakistan",
+            "relation": "operated-by",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan",
+            "subject": "HQ-9P"
+          }
+        ],
+        "site": {
+          "context": {
+            "designation": "the old Rawalpindi-area site",
+            "geography": "near the port road turnoff"
+          },
+          "location_text": "near the port road turnoff",
+          "name": "the old Rawalpindi-area site",
+          "occupancy_state": "negative TEL presence",
+          "signature_geometry": "perimeter berm and access road configuration",
+          "site_type": "suspected forward SAM deployment area",
+          "source_quote": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself"
+        },
+        "units": []
+      },
+      "tool_name": "extract_imagery_geoint",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 9.711726270616055,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:01:21.427775+00:00",
+  "run_index": 1,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d17b_withheld_gap"
+}

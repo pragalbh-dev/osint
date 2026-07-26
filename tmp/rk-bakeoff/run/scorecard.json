@@ -1,0 +1,1195 @@
+{
+  "candidates": [
+    {
+      "eligible_to_win": true,
+      "exercised": true,
+      "gates": [
+        {
+          "detail": "6/6 standalone-image calls returned (multimodal=native; recorded probe 1/1 on d17b_withheld_gap.png @2026-07-25T20:27:24+00:00, this run 5/5)",
+          "name": "vlm_imagery_path",
+          "status": "PASS"
+        },
+        {
+          "detail": "chanakya.ingest.client is on the shipped ingest path, anthropic imports, and it is declared the seed producer",
+          "name": "keyless_equals_live",
+          "status": "PASS"
+        },
+        {
+          "detail": "'claude-opus-5' is a concrete pinned id",
+          "name": "pinned_model_id",
+          "status": "PASS"
+        },
+        {
+          "detail": "ANTHROPIC_API_KEY is set",
+          "name": "exercisable",
+          "status": "PASS"
+        },
+        {
+          "detail": "citation_faithfulness=0.789 measured; no absolute floor is configured, so only the relative veto (materially worse than a rival) applies",
+          "name": "non-negotiable:citation_faithfulness",
+          "status": "PASS"
+        },
+        {
+          "detail": "extract_only_stated=0.955 measured; no absolute floor is configured, so only the relative veto (materially worse than a rival) applies",
+          "name": "non-negotiable:extract_only_stated",
+          "status": "PASS"
+        },
+        {
+          "detail": "trap_avoidance=0.873 measured; no absolute floor is configured, so only the relative veto (materially worse than a rival) applies",
+          "name": "non-negotiable:trap_avoidance",
+          "status": "PASS"
+        }
+      ],
+      "id": "anthropic-opus-5",
+      "label": "Anthropic Opus 5",
+      "model_id": "claude-opus-5",
+      "not_exercised_reason": "",
+      "provenance": {
+        "current_invocation": "inv-20260726T163356Z-f2ea20",
+        "documents_bought": 0,
+        "documents_reused": 35,
+        "invocations": [
+          "inv-20260726T155646Z-52deac"
+        ],
+        "single_invocation": true,
+        "statement": "every run was REPLAYED from one earlier invocation (inv-20260726T155646Z-52deac); this invocation (inv-20260726T163356Z-f2ea20) bought nothing. The runs were still sampled in a single sitting, so `determinism` means what it usually means — but the numbers describe that session, not this one"
+      },
+      "series": {
+        "citation_faithfulness": {
+          "direction": "higher_is_better",
+          "mean": 0.7891198024363785,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.010300273146653799,
+          "unit": "rate",
+          "values": [
+            0.7867298578199052,
+            0.7747747747747747,
+            0.8009950248756219,
+            0.7860696517412935,
+            0.7970297029702971
+          ]
+        },
+        "coref_binding": {
+          "direction": "higher_is_better",
+          "mean": 0.3511255086419795,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.0880580249326601,
+          "unit": "rate",
+          "values": [
+            0.25510204081632654,
+            0.40143369175627247,
+            0.25510204081632654,
+            0.421994884910486,
+            0.421994884910486
+          ]
+        },
+        "cost_usd": {
+          "direction": "lower_is_better",
+          "mean": null,
+          "n_runs": 5,
+          "rankable": false,
+          "reasons": [
+            "UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml"
+          ],
+          "status": "unavailable",
+          "stdev": null,
+          "unit": "usd",
+          "values": []
+        },
+        "determinism": {
+          "direction": "higher_is_better",
+          "mean": 0.6042711743223051,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.022145033858138354,
+          "unit": "rate",
+          "values": [
+            0.6310770183829886,
+            0.5829866039049529,
+            0.5824974741973306,
+            0.6219853796431336,
+            0.6028093954831203
+          ]
+        },
+        "discriminator_capture": {
+          "direction": "higher_is_better",
+          "mean": 0.2952380952380952,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.062087641954310935,
+          "unit": "rate",
+          "values": [
+            0.3333333333333333,
+            0.3333333333333333,
+            0.3333333333333333,
+            0.19047619047619047,
+            0.2857142857142857
+          ]
+        },
+        "discriminator_fabrication_avoidance": {
+          "direction": "higher_is_better",
+          "mean": 0.9217391304347826,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.056688716566979575,
+          "unit": "rate",
+          "values": [
+            0.8695652173913043,
+            0.9565217391304348,
+            0.8695652173913043,
+            0.9130434782608695,
+            1.0
+          ]
+        },
+        "extract_only_stated": {
+          "direction": "higher_is_better",
+          "mean": 0.9549633081682607,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.010995682452753749,
+          "unit": "rate",
+          "values": [
+            0.9620853080568721,
+            0.9369369369369369,
+            0.9552238805970149,
+            0.9552238805970149,
+            0.9653465346534653
+          ]
+        },
+        "graph_edge_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.32857142857142857,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.063887656499994,
+          "unit": "rate",
+          "values": [
+            0.35714285714285715,
+            0.21428571428571427,
+            0.35714285714285715,
+            0.35714285714285715,
+            0.35714285714285715
+          ]
+        },
+        "graph_node_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.6,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.021066252211737205,
+          "unit": "rate",
+          "values": [
+            0.6153846153846154,
+            0.6153846153846154,
+            0.5769230769230769,
+            0.6153846153846154,
+            0.5769230769230769
+          ]
+        },
+        "graph_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.505,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.020916500663351906,
+          "unit": "rate",
+          "values": [
+            0.525,
+            0.475,
+            0.5,
+            0.525,
+            0.5
+          ]
+        },
+        "identity_over_read": {
+          "direction": "lower_is_better",
+          "mean": 0.0,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.0,
+          "unit": "count",
+          "values": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "kind_tagging": {
+          "direction": "higher_is_better",
+          "mean": null,
+          "n_runs": 5,
+          "rankable": false,
+          "reasons": [
+            "the gold slice labels no claim kinds"
+          ],
+          "status": "unavailable",
+          "stdev": null,
+          "unit": "rate",
+          "values": []
+        },
+        "latency_s": {
+          "direction": "lower_is_better",
+          "mean": 261.85635142596436,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 5.121106895870332,
+          "unit": "seconds",
+          "values": [
+            266.80298056825995,
+            264.4051785301417,
+            265.4130788948387,
+            256.004997250624,
+            256.65552188595757
+          ]
+        },
+        "structured_output_reliability": {
+          "direction": "higher_is_better",
+          "mean": 1.0,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.0,
+          "unit": "rate",
+          "values": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "surface_f1": {
+          "direction": "higher_is_better",
+          "mean": 0.20056639594270212,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.00984159422534453,
+          "unit": "rate",
+          "values": [
+            0.21008403361344538,
+            0.1904761904761905,
+            0.21186440677966104,
+            0.19742489270386268,
+            0.1929824561403509
+          ]
+        },
+        "surface_precision": {
+          "direction": "higher_is_better",
+          "mean": 0.13818476679540578,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.007298453041933379,
+          "unit": "rate",
+          "values": [
+            0.14450867052023122,
+            0.12834224598930483,
+            0.14619883040935672,
+            0.13690476190476192,
+            0.13496932515337423
+          ]
+        },
+        "surface_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.36615384615384616,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.02005908432370046,
+          "unit": "rate",
+          "values": [
+            0.38461538461538464,
+            0.36923076923076925,
+            0.38461538461538464,
+            0.35384615384615387,
+            0.3384615384615385
+          ]
+        },
+        "trap_avoidance": {
+          "direction": "higher_is_better",
+          "mean": 0.8727272727272727,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.04979295977319687,
+          "unit": "rate",
+          "values": [
+            0.9090909090909091,
+            0.8181818181818182,
+            0.9090909090909091,
+            0.9090909090909091,
+            0.8181818181818182
+          ]
+        }
+      }
+    },
+    {
+      "eligible_to_win": true,
+      "exercised": true,
+      "gates": [
+        {
+          "detail": "6/6 standalone-image calls returned (multimodal=native; recorded probe 1/1 on d17b_withheld_gap.png @2026-07-25T20:27:33+00:00, this run 5/5)",
+          "name": "vlm_imagery_path",
+          "status": "PASS"
+        },
+        {
+          "detail": "chanakya.ingest.client is on the shipped ingest path, google.genai imports, and it is declared the seed producer",
+          "name": "keyless_equals_live",
+          "status": "PASS"
+        },
+        {
+          "detail": "'gemini-3.6-flash' is a concrete pinned id",
+          "name": "pinned_model_id",
+          "status": "PASS"
+        },
+        {
+          "detail": "GEMINI_API_KEY is set",
+          "name": "exercisable",
+          "status": "PASS"
+        },
+        {
+          "detail": "citation_faithfulness=0.833 measured; no absolute floor is configured, so only the relative veto (materially worse than a rival) applies",
+          "name": "non-negotiable:citation_faithfulness",
+          "status": "PASS"
+        },
+        {
+          "detail": "extract_only_stated=0.985 measured; no absolute floor is configured, so only the relative veto (materially worse than a rival) applies",
+          "name": "non-negotiable:extract_only_stated",
+          "status": "PASS"
+        },
+        {
+          "detail": "trap_avoidance=0.745 measured; no absolute floor is configured, so only the relative veto (materially worse than a rival) applies",
+          "name": "non-negotiable:trap_avoidance",
+          "status": "PASS"
+        }
+      ],
+      "id": "gemini-3-6-flash",
+      "label": "Gemini Flash 3.6",
+      "model_id": "gemini-3.6-flash",
+      "not_exercised_reason": "",
+      "provenance": {
+        "current_invocation": "inv-20260726T163356Z-f2ea20",
+        "documents_bought": 0,
+        "documents_reused": 35,
+        "invocations": [
+          "inv-20260726T155646Z-52deac"
+        ],
+        "single_invocation": true,
+        "statement": "every run was REPLAYED from one earlier invocation (inv-20260726T155646Z-52deac); this invocation (inv-20260726T163356Z-f2ea20) bought nothing. The runs were still sampled in a single sitting, so `determinism` means what it usually means — but the numbers describe that session, not this one"
+      },
+      "series": {
+        "citation_faithfulness": {
+          "direction": "higher_is_better",
+          "mean": 0.8331376090812377,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.019058323222947624,
+          "unit": "rate",
+          "values": [
+            0.8356164383561644,
+            0.841726618705036,
+            0.8589743589743589,
+            0.8111888111888111,
+            0.8181818181818182
+          ]
+        },
+        "coref_binding": {
+          "direction": "higher_is_better",
+          "mean": 0.36584315305321624,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.024309213815105445,
+          "unit": "rate",
+          "values": [
+            0.3364367329665679,
+            0.34663865546218486,
+            0.38960244648318043,
+            0.3669354838709677,
+            0.38960244648318043
+          ]
+        },
+        "cost_usd": {
+          "direction": "lower_is_better",
+          "mean": null,
+          "n_runs": 5,
+          "rankable": false,
+          "reasons": [
+            "UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml"
+          ],
+          "status": "unavailable",
+          "stdev": null,
+          "unit": "usd",
+          "values": []
+        },
+        "determinism": {
+          "direction": "higher_is_better",
+          "mean": 0.6247270814791646,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.024047938804965842,
+          "unit": "rate",
+          "values": [
+            0.6402687117293859,
+            0.6182615198700424,
+            0.597367257311159,
+            0.6102664186089748,
+            0.6574714998762611
+          ]
+        },
+        "discriminator_capture": {
+          "direction": "higher_is_better",
+          "mean": 0.18823529411764706,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.14043925160368614,
+          "unit": "rate",
+          "values": [
+            0.29411764705882354,
+            0.11764705882352941,
+            0.17647058823529413,
+            0.35294117647058826,
+            0.0
+          ]
+        },
+        "discriminator_fabrication_avoidance": {
+          "direction": "higher_is_better",
+          "mean": 0.8841692466460268,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.07529571880143543,
+          "unit": "rate",
+          "values": [
+            0.9473684210526315,
+            0.8666666666666667,
+            0.8947368421052632,
+            0.9473684210526315,
+            0.7647058823529411
+          ]
+        },
+        "extract_only_stated": {
+          "direction": "higher_is_better",
+          "mean": 0.9851654143957289,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.005546631460951465,
+          "unit": "rate",
+          "values": [
+            0.9863013698630136,
+            0.9928057553956835,
+            0.9871794871794872,
+            0.9790209790209791,
+            0.9805194805194806
+          ]
+        },
+        "graph_edge_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.3142857142857143,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.039123039821797594,
+          "unit": "rate",
+          "values": [
+            0.35714285714285715,
+            0.2857142857142857,
+            0.2857142857142857,
+            0.35714285714285715,
+            0.2857142857142857
+          ]
+        },
+        "graph_node_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.5307692307692308,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.017200522903844526,
+          "unit": "rate",
+          "values": [
+            0.5384615384615384,
+            0.5384615384615384,
+            0.5,
+            0.5384615384615384,
+            0.5384615384615384
+          ]
+        },
+        "graph_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.45499999999999996,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.02091650066335188,
+          "unit": "rate",
+          "values": [
+            0.475,
+            0.45,
+            0.425,
+            0.475,
+            0.45
+          ]
+        },
+        "identity_over_read": {
+          "direction": "lower_is_better",
+          "mean": 0.0,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.0,
+          "unit": "count",
+          "values": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "kind_tagging": {
+          "direction": "higher_is_better",
+          "mean": null,
+          "n_runs": 5,
+          "rankable": false,
+          "reasons": [
+            "the gold slice labels no claim kinds"
+          ],
+          "status": "unavailable",
+          "stdev": null,
+          "unit": "rate",
+          "values": []
+        },
+        "latency_s": {
+          "direction": "lower_is_better",
+          "mean": 234.78736930284649,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 24.324780190809133,
+          "unit": "seconds",
+          "values": [
+            273.882056501694,
+            243.07797988457605,
+            221.90657284064218,
+            215.47894364921376,
+            219.59129363810644
+          ]
+        },
+        "structured_output_reliability": {
+          "direction": "higher_is_better",
+          "mean": 1.0,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.0,
+          "unit": "rate",
+          "values": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "surface_f1": {
+          "direction": "higher_is_better",
+          "mean": 0.2059056761479617,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.021951252985773634,
+          "unit": "rate",
+          "values": [
+            0.2222222222222222,
+            0.23204419889502761,
+            0.19387755102040816,
+            0.20430107526881724,
+            0.17708333333333334
+          ]
+        },
+        "surface_precision": {
+          "direction": "higher_is_better",
+          "mean": 0.1572621101024389,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.018765531610751417,
+          "unit": "rate",
+          "values": [
+            0.1693548387096774,
+            0.1810344827586207,
+            0.1450381679389313,
+            0.15702479338842976,
+            0.13385826771653545
+          ]
+        },
+        "surface_recall": {
+          "direction": "higher_is_better",
+          "mean": 0.29846153846153844,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.02574338543181771,
+          "unit": "rate",
+          "values": [
+            0.3230769230769231,
+            0.3230769230769231,
+            0.2923076923076923,
+            0.2923076923076923,
+            0.26153846153846155
+          ]
+        },
+        "trap_avoidance": {
+          "direction": "higher_is_better",
+          "mean": 0.7454545454545455,
+          "n_runs": 5,
+          "rankable": true,
+          "reasons": [],
+          "status": "measured",
+          "stdev": 0.0406557814090871,
+          "unit": "rate",
+          "values": [
+            0.8181818181818182,
+            0.7272727272727273,
+            0.7272727272727273,
+            0.7272727272727273,
+            0.7272727272727273
+          ]
+        }
+      }
+    }
+  ],
+  "comparisons": {
+    "citation_faithfulness": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -0.044017806644859214,
+          "b": "gemini-3-6-flash",
+          "margin": 0.03063707920040754,
+          "mean_a": 0.7891198024363785,
+          "mean_b": 0.8331376090812377,
+          "metric": "citation_faithfulness",
+          "note": "|Δ|=0.0440 >= required margin 0.0306",
+          "pooled_sd": 0.01531853960020377,
+          "verdict": "B_BETTER"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash"
+        ],
+        [
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "coref_binding": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -0.014717644411236741,
+          "b": "gemini-3-6-flash",
+          "margin": 0.12919097206344957,
+          "mean_a": 0.3511255086419795,
+          "mean_b": 0.36584315305321624,
+          "metric": "coref_binding",
+          "note": "|Δ|=0.0147 < required margin 0.1292",
+          "pooled_sd": 0.06459548603172478,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash",
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "cost_usd": {
+      "excluded": {
+        "anthropic-opus-5": "UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml",
+        "gemini-3-6-flash": "UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml"
+      },
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": null,
+          "b": "gemini-3-6-flash",
+          "margin": null,
+          "mean_a": null,
+          "mean_b": null,
+          "metric": "cost_usd",
+          "note": "anthropic-opus-5: UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml; gemini-3-6-flash: UNPRICED — no pricing declared for this candidate in config/bakeoff.yaml",
+          "pooled_sd": null,
+          "verdict": "NOT_RANKABLE"
+        }
+      ],
+      "tiers": []
+    },
+    "determinism": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -0.02045590715685941,
+          "b": "gemini-3-6-flash",
+          "margin": 0.046232150833494134,
+          "mean_a": 0.6042711743223051,
+          "mean_b": 0.6247270814791646,
+          "metric": "determinism",
+          "note": "|Δ|=0.0205 < required margin 0.0462",
+          "pooled_sd": 0.023116075416747067,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash",
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "discriminator_capture": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.10700280112044813,
+          "b": "gemini-3-6-flash",
+          "margin": 0.21715459320240119,
+          "mean_a": 0.2952380952380952,
+          "mean_b": 0.18823529411764706,
+          "metric": "discriminator_capture",
+          "note": "|Δ|=0.1070 < required margin 0.2172",
+          "pooled_sd": 0.10857729660120059,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5",
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "discriminator_fabrication_avoidance": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.03756988378875581,
+          "b": "gemini-3-6-flash",
+          "margin": 0.1332895784060868,
+          "mean_a": 0.9217391304347826,
+          "mean_b": 0.8841692466460268,
+          "metric": "discriminator_fabrication_avoidance",
+          "note": "|Δ|=0.0376 < required margin 0.1333",
+          "pooled_sd": 0.0666447892030434,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5",
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "extract_only_stated": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -0.030202106227468217,
+          "b": "gemini-3-6-flash",
+          "margin": 0.03,
+          "mean_a": 0.9549633081682607,
+          "mean_b": 0.9851654143957289,
+          "metric": "extract_only_stated",
+          "note": "|Δ|=0.0302 >= required margin 0.0300",
+          "pooled_sd": 0.0087083337431857,
+          "verdict": "B_BETTER"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash"
+        ],
+        [
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "graph_edge_recall": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.01428571428571429,
+          "b": "gemini-3-6-flash",
+          "margin": 0.10594569267279522,
+          "mean_a": 0.32857142857142857,
+          "mean_b": 0.3142857142857143,
+          "metric": "graph_edge_recall",
+          "note": "|Δ|=0.0143 < required margin 0.1059",
+          "pooled_sd": 0.05297284633639761,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5",
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "graph_node_recall": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.0692307692307692,
+          "b": "gemini-3-6-flash",
+          "margin": 0.038461538461538505,
+          "mean_a": 0.6,
+          "mean_b": 0.5307692307692308,
+          "metric": "graph_node_recall",
+          "note": "|Δ|=0.0692 >= required margin 0.0385",
+          "pooled_sd": 0.019230769230769253,
+          "verdict": "A_BETTER"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5"
+        ],
+        [
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "graph_recall": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.050000000000000044,
+          "b": "gemini-3-6-flash",
+          "margin": 0.041833001326703784,
+          "mean_a": 0.505,
+          "mean_b": 0.45499999999999996,
+          "metric": "graph_recall",
+          "note": "|Δ|=0.0500 >= required margin 0.0418",
+          "pooled_sd": 0.020916500663351892,
+          "verdict": "A_BETTER"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5"
+        ],
+        [
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "identity_over_read": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.0,
+          "b": "gemini-3-6-flash",
+          "margin": 0.03,
+          "mean_a": 0.0,
+          "mean_b": 0.0,
+          "metric": "identity_over_read",
+          "note": "|Δ|=0.0000 < required margin 0.0300",
+          "pooled_sd": 0.0,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5",
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "kind_tagging": {
+      "excluded": {
+        "anthropic-opus-5": "the gold slice labels no claim kinds",
+        "gemini-3-6-flash": "the gold slice labels no claim kinds"
+      },
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": null,
+          "b": "gemini-3-6-flash",
+          "margin": null,
+          "mean_a": null,
+          "mean_b": null,
+          "metric": "kind_tagging",
+          "note": "anthropic-opus-5: the gold slice labels no claim kinds; gemini-3-6-flash: the gold slice labels no claim kinds",
+          "pooled_sd": null,
+          "verdict": "NOT_RANKABLE"
+        }
+      ],
+      "tiers": []
+    },
+    "latency_s": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -27.068982123117877,
+          "b": "gemini-3-6-flash",
+          "margin": 35.15453504656578,
+          "mean_a": 261.85635142596436,
+          "mean_b": 234.78736930284649,
+          "metric": "latency_s",
+          "note": "|Δ|=27.0690 < required margin 35.1545",
+          "pooled_sd": 17.57726752328289,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash",
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "structured_output_reliability": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.0,
+          "b": "gemini-3-6-flash",
+          "margin": 0.03,
+          "mean_a": 1.0,
+          "mean_b": 1.0,
+          "metric": "structured_output_reliability",
+          "note": "|Δ|=0.0000 < required margin 0.0300",
+          "pooled_sd": 0.0,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5",
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "surface_f1": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -0.005339280205259589,
+          "b": "gemini-3-6-flash",
+          "margin": 0.0340210077611399,
+          "mean_a": 0.20056639594270212,
+          "mean_b": 0.2059056761479617,
+          "metric": "surface_f1",
+          "note": "|Δ|=0.0053 < required margin 0.0340",
+          "pooled_sd": 0.01701050388056995,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash",
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "surface_precision": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": -0.019077343307033118,
+          "b": "gemini-3-6-flash",
+          "margin": 0.03,
+          "mean_a": 0.13818476679540578,
+          "mean_b": 0.1572621101024389,
+          "metric": "surface_precision",
+          "note": "|Δ|=0.0191 < required margin 0.0300",
+          "pooled_sd": 0.014237496153457202,
+          "verdict": "NO_MEASURED_DIFFERENCE"
+        }
+      ],
+      "tiers": [
+        [
+          "gemini-3-6-flash",
+          "anthropic-opus-5"
+        ]
+      ]
+    },
+    "surface_recall": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.06769230769230772,
+          "b": "gemini-3-6-flash",
+          "margin": 0.046153846153846156,
+          "mean_a": 0.36615384615384616,
+          "mean_b": 0.29846153846153844,
+          "metric": "surface_recall",
+          "note": "|Δ|=0.0677 >= required margin 0.0462",
+          "pooled_sd": 0.023076923076923078,
+          "verdict": "A_BETTER"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5"
+        ],
+        [
+          "gemini-3-6-flash"
+        ]
+      ]
+    },
+    "trap_avoidance": {
+      "excluded": {},
+      "pairwise": [
+        {
+          "a": "anthropic-opus-5",
+          "advantage_a": 0.1272727272727272,
+          "b": "gemini-3-6-flash",
+          "margin": 0.09090909090909087,
+          "mean_a": 0.8727272727272727,
+          "mean_b": 0.7454545454545455,
+          "metric": "trap_avoidance",
+          "note": "|Δ|=0.1273 >= required margin 0.0909",
+          "pooled_sd": 0.045454545454545435,
+          "verdict": "A_BETTER"
+        }
+      ],
+      "tiers": [
+        [
+          "anthropic-opus-5"
+        ],
+        [
+          "gemini-3-6-flash"
+        ]
+      ]
+    }
+  },
+  "margin": {
+    "min_absolute": 0.03,
+    "noise_multiplier": 2.0,
+    "per_metric_min_absolute": {}
+  },
+  "match_policy": {
+    "entity_type_policy": "normalized",
+    "grounding_similarity": 0.85,
+    "identifier_agreement": "nested_or_equal",
+    "identifier_policy": "designator_aware",
+    "pair_min_similarity": 0.8,
+    "predicate_policy": "normalized",
+    "require_same_form": true,
+    "require_same_polarity": true,
+    "role_min_similarity": 0.7,
+    "similarity": "token_sort_ratio",
+    "span_bonus_weight": 0.15,
+    "span_iou_floor": 0.3,
+    "span_policy": "bonus"
+  },
+  "replication": {
+    "min_runs_for_ranking": 3,
+    "runs_per_candidate": 5
+  },
+  "schema_version": "rk-bakeoff-scorecard/1.0",
+  "verdict": {
+    "composite_exclusions": {
+      "cost_usd": "weight 0 (reported, not composited)",
+      "graph_edge_recall": "weight 0 (reported, not composited)",
+      "graph_node_recall": "weight 0 (reported, not composited)",
+      "identity_over_read": "weight 0 (reported, not composited)",
+      "kind_tagging": "not rankable for anthropic-opus-5 (the gold slice labels no claim kinds); gemini-3-6-flash (the gold slice labels no claim kinds)",
+      "latency_s": "weight 0 (reported, not composited)",
+      "surface_precision": "weight 0 (reported, not composited)",
+      "surface_recall": "weight 0 (reported, not composited)",
+      "trap_avoidance": "weight 0 (reported, not composited)"
+    },
+    "composite_weights": {
+      "citation_faithfulness": 4.5,
+      "coref_binding": 5.0,
+      "determinism": 2.0,
+      "discriminator_capture": 4.5,
+      "discriminator_fabrication_avoidance": 4.0,
+      "extract_only_stated": 4.5,
+      "graph_recall": 3.0,
+      "structured_output_reliability": 3.0,
+      "surface_f1": 3.0
+    },
+    "disqualified": {},
+    "kind": "NO_MEASURED_DIFFERENCE",
+    "statement": "NO MEASURED DIFFERENCE between anthropic-opus-5, gemini-3-6-flash: every gap between them sits inside the run-to-run noise at the configured margin. Naming one of them would be a ranking invented from jitter.",
+    "tied": [
+      "anthropic-opus-5",
+      "gemini-3-6-flash"
+    ],
+    "winner": null
+  }
+}

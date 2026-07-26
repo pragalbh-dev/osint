@@ -1,0 +1,240 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 30.557354168966413,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "HQ-9BE",
+            "name_b": "HQ-9P",
+            "source_quote": "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "context": {
+              "geography": "Punjab",
+              "operator": "Pakistan Army/PAF"
+            },
+            "location_text": "~10 km NW of Gujranwala along the GT Road corridor, Punjab",
+            "name": "Rahwali airfield",
+            "signature_geometry": "northeast dispersal area; six TEL-pattern vehicles in a fan arrangement; large octagonal engagement radar signature on its prepared hardstand roughly 380 m east of the TEL cluster",
+            "site_type": "airfield",
+            "source_quote": "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab): commercial EO imagery collected 27 March (Planet SkySat, 0.5m) confirms the TEL and battery-command cluster first detected on the single-pass collection reported earlier this quarter, in the northeast dispersal area. Six TEL-pattern vehicles remain in a fan arrangement consistent with prior HQ-9B associated deployments elsewhere; a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand roughly 380 m east of the TEL cluster"
+          },
+          {
+            "context": {
+              "geography": "Sialkot-area"
+            },
+            "location_text": "Sialkot-area",
+            "name": "Sialkot-area dispersal sites",
+            "occupancy_state": "last confirmed",
+            "site_type": "dispersal site",
+            "source_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass."
+          },
+          {
+            "context": {
+              "geography": "Pasrur"
+            },
+            "location_text": "Pasrur",
+            "name": "Pasrur dispersal sites",
+            "occupancy_state": "last confirmed",
+            "site_type": "dispersal site",
+            "source_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass."
+          }
+        ],
+        "components": [
+          {
+            "component_class": "engagement radar",
+            "context": {
+              "designation": "HT-233"
+            },
+            "functional_role": "fire-control/engagement radar",
+            "name": "HT-233",
+            "source_quote": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system"
+          }
+        ],
+        "denials": [
+          {
+            "object": "HQ-9-family site",
+            "predicate": "cited in open reporting as",
+            "source_quote": "Rahwali had not previously been cited in open reporting as an HQ-9-family site",
+            "subject": "Rahwali airfield"
+          }
+        ],
+        "distinctions": [
+          {
+            "name_a": "HQ-9B",
+            "name_b": "HQ-9BE",
+            "source_quote": "Pakistani service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing designation"
+          }
+        ],
+        "events": [
+          {
+            "date_text": "27 March",
+            "event_kind": "sighting",
+            "location_text": "Rahwali airfield",
+            "quantity_text": "six TEL-pattern vehicles",
+            "source_quote": "commercial EO imagery collected 27 March (Planet SkySat, 0.5m) confirms the TEL and battery-command cluster first detected on the single-pass collection reported earlier this quarter, in the northeast dispersal area. Six TEL-pattern vehicles remain in a fan arrangement consistent with prior HQ-9B associated deployments elsewhere",
+            "system": "HQ-9B"
+          },
+          {
+            "date_text": "29 March",
+            "event_kind": "sighting",
+            "location_text": "Rahwali airfield",
+            "source_quote": "Separately, a repeat optical pass on 29 March (different collection platform than the 27 March pass) again shows the radar hardstand occupied and TEL count unchanged.",
+            "system": "HT-233"
+          }
+        ],
+        "manufacturers": [
+          {
+            "name": "CASIC",
+            "role": "export design authority",
+            "source_quote": "versus the CASIC export HQ-9BE marketing designation"
+          },
+          {
+            "name": "Planet SkySat",
+            "role": "commercial EO imagery vendor",
+            "source_quote": "commercial EO imagery collected 27 March (Planet SkySat, 0.5m)"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": "24–31 March 2025",
+            "object": "Rahwali airfield",
+            "relation": "observed-at",
+            "source_quote": "this is the first collection cycle to associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location",
+            "subject": "HQ-9BE"
+          },
+          {
+            "object": "HQ-9B",
+            "relation": "component-of",
+            "source_quote": "believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system",
+            "subject": "HT-233"
+          },
+          {
+            "object": "HQ-9BE",
+            "relation": "equips",
+            "source_quote": "associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location",
+            "subject": "Army Air Defence Command"
+          }
+        ],
+        "sources": [
+          {
+            "name": "IISS Military Balance+ / Open-Source Airpower Monitor",
+            "source_quote": "IISS Military Balance+ / Open-Source Airpower Monitor\\nSouth Asia Air Defence Tracker — Weekly Imagery & Signals Digest",
+            "source_type": "Weekly Imagery & Signals Digest"
+          },
+          {
+            "name": "commercial ELINT aggregator feed",
+            "source_quote": "A commercial ELINT aggregator feed (operator not disclosed to subscribers, relayed via a third-party maritime/air RF-monitoring service)",
+            "source_type": "third-party maritime/air RF-monitoring service"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "operator": "PAF/Army Air Defence Command"
+            },
+            "name": "Army Air Defence Command",
+            "service_branch": "Pakistan Army",
+            "source_quote": "associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location"
+          }
+        ],
+        "variants": [
+          {
+            "context": {
+              "designation": "HQ-9B",
+              "operator": "PLA"
+            },
+            "family": "HQ-9",
+            "name": "HQ-9B",
+            "signature_geometry": "fan arrangement consistent with prior HQ-9B associated deployments elsewhere",
+            "source_quote": "Six TEL-pattern vehicles remain in a fan arrangement consistent with prior HQ-9B associated deployments elsewhere; a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system"
+          },
+          {
+            "context": {
+              "designation": "HQ-9BE"
+            },
+            "family": "HQ-9",
+            "name": "HQ-9BE",
+            "source_quote": "associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location"
+          },
+          {
+            "context": {
+              "designation": "HQ-9P",
+              "operator": "Pakistani service"
+            },
+            "family": "HQ-9",
+            "name": "HQ-9P",
+            "source_quote": "sometimes rendered HQ-9P in Pakistani service literature"
+          },
+          {
+            "context": {
+              "designation": "HQ-9"
+            },
+            "family": "HQ-9",
+            "name": "HQ-9",
+            "source_quote": "Rahwali had not previously been cited in open reporting as an HQ-9-family site"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 10.614451680332422,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature)"
+            ],
+            "member_ids": [
+              7,
+              8
+            ]
+          }
+        ],
+        "contrasts": [
+          {
+            "left_id": 6,
+            "licensing_quote": "Pakistani service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing designation",
+            "right_id": 7
+          }
+        ]
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:02:13.295139+00:00",
+  "run_index": 2,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d19_rahwali_confirm"
+}

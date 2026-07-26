@@ -1,0 +1,488 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 282.6980224731378,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "HQ-9BE",
+            "name_b": "HQ-9P",
+            "source_quote": "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "context": {
+              "designation": null,
+              "geography": "~10 km NW of Gujranwala along the GT Road corridor, Punjab",
+              "operator": "Pakistan Army/PAF",
+              "time": "27 March; 29 March"
+            },
+            "location_text": "~10 km NW of Gujranwala along the GT Road corridor, Punjab",
+            "name": "Rahwali airfield",
+            "occupancy_state": "radar hardstand occupied and TEL count unchanged",
+            "signature_geometry": "Six TEL-pattern vehicles remain in a fan arrangement; a large octagonal engagement radar signature is visible on its prepared hardstand roughly 380 m east of the TEL cluster",
+            "site_type": "Pakistan Army/PAF joint-use facility",
+            "source_quote": "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab): commercial EO imagery collected 27 March (Planet SkySat, 0.5m) confirms the TEL and battery-command cluster first detected on the single-pass collection reported earlier this quarter, in the northeast dispersal area. Six TEL-pattern vehicles remain in a fan arrangement consistent with prior HQ-9B associated deployments elsewhere; a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand roughly 380 m east of the TEL cluster — position essentially unchanged from that earlier single pass"
+          },
+          {
+            "context": {
+              "designation": null,
+              "geography": "Sialkot-area",
+              "operator": null,
+              "time": "07 March pass"
+            },
+            "location_text": "Sialkot-area",
+            "name": "Sialkot-area dispersal site",
+            "occupancy_state": "last confirmed",
+            "signature_geometry": null,
+            "site_type": "dispersal site",
+            "source_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass."
+          },
+          {
+            "context": {
+              "designation": null,
+              "geography": "Pasrur",
+              "operator": null,
+              "time": "07 March pass"
+            },
+            "location_text": "Pasrur",
+            "name": "Pasrur dispersal site",
+            "occupancy_state": "last confirmed",
+            "signature_geometry": null,
+            "site_type": "dispersal site",
+            "source_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass."
+          }
+        ],
+        "components": [
+          {
+            "component_class": "TEL",
+            "context": {
+              "designation": null,
+              "geography": "northeast dispersal area",
+              "operator": null,
+              "time": "27 March"
+            },
+            "count_state": "remain",
+            "functional_role": null,
+            "name": "TEL-pattern vehicles",
+            "quantity_text": "Six",
+            "radar_band": null,
+            "source_quote": "Six TEL-pattern vehicles remain in a fan arrangement consistent with prior HQ-9B associated deployments elsewhere"
+          },
+          {
+            "component_class": "engagement radar",
+            "context": {
+              "designation": "HT-233",
+              "geography": "on its prepared hardstand roughly 380 m east of the TEL cluster",
+              "operator": null,
+              "time": "27 March"
+            },
+            "count_state": "estimated",
+            "functional_role": "fire-control/engagement radar associated with the HQ-9B system",
+            "name": "HT-233 fire-control/engagement radar",
+            "quantity_text": "one",
+            "radar_band": null,
+            "source_quote": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand roughly 380 m east of the TEL cluster"
+          },
+          {
+            "component_class": "van",
+            "context": {
+              "designation": null,
+              "geography": "this site",
+              "operator": null,
+              "time": "this cycle"
+            },
+            "count_state": "estimated",
+            "functional_role": "command/guidance",
+            "name": "command/guidance van",
+            "quantity_text": null,
+            "radar_band": null,
+            "source_quote": "Battery strength at this site is estimated at 6–8 TELs plus one engagement radar and associated command/guidance van"
+          },
+          {
+            "component_class": "TEL",
+            "context": {
+              "designation": null,
+              "geography": "this site",
+              "operator": null,
+              "time": "this cycle"
+            },
+            "count_state": "estimated",
+            "functional_role": null,
+            "name": "TELs",
+            "quantity_text": "6–8",
+            "radar_band": null,
+            "source_quote": "Battery strength at this site is estimated at 6–8 TELs plus one engagement radar and associated command/guidance van"
+          },
+          {
+            "component_class": "radar",
+            "context": {
+              "designation": null,
+              "geography": "this site",
+              "operator": null,
+              "time": "this cycle"
+            },
+            "count_state": "estimated",
+            "functional_role": "engagement radar",
+            "name": "engagement radar",
+            "quantity_text": "one",
+            "radar_band": null,
+            "source_quote": "Battery strength at this site is estimated at 6–8 TELs plus one engagement radar and associated command/guidance van"
+          }
+        ],
+        "denials": [
+          {
+            "object": "an HQ-9-family site",
+            "predicate": "had not previously been cited in open reporting as",
+            "source_quote": "Rahwali had not previously been cited in open reporting as an HQ-9-family site",
+            "subject": "Rahwali"
+          },
+          {
+            "object": "this period",
+            "predicate": "new activity",
+            "source_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period",
+            "subject": "Sialkot-area and Pasrur dispersal sites"
+          }
+        ],
+        "distinctions": [],
+        "events": [
+          {
+            "count_state": "confirmed",
+            "date_text": "27 March",
+            "event_kind": "sighting",
+            "location_text": "the northeast dispersal area",
+            "quantity_text": null,
+            "recipient": null,
+            "source_quote": "commercial EO imagery collected 27 March (Planet SkySat, 0.5m) confirms the TEL and battery-command cluster first detected on the single-pass collection reported earlier this quarter, in the northeast dispersal area.",
+            "supplier": null,
+            "system": "TEL and battery-command cluster",
+            "unit": null
+          },
+          {
+            "count_state": "high confidence, single pass",
+            "date_text": "during the reporting window",
+            "event_kind": "sighting",
+            "location_text": "the same general locale",
+            "quantity_text": null,
+            "recipient": null,
+            "source_quote": "A commercial ELINT aggregator feed (operator not disclosed to subscribers, relayed via a third-party maritime/air RF-monitoring service) logged an emitter-on fix in the same general locale during the reporting window consistent with HT-233-band engagement-radar parameters; the fix window is described by the vendor only as \"high confidence, single pass\" with no further geolocation detail released at this subscription tier.",
+            "supplier": null,
+            "system": "HT-233-band engagement-radar emitter",
+            "unit": null
+          },
+          {
+            "count_state": "radar hardstand occupied and TEL count unchanged",
+            "date_text": "29 March",
+            "event_kind": "sighting",
+            "location_text": "Rahwali airfield",
+            "quantity_text": null,
+            "recipient": null,
+            "source_quote": "Separately, a repeat optical pass on 29 March (different collection platform than the 27 March pass) again shows the radar hardstand occupied and TEL count unchanged.",
+            "supplier": null,
+            "system": "radar hardstand and TELs",
+            "unit": null
+          },
+          {
+            "count_state": "first collection cycle to associate",
+            "date_text": "this is the first collection cycle",
+            "event_kind": "induction",
+            "location_text": "Rahwali",
+            "quantity_text": null,
+            "recipient": "Rahwali",
+            "source_quote": "this is the first collection cycle to associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location, consistent with a recent redeployment rather than a long-standing emplacement.",
+            "supplier": null,
+            "system": "PAF/Army Air Defence Command HQ-9BE battery",
+            "unit": "PAF/Army Air Defence Command HQ-9BE battery"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": null,
+            "context": {
+              "designation": null,
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "name": "CASIC",
+            "origin_country": null,
+            "role": "exporter associated with the HQ-9BE marketing designation",
+            "source_quote": "the CASIC export HQ-9BE marketing designation"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": "27 March",
+            "object": "Rahwali airfield",
+            "relation": "observed-at",
+            "source_quote": "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab): commercial EO imagery collected 27 March (Planet SkySat, 0.5m) confirms the TEL and battery-command cluster first detected on the single-pass collection reported earlier this quarter, in the northeast dispersal area.",
+            "subject": "TEL and battery-command cluster"
+          },
+          {
+            "date_text": "27 March",
+            "object": "Rahwali airfield",
+            "relation": "observed-at",
+            "source_quote": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand roughly 380 m east of the TEL cluster",
+            "subject": "HT-233 fire-control/engagement radar"
+          },
+          {
+            "date_text": null,
+            "object": "HQ-9B system",
+            "relation": "component-of",
+            "source_quote": "the HT-233 fire-control/engagement radar associated with the HQ-9B system",
+            "subject": "HT-233 fire-control/engagement radar"
+          },
+          {
+            "date_text": "during the reporting window",
+            "object": "the same general locale",
+            "relation": "observed-at",
+            "source_quote": "logged an emitter-on fix in the same general locale during the reporting window consistent with HT-233-band engagement-radar parameters",
+            "subject": "HT-233-band engagement-radar emitter"
+          },
+          {
+            "date_text": "29 March",
+            "object": "Rahwali airfield",
+            "relation": "observed-at",
+            "source_quote": "a repeat optical pass on 29 March (different collection platform than the 27 March pass) again shows the radar hardstand occupied and TEL count unchanged",
+            "subject": "radar hardstand and TELs"
+          },
+          {
+            "date_text": "this is the first collection cycle",
+            "object": "Rahwali",
+            "relation": "based-at",
+            "source_quote": "this is the first collection cycle to associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location",
+            "subject": "PAF/Army Air Defence Command HQ-9BE battery"
+          },
+          {
+            "date_text": "this cycle",
+            "object": "6–8 TELs plus one engagement radar and associated command/guidance van",
+            "relation": "equips",
+            "source_quote": "Battery strength at this site is estimated at 6–8 TELs plus one engagement radar and associated command/guidance van",
+            "subject": "PAF/Army Air Defence Command HQ-9BE battery"
+          }
+        ],
+        "sources": [
+          {
+            "name": "IISS Military Balance+ / Open-Source Airpower Monitor",
+            "source_quote": "IISS Military Balance+ / Open-Source Airpower Monitor",
+            "source_type": "analytic / official prose"
+          },
+          {
+            "name": "Planet SkySat",
+            "source_quote": "commercial EO imagery collected 27 March (Planet SkySat, 0.5m)",
+            "source_type": "commercial EO imagery"
+          },
+          {
+            "name": "commercial ELINT aggregator feed",
+            "source_quote": "A commercial ELINT aggregator feed (operator not disclosed to subscribers, relayed via a third-party maritime/air RF-monitoring service)",
+            "source_type": "commercial ELINT aggregator feed"
+          },
+          {
+            "name": "third-party maritime/air RF-monitoring service",
+            "source_quote": "relayed via a third-party maritime/air RF-monitoring service",
+            "source_type": "RF-monitoring service"
+          },
+          {
+            "name": "vendor",
+            "source_quote": "the fix window is described by the vendor only as \"high confidence, single pass\"",
+            "source_type": "ELINT vendor"
+          },
+          {
+            "name": "prior digest issues (14 Feb 2025, 07 Mar 2025)",
+            "source_quote": "Compiled from open commercial imagery, subscriber ELINT relay reporting, and prior digest issues (14 Feb 2025, 07 Mar 2025).",
+            "source_type": "prior digest issues"
+          }
+        ],
+        "units": [
+          {
+            "alert_posture": null,
+            "context": {
+              "designation": "HQ-9BE",
+              "geography": "Rahwali",
+              "operator": "PAF/Army Air Defence Command",
+              "time": "this is the first collection cycle"
+            },
+            "echelon": "battery",
+            "home_garrison": null,
+            "name": "PAF/Army Air Defence Command HQ-9BE battery",
+            "service_branch": "PAF/Army Air Defence Command",
+            "source_quote": "this is the first collection cycle to associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location"
+          }
+        ],
+        "variants": [
+          {
+            "confidence_language": null,
+            "context": {
+              "designation": "HQ-9B",
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "designators": [
+              "HQ-9B"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9B",
+            "operator_branch": null,
+            "range_text": null,
+            "signature_geometry": "fan arrangement consistent with prior HQ-9B associated deployments elsewhere",
+            "source_quote": "Six TEL-pattern vehicles remain in a fan arrangement consistent with prior HQ-9B associated deployments elsewhere"
+          },
+          {
+            "confidence_language": "export variant, sometimes rendered HQ-9P in Pakistani service literature",
+            "context": {
+              "designation": "HQ-9BE",
+              "geography": "Rahwali",
+              "operator": "PAF/Army Air Defence Command",
+              "time": "this is the first collection cycle"
+            },
+            "designators": [
+              "HQ-9BE",
+              "HQ-9P"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9BE",
+            "operator_branch": "PAF/Army Air Defence Command",
+            "range_text": null,
+            "signature_geometry": null,
+            "source_quote": "this is the first collection cycle to associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location"
+          },
+          {
+            "confidence_language": "sometimes rendered HQ-9P in Pakistani service literature",
+            "context": {
+              "designation": "HQ-9P",
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "designators": [
+              "HQ-9P"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9P",
+            "operator_branch": null,
+            "range_text": null,
+            "signature_geometry": null,
+            "source_quote": "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature)"
+          },
+          {
+            "confidence_language": null,
+            "context": {
+              "designation": "HQ-9",
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "designators": [
+              "HQ-9"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9",
+            "operator_branch": null,
+            "range_text": null,
+            "signature_geometry": null,
+            "source_quote": "HQ-9/HQ-9B/HQ-9BE/HQ-9P designator family"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": {
+        "input_tokens": 5884,
+        "output_tokens": 3024
+      }
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 5.77746724197641,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature)"
+            ],
+            "member_ids": [
+              10,
+              11
+            ]
+          },
+          {
+            "evidence": "NAME_VARIANT",
+            "licensing_quotes": [
+              "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab)",
+              "Order-of-battle context: Rahwali had not previously been cited in open reporting as an HQ-9-family site"
+            ],
+            "member_ids": [
+              18,
+              26
+            ]
+          },
+          {
+            "evidence": "UNAMBIGUOUS_ANAPHOR",
+            "licensing_quotes": [
+              "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand roughly 380 m east of the TEL cluster",
+              "Separately, a repeat optical pass on 29 March (different collection platform than the 27 March pass) again shows the radar hardstand occupied and TEL count unchanged."
+            ],
+            "member_ids": [
+              14,
+              17
+            ]
+          },
+          {
+            "evidence": "UNAMBIGUOUS_ANAPHOR",
+            "licensing_quotes": [
+              "Rahwali airfield (Pakistan Army/PAF joint-use facility, ~10 km NW of Gujranwala along the GT Road corridor, Punjab)",
+              "A commercial ELINT aggregator feed (operator not disclosed to subscribers, relayed via a third-party maritime/air RF-monitoring service) logged an emitter-on fix in the same general locale during the reporting window consistent with HT-233-band engagement-radar parameters",
+              "Order-of-battle context: Rahwali had not previously been cited in open reporting as an HQ-9-family site"
+            ],
+            "member_ids": [
+              18,
+              24,
+              26
+            ]
+          }
+        ],
+        "contrasts": [
+          {
+            "left_id": 19,
+            "licensing_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass.",
+            "right_id": 20
+          }
+        ]
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": {
+        "input_tokens": 2395,
+        "output_tokens": 436
+      }
+    }
+  ],
+  "candidate_id": "openai-gpt-5-6-sol",
+  "fingerprint": "983ba2071fb17d86e0d6af36040a54bfd4ce564a7991c3d2b614b2b149325848",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:08:57.933974+00:00",
+  "run_index": 1,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d19_rahwali_confirm"
+}

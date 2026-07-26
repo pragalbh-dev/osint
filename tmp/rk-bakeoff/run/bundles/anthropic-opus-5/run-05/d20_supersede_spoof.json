@@ -1,0 +1,852 @@
+[
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "NAME_VARIANT",
+      "_coref_forms": [
+        "@faisal_defencewatch (Faisal Baig | Defence & Security tracker)",
+        "@faisal_defencewatch"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "'NAME_VARIANT' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another predicate — immune to the very cap that replaced it",
+      "_coref_quotes": [
+        "Handle: @faisal_defencewatch (Faisal Baig | Defence & Security tracker)",
+        "Handle: @faisal_defencewatch",
+        "linking back to @faisal_defencewatch's original post as the sole source"
+      ],
+      "_coref_referent": "ref:d20-supersede-spoof-c1",
+      "_object_mention": "d20-supersede-spoof-l50",
+      "_subject_mention": "d20-supersede-spoof-l2-2",
+      "source_quote": "Handle: @faisal_defencewatch (Faisal Baig | Defence & Security tracker)"
+    },
+    "claim_id": "d20-supersede-spoof-l2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "frame": null,
+        "line": 2,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          7,
+          35
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "frame": null,
+        "line": 2,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          7,
+          78
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+        "frame": null,
+        "line": 61,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2885,
+          2956
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "@faisal_defencewatch",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "@faisal_defencewatch (Faisal Baig | Defence & Security tracker)"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d20-supersede-spoof-l2-2",
+      "d20-supersede-spoof-l50"
+    ],
+    "referent_id": "ref:chunk0-d20-supersede-spoof-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-11",
+      "status_url": "[link unavailable, account locked/protected — h/t retweet by @PakSkiesWatch]"
+    },
+    "claim_id": "d20-supersede-spoof-l2-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 2,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        7,
+        184
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@faisal_defencewatch (Faisal Baig | Defence & Security tracker)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d20-supersede-spoof-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "[link unavailable, account locked/protected — h/t retweet by @PakSkiesWatch]"
+    },
+    "claim_id": "d20-supersede-spoof-l6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        223,
+        354
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "has QUIETLY relocated, moved out toward the old Rawalpindi site"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Rahwali; the old Rawalpindi site",
+        "raw": "Rahwali; the old Rawalpindi site",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ9B btry",
+        "HQ9B btry"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-05-09 (~14:20 IST per search result)",
+      "status_url": "https://x.com/SushantNMehta/status/1920812234981123412"
+    },
+    "claim_id": "d20-supersede-spoof-l10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        449,
+        602
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@SushantNMehta (Sushant Mehta)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/SushantNMehta/status/1920812234981123412"
+    },
+    "claim_id": "d20-supersede-spoof-l14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        610,
+        727
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "co-located near Rahwali airbase"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "near Rahwali airbase, Gujranwala",
+        "raw": "near Rahwali airbase, Gujranwala",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P (HIMADS)",
+        "HQ-9/P (HIMADS) battery"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2025",
+          "year": 2025
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-11",
+      "status_url": "https://x.com/IndoPacSentry/status/1932556781234567890"
+    },
+    "claim_id": "d20-supersede-spoof-l18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        838,
+        984
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@IndoPacSentry (OSINT hobby account, ~4,200 followers)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-11",
+      "status_url": "[status link not recoverable — post since deleted/edited per Wayback partial cache]"
+    },
+    "claim_id": "d20-supersede-spoof-l26",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1170,
+        1341
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@PakSkiesWatch (fan-run aviation/AD spotting page)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "[status link not recoverable — post since deleted/edited per Wayback partial cache]"
+    },
+    "claim_id": "d20-supersede-spoof-l30",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 30,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1392,
+        1457
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "out of Rahwali, redeployed near the port road area allegedly"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "out of Rahwali, near the port road area",
+        "raw": "out of Rahwali, near the port road area",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ9B"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-12",
+      "status_url": "https://x.com/DefenceHawkPK/status/1932890123456789012"
+    },
+    "claim_id": "d20-supersede-spoof-l34",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1550,
+        1703
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-12",
+      "kind": "exact",
+      "raw": "2025-06-12"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@DefenceHawkPK (self-described \"open source defence analyst\")"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/DefenceHawkPK/status/1932890123456789012"
+    },
+    "claim_id": "d20-supersede-spoof-l38",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 38,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1748,
+        1816
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-12",
+      "kind": "exact",
+      "raw": "2025-06-12"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "gone from Rahwali, redeployment underway"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Rahwali",
+        "raw": "Rahwali",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ9B",
+        "HQ9B battery"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-12",
+        "kind": "exact",
+        "raw": "2025-06-12"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-12",
+      "status_url": "https://x.com/SushantNMehta/status/1932901239876543210"
+    },
+    "claim_id": "d20-supersede-spoof-l42",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 42,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1894,
+        2016
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-12",
+      "kind": "exact",
+      "raw": "2025-06-12"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@SushantNMehta (Sushant Mehta)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-12",
+      "status_url": "[link unavailable, account locked/protected]"
+    },
+    "claim_id": "d20-supersede-spoof-l50",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 50,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2249,
+        2351
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-12",
+      "kind": "exact",
+      "raw": "2025-06-12"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@faisal_defencewatch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d20-supersede-spoof-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "[link unavailable, account locked/protected]"
+    },
+    "claim_id": "d20-supersede-spoof-l54",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 54,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2415,
+        2510
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-12",
+      "kind": "exact",
+      "raw": "2025-06-12"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "its moved, whole btry gone to new loc"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Rahwali site basically empty now allegedly",
+        "raw": "Rahwali site basically empty now allegedly",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "whole btry"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-12",
+        "kind": "exact",
+        "raw": "2025-06-12"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-06-13",
+      "status_url": "exact caption unrecoverable, page since restricted; paraphrase from cached search snippet"
+    },
+    "claim_id": "d20-supersede-spoof-l58",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d20_supersede_spoof.txt",
+      "frame": null,
+      "line": 58,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2558,
+        2736
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-13",
+      "kind": "exact",
+      "raw": "2025-06-13"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@grey_falcon_osint (small OSINT aggregator account)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d20_supersede_spoof",
+    "targets": null
+  }
+]

@@ -1,0 +1,275 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 20.947270561940968,
+      "offered_fields": [
+        "assessed_types",
+        "collection_gaps",
+        "components",
+        "observations",
+        "occupancy",
+        "relations",
+        "site",
+        "source_quote",
+        "units"
+      ],
+      "payload": {
+        "assessed_types": [
+          {
+            "confidence_language": "Site identity as \"the forward HQ-9/P site\" rests on prior open-source association rather than confirmed order-of-battle documentation",
+            "context": {
+              "designation": "HQ-9P",
+              "operator": "Pakistan"
+            },
+            "designators": [
+              "HQ-9P",
+              "HQ-9/P"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9P",
+            "operator_branch": "Pakistan",
+            "source_quote": "previously flagged in open-source discussion threads as associated with the HQ-9P long-range air defense system fielded by Pakistan"
+          }
+        ],
+        "collection_gaps": [
+          {
+            "description": "partial cloud obscuration (~15%) along the northern tree line limits confidence along roughly 20% of the perimeter",
+            "missing_slot": "perimeter / tree-line segment coverage",
+            "next_coverage_due": "a follow-up tasking is recommended within the next 5–7 days",
+            "source_quote": "Shadow analysis at the given sun angle does not suggest concealed elongated objects under the tree canopy fringe, though the analyst notes partial obscuration limits confidence along roughly 20% of the perimeter."
+          },
+          {
+            "description": "Single EO pass; no SAR cross-check performed this cycle",
+            "missing_slot": "SAR cross-check",
+            "source_quote": "- Single EO pass; no SAR cross-check performed this cycle."
+          },
+          {
+            "description": "Possibility of dispersal, maintenance rotation to an unobserved facility, or a collection-timing gap relative to the forum claim",
+            "missing_slot": "unobserved facility / collection timing",
+            "next_coverage_due": "within the next 5–7 days",
+            "source_quote": "This does not preclude the possibility of dispersal, maintenance rotation to an unobserved facility, or a collection-timing gap relative to the forum claim referenced in Section 4."
+          },
+          {
+            "description": "No unit markings or signage visible in any pass to date; site identity rests on prior open-source association rather than confirmed order-of-battle documentation",
+            "missing_slot": "unit attribution",
+            "source_quote": "no unit markings or signage visible in any pass to date"
+          },
+          {
+            "description": "Baseline imagery (2024-11) sourced from separate collection contract; direct pixel-level comparison not performed, visual assessment only",
+            "missing_slot": "pixel-level baseline comparison",
+            "source_quote": "- Baseline imagery (2024-11) sourced from separate collection contract; direct pixel-level comparison not performed, visual assessment only."
+          }
+        ],
+        "components": [
+          {
+            "component_class": "radar trailer",
+            "count_state": "empty in the current image",
+            "name": "possible radar trailer footprint",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          },
+          {
+            "component_class": "structure",
+            "name": "administration or guard structure",
+            "source_quote": "two light vehicles parked near what is assessed as an administration or guard structure"
+          }
+        ],
+        "observations": [
+          {
+            "count_state": "negative",
+            "location_text": "on any of the hardstands or along the access spur",
+            "object_count_text": "No transporter-erector-launchers (TELs) are visible",
+            "object_type": "transporter-erector-launchers (TELs)",
+            "pass_date": "2025-06-11",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "count_state": "negative",
+            "location_text": "on either the northern or southern pad clusters",
+            "object_count_text": "No canvas-covered or tarped objects of TEL-consistent dimensions were identified",
+            "object_type": "canvas-covered or tarped objects of TEL-consistent dimensions",
+            "pass_date": "2025-06-11",
+            "source_quote": "No canvas-covered or tarped objects of TEL-consistent dimensions were identified on either the northern or southern pad clusters."
+          },
+          {
+            "location_text": "near what is assessed as an administration or guard structure",
+            "object_count_text": "two",
+            "object_type": "light vehicles",
+            "pass_date": "2025-06-11",
+            "source_quote": "two light vehicles parked near what is assessed as an administration or guard structure"
+          },
+          {
+            "location_text": "The cleared laydown area",
+            "object_count_text": "what was assessed as a possible radar trailer footprint",
+            "object_type": "possible radar trailer footprint",
+            "pass_date": "2024-11",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          },
+          {
+            "count_state": "negative",
+            "location_text": "within the fenced compound",
+            "object_count_text": "No unusual vehicle staging, generator trailers, or the tented storage ... was noted anywhere within the fenced compound this pass",
+            "object_type": "unusual vehicle staging, generator trailers, or the tented storage typically associated with missile canister or spares handling",
+            "pass_date": "2025-06-11",
+            "source_quote": "No unusual vehicle staging, generator trailers, or the tented storage typically associated with missile canister or spares handling was noted anywhere within the fenced compound this pass"
+          }
+        ],
+        "occupancy": [
+          {
+            "observed": "transporter-erector-launchers (TELs)",
+            "observed_date": "2025-06-11",
+            "occupancy_state": "absent / negative TEL presence observation",
+            "site": "the old Rawalpindi-area site",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          }
+        ],
+        "site": {
+          "context": {
+            "designation": "the forward HQ-9/P site",
+            "geography": "near the port road turnoff",
+            "time": "2025-06-11"
+          },
+          "location_text": "near the port road turnoff, not the garrison itself",
+          "name": "the old Rawalpindi-area site",
+          "occupancy_state": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass",
+          "signature_geometry": "the previously noted perimeter berm and access road configuration largely unchanged from the 2024-11 baseline",
+          "site_type": "suspected forward SAM deployment area",
+          "source_quote": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself — was tasked for revisit collection this cycle following unconfirmed claims circulating on regional defense forums of a battery relocation."
+        },
+        "source_quote": "This report provides a visual update on a suspected forward SAM deployment area previously flagged in open-source discussion threads as associated with the HQ-9P long-range air defense system fielded by Pakistan."
+      },
+      "tool_name": "extract_imagery_geoint",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 2.988945805002004,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [],
+        "contrasts": [
+          {
+            "left_id": 1,
+            "licensing_quote": "referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself",
+            "right_id": 4
+          }
+        ]
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "image",
+      "latency_s": 30.588141452986747,
+      "offered_fields": [
+        "caption",
+        "caption_vs_image_consistency",
+        "count_abstained",
+        "count_object",
+        "description",
+        "features",
+        "frame_kind",
+        "geometry_tokens",
+        "gsd_note",
+        "object_count_max",
+        "object_count_min",
+        "occupancy_state",
+        "resolution_sufficiency"
+      ],
+      "payload": {
+        "caption": "Overhead frame of a dense urban block grid surrounding a large polygonal cleared parcel with a circular landscaped feature and a row of small vehicle-sized objects.",
+        "caption_vs_image_consistency": "No external caption supplied; description derives solely from visible content.",
+        "count_abstained": false,
+        "count_object": "small vehicle-sized rectangular objects in the marked parking rows near the center-south of the cleared parcel",
+        "description": "Nadir-looking, sun-lit urban scene. Wide multi-lane arterial roads with painted lane markings and planted medians form a coarse cross through the frame, dividing it into large blocks. Most blocks are filled with regularly spaced multi-storey slab buildings in parallel rows, aligned roughly north-south with long shadows cast toward the lower part of the frame; several blocks show gable or flat roofs, some with blue-toned roofing panels. A running track with an oval marking and adjacent rectangular courts sits in a block on the left-center. In the right half there are several construction or earthworks areas: bare graded ground, stockpiles, foundation excavations, and a tower-crane-like linear shadow.\n\nThe dominant feature is a large irregular polygonal parcel occupying the center of the frame, bounded by roads and building rows. Its surface is mostly bare compacted earth and light-toned paving with a network of curving and radial paved walkways. In its upper-center is a large circular to lobed landscaped feature roughly 150-200 m across, composed of symmetric arcs, radial paths, a central axis with a narrow elongated element, and small paved plazas. South of this circular feature is a linear paved apron with two adjacent rows of small uniform rectangular objects arranged in orderly parallel rank, consistent with parked vehicles. Farther south within the same parcel are several low rectangular structures with light roofs, small courtyards, tree lines, and additional straight paved paths leading to a southern entrance area. Scattered small trees and shrub clusters line the parcel's internal roads and perimeter.\n\nNo revetments, berms, earthen walls, hardened shelters, or arc-shaped protective emplacements are visible. No obvious security fencing or segregated secure compound geometry can be resolved. Occupancy is limited to a small number of vehicles on the roads and the parked rows described above; the large parcel is otherwise largely open and unoccupied.",
+        "features": [
+          {
+            "arrangement": "centered on an internal axis of the open parcel",
+            "feature": "circular/lobed landscaped monument-style plaza with radial and arc paths",
+            "note": "approximately 150-200 m across; ornamental rather than functional hardstand",
+            "shape": "circle with symmetric lobes"
+          },
+          {
+            "arrangement": "occupies the central block bounded by four roads",
+            "feature": "bare graded earth surface",
+            "note": "light tan compacted ground with tire/track scuffing",
+            "shape": "irregular polygon"
+          },
+          {
+            "arrangement": "two parallel rows south of the circular feature",
+            "feature": "paved apron with painted parking bays",
+            "note": "small uniform rectangular objects occupy many bays",
+            "shape": "elongated rectangle"
+          },
+          {
+            "arrangement": "loose cluster along the southern half of the open parcel",
+            "feature": "low rectangular buildings with light flat roofs",
+            "shape": "rectangle"
+          },
+          {
+            "arrangement": "regular parallel rows in nearly every surrounding block",
+            "feature": "multi-storey slab residential-type buildings",
+            "note": "consistent spacing and shadow length indicate similar height",
+            "shape": "elongated rectangle"
+          },
+          {
+            "arrangement": "orthogonal grid crossing the frame",
+            "feature": "multi-lane arterial roads with medians and marked crosswalks",
+            "shape": "straight linear"
+          },
+          {
+            "arrangement": "single block west of the open parcel",
+            "feature": "athletic track and adjacent courts",
+            "shape": "oval plus rectangles"
+          },
+          {
+            "arrangement": "several blocks in the right half and lower left",
+            "feature": "construction/earthworks areas",
+            "note": "spoil piles, excavations, unfinished foundations",
+            "shape": "irregular"
+          },
+          {
+            "arrangement": "along internal paths and parcel perimeter",
+            "feature": "tree and shrub lines",
+            "shape": "linear and dotted"
+          }
+        ],
+        "frame_kind": "single-frame high-resolution optical satellite image, near-nadir, daytime",
+        "geometry_tokens": [
+          "polygonal open parcel",
+          "radial path network",
+          "circular plaza",
+          "paved apron",
+          "parking bays",
+          "orthogonal road grid",
+          "parallel building rows",
+          "internal service road",
+          "tree line",
+          "excavation pit",
+          "spoil pile",
+          "walkway loop"
+        ],
+        "gsd_note": "Ground sample distance appears sub-metre; individual vehicles, lane markings, and path edges are resolvable, but fine roof detail and small equipment are not.",
+        "object_count_max": 90,
+        "object_count_min": 40,
+        "occupancy_state": "largely unoccupied open ground; a moderate number of small vehicle-sized objects present in the marked parking rows and a few on surrounding roads",
+        "resolution_sufficiency": "sufficient for gross layout, road/paving geometry, and building footprints; insufficient to characterise individual small objects beyond 'vehicle-sized rectangle'"
+      },
+      "tool_name": "read_overhead_image",
+      "usage": null
+    }
+  ],
+  "candidate_id": "anthropic-opus-5",
+  "fingerprint": "eec7fab36583fc2bf13c98a2b435266203842b3743157d85b9619f46ae879e57",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T15:58:52.145280+00:00",
+  "run_index": 3,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d17b_withheld_gap"
+}

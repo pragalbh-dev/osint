@@ -339,9 +339,16 @@ def test_a_wholly_replayed_scorecard_says_it_describes_another_session(inputs) -
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
 def test_the_shipped_config_paces_openai_and_leaves_the_others_alone() -> None:
-    """The cap that killed the run is declared in config, not in code — it is an account property."""
+    """The cap that killed the run is declared in config, not in code — it is an account property.
+
+    And the declared rate sits **strictly under** the account's cap rather than on it. Measured
+    2026-07-26: declaring the exact 3/min cap died anyway, because spacing at 60/cap puts three starts
+    inside every trailing minute and the fourth then races the provider's own window boundary. So the
+    assertion is not "equals the cap" — it is "leaves headroom below it".
+    """
     cfg = load_bakeoff_config(settings.config_dir() / "bakeoff.yaml")
-    assert cfg.rate_limit("openai").requests_per_minute == 3
+    openai_rpm = cfg.rate_limit("openai").requests_per_minute
+    assert openai_rpm is not None and 0 < openai_rpm < 3
     assert cfg.rate_limit("anthropic").requests_per_minute is None
     assert cfg.rate_limit("google").requests_per_minute is None
 

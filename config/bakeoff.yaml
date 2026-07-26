@@ -234,13 +234,25 @@ match_policy:
 # `requests_per_minute` paces request STARTS evenly (one call every 60/rpm seconds) rather than allowing a
 # burst-then-wait bucket: a bucket empties its whole allowance into the first instant of every window,
 # which is the exact shape that trips a cap whose window does not line up with ours.
+#
+# PACE UNDER THE CAP, NEVER ON IT (measured 2026-07-26, second live run). Declaring the account's exact
+# cap — 3/min, i.e. one start every 20.0s — died again at document 11 of 35 on the same 429: "Limit 3,
+# Used 3, Requested 1". Spacing at exactly 60/cap puts three starts inside every trailing minute, so the
+# next start races the provider's own window boundary, and any jitter — network latency, a transport
+# retry that does not re-take a slot, a window that begins a few hundred ms after ours — makes the fourth
+# request land while three are still counted. The declared rate is therefore the account cap MINUS a
+# margin, not the cap. This costs wall-clock in one lane and buys the run's survival; it changes no gate,
+# no weight, no margin rule and no match policy, and it is not a retry — a returned 429 is still never
+# re-issued.
 rate_limits:
   openai:
-    requests_per_minute: 3
+    requests_per_minute: 2      # account cap is 3/min; paced at 2 (one start every 30.0s) for headroom
     max_concurrent: 1
     note: >-
-      MEASURED, not guessed: this account returned 429 on 2026-07-26 under the run's default fan-out.
-      Raise it if the account is upgraded — it is an account property and belongs in config, not in code.
+      MEASURED, not guessed: this account returned 429 on 2026-07-26 under the run's default fan-out, and
+      again when paced at exactly its 3/min cap. Declared at 2/min so the pacing sits UNDER the cap rather
+      than on its boundary. Raise it if the account is upgraded — it is an account property and belongs in
+      config, not in code.
   # anthropic and google are deliberately absent = unpaced. Neither has rate-limited this project's runs,
   # and inventing a cap nobody has hit would slow a lane for a fact not in evidence.
 

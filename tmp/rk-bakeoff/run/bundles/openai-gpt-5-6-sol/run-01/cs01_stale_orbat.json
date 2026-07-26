@@ -1,0 +1,2715 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        71
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "database (cached copy)"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "South Asia Defence Monitor — Air Defence Systems Database"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "NAME_VARIANT",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9/P missile"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "'NAME_VARIANT' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another predicate — immune to the very cap that replaced it",
+      "_coref_quotes": [
+        "Pakistan — HQ-9/P Long-Range Surface-to-Air Missile",
+        "The missile itself is reported to have a maximum engagement range on the order of 200 km"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c2",
+      "_subject_mention": "cs01-stale-orbat-l5-2",
+      "source_quote": "Pakistan — HQ-9/P Long-Range Surface-to-Air Missile"
+    },
+    "claim_id": "cs01-stale-orbat-l5",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 5,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          223,
+          274
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 17,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2294,
+          2382
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P missile",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l5-2"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l5-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        234,
+        240
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "reported",
+        "designators": [
+          "HQ-9/P"
+        ],
+        "family": "HQ-9",
+        "operator_branch": "Pakistan Air Force's Air Defence Command",
+        "range_km": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "km",
+          "value": 200.0
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "cs01-stale-orbat-l5-2",
+      "_subject_mention": "cs01-stale-orbat-l5-2"
+    },
+    "claim_id": "cs01-stale-orbat-l5-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        234,
+        240
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        286,
+        375
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-9"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "cs01-stale-orbat-l9",
+      "_subject_mention": "cs01-stale-orbat-l9"
+    },
+    "claim_id": "cs01-stale-orbat-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        286,
+        375
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        377,
+        533
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "S-300PMU"
+        ],
+        "family": "S-300PMU"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-300PMU series"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l9-3"
+    },
+    "claim_id": "cs01-stale-orbat-l9-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        377,
+        533
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-300PMU",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-300PMU series"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "NAME_VARIANT",
+      "_coref_forms": [
+        "S-300PMU series",
+        "S-300PMU"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "'NAME_VARIANT' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another predicate — immune to the very cap that replaced it",
+      "_coref_quotes": [
+        "the Russian S-300PMU series"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c3",
+      "_subject_mention": "cs01-stale-orbat-l9-3",
+      "source_quote": "the Russian S-300PMU series"
+    },
+    "claim_id": "cs01-stale-orbat-l9-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        426,
+        453
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "S-300PMU",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "S-300PMU series"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l9-3"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        535,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "Crotale"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Crotale"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        535,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "Spada"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Spada"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "cs01-stale-orbat-l9-6",
+      "_subject_mention": "cs01-stale-orbat-l9-6"
+    },
+    "claim_id": "cs01-stale-orbat-l9-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        535,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Crotale",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Crotale"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "cs01-stale-orbat-l9-7",
+      "_subject_mention": "cs01-stale-orbat-l9-7"
+    },
+    "claim_id": "cs01-stale-orbat-l9-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        535,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Spada",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Spada"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        754,
+        830
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Baluchistan",
+          "raw": "Baluchistan",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "range"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "an undisclosed range in Baluchistan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        833,
+        1029
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "echelon": "Command",
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Air Force's Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_object_mention": "cs01-stale-orbat-l11",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "cs01-stale-orbat-l5-2",
+      "_undated_perishable": true,
+      "source_quote": "As of this writing, the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+    },
+    "claim_id": "cs01-stale-orbat-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        833,
+        1029
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Air Force's Air Defence Command",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l5-2",
+      "_undated_perishable": true
+    },
+    "claim_id": "cs01-stale-orbat-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        833,
+        1029
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1121
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "LY-80",
+          "HQ-16"
+        ],
+        "family": "HQ-16"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l11-4"
+    },
+    "claim_id": "cs01-stale-orbat-l11-5",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1031,
+          1121
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1059,
+          1072
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-16",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "cs01-stale-orbat-l11-4",
+      "_subject_mention": "cs01-stale-orbat-l11-4"
+    },
+    "claim_id": "cs01-stale-orbat-l11-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1121
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "LY-80",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "HQ-9",
+        "HQ-16"
+      ],
+      "_subject_mention": "cs01-stale-orbat-l9",
+      "source_quote": "complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers. Battery composition is estimated at one command-and-control vehicle, six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters, associated HT-233 phased-array engagement radars, and a search/acquisition radar element, broadly mirroring the PLA's own HQ-9 regimental structure."
+    },
+    "claim_id": "cs01-stale-orbat-l11-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1439
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-16",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l9"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "HQ-9",
+        "LY-80"
+      ],
+      "_object_mention": "cs01-stale-orbat-l11-4",
+      "_subject_mention": "cs01-stale-orbat-l9",
+      "source_quote": "complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers. Battery composition is estimated at one command-and-control vehicle, six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters, associated HT-233 phased-array engagement radars, and a search/acquisition radar element, broadly mirroring the PLA's own HQ-9 regimental structure."
+    },
+    "claim_id": "cs01-stale-orbat-l11-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1439
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "LY-80",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l9",
+      "cs01-stale-orbat-l11-4"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "LY-80",
+        "HQ-16"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "shorter-range LY-80 (HQ-16) batteries"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c4",
+      "_subject_mention": "cs01-stale-orbat-l11-4",
+      "source_quote": "shorter-range LY-80 (HQ-16) batteries"
+    },
+    "claim_id": "cs01-stale-orbat-l11-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1045,
+        1082
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-16",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-4"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1190
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "vehicle",
+        "functional_role": "command-and-control"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "command-and-control vehicle"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "transporter-erector-launcher vehicles"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l11-10"
+    },
+    "claim_id": "cs01-stale-orbat-l11-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P battery",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "command-and-control vehicle"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l11-21"
+    },
+    "claim_id": "cs01-stale-orbat-l11-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P battery",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "HT-233 phased-array engagement radars"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l11-22"
+    },
+    "claim_id": "cs01-stale-orbat-l11-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P battery",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "search/acquisition radar element"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l11-11"
+    },
+    "claim_id": "cs01-stale-orbat-l11-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P battery",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c5",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "single-stage TEL (transporter-erector-launcher) vehicles",
+        "TEL"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "six single-stage TEL (transporter-erector-launcher) vehicles"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c5",
+      "_subject_mention": "cs01-stale-orbat-l11-11",
+      "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "claim_id": "cs01-stale-orbat-l11-16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1252
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "TEL",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-11"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c5",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "single-stage TEL (transporter-erector-launcher) vehicles",
+        "transporter-erector-launcher"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "six single-stage TEL (transporter-erector-launcher) vehicles"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c5",
+      "_subject_mention": "cs01-stale-orbat-l11-11",
+      "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "claim_id": "cs01-stale-orbat-l11-17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1252
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "transporter-erector-launcher",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-11"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "missile canisters"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "missile canisters"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "supplies-component",
+      "_object_mention": "cs01-stale-orbat-l11-18",
+      "_relane_reason": "'supplies-component'@(component->component) -> component-of",
+      "_subject_mention": "cs01-stale-orbat-l11-11",
+      "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+    },
+    "claim_id": "cs01-stale-orbat-l11-19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "missile canisters",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "single-stage TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-20",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1209,
+        1243
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "transporter-erector-launcher",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1291,
+        1339
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "phased-array engagement radars",
+        "functional_role": "engagement"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233 phased-array engagement radars"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1341,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar element",
+        "functional_role": "search/acquisition"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "search/acquisition radar element"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1656,
+        2032
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "alert_posture": "operational",
+        "echelon": "battalions",
+        "service_branch": "PAF"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "two operational battalions"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1656,
+        2032
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "alert_posture": "reportedly in the delivery pipeline",
+        "echelon": "battalion"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "a third battalion"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1656,
+        2032
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "echelon": "Command",
+        "service_branch": "PAF"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF's Central Air Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1656,
+        2032
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "order-of-battle assessment"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "a 2015 order-of-battle assessment compiled by a regional military balance publication"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "stated",
+      "_object_mention": "cs01-stale-orbat-l15",
+      "_relane_reason": "'equips'@(unit->variant) reversed -> inducted-into",
+      "_subject_mention": "cs01-stale-orbat-l5-2",
+      "source_quote": "A widely-cited figure — drawn from a 2015 order-of-battle assessment compiled by a regional military balance publication — places Pakistani holdings at two operational battalions (approximately eight to twelve TEL launchers per battalion equivalent, figures vary by source) assigned to the PAF's Central Air Command, with a third battalion reportedly in the delivery pipeline."
+    },
+    "claim_id": "cs01-stale-orbat-l15-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1656,
+        2032
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2015",
+      "year": 2015
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "two operational battalions",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "two operational battalions",
+        "a third battalion"
+      ],
+      "_object_mention": "cs01-stale-orbat-l15-2",
+      "_subject_mention": "cs01-stale-orbat-l15",
+      "source_quote": "two operational battalions (approximately eight to twelve TEL launchers per battalion equivalent, figures vary by source) assigned to the PAF's Central Air Command, with a third battalion reportedly in the delivery pipeline"
+    },
+    "claim_id": "cs01-stale-orbat-l15-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1808,
+        2031
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "a third battalion",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "two operational battalions"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l15",
+      "cs01-stale-orbat-l15-2"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c7",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "anti-tactical ballistic missile",
+        "ATBM"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "a secondary anti-tactical ballistic missile (ATBM) capability"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c7",
+      "source_quote": "a secondary anti-tactical ballistic missile (ATBM) capability"
+    },
+    "claim_id": "cs01-stale-orbat-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2417,
+        2478
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ATBM",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "anti-tactical ballistic missile"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c7",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2417,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "role": "manufacturer"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l17-2"
+    },
+    "claim_id": "cs01-stale-orbat-l17-3",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 17,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2417,
+          2607
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 17,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2547,
+          2607
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "CPMIEC",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "source_quote": "a secondary anti-tactical ballistic missile (ATBM) capability against short-range ballistic missiles claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "claim_id": "cs01-stale-orbat-l17-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2417,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P missile",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l17-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2429,
+        2467
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ATBM",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "anti-tactical ballistic missile"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "China Precision Machinery Import-Export Corporation",
+        "China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c1",
+      "_subject_mention": "cs01-stale-orbat-l17-2",
+      "source_quote": "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "claim_id": "cs01-stale-orbat-l17-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2529,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "China Precision Machinery Import-Export Corporation (CPMIEC)",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l17-2"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "China Precision Machinery Import-Export Corporation",
+        "CPMIEC"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c1",
+      "_subject_mention": "cs01-stale-orbat-l17-2",
+      "source_quote": "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "claim_id": "cs01-stale-orbat-l17-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2529,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "CPMIEC",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l17-2"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3154,
+        3417
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "regional defence weekly"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "a regional defence weekly"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l21-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3154,
+        3417
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2013",
+      "year": 2013
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count_state": "already inducted"
+      },
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2013",
+        "year": 2013
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l21-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3418,
+        3685
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "industry newsletter"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "a separate industry newsletter"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3687,
+        3778
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Arabian Sea approach",
+          "raw": "Arabian Sea approach",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "believed to include",
+        "site_type": "deployment positions"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "positions oriented toward the Arabian Sea approach"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "based-at",
+      "_object_mention": "cs01-stale-orbat-l23",
+      "_relane_reason": "'based-at'@(variant->basing_site) -> observed-at",
+      "_subject_mention": "cs01-stale-orbat-l5-2",
+      "_undated_perishable": true,
+      "source_quote": "Deployment sites are believed to include positions oriented toward the Arabian Sea approach"
+    },
+    "claim_id": "cs01-stale-orbat-l23-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3687,
+        3778
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "positions oriented toward the Arabian Sea approach",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l23-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3779,
+        3971
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "near the Punjab border sector",
+          "raw": "near the Punjab border sector",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "per unconfirmed reporting",
+        "site_type": "secondary battery"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "a secondary battery near the Punjab border sector"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c6",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "_undated_perishable": true,
+      "source_quote": "per unconfirmed reporting, a secondary battery near the Punjab border sector"
+    },
+    "claim_id": "cs01-stale-orbat-l23-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3784,
+        3860
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "near the Punjab border sector",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "a secondary battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c6",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "a secondary battery near the Punjab border sector",
+        "near the Punjab border sector"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the anaphor has 11 type-compatible antecedents in this document, not exactly one (an 'unknown'-typed mention counts as compatible on purpose — a second undeclared endpoint is precisely what an extractor under-reach would hide, and it must FAIL the gate, not pass it)",
+      "_coref_quotes": [
+        "a secondary battery near the Punjab border sector",
+        "though this latter deployment has not been corroborated"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c6",
+      "_subject_mention": "cs01-stale-orbat-l23-3",
+      "source_quote": "a secondary battery near the Punjab border sector"
+    },
+    "claim_id": "cs01-stale-orbat-l23-5",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 23,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3811,
+          3860
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+        "frame": null,
+        "line": 23,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3862,
+          3917
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gpt-5.6-sol"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "near the Punjab border sector",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "a secondary battery near the Punjab border sector"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l23-3"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c6",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  }
+]

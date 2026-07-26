@@ -1,0 +1,184 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 17.626597875263542,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HIMADS",
+            "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P"
+          },
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HQ-9P",
+            "source_quote": "variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+          },
+          {
+            "name_a": "Hongqi-9",
+            "name_b": "HQ-9",
+            "source_quote": "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "context": {
+              "geography": "Karachi",
+              "operator": "Pakistan Army Air Defence",
+              "time": "14 October 2021"
+            },
+            "location_text": "Karachi",
+            "name": "Army Air Defence Centre",
+            "site_type": "Air Defence Centre",
+            "source_quote": "visited the Army Air Defence Centre, Karachi"
+          }
+        ],
+        "components": [],
+        "denials": [
+          {
+            "object": "exact number of batteries/launchers (TELs) inducted",
+            "predicate": "disclosed",
+            "source_quote": "The exact number of batteries/launchers (TELs) inducted was not disclosed, in keeping with the Army's standing practice of not releasing order-of-battle details for sensitive air defence assets.",
+            "subject": "Pakistan Army"
+          }
+        ],
+        "distinctions": [],
+        "events": [
+          {
+            "date_text": "14 October 2021",
+            "event_kind": "induction",
+            "location_text": "Army Air Defence Centre, Karachi",
+            "recipient": "Pakistan Army Air Defence",
+            "source_quote": "Rawalpindi – 14 October 2021: The Chief of Army Staff (COAS), General Qamar Javed Bajwa, today visited the Army Air Defence Centre, Karachi, where a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit.",
+            "system": "HQ-9/P",
+            "unit": "Pakistan Army Air Defence (PAAD) unit"
+          }
+        ],
+        "manufacturers": [
+          {
+            "context": {
+              "operator": "China"
+            },
+            "name": "China",
+            "origin_country": "China",
+            "role": "supplier",
+            "source_quote": "variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": "14 October 2021",
+            "object": "Pakistan Army Air Defence",
+            "relation": "inducted-into",
+            "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit.",
+            "subject": "HQ-9/P"
+          },
+          {
+            "date_text": "14 October 2021",
+            "object": "Army Air Defence Centre",
+            "relation": "observed-at",
+            "source_quote": "visited the Army Air Defence Centre, Karachi, where a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+            "subject": "HQ-9/P"
+          }
+        ],
+        "sources": [
+          {
+            "name": "Inter-Services Public Relations (ISPR)",
+            "source_quote": "Inter-Services Public Relations (ISPR)",
+            "source_type": "official-PR"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "geography": "Karachi",
+              "operator": "Pakistan Army",
+              "time": "14 October 2021"
+            },
+            "home_garrison": "Karachi",
+            "name": "Pakistan Army Air Defence",
+            "service_branch": "Pakistan Army",
+            "source_quote": "formally inducted into service with a Pakistan Army Air Defence (PAAD) unit."
+          }
+        ],
+        "variants": [
+          {
+            "context": {
+              "designation": "HQ-9/P",
+              "geography": "Karachi",
+              "operator": "Pakistan Army Air Defence",
+              "time": "14 October 2021"
+            },
+            "family": "Hongqi-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Army Air Defence",
+            "range_text": "well beyond 100 km",
+            "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit... extend Pakistan's ground-based air defence envelope well beyond 100 km"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 10.128937839064747,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+              "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+            ],
+            "member_ids": [
+              4,
+              6,
+              7
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+            ],
+            "member_ids": [
+              8,
+              9
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:02:45.930997+00:00",
+  "run_index": 3,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d02_ispr_induction"
+}

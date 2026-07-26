@@ -1797,6 +1797,73 @@ own arithmetic rather than a number worked out on paper: the GPT lane costs **13
 (40–75 calls at 20s spacing), the other two lanes run at full speed beside it, and a three-way re-run is
 therefore ~30 minutes end to end and ~195 calls — of which nothing already on disk is re-bought.
 
+### RK-BAKEOFF — the bake-off ran, and it REFUSES to name a winner (2026-07-26, `bakeoff/rk-impl`)
+
+**DECISION: no primary extractor is selected. `claude-opus-5` and `gemini-3.6-flash` are measured
+indistinguishable; `gpt-5.6-sol` could not be measured. The incumbent arrangement stands unchanged, and any
+change to it is a human judgement made outside this measurement and must be recorded as one.**
+
+Preflight was **3/3 ELIGIBLE** with the coref channel **LIVE**, the plan printed **120–225 calls (~195)**
+before spending, and the slice carried the real corpus image, so the imagery gate read evidence rather than
+UNKNOWN. **~177 calls actually billed** (174 persisted: Opus 75, Gemini 75, GPT 24; ≤3 lost in flight) —
+**under the projection** — over **37m14s** wall clock.
+
+**The result.** Five runs each. Composite (weighted mean per run of the nine weighted rate metrics): Opus
+**0.6252 ± 0.0140**, Gemini **0.6157 ± 0.0269**. Gap **0.0095** against a required margin of **0.0429** —
+the gap is 4.5× *smaller* than the noise it must clear. Verdict `NO_MEASURED_DIFFERENCE`. Both required
+metrics were measured, so this is a measured tie, not `INSUFFICIENT_CRITERIA`. Nothing was re-weighted,
+excluded or relaxed to produce it, and **no winner was manufactured out of jitter** — which is this
+project's own non-negotiable applied to its own instrument.
+
+**The vetoes split, and that is the decision-relevant finding.** Gemini is materially better on two of the
+three non-negotiables (`citation_faithfulness` +0.044; `extract_only_stated` +0.030 — which clears the
+absolute floor by 0.0002 and is the weakest material call on the board). Opus is materially better on the
+third (`trap_avoidance` +0.127 over a 0.091 margin — the most robust single finding, on an 11-trap
+denominator) and on `graph_recall` (+0.050). So there is **no free tie-break**: any pick trades one
+non-negotiable against another in the open, which is the veto rule working rather than deadlocking. The
+top-weighted criterion, `coref_binding`, is squarely inside noise for both (~0.35) — a finding about the
+task, not a separator.
+
+**Both surviving candidates keep the two structural properties the replumb depends on**, so neither is what
+separates them: each passes `vlm_imagery_path` on evidence (recorded probe + **5/5 standalone-image calls
+this run**, i.e. 6/6), and each passes `keyless_equals_live` because its client lives on the shipped
+`chanakya.ingest` path and is declared the seed producer — a frozen seed bundle it produces is therefore
+what live produces. Both ids are pinned: `claude-opus-5` and `gemini-3.6-flash` are concrete, not floating
+aliases. Whichever a human eventually picks from the tied pair, the VLM path and KEYLESS==LIVE hold by
+construction.
+
+**`gpt-5.6-sol` is unmeasured, not judged.** Its lane stopped at 11 of 35 documents on **two independent
+OpenAI account entitlements**: 3 requests/minute, then — once pacing cleared that — **10,000 tokens/minute
+against ~6,500-token extraction requests**, which admits roughly one call a minute. Finishing it would have
+cost ~52 more calls (~226 total, past the authorised 225 ceiling) and ~50 minutes, chasing a wall that had
+already moved once. Stopped and reported instead. **The rendered scorecard does not mention this candidate
+at all** — a narrowed run reports only what it ran — so the record lives in `tmp/conv/RK-BAKEOFF-RESULT.md`,
+and nothing about that model's extraction quality may be inferred in either direction.
+
+**One config change, and it is not a measurement knob.** `rate_limits.openai` moved 3 → **2 req/min**:
+pacing at *exactly* the account cap puts three starts inside every trailing minute, so the fourth races the
+provider's window boundary and any jitter loses. Pace **under** a cap, never on it. No gate, weight, margin
+rule or match-policy value was touched, and the retry discipline is unchanged — a returned 429 is still
+never re-issued, because `structured_output_reliability` exists to score what a provider returns.
+
+**Resume earned its keep.** Attempt A died on the RPM cap having completed both unpaced lanes; attempt B
+re-entered with **81 of 105 document-extractions reusable** and re-bought none of them; the final scorecard
+was rendered from a **zero-call replay** and is stamped "Replayed, not re-run". Both scored candidates were
+sampled in one sitting, so `determinism` (a weighted, measured line) means what it normally means. The
+previous sitting's identical failure discarded ~225 already-billed calls and produced nothing.
+
+**What this cannot decide, recorded so it is not discovered later:** five of six source types appear
+exactly once (a per-type claim is an anecdote); 16 of 65 gold claims carry a role surface appearing nowhere
+in their document, so absolute recall is capped for any verbatim extractor and only comparative numbers
+mean anything (`surface_f1` ≈ 0.20 for both is a floor artefact, not a reading score); binding precision
+rests on 8 items; and **cost is UNPRICED** — the operationally decisive cost this run actually met was a
+rate limit, which no metric models. More runs cannot break the tie: the margin's absolute floor is 0.03, so
+a 0.0095 composite gap is structurally immaterial. **A harder, larger labeled slice — more traps, more
+negative binding pairs — is the only lever that would separate them.**
+
+Full scorecard, arithmetic and interpretation: `tmp/conv/RK-BAKEOFF-RESULT.md`; machine-readable output and
+the paid receipts under `tmp/rk-bakeoff/run/`.
+
 ### DEFAULT-ON — the identity re-key stops being a staged flag, and the loopholes the flags were hiding (2026-07-25)
 
 Three stages of the identity re-key had landed **behind flags that shipped OFF**
