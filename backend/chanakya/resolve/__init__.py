@@ -33,7 +33,7 @@ from chanakya.schemas import (
     pair_key,
 )
 
-from . import aliases, entities, places, scoring
+from . import aliases, cluster, entities, places, scoring
 from .aliases import AliasIndex
 from .anchor import AnchorResolution, resolve_anchors
 from .cluster import Pair, ResolveResult, finalise, resolve_entities
@@ -156,12 +156,22 @@ def _resolve(
     # veto = configured distinct-from (by name) ∪ registry distinct-from (by entity id) ∪ gazetteer-distinct
     # place pairs (Karachi-Port ≠ Port-Qasim) ∪ source-asserted distinct-from claims — computed up front so
     # it hard-vetoes an entity-level merge too, not just surfaces as an edge.
-    veto = (
-        _veto_pairs(graph, cfg, alias_idx)
-        | _registry_veto(graph, cfg)
-        | places.place_distinct_pairs(graph, cfg, place_of)
-        | _claim_distinct_pairs(graph, cfg, alias_idx)
-    )
+    # G18, EVERY RAIL: each veto channel also states its GROUND, keyed by pair, and the grounds are collected
+    # in one dict here rather than at each call site. A wall nobody can read is indistinguishable from a
+    # missing edge, and — measured — nineteen of the thirty walls drawn on the booted corpus were DERIVED
+    # findings (gazetteer, hard identifier) rendering the string "explicit do-not-merge (hard veto)": the
+    # identical text used for a genuinely curated analyst veto, so three distinct grounds collapsed into one
+    # and the word "explicit" misattributed machine inference to a person.
+    wall_grounds: dict[Pair, str] = {}
+    curated_veto = _veto_pairs(graph, cfg, alias_idx) | _registry_veto(graph, cfg)
+    place_walls, place_wall_reasons = places.place_distinct_pairs(graph, cfg, place_of)
+    stated_walls = _claim_distinct_pairs(graph, cfg, alias_idx)
+    # Least specific first: a later rail's more specific finding wins the same pair (the same precedence
+    # rule the critical/relationship rails already used between themselves).
+    wall_grounds.update({p: _curated_wall_reason() for p in curated_veto})
+    wall_grounds.update({p: _stated_wall_reason() for p in stated_walls})
+    wall_grounds.update(place_wall_reasons)
+    veto = curated_veto | place_walls | stated_walls
 
     # P3.1 (RES-1) — endpoint-as-mention. Runs BEFORE the fixpoint so ``graph.edges`` already carry entity
     # ids when ``merge_score`` runs; that is what revives the relational + source-asserted terms.
@@ -187,13 +197,26 @@ def _resolve(
     # that channel is hard AND transitive, re-applied in `finalise`, visible to the D9 bridge alarm and DRAWN,
     # whereas the geo veto's channel is pairwise and invisible — and G18 would pass over either.
     rel_walls, rel_wall_reasons, rel_raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
-    veto |= (
-        _claim_distinct_pairs(graph, cfg, alias_idx)
-        | _identifier_veto(graph, cfg)
-        | crit_walls
-        | rel_walls
-    )
+    stated_walls_2 = _claim_distinct_pairs(graph, cfg, alias_idx)
+    ident_walls, ident_wall_reasons = _identifier_veto(graph, cfg)
+    veto |= stated_walls_2 | ident_walls | crit_walls | rel_walls
     crit_raises = {**crit_raises, **rel_raises}
+    # …and the grounds for the four rails resolved after the endpoint pass, least-specific first. The two
+    # that had a producer (critical attribute, relationship) keep their existing precedence — relationship
+    # last, as the more specific finding — and the two that had none (hard identifier, and the second read of
+    # the stated do-not-merges) now have one.
+    wall_grounds.update({p: _stated_wall_reason() for p in stated_walls_2 if p not in wall_grounds})
+    wall_grounds.update(ident_wall_reasons)
+    wall_grounds.update(crit_wall_reasons)
+    wall_grounds.update(rel_wall_reasons)
+    # The most specific ground there is: a HUMAN decided this pair apart (a `merge_adjudication` reject/split
+    # replayed from the decision log). It outranks every derived rail — an override is not a finding (G12).
+    wall_grounds.update(
+        {
+            frozenset(pair): _analyst_wall_reason()
+            for pair in cluster.learned_distinct_eid_pairs(alias_idx, graph, cfg.transliteration)
+        }
+    )
 
     # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
     # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
@@ -256,9 +279,12 @@ def _resolve(
     # with the generic fallback and no ground named. Two refusals with two different causes read identically
     # to the analyst, which is the "fixed default wearing a rationale's clothes" failure: every "a reason
     # exists" check passes and the reason instructs nobody. The rails are merged in a fixed order so a pair
-    # walled by both gets a stable reason (the relationship rail last, as the more specific finding).
+    # walled by both gets a stable reason (the relationship rail last, as the more specific finding) — that
+    # ordering is now applied once, when ``wall_grounds`` is built above, and every rail that can draw a wall
+    # is in it: curated config/registry, source-stated, gazetteer place, hard identifier, critical attribute,
+    # relationship conflict, and the analyst's own replayed reject/split.
     result.wall_reasons.update(
-        {pair_key(*sorted(p)): why for p, why in crit_wall_reasons.items()}
+        {pair_key(*sorted(p)): why for p, why in wall_grounds.items()}
     )
     # …and the ESCALATE half for the same collision. A wall that outranked a source's stated identity owes each
     # endpoint a named Known Gap, or the assertion the resolver overrode reached nobody. ``setdefault``, not
@@ -266,7 +292,6 @@ def _resolve(
     # and ``finalise`` prunes any entry whose endpoints ended up in one cluster along some other chain.
     for pair, what_missing in sorted(walled_assertions.items(), key=lambda kv: sorted(kv[0])):
         result.identity_refusals.setdefault(pair_key(*sorted(pair)), what_missing)
-    result.wall_reasons.update({pair_key(*sorted(p)): why for p, why in rel_wall_reasons.items()})
     # A raised coreference link keeps its licensing evidence on the queue item — BESIDE any reason the
     # resolver already recorded, never instead of it. The two answer different questions and the analyst needs
     # both: the resolver's reason says why the merge was WITHHELD (a critical conflict, a cap), the coref
@@ -556,7 +581,76 @@ def _refine_node_types(
 
 # ── T3b-C: the hard-identifier rail (a bill of lading is an identity, not a name) ───────────────
 
-def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
+# ── G18/B4: one truthful text per rail that can draw a wall ─────────────────────────────────────
+#
+# Three distinct grounds used to render one string — "explicit do-not-merge (hard veto)" — and only one of
+# them was explicit. The word matters: it tells an analyst a *person* already ruled on this pair, so applying
+# it to a machine inference both misattributes the decision and removes the analyst's reason to check it. Each
+# rail now says what it is and, where it is derived, says so and names what would correct it.
+
+def _curated_wall_reason() -> str:
+    """The one rail where "explicit" is TRUE: a curated do-not-merge in config/entities.yaml or the
+    ``distinct_from`` alias block. A human wrote this pair down; the resolver only instantiated it."""
+    return (
+        "explicit curated do-not-merge — this pair is written down as two different things in the curated "
+        "reference data (the entity registry / the distinct-from table), so no amount of resemblance may fuse "
+        "it. These are the flagship traps of the subject (an export designator that is NOT the design it is "
+        "usually printed beside, two commands of different services). To overturn it, change the curated "
+        "entry: the resolver will not, and an analyst merge is the only override."
+    )
+
+
+def _stated_wall_reason() -> str:
+    """A SOURCE went out of its way to say "this is not that" — the cheapest high-value evidence there is.
+
+    Distinct from the curated rail because the authority is different: a document, quotable, and the claim is
+    on the drawn edge's ``claim_ids`` — so unlike the derived rails, this one's ground is one click from the
+    sentence. Deliberately ungraded (see :func:`_claim_distinct_pairs`): the cost of honouring a wrong one is
+    two nodes an analyst can still merge.
+    """
+    return (
+        "a SOURCE states these are different — a document in evidence asserts a do-not-merge between these "
+        "two mentions (the cited claim is the sentence). Not a curated rule and not a machine inference: an "
+        "author disambiguating their own subject. Honoured ungraded, because the cost of honouring a wrong one "
+        "is two nodes an analyst can merge, while the cost of ignoring a right one is a fused distinction "
+        "nobody can recover."
+    )
+
+
+def _analyst_wall_reason() -> str:
+    """An ANALYST decided this pair apart — a ``merge_adjudication`` reject/split replayed from the log.
+
+    The most specific ground there is, and it outranks every derived rail: an override is a decision, not a
+    finding (G12). It also explains a wall that no config file mentions, which is otherwise the most
+    confusing wall an analyst can meet.
+    """
+    return (
+        "an ANALYST adjudicated these apart — a proposed merge was rejected (or an existing one split) in the "
+        "decision log, and that decision is replayed on every rebuild, so the wall holds without anyone "
+        "having to edit config. This is a human judgement about these two mentions, not a machine finding; "
+        "the audit trail is the adjudication record itself."
+    )
+
+
+def _identifier_wall_reason(ident_a: str, ident_b: str) -> str:
+    """Analyst-facing ground for the hard-identifier wall (T3b-C) — a DERIVED finding, and it says so.
+
+    Deliberately never the word *explicit*: nobody curated this pair. The resolver read a bill-of-lading /
+    contract reference out of each name and found two different ones. Naming the two references is most of
+    the value — an analyst who thinks the wall is wrong needs to know *which* identifiers were compared,
+    because the usual cause of a wrong one is an extraction that swept a reference off the wrong line.
+    """
+    return (
+        f"held apart by two DIFFERENT stated hard identifiers ({ident_a} ≠ {ident_b}). A bill-of-lading or "
+        f"contract reference is an identity, not a description, so two different ones are two different "
+        f"things — fusing them would collapse two import events into one and silently corrupt the "
+        f"supply-chain count. This wall is DERIVED by the resolver from the two names; it is not a curated "
+        f"do-not-merge. If the two references belong to one shipment, the extraction is what is wrong, and an "
+        f"analyst merge overrides this (T3b-C)."
+    )
+
+
+def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> tuple[set[Pair], dict[Pair, str]]:
     """Two same-type entities stating **different** hard identifiers → a hard veto, drawn like any other.
 
     ``config/ontology.yaml`` declares, per node type, the patterns that make a name a hard identifier
@@ -569,6 +663,11 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
 
     Absence is not disagreement (the ``has_hard_conflict`` doctrine): a prose-named contract event
     states no reference and is never vetoed by this rail. A type declaring no patterns is unaffected.
+
+    Returns ``(walls, reasons)``. The reasons are what G18 asks of *every* rail that can draw a wall, and
+    this one had none: its drawn edge carried the generic "explicit do-not-merge" label, which is false twice
+    over — the finding is derived rather than explicit, and it named neither of the two identifiers it
+    compared. Six of the thirty drawn walls on the booted corpus came from here.
     """
     ntx = cfg.node_types
     by_type: dict[str, list[tuple[str, str]]] = {}
@@ -577,11 +676,14 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
         if ident is not None:
             by_type.setdefault(ent.etype, []).append((eid, ident))
     out: set[Pair] = set()
+    reasons: dict[Pair, str] = {}
     for members in by_type.values():
         for (a, ident_a), (b, ident_b) in unordered_pairs(members):
             if ident_a != ident_b:
-                out.add(frozenset((a, b)))
-    return out
+                pair = frozenset((a, b))
+                out.add(pair)
+                reasons[pair] = _identifier_wall_reason(*sorted((ident_a, ident_b)))
+    return out, reasons
 
 
 # ── D5/D6/3A: the declared-critical-attribute rail, credibility-gated (a serial/branch clash walls) ──

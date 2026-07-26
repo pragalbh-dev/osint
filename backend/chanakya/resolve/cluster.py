@@ -170,6 +170,47 @@ def _perishable_confirm_reason() -> str:
     )
 
 
+#: The signal-by-signal vocabulary the scored-candidate basis is written from. Prose per signal, so the
+#: reason names the ground that actually fired rather than a generic "it scored highly" (gate G6: no
+#: threshold, no code literal in analyst-facing prose).
+_BASIS_PROSE = {
+    NAME: "the two names are similar (or alias-equivalent)",
+    DISCRIMINATOR: "the two sides agree on a stated identity-bearing attribute",
+    RELATIONAL: "the two sides share resolved neighbours in the graph",
+    SOURCE_ASSERTED: "a source asserts the identity — the asserting claim is cited on this link",
+}
+
+
+def _scored_basis_reason(bd: dict[str, float]) -> str:
+    """Why an ORDINARY scored pair is in the analyst's queue — the signals that actually carried it there.
+
+    Every other reason in this module explains a REFUSAL (a cap, a wall, a raise). This one explains a
+    referral, and it existed nowhere: a pair that no cap touched was queued and drawn with a confidence
+    number and no stated basis, which is the same "a value in a dict is not an escalation" failure one step
+    to the left. Measured: 21 of the drawn candidate same-as edges on the booted corpus, among them four
+    variant-family pairs.
+
+    Derived from THIS pair's breakdown — a signal is named only if it fired — so it cannot become a fixed
+    default that fits every pair. ``temporal_consistency`` is deliberately never named: it is a near-constant
+    background term (1.0 on any non-relocation pair), so naming it would pad every reason with a
+    non-discriminator.
+    """
+    fired = [_BASIS_PROSE[k] for k in (NAME, DISCRIMINATOR, RELATIONAL, SOURCE_ASSERTED) if bd.get(k, 0.0)]
+    if not fired:
+        # No identity signal fired at all, yet the pair was queued — that can only be a raise channel that
+        # did not name itself, and saying so is more useful than inventing a basis.
+        return (
+            "open identity question with NO scored identity signal — the pair was referred by a proposal "
+            "channel that did not state its grounds. Treat the proposal as unsupported until a source, a "
+            "shared neighbour or an agreeing attribute is found; the resolver has nothing further to offer."
+        )
+    return (
+        "open identity question — no cap and no wall touched this pair; it reached the review band on its "
+        "own evidence and stopped short of the fusion bar, so the merge is the analyst's call. What carried "
+        "it here: " + "; ".join(fired) + "."
+    )
+
+
 def _name_alone(bd: dict[str, float]) -> bool:
     """True when the ONLY nonzero *identity* signal is the name/attribute term (D4 banked correction).
 
@@ -983,7 +1024,13 @@ def resolve_entities(
         elif is_bridge and wall is not None:
             reason = _bridge_reason(wall)
         else:
-            reason = ""
+            # …and the ORDINARY scored candidate, which had no reason at all. Twenty-one pairs reached the
+            # analyst's queue as drawn candidate same-as edges carrying a confidence number and no basis
+            # whatever — "escalate to the analyst" satisfied by a float. Nothing was *withheld* on this
+            # branch (no cap, no wall, no raise), so the honest ground is the one the score itself states:
+            # WHICH signals put the pair here. Derived from this pair's own breakdown, so it can never be a
+            # fixed default that fits every pair (the failure mode the sibling reasons exist to avoid).
+            reason = _scored_basis_reason(bd) if band == "hitl" else ""
         if band == "hitl" and not capped:
             res.candidates.append((a, b))
             res.merge_confidence[pair_key(a, b)] = bd["total"]
@@ -1012,19 +1059,19 @@ def resolve_entities(
     return res
 
 
-def _veto_eid_pairs(
-    veto: set[Pair], alias_idx: AliasIndex, graph: EntityGraph, trans: dict[str, str]
-) -> list[tuple[str, str]]:
-    """Vetoed pairs (config + learned ``barred``) that are both instantiated entities, as sorted tuples."""
-    out: set[tuple[str, str]] = set()
-    for pair in veto:
-        a, b = sorted(pair)
-        if a in graph.entities and b in graph.entities:
-            out.add((a, b))
-    # learned distinct-from (merge_adjudication reject/split) over instantiated entities
+def learned_distinct_eid_pairs(
+    alias_idx: AliasIndex, graph: EntityGraph, trans: dict[str, str]
+) -> set[tuple[str, str]]:
+    """The ANALYST-learned do-not-merges (``merge_adjudication`` reject/split) as instantiated eid pairs.
+
+    Factored out of :func:`_veto_eid_pairs` so the rail that *draws* the wall and the rail that *explains*
+    it read one definition (``resolve._wall_grounds`` needs to know which walls a human decided, and a
+    second copy of this name→eid mapping is how the two come to disagree about which those are).
+    """
     norm_to_eids: dict[str, list[str]] = {}
     for eid, ent in graph.entities.items():
         norm_to_eids.setdefault(normalize(ent.name, trans), []).append(eid)
+    out: set[tuple[str, str]] = set()
     for barred in alias_idx.distinct:
         names = sorted(barred)
         if len(names) != len({*names}):  # a self-pair — ignore
@@ -1034,6 +1081,19 @@ def _veto_eid_pairs(
             for b in norm_to_eids.get(nb, []):
                 if a != b:
                     out.add(tuple(sorted((a, b))))  # type: ignore[arg-type]
+    return out
+
+
+def _veto_eid_pairs(
+    veto: set[Pair], alias_idx: AliasIndex, graph: EntityGraph, trans: dict[str, str]
+) -> list[tuple[str, str]]:
+    """Vetoed pairs (config + learned ``barred``) that are both instantiated entities, as sorted tuples."""
+    out: set[tuple[str, str]] = set()
+    for pair in veto:
+        a, b = sorted(pair)
+        if a in graph.entities and b in graph.entities:
+            out.add((a, b))
+    out |= learned_distinct_eid_pairs(alias_idx, graph, trans)
     return sorted(out)
 
 

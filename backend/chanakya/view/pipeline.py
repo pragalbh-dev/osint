@@ -231,57 +231,124 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
     ``assertion_confidence``, gate G5). Auto-merges do *not* appear here (they collapse to one node —
     see :func:`_merge_provenance`); only pairs an analyst still has to adjudicate, and explicit
     do-not-merge traps, surface as edges. An edge is emitted only when *both* endpoints exist as nodes.
+
+    **The endpoints are CANONICALISED first, and that is a bug fix, not a tidy-up.** The resolver keys its
+    decisions on RAW entity ids; ``_assemble`` names nodes by their CANONICAL id. Testing raw membership
+    against a canonical node set therefore silently dropped every decision whose endpoint had itself been
+    merged — measured on the booted corpus: 20 of 42 candidate merges and 11 of 76 walls were nowhere on the
+    analyst's surface, including both cross-country walls. Worse, the better resolution got the more decisions
+    vanished (more merges ⇒ more raw ids that are no longer node ids), and ``POST /hitl/merge`` 404s without
+    the drawn edge — so those pairs were un-adjudicable: the analyst could not act even on the ones they
+    somehow knew about. Several raw pairs can collapse onto one canonical pair, so each canonical pair is
+    emitted ONCE, taking the strongest case (highest identity confidence) and the first non-empty reason in
+    sorted raw order — deterministic (gate G2).
     """
     out: list[EdgeView] = []
-    for a, b in sorted(partition.candidates):
-        if a in node_ids and b in node_ids:
-            key = pair_key(a, b)
-            breakdown = partition.merge_breakdown.get(key, {})
-            # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
-            # which independent identity signals corroborated this candidate. Only when a signal fired.
-            attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
-            ledger = identity_ledger(breakdown)
-            if ledger:
-                attrs["identity_ledger"] = ledger
-            # WHY this pair is an open question rather than a merge — the cap's own words, the stated
-            # critical disagreement, the licensing coreference quote, the bridged wall. The resolver has
-            # always computed it; nothing rendered it, so the one surface an analyst actually opens showed a
-            # score and no grounds. "Escalate to the analyst" is not satisfied by a value in a dict.
-            reason = partition.candidate_reasons.get(key)
-            if reason:
-                attrs["reason"] = reason
-            out.append(
-                EdgeView(
-                    id=f"same-as:{key}",
-                    type="same-as",
-                    source=a,
-                    target=b,
-                    merge_confidence=partition.merge_confidence.get(key),
-                    # The claims in which a source asserts the identity — the evidence *behind* the
-                    # ``source_asserted`` term of the breakdown beside it. G4 still exempts this edge
-                    # (it may legitimately have none: most candidates are scored on name + neighbourhood
-                    # alone), but where a source did speak, the analyst must be able to read it — and
-                    # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
-                    claim_ids=list(partition.identity_claims.get(key, [])),
-                    attrs=attrs,
-                )
+    for a, b, raw_keys in _canonical_decisions(partition.candidates, node_ids, partition):
+        # The strongest case among the raw pairs that collapsed onto this canonical pair — the analyst is
+        # owed the best evidence for the proposal, not an arbitrary one. Deterministic: highest identity
+        # confidence, ties broken lexicographically (gate G2).
+        best = min(raw_keys, key=lambda k: (-partition.merge_confidence.get(k, 0.0), k))
+        key = pair_key(a, b)
+        breakdown = partition.merge_breakdown.get(best, {})
+        # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
+        # which independent identity signals corroborated this candidate. Only when a signal fired.
+        attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
+        ledger = identity_ledger(breakdown)
+        if ledger:
+            attrs["identity_ledger"] = ledger
+        # WHY this pair is an open question rather than a merge — the cap's own words, the stated
+        # critical disagreement, the licensing coreference quote, the bridged wall. The resolver has
+        # always computed it; nothing rendered it, so the one surface an analyst actually opens showed a
+        # score and no grounds. "Escalate to the analyst" is not satisfied by a value in a dict.
+        # Read over EVERY collapsed raw pair, not just the strongest: whichever of them the resolver gave a
+        # reason to, that reason is this pair's ground, and losing it to the confidence tie-break would
+        # re-open exactly the hole this render exists to close.
+        reason = next(
+            (r for r in (partition.candidate_reasons.get(k) for k in [best, *raw_keys]) if r), None
+        )
+        if reason:
+            attrs["reason"] = reason
+        out.append(
+            EdgeView(
+                id=f"same-as:{key}",
+                type="same-as",
+                source=a,
+                target=b,
+                merge_confidence=partition.merge_confidence.get(best),
+                # The claims in which a source asserts the identity — the evidence *behind* the
+                # ``source_asserted`` term of the breakdown beside it. G4 still exempts this edge
+                # (it may legitimately have none: most candidates are scored on name + neighbourhood
+                # alone), but where a source did speak, the analyst must be able to read it — and
+                # ``GET /evidence/{edge_id}`` serves exactly this list, so no new route is needed.
+                # Unioned across the collapsed raw pairs (order-preserving): no asserting sentence is
+                # dropped because two mentions of one side resolved together.
+                claim_ids=_merged_claim_ids(partition.identity_claims, raw_keys),
+                attrs=attrs,
             )
-    for a, b in sorted(partition.distinct_from):
-        if a in node_ids and b in node_ids:
-            # G18: a wall the system DERIVED carries its own grounds. A curated do-not-merge needs none — an
-            # analyst wrote it — but a stated-relationship conflict at overlapping times is a *finding*, and
-            # a finding with no readable grounds is indistinguishable from a missing edge. No wall reason ⇒
-            # the generic label, byte-unchanged (gate G2).
-            reason = partition.wall_reasons.get(pair_key(a, b)) or "explicit do-not-merge (hard veto)"
-            out.append(
-                EdgeView(
-                    id=f"distinct-from:{pair_key(a, b)}",
-                    type="distinct-from",
-                    source=a,
-                    target=b,
-                    attrs={"reason": reason},
-                )
+        )
+    for a, b, raw_keys in _canonical_decisions(partition.distinct_from, node_ids, partition):
+        # G18/B4: EVERY rail that can draw a wall states its own ground, and a DERIVED finding never claims
+        # to be a curated one. The fallback below is reached only if a rail draws a wall and records no
+        # ground — a defect rather than a state — so it says that plainly instead of asserting "explicit",
+        # which would misattribute a machine inference to a person.
+        reason = next(
+            (r for r in (partition.wall_reasons.get(k) for k in raw_keys) if r),
+            "held apart by a hard do-not-merge wall whose ground was not recorded by the rail that raised "
+            "it — this is a defect in that rail, not a statement about the pair. Treat the wall as holding "
+            "and report the missing ground.",
+        )
+        out.append(
+            EdgeView(
+                id=f"distinct-from:{pair_key(a, b)}",
+                type="distinct-from",
+                source=a,
+                target=b,
+                attrs={"reason": reason},
             )
+        )
+    return out
+
+
+def _canonical_decisions(
+    pairs: list[tuple[str, str]], node_ids: set[str], partition: Partition
+) -> list[tuple[str, str, list[str]]]:
+    """Resolver decisions keyed on RAW entity ids → the CANONICAL pairs the analyst can actually see.
+
+    Returns ``(canonical_a, canonical_b, [raw pair_keys])``, sorted. The resolver decides over raw ids while
+    ``_assemble`` names nodes by canonical id, so a raw-vs-canonical membership test dropped every decision
+    whose endpoint had itself been merged — silently, and *more* of them the better resolution got. Two
+    filters remain, and both are real rather than artefacts:
+
+    * ``ca == cb`` — the two mentions ended up as ONE node along some other chain, so there is no pair left
+      to draw and nothing to adjudicate;
+    * an endpoint that is not a node at all — a registry seed or a mention no claim ever instantiated. There
+      is nothing to hang an edge on, and inventing a node for it would fabricate an entity.
+
+    Several raw pairs can collapse onto one canonical pair; the caller gets all of their keys so it can pick
+    the strongest confidence and keep whichever of them carries a reason.
+    """
+    canon = partition.entity_canonical
+    grouped: dict[tuple[str, str], list[str]] = {}
+    for a, b in sorted(pairs):
+        ca, cb = canon.get(a, a), canon.get(b, b)
+        if ca == cb or ca not in node_ids or cb not in node_ids:
+            continue
+        grouped.setdefault(tuple(sorted((ca, cb))), []).append(pair_key(a, b))  # type: ignore[arg-type]
+    return [(a, b, keys) for (a, b), keys in sorted(grouped.items())]
+
+
+def _merged_claim_ids(claims: dict[str, list[str]], raw_keys: list[str]) -> list[str]:
+    """Union of the identity claims across every raw pair that collapsed onto one canonical pair.
+
+    Order-preserving and duplicate-free, so ``GET /evidence/{edge_id}`` serves every sentence that asserted
+    this identity and never the same one twice.
+    """
+    out: list[str] = []
+    for key in raw_keys:
+        for cid in claims.get(key, []):
+            if cid not in out:
+                out.append(cid)
     return out
 
 
@@ -958,13 +1025,22 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # contradiction. One gap PER ENDPOINT (the pair is what is contradicted, but a gap hangs off a node and
     # each of the two mentions is separately un-anchored by the refusal), so neither half is left with no
     # edge, no queue item and no record — which is what the cross-type refusal used to do.
+    #
+    # The endpoints are CANONICALISED before the membership test, for the same reason as the drawn resolution
+    # edges: a refusal is keyed on RAW entity ids while nodes are named by canonical id, so a raw endpoint
+    # that had itself been merged failed ``in nodes`` and its gap was dropped — 5 of the 14 endpoints on the
+    # booted corpus. The escalate half then fired for the pair and reached the analyst for one of its two
+    # mentions, or for neither.
     for pair_ref, what_missing in sorted(partition.identity_refusals.items()):
+        seen_refs: set[str] = set()
         for endpoint in pair_ref.split("|"):
-            if endpoint in nodes:
+            ref = partition.entity_canonical.get(endpoint, endpoint)
+            if ref in nodes and ref not in seen_refs:
+                seen_refs.add(ref)
                 known_gaps.append(
                     KnownGap(
-                        id=f"gap:identity:{pair_ref}:{endpoint}",
-                        related_ref=endpoint,
+                        id=f"gap:identity:{pair_ref}:{ref}",
+                        related_ref=ref,
                         what_missing=what_missing,
                         observability_ceiling="confirmable",
                         missing_slots=["identity"],

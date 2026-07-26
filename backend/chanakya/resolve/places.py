@@ -312,25 +312,50 @@ def place_matches(graph: EntityGraph, cfg: ResolveConfig) -> dict[str, PlaceMatc
     return out
 
 
+def place_wall_reason(place_a: str, place_b: str) -> str:
+    """Analyst-facing ground for a gazetteer place wall — a DERIVED finding about the two PLACES.
+
+    The curated fact is ``place_a`` ≠ ``place_b`` in the gazetteer. That two *mentions* are held apart is the
+    resolver's inference from it, via each mention's place match, so this text names the gazetteer pair and
+    the inference — and never claims a human ruled on these two mentions. Thirteen of the thirty walls drawn
+    on the booted corpus come from this rail and every one of them was rendering "explicit do-not-merge
+    (hard veto)", the identical string used for a genuinely curated analyst veto.
+    """
+    return (
+        f"held apart by the curated place gazetteer: these two mentions resolve to two places the gazetteer "
+        f"records as distinct ({place_a} ≠ {place_b}). Two ports on one shipping neighbourhood, or two "
+        f"revetment complexes inside one district, look alike in every name and neighbourhood signal — the "
+        f"gazetteer is the only rail that separates them, so it is hard and it holds transitively. DERIVED: "
+        f"the curated fact is that the two PLACES differ; that these two mentions are therefore different "
+        f"things is the resolver's inference from each mention's place match. If a mention is matched to the "
+        f"wrong place, fix the match (or record an analyst merge) — the gazetteer entry is not the error."
+    )
+
+
 def place_distinct_pairs(
     graph: EntityGraph, cfg: ResolveConfig, place_of: dict[str, PlaceMatch] | None = None
-) -> set[frozenset[str]]:
-    """Entity pairs whose gazetteer places are mutually ``distinct_from`` → a **hard veto**.
+) -> tuple[set[frozenset[str]], dict[frozenset[str], str]]:
+    """Entity pairs whose gazetteer places are mutually ``distinct_from`` → a **hard veto**, with grounds.
 
     Computed BEFORE ``resolve_entities`` so the Karachi-Port ≠ Port-Qasim trap vetoes an *entity*-level
     merge too (two ports that share a shipping neighbourhood must still never fuse), not merely surface
     as an edge afterwards. Folded into the veto set, so it also blocks transitive fusion in ``finalise``.
+
+    Returns ``(walls, reasons)`` — see :func:`place_wall_reason` for why this rail owes a reason of its own.
     """
     if not cfg.places.places or not cfg.scorable:
-        return set()
+        return set(), {}
     distinct_places = _distinct_place_pairs(cfg)
     if place_of is None:
         place_of = place_matches(graph, cfg)
     out: set[frozenset[str]] = set()
+    reasons: dict[frozenset[str], str] = {}
     for a, b in unordered_pairs(sorted(place_of)):
         if frozenset((place_of[a].place_id, place_of[b].place_id)) in distinct_places:
-            out.add(frozenset((a, b)))
-    return out
+            pair = frozenset((a, b))
+            out.add(pair)
+            reasons[pair] = place_wall_reason(*sorted((place_of[a].place_id, place_of[b].place_id)))
+    return out, reasons
 
 
 def place_merge_pairs(
