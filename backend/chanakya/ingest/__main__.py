@@ -41,7 +41,11 @@ def _load_config() -> ConfigBundle:
 
 def _cmd_extract(args: argparse.Namespace) -> int:
     """Re-record the frozen bundles for a scenario (needs an extraction key)."""
-    client = build_extraction_client()
+    # ``--model`` pins the recording to one concrete id. Without it the provider defaults apply, and one of
+    # them (Gemini's) is a floating ``-latest`` alias — fine for live resilience, wrong for a recording,
+    # because the frozen seed must be traceable to the exact model that produced it (KEYLESS==LIVE). Which
+    # PROVIDER runs is still decided by which key is in the environment; this only pins the model within it.
+    client = build_extraction_client(model_id=args.model) if args.model else build_extraction_client()
     if client is None:
         print(
             "no extraction client: set GEMINI_API_KEY or ANTHROPIC_API_KEY to (re)record bundles",
@@ -170,6 +174,9 @@ def main(argv: list[str] | None = None) -> int:
                            help="geocode from the gazetteer only (no Nominatim) — deterministic re-record")
     p_extract.add_argument("--only", nargs="*", metavar="SOURCE_ID", default=None,
                            help="re-record only these source ids (scoped re-record; skips the prune)")
+    p_extract.add_argument("--model", default=None, metavar="MODEL_ID",
+                           help="pin the extraction model id (e.g. claude-opus-5, gemini-3.6-flash); "
+                                "the provider is still chosen by which key is set")
     p_extract.set_defaults(func=_cmd_extract)
 
     p_seed = sub.add_parser("seed", help="load a scenario's frozen bundles into a store (keyless)")

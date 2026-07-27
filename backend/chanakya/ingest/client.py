@@ -278,6 +278,12 @@ class GeminiExtractionClient:
         from google.genai import types
 
         declaration = types.FunctionDeclaration(name=tool_name, parameters_json_schema=input_schema)
+        # Thinking is ON by this model's own default and CANNOT be switched off (``thinking_budget=0`` is a
+        # 400) — measured, not assumed. So the default call already reasons; ``CHANAKYA_GEMINI_THINK`` only
+        # raises the ceiling, for the experiment of whether more deliberation fixes a reasoning-shaped
+        # extraction error (an inverted relation direction, a formation recorded at the wrong echelon).
+        # Unset ⇒ byte-identical to the shipped behaviour.
+        budget = os.environ.get("CHANAKYA_GEMINI_THINK")
         config = types.GenerateContentConfig(
             system_instruction=system or None,
             tools=[types.Tool(function_declarations=[declaration])],
@@ -287,6 +293,7 @@ class GeminiExtractionClient:
                     allowed_function_names=[tool_name],
                 )
             ),
+            **({"thinking_config": types.ThinkingConfig(thinking_budget=int(budget))} if budget else {}),
         )
         response = self._sdk_client().models.generate_content(
             model=self.model_id, contents=contents, config=config
