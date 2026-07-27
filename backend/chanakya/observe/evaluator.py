@@ -367,6 +367,12 @@ def explain(
     ``unresolved_anchors`` names every anchor that binds to nothing and ``anchor_warning`` says what that
     means in one sentence. Without a view the check *cannot* be done, and ``anchor_check`` says so rather
     than implying a clean bill of health — an unperformed check is never reported as a pass.
+
+    **Trigger reachability (AH-3).** The anchor check answers "can I see my target?"; ``reachability``
+    answers the other half — "given that I can see everything, could the condition I watch for occur on
+    this graph at all?". A tripwire watching for an edge type the view holds none of, or compiling to
+    arm-only, is armed and permanently silent, and that silence used to read as an all-clear on every
+    list surface. Carried here so the proposer's confirm screen states it *before* the analyst arms it.
     """
     ct = compile_trigger(observable.trigger)
     out = {
@@ -396,6 +402,15 @@ def explain(
             + ", ".join(ct.unconsumed)
         )
     out.update(_anchor_explanation(observable, view, config))
+    # Imported at call time, not module scope: ``reachability`` reuses this module's fire-time helpers
+    # (``_candidates``/``_watched``/``_in_scope``) so its verdict cannot drift from what actually fires,
+    # which makes the dependency one-way at import and two-way only here.
+    from .reachability import trigger_reachability
+
+    reach = trigger_reachability(observable, view, config)
+    out["reachability"] = reach.as_dict()
+    if reach.warning:
+        out["reachability_warning"] = reach.warning
     return out
 
 

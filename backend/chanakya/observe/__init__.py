@@ -13,6 +13,10 @@ Public surface:
   arm-only reason) and, given a view, whether its anchors actually resolve (AH-1).
 * ``anchor_diagnostics(config, view) -> [dict]`` — every armed observable whose anchors do **not** all
   resolve; the API/SPA-facing "this tripwire is watching nothing" statement.
+* ``reachability_diagnostics(config, view) -> [dict]`` — per armed observable, whether its trigger could
+  **ever** fire on this graph, and the named missing edge type / node type / attribute when it cannot
+  (AH-3). The anchor check says "I cannot see my target"; this says "I can see everything, and the thing
+  I watch for cannot occur here."
 * ``read_dispositions(records) -> {observable_id: DispositionStats}`` — read HITL dispositions back
   for tripwire tuning (consumption side; HITL owns the writeback).
 
@@ -34,12 +38,34 @@ from .observable import (
     resolve_scope,
     resolve_scope_detail,
 )
+from .reachability import (
+    ATTRIBUTE_NOT_COVERED,
+    GAP_KIND,
+    NEVER_FIRES,
+    NO_COVERAGE,
+    OUT_OF_WATCH_SCOPE,
+    REACHABLE,
+    TYPE_NOT_MODELLED,
+    TriggerReachability,
+    reachability_diagnostics,
+    trigger_reachability,
+)
 
 __all__ = [
     "evaluate",
     "arm",
     "explain",
     "anchor_diagnostics",
+    "reachability_diagnostics",
+    "trigger_reachability",
+    "TriggerReachability",
+    "REACHABLE",
+    "NEVER_FIRES",
+    "TYPE_NOT_MODELLED",
+    "NO_COVERAGE",
+    "ATTRIBUTE_NOT_COVERED",
+    "OUT_OF_WATCH_SCOPE",
+    "GAP_KIND",
     "read_dispositions",
     "DispositionStats",
     "compile_trigger",

@@ -264,6 +264,16 @@ class ConfigRead(Record):
     anchors bind to nothing is watching nothing, and the catalogue read is where the Watch panel learns
     that. ``{}`` means no check applies to this section; ``{"anchor_check": {"checked": true,
     "unresolved": []}}`` is the positive statement that every armed tripwire's anchors bind.
+
+    ``observables`` carries a second, independent diagnostic — ``trigger_reachability`` (AH-3). Anchors
+    binding is not the same as the watched condition being *possible*: a tripwire can resolve every
+    anchor, watch 66 nodes, and still be looking for an edge type no document in coverage produces. That
+    one is armed, quiet and structurally incapable of firing, and its quiet reads as an all-clear.
+    ``{"trigger_reachability": {"checked": true, "observables": [{"observable_id": …, "status":
+    "reachable" | "no_coverage" | "never_fires" | "type_not_modelled" | "attribute_not_covered" |
+    "out_of_watch_scope", "can_fire": bool, "gap_kind": "data" | "modelling" | "engine" | "scope" | null,
+    "missing": [{"kind": …, "name": …}], "candidate_count": int | null, "warning": str | null}, …]}}`` —
+    one entry per armed observable, so a card can state the positive verdict rather than imply it.
     """
 
     section: str  # the resolved (plural) section name, e.g. "observables"

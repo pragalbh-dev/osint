@@ -339,3 +339,51 @@ plus the owning config file for a broken one).
 Consumers updated: `rail/watchSummary.ts` (faults only; also stops collapsing *scope lost* into the
 milder partial case), `panel/views/WatchView.tsx` (`AWAITING COVERAGE` block), `api/types.ts`
 (`AnchorSeverity`, `isAnchorFault`).
+
+## AH-3 — trigger reachability: an armed tripwire that CANNOT FIRE now says so (2026-07-27, `feat/observable-trigger-reachability`)
+
+**What changed (additive, non-breaking):**
+
+* `GET /config/observables` → `diagnostics.trigger_reachability`:
+  `{checked: bool, reason?: string, observables: ObservableReachability[]}`. Same rules as
+  `anchor_check`: `checked: false` must **never** render as a clean bill of health, and it is recomputed
+  live per read (a verdict clears itself the moment an ingest produces the missing type — no restart).
+* `ObservableReachability` = `{observable_id, status, can_fire: bool, gap_kind, missing[], candidate_count:
+  number|null, checked: bool, warning: string|null}`.
+  * `status`: `"reachable" | "no_coverage" | "never_fires" | "type_not_modelled" |
+    "attribute_not_covered" | "out_of_watch_scope"`.
+  * `gap_kind`: `"data" | "modelling" | "engine" | "scope" | null` — **this is the rendering dial**, see below.
+  * `missing`: `{kind: "edge_type"|"node_type"|"attribute"|"trigger_form"|"watch_scope", name: string}[]`
+    — the specific thing that is absent, structured so a chip/badge can be built without parsing prose.
+  * `warning`: a complete analyst-facing sentence — **render verbatim**, same rule as `anchor_warning`.
+* Unlike `anchor_check.unresolved` (problems only), this list is **complete — one entry per armed
+  observable**. A Watch card cannot honestly say "watching, and it could fire" unless the positive
+  verdict is carried too, so `status: "reachable"` is a real payload, not an omission.
+* `POST /config/observable` → the same verdicts appear in the existing `warnings: string[]` for any
+  tripwire that cannot fire. **200 with a warning, never a 422**: arming a wire ahead of coverage ("tell
+  me the day this becomes observable") is legitimate; being told nothing about it is not.
+* `explain()` (already piped to the ASK observable-proposal confirm screen via `ObservableProposal.
+  explanation`) gains `reachability` (the same object) and `reachability_warning`.
+
+**Why:** the anchor check answers *"can I see my target?"*. It never asked *"given that I can see
+everything, can the thing I am watching for occur here at all?"* — and measured on the booted app, two of
+the three shipped tripwires answered **no** and said nothing. One waits on a `replenishes` edge the view
+holds zero of (and zero `interceptor_stockpile` nodes for one to attach to) while advertising *"watching
+66 node(s)"*; the other compiles to arm-only and has no detector, so it can never alert however the graph
+changes. Both rendered as plain grey **armed**. That is an absence of alerts presented as an all-clear.
+
+**Rendering rule (load-bearing) — `gap_kind` decides the register, not `can_fire`:**
+
+* `"data"` (`no_coverage`, `attribute_not_covered`) — the type/attribute IS modelled and simply has no
+  coverage yet. **Self-healing**, and this is a normal state for a forward-armed wire. Render in the same
+  neutral register as `pending_coverage` anchors — *"waiting on coverage"*, not an alarm. It must still be
+  visible on the card: the analyst has to know this beat is **UNCOVERED**, not quiet.
+* `"modelling"` / `"engine"` (`type_not_modelled`, `never_fires`) — **no volume of new documents fixes
+  it**; a human must edit `config/ontology.yaml` or the trigger. These are faults: alarm on them.
+* `"scope"` (`out_of_watch_scope`) — candidates exist, none in scope. The remedy lives in `anchor_check`;
+  the `warning` quotes it, so do not render both complaints as two separate problems.
+* An **absent or unrecognised** `gap_kind` on `can_fire: false` is a fault (underclaim = overclaim).
+
+**Not yet consumed by the SPA.** Backend + API only in this branch — `api/types.ts` carries the types and
+`isReachabilityFault()`; `WatchView` / `watchSummary` still render the anchor half alone. Until a panel
+reads it, the verdict is on the wire but not on the screen.
