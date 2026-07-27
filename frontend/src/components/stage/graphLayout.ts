@@ -149,11 +149,24 @@ function edgeInLayers(edge: GraphEdgeDef, layers: GraphLayers): boolean {
   return true
 }
 
+const asc = (x: string, y: string): number => (x < y ? -1 : x > y ? 1 : 0)
+
+/** The deterministic display tie-break: by NAME, with the id only as a last resort.
+ *
+ *  It used to be the id alone. An id is an opaque handle the backend mints and may re-key
+ *  (RK-NAMECUT), so ordering on it makes a node's place in its column move for a reason
+ *  that is invisible on screen and means nothing about the graph — while what the analyst
+ *  is scanning is the label. The id stays as the final tiebreak because it is unique, which
+ *  is what makes the order total (and therefore the picture reproducible run to run). */
+function byLabel(a: GraphNodeDef, b: GraphNodeDef): number {
+  return asc(a.name ?? '', b.name ?? '') || asc(a.id, b.id)
+}
+
 /**
  * Decide what the canvas shows and where each node sits.
  *
  * Layout: nodes are banded into columns by ontology role (left → right along the supply
- * chain), and within a column ordered by drawn-degree descending then id ascending — so
+ * chain), and within a column ordered by drawn-degree descending then name ascending — so
  * hubs sit at the top of their band and the order never depends on object iteration luck.
  * Positions are computed for every node, including ones currently off-canvas, so toggling
  * a layer on slides nodes in at a fixed place instead of re-shuffling the whole picture.
@@ -245,8 +258,8 @@ export function planGraph(
     // canvas nodes first (hub-first), then the rest — so the drawn column is contiguous
     // and centred, and off-canvas nodes park below it without opening gaps.
     const ordered = [
-      ...drawn.sort((a, b) => degree(b.id) - degree(a.id) || (a.id < b.id ? -1 : 1)),
-      ...rest.sort((a, b) => (a.id < b.id ? -1 : 1)),
+      ...drawn.sort((a, b) => degree(b.id) - degree(a.id) || byLabel(a, b)),
+      ...rest.sort(byLabel),
     ]
     const slot = drawn.length > 0 ? drawnBands.findIndex(([t]) => t === type) : parked++
     const x = slot * COL_W
@@ -312,6 +325,6 @@ export function groupByType(nodes: GraphNodeDef[]): Array<{ type: string; nodes:
     else groups.set(t, [n])
   }
   return [...groups.entries()]
-    .map(([type, ns]) => ({ type, nodes: ns.sort((a, b) => (a.id < b.id ? -1 : 1)) }))
+    .map(([type, ns]) => ({ type, nodes: ns.sort(byLabel) }))
     .sort((a, b) => b.nodes.length - a.nodes.length || roleRank(a.type) - roleRank(b.type))
 }

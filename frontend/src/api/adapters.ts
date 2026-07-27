@@ -241,13 +241,30 @@ function yearOf(value?: string | null): number | null {
 // ───────────────────── analyst-facing naming (no raw ids in copy) ─────────────────────
 // `site_rahwali` is a key, not a name. Analyst-facing copy renders the node's OWN `name`
 // and keeps the id as secondary/technical detail; nothing here paraphrases or invents a
-// label — a node with no `name` falls back to its id rather than to a guess.
+// label — a node with no `name` reads as an unnamed thing OF ITS TYPE, never as its id.
+//
+// The id is an OPAQUE HANDLE (RK-NAMECUT): the backend mints it and may re-key it, so the
+// same node can carry a different id after a rebuild. Printing it where a name belongs says
+// nothing an analyst can act on and quietly promises a stability the backend never offered,
+// while "unnamed basing site" is both true and readable. An id IS still shown for a
+// reference the view does not contain at all — that is a dangling pointer, not a name, and
+// the raw handle is the only honest thing to surface for it.
 
-/** id → node.name, or the id itself when the graph has no name for it. Never invents one. */
+/** What to call a node whose graph record carries no `name` — never its id. */
+export function unnamedLabel(type?: string | null): string {
+  return `unnamed ${type ? humanizeToken(type) : 'record'}`
+}
+
+/** A node's analyst-facing label: its own name, else `unnamed <type>`. */
+export function nodeDisplayName(node: { name?: string | null; type?: string | null }): string {
+  return node.name ?? unnamedLabel(node.type)
+}
+
+/** id → the node's name (or `unnamed <type>`); the raw id only for a ref the view has no record of. */
 export function displayNameOf(view: GraphView | null | undefined, id: string): string {
   if (!view) return id
   const node = view.nodes.find((n) => n.id === id)
-  if (node?.name) return node.name
+  if (node) return nodeDisplayName(node)
   const edge = view.edges.find((e) => e.id === id)
   if (edge) {
     // an edge has no name of its own — read it as "source — type → target", each side named.
@@ -259,7 +276,7 @@ export function displayNameOf(view: GraphView | null | undefined, id: string): s
 /** Build a reusable resolver over one view (avoids re-scanning per lookup). */
 export function nameResolver(view: GraphView | null | undefined): (id: string) => string {
   if (!view) return (id) => id
-  const names = new Map(view.nodes.map((n) => [n.id, n.name ?? n.id]))
+  const names = new Map(view.nodes.map((n) => [n.id, nodeDisplayName(n)]))
   return (id) => names.get(id) ?? displayNameOf(view, id)
 }
 
@@ -366,7 +383,7 @@ export function unplacedLocations(view: GraphView): UnplacedLocation[] {
     if (typeof loc.wgs84_lat === 'number' && typeof loc.wgs84_lon === 'number') continue
     const stated = locationRawText(loc.raw)
     if (!stated) continue
-    out.push({ id: node.id, label: node.name ?? node.id, stated, type: node.type })
+    out.push({ id: node.id, label: nodeDisplayName(node), stated, type: node.type })
   }
   return out.sort((a, b) => a.label.localeCompare(b.label))
 }
@@ -440,7 +457,7 @@ export function viewToPins(view: GraphView): StagePin[] {
 
     pins.push({
       id: node.id,
-      label: node.name ?? node.id,
+      label: nodeDisplayName(node),
       lat,
       lon,
       coord,
@@ -508,7 +525,7 @@ export function clusterAreaPins(pins: StagePin[]): StagePin[] {
 export function viewToGraphNodes(view: GraphView): GraphNodeDef[] {
   return view.nodes.map((node) => ({
     id: node.id,
-    label: `${node.name ?? node.id}\n${node.type}`,
+    label: `${nodeDisplayName(node)}\n${node.type}`,
     x: 0,
     y: 0,
     kind: statusToGraphKind(node),
@@ -516,7 +533,7 @@ export function viewToGraphNodes(view: GraphView): GraphNodeDef[] {
     // separates the knowledge layer from the evidence layer (`source` nodes) and lays
     // nodes out by supply-chain role, neither of which is derivable from `kind`.
     type: node.type,
-    name: node.name ?? node.id,
+    name: nodeDisplayName(node),
   }))
 }
 
@@ -929,7 +946,7 @@ export function drawerSubject(view: GraphView | null | undefined, ref: string): 
     return {
       ref,
       kind: 'node',
-      headline: `“${node.name ?? node.id}” exists, as a ${typeLabel}`,
+      headline: `“${nodeDisplayName(node)}” exists, as a ${typeLabel}`,
       typeLabel,
       statusless: false,
     }
@@ -1755,7 +1772,7 @@ function reviewSide(id: string, node: NodeView | undefined): LiveReviewSide {
   const status = node?.status ?? null
   return {
     id,
-    label: node?.name ?? id,
+    label: node ? nodeDisplayName(node) : id,
     type,
     status,
     claimCount,
@@ -1870,7 +1887,10 @@ export function mergeDiffersOn(
 export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   const items: LiveReviewItem[] = []
   const nodeIndex = new Map(view.nodes.map((n) => [n.id, n]))
-  const nodeLabel = (id: string): string => nodeIndex.get(id)?.name ?? id
+  const nodeLabel = (id: string): string => {
+    const n = nodeIndex.get(id)
+    return n ? nodeDisplayName(n) : id
+  }
   const edgeIndex = new Map(view.edges.map((e) => [e.id, e]))
 
   // How many real (assertional) edges hang off each node — "what reconnects if you merge".
@@ -1979,7 +1999,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
     const contradicted = el.status === 'contradicted'
     if (opposing.length === 0 && !contradicted) continue
     const isNode = 'name' in el
-    const label = isNode ? ((el as NodeView).name ?? el.id) : displayNameOf(view, el.id)
+    const label = isNode ? nodeDisplayName(el as NodeView) : displayNameOf(view, el.id)
     const type = isNode ? (el as NodeView).type : (el as EdgeView).type
     const material = isNode ? isChokepoint(el as NodeView) : false
     const badge = contradicted ? 'Contradiction' : 'Close call'

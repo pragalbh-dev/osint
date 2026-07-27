@@ -111,7 +111,7 @@ def test_every_identity_refusal_gap_reaches_a_node_on_the_surface(booted) -> Non
     gap_refs = {g.related_ref for g in view.known_gaps if g.id.startswith("gap:identity:")}
 
     for pair_ref in sorted(partition.identity_refusals):
-        endpoints = {_canonical(partition, e) for e in pair_ref.split("|")}
+        endpoints = {_canonical(partition, e) for e in partition.pair_members[pair_ref]}
         reachable = {e for e in endpoints if e in node_ids}
         assert reachable & gap_refs, (
             f"the identity refusal {pair_ref!r} raised no Known Gap on any node the analyst can open "
@@ -219,7 +219,7 @@ def test_a_node_whose_type_is_contradicted_is_never_confirmed(booted) -> None:
     nodes = {n.id: n for n in view.nodes}
     refused_nodes = set()
     for pair_ref in partition.identity_refusals:
-        ends = [_canonical(partition, e) for e in pair_ref.split("|")]
+        ends = [_canonical(partition, e) for e in partition.pair_members[pair_ref]]
         refused_nodes.update(e for e in ends if e in nodes)
     assert refused_nodes, "no identity refusal reaches a node on this corpus — the property is untested"
 
@@ -259,7 +259,11 @@ def test_the_refusal_does_not_shatter_the_better_attested_reading(booted) -> Non
         n.id: sum(g.weight for g in n.supporting_claims) for n in view.nodes
     }
     for pair_ref in sorted(partition.identity_refusals):
-        ends = [e for e in dict.fromkeys(_canonical(partition, e) for e in pair_ref.split("|")) if e in nodes]
+        ends = [
+            e for e in dict.fromkeys(
+                _canonical(partition, e) for e in partition.pair_members[pair_ref]
+            ) if e in nodes
+        ]
         if len(ends) < 2:
             continue
         best = max(ends, key=lambda e: looks.get(e, 0.0))

@@ -115,6 +115,19 @@ class Partition(Record):
     # from the edge instead of falling back to ``unknown``. Empty ⇒ every endpoint had a claim-backed node
     # (or was un-typable) ⇒ view unchanged (gate G2). Provenance for such a node is the triple's claim_ids.
     endpoint_node_types: dict[str, str] = {}  # canonical entity id → ontology node type (minted endpoints)
+    # RK-NAMECUT/N1 — the sibling of ``endpoint_node_types`` for the other half of a materialised endpoint:
+    # what to CALL it. The view used to unwrap the designator out of an ``ent:<type>:<form>`` id and, failing
+    # that, render the id itself as the node's name — a reader parsing an opaque handle, and an analyst shown
+    # a key where a name belongs. The elected surface form is stated here instead, keyed by the post-merge id
+    # the view draws, so an id may be re-keyed without renaming anything. Empty ⇒ every endpoint was
+    # claim-backed and already named (gate G2).
+    display_label: dict[str, str] = {}  # canonical entity id → the designator to SHOW for it
+    # RK-NAMECUT/N1 — pair_key → the two ids it was built from. Every dict above is keyed by a JOINED string
+    # ("a|b") and the Known-Gap rendering used to recover the endpoints by splitting it back, which is lossy
+    # the moment an id contains the join character (an id built from a document's own surface form carries
+    # whatever punctuation that document used). The key stays exactly as it was — it is quoted in the gap's
+    # own id, so it is analyst-visible state — and the ids ride alongside it.
+    pair_members: dict[str, tuple[str, str]] = {}
     # RES-3: the place-resolution channel. ``resolve_place`` always computed a match and threw it away,
     # so ``Location.resolved_place_ref`` — declared "filled by RESOLVE", read by observe/dsl.py and the
     # map — had a reader and no writer. Keyed by the POST-merge canonical entity id so ``rebuild()`` can

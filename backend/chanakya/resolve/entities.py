@@ -47,6 +47,20 @@ def as_pair(x: Iterable[str]) -> tuple[str, str]:
     return (a, b)
 
 
+def mint_entity_id(base_type: str, name: str) -> str:
+    """The ONE place an ``ent:<base type>:<name>`` entity id is spelled (RK-NAMECUT/N1).
+
+    An entity id is an **opaque handle**: it is minted from the base type a claim declared plus the
+    surface form it used, and from that moment nothing may *read* information back out of it. That rule
+    only holds if the mint has a single spelling — three literal f-strings in three modules are three
+    places a later re-key has to find, and the one it misses becomes a silent second id namespace. Every
+    reader that used to recover the type or the name by splitting this string now carries what it needs
+    explicitly (:attr:`Entity.base_type`, ``Partition.display_label``); this function is what BUILDS the
+    string, which is the only direction that stays legitimate.
+    """
+    return f"ent:{base_type}:{name}"
+
+
 def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedRef:
     """The per-claim identity ref (extractor's if set, else synthesised) — matches F0's stub exactly.
 
@@ -60,7 +74,7 @@ def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedR
         return claim.resolved_ref
     p = claim.payload
     if p.form == "entity":
-        return ResolvedRef(entity_id=f"ent:{p.entity_type}:{p.name}")
+        return ResolvedRef(entity_id=mint_entity_id(p.entity_type, p.name))
     if p.form == "triple":
         ei = (
             lane.edge_instance_key(p.subject, p.predicate, p.object)
@@ -120,6 +134,18 @@ class Entity:
     # real claim resolves onto it, but when it does, its cluster adopts its id (see ``cluster._preferred``)
     # so the graph, the lenses and the oracle share one id namespace.
     registry: bool = False
+    # The base type this entity's id was MINTED under (RK-NAMECUT/N1), or ``None`` for an id that was not
+    # minted from a (type, name) pair at all — a registry stable id (``var_hq9p``), a synthesised id, an
+    # extractor-supplied ref.
+    #
+    # It exists because ``etype`` is mutated in place: ``resolve._refine_node_types`` re-types an entity to
+    # its ontology refinement (a province arriving as a ``basing_site`` becomes an ``area_of_operations``)
+    # and deliberately leaves the id alone, so after refinement the id string was the ONLY surviving record
+    # of the type the mint keyed under. ``_refined_rekey_pairs`` — the one place where a merge decision
+    # turns on it — used to recover it by splitting the id, which is a reader parsing an opaque handle and
+    # the exact coupling that makes the id format unchangeable. Recorded here at mint time instead, so the
+    # id may be re-keyed without moving a single identity decision. Do NOT re-derive it from the id.
+    base_type: str | None = None
     # ADDITIVE (Stage 3-prep, mirrors view's ``attr_history`` — §1B one stage earlier). Role-agnostic: every
     # claim-asserted value for an attribute is retained here, time-ordered, even one ``attrs[k]`` (first-
     # claim-wins) drops. Empty for entities carrying no claim of their own (registry seeds, T3b mints).
@@ -247,10 +273,19 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
     for c in claims:
         p = c.payload
         if p.form == "entity":
-            eid = base_ref(c, lane).entity_id or f"ent:{p.entity_type}:{p.name}"
+            minted_id = mint_entity_id(p.entity_type, p.name)
+            eid = base_ref(c, lane).entity_id or minted_id
             ent = entities.get(eid)
             if ent is None:
-                ent = Entity(eid=eid, etype=p.entity_type, name=p.name)
+                # ``base_type`` is recorded only where the id IS this mint's own key — an extractor-supplied
+                # ``resolved_ref`` may name a stable registry id (``var_hq9p``), which no (type, name) pair
+                # produced and which a refinement therefore cannot disagree with. Compared against the mint,
+                # never parsed back out of it: an empty name yields no key either way.
+                keyed = bool(p.entity_type) and bool(p.name) and eid == minted_id
+                ent = Entity(
+                    eid=eid, etype=p.entity_type, name=p.name,
+                    base_type=p.entity_type if keyed else None,
+                )
                 entities[eid] = ent
             if c.claim_id not in ent.claim_ids:
                 ent.claim_ids.append(c.claim_id)

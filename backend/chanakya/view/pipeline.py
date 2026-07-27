@@ -466,6 +466,7 @@ def _assemble(
     display_names: dict[str, str] | None = None,
     routing: LayerRouting | None = None,
     outcome: RoutingOutcome | None = None,
+    display_labels: dict[str, str] | None = None,
 ) -> tuple[dict[str, NodeView], list[EdgeView], list[EventView]]:
     nodes: dict[str, NodeView] = {}
     events: list[EventView] = []
@@ -632,6 +633,13 @@ def _assemble(
     # types such an endpoint from the edge's own domain/range where the ontology allows it (RES-1), so
     # this materialises a real typed node; ``unknown`` now means only "the ontology could not type it",
     # which is an honest gap rather than the id-namespace artefact it used to be.
+    # The designator comes from RESOLVE's ``display_label`` (T3b-D, RK-NAMECUT/N1): the surface form the
+    # document actually used, elected by the layer that resolved the endpoint. It used to be unwrapped from
+    # the id (``ent:<type>:<form>`` → the form) with the raw id as the fallback — which is how the graph came
+    # to show ids where names belong, and which pinned the id format in place. **No fallback to the id**: a
+    # node with no elected designator is genuinely nameless, and the surface says so ("unnamed <type>")
+    # rather than passing off a key as a name.
+    ep_labels = display_labels or {}
     for e in edges:
         for endpoint in (e.source, e.target):
             if endpoint not in nodes:
@@ -639,7 +647,7 @@ def _assemble(
                 nodes[endpoint] = NodeView(
                     id=endpoint,
                     type=node_type,
-                    name=display(endpoint, _endpoint_display_name(endpoint)),
+                    name=display(endpoint, ep_labels.get(endpoint)),
                     claim_ids=list(e.claim_ids),
                 )
 
@@ -780,34 +788,6 @@ def _stamp_uncertainty(nodes: dict[str, NodeView], radii: dict[str, float]) -> N
         node.attrs.setdefault(LOCATION_SOURCE, LOCATION_SOURCE_STATED)
 
 
-def _minted_name(node_id: str) -> str | None:
-    """The display name inside a minted endpoint id (``ent:<type>:<name>``), else None.
-
-    RESOLVE mints an endpoint node as ``ent:<type>:<surface form>``, so the designator the document
-    actually used is recoverable for display/search without a second channel. Split is bounded at 2 so a
-    name containing ``:`` survives intact. A stable-id node (``var_hq9p``) never reaches here — it is
-    claim-backed and already materialised above.
-    """
-    parts = node_id.split(":", 2)
-    return parts[2] if len(parts) == 3 and parts[0] == "ent" and parts[2] else None
-
-
-def _endpoint_display_name(node_id: str) -> str | None:
-    """The designator to SHOW for a materialised endpoint — typed or ``unknown`` (T3b-D).
-
-    A typed endpoint is minted as ``ent:<type>:<surface form>`` and unwraps via :func:`_minted_name`. An
-    endpoint the ontology could not type is never minted at all: it stays the raw surface form, so **the
-    id IS the designator**. Rendering it nameless was the reason the graph showed a bare
-    ``HQ-9/P TEL`` id with type ``unknown`` — the one piece of information the analyst needed (what the
-    document actually called it) was on the node the whole time and simply not surfaced.
-
-    A name is a display concern, not an identity one: it does not make the node resolvable. These nodes
-    fail to resolve because RESOLVE left them as untyped mentions rather than entities, which is fixed
-    at the typing layer (``resolve._edge_allowed_types``), not here.
-    """
-    return _minted_name(node_id) or node_id or None
-
-
 # ── HITL decision effects (real F0, gate G12) ─────────────────────────────────────────────────
 
 def apply_decision_effects(view: GraphView, decisions: Iterable[DecisionRecord]) -> GraphView:
@@ -939,6 +919,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
         {e.entity_id: e.display_name for e in config.entities.entities if e.display_name},
         routing,
         routing_outcome,
+        partition.display_label,
     )
     _merge_provenance(nodes, partition)  # accepted-merge audit trail on the canonical node
     _stamp_place_refs(nodes, partition, config.places)  # RES-3: curated-anchor binding + its evidence
@@ -1050,9 +1031,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     _by_id = {a.element_id: a for a in assertions}
     _looks = {a.element_id: sum(g.weight for g in a.groups) for a in assertions}
     for _pair_ref in sorted(partition.identity_refusals):
+        # The two ids come from ``pair_members``, never from splitting ``_pair_ref``: the key is a joined
+        # string, an id may contain the join character, and getting the endpoints wrong here decides which
+        # node is marked unassessable (RK-NAMECUT/N1).
         _ends = [
             partition.entity_canonical.get(e, e)
-            for e in _pair_ref.split("|")
+            for e in partition.pair_members.get(_pair_ref, ())
         ]
         _ends = [e for e in dict.fromkeys(_ends) if e in nodes and e in _by_id]
         if not _ends:
@@ -1161,7 +1145,9 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # mentions, or for neither.
     for pair_ref, what_missing in sorted(partition.identity_refusals.items()):
         seen_refs: set[str] = set()
-        for endpoint in pair_ref.split("|"):
+        # ``pair_members``, not a split of the key — see the refusal loop above. The key itself is still
+        # quoted verbatim into the gap id, because that id is analyst-visible state.
+        for endpoint in partition.pair_members.get(pair_ref, ()):
             ref = partition.entity_canonical.get(endpoint, endpoint)
             if ref in nodes and ref not in seen_refs:
                 seen_refs.add(ref)
@@ -1181,7 +1167,7 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # config (`contrast_ceiling: probable` keeps the queue place, so nothing is re-routed).
     for pair_ref, what_missing in sorted(partition.withheld_escalations.items()):
         seen_refs = set()
-        for endpoint in pair_ref.split("|"):
+        for endpoint in partition.pair_members.get(pair_ref, ()):
             ref = partition.entity_canonical.get(endpoint, endpoint)
             if ref in nodes and ref not in seen_refs:
                 seen_refs.add(ref)

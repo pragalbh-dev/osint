@@ -43,6 +43,7 @@ from .entities import (
     EntityGraph,
     as_pair,
     base_ref,
+    mint_entity_id,
     namespace_compatible,
     unordered_pairs,
 )
@@ -311,19 +312,20 @@ def _resolve(
     # ordering is now applied once, when ``wall_grounds`` is built above, and every rail that can draw a wall
     # is in it: curated config/registry, source-stated, gazetteer place, hard identifier, critical attribute,
     # relationship conflict, and the analyst's own replayed reject/split.
-    result.wall_reasons.update(
-        {pair_key(*sorted(p)): why for p, why in wall_grounds.items()}
-    )
+    for _pair, _why in sorted(wall_grounds.items(), key=lambda kv: sorted(kv[0])):
+        _a, _b = sorted(_pair)
+        result.wall_reasons[result.key_for(_a, _b)] = _why
     # …and the ESCALATE half for the same collision. A wall that outranked a source's stated identity owes each
     # endpoint a named Known Gap, or the assertion the resolver overrode reached nobody. ``setdefault``, not
     # ``update``: ``fusion_blocked``'s own type/namespace refusal is the more specific finding where both fire,
     # and ``finalise`` prunes any entry whose endpoints ended up in one cluster along some other chain.
     for pair, what_missing in sorted(walled_assertions.items(), key=lambda kv: sorted(kv[0])):
-        result.identity_refusals.setdefault(pair_key(*sorted(pair)), what_missing)
+        a, b = sorted(pair)
+        result.identity_refusals.setdefault(result.key_for(a, b), what_missing)
     # The re-routed escalation for a source-stated contrast the declared band took off the queue (above).
     for pair, why in sorted(contrast_withheld.items(), key=lambda kv: sorted(kv[0])):
         result.withheld_escalations.setdefault(
-            pair_key(*sorted(pair)),
+            result.key_for(*sorted(pair)),
             "a SOURCE distinguishes this mention from another that the identity score reads as the SAME "
             "entity, and the configured band withholds the pair from the review queue — so this record is the "
             "escalation. The merge is refused (correctly). What is missing is a decision on WHY the two "
@@ -340,8 +342,9 @@ def _resolve(
     # is what makes raise-only fictional (D-13.17).
     for pair, why in sorted(coref_reasons.items(), key=lambda kv: sorted(kv[0])):
         a, b = sorted(pair)
-        existing = result.candidate_reasons.get(pair_key(a, b))
-        result.candidate_reasons[pair_key(a, b)] = f"{existing}\n\nALSO: {why}" if existing else why
+        key = result.key_for(a, b)
+        existing = result.candidate_reasons.get(key)
+        result.candidate_reasons[key] = f"{existing}\n\nALSO: {why}" if existing else why
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
     # F4 — a MISSING discriminator is not permission to cross a wall. AFTER ``finalise``, so the pairs and
     # the walls are both canonical and the caution names the records the analyst is actually looking at
@@ -472,8 +475,16 @@ def _edge_allowed_types(graph: EntityGraph, lane: EdgeLaneIndex) -> dict[str, se
     return out
 
 
+#: ``(base type, surface form) → the entity id minted from that pair`` (RK-NAMECUT/N1). The explicit
+#: replacement for re-spelling ``ent:<type>:<form>`` and asking whether the graph has that key: it is the
+#: same question, asked of an index the mint maintains rather than of the id string's shape. Keyed on the
+#: MINT-time base type (:attr:`entities.Entity.base_type`), because ``etype`` has already been refined in
+#: place by the time anything consults this.
+type MintIndex = dict[tuple[str, str], str]
+
+
 def _settle_contradiction(
-    form: str, matches: list[str], node_type: str, graph: EntityGraph
+    form: str, matches: list[str], node_type: str, graph: EntityGraph, minted_ids: MintIndex
 ) -> str | None:
     """Where a contradictorily-typed form resolves once the ontology has ruled out a type (T3b-B).
 
@@ -489,13 +500,18 @@ def _settle_contradiction(
     which is what the registry is *for*: the extractor emits a surface form, the registry says which
     stable id owns it. Failing that, the entity a claim already declared under the surviving type. If
     neither is unambiguous the original refusal stands and the mention stays an untyped tier-3 mention.
+
+    ``minted_ids`` is that last lookup, as an explicit ``(base type, surface form) → entity id`` index
+    (RK-NAMECUT/N1). It used to be done by re-spelling ``ent:<type>:<form>`` and testing membership —
+    correct only for as long as the id format never changes, and note it has to be the type the mint
+    *keyed* under, not ``etype``: ``_refine_node_types`` has already re-typed claim-backed entities in
+    place by the time this runs, so reading the live type here would miss exactly the refined entities.
     """
     of_type = [m for m in matches if graph.entities[m].etype == node_type]
     registry = [m for m in of_type if graph.entities[m].registry]
     if len(registry) == 1:
         return registry[0]
-    declared = f"ent:{node_type}:{form}"
-    return declared if declared in graph.entities else None
+    return minted_ids.get((node_type, form))
 
 
 def _spans_veto(matches: list[str], veto: set[Pair]) -> bool:
@@ -542,6 +558,14 @@ def _link_endpoints(
     mention: dict[str, str] = {}   # surface form → entity id it resolves to
     minted: dict[str, str] = {}    # newly minted entity id → its ontology node type
     ambiguous: list[tuple[str, str]] = []
+    # The mint's own key index (RK-NAMECUT/N1) — what ``_settle_contradiction`` consults instead of
+    # re-spelling the id and testing membership. Kept LIVE (each mint below registers itself) rather than
+    # snapshotted, so it says exactly what "this id already exists" said before.
+    minted_ids: MintIndex = {
+        (ent.base_type, ent.name): eid
+        for eid, ent in graph.entities.items()
+        if ent.base_type is not None
+    }
 
     for form in surface_forms:
         if form in graph.entities:
@@ -566,7 +590,7 @@ def _link_endpoints(
             narrowed = types & allowed_types.get(form, set())
             if len(narrowed) != 1:
                 continue
-            settled = _settle_contradiction(form, matches, next(iter(narrowed)), graph)
+            settled = _settle_contradiction(form, matches, next(iter(narrowed)), graph, minted_ids)
             if settled is None:
                 continue
             mention[form] = settled
@@ -577,10 +601,14 @@ def _link_endpoints(
             continue  # un-typable (or contradictorily typed) → stays an untyped tier-3 mention
 
         node_type = next(iter(types))
-        eid = f"ent:{node_type}:{form}"
+        eid = mint_entity_id(node_type, form)
         if eid not in graph.entities:
-            graph.entities[eid] = Entity(eid=eid, etype=node_type, name=form)
+            # ``base_type`` freezes the type this id was keyed under. ``_refine_node_types`` runs again
+            # immediately after this pass and may re-type the entity in place; from then on the mint key is
+            # recoverable only from here (it used to be read back out of the id string — RK-NAMECUT/N1).
+            graph.entities[eid] = Entity(eid=eid, etype=node_type, name=form, base_type=node_type)
             minted[eid] = node_type
+            minted_ids[(node_type, form)] = eid
         mention[form] = eid
 
     for e in graph.edges:  # rewrite in place: the fixpoint scores over entity ids from here on
@@ -624,10 +652,6 @@ def _refine_node_types(
     return refined
 
 
-#: The id namespace every claim-minted entity carries: ``ent:<base type>:<name>``.
-_MINTED_ID_PREFIX = "ent"
-
-
 def _refined_rekey_pairs(graph: EntityGraph) -> set[Pair]:
     """ONE surface string that two mint sites keyed under two different base types → one entity (T3b-A tail).
 
@@ -647,37 +671,29 @@ def _refined_rekey_pairs(graph: EntityGraph) -> set[Pair]:
     twice by two mint sites; the "two" entities are a keying artefact of the base type each claim happened to
     declare. So it is an EARNED trigger (``TRIGGER_REKEY``), like an alias link or a curated place anchor, and
     the cap does not touch it. It is also strictly narrower than the exact-name bootstrap it revives: the names
-    must be byte-equal, the refined types must be equal, and at least one side's id namespace must disagree
-    with its own refined type — i.e. refinement must actually have moved something. Vetoes are unaffected (the
-    trigger is consulted after them, in both phases).
+    must be byte-equal, the refined types must be equal, and at least one side's mint-time base type must
+    disagree with its own refined type — i.e. refinement must actually have moved something. Vetoes are
+    unaffected (the trigger is consulted after them, in both phases).
+
+    The mint-time base type is read from :attr:`entities.Entity.base_type`, NOT recovered from the id string
+    (RK-NAMECUT/N1). This is the one place in the system where an id's FORMAT used to drive a merge decision,
+    so it is the coupling that mattered most: while it stood, re-keying an id could silently move which pairs
+    fused. An entity with no ``base_type`` — a registry stable id, a synthesised id — has no mint key for a
+    refinement to disagree with and is skipped, exactly as the unparseable id shape used to be.
     """
     by_key: dict[tuple[str, str], list[str]] = {}
     for eid, ent in sorted(graph.entities.items()):
-        if _minted_id_namespace(eid) is None:
-            continue  # a registry stable id / a synthesised id has no base-type namespace to disagree with
+        if ent.base_type is None:
+            continue  # a registry stable id / a synthesised id has no base type to disagree with
         by_key.setdefault((ent.name, ent.etype), []).append(eid)
     out: set[Pair] = set()
     for (_name, etype), eids in sorted(by_key.items()):
         if not eids or eids[1:] == []:
             continue  # a single id for this (name, type) — nothing duplicated
-        if all(_minted_id_namespace(eid) == etype for eid in eids):
+        if all(graph.entities[eid].base_type == etype for eid in eids):
             continue  # nothing was refined: two same-named, same-typed ids cannot both be the mint's own key
         out.update(frozenset(p) for p in unordered_pairs(sorted(eids)))
     return out
-
-
-def _minted_id_namespace(eid: str) -> str | None:
-    """The BASE TYPE an ``ent:<type>:<name>`` id was minted under, or ``None`` for any other id shape.
-
-    A registry stable id (``var_hq9p``) or a synthesised id (``presence:…@…``) has no mint-time type namespace,
-    so there is nothing for a refinement to disagree with. Parsed by ``partition`` rather than an indexed
-    split so the id's shape needs no positional literal (gate G6 counts numbers in this package).
-    """
-    prefix, sep, rest = eid.partition(":")
-    base_type, sep2, name = rest.partition(":")
-    if not sep or not sep2 or prefix != _MINTED_ID_PREFIX or not base_type or not name:
-        return None
-    return base_type
 
 
 # ── T3b-C: the hard-identifier rail (a bill of lading is an identity, not a name) ───────────────
@@ -2018,6 +2034,31 @@ def _to_partition(
     for eid, node_type in sorted((minted or {}).items()):
         endpoint_node_types.setdefault(canonical_of(eid), node_type)
 
+    # ``display_label`` — the same idea as ``endpoint_node_types``, for the other half of what a
+    # materialised endpoint needs (RK-NAMECUT/N1). The view had to name a node it materialises off an edge,
+    # and recovered the designator by SPLITTING the id: an ``ent:<type>:<form>`` id gave back its form, and
+    # anything else fell through to rendering the id itself as the node's human name. Both halves are wrong
+    # — the first reads an opaque handle, the second shows an analyst a key and calls it a name — so the
+    # elected surface form is carried explicitly instead, keyed by the POST-merge id the view will draw.
+    #
+    # Two populations, and the second is the one that is easy to miss: every entity the resolver knows
+    # (claim-backed, registry-seeded or minted — its ``name`` IS the designator, and the canonical member of
+    # a merged cluster wins), plus every triple endpoint that stayed a RAW mention. For that second kind the
+    # id and the designator are the same string today, which is exactly why it must be stated rather than
+    # inferred: nothing else records that the node has a name at all.
+    display_label: dict[str, str] = {}
+    if graph is not None:
+        for eid, ent in sorted(graph.entities.items()):
+            if not ent.name:
+                continue
+            target = canonical_of(eid)
+            if target == eid or target not in display_label:
+                display_label[target] = ent.name
+        for edge in graph.edges:  # endpoints are already rewritten onto entity ids where they resolved
+            for endpoint in (edge.subject, edge.object):
+                if endpoint and endpoint not in graph.entities:
+                    display_label.setdefault(endpoint, endpoint)
+
     # Keyed by the POST-merge id, so the view can stamp it straight onto the node. A merge that fused two
     # mentions carrying different matches keeps the better-evidenced one rather than "last write wins".
     place_refs: dict[str, PlaceRef] = {}
@@ -2046,7 +2087,7 @@ def _to_partition(
         for a, b in sorted({as_pair(p) for p in [*result.candidates, *result.same_as]}):
             cids = scoring.licensing_claim_ids(graph, a, b)
             if cids:
-                identity_claims[pair_key(a, b)] = cids
+                identity_claims[result.key_for(a, b)] = cids
 
     return Partition(
         resolved_ref=resolved_ref,
@@ -2063,5 +2104,7 @@ def _to_partition(
         identity_claims=identity_claims,
         entity_canonical=entity_canonical,
         endpoint_node_types=endpoint_node_types,
+        display_label=display_label,
+        pair_members=dict(result.pair_members),
         place_refs=place_refs,
     )

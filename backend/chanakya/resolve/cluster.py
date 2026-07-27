@@ -101,6 +101,19 @@ class ResolveResult:
     withheld_escalations: dict[str, str] = field(default_factory=dict)
     merge_confidence: dict[str, float] = field(default_factory=dict)
     merge_breakdown: dict[str, dict[str, float]] = field(default_factory=dict)
+    # pair_key → the two entity ids it was built from (RK-NAMECUT/N1). Every dict above is keyed by a
+    # pair_key, which is a JOINED string ("a|b"), and two readers used to recover the endpoints by splitting
+    # it back apart (``_still_apart`` here, the Known-Gap rendering in ``view/pipeline``). That is lossy by
+    # construction — nothing forbids an id containing "|", and a surface-form-derived id routinely carries
+    # whatever punctuation a document used — so the split is a second, silent id-format assumption on top of
+    # the ``ent:type:name`` one. The ids ride along instead; :meth:`key_for` is what keeps the two in step.
+    pair_members: dict[str, tuple[str, str]] = field(default_factory=dict)
+
+    def key_for(self, a: str, b: str) -> str:
+        """``pair_key(a, b)``, recording the endpoints so no reader ever splits the joined key back apart."""
+        key = pair_key(a, b)
+        self.pair_members.setdefault(key, as_pair((a, b)))
+        return key
 
 
 def _deterministic_total(bd: dict[str, float], cfg: ResolveConfig) -> float:
@@ -591,8 +604,9 @@ def resolve_entities(
 
     def merge(a: str, b: str, confidence: float, bd: dict[str, float]) -> None:
         res.same_as.append((a, b))  # raw merge pair; _finalise stars it to the cluster canonical
-        res.merge_confidence[pair_key(a, b)] = confidence
-        res.merge_breakdown[pair_key(a, b)] = bd
+        key = res.key_for(a, b)
+        res.merge_confidence[key] = confidence
+        res.merge_breakdown[key] = bd
         merge_edges[frozenset((a, b))] = confidence
         uf.union(a, b)
 
@@ -780,7 +794,7 @@ def resolve_entities(
         if incompatible is not None:
             ceiling, reason, what_missing = incompatible
             if would_fuse:
-                res.identity_refusals[pair_key(a, b)] = what_missing
+                res.identity_refusals[res.key_for(a, b)] = what_missing
             return ceiling, reason, "cross_identity"
         if (
             ceiling_withholds(earned.name_ceiling)
@@ -1065,10 +1079,11 @@ def resolve_entities(
             reason = _scored_basis_reason(bd) if band == "hitl" else ""
         if band == "hitl" and not capped:
             res.candidates.append((a, b))
-            res.merge_confidence[pair_key(a, b)] = bd["total"]
-            res.merge_breakdown[pair_key(a, b)] = bd
+            key = res.key_for(a, b)
+            res.merge_confidence[key] = bd["total"]
+            res.merge_breakdown[key] = bd
             if reason:
-                res.candidate_reasons[pair_key(a, b)] = reason
+                res.candidate_reasons[key] = reason
         # The retained `possible` watch-list (D4): a scored pair in [possible_floor, hitl_low) that would
         # otherwise be dropped as `separate`, PLUS any pair a cap withheld from the queue. Kept with its
         # identity confidence/breakdown AND its reason; Partition-only (never drawn — see view/pipeline).
@@ -1078,17 +1093,18 @@ def resolve_entities(
         # discard the decision and the reason with it. Absent floor + no cap ⇒ the pair drops as before.
         elif capped or (pfloor is not None and bd["total"] >= pfloor):
             res.possible.append((a, b))
-            res.merge_confidence[pair_key(a, b)] = bd["total"]
-            res.merge_breakdown[pair_key(a, b)] = bd
+            key = res.key_for(a, b)
+            res.merge_confidence[key] = bd["total"]
+            res.merge_breakdown[key] = bd
             if reason:
-                res.candidate_reasons[pair_key(a, b)] = reason
+                res.candidate_reasons[key] = reason
             # …and where the rail that capped it is declared as still owing an escalation, the pair leaves
             # the queue but NOT the analyst's sight: each endpoint gets a named Known Gap carrying the cap's
             # own words (which already name the ground and the band actually applied). ``setdefault`` so a
             # more specific refusal recorded elsewhere is never overwritten.
             if pair in capped_escalate:
                 res.withheld_escalations.setdefault(
-                    pair_key(a, b),
+                    res.key_for(a, b),
                     # BOTH mentions are named. The gap hangs off one node but the thing that is unsettled is
                     # the PAIR, and "this may be the same as something else" is not a finding an analyst can
                     # act on. Ids rather than names on purpose: the pairs this rail catches routinely carry
@@ -1210,9 +1226,9 @@ def finalise(
                 continue
             res.canonical[m] = canonical
             same_as.append((m, canonical))
-            key = pair_key(m, canonical)
-            res.merge_confidence[key] = _rep(raw_conf, m, key, 1.0)
-            res.merge_breakdown[key] = _rep(raw_bd, m, key, {"total": 1.0})
+            key = res.key_for(m, canonical)
+            res.merge_confidence[key] = _rep(raw_conf, res.pair_members, m, key, 1.0)
+            res.merge_breakdown[key] = _rep(raw_bd, res.pair_members, m, key, {"total": 1.0})
 
     res.same_as = sorted(same_as)
     # a candidate that later merged, or is now vetoed-apart, is no longer an open question
@@ -1256,20 +1272,30 @@ def finalise(
     # An identity refusal that no longer holds two mentions apart is moot: if the endpoints ended up in one
     # cluster along some other chain there is nothing left to escalate.
     def _still_apart(key: str) -> bool:
-        a, _sep, b = key.partition("|")
-        return bool(b) and uf.find(a) != uf.find(b)
+        # The endpoints come from ``pair_members``, not from splitting the key: the key is a joined string
+        # and an id may legally contain the join character, so the split could silently name the wrong two
+        # entities — and the answer here decides whether an analyst is told about a refusal at all.
+        pair = res.pair_members.get(key)
+        return pair is not None and uf.find(pair[0]) != uf.find(pair[1])
 
     res.identity_refusals = {
         key: what for key, what in res.identity_refusals.items() if _still_apart(key)
     }
 
 
-def _rep[T](raw: dict[str, T], m: str, key: str, default: T) -> T:
-    """A representative confidence/breakdown for a star edge: the exact pair if recorded, else any touching m."""
+def _rep[T](
+    raw: dict[str, T], members: dict[str, tuple[str, str]], m: str, key: str, default: T
+) -> T:
+    """A representative confidence/breakdown for a star edge: the exact pair if recorded, else any touching m.
+
+    "Touching m" is asked of ``members`` (the ids each key was built from) rather than of the key string:
+    splitting a joined key is only equivalent while no id contains the join character, and an id built from
+    a document's own surface form carries whatever punctuation that document used.
+    """
     if key in raw:
         return raw[key]
     for k in sorted(raw):
-        if m in k.split("|"):
+        if m in members.get(k, ()):
             return raw[k]
     return default
 

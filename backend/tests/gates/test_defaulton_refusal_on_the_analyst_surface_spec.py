@@ -864,7 +864,11 @@ def test_every_open_identity_question_on_the_real_corpus_reaches_the_rendered_vi
     part, view = booted_corpus.partition, booted_corpus.view
     canonical = dict(part.entity_canonical)
     open_pairs = {tuple(sorted(p)) for p in part.candidates}
-    open_pairs |= {tuple(sorted(k.split("|", 1))) for k in part.identity_refusals if "|" in k}
+    # The endpoints ride the partition (``pair_members``) rather than being split back out of the joined
+    # key: the key is a display/index string, and an id is free to contain the join character.
+    open_pairs |= {
+        tuple(sorted(part.pair_members[k])) for k in part.identity_refusals if k in part.pair_members
+    }
 
     absent = []
     for a, b in sorted(open_pairs):
