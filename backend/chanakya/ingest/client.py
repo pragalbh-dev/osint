@@ -63,7 +63,13 @@ from chanakya.toolargs import validate_tool_arguments
 
 # ── model + call defaults (config-adjacent constants, no magic numbers buried in logic) ───────────
 
-MODEL = "claude-opus-4-8"  # Anthropic extraction model (md/07); forced tool_use, no sampling params
+# Anthropic extraction model; forced tool_use, no sampling params. PINNED to the exact id RK-BAKEOFF
+# measured (``config/bakeoff.yaml`` → candidate ``anthropic-opus-5``) and that performed the keyed re-record
+# of the frozen bundles: ``keyless_equals_live`` only holds if the model which produced the seed is the one
+# live extraction uses, so this constant and that candidate must not drift apart. ``claude-opus-5`` is the
+# complete concrete id — the Anthropic scheme carries no date suffix on a current model and appending one
+# 404s — and it is not a floating alias: it names Opus 5 and nothing else.
+MODEL = "claude-opus-5"
 # PRIMARY extractor: native function-calling + multimodal, fast, keyed. The floating ``-latest`` alias
 # tracks the current Gemini flash so a pinned id going "no longer available to new users" (which is what
 # happened to gemini-2.5-flash) never dead-ends live extraction; overridable via ``build_extraction_client``.
@@ -72,7 +78,21 @@ DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 # snapshot for the 5.6 family, so this IS the concrete id. There is no ``-latest`` fallback here on
 # purpose — a floating id would let the frozen seed silently stop equalling what live produces.
 DEFAULT_OPENAI_MODEL = "gpt-5.6-sol"
-MAX_TOKENS = 8192  # a single doc's worth of tool arguments; well under the streaming/timeout threshold
+# One document's worth of tool arguments. Raised from 8192, which the keyed re-record proved is not enough:
+# `d05_customs_manifest` (a row-heavy bill-of-lading table) had its tool call cut off mid-token, and
+# `validate_tool_arguments` correctly refused the truncated payload rather than recording a half-row.
+# Two things pushed it over at once, and both are properties of the pinned model rather than of that
+# document: Opus 5 emits materially more per document than the previous extractor (the bake-off's most
+# robust finding), and on Opus 5 thinking is ON by default — where it was off by default on Opus 4.8 — so
+# reasoning tokens now come out of the SAME ceiling as the tool arguments. A row-heavy table is simply where
+# the sum first exceeded it. This is generous headroom, not a tuned value: truncation is silent-ish data
+# loss at the point where the graph's evidence is created, so the ceiling should never be the thing that
+# decides what a document says.
+MAX_TOKENS = 32000
+#: Transport-level retries (connection errors and 408/409/429/5xx), NOT content retries — see the
+#: constructor note. The SDK default of 2 does not survive a sustained provider overload across a ~73-call
+#: recording run.
+TRANSPORT_MAX_RETRIES = 8
 
 
 # ── the call descriptor ──────────────────────────────────────────────────────────────────────────
@@ -323,21 +343,39 @@ class AnthropicExtractionClient:
     def __init__(self, api_key: str | None = None, *, model_id: str = MODEL) -> None:
         import anthropic
 
-        self._client: Any = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+        # TRANSPORT retries only, and that is not a softening of the no-retry rule above. That rule forbids
+        # re-rolling a *returned* response — re-asking until a malformed or truncated payload comes back the
+        # way we wanted is sampling until the answer is liked, and the SDK never does it: it retries only
+        # connection errors and 408/409/429/5xx, never a 200 whose body we dislike. So the distinction
+        # enforces itself. The default of 2 was measured insufficient: a re-record is ~73 serial calls, and
+        # a single transient `overloaded_error` from the provider killed a whole run partway, leaving the
+        # bundle directory half-rewritten — this path has no resume, so one blip costs everything already
+        # spent. Retrying the transport is free of the correctness objection and is what makes a long
+        # recording survivable.
+        opts: dict[str, Any] = {"max_retries": TRANSPORT_MAX_RETRIES}
+        if api_key:
+            opts["api_key"] = api_key
+        self._client: Any = anthropic.Anthropic(**opts)
         self.model_id = model_id
 
     def _call(
         self, *, tool_name: str, input_schema: dict[str, Any], system: str, content: Any
     ) -> dict[str, Any]:
         tool = {"name": tool_name, "input_schema": input_schema}
-        response = self._client.messages.create(
+        # STREAMED, not a plain create: at MAX_TOKENS this size the SDK refuses a non-streaming request
+        # (it estimates the call could outlive the HTTP timeout) and a long extraction would die on the
+        # connection rather than on anything about the document. `get_final_message()` still hands back the
+        # same assembled Message, so the tool-use handling below is unchanged — we take the timeout
+        # protection and ignore the individual events.
+        with self._client.messages.stream(
             model=self.model_id,
             max_tokens=MAX_TOKENS,
             system=system,
             messages=[{"role": "user", "content": content}],
             tools=[tool],
             tool_choice={"type": "tool", "name": tool_name},
-        )
+        ) as stream:
+            response = stream.get_final_message()
         for block in response.content:
             if getattr(block, "type", None) == "tool_use" and block.name == tool_name:
                 return validate_tool_arguments(

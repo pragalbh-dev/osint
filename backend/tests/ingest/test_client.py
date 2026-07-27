@@ -4,6 +4,8 @@ The scripted client and the builder are exercised with zero network. The two liv
 two ways: a ``respx``-mocked Anthropic round-trip that asserts the *request* shape (forced tool_choice,
 no sampling params, the image block on ``read_image``) and parses a canned tool_use response, plus opt-in
 ``@pytest.mark.live`` smoke tests that hit the real API only when a key is present.
+
+That canned response is a **stream**, not a JSON body — see the note above ``_sse_response`` for why.
 """
 
 from __future__ import annotations
@@ -13,6 +15,7 @@ import dataclasses
 import json
 import os
 import sys
+from collections.abc import Sequence
 
 import httpx
 import pytest
@@ -20,6 +23,7 @@ import respx
 
 from chanakya.ingest.client import (
     DEFAULT_OPENAI_MODEL,
+    MAX_TOKENS,
     MODEL,
     AnthropicExtractionClient,
     ExtractionCall,
@@ -138,28 +142,90 @@ def test_the_openai_default_model_is_a_pinned_id_not_a_floating_alias() -> None:
 _ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
 
 
-def _tool_use_response(tool_name: str, tool_input: dict[str, object]) -> httpx.Response:
-    return httpx.Response(
-        200,
-        json={
-            "id": "msg_test",
-            "type": "message",
-            "role": "assistant",
-            "model": "claude-opus-4-8",
-            "content": [
-                {"type": "tool_use", "id": "toolu_test", "name": tool_name, "input": tool_input}
-            ],
-            "stop_reason": "tool_use",
-            "stop_sequence": None,
-            "usage": {"input_tokens": 12, "output_tokens": 7},
-        },
+# ── why these mocks are streams, not one JSON body ────────────────────────────────────────────────
+#
+# ``AnthropicExtractionClient._call`` calls ``messages.stream(...)``, not ``messages.create(...)``: with
+# ``MAX_TOKENS`` at 32000 the SDK *refuses* a non-streaming request outright (it estimates the call could
+# outlive the HTTP timeout), so streaming is not a preference here, it is the only way the call is made.
+# The wire response therefore has to be Server-Sent Events. Everything below builds the event sequence
+# the SDK's accumulator expects:
+#
+#     message_start → content_block_start → content_block_delta* → content_block_stop
+#                   → message_delta (stop_reason + usage) → message_stop
+#
+# The *request* is still fully inspectable through the respx route exactly as before — it now simply also
+# carries ``"stream": true``.
+
+
+def _sse_response(events: Sequence[tuple[str, dict[str, object]]]) -> httpx.Response:
+    """Render ``(event-name, payload)`` pairs as a ``text/event-stream`` body.
+
+    The SDK's decoder dispatches on the ``event:`` name and JSON-parses the ``data:`` line, so both are
+    required; a plain JSON body is simply never parsed on this path.
+    """
+    body = "".join(f"event: {name}\ndata: {json.dumps(payload)}\n\n" for name, payload in events)
+    return httpx.Response(200, content=body.encode(), headers={"content-type": "text/event-stream"})
+
+
+def _message_stream(
+    content_block: dict[str, object],
+    deltas: Sequence[dict[str, object]],
+    *,
+    stop_reason: str,
+    output_tokens: int = 7,
+) -> httpx.Response:
+    """A one-content-block assistant message, streamed the way the Messages API sends it."""
+    events: list[tuple[str, dict[str, object]]] = [
+        ("message_start", {"type": "message_start", "message": {
+            "id": "msg_test", "type": "message", "role": "assistant", "model": MODEL,
+            "content": [], "stop_reason": None, "stop_sequence": None,
+            "usage": {"input_tokens": 12, "output_tokens": 0}}}),
+        ("content_block_start",
+         {"type": "content_block_start", "index": 0, "content_block": content_block}),
+        *(("content_block_delta", {"type": "content_block_delta", "index": 0, "delta": d})
+          for d in deltas),
+        ("content_block_stop", {"type": "content_block_stop", "index": 0}),
+        # stop_reason arrives here, on message_delta — never on message_start.
+        ("message_delta", {"type": "message_delta",
+                           "delta": {"stop_reason": stop_reason, "stop_sequence": None},
+                           "usage": {"output_tokens": output_tokens}}),
+        ("message_stop", {"type": "message_stop"}),
+    ]
+    return _sse_response(events)
+
+
+def _tool_use_stream(
+    tool_name: str,
+    tool_input: dict[str, object],
+    *,
+    raw_json: str | None = None,
+    stop_reason: str = "tool_use",
+    output_tokens: int = 7,
+) -> httpx.Response:
+    """A forced ``tool_use`` call carrying ``tool_input`` — the streaming twin of a canned tool_use body.
+
+    The block opens with an empty ``input`` and the arguments arrive as ``input_json_delta`` fragments
+    that are each invalid JSON on their own; the SDK re-parses the accumulated buffer after every delta
+    and the client reads the reassembled result. Chopping the payload up rather than sending it whole is
+    the point — it is the accumulator, not a pre-parsed dict, that the production code now consumes.
+
+    ``raw_json`` overrides the serialised arguments with a literal string, so a caller can put genuinely
+    unfinished JSON on the wire — a generation that stopped mid-token — instead of a serialisable dict.
+    """
+    raw = json.dumps(tool_input) if raw_json is None else raw_json
+    fragments = [raw[i:i + 24] for i in range(0, len(raw), 24)]
+    return _message_stream(
+        {"type": "tool_use", "id": "toolu_test", "name": tool_name, "input": {}},
+        [{"type": "input_json_delta", "partial_json": fragment} for fragment in fragments],
+        stop_reason=stop_reason,
+        output_tokens=output_tokens,
     )
 
 
 @respx.mock
 def test_anthropic_extract_forces_tool_and_omits_sampling() -> None:
     route = respx.post(_ANTHROPIC_URL).mock(
-        return_value=_tool_use_response("emit_prose_claim", {"claims": []})
+        return_value=_tool_use_stream("emit_prose_claim", {"claims": []})
     )
     client = AnthropicExtractionClient(api_key="sk-test")
     out = client.extract(
@@ -173,6 +239,10 @@ def test_anthropic_extract_forces_tool_and_omits_sampling() -> None:
     assert body["tools"][0]["name"] == "emit_prose_claim"
     assert body["system"] == "sys prompt"
     assert body["messages"][0]["content"] == "doc text"
+    # The ceiling is read from the module so it cannot rot here, and the two travel together: a budget
+    # this large is exactly why the request has to be streamed.
+    assert body["max_tokens"] == MAX_TOKENS
+    assert body["stream"] is True
     # No sampling params ever (400 on Opus 4.8; G7).
     for banned in ("temperature", "top_p", "top_k"):
         assert banned not in body
@@ -181,7 +251,7 @@ def test_anthropic_extract_forces_tool_and_omits_sampling() -> None:
 @respx.mock
 def test_anthropic_read_image_attaches_base64_block() -> None:
     route = respx.post(_ANTHROPIC_URL).mock(
-        return_value=_tool_use_response("emit_imagery_observation", {"features": []})
+        return_value=_tool_use_stream("emit_imagery_observation", {"features": []})
     )
     client = AnthropicExtractionClient(api_key="sk-test")
     out = client.read_image(
@@ -205,19 +275,13 @@ def test_anthropic_read_image_attaches_base64_block() -> None:
 
 @respx.mock
 def test_anthropic_raises_when_no_tool_use_block() -> None:
+    # A prose answer to a forced-tool request: the stream carries a text block and no tool_use at all.
     respx.post(_ANTHROPIC_URL).mock(
-        return_value=httpx.Response(
-            200,
-            json={
-                "id": "msg_x",
-                "type": "message",
-                "role": "assistant",
-                "model": "claude-opus-4-8",
-                "content": [{"type": "text", "text": "no tool"}],
-                "stop_reason": "end_turn",
-                "stop_sequence": None,
-                "usage": {"input_tokens": 3, "output_tokens": 2},
-            },
+        return_value=_message_stream(
+            {"type": "text", "text": ""},
+            [{"type": "text_delta", "text": "no tool"}],
+            stop_reason="end_turn",
+            output_tokens=2,
         )
     )
     client = AnthropicExtractionClient(api_key="sk-test")
@@ -266,7 +330,7 @@ def test_scripted_client_extract_ignores_images() -> None:
 @respx.mock
 def test_anthropic_extract_attaches_page_images() -> None:
     route = respx.post(_ANTHROPIC_URL).mock(
-        return_value=_tool_use_response("extract_prose_claim", {"sources": []})
+        return_value=_tool_use_stream("extract_prose_claim", {"sources": []})
     )
     client = AnthropicExtractionClient(api_key="sk-test")
     out = client.extract(
@@ -290,7 +354,7 @@ def test_anthropic_extract_attaches_page_images() -> None:
 @respx.mock
 def test_anthropic_extract_text_only_stays_bare_string() -> None:
     route = respx.post(_ANTHROPIC_URL).mock(
-        return_value=_tool_use_response("extract_prose_claim", {"sources": []})
+        return_value=_tool_use_stream("extract_prose_claim", {"sources": []})
     )
     client = AnthropicExtractionClient(api_key="sk-test")
     client.extract(tool_name="extract_prose_claim", input_schema=_SCHEMA, system="s", text="only text")

@@ -25,13 +25,17 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import httpx
 import pytest
 import respx
 
 from chanakya.ingest import coref
-from chanakya.ingest.client import AnthropicExtractionClient, ScriptedExtractionClient
+from chanakya.ingest.client import MAX_TOKENS, AnthropicExtractionClient, ScriptedExtractionClient
 from chanakya.toolargs import MalformedToolPayload, structural_violations, validate_tool_arguments
+
+# The client streams the Messages call (a 32000-token ceiling makes a non-streaming request unsafe), so
+# the Anthropic mock has to be Server-Sent Events rather than one JSON body. The event sequence lives in
+# one place — ``test_client`` — so there is a single definition to correct if the SDK's shape moves.
+from tests.ingest.test_client import _tool_use_stream
 
 # ── the real recorded payload ─────────────────────────────────────────────────────────────────────
 
@@ -89,14 +93,15 @@ def test_validator_names_the_field_and_the_truncation() -> None:
 
 @respx.mock
 def test_anthropic_client_refuses_the_recorded_payload() -> None:
-    """The production seam, end to end: the same bytes off the wire now raise instead of returning."""
-    respx.post(_ANTHROPIC_URL).mock(return_value=httpx.Response(200, json={
-        "id": "msg_test", "type": "message", "role": "assistant", "model": "claude-opus-4-8",
-        "content": [{"type": "tool_use", "id": "toolu_1", "name": "cluster_coreferences",
-                     "input": RECORDED_PAYLOAD}],
-        "stop_reason": "tool_use", "stop_sequence": None,
-        "usage": {"input_tokens": 10, "output_tokens": 8},
-    }))
+    """The production seam, end to end: the same bytes off the wire now raise instead of returning.
+
+    ``stop_reason`` is the benign ``tool_use`` on purpose — the payload is refused on its own evidence,
+    with no help from the provider's stop signal. The arguments reach the client as ``input_json_delta``
+    fragments that reassemble into exactly ``RECORDED_PAYLOAD``: the truncation that matters here is
+    *inside* the ``clusters`` value, which the provider serialised as a string and cut mid-token.
+    """
+    respx.post(_ANTHROPIC_URL).mock(
+        return_value=_tool_use_stream("cluster_coreferences", RECORDED_PAYLOAD))
     client = AnthropicExtractionClient(api_key="sk-test")
     with pytest.raises(MalformedToolPayload, match="clusters"):
         client.extract(tool_name="cluster_coreferences", input_schema=COREF_SCHEMA,
@@ -108,20 +113,47 @@ def test_anthropic_client_rejects_a_call_stopped_at_the_token_budget() -> None:
     """A tool call cut off *between* two complete list entries leaves a payload whose shape is fine.
 
     Only the provider's own ``stop_reason`` reveals it, so that signal is a rejection on its own — a
-    forced call that ran out of budget returned an incomplete answer, not a short one.
+    forced call that ran out of budget returned an incomplete answer, not a short one. The budget it ran
+    out of is ``MAX_TOKENS``, read from the module so this stays honest when the ceiling next moves.
     """
-    respx.post(_ANTHROPIC_URL).mock(return_value=httpx.Response(200, json={
-        "id": "msg_test", "type": "message", "role": "assistant", "model": "claude-opus-4-8",
-        "content": [{"type": "tool_use", "id": "toolu_1", "name": "cluster_coreferences",
-                     "input": {"clusters": [{"member_ids": [1, 2], "evidence": "NAME_VARIANT",
-                                             "licensing_quotes": ["q"]}]}}],
-        "stop_reason": "max_tokens", "stop_sequence": None,
-        "usage": {"input_tokens": 10, "output_tokens": 8192},
-    }))
+    respx.post(_ANTHROPIC_URL).mock(return_value=_tool_use_stream(
+        "cluster_coreferences",
+        {"clusters": [{"member_ids": [1, 2], "evidence": "NAME_VARIANT",
+                       "licensing_quotes": ["q"]}]},
+        stop_reason="max_tokens", output_tokens=MAX_TOKENS,
+    ))
     client = AnthropicExtractionClient(api_key="sk-test")
     with pytest.raises(MalformedToolPayload, match="truncated the forced tool call"):
         client.extract(tool_name="cluster_coreferences", input_schema=COREF_SCHEMA,
                        system="s", text="doc")
+
+
+#: The same generation, cut where it actually stopped: valid JSON right up to the point the budget ran
+#: out, ending inside the ``clusters`` string with nothing closed. This is what a mid-token cut looks
+#: like *on the wire*, as opposed to the reassembled dict the recorded bundle preserved.
+CUT_MID_TOKEN_JSON = json.dumps(RECORDED_PAYLOAD)[:-2]  # drop the closing quote and brace
+
+
+@respx.mock
+def test_a_stream_cut_mid_string_arrives_as_an_empty_payload() -> None:
+    """Why the test above puts *complete* JSON on the wire, and why ``stop_reason`` has to stand alone.
+
+    The SDK reassembles ``input_json_delta`` fragments by partial-parsing the buffer, and partial parsing
+    **discards a trailing unfinished string**. So a call cut mid-token does not reach the client as a
+    ragged payload the validator can name — it reaches it as ``{}``: structurally spotless, and
+    indistinguishable from a truthful "found nothing". That is the same silent-loss shape this module
+    exists to forbid, and nothing in the arguments can catch it. ``stop_reason`` is the only surviving
+    evidence, which is exactly why the budget signal is a rejection in its own right.
+    """
+    with pytest.raises(json.JSONDecodeError):
+        json.loads(CUT_MID_TOKEN_JSON)  # genuinely unfinished, not a tidied stand-in
+
+    # stop_reason is the benign one here, isolating what the *payload* alone can be held to.
+    respx.post(_ANTHROPIC_URL).mock(return_value=_tool_use_stream(
+        "cluster_coreferences", {}, raw_json=CUT_MID_TOKEN_JSON))
+    client = AnthropicExtractionClient(api_key="sk-test")
+    assert client.extract(tool_name="cluster_coreferences", input_schema=COREF_SCHEMA,
+                          system="s", text="doc") == {}, "the cut field is dropped, not surfaced"
 
 
 def test_scripted_replay_refuses_a_malformed_recorded_payload() -> None:
