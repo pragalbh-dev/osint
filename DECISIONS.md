@@ -2079,3 +2079,170 @@ The SPA does **not** yet render this. `frontend/src/api/types.ts` carries the ty
 `WatchView` / `watchSummary` still show the anchor half alone (the frontend has no installed toolchain in
 this worktree, and shipping unverified React was the worse risk). Until a panel reads it, the verdict is
 on the wire but not on the screen — which is, by this work's own argument, only half the fix.
+
+## INGEST — the extraction prompt now asks for what we score (2026-07-26, `fix/extraction-prompt-asks-for-what-we-score`)
+
+**PRE-REGISTERED.** This entry was written **before** any re-run. The three defects below are the only ones
+a replay cannot validate — changing a prompt changes model behaviour, so measuring the change needs new
+calls. The predictions in §4 are therefore the falsifiable record: if `discriminator_capture` does not rise,
+the diagnosis of defect 1 was **wrong**, and that must be discoverable afterwards rather than explained away.
+
+**The prompt is shared by all three bake-off candidates and is not per-model**, so nothing here is an
+advantage for one of them; it is a change to the instrument, and both candidates must be re-baselined.
+
+### 1. We scored a field the prompt never requested and the schema described as inert
+
+`_SYSTEM_BASE` was ~350 words that instructed at paragraph length on signature geometry, quotes, dates and
+aliases, and contained **zero** occurrences of `context`, `discriminat*`, `operator`, `geography` or "tell
+apart". The four discriminators reached the model only as field descriptions on an optional nested block —
+whose class docstring **ships verbatim inside the tool schema**, Sphinx markup and all, ending with
+"Populated by the model from S1; read by nothing yet." 13.4% of the composite weight sat on a field we never
+asked for and explicitly called dead. Both candidates scored a perfect 1.000 on structured-output
+compliance: they filled exactly what we asked for.
+
+Fixed by **asking**, in the register the rest of the prompt uses: what a discriminator is *for*
+(individuation — the detail that lets a reader tell two similar things apart), the four slots by their
+meaning, and the absence rule in the same breath, because an invented discriminator is worse than a missing
+one and there is a separately scored line for that exact trade.
+
+**A general rule falls out of this, and it is the more valuable half.** Pydantic ships every class docstring
+and field description into the tool schema, so **those strings are model-facing text, not developer notes**.
+Internal reasoning, decision ids and Sphinx roles now live in `#` comments, which pydantic does not ship —
+enforced by a test over every tool schema. Side effect worth stating: the model-facing JSON *shrank* (prose
+15.0k → 13.9k bytes, imagery 14.5k → 11.8k) while the prompt grew ~350 → 549 words, so the instruction we added
+was paid for by commentary the model could never use. (Prose ends higher than the 13.3k this entry first
+recorded because §6's veto-lane descriptions bought back ~600 bytes of it — a deliberate trade, and the
+schema-size ceiling is now close enough that the next addition has to displace something.)
+
+### 2. An enum whose legal values lived nowhere the model could see them
+
+`CoreferenceCluster.evidence` shipped as a bare nullable string. The three category names existed only in
+the pass-2 system prompt, so a candidate that answered correctly in a slightly different shape
+(`EXPLICIT_EQUIVALENCE — CLIAD is the parenthetical acronym for…`) had its cluster dropped, silently: 7 for
+GPT-5.6, 0 for the two we shipped, so a real schema defect but not part of the shared floor.
+
+The literal type is now the single definition — `model_json_schema()` turns it into an `enum` the model can
+see, and the accepted set is *derived from it* (`get_args`), so offered and accepted values can never drift
+apart again. That drift was the root cause, not the missing enum.
+
+**And the drop is now audible.** A label outside the three the schema names logs a **warning** — that is the
+case where the model may have been right in a shape we refuse. A label that is legal but disabled on this
+deployment logs an **info** naming the config key, because policy working as configured is not a defect.
+Neither aborts the document's pass: the surrounding rails are row-at-a-time, and one bad row must not
+discard the good ones. *Stated limitation:* a log line is the loudest channel that exists here today —
+there is no per-document ingest diagnostics record for a dropped-cluster count to land in, and inventing one
+was out of scope.
+
+### 3. Claim granularity was unspecified, and recall is scored against a fixed convention
+
+Measured: ~208 claims/run against ~149 for the other candidate, and one candidate's own count swung 174→227
+across five runs of the *same* documents. Two reasonable extractors can differ severalfold purely on how
+finely a sentence is split, and nothing said which we wanted.
+
+What is stated is the **unit of analysis** this project already has a position on (spine/02: one source, one
+date, one subject-predicate-object) as a rule applicable to an unseen document: one item per stated fact; a
+thing named several times in one document is one item, not one per mention; a relationship is one item per
+stated subject-relation-object; a thing and a relationship about it are different kinds of item, not a
+duplicate. **This is deliberately not "emit fewer claims".** Bundling two stated facts into one item breaks
+the rule exactly as splitting one fact into two does, and a test asserts the prompt contains no terseness
+instruction. The rule also opens by naming its own scope — it is about *how many items*, never about *what is
+the same thing* — because the paragraph above it is about identity and the two otherwise collide on the same
+sentence of a document (§6).
+
+### 4. Pre-registered predictions (the falsifiable part)
+
+**Every weighted line in the composite is listed, including the ones this change does not touch** — an
+omitted line is a line that can be quoted afterwards in whichever direction suits.
+
+| line | prediction | why |
+|---|---|---|
+| `discriminator_capture` (4.5) | **UP**, and materially — the mechanism is "never asked" | if it does not move, defect 1 was misdiagnosed and the field descriptions were already sufficient |
+| `discriminator_fabrication_avoidance` | **FLAT** (must not fall) | the absence rule ships in the same sentence as the ask; a fall means asking harder bought capture with invention, and the ask must then be narrowed |
+| `determinism` (2.0) | **UP** — the single most informative line here | the grain rule exists to remove the split/lump degree of freedom that swung one candidate 174→227 across five runs of the same documents. It is also the line the *review* put at risk: the shipped draft let the identity paragraph and the grain rule answer the same case (a repeated name) two ways, and a conflict a model resolves for itself resolves differently each run. Both are now scoped out loud. **A flat or falling `determinism` says the grain rule did not work, or that some other conflict remains — it is not explainable by anything else in this change.** |
+| claim-count variance across runs of one document | **DOWN** | the raw form of the same prediction, and the one to read first if `determinism`'s aggregation obscures it |
+| `graph_recall` (3.0) | **FLAT, or slightly up** | nothing here changes which edges are emitted. The one plausible route up is the discriminator block individuating two same-named endpoints that previously collapsed into one; the one plausible route down is the grain rule being read as "fewer items", which the disjointness clause and the no-terseness test are there to prevent. Either move needs the extraction diffed, not the number quoted |
+| `surface_recall` | **FLAT, or slightly up** | nothing was capped; the grain rule can merge repeated mentions that were already folded by `dedup_within_doc`, so little should change |
+| `surface_precision` / `surface_f1` | **UP slightly, for the wrong reason** | fewer split-duplicates shrinks a denominator the 65-row gold cannot cover anyway; do **not** read this as an extraction improvement |
+| `structured_output_reliability` | **FLAT at 1.000** | a longer prompt is the one thing that could spend it; if it falls, the additions are too long and the discriminator ask (which is mandatory) keeps priority over the grain rule |
+| `extract_only_stated` / `citation_faithfulness` | **FLAT** | nothing in this change touches quoting or grounding. The one clause that could have — "one item carrying its clearest quote", which asked the model to rank spans the pipeline in fact keeps all of — was **removed** before the run, precisely so a fall here has no candidate cause inside this change. If either line falls it must be investigated, not attributed |
+| `coref_binding` | **FLAT** (still UNMEASURABLE on this gold) | the enum fix cost the two shipped candidates 0; it should show on a GPT-class candidate only |
+| `trap_avoidance` | **NOT PREDICTED — and not to be read as evidence either way** | the metric is broken, not merely untouched: all 25 apparent hits are span-overlap artefacts, zero are fabricated assertions, and on a containment basis the ordering *reverses* (RESUME-HERE §3). A number produced by an instrument known to measure the wrong thing supports no conclusion, so no direction is claimed here. It is listed to stop the next reader treating a silent omission as "expected flat" |
+
+**Attribution — which half of the change moved a number.** This branch does two things at once (asks for the
+discriminators in the prompt; cleans the tool schema of internal prose, which also shortened it). A single
+re-run cannot separate them, so the honest reading of a `discriminator_capture` rise is *"the change worked"*,
+not *"the ask worked"* — the schema cleanup removed the "read by nothing yet" sentence from the same field's
+own docstring, which is an equally good candidate cause. Two ways the next run could separate them, in cost
+order: (a) score one extra arm with the schema cleanup only and the prompt paragraph removed — one config,
+same documents, and it isolates the ask directly; (b) if only one run is affordable, do not attribute at all
+— report the composite and say the branch is a package. **An unattributed result is a weaker claim than it
+looks, and stating that is cheaper than defending a cause we never tested.**
+
+### 5. Rejected as overfitting — named, because each was tempting
+
+* **"Do not create entities from abstract nominalizations."** The diagnosis flags this one itself. It would
+  raise `extract_only_stated` (18 of one candidate's 47 failures are `known_gap` nominal labels), and on
+  inspection those labels are *faithful* — the instruction's real effect would be to make output match this
+  gold's phrasing, turning the next bake-off into a measurement of our own prompt patch.
+* **Teaching the gold's vocabulary** — the registry's licensing-category phrasings, `"Karachi (city
+  precision only)"`, "prefer `observed-at` over `SightingEvent`". Annotator bookkeeping; raises agreement
+  without improving one extraction decision on an unseen document.
+* **"Put the full mention noun phrase in `name`."** Would take `entity:variant` 0/4 → 4/4. The bare
+  designator is the better answer for entity resolution, the graph, and the label an analyst reads.
+* **Any terseness or emission cap.** The fastest route to a better F1, and the opposite of what an OSINT
+  extractor is for. A test now asserts the prompt contains no such instruction.
+* **Making the model emit explicit singleton clusters** so `referent_id` is never `None`. 0.35 → ~0.80 with
+  no scorer change, and it destroys the abstention signal this system is built on. The defect is in how the
+  scorer reads absence.
+
+### 6. What an adversarial read of the shipped prompt caught — before any run
+
+The fix was reviewed by reading the model-facing surface *as the model receives it*, and the fix had
+introduced four defects of its own. Recorded because three of them are the same failure mode the change was
+about: text we wrote for ourselves, landing in front of a model.
+
+* **The ask contained an over-merge licence.** It read "two same-named things stay two things only if their
+  context is on the record" — one sentence from "leave the rest empty ... a guess manufactures identity
+  evidence". As an instruction that is *"leave it blank and they get merged"*: a standing reason to fill a
+  field we forbid guessing at, pointing at manufactured identity evidence as the way to prevent a wrong
+  fusion — this project's archetypal harm, inverted. It also silently threatened the change's own
+  `discriminator_fabrication_avoidance` prediction. **Removed.** The paragraph now states what the block is
+  *for* and adds that identity is not the extractor's judgement to make; it says nothing about what the
+  resolver does with a filled or empty block. General rule, worth more than the patch: *never tell an
+  extractor the downstream consequence of its own sparseness* — a model that knows the consequence can aim
+  at it.
+* **Two adjacent paragraphs answered the same case differently.** The identity paragraph allows two
+  same-named things to be two things; the grain rule immediately said a repeated name is one item. A model
+  handed that conflict resolves it differently run to run, which lands on `determinism` — the metric the
+  grain rule was added to improve. Both now name their scope (identity vs. how many items), and the grain
+  rule carries the case where a document itself holds two same-named things apart.
+* **"carrying its clearest quote" described something we do not do.** It is not in the project's unit of
+  analysis (spine/02) and it contradicts `dedup_within_doc`, which folds restatements while keeping the
+  **union** of every cited span so none is discarded. Asking a model to rank spans, against two
+  quote-grounded floor metrics, invites a spliced one. **Removed**, and the pre-registration's escape hatch
+  for that exact regression removed with it — a prediction that explains away its likeliest failure in
+  advance is not a prediction. A test now asserts the fold behaviour *and* the absence of the ask, so the
+  two can never drift apart silently.
+* **A clarity rewrite blurred the veto lane.** `aliases` (→ `same-as`) and `distinctions` (→ `distinct-from`)
+  share one shape; only the field name distinguishes them, and the rewritten shared docstring described one
+  direction and left the other to inference. `distinct-from` is the rail that stops two co-located,
+  same-named things being fused into one unit's before-and-after. Each field now states its own direction
+  and the shared docstring says the field is what decides.
+
+**And the general rule was applied to five classes without auditing the rest.** Dumping every description
+found more of the same kind — "the many-claims-per-row unit", "the perishable sustainment node", "→ a
+negative-polarity observation claim", "the pass-2 output", "(customs-tender family)" — and the audit had also
+stopped at the seven *text* schemas, missing the **two imagery tools**, which were shipping doubled-backtick
+markup and a docstring explaining to a model that has only a picture which internal stage owns
+identification. All rewritten as instructions. More importantly the guards are now **properties of the whole
+surface** rather than assertions pinned to the strings someone noticed: every object in every tool schema
+must carry a usable description, and no description may name our own machinery (nodes, edges, referents,
+polarity, claims, the resolver, the schema, anything downstream — word-boundary matched). The surface list is
+now a single function, so a new forced tool joins the audit by being added in one place. That catches the
+next one without anyone re-reading the file.
+
+*Scope, stated so the gap is not mistaken for a clean bill:* the audit covers the **ingest** tool surface —
+the nine schemas a model is shown while extracting. The ASK agent's `graph_*` tool specs
+(`chanakya/agent/tool_specs.py`) are hand-written model-facing descriptions that were never read under this
+rule. They are a different subsystem on a branch about the extraction prompt, so widening now would be scope
+creep; the same dump, pointed at that module, is the next person's twenty minutes.
