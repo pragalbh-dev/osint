@@ -2,7 +2,7 @@
 
 The adapter turns a *quoted string* into ``[start, end]``. If that arithmetic is off, the offsets look
 fine and the citation-faithfulness metric reports a model as mis-citing — a fabricated finding about a
-candidate, caused by us. So the round trip is asserted on all 125 rows, with an independent normaliser.
+candidate, caused by us. So the round trip is asserted on all 127 rows, with an independent normaliser.
 """
 
 from __future__ import annotations
@@ -32,7 +32,7 @@ def _norm(text: str) -> str:
 
 
 def _records(adapted: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Every adapted record that carries a ``doc_ref`` — all 125 of them, positive and negative."""
+    """Every adapted record that carries a ``doc_ref`` — all 127 of them, positive and negative."""
     out = {c["gold_id"]: c for c in adapted["claims"]}
     for block in adapted["negative_gold"].values():
         out |= {r["gold_id"]: r for r in block["rows"]}
@@ -67,7 +67,7 @@ def test_offsets_slice_back_to_the_quoted_span(
 def test_the_three_non_byte_exact_spans_are_whitespace_only(
     raw_gold: dict[str, Any], adapted: dict[str, Any], texts_by_path: dict[str, str],
 ) -> None:
-    """The 122/125 gap is whitespace collapse in the fixed-width customs table — nothing else."""
+    """The 124/127 gap is whitespace collapse in the fixed-width customs table — nothing else."""
     by_row = {r["row_id"]: r for r in raw_gold["rows"]}
     inexact = []
     for gold_id, record in _records(adapted).items():

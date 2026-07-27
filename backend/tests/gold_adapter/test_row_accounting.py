@@ -1,7 +1,10 @@
-"""Every one of the 125 labeled rows lands in exactly one bucket, and the buckets are the right sizes.
+"""Every one of the 127 labeled rows lands in exactly one bucket, and the buckets are the right sizes.
 
 The failure this guards against is the one the project keeps hitting: a translation that quietly drops
 rows and reports a clean-looking number over a shrunken denominator.
+
+Pure fixture bookkeeping: every number below comes from ``EXPECTED``, which was re-derived against the
+2026-07-26 gold repair. Nothing here is a measurement of a model.
 """
 
 from __future__ import annotations

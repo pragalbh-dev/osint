@@ -1,12 +1,24 @@
 """S12 — the slice's own ceiling on absolute recall, reported rather than corrected.
 
-16 of the 65 scored claims carry a role surface that appears nowhere in their document: the gold labels a
-*resolved* subject ("HQ-9/P" where the sentence says only "was formally inducted…"), or an annotator's
-composition ("The missile itself / the HQ-9/P"). Those rows can only be matched through the matcher's
-fuzzy tolerance, so a scorecard that reads absolute recall against 1.00 is over-reporting the gap.
+Some scored claims carry a role surface that appears nowhere in their cited document, so they can only be
+matched through the matcher's fuzzy tolerance; a scorecard that reads absolute recall against 1.00 is
+over-reporting the gap by that much. The adapter's job is to *state* the ceiling in the adapted file, and
+the surviving tests here check that what it states is recomputable from the corpus rather than asserted.
 
-This is a LABELLING observation, not a defect the adapter fixes — stripping the annotator sugar would
-truncate the surfaces that genuinely are document text ("transporter-erector-launchers (TELs)").
+The ceiling's SIZE is deliberately not pinned in this module. It is a moving property of the labelling —
+the 2026-07-26 gold repair shrank it substantially by rewriting annotator-composed surfaces back to
+document text — and the gold declares its own current figures under ``ceilings`` →
+``2_verbatim_extractability``, which is the right single home for them.
+
+RETIRED 2026-07-27 — ``test_the_ceiling_is_stated_in_the_file``
+───────────────────────────────────────────────────────────────
+That test pinned the ceiling at 34 in-span / 49 in-document / 16 absent, and its premise was that those 16
+rows were "a LABELLING observation, not a defect the adapter fixes". The 2026-07-26 repair fixed exactly
+that: it corrected 14 of the 16 against the document and moved the other 2 out of the scored set. So the
+test was not merely stale in its numbers — its stated reason for existing had become false. It is deleted
+rather than bumped, because re-baselining it would have preserved a narrative the repair refuted. The
+finding, and what the repair did about it, live in ``tmp/conv/RK-BAKEOFF-DIAGNOSIS.md`` and in the gold's
+own 2026-07-26 audit-log entry.
 """
 
 from __future__ import annotations
@@ -14,17 +26,6 @@ from __future__ import annotations
 from typing import Any
 
 from eval.gold.adapter import normalize_text
-
-from .conftest import EXPECTED
-
-
-def test_the_ceiling_is_stated_in_the_file(adapted: dict[str, Any]) -> None:
-    block = adapted["surface_verbatimness"]
-    assert block["scored_claims"] == EXPECTED["claims"]
-    assert block["all_role_surfaces_verbatim_in_own_span"] == 34
-    assert block["all_role_surfaces_verbatim_somewhere_in_document"] == 49
-    assert len(block["rows_with_a_surface_absent_from_the_whole_document"]) == 16
-    assert "ceiling" in block["reading"].lower()
 
 
 def test_the_counts_are_recomputable_from_the_file_and_the_corpus(

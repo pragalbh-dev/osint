@@ -9,8 +9,8 @@ slice, for the three candidates the ruling names.
 Each candidate is synthesised mechanically from the gold itself, so nothing is hand-tuned:
 
 * **perfect**            — emits exactly the 65 positive claims.
-* **verbose but honest** — the 65 positives *plus* one unpaired emission on every one of the 27 neutral-class
-  spans (19 ``unmodelled`` + 6 ``anti_coref`` + 2 ``ambiguous``). It has read more of the document and
+* **verbose but honest** — the 65 positives *plus* one unpaired emission on every one of the 29 neutral-class
+  spans (19 ``unmodelled`` + 8 ``anti_coref`` + 2 ``ambiguous``). It has read more of the document and
   invented nothing.
 * **fabricating**        — the 65 positives *plus* one unpaired emission on every one of the 11
   ``not_a_claim`` trap spans.
@@ -18,6 +18,18 @@ Each candidate is synthesised mechanically from the gold itself, so nothing is h
 The unpaired emissions carry deliberately non-gold surfaces, because "an unpaired emission sitting on a
 declared-neutral span" is exactly the case the exclusion is about; an emission that paired with positive gold
 was never charged in the first place.
+
+RETIRED 2026-07-27 — ``test_the_verbose_but_honest_model_was_losing_precision_for_reading_the_document``
+─────────────────────────────────────────────────────────────────────────────────────────────────────
+That test pinned the headline quantification of Ruling 1 (0.7065 unwired → 1.0 wired, a 0.2935 loss over
+27 neutral spans). The 2026-07-26 gold repair moved the neutral count 27 → 29, which moves both decimals.
+It is deleted rather than bumped, because those decimals are a *measured finding* about how a candidate
+scored, not bookkeeping about the fixture — and the bake-off diagnosis established that several such
+figures were artefacts of our own scorer. Editing the number in place would have laundered a changed
+measurement as a repair. The finding, with its provenance and its caveats, lives in
+``tmp/conv/RK-BAKEOFF-DIAGNOSIS.md``; the *property* it was really defending — that wiring the exclusion
+stops ranking a verbose-honest model below a fabricator — is still asserted below by
+``test_the_wired_denominator_ranks_the_honest_model_above_the_fabricator``.
 """
 
 from __future__ import annotations
@@ -99,7 +111,12 @@ def _candidates(gold, negative) -> dict[str, list[SurfaceClaim]]:
 # ── the numbers ────────────────────────────────────────────────────────────────────────────────────
 
 def test_the_slice_declares_the_counts_this_measurement_assumes(loaded) -> None:
-    """Pinned so a change to the gold breaks this loudly instead of silently re-baselining the figures."""
+    """Pinned so a change to the gold breaks this loudly instead of silently re-baselining the figures.
+
+    It did exactly that on 2026-07-26 and is re-armed against the repaired census. The neutral total is
+    now derived from ``EXPECTED`` rather than written as its own literal, so this tripwire fires on the
+    *classes* moving apart, not merely on their sum changing.
+    """
     gold, negative = loaded
     assert len(gold) == EXPECTED["claims"]
     counts = negative.counts()
@@ -107,7 +124,7 @@ def test_the_slice_declares_the_counts_this_measurement_assumes(loaded) -> None:
     assert counts["anti_coref"] == EXPECTED["anti_coref"]
     assert counts["ambiguous"] == EXPECTED["ambiguous"]
     assert counts["unmodelled"] == EXPECTED["unmodelled"]
-    assert sum(counts[c] for c in NEUTRAL_CLASSES) == 27
+    assert sum(counts[c] for c in NEUTRAL_CLASSES) == sum(EXPECTED[c] for c in NEUTRAL_CLASSES) == 29
 
 
 def test_a_perfect_model_scores_one_on_precision_and_recall_either_way(loaded, policy) -> None:
@@ -121,20 +138,10 @@ def test_a_perfect_model_scores_one_on_precision_and_recall_either_way(loaded, p
     assert m["traps"].value == pytest.approx(1.0)
 
 
-def test_the_verbose_but_honest_model_was_losing_precision_for_reading_the_document(loaded,
-                                                                                   policy) -> None:
-    """The defect, quantified. Unwired, reading all 27 neutral-class spans correctly cost 0.2935 of
-    precision; wired, it costs nothing. This is the number that does NOT cancel between candidates."""
-    gold, negative = loaded
-    m = _measure(gold, negative, _candidates(gold, negative)["verbose_honest"], policy)
-
-    assert m["emitted"] == 65 + 27
-    assert m["matched"] == 65
-    assert m["before"] == pytest.approx(0.7065, abs=5e-5)
-    assert m["after"] == pytest.approx(1.0)
-    assert m["after"] - m["before"] == pytest.approx(0.2935, abs=5e-5)
-    assert m["excluded"] == 27
-    assert m["traps"].value == pytest.approx(1.0), "a verbose honest model must not read as a fabricator"
+# RETIRED 2026-07-27: ``test_the_verbose_but_honest_model_was_losing_precision_for_reading_the_document``
+# stood here. It pinned 0.7065 / 0.2935 — the published quantification of a scorer ruling, not fixture
+# bookkeeping — and the 2026-07-26 gold repair (27 → 29 neutral rows) moved both. Deleted rather than
+# re-baselined; see this module's docstring and ``tmp/conv/RK-BAKEOFF-DIAGNOSIS.md``.
 
 
 def test_the_unmodelled_rows_alone_account_for_most_of_the_loss(loaded, policy) -> None:
@@ -166,8 +173,11 @@ def test_the_fabricating_model_is_not_excused_by_the_exclusion(loaded, policy) -
 
 def test_the_wired_denominator_ranks_the_honest_model_above_the_fabricator(loaded, policy) -> None:
     """The property that matters to a verdict, not just the arithmetic: unwired, the verbose-but-honest model
-    scored WORSE on precision than the fabricator (0.7065 vs 0.8553) — the instrument preferred the model
-    that invented claims to the one that read more of the page. Wired, that inversion is gone."""
+    scored WORSE on precision than the fabricator — the instrument preferred the model that invented claims
+    to the one that read more of the page. Wired, that inversion is gone.
+
+    Stated as an inequality, never as the two decimals: those move with the gold's neutral-row census (they
+    did on 2026-07-26) while the inversion this test exists to catch does not."""
     gold, negative = loaded
     cands = _candidates(gold, negative)
     honest = _measure(gold, negative, cands["verbose_honest"], policy)

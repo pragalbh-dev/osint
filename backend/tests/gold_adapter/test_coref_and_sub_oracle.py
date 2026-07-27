@@ -17,6 +17,17 @@ from .conftest import EXPECTED
 
 # ── the coref registry ────────────────────────────────────────────────────────────────────────────
 
+def _retagged_by_the_repair(raw_gold: dict[str, Any]) -> list[str]:
+    """The rows the 2026-07-26 gold repair re-routed off their registry cluster, per the gold's own log.
+
+    Read from the audit log rather than transcribed, so the relationship asserted below is between two
+    things the *gold* states, not between two literals a test remembers.
+    """
+    entries = [e for e in raw_gold["audit_log"] if "anti_coref_routing" in e]
+    assert len(entries) == 1, "the gold declares more than one anti-coref routing repair"
+    return list(entries[0]["anti_coref_routing"]["retagged_rows"])
+
+
 def test_registry_carries_the_curated_clusters(adapted: dict[str, Any]) -> None:
     registry = adapted["coref_registry"]
     assert len(registry) == EXPECTED["coref_clusters"] == 32
@@ -27,17 +38,36 @@ def test_registry_carries_the_curated_clusters(adapted: dict[str, Any]) -> None:
 def test_only_curated_clusters_are_scoreable_on_a_claim(
     raw_gold: dict[str, Any], adapted: dict[str, Any],
 ) -> None:
-    """S9: an ad-hoc row tag must not become coref gold — B-cubed over singletons is not a measurement."""
+    """S9: an ad-hoc row tag must not become coref gold — B-cubed over singletons is not a measurement.
+
+    The scoreable count fell 51 → 39 in the 2026-07-26 gold repair, which re-routed twelve rows off the
+    two ANTI_COREF registry clusters that had been tagging positive claims. That is asserted as the
+    RELATIONSHIP — 39 plus the repair's own list of re-routed rows reproduces the 51 this test froze on
+    2026-07-25 — because a bare new literal would say nothing about whether the drop was the repair or a
+    silently dropped tag.
+    """
     curated = {c["cluster"] for c in adapted["coref_registry"]}
     by_row = {r["row_id"]: r for r in raw_gold["rows"]}
-    tagged = 0
+    scoreable = set()
     for claim in adapted["claims"]:
         tag = claim.get("coref_cluster")
         if tag is None:
             continue
-        tagged += 1
+        scoreable.add(claim["gold_id"])
         assert tag in curated, f"{claim['gold_id']}: non-registry tag {tag!r} became coref gold"
-    assert tagged == 51
+
+    retagged = _retagged_by_the_repair(raw_gold)
+    assert len(scoreable) == 39
+    assert len(scoreable) + len(retagged) == 51, (
+        "the drop from the pre-repair 51 is no longer accounted for by the declared retag alone — a tag "
+        "moved for some other reason and this filter needs re-measuring, not re-baselining"
+    )
+    # the retag moved each row's CLUSTER, not the row: all twelve are still scored claims, and none of
+    # them is scoreable coref gold any more.
+    claim_ids = {c["gold_id"] for c in adapted["claims"]}
+    assert set(retagged) <= claim_ids, "a re-routed row left the scored set: that is not a retag"
+    assert not (set(retagged) & scoreable), "a re-routed row is still coref gold: the retag did not take"
+
     # and rows whose tag is NOT in the registry really do exist — otherwise the filter is untested
     non_registry = [r for r in by_row.values()
                     if r.get("coref_cluster") not in (None, "-")

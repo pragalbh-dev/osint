@@ -1,17 +1,21 @@
 """The check that decides whether the bake-off is honest.
 
 A hypothetical PERFECT model — one emitting exactly the positive gold and nothing else — must score 1.0
-recall. If the 38 negative rows are loaded as positives instead, that model is capped at 65/125 = 0.52,
-and every candidate is charged 0.48 recall for a loader artefact. That is the whole reason the adapter
+recall. If the 40 negative rows are loaded as positives instead, that model is capped at 65/127 ≈ 0.51,
+and every candidate is charged ~0.49 recall for a loader artefact. That is the whole reason the adapter
 exists, so it is measured here rather than argued.
 
 Two ceilings, and they are NOT the same number — keeping them apart is the point:
 
-* **0.5200 (65/125)** — a candidate emitting only what the extraction pipeline can express. This is the
+* **65/127 ≈ 0.512** — a candidate emitting only what the extraction pipeline can express. This is the
   honest statement of what the adapter is worth, because the 22 attribute rows are excluded from scoring
   precisely on the grounds that the pipeline cannot express an attribute as a claim.
-* **0.6960 (87/125)** — a candidate that *additionally* emitted all 22 attribute rows. A real candidate
-  cannot reach this, so quoting it alone understates the artefact by 0.18 recall.
+* **87/127 ≈ 0.685** — a candidate that *additionally* emitted all 22 attribute rows. A real candidate
+  cannot reach this, so quoting it alone understates the artefact by ~0.17 recall.
+
+Both ceilings are *derived from the census* below rather than pinned as decimals: the 2026-07-26 gold
+repair moved them (from 0.520 and 0.696) without touching anything they are used to argue, and a
+re-derivable ratio cannot rot that way a second time.
 
 Two layers, on purpose:
 
@@ -46,24 +50,28 @@ NEGATIVE_ROWS = (EXPECTED["not_a_claim"] + EXPECTED["anti_coref"]
 
 def test_the_recall_denominator_is_the_positive_gold_only(adapted: dict[str, Any]) -> None:
     assert adapted["reconciliation"]["scored_recall_denominator"] == EXPECTED["claims"] == 65
-    assert NEGATIVE_ROWS == 38
+    # 40, not the 38 frozen on 2026-07-25: the 2026-07-26 gold repair appended two ANTI_COREF
+    # prohibition rows. The emittable count is unchanged at 87 — both rows are negative gold.
+    assert NEGATIVE_ROWS == 40
     assert EXPECTED["rows"] - NEGATIVE_ROWS == 87
 
 
 def test_a_perfect_model_is_not_capped(adapted: dict[str, Any]) -> None:
     """Recall 65/65 = 1.00 through the adapter, against both naive ceilings.
 
-    ``expressible`` is the ceiling that describes a real candidate (0.52); ``with_attributes`` is the
-    ceiling for one that also emitted the 22 unexpressible attribute rows (0.696). Asserting both stops
+    ``expressible`` is the ceiling that describes a real candidate (≈0.512); ``with_attributes`` is the
+    ceiling for one that also emitted the 22 unexpressible attribute rows (≈0.685). Asserting both stops
     either being quoted as "the" naive number.
     """
     adapted_recall = EXPECTED["claims"] / adapted["reconciliation"]["scored_recall_denominator"]
     expressible = EXPECTED["claims"] / EXPECTED["rows"]
     with_attributes = (EXPECTED["rows"] - NEGATIVE_ROWS) / EXPECTED["rows"]
     assert adapted_recall == 1.0
-    assert round(expressible, 3) == 0.520
-    assert round(with_attributes, 3) == 0.696
-    # the artefact is 0.48 for a candidate emitting only what the pipeline can produce
+    # was 0.520 / 0.696 over 125 rows; the 2026-07-26 repair added two negative rows to the naive
+    # denominator without adding anything a candidate can score, so both ceilings fall slightly.
+    assert round(expressible, 3) == 0.512
+    assert round(with_attributes, 3) == 0.685
+    # the artefact is ~0.49 for a candidate emitting only what the pipeline can produce
     assert adapted_recall - expressible > 0.47
     assert adapted_recall - with_attributes > 0.30
 
@@ -329,17 +337,23 @@ def test_perfect_model_scores_one_through_the_adapter(
 def test_the_naive_load_caps_the_same_model_at_070(
     scorer: Any, raw_gold: dict[str, Any], adapted: dict[str, Any], tmp_path: Any,
 ) -> None:
-    """The counterfactual, measured: all 125 rows as positives.
+    """The counterfactual, measured: all 127 rows as positives.
 
     Two candidates, because the two ceilings are different claims about different models:
 
-    * ``emittable`` (87 rows = 65 claims + 22 attribute rows) scores 0.696. Note what this credits — a
-      model matching the 22 attribute rows, which the adapter excludes from scoring *on the grounds that
-      the pipeline cannot express an attribute as a claim*. So 0.696 describes a model that cannot exist.
-    * a candidate emitting only the 65 claim-shaped rows scores 0.520, and that is the ceiling that
-      describes a real extractor.
+    * ``emittable`` (87 rows = 65 claims + 22 attribute rows) is the FLATTERING ceiling. Note what it
+      credits — a model matching the 22 attribute rows, which the adapter excludes from scoring *on the
+      grounds that the pipeline cannot express an attribute as a claim*. It describes a model that
+      cannot exist, and it still lands under 0.70.
+    * a candidate emitting only the 65 claim-shaped rows is the HONEST ceiling, the one that describes a
+      real extractor, and it sits below the flattering one.
 
-    Asserting both keeps the honest figure (0.52) from being displaced by the flattering one.
+    Asserting both keeps the honest figure from being displaced by the flattering one.
+
+    Both are asserted as RATIOS OVER THE CENSUS, not as the decimals they happened to be on 2026-07-25
+    (0.696 / 0.520). The 2026-07-26 gold repair moved those decimals to 0.685 / 0.512 while leaving every
+    claim this test makes intact — pinning the decimal turned a live proof into a stale one, so the
+    property is what is pinned now.
     """
     gold_mod, matcher_mod, surface_mod = scorer
     paths = {d["doc_id"]: d["path"] for d in raw_gold["documents"]}
@@ -379,8 +393,10 @@ def test_the_naive_load_caps_the_same_model_at_070(
         for i, g in enumerate(g for g in naive_gold if g.key in emittable)
     ]
     result = matcher_mod.match_claims(naive_gold, candidate, _policy())
-    assert len(candidate) == 87
-    assert round(result.recall, 3) == 0.696
+    assert len(candidate) == EXPECTED["rows"] - NEGATIVE_ROWS == 87
+    # THE headline: the flattering ceiling is exactly emittable-rows / all-rows, and even that stays
+    # under 0.70. Stated as the ratio so a change to the census re-derives it instead of rotting it.
+    assert result.recall == pytest.approx((EXPECTED["rows"] - NEGATIVE_ROWS) / EXPECTED["rows"])
     assert result.recall < 0.70
 
     # and the ceiling for a candidate emitting only what the pipeline can actually express
@@ -391,8 +407,9 @@ def test_the_naive_load_caps_the_same_model_at_070(
     }]
     assert len(expressible) == EXPECTED["claims"] == 65
     real = matcher_mod.match_claims(naive_gold, expressible, _policy())
-    assert round(real.recall, 3) == 0.520
-    # the artefact a real candidate actually suffers is 0.48, not 0.30
+    assert real.recall == pytest.approx(EXPECTED["claims"] / EXPECTED["rows"])
+    assert real.recall < result.recall, "the honest ceiling must sit BELOW the flattering one"
+    # the artefact a real candidate actually suffers is ~0.49, not ~0.31
     assert 1.0 - real.recall > 0.47
 
 
