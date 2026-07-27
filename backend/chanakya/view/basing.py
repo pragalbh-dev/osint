@@ -95,6 +95,19 @@ def _cfg(config: ConfigBundle) -> dict[str, object]:
     return dict(getattr(config.credibility, "basing_proposer", None) or {})
 
 
+def _edge_type_list(cfg: dict[str, object], key: str) -> list[str]:
+    """A declared list-of-edge-types knob, narrowed out of the untyped config block. Absent ⇒ ``[]``.
+
+    The ``isinstance`` is load-bearing, not ceremony: a knob mis-authored as a bare string
+    (``occupancy_edge_types: located-at``) would otherwise *iterate its characters* and hand the derivation a
+    list of single letters to match edge types against — the same shape of defect already found on the
+    ingest path, where a string was iterated where a container was meant. Refusing a non-container leaves
+    the derivation dormant, which is the fail-safe direction: no derived basing rather than garbage basing.
+    """
+    value = cfg.get(key)
+    return [str(x) for x in value] if isinstance(value, (list, tuple)) else []
+
+
 def _upper(value: DateValue | None) -> str | None:
     return canonical_iso_bounds(value)[1]
 
@@ -309,11 +322,12 @@ def derive(
     cfg = _cfg(config)
     if not cfg:
         return out
-    occupancy_edges = [str(x) for x in (cfg.get("occupancy_edge_types") or [])]
-    formation_edges = [str(x) for x in (cfg.get("formation_edge_types") or [])]
-    hop_edges = [str(x) for x in (cfg.get("equipment_hop_edges") or [])]
+    occupancy_edges = _edge_type_list(cfg, "occupancy_edge_types")
+    formation_edges = _edge_type_list(cfg, "formation_edge_types")
+    hop_edges = _edge_type_list(cfg, "equipment_hop_edges")
     derived_edge_type = str(cfg.get("derived_edge") or "")
-    cap = int(cfg.get("max_units_per_site") or 1)
+    raw_cap = cfg.get("max_units_per_site")
+    cap = int(raw_cap) if isinstance(raw_cap, int) and not isinstance(raw_cap, bool) and raw_cap > 0 else 1
     require_located = bool(cfg.get("require_located_site", True))
     if not (occupancy_edges and formation_edges and derived_edge_type):
         return out

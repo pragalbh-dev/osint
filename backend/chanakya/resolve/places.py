@@ -351,10 +351,16 @@ def place_distinct_pairs(
     out: set[frozenset[str]] = set()
     reasons: dict[frozenset[str], str] = {}
     for a, b in unordered_pairs(sorted(place_of)):
-        if frozenset((place_of[a].place_id, place_of[b].place_id)) in distinct_places:
+        place_a, place_b = place_of[a].place_id, place_of[b].place_id
+        # A mention with no gazetteer match has no place to be held apart BY. :func:`place_matches` already
+        # drops those, but ``place_of`` is a caller-supplied parameter — skipping here keeps an unfiltered
+        # dict from reaching the wall, and fails safe (no wall drawn) rather than inventing one.
+        if place_a is None or place_b is None:
+            continue
+        if frozenset((place_a, place_b)) in distinct_places:
             pair = frozenset((a, b))
             out.add(pair)
-            reasons[pair] = place_wall_reason(*sorted((place_of[a].place_id, place_of[b].place_id)))
+            reasons[pair] = place_wall_reason(*sorted((place_a, place_b)))
     return out, reasons
 
 

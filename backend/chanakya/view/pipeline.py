@@ -1205,7 +1205,12 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
     # skim it. First occurrence wins, so the order above (assessment gaps, then routing, then derivation) is
     # the precedence, and it is deterministic (gate G2).
     _seen_gaps: set[str] = set()
-    known_gaps = [g for g in known_gaps if not (g.id in _seen_gaps or _seen_gaps.add(g.id))]
+    _deduped_gaps = []
+    for _gap in known_gaps:
+        if _gap.id not in _seen_gaps:
+            _seen_gaps.add(_gap.id)
+            _deduped_gaps.append(_gap)
+    known_gaps = _deduped_gaps
     # …and the SAME dedup rule applied to what the analyst actually reads, not just to the id. An identity
     # gap is keyed by the raw pair that raised it, so five raw pairs that canonicalise onto one node produce
     # five DIFFERENT ids carrying one identical sentence — measured: 14 identity gaps on the booted corpus
