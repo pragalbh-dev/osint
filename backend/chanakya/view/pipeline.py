@@ -66,10 +66,6 @@ from chanakya.schemas import (
     report_bounded_validity,
 )
 from chanakya.sufficiency import check, coverage_statement
-
-#: The sufficiency slot an identity refusal is missing. One name, used by the node's ``missing_slots`` and by
-#: the per-endpoint ``gap:identity:`` record, so the refuse half and the escalate half say the same word.
-IDENTITY_SLOT = "identity" 
 from chanakya.timeref import effective_as_of, is_available_by
 
 from . import basing as derived_basing
@@ -84,6 +80,10 @@ from .layers import (
     withheld_edge_gap,
 )
 from .supersede import build_instance_edges, order_instance_edges
+
+#: The sufficiency slot an identity refusal is missing. One name, used by the node's ``missing_slots`` and by
+#: the per-endpoint ``gap:identity:`` record, so the refuse half and the escalate half say the same word.
+IDENTITY_SLOT = "identity"
 
 # ── log normalisation ────────────────────────────────────────────────────────────────────────
 
