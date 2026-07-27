@@ -2006,3 +2006,76 @@ fix (the metric runs the same shape check, with a schema-free fallback for alrea
 on another branch, so it ships as `tmp/conv/eval-structured-output-sees-truncation.patch` — verified to
 re-score those two runs 1.0000 → 0.9333 and to leave the other ten untouched. It imports
 `chanakya.toolargs`, so it can only land after this branch merges.
+
+## MONITOR — an armed tripwire that CANNOT FIRE now says so (2026-07-27, `feat/observable-trigger-reachability`)
+
+### 1. The defect, measured on the booted app
+
+Two of the three shipped observables could never produce an alert, and both rendered as ordinary armed
+tripwires:
+
+* `obs-followon-interceptor-order` waits on a `replenishes` edge. The rebuilt corpus view holds **zero**
+  edges of that type and **zero** `interceptor_stockpile` nodes for one to attach to — and it advertised
+  *"watching 66 node(s)"*.
+* `obs-spares-tender-probable-induction` compiles to **arm-only**: `_fire` and `arm` both return before
+  any detector runs, so no graph change can ever trip it. `explain()` had always known this; no
+  list-level surface ever said it.
+
+The anchor work (AH-1/AH-2) taught a tripwire to say *"I cannot see my target"*. It never taught it *"I
+can see everything, and the thing I am watching for cannot occur here."* An armed-but-impossible tripwire
+converts an absence of alerts into an all-clear — the non-negotiable's monitoring case.
+
+### 2. The rule, and why it is honest rather than a guess
+
+`chanakya/observe/reachability.py` decides from the trigger's **own compiled shape** against what the
+view and the ontology actually contain, and it **imports the evaluator's fire-time helpers**
+(`_candidates` / `_watched` / `_in_scope`) rather than re-deriving them, so a verdict cannot drift from
+what really fires. Every negative verdict restates something the detector code makes true by
+construction: no candidates → no alerts; a field no element carries → every comparison is UNKNOWN and
+UNKNOWN never satisfies a trigger; no candidate in scope → every detector drops it.
+
+**Conservative in the safe direction, deliberately.** A false *unreachable* tells an analyst to stop
+trusting a wire that works; a false *reachable* is merely the status quo. So a verdict is returned only
+when the specific missing thing can be **named**, and everything undecidable (a threshold not yet
+crossed, a `where_*` block that happens not to hold, whether a future document will assert something)
+falls through to `reachable` — which means *reachable-or-undetermined*, never a clean bill of health.
+One consequence worth stating: a type **present in the view but undeclared in the ontology** is reported
+reachable, because derived/discovered instance types exist that the ontology does not enumerate and
+calling one a modelling gap would be a false negative in the dangerous direction.
+
+### 3. Two gaps, because an analyst does different things about them
+
+`gap_kind` — **not** `can_fire` — is the rendering dial:
+
+* `data` (`no_coverage`, `attribute_not_covered`) — the type/attribute IS modelled and simply has no
+  coverage. Self-healing on the next ingest; the same neutral register as `pending_coverage` anchors.
+  Still visible: the analyst must know the beat is UNCOVERED rather than quiet.
+* `modelling` / `engine` (`type_not_modelled`, `never_fires`) — **no volume of documents fixes it**; a
+  human edits `config/ontology.yaml` or the trigger. Faults.
+* `scope` (`out_of_watch_scope`) — candidates exist, none in scope. The remedy is the anchor check's, so
+  the sentence **quotes** it rather than inventing a second diagnosis.
+
+### 4. Surfaces + the one judgement call
+
+`GET /config/observables` → `diagnostics.trigger_reachability` (complete — one entry per armed
+observable, so a Watch card can state the positive verdict instead of implying it); `POST
+/config/observable` → the same verdicts in the existing `warnings`; `explain()` → `reachability`, which
+puts it on the ASK observable-proposal confirm screen, i.e. **before** an analyst arms a dead wire.
+
+**Warning, not rejection** — arming a wire ahead of coverage ("tell me the day this becomes observable")
+is a legitimate, even desirable act; being told nothing about it is not. Same call as AH-1.
+
+**The one deduplication:** when a scope verdict overlaps an anchor complaint on the same observable, the
+*write* emits the anchor sentence alone (it is strictly more informative, and the reachability sentence
+quotes it verbatim). Two warnings for one fault is how a monitoring surface teaches its analyst to skim.
+The verdict still stands unconditionally on the read surface, and a scope shortfall with **no** anchor
+complaint — every anchor resolves but `anchors_within_hops` is too tight — is still reported, since that
+case is invisible to the anchor check by construction. Both halves are pinned by tests.
+
+### 5. Not done — stated rather than implied
+
+The SPA does **not** yet render this. `frontend/src/api/types.ts` carries the types and
+`isReachabilityFault()`, and `tmp/conv/API-to-FRONTEND-contract-log.md` carries the rendering rule, but
+`WatchView` / `watchSummary` still show the anchor half alone (the frontend has no installed toolchain in
+this worktree, and shipping unverified React was the worse risk). Until a panel reads it, the verdict is
+on the wire but not on the screen — which is, by this work's own argument, only half the fix.

@@ -29,6 +29,16 @@ not a rejection** — an anchor may legitimately be declared before the entity e
 re-run live on every read, so it clears itself when an ingest creates the node. No restart, no cached
 verdict, and no boot-time-only validation (the hot-config rule).
 
+**Trigger reachability (AH-3).** Anchors binding is only half of "is this tripwire actually watching".
+The other half — measured wrong on the running app — is whether the *condition* it watches for can occur
+on this graph at all. Two of the three shipped observables could not (one waits on an edge type coverage
+yields none of; one compiles to arm-only and has no detector), and both rendered as ordinary armed
+tripwires, one of them advertising "watching 66 node(s)". ``GET`` now carries
+``diagnostics.trigger_reachability`` beside the anchor check and ``POST`` returns the same verdicts as
+warnings, so an armed-but-silent wire can never again read as an all-clear. Also a warning, not a
+rejection: arming a wire for a relation that is not yet observable is a legitimate act — being told
+nothing about it is not.
+
 Every section is readable. ``config/`` holds no secrets by construction (secrets live in ``.env`` and
 are read via ``chanakya.settings``, never through :class:`ConfigBundle`), so there is no section to
 withhold, and withholding one would leave a config editor that cannot edit it.
@@ -43,7 +53,7 @@ from pydantic import ValidationError
 
 from chanakya.api.routes.deps import get_state
 from chanakya.api.state import AppState
-from chanakya.observe import anchor_diagnostics, arm
+from chanakya.observe import anchor_diagnostics, arm, reachability_diagnostics
 from chanakya.schemas import CONFIG_SECTIONS, ConfigRead, ConfigWrite, ConfigWriteResult
 
 router = APIRouter()
@@ -102,19 +112,69 @@ def _anchor_check(state: AppState) -> dict[str, Any]:
     return {"checked": True, "unresolved": anchor_diagnostics(state.config.snapshot(), view)}
 
 
+def _reachability_check(state: AppState) -> dict[str, Any]:
+    """The live trigger-reachability check over every armed observable (AH-3).
+
+    The anchor check answers "do this tripwire's anchors bind to a node?". This answers the question one
+    layer up, and the one the running app was measured getting wrong: **given that everything resolves,
+    could the condition this tripwire watches for occur on this graph at all?** Two of the three shipped
+    observables could not — one watches for a ``replenishes`` edge the view holds none of, one compiles
+    to arm-only — and both rendered as plain armed tripwires. An armed tripwire that cannot fire turns an
+    absence of alerts into an all-clear, which is the one thing this system may never do.
+
+    Complete rather than problems-only, so the Watch panel can render a per-card verdict (a card that
+    cannot say "watching, and it could fire" has to imply it). Recomputed per read against the current
+    view, so a ``no_coverage`` verdict clears itself the moment an ingest produces the missing type —
+    same hot-config rule as the anchor check, and never a boot-time-only validation. ``checked: false``
+    rather than a clean bill of health when there is no view; an unperformed check is never a pass.
+    """
+    try:
+        view = state.view()
+    except RuntimeError:
+        return {
+            "checked": False,
+            "reason": "no rebuilt view yet — trigger reachability cannot be checked",
+            "observables": [],
+        }
+    return {"checked": True, "observables": reachability_diagnostics(state.config.snapshot(), view)}
+
+
+def _reachability_is_worth_saying(entry: dict[str, Any], anchor_warned: set[str]) -> bool:
+    """Should this reachability verdict be repeated in the write's ``warnings``?
+
+    Two warnings for one fault is how a monitoring surface teaches its analyst to skim. When a tripwire's
+    candidates are all outside its watch scope AND the anchor check already complained about the same
+    tripwire, the two are the *same* finding seen from either end — and the anchor sentence is strictly
+    the more useful one (it names which anchor, where it was declared, and whether it is broken or merely
+    uncovered; the reachability sentence quotes it verbatim anyway). So the scope verdict defers.
+
+    It still defers only in that overlap. A scope shortfall with **no** anchor complaint — every anchor
+    resolved, but ``anchors_within_hops`` is too tight to reach any candidate — is invisible to the
+    anchor check, and that is precisely the case this branch was added to catch. The verdict itself is
+    unconditional on the read surface either way; this only decides whether the *write* repeats it.
+    """
+    if entry["can_fire"] or not entry["warning"]:
+        return False
+    return not (entry["gap_kind"] == "scope" and entry["observable_id"] in anchor_warned)
+
+
 @router.get("/config/{section}", response_model=ConfigRead)
 def get_config(section: str, state: AppState = Depends(get_state)) -> ConfigRead:
     """The current value of one section, from the live store. The mirror of ``post_config``.
 
-    For ``observables`` the response also carries ``diagnostics.anchor_check`` — whether each armed
-    tripwire's anchors actually bind to a node in the current view. Without it the catalogue read says
-    "3 armed" identically whether those three are watching the graph or watching nothing.
+    For ``observables`` the response also carries two live diagnostics, because "3 armed" is the same
+    string whether those three are watching the graph or watching nothing:
+
+    * ``diagnostics.anchor_check`` — whether each armed tripwire's anchors bind to a node (AH-1/AH-2);
+    * ``diagnostics.trigger_reachability`` — whether each armed tripwire's *condition* could ever occur
+      on this graph, and the named missing edge type / node type / attribute when it could not (AH-3).
     """
     resolved = _resolve_section(section)
     value = state.config.get_section(resolved)
     diagnostics: dict[str, Any] = {}
     if resolved == "observables":
         diagnostics["anchor_check"] = _anchor_check(state)
+        diagnostics["trigger_reachability"] = _reachability_check(state)
     return ConfigRead(
         section=resolved,
         version=state.config.version,
@@ -178,7 +238,20 @@ def post_config(section: str, body: ConfigWrite, state: AppState = Depends(get_s
         check = _anchor_check(state)
         if not check["checked"]:
             warnings.append(f"observable anchors were not checked: {check['reason']}")
+        anchor_warned = {entry["observable_id"] for entry in check["unresolved"]}
         warnings.extend(
             f"{entry['observable_id']}: {entry['warning']}" for entry in check["unresolved"]
+        )
+        # AH-3 — and warn on a tripwire whose CONDITION cannot occur, not just one whose anchors miss.
+        # Also non-fatal: arming a wire for a relation coverage has not produced yet is a legitimate,
+        # even desirable act ("tell me the day this becomes observable") — what is not legitimate is
+        # arming it and being told nothing, so it lands as a warning rather than a rejection.
+        reach = _reachability_check(state)
+        if not reach["checked"]:
+            warnings.append(f"observable trigger reachability was not checked: {reach['reason']}")
+        warnings.extend(
+            f"{entry['observable_id']}: {entry['warning']}"
+            for entry in reach["observables"]
+            if _reachability_is_worth_saying(entry, anchor_warned)
         )
     return ConfigWriteResult(section=resolved, version=version, warnings=warnings)
