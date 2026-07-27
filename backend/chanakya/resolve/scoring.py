@@ -110,6 +110,25 @@ def geo_conflict_km(a: Entity, b: Entity, cfg: ResolveConfig) -> float | None:
     return km if km > min(stated) else None  # the stricter of the two types governs
 
 
+def _value_set(attr: str, value: object, cfg: ResolveConfig) -> frozenset[str] | None:
+    """A multi-valued attribute as a normalised set of members; ``None`` when it is not multi-valued.
+
+    Returns ``None`` for a scalar so the caller falls through to the existing scalar path unchanged — this
+    helper only ever *adds* a reading for list/tuple/set values, which previously compared by ``==`` and so
+    could only ever agree by being byte-identical. Members are folded through the same declared equivalence
+    classes a scalar gets, so ``PAF`` and ``Pakistan Air Force`` still meet inside a list.
+    """
+    if not isinstance(value, (list, tuple, set, frozenset)):
+        return None
+    out: set[str] = set()
+    for item in value:
+        if item is None:
+            continue
+        folded, _ = cfg.earned_identity.normalise_value(attr, item)
+        out.add(str(folded).strip().casefold())
+    return frozenset(out) or None  # an empty list states nothing — treat as scalar/absent, never as agreement
+
+
 def attribute_is_conflict(a: Entity, b: Entity, attr: str, cfg: ResolveConfig) -> bool:
     """Do ``a`` and ``b`` *conflict* on ``attr`` — a **time-aware** stated disagreement (Stage 3B-ii).
 
@@ -131,6 +150,16 @@ def attribute_is_conflict(a: Entity, b: Entity, attr: str, cfg: ResolveConfig) -
     va, vb = a.attrs.get(attr), b.attrs.get(attr)
     if va is None or vb is None or va == vb:
         return False  # absence ≠ conflict; same value ≠ conflict
+    # SET SEMANTICS for a multi-valued slot. Several identity slots are naturally a LIST — a design carries
+    # every designator it is sold under (`["HQ-9/P", "HQ-9P", "FD-2000"]`). Compared with `==` those lists
+    # disagree unless they are identical, so two mentions that name the SAME design under overlapping
+    # designators read as a stated disagreement and take the conflict penalty — the exact inverse of the
+    # truth. Overlap is agreement: one shared identifier is a stated equivalence. Disjoint stays a conflict,
+    # which is the property that matters — `["HQ-9"]` against `["HQ-9A"]` is two designs, not one, and this
+    # is the wall that keeps the ORBAT's costliest over-merge from being proposed.
+    set_a, set_b = _value_set(attr, va, cfg), _value_set(attr, vb, cfg)
+    if set_a is not None and set_b is not None:
+        return not (set_a & set_b)
     # C7 (RK-COREF/S3): compare NORMALISED values. The shipped config states the problem outright — sources
     # write 'Air Force' / 'PAF' / 'Pakistan Air Force' for one branch and 'CHINA' / 'China' for one country,
     # and an exact-match wall on those "SHATTERS legitimate merges", which is why both slots were demoted to
