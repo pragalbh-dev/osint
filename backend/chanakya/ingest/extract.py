@@ -187,8 +187,22 @@ class MentionContext(BaseModel):
     )
 
 
+# ── per-type definitions (b): what each type IS in this domain, and the neighbour it is confused with.
+#
+# Every one of these classes used to reach the model as a bare one-line label over a list of generic slots, so
+# the type boundaries were the model's to guess — and the guesses were the measured failures: an entire
+# air-defence COMMAND recorded as the thing emplaced at a dispersal pad (the correct answer was the battery),
+# a design conflated with the one deployment of it a report described. The pairs that actually collide are
+# adjacent, not arbitrary — org↔unit, unit↔command, design↔deployment, part↔whole, place↔occupant — so each
+# docstring names its own type and then names the neighbour, which is the discrimination the model has to make.
+# Kept to one added sentence each: this text ships inside the tool schema on every call.
+
 class OrgMention(BaseModel):
-    """A named organization the source states (a manufacturer, exporter, consignee, shipper…)."""
+    """A named organization the source states (a manufacturer, exporter, consignee, shipper…).
+
+    A company, agency or state enterprise that designs, builds, sells, ships or receives hardware — never the
+    military formation that operates it, and never the service or command above that formation.
+    """
 
     name: str | None = None
     role: str | None = None  # e.g. "manufacturer" | "export-agent" | "consignee" | "shipper"
@@ -199,11 +213,30 @@ class OrgMention(BaseModel):
 
 
 class UnitMention(BaseModel):
-    """A named operating/military unit or force element the source states."""
+    """A named operating/military unit or force element the source states.
+
+    A FORMATION: it carries its own designation, it persists when it moves, and it can be posted somewhere.
+    Not the service or higher command that owns it — an air-defence command owns formations and is never
+    itself emplaced at a pad — and not the equipment the formation fields.
+    """
 
     name: str | None = None
     echelon: str | None = None
     service_branch: str | None = None
+    # (c) THE INDIVIDUATING SLOT, and the one the schema had no room for at all: `unit.designator` has been
+    # declared identity-bearing since D6 and stated on zero extracted units, because a document's "22 Air
+    # Defence Regiment" had nowhere to go but the free-text name. The description works the boundary the
+    # measured failure sits on — the formation's OWN reference, not its parent's and not its equipment's —
+    # because the wrong string here is worse than an empty slot: it asserts a formation that does not exist.
+    designator: str | None = Field(
+        default=None,
+        description=(
+            "THIS formation's own number or reference, exactly as the source writes it ('22 Air Defence "
+            "Regiment', '8 AD Bn', an order-of-battle reference). It is what tells two similarly-named "
+            "formations apart, so capture it whenever the source states it. Never the designation of the "
+            "command above it, never the model number of its equipment, and never one you construct."
+        ),
+    )
     home_garrison: str | None = None
     alert_posture: str | None = Field(
         default=None,
@@ -219,11 +252,27 @@ class UnitMention(BaseModel):
 
 
 class VariantMention(BaseModel):
-    """A named weapon system or variant, under the designation the source itself uses."""
+    """A named weapon system or variant, under the designation the source itself uses.
+
+    A DESIGN — a model of system, taken as a type. Not one deployed example of it at a place (a design has no
+    location of its own) and not a sub-system inside it.
+    """
 
     name: str | None = None
     family: str | None = None
-    designators: list[str] = []  # stated alternate designators (each a candidate same-as)
+    # (c) This slot was already filled on 40 extracted variants and already turned into a stated-alias
+    # assertion per member; what it never had was a description, so it was reached only by a model inferring
+    # the intent from the field name. Individuating, so it is worth stating: a designation names ONE
+    # production line, where `family` above names a class every member shares by definition.
+    designators: list[str] = Field(
+        default=[],
+        description=(
+            "Every OTHER designation this source gives THIS system — an export name, a service name, a "
+            "spelling variant ('HQ-9P', 'FD-2000'). A designation names one production line precisely, which "
+            "is what tells two similarly-named systems apart, so copy each one the source states. Leave the "
+            "list empty when the source gives only one name; never add a designation from your own knowledge."
+        ),
+    )
     range_text: str | None = None
     confidence_language: str | None = None  # the source's own hedge ("consistent with", "probable")
     signature_geometry: str | None = None  # the source's CHARACTERISTIC / reference physical layout of THIS
@@ -244,11 +293,29 @@ class VariantMention(BaseModel):
 
 
 class ComponentMention(BaseModel):
-    """A named sub-system / component the source states (a radar, an interceptor, a test set…)."""
+    """A named sub-system / component the source states (a radar, an interceptor, a test set…).
+
+    A PART of a larger system — a radar, launcher, round or support item. Not the whole system it belongs to,
+    and not the organization that builds it.
+    """
 
     name: str | None = None
     component_class: str | None = None
     functional_role: str | None = None
+    # (c) Added rather than aligning the config to what was already emitted, because the three slots that WERE
+    # emitted (`component_class`, `functional_role`, `radar_band`) all name a bracket of hardware — 'an
+    # engagement radar', 'S-band' — and re-pointing the identity declaration at one of those would declare a
+    # class label to be an identity, which is the exact over-merge the taxonomic axis exists to stop. The
+    # attribute is already in the ontology vocabulary and in the seeded baseline; only the capture slot was
+    # missing.
+    model_designation: str | None = Field(
+        default=None,
+        description=(
+            "THIS item's own model or type designation, exactly as the source writes it ('HT-233', 'Type "
+            "305B'). It is what tells two similarly-described items apart, so capture it whenever the source "
+            "states it. Not the designation of the larger system it belongs to; never construct one."
+        ),
+    )
     radar_band: str | None = None
     quantity_text: str | None = None
     count_state: str | None = None
@@ -257,7 +324,11 @@ class ComponentMention(BaseModel):
 
 
 class SiteMention(BaseModel):
-    """A named place / basing-or-logistics site the source states, with any stated location string."""
+    """A named place / basing-or-logistics site the source states, with any stated location string.
+
+    A PLACE — a base, pad, revetment, depot, port or terminal. Not the formation stationed at it and not the
+    equipment seen there: a place stays the same place when its occupants change.
+    """
 
     name: str | None = None
     site_type: str | None = None
@@ -269,7 +340,11 @@ class SiteMention(BaseModel):
 
 
 class SourceMention(BaseModel):
-    """A source/register/origin the document itself names (SIPRI, a database, an upstream report)."""
+    """A source/register/origin the document itself names (SIPRI, a database, an upstream report).
+
+    A PUBLISHER or reference work this document credits for its information — never an organization taking
+    part in the trade or the operations the document describes.
+    """
 
     name: str | None = None
     source_type: str | None = None
@@ -437,7 +512,10 @@ class CustomsGdBol(BaseModel):
 
 class StockpileMention(BaseModel):
     """A stated stock of interceptors or spares — how deep the magazine is and how long resupply takes. A
-    posture that changes, so copy any date wording the document gives it."""
+    posture that changes, so copy any date wording the document gives it.
+
+    A HOLDING of rounds or spares — not the round or spare part itself as a design, and not the formation
+    that draws on it."""
 
     name: str | None = None
     stocked_round: str | None = None
@@ -449,7 +527,10 @@ class StockpileMention(BaseModel):
 
 class TechDataMention(BaseModel):
     """Who holds the technical data or design authority for a system — a technical data package, firmware,
-    crypto keys or a calibration reference — and whether the document says control rests abroad."""
+    crypto keys or a calibration reference — and whether the document says control rests abroad.
+
+    The ORGANIZATION in that role — not the system whose data it controls, and not the customer operating
+    that system."""
 
     name: str | None = None
     holds: str | None = None  # TDP | firmware | crypto-keys | calibration-ref (as the source states it)
@@ -582,8 +663,34 @@ SCHEMAS: dict[str, type[BaseModel]] = {
 
 _TOOL_NAMES: dict[str, str] = {fmt: f"extract_{fmt}" for fmt in SCHEMAS}
 
+# ── (a) the domain framing. Everything below this told the model HOW to be careful and nothing told it WHAT
+# the categories mean here, so every type boundary was inferred from a field name. Two measured consequences:
+# an entire air-defence COMMAND recorded as the thing based at an airfield dispersal pad (the correct answer
+# was the battery emplaced on it), and identity-bearing slots left empty because nothing marked them as
+# anything but more optional prose.
+#
+# The ECHELON rule is stated as a rule and then shown, because the failure is not a vocabulary gap — the model
+# knows what a command is — it is a mis-application under pressure to name *something* at the site, and a bare
+# rule generalises to the next document only if the reader can see it applied once. The second contrast is
+# deliberately from the trade half rather than the ORBAT half: the same "record the actor, not the hierarchy
+# above it" error costs a consignee on a customs row, and one instance would read as a rule about airfields.
+#
+# Deliberately says nothing about what any of it is used for. The audit rule for this whole module holds here
+# too — model-facing text describes the document, never our machinery — so the framing is the analytic
+# subject-matter ("what exists, who supplies it, who fields it, where it sits"), not the store it lands in.
 _SYSTEM_BASE = (
-    "You are a structured-extraction tool for an open-source intelligence pipeline. Read the document "
+    "You are a structured-extraction tool for an open-source intelligence pipeline. The documents concern "
+    "AIR-DEFENCE systems and the organisations that design, build, sell, operate and base them; together "
+    "they are read as one order-of-battle and supply-chain picture — what equipment exists, who supplies and "
+    "ships it, which formations field it, and where it sits. "
+    "ECHELON: the thing you record as being AT a place is the formation or the equipment actually emplaced "
+    "there, never the higher command or the service that owns it. A command owns formations; a service owns "
+    "commands; neither is itself parked on a launch pad or in a revetment. So if a report says a battery of "
+    "some system is emplaced at a dispersal pad and separately names the air-defence command that controls "
+    "it, the thing at the pad is the BATTERY — the command's control of it is a different fact, recorded "
+    "separately, and only if the report states it. The same rule runs through the trade documents: goods "
+    "arrive for the named consignee, not for the ministry or the armed service above it. "
+    "Read the document "
     "and fill the tool with ONLY facts the document explicitly states. Leave every field the document "
     "does not state empty — never invent, infer, or complete a name, number, date, or place. For every "
     "item you fill, put the exact verbatim text it is based on in `source_quote`. Extract identities as "
@@ -1288,6 +1395,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("unit", name, ref, attrs={
                 "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
+                "designator": _str(m, "designator"),
                 "home_garrison": _str(m, "home_garrison"), "alert_posture": _str(m, "alert_posture"),
             })
 
@@ -1312,6 +1420,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
             em.entity("component", name, ref, attrs={
                 "component_class": _str(m, "component_class"),
                 "functional_role": _str(m, "functional_role"), "radar_band": _str(m, "radar_band"),
+                "model_designation": _str(m, "model_designation"),
             })
 
     for m in _items(filled, "basing_sites"):
@@ -1500,6 +1609,7 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
         oref = _resolve_doc_ref(loaded, _str(org, "source_quote"), fallback=oname)
         em.entity("unit", oname, oref, attrs={"echelon": _str(org, "echelon"),
                                               "service_branch": _str(org, "service_branch"),
+                                              "designator": _str(org, "designator"),
                                               "alert_posture": _str(org, "alert_posture")})
 
     system = _obj(filled, "system")
@@ -1531,6 +1641,7 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
             em.entity("component", name, ref, attrs={
                 "component_class": _str(m, "component_class"),
                 "functional_role": _str(m, "functional_role"), "quantity": _dump(qty),
+                "model_designation": _str(m, "model_designation"),
             })
 
     # A sustainment tender implies sustainment NODES — the perishable spares/stockpile posture and/or the
@@ -1660,7 +1771,8 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
         if name:
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("component", name, ref, attrs={"component_class": _str(m, "component_class"),
-                                                     "functional_role": _str(m, "functional_role")})
+                                                     "functional_role": _str(m, "functional_role"),
+                                                     "model_designation": _str(m, "model_designation")})
 
     for m in _items(filled, "units"):
         name = _str(m, "name")
@@ -1668,6 +1780,7 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("unit", name, ref, attrs={
                 "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
+                "designator": _str(m, "designator"),
                 "home_garrison": _str(m, "home_garrison"), "alert_posture": _str(m, "alert_posture"),
             })
 

@@ -482,10 +482,30 @@ def test_the_schema_stayed_lean_while_the_prompt_grew() -> None:
     Both candidates score a perfect 1.000 on structured-output reliability — they do exactly what we ask,
     and that is an asset. Cleaning the internal prose out of the schema paid for the instruction we added:
     this is a floor against the next person adding an essay to a field description.
+
+    **The ceiling was 14,000 and is now 17,000, and the reason is a change of contents, not a slipped budget.**
+    The original number was set against a ~15k schema *a third of which was internal commentary* — text a
+    model cannot act on, which is why deleting it was free. What has been added since is the opposite kind of
+    text and had a measured defect behind it: each mention class reached the model as a bare one-line label
+    over generic slots, so every type boundary was the model's to guess, and the guesses were wrong in the
+    expensive direction — an entire air-defence command recorded as the thing emplaced at a dispersal pad when
+    the answer was the battery on it. Each class now states what it IS here and which neighbouring type it is
+    confused with, and the three identity-bearing slots say what they identify. That is instruction, and a byte
+    of instruction is not interchangeable with a byte of commentary.
+
+    So the size assertion is deliberately no longer the *only* thing standing between a field description and
+    an essay — it never could distinguish the two. The guards that actually encode the original defect are
+    ``test_no_internal_cross_reference_reaches_the_model`` and
+    ``test_no_description_describes_our_own_machinery``, both of which run over every description on the whole
+    surface and neither of which was touched. This one stays as a coarse backstop: at 39-41% prose the schemas
+    are still mostly structure, and 17k leaves ~600 bytes over the largest of them — enough for a genuine
+    addition, not enough for an essay, and it must not be raised again without the same kind of reason.
     """
     for fmt, model in SCHEMAS.items():
         size = len(json.dumps(model.model_json_schema()))
-        assert size < 14_000, (
-            f"the {fmt} tool schema is {size} bytes of model-facing JSON. It was ~15k when a third of it "
-            "was internal commentary; keep the descriptions instructional and short."
+        assert size < 17_000, (
+            f"the {fmt} tool schema is {size} bytes of model-facing JSON. Read this test's reasoning before "
+            "raising the ceiling: it moved once, for per-type definitions that fixed a measured "
+            "type-confusion, and 'my text is useful too' is not that argument. Keep descriptions "
+            "instructional and short."
         )

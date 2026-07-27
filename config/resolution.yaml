@@ -416,6 +416,25 @@ attribute_roles:
     # production line and one customer — FD-2000 is the HQ-9/P export, HQ-9BE the HQ-9B export — so two
     # mentions stating the same one really are one design. Individuating, therefore NOT taxonomic.
     export_designator: {role: supporting, time_role: durable}
+    # …and THE SAME FACT UNDER THE NAME THE EXTRACTOR ACTUALLY WRITES IT. `export_designator` is real —
+    # the seeded baseline, the answer key and config/ontology.yaml all carry it — but nothing in the LIVE
+    # extraction path emits it: a document says "HQ-9/P, marketed as FD-2000" and that lands in a LIST of
+    # stated designations. Measured: `designators` populated on 40 claims, `export_designator` on none of
+    # them, so the design layer's one identity-bearing signal was declared against a key no extracted
+    # variant ever had, and the discriminator signal fired on 4 of 203 scored pairs. Both are declared;
+    # neither is renamed, because they are genuinely different shapes (one chosen export name vs every
+    # designation a source states) and the seeded/live halves of the corpus each need their own.
+    #
+    # NOT taxonomic, for `export_designator`'s exact reason: a designation names one production line, not a
+    # bracket of them, so two mentions sharing one really are one design. `family` is the counter-case and is
+    # correctly taxonomic — HQ-9, HQ-9A, HQ-9B and HQ-9BE all share it by definition.
+    #
+    # The value is a LIST and that is deliberate: attribute comparison already reads a multi-valued slot as a
+    # SET, so one shared designation is agreement and a fully disjoint pair is still a conflict — which is the
+    # half that matters, since ["HQ-9"] against ["HQ-9A"] must stay two designs. Declaring it does not open a
+    # new fusion lane: the extractor ALREADY emits a same-as assertion per stated designator, so this makes
+    # evidence that was being asserted anyway comparable as an attribute instead of only as an edge.
+    designators:       {role: supporting, time_role: durable}
   unit:
     # CRITICAL. It was `supporting` — i.e. inert — only because the corpus states it unnormalised
     # ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an exact-match wall on those "SHATTERS legitimate
@@ -425,7 +444,12 @@ attribute_roles:
     # DIFFERENCE is the whole point of the row and is unaffected; what it may no longer do is stand in as
     # positive evidence that two similarly-named formations are one formation.
     service_branch:  {role: critical, time_role: durable, taxonomic: true}
-    designator:      {role: supporting, time_role: durable}   # a designator individuates — identity-bearing
+    # A designator individuates — identity-bearing, and the top rung of `hard_id_fields.unique.unit` below
+    # rests on it. THE OTHER HALF WAS MISSING: this row has always been declared and the extraction schema had
+    # no field a document's formation number could land in, so `designator` was stated on ZERO extracted units
+    # and both this row and the composite `(service_branch, designator)` identifier were unreachable. The
+    # capture slot now exists (`UnitMention.designator`); the declaration is unchanged.
+    designator:      {role: supporting, time_role: durable}
     echelon:         {role: supporting, time_role: durable, taxonomic: true}   # every battalion is a battalion
     alert_posture:   {role: supporting, time_role: perishable}   # a stated readiness/alert status — expected
                                                                  # to CHANGE over time, never a durable trait,
@@ -483,10 +507,29 @@ attribute_roles:
     component_class: {role: supporting, time_role: durable, taxonomic: true}
     # The individuating counterpart, for the same reason as `variant.export_designator`: a MODEL DESIGNATION
     # names one piece of hardware ('HT-233', 'Type 305B'), not a bracket of them, so its agreement is the one
-    # component signal that may clear the name cap.
+    # component signal that may clear the name cap. SAME MISSING HALF as `unit.designator`: config/ontology.yaml
+    # declares the attribute and the seeded baseline carries it, but the extraction schema offered the model
+    # only `component_class` / `functional_role` / `radar_band` — all three taxonomic — so every LIVE component
+    # reached scoring with nothing individuating on it at all. Aligned by adding the capture slot
+    # (`ComponentMention.model_designation`) rather than by re-pointing this row at a class label, which is the
+    # only other way to make the names meet and would mean declaring a bracket to be an identity.
     model_designation: {role: supporting, time_role: durable}
   manufacturer:
     tier:            {role: supporting, time_role: durable, taxonomic: true}   # a supplier tier is a bracket
+  # ── manufacturer / trading_org: DELIBERATELY no identity-bearing attribute ────────────────────────
+  # Both types reach scoring with an empty identity-bearing set, and that is left as it is. The extractor
+  # states exactly two things about an organisation, and BOTH are class labels: `role` (manufacturer /
+  # export-agent / consignee / shipper — a bracket every consignee in the corpus shares) and `origin_country`
+  # (already declared critical + taxonomic on trading_org, on the stated ground that "two companies both
+  # stated 'China' is a country's whole industry, not one company"). Promoting either to a non-taxonomic
+  # identity signal would re-open precisely the over-merge the taxonomic axis was added to close, and on the
+  # most dangerous type there is: fusing two same-named trading orgs silently moves a supplier across a border.
+  #
+  # What WOULD individuate an organisation is a registration/licence number or a registered address — two
+  # firms of the same name at different addresses are different firms. The corpus's customs rows do carry
+  # addresses, but nothing captures them today, so declaring such a row now would be a declaration against a
+  # key no organisation has: exactly the defect the three rows above exist to fix. Recorded as a known gap
+  # rather than filled with the nearest available bracket.
 
 # ── credibility floor on the critical-attribute veto (D5 take-care a, Stage 3A) ──────────────────
 # A source-credibility floor on the critical→veto wall above. A stated critical-attribute disagreement
