@@ -14,10 +14,23 @@
 // derives 'fired' / the analyst's disposition from the feed. Nothing here hardcodes it.
 import { useWorkbench } from '@/store/workbench'
 import { useTripwires } from '@/api/viewmodel'
-import { useAnchorCheck, useArmedObservables } from '@/api/hooks'
+import { useAnchorCheck, useArmedObservables, useReachabilityCheck } from '@/api/hooks'
 import { TRIPWIRES, WATCH_INTRO } from '@/demo/scenario'
 import type { LiveFiring, LiveTripwire } from '@/api/adapters'
-import { isAnchorFault, type ObservableAnchorProblem, type ObservableDef } from '@/api/types'
+import {
+  isAnchorFault,
+  type ObservableAnchorProblem,
+  type ObservableDef,
+  type TriggerReachability,
+} from '@/api/types'
+import {
+  cannotFireCount,
+  reachabilityBadge,
+  reachabilityIndex,
+  reachabilityMeta,
+  reachabilityNotice,
+  type ReachabilityNotice,
+} from './reachability'
 import { AlertEvidence } from './AlertEvidence'
 
 const LIVE_INTRO =
@@ -143,50 +156,123 @@ function AnchorProblem({ problem }: { problem: ObservableAnchorProblem }) {
   )
 }
 
+/** The trigger-reachability complaint, rendered ON the tripwire it is about (AH-3).
+ *
+ *  Deliberately the SAME shape as AnchorProblem above — dashed box, all-caps eyebrow, backend's
+ *  sentence, mono footer — because it is the same kind of statement about the same card, just about a
+ *  different way of being useless. Two visual languages for "this wire is not what it looks like"
+ *  would be a worse outcome than the silence this replaces.
+ *
+ *  Register follows `gap_kind`, which is precisely the question "does a human have to do something?":
+ *  a data gap self-heals on the next relevant document and gets the neutral treatment the anchor
+ *  block's "awaiting coverage" already uses; a modelling/engine fault never heals on its own and gets
+ *  the loud one, so that loud still means something when it appears. */
+function ReachabilityProblem({ notice }: { notice: ReachabilityNotice }) {
+  const loud = notice.register === 'fault'
+  return (
+    <div
+      className={`mt-[9px] rounded border border-dashed px-[11px] py-[9px] ${
+        loud ? 'border-live' : 'border-hairline-strong'
+      }`}
+    >
+      <div
+        className={`mb-[4px] font-mono text-[10px] tracking-[0.06em] ${
+          loud ? 'text-live' : 'text-text-faint'
+        }`}
+      >
+        {notice.label}
+      </div>
+      {/* The backend's words, verbatim. It already names the missing type AND the remedy; a UI
+          paraphrase would drift from the engine the moment either changes. */}
+      {notice.warning && (
+        <div className="text-[12px] leading-[1.5] text-text-dim">{notice.warning}</div>
+      )}
+      <div className="mt-[6px] font-mono text-[10.5px] text-text-faint">{notice.detail}</div>
+    </div>
+  )
+}
+
 /** An armed-but-quiet observable from the live catalogue: a definition, not a firing — so it
  *  carries what it watches, never evidence (there is none until it fires). The badge reads "armed"
  *  only when its anchors actually bind; a tripwire watching an empty set is not armed in any sense
  *  an analyst would recognise, and saying "armed" beside it would be the lie this panel exists to
  *  avoid. */
-function ArmedObservableCard({ def, problem }: { def: ObservableDef; problem?: ObservableAnchorProblem }) {
+function ArmedObservableCard({
+  def,
+  problem,
+  reach,
+}: {
+  def: ObservableDef
+  problem?: ObservableAnchorProblem
+  reach?: TriggerReachability
+}) {
   const on = typeof def.trigger?.on === 'string' ? String(def.trigger.on) : null
   const dead = problem?.watching_nothing === true
+  const notice = reachabilityNotice(reach)
+  // The GLANCE layer. An analyst scanning this panel reads three badges and stops; a wire that
+  // cannot fire showing a plain "armed" has misled them before they read a word. Precedence is
+  // worst-first: watching an empty set outranks watching for an impossible condition, but both
+  // outrank "armed", which here would simply be false.
+  const badge = dead ? 'watching nothing' : (reachabilityBadge(reach) ?? 'armed')
+  const loud = dead || (problem && isAnchorFault(problem)) || notice?.register === 'fault'
   return (
-    <div
-      className={`rounded border px-[14px] py-[13px] ${
-        problem && isAnchorFault(problem) ? 'border-live' : 'border-hairline'
-      }`}
-    >
+    <div className={`rounded border px-[14px] py-[13px] ${loud ? 'border-live' : 'border-hairline'}`}>
       <div className="mb-[7px] flex items-center justify-between gap-3">
         <span className="text-[13px] text-text">{armedTitle(def.observable_id)}</span>
-        <StateBadge label={dead ? 'watching nothing' : 'armed'} open={dead} />
+        <StateBadge label={badge} open={!!loud} />
       </div>
       <div className="font-mono text-[10.5px] text-text-faint">
-        {[`indicator · ${def.observable_id}`, on ? `watches · ${on}` : null, def.severity ? `severity · ${def.severity}` : null]
+        {[
+          `indicator · ${def.observable_id}`,
+          on ? `watches · ${on}` : null,
+          def.severity ? `severity · ${def.severity}` : null,
+          // The POSITIVE verdict, stated rather than implied. The backend serves a complete list for
+          // exactly this reason: "quiet because nothing happened" and "quiet because it is broken"
+          // must not look identical, and one token on a line that already exists is the cheapest
+          // possible way to tell them apart.
+          reachabilityMeta(reach),
+        ]
           .filter(Boolean)
           .join('  ·  ')}
       </div>
       {problem && <AnchorProblem problem={problem} />}
+      {notice && <ReachabilityProblem notice={notice} />}
     </div>
   )
 }
 
-function LiveTripwireCard({ tripwire, problem }: { tripwire: LiveTripwire; problem?: ObservableAnchorProblem }) {
+function LiveTripwireCard({
+  tripwire,
+  problem,
+  reach,
+}: {
+  tripwire: LiveTripwire
+  problem?: ObservableAnchorProblem
+  reach?: TriggerReachability
+}) {
   const open = tripwire.state === 'fired'
+  const notice = reachabilityNotice(reach)
   return (
     <div
       className={`rounded border px-[14px] py-[13px] ${
-        problem && isAnchorFault(problem) ? 'border-live' : 'border-hairline'
+        (problem && isAnchorFault(problem)) || notice?.register === 'fault'
+          ? 'border-live'
+          : 'border-hairline'
       }`}
     >
       <div className="mb-[7px] flex items-center justify-between gap-3">
         <span className="text-[13px] text-text">{tripwire.name}</span>
+        {/* The badge here reports FIRING state, a different axis from capability — a wire that has
+            fired plainly could fire. The capability verdict rides in the blocks below instead. */}
         <StateBadge label={tripwire.stateLabel} open={open} />
       </div>
-      <div className="mb-[2px] font-mono text-[10.5px] text-text-faint">indicator · {tripwire.observableId}</div>
+      <div className="mb-[2px] font-mono text-[10.5px] text-text-faint">
+        {[`indicator · ${tripwire.observableId}`, reachabilityMeta(reach)].filter(Boolean).join('  ·  ')}
+      </div>
       {/* A tripwire can have fired historically and be blind NOW — the past firing must not read as
-          proof that it is still watching. */}
+          proof that it is still watching, whether it went blind at the anchor or at the trigger. */}
       {problem && <AnchorProblem problem={problem} />}
+      {notice && <ReachabilityProblem notice={notice} />}
       {tripwire.firings.map((firing) => (
         <Firing key={firing.key} firing={firing} />
       ))}
@@ -200,10 +286,18 @@ export function WatchView() {
   const tripwires = useTripwires() // null = no live feed to read → the frozen demo rows
   const armed = useArmedObservables() // null = demo mode, in flight, or the catalogue could not be read
   const anchors = useAnchorCheck() // null = unknown; never treated as "all anchors fine"
+  const reachCheck = useReachabilityCheck() // null = unknown; likewise never a clean bill of health
   const firedIds = new Set((tripwires ?? []).map((t) => t.observableId))
   const armedQuiet = (armed ?? []).filter((d) => !firedIds.has(d.observable_id))
   const problems = new Map((anchors?.unresolved ?? []).map((p) => [p.observable_id, p]))
   const deadCount = (anchors?.unresolved ?? []).filter((p) => p.watching_nothing).length
+  // AH-3 — the second, independent way a wire is armed and useless. `cannotFire` covers both gap
+  // kinds (the wire is dead either way); `faults` is the subset no document will ever fix.
+  const reaches = reachabilityIndex(reachCheck)
+  const cannotFire = cannotFireCount(reachCheck)
+  const reachFaults = [...reaches.values()].filter(
+    (r) => reachabilityNotice(r)?.register === 'fault',
+  ).length
 
   return (
     <div>
@@ -231,10 +325,38 @@ export function WatchView() {
         </div>
       )}
 
+      {/* AH-3, same rule as above one layer down: the reachability check not RUNNING must never read
+          as the reachability check passing. */}
+      {reachCheck?.checked === false && (
+        <div className="mb-[14px] rounded border border-dashed border-hairline-strong px-[13px] py-[11px] text-[12px] leading-[1.55] text-text-faint">
+          Whether these triggers could fire at all could not be checked
+          {reachCheck.reason ? ` — ${reachCheck.reason}` : ''}. Treat the silence below as unverified,
+          not as an all-clear.
+        </div>
+      )}
+
+      {/* Only FAULTS get the loud banner. A data gap is real and is stated on its own card, but it
+          clears itself on the next relevant document — banner-shouting about a self-healing state is
+          how an analyst learns to skip the banners, and then misses this one. */}
+      {reachFaults > 0 && (
+        <div className="mb-[14px] rounded border border-live px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-text">
+          {reachFaults === 1 ? '1 tripwire cannot fire' : `${reachFaults} tripwires cannot fire`} —
+          the condition {reachFaults === 1 ? 'it watches' : 'they watch'} for cannot occur on this
+          graph, so no volume of new documents will change{' '}
+          {reachFaults === 1 ? 'it' : 'them'}. This needs a trigger or ontology edit, not more
+          coverage. Details on the {reachFaults === 1 ? 'card' : 'cards'} below.
+        </div>
+      )}
+
       <div className="flex flex-col gap-[10px]">
         {tripwires
           ? tripwires.map((t) => (
-              <LiveTripwireCard key={t.observableId} tripwire={t} problem={problems.get(t.observableId)} />
+              <LiveTripwireCard
+                key={t.observableId}
+                tripwire={t}
+                problem={problems.get(t.observableId)}
+                reach={reaches.get(t.observableId)}
+              />
             ))
           : TRIPWIRES.map((t) => (
               <div key={t.name} className="rounded border border-hairline px-[14px] py-[13px]">
@@ -248,6 +370,8 @@ export function WatchView() {
             ))}
       </div>
 
+      {/* This sentence is the all-clear an analyst actually reads, so every reason it is NOT one has
+          to be attached to it right here — not a scroll away. */}
       {tripwires && tripwires.length === 0 && (
         <div className="rounded border border-dashed border-hairline-strong px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-text-dim">
           No tripwire has fired on the current view.
@@ -256,6 +380,15 @@ export function WatchView() {
               {' '}
               That is not an all-clear: {deadCount === 1 ? 'one of them is' : `${deadCount} of them are`}{' '}
               watching nothing (see below).
+            </>
+          )}
+          {cannotFire > 0 && (
+            <>
+              {' '}
+              {deadCount > 0 ? 'Nor is it one for the rest: ' : 'That is not an all-clear: '}
+              {cannotFire === 1 ? 'one of them cannot' : `${cannotFire} of them cannot`} fire on this
+              graph at all (see below), so {cannotFire === 1 ? 'its' : 'their'} silence carries no
+              information.
             </>
           )}
         </div>
@@ -271,7 +404,12 @@ export function WatchView() {
           </div>
           <div className="flex flex-col gap-[10px]">
             {armedQuiet.map((d) => (
-              <ArmedObservableCard key={d.observable_id} def={d} problem={problems.get(d.observable_id)} />
+              <ArmedObservableCard
+                key={d.observable_id}
+                def={d}
+                problem={problems.get(d.observable_id)}
+                reach={reaches.get(d.observable_id)}
+              />
             ))}
           </div>
         </>

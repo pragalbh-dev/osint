@@ -7,7 +7,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { api } from './client'
-import type { AnchorCheck, ObservableDef, ObservablesConfig } from './types'
+import type { AnchorCheck, ObservableDef, ObservablesConfig, ReachabilityCheck } from './types'
 import { useWorkbench } from '@/store/workbench'
 
 export function useHealth() {
@@ -75,6 +75,31 @@ export function useAnchorCheck(): AnchorCheck | null {
   if (mode !== 'live' || !data) return null
   const check = data.diagnostics?.anchor_check
   return check && Array.isArray(check.unresolved) ? check : null
+}
+
+/** LIVE trigger-reachability check — whether each armed tripwire's CONDITION could ever occur (AH-3).
+ *
+ *  The anchor check above and this one fail independently, and the second is the sneakier of the two:
+ *  a tripwire can bind every anchor, watch dozens of nodes, and still filter on an edge type nothing
+ *  in coverage produces. It is armed, it is counted as armed, and it will never fire — so its silence
+ *  reads as an all-clear while carrying no information at all.
+ *
+ *  Rides in on the same `['config','observables']` request the armed count already makes — no extra
+ *  fetch, no separate cache entry, no verdict that can go stale against the other two numbers.
+ *
+ *  Returns `null` when unknown (demo mode, in flight, fetch failed, or the payload has no such
+ *  diagnostic) so callers can say "unknown" rather than render an unearned clean bill of health. */
+export function useReachabilityCheck(): ReachabilityCheck | null {
+  const mode = useWorkbench((s) => s.mode)
+  const { data } = useQuery({
+    queryKey: ['config', 'observables'],
+    queryFn: () => api.configSection('observables'),
+    enabled: mode === 'live',
+    refetchInterval: 30_000,
+  })
+  if (mode !== 'live' || !data) return null
+  const check = data.diagnostics?.trigger_reachability
+  return check && Array.isArray(check.observables) ? check : null
 }
 
 /** In LIVE mode, mirror the real /view into the store so the stage can render it.

@@ -9,7 +9,7 @@ import { useWorkbench, type DocId } from '@/store/workbench'
 import { INGEST_DOCS, QUEUE_ITEMS, TRIPWIRES } from '@/demo/scenario'
 import { groupReviewQueue, viewToReviewQueue, type LiveReviewGroup } from '@/api/adapters'
 import { useTripwires } from '@/api/viewmodel'
-import { useAnchorCheck, useArmedObservables } from '@/api/hooks'
+import { useAnchorCheck, useArmedObservables, useReachabilityCheck } from '@/api/hooks'
 import { watchSummary } from './watchSummary'
 import { LiveIngest } from './LiveIngest'
 
@@ -188,12 +188,17 @@ export function Rail() {
   // Third source (AH-1): the live ANCHOR CHECK. Armed is not the same as watching — a tripwire whose
   // anchors resolve to no node watches an empty set and can never fire, so counting it as coverage is
   // the same class of lie as inferring the armed count from the fired feed.
+  // Fourth source (AH-3): the live TRIGGER-REACHABILITY check. Binding is not the same as being able
+  // to fire — a wire can resolve every anchor, watch dozens of nodes, and still filter on an edge
+  // type nothing in coverage produces. "3 armed · none fired" is exactly as false about that wire as
+  // it was about a blind one, and it is the line an analyst reads WITHOUT opening anything.
   const tripwires = useTripwires()
   const armed = useArmedObservables()
   const anchors = useAnchorCheck()
+  const reach = useReachabilityCheck()
   const watch = useMemo(
-    () => watchSummary(armed, tripwires, TRIPWIRES.length, anchors),
-    [armed, tripwires, anchors],
+    () => watchSummary(armed, tripwires, TRIPWIRES.length, anchors, reach),
+    [armed, tripwires, anchors, reach],
   )
 
   // Drag payload backup — some browsers restrict dataTransfer.getData on dragover,
