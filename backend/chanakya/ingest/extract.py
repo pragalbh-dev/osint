@@ -386,8 +386,30 @@ class RelationMention(BaseModel):
     """
 
     relation: str | None = None
-    subject: str | None = None
-    object: str | None = None
+    # Both ends carry the SAME rule, and it is about grammatical form, never about category. Deliberately no
+    # list of permitted kinds here: WHICH types an end may take is the relation's own business, declared per
+    # edge in the ontology, and a list in this description would fight that and quietly suppress a legitimate
+    # place or organisation end. What the model cannot know without being told is that the phrase has to
+    # REFER. Every measured failure was one shape — the predicate half of a sentence lifted into a
+    # participant slot ("what was TRANSFERRED", "its documented role supplying motors for other CASIC
+    # missiles"). Those name no participant, so nothing downstream can resolve them; the endpoint becomes an
+    # untyped node that can only ever be attached to the wrong thing.
+    subject: str | None = Field(
+        default=None,
+        description=(
+            "The participant this statement is ABOUT, as the document names it — system, unit, place, "
+            "organisation or event, whichever the relation takes. It must NAME a participant: never a "
+            "clause ('what was transferred'), never an activity or role ('its role supplying motors') — "
+            "name the thing transferred and the supplier instead. A referring phrase ('the engagement "
+            "radar') does name it: copy it verbatim."
+        ),
+    )
+    object: str | None = Field(
+        default=None,
+        description=(
+            "The participant at the other end, under the subject's rule — never a clause, never a role."
+        ),
+    )
     date_text: str | None = Field(
         default=None,
         description=(
