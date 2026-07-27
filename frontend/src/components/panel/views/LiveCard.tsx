@@ -153,7 +153,11 @@ function AlertContext({ item }: { item: LiveReviewItem }) {
       )}
       {/* "Is it real?" is only answerable from evidence — both sides of the change are one
           click from their sources, and a held supersession explains itself in its own words. */}
-      <AlertEvidence provenance={c.provenance} holdReasons={c.holdReasons} />
+      <AlertEvidence
+        provenance={c.provenance}
+        holdReasons={c.holdReasons}
+        originContest={c.originContest}
+      />
     </div>
   )
 }

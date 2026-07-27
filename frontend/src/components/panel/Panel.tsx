@@ -6,6 +6,7 @@ import { AskBar } from './AskBar'
 import { ZeroView } from './views/ZeroView'
 import { HeroAnswer } from './views/HeroAnswer'
 import { GapsView } from './views/GapsView'
+import { KnownGapsView } from './views/KnownGapsView'
 import { LiveAnswer } from './views/LiveAnswer'
 import { MergeCard } from './views/MergeCard'
 import { OverrideCard } from './views/OverrideCard'
@@ -26,6 +27,7 @@ export function Panel() {
         {panelView === 'zero' && <ZeroView />}
         {panelView === 'hero' && <HeroAnswer />}
         {panelView === 'gaps' && <GapsView />}
+        {panelView === 'knowngaps' && <KnownGapsView />}
         {panelView === 'answer' && <LiveAnswer />}
         {panelView === 'cred' && <CredView />}
         {panelView === 'watch' && <WatchView />}

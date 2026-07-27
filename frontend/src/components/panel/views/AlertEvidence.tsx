@@ -12,7 +12,7 @@
 // evidence" panel that would be a lie about the evidence rather than a report of it.
 
 import { useWorkbench } from '@/store/workbench'
-import type { LiveAlertProvenanceModel } from '@/api/adapters'
+import type { LiveAlertOriginContest, LiveAlertProvenanceModel } from '@/api/adapters'
 
 const SIDE_LABEL = { before: 'Before', after: 'After' } as const
 
@@ -44,12 +44,79 @@ function RefChip({
   )
 }
 
+/** The alert says the move came from one place; the graph's own supersession says another.
+ *
+ *  Both are honestly derived and neither is a mistake: the tripwire's "before" is whichever basing
+ *  edge represented the group in the previous view, and with four un-adjudicated basings on one unit
+ *  that representative is settled by an id sort rather than by adjudication — while `supersedes`
+ *  records the assertion the new one actually overtook. Two surfaces, two origins. This system's
+ *  whole thesis is that a contest gets reported, so nothing here picks a winner: it names both, and
+ *  names the other basings still on file that make "from" an open question rather than a fact. */
+function OriginContest({ contest }: { contest: LiveAlertOriginContest }) {
+  const openProvenance = useWorkbench((s) => s.openProvenance)
+  return (
+    <div className="mt-[10px] rounded border border-dashed border-problem px-[13px] py-[11px]">
+      <div className="mb-[6px] font-mono text-[10px] tracking-[0.06em] text-problem">
+        WHERE IT MOVED FROM IS CONTESTED
+      </div>
+      <div className="text-[12px] leading-[1.55] text-text-dim">
+        The tripwire reports the move as coming from{' '}
+        <span className="text-text">{contest.statedFrom}</span>, while the supersession this graph
+        recorded says the assertion that was overtaken was the one at{' '}
+        <span className="text-text">{contest.recordedFrom}</span>. Both are on file; nothing has
+        adjudicated between them, so the origin is not settled here.
+      </div>
+      {contest.otherBasings.length > 0 && (
+        <div className="mt-[8px] text-[12px] leading-[1.55] text-text-dim">
+          {contest.otherBasings.length === 1
+            ? 'One further basing is still recorded for this unit and no supersession retired it: '
+            : `${contest.otherBasings.length} further basings are still recorded for this unit and no supersession retired them: `}
+          {contest.otherBasings.map((b, i) => (
+            <span key={b.ref}>
+              {i > 0 ? ', ' : ''}
+              <span className="text-text">{b.name}</span>
+              {b.status ? ` (${b.status})` : ''}
+            </span>
+          ))}
+          .
+        </div>
+      )}
+      <div className="mt-[9px] flex flex-wrap gap-[6px]">
+        {contest.statedFromRef && (
+          <RefChip
+            label="the tripwire's origin"
+            title="Open the provenance of the basing the alert named"
+            onClick={() => openProvenance(contest.statedFromRef as string)}
+          />
+        )}
+        {contest.recordedFromRef && (
+          <RefChip
+            label="the recorded origin"
+            title="Open the provenance of the assertion the successor overtook"
+            onClick={() => openProvenance(contest.recordedFromRef as string)}
+          />
+        )}
+        {contest.otherBasings.map((b) => (
+          <RefChip
+            key={b.ref}
+            label={b.name}
+            title="Open this basing's provenance"
+            onClick={() => openProvenance(b.ref)}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function AlertEvidence({
   provenance,
   holdReasons = [],
+  originContest = null,
 }: {
   provenance?: LiveAlertProvenanceModel | null
   holdReasons?: string[]
+  originContest?: LiveAlertOriginContest | null
 }) {
   const openProvenance = useWorkbench((s) => s.openProvenance)
 
@@ -104,6 +171,8 @@ export function AlertEvidence({
           ))}
         </>
       )}
+
+      {originContest && <OriginContest contest={originContest} />}
 
       {holdReasons.length > 0 && (
         // The old assertion was NOT auto-retired. The gate's own words, verbatim — a

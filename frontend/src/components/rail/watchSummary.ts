@@ -82,17 +82,49 @@ function anchorNote(anchors: WatchAnchorCheck | null): string {
   return parts.join(' · ')
 }
 
+/** The fourth truth (AH-3): binding is not the same as being ABLE TO FIRE. The anchor check above
+ *  asks whether a wire is aimed at real nodes; this asks whether the thing it watches for could ever
+ *  happen. A wire can pass the first and fail the second — every anchor bound, 66 nodes watched, and
+ *  a filter on an edge type nothing in coverage produces. It inflates the armed count exactly like a
+ *  blind anchor does, and "3 armed · none fired" is exactly as false about it. */
+export interface WatchReachabilityCheck {
+  checked: boolean
+  observables: readonly { can_fire?: boolean; gap_kind?: string | null; checked?: boolean }[]
+}
+
+/** How the reachability half reads on its own; `''` when there is nothing to add.
+ *
+ *  Both gap kinds are counted, and the caption does NOT split them the way the panel does. That is a
+ *  deliberate compression for a one-line surface: the difference between "a document would fix this"
+ *  and "a human must fix this" changes what an analyst DOES, but not whether they can trust the
+ *  silence — and trust is the only thing the rail has room to speak to. The remedy is one click away
+ *  in the Watch panel, where there is room to say which is which.
+ *
+ *  Note this deliberately differs from `anchorNote`'s rule of faults-only. A `pending_coverage`
+ *  anchor leaves its wire watching real nodes — degraded, not dead — so putting it on the alarm line
+ *  would cry wolf. `can_fire: false` means dead, whichever gap kind caused it. */
+function reachabilityNote(reach: WatchReachabilityCheck | null): string {
+  if (reach === null) return '' // unknown — not a claim either way
+  if (!reach.checked) return 'reachability unchecked'
+  const dead = reach.observables.filter(
+    (r) => r.checked !== false && r.can_fire === false && r.gap_kind !== 'scope',
+  ).length
+  return dead > 0 ? `${dead} cannot fire` : ''
+}
+
 /**
  * @param armed      the armed catalogue, or `null` if it could not be read (never treat as 0)
  * @param tripwires  observables with at least one firing on the current view, or `null` in demo mode
  * @param demoCount  the frozen demo tripwire count, used only when there is no live feed at all
  * @param anchors    the live anchor check, or `null` if unknown — never inferred to be clean
+ * @param reach      the live trigger-reachability check, or `null` if unknown — likewise
  */
 export function watchSummary(
   armed: readonly unknown[] | null,
   tripwires: readonly WatchTripwire[] | null,
   demoCount: number,
   anchors: WatchAnchorCheck | null = null,
+  reach: WatchReachabilityCheck | null = null,
 ): WatchSummary {
   // No live feed at all → demo mode's frozen scenario. Unchanged output: "3" · "armed".
   if (!tripwires) return { count: String(demoCount), note: 'armed' }
@@ -109,8 +141,13 @@ export function watchSummary(
     }
   }
 
-  // Order is deliberate: the count, then why it OVERSTATES coverage, then what has fired. A tripwire
-  // watching nothing is the thing an analyst most needs to see before trusting the silence.
-  const note = [`${armed.length} armed`, anchorNote(anchors), fired].filter(Boolean).join(' · ')
+  // Order is deliberate: the count, then every reason it OVERSTATES coverage, then what has fired. A
+  // tripwire that cannot fire — whether because it is aimed at nothing or because the condition it
+  // watches for is impossible — is the thing an analyst most needs to see before trusting silence.
+  // The badge stays the true armed count: it is correctly labelled "armed", and the caption, not the
+  // number, is where the caveat belongs.
+  const note = [`${armed.length} armed`, anchorNote(anchors), reachabilityNote(reach), fired]
+    .filter(Boolean)
+    .join(' · ')
   return { count: String(armed.length), note }
 }

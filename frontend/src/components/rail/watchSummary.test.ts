@@ -143,3 +143,90 @@ describe('watchSummary — anchor severity (AH-2)', () => {
     expect(s.note).toBe('3 armed · 1 anchor unresolved · none fired')
   })
 })
+
+// ── AH-3: armed is not the same as ABLE TO FIRE ─────────────────────────────────────────────────
+// The second, independent way the caption lied. A wire can bind every anchor, watch 66 nodes, and
+// still filter on an edge type nothing in coverage produces — so the anchor half above reports it
+// clean while it sits there structurally incapable of ever firing. "3 armed · none fired" is the
+// same false all-clear about that wire, and it is the line an analyst reads without opening
+// anything.
+describe('watchSummary — trigger reachability (AH-3)', () => {
+  const CAN = { can_fire: true, gap_kind: null, checked: true }
+  const DATA = { can_fire: false, gap_kind: 'data', checked: true }
+  const FAULT = { can_fire: false, gap_kind: 'engine', checked: true }
+
+  it('omitting the reachability check leaves the caption exactly as it was', () => {
+    expect(watchSummary(OBS, [], 3).note).toBe('3 armed · none fired')
+    expect(watchSummary(OBS, [], 3, null, null).note).toBe('3 armed · none fired')
+  })
+
+  it('a clean check adds nothing — no cry wolf', () => {
+    expect(
+      watchSummary(OBS, [], 3, null, { checked: true, observables: [CAN, CAN, CAN] }).note,
+    ).toBe('3 armed · none fired')
+  })
+
+  it('THE FIX: a wire that cannot fire is not counted as armed-and-watching', () => {
+    // The shipped config: one healthy, one data gap, one engine fault.
+    const s = watchSummary(OBS, [], 3, null, { checked: true, observables: [CAN, DATA, FAULT] })
+    expect(s.note).toBe('3 armed · 2 cannot fire · none fired')
+    expect(s.count).toBe('3') // the armed count is still true — the caption carries the caveat
+  })
+
+  it('counts both gap kinds — dead is dead, whatever might revive it later', () => {
+    expect(
+      watchSummary(OBS, [], 3, null, { checked: true, observables: [DATA] }).note,
+    ).toBe('3 armed · 1 cannot fire · none fired')
+    expect(
+      watchSummary(OBS, [], 3, null, { checked: true, observables: [FAULT] }).note,
+    ).toBe('3 armed · 1 cannot fire · none fired')
+  })
+
+  it('scope gaps stay out — the anchor half of the caption already counts those', () => {
+    const s = watchSummary(OBS, [], 3, null, {
+      checked: true,
+      observables: [{ can_fire: false, gap_kind: 'scope', checked: true }],
+    })
+    expect(s.note).toBe('3 armed · none fired')
+  })
+
+  it('an unrun check says so — never a silent pass', () => {
+    const s = watchSummary(OBS, [], 3, null, { checked: false, observables: [] })
+    expect(s.note).toBe('3 armed · reachability unchecked · none fired')
+  })
+
+  it('an unchecked entry is not counted as dead', () => {
+    const s = watchSummary(OBS, [], 3, null, {
+      checked: true,
+      observables: [{ can_fire: false, gap_kind: 'engine', checked: false }],
+    })
+    expect(s.note).toBe('3 armed · none fired')
+  })
+
+  it('both halves can speak at once, in order: why it overstates, then what fired', () => {
+    const s = watchSummary(
+      OBS,
+      [fired('fired')],
+      3,
+      { checked: true, unresolved: [{ watching_nothing: true, severity: 'watching_nothing' }] },
+      { checked: true, observables: [CAN, DATA, FAULT] },
+    )
+    expect(s.note).toBe('3 armed · 1 watching nothing · 2 cannot fire · 1 fired')
+  })
+
+  // NON-VACUITY: a caption hardcoded to the healthy string, or to a constant warning, cannot satisfy
+  // both halves of this. It is the control that keeps the rest of this block from passing vacuously.
+  it('NON-VACUITY: the caption must change with the payload', () => {
+    const healthy = watchSummary(OBS, [], 3, null, {
+      checked: true,
+      observables: [CAN, CAN, CAN],
+    }).note
+    const broken = watchSummary(OBS, [], 3, null, {
+      checked: true,
+      observables: [CAN, DATA, FAULT],
+    }).note
+    expect(healthy).toBe('3 armed · none fired')
+    expect(broken).not.toBe(healthy)
+    expect(broken).toContain('cannot fire')
+  })
+})
