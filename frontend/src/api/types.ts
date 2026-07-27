@@ -471,12 +471,6 @@ export interface AnchorCheck {
   unresolved: ObservableAnchorProblem[]
 }
 
-/** AH-3 — the OTHER way an armed tripwire is silently dead. The anchor check asks "can I see my
- *  target?"; this asks "given that I can see everything, can the thing I watch for occur here at
- *  all?". Measured on the running app, two of three shipped tripwires answered no and said nothing:
- *  one waits on a `replenishes` edge the graph holds zero of while advertising "watching 66 node(s)",
- *  the other has no detector for its trigger form at all. Both rendered as plain grey ARMED. */
-
 // ───────────────────────── trigger reachability (AH-3) ─────────────────────────
 
 /** The SECOND, independent way a tripwire can be armed-and-useless (AH-3).
@@ -495,24 +489,6 @@ export type ReachabilityStatus =
   | 'type_not_modelled'
   | 'attribute_not_covered'
   | 'out_of_watch_scope'
-
-/** What a human must actually DO about it — the rendering dial, not `can_fire`:
- *  - `data` — the type/attribute IS modelled and simply has no coverage yet. Self-healing on the next
- *    ingest, and a normal state for a forward-armed wire. Render in the neutral "awaiting coverage"
- *    register (as with `pending_coverage` anchors) — but still VISIBLE: the analyst must know this
- *    beat is UNCOVERED rather than quiet.
- *  - `modelling` / `engine` — the ontology declares no such relation, or the trigger form has no
- *    detector at all. No volume of new documents fixes it; a human edits config. These are faults.
- *  - `scope` — candidates exist but none is in scope. The remedy lives in the anchor check and the
- *    `warning` quotes it, so do not render this as a second, separate problem. */
-export type ReachabilityGapKind = 'data' | 'modelling' | 'engine' | 'scope'
-
-export interface ReachabilityMissing {
-  kind: 'edge_type' | 'node_type' | 'attribute' | 'trigger_form' | 'watch_scope'
-  name: string
-}
-
-export interface ObservableReachability {
 
 /** What KIND of gap, i.e. who has to do something about it — the only distinction that changes an
  *  analyst's next action:
@@ -536,31 +512,6 @@ export interface TriggerReachability {
   status: ReachabilityStatus
   can_fire: boolean
   gap_kind: ReachabilityGapKind | null
-  /** The specific thing that is absent — structured so a chip can be built without parsing prose. */
-  missing: ReachabilityMissing[]
-  /** View elements the trigger's type filter matched; `null` when not computed. */
-  candidate_count: number | null
-  /** `false` = the check could not be run. Never render that as a clean bill of health. */
-  checked: boolean
-  /** A complete analyst-facing sentence — render VERBATIM, as with `anchor_warning`. Composing your
-   *  own is how the API and the screen drift on what the verdict means. `null` when reachable. */
-  warning: string | null
-}
-
-/** GET /config/observables → `diagnostics.trigger_reachability`. Unlike `anchor_check.unresolved`
- *  this list is COMPLETE — one entry per armed observable — because a Watch card cannot honestly say
- *  "watching, and it could fire" unless the positive verdict is carried too. */
-export interface ReachabilityCheck {
-  checked: boolean
-  reason?: string
-  observables: ObservableReachability[]
-}
-
-/** Is this a fault an analyst must act on, or a coverage gap that clears itself? An absent or
- *  unrecognised `gap_kind` on a tripwire that cannot fire counts as a fault — an underclaim is as
- *  dishonest as an overclaim, just quieter. */
-export function isReachabilityFault(r: ObservableReachability): boolean {
-
   missing: ReachabilityMissing[]
   candidate_count: number | null
   /** `false` = the check did not run for this observable. Must NEVER render as a pass — the backend
@@ -584,7 +535,6 @@ export function isReachabilityFault(r: TriggerReachability): boolean {
   return r.gap_kind !== 'data' && r.gap_kind !== 'scope'
 }
 
-
 /** GET /config/observables → `diagnostics.trigger_reachability`. Unlike the anchor check this is
  *  COMPLETE, not problems-only (one entry per armed observable), so a card can state the positive
  *  verdict rather than leave the analyst to infer it from an absence. */
@@ -599,8 +549,6 @@ export interface ReachabilityCheck {
  *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed.
  *  `diagnostics` is DERIVED state about that value (never part of the round-trip) — for observables
  *  it carries the live anchor check, so "3 armed" can't quietly mean "3 armed, 1 watching nothing",
- *  plus the trigger-reachability check, so it can't mean "3 armed, 2 that can never fire" either. */
-
  *  plus the trigger-reachability check, so it can't quietly mean "3 armed, 2 that cannot fire". */
 export interface ConfigRead {
   section: string
