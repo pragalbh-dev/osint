@@ -1,0 +1,187 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "image",
+      "latency_s": 7.686256235931069,
+      "offered_fields": [
+        "caption",
+        "caption_vs_image_consistency",
+        "count_abstained",
+        "count_object",
+        "description",
+        "features",
+        "frame_kind",
+        "geometry_tokens",
+        "gsd_note",
+        "object_count_max",
+        "object_count_min",
+        "occupancy_state",
+        "resolution_sufficiency"
+      ],
+      "payload": {
+        "caption": "Overhead view of an enclosed facility with a distinctive circular multi-lobed driveway layout, surrounded by dense urban development.",
+        "caption_vs_image_consistency": "consistent",
+        "count_abstained": true,
+        "count_object": "vehicles or small structures",
+        "description": "High-resolution overhead optical imagery showing an open rectangular/trapezoidal ground plot situated within a dense urban street grid. The central portion of the plot features a prominent circular ground structure composed of paved loops and rounded driveways radiating in a multi-lobed arrangement around a central point. South of this circular pattern are several low-rise rectangular buildings, paved courtyards, and small structures. A diagonal feature (road, embankment, or rail track) borders the upper right side of the open lot. The surrounding area consists of multi-lane city streets, multi-story residential building complexes, construction sites, and a sports track visible to the west.",
+        "features": [
+          {
+            "arrangement": "radial / multi-lobed loop",
+            "feature": "paved loop track",
+            "note": "Symmetrical circular layout with curved internal paths",
+            "shape": "circular"
+          },
+          {
+            "arrangement": "grid / aligned rows",
+            "feature": "buildings",
+            "note": "Low-rise structures south of the circular pad layout",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "linear border",
+            "feature": "diagonal track / road",
+            "note": "Extends along the northeastern boundary of the open field",
+            "shape": "linear"
+          },
+          {
+            "arrangement": "grid network",
+            "feature": "urban road network",
+            "note": "Paved multi-lane streets surrounding the site",
+            "shape": "grid"
+          }
+        ],
+        "frame_kind": "satellite optical",
+        "geometry_tokens": [
+          "circular layout",
+          "radial driveways",
+          "rectangular buildings",
+          "linear tracks",
+          "urban grid"
+        ],
+        "gsd_note": "Sub-meter resolution, sufficient to detail facility ground patterns, road networks, and building footprints.",
+        "occupancy_state": "occupied / operational structure",
+        "resolution_sufficiency": "sufficient"
+      },
+      "tool_name": "read_overhead_image",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 12.259114432148635,
+      "offered_fields": [
+        "assessed_types",
+        "collection_gaps",
+        "components",
+        "observations",
+        "occupancy",
+        "relations",
+        "site",
+        "source_quote",
+        "units"
+      ],
+      "payload": {
+        "assessed_types": [
+          {
+            "context": {
+              "designation": "HQ-9P",
+              "operator": "Pakistan"
+            },
+            "name": "HQ-9P",
+            "operator_branch": "Pakistan",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan"
+          }
+        ],
+        "collection_gaps": [
+          {
+            "description": "Given the partial cloud obscuration and single-pass nature of this collection, a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding",
+            "missing_slot": "follow-up imagery pass",
+            "next_coverage_due": "within the next 5–7 days",
+            "source_quote": "a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding"
+          }
+        ],
+        "components": [
+          {
+            "context": {
+              "designation": "TEL"
+            },
+            "name": "transporter-erector-launchers (TELs)",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "name": "radar trailer",
+            "source_quote": "what was assessed as a possible radar trailer footprint is empty in the current image"
+          }
+        ],
+        "observations": [
+          {
+            "count_state": "zero / negative",
+            "location_text": "the old Rawalpindi-area site near the port road turnoff",
+            "object_count_text": "No",
+            "object_type": "transporter-erector-launchers (TELs)",
+            "pass_date": "2025-06-11",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "location_text": "cleared laydown area",
+            "object_type": "radar trailer footprint",
+            "pass_date": "2024-11",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "occupancy": [
+          {
+            "observed": "transporter-erector-launchers (TELs)",
+            "observed_date": "2025-06-11",
+            "occupancy_state": "negative / absent",
+            "site": "the old Rawalpindi-area site",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          }
+        ],
+        "relations": [
+          {
+            "object": "Pakistan",
+            "relation": "operated-by",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan",
+            "subject": "HQ-9P"
+          }
+        ],
+        "site": {
+          "context": {
+            "geography": "near the port road turnoff"
+          },
+          "location_text": "near the port road turnoff, not the garrison itself",
+          "name": "the old Rawalpindi-area site",
+          "occupancy_state": "negative TEL presence",
+          "source_quote": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself"
+        },
+        "source_quote": "IMAGERY ANALYSIS SUMMARY — COMMERCIAL SATELLITE DERIVED\nRef: OSINT-VIS-0625-114"
+      },
+      "tool_name": "extract_imagery_geoint",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 6.634946668986231,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:03:11.579637+00:00",
+  "run_index": 4,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d17b_withheld_gap"
+}

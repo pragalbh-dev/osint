@@ -1,0 +1,190 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 61.67157607804984,
+      "offered_fields": [
+        "rows"
+      ],
+      "payload": {
+        "rows": [
+          {
+            "aliases": [
+              {
+                "name_a": "SINO-GALAXY IMP/EXP CO. LTD",
+                "name_b": "SINO-GALAXY IMPEX CO, LTD",
+                "source_quote": "Shipper:         SINO-GALAXY IMP/EXP CO. LTD\n                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)"
+              }
+            ],
+            "bl_no": "YMLUW189234567",
+            "consignee": {
+              "aka": null,
+              "context": null,
+              "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+              "origin_country": null,
+              "role": "Consignee",
+              "source_quote": "Consignee:       ORIENT ELECTRO TRADING (PVT) LTD\n                 Suite 4-C, Sharae Faisal Commercial Complex,\n                 Karachi -- NTN 3298761-4"
+            },
+            "containers": [
+              "TCNU7712204",
+              "TCNU7712341"
+            ],
+            "count_state": "14 WOODEN CRATES, gross wt 9,870 kg",
+            "declared_value": "USD 612,400 (CIF PQ)",
+            "description": "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE,\n                 FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT",
+            "destination_quote": null,
+            "destination_ref": null,
+            "filing_date": "04-11-2020",
+            "freight_forwarder": "AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
+            "gd_no": "KPQA-HC-2020-118834",
+            "hs_code": "8526.91.00",
+            "port_of_discharge": "PORT MUHAMMAD BIN QASIM (PQ)",
+            "shipper": {
+              "aka": "SINO-GALAXY IMPEX CO, LTD",
+              "context": null,
+              "name": "SINO-GALAXY IMP/EXP CO. LTD",
+              "origin_country": "CHINA",
+              "role": "Shipper",
+              "source_quote": "Shipper:         SINO-GALAXY IMP/EXP CO. LTD\n                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)\nShipper Ctry:    CHINA (Origin: Tianjin Xingang)"
+            },
+            "source_quote": "GD No: KPQA-HC-2020-118834          Filing Date: 04-11-2020\nPort of Discharge: PORT MUHAMMAD BIN QASIM (PQ)\nTerminal Handler: Pakistan International Bulk Terminal\nB/L No: YMLUW189234567\n\nConsignee:       ORIENT ELECTRO TRADING (PVT) LTD\n                 Suite 4-C, Sharae Faisal Commercial Complex,\n                 Karachi -- NTN 3298761-4\nShipper:         SINO-GALAXY IMP/EXP CO. LTD\n                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)\nShipper Ctry:    CHINA (Origin: Tianjin Xingang)\n\nHS Code:         8526.91.00\nDescription (as filed): \"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE,\n                 FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT\"\nPkgs:            14 WOODEN CRATES, gross wt 9,870 kg\nContainer:       TCNU7712204 / TCNU7712341 (2 x 40ft HC)\nDeclared Value:  USD 612,400 (CIF PQ)\nFreight Fwdr:    AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
+            "terminal": "Pakistan International Bulk Terminal"
+          },
+          {
+            "aliases": [],
+            "bl_no": "YMLUW189234568",
+            "consignee": {
+              "aka": null,
+              "context": null,
+              "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+              "origin_country": null,
+              "role": "Consignee",
+              "source_quote": "Consignee:       ORIENT ELECTRO TRADING (PVT) LTD"
+            },
+            "containers": [
+              "TCNU7712204"
+            ],
+            "count_state": "6 CRATES, gross wt 4,120 kg",
+            "declared_value": "USD 188,900",
+            "description": "ELECTRONIC ASSEMBLY, ANTENNA FEED SUB-UNIT, TEST\n                 EQPT ACCESSORY, PARTS OF SURVEILLANCE INSTRUMENT N.E.S.",
+            "destination_quote": "\"consignee to arrange onward clearance -- final destination Air Defence\n  Depot, ~12 km NNW of Kala Chitta / Attock Cantt area, coordinate with\n  local agent before release\"",
+            "destination_ref": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+            "filing_date": "04-11-2020",
+            "freight_forwarder": null,
+            "gd_no": "KPQA-HC-2020-118835",
+            "hs_code": "8526.92.00",
+            "port_of_discharge": "BIN QASIM",
+            "shipper": {
+              "aka": null,
+              "context": null,
+              "name": "SINO GALAXY IMP. & EXP. CO.",
+              "origin_country": "CHINA",
+              "role": "Shipper",
+              "source_quote": "Shipper:         SINO GALAXY IMP. & EXP. CO.\nShipper Ctry:    CHINA"
+            },
+            "source_quote": "GD No: KPQA-HC-2020-118835          Filing Date: 04-11-2020\nPort of Discharge: BIN QASIM\nB/L No: YMLUW189234568\n\nConsignee:       ORIENT ELECTRO TRADING (PVT) LTD\nShipper:         SINO GALAXY IMP. & EXP. CO.\nShipper Ctry:    CHINA\n\nHS Code:         8526.92.00\nDescription (as filed): \"ELECTRONIC ASSEMBLY, ANTENNA FEED SUB-UNIT, TEST\n                 EQPT ACCESSORY, PARTS OF SURVEILLANCE INSTRUMENT N.E.S.\"\nPkgs:            6 CRATES, gross wt 4,120 kg\nContainer:       TCNU7712204 (shared, see line 118834)\nDeclared Value:  USD 188,900\n\nDelivery instructions (broker note, handwritten annotation on file copy):\n  \"consignee to arrange onward clearance -- final destination Air Defence\n  Depot, ~12 km NNW of Kala Chitta / Attock Cantt area, coordinate with\n  local agent before release\"",
+            "terminal": null
+          },
+          {
+            "aliases": [
+              {
+                "name_a": "ORIENT ELECTRO TRADING PVT LTD",
+                "name_b": "ORIENT ELECTRONIC TRADING CO",
+                "source_quote": "Consignee:       ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC\n                 TRADING CO -- name change ref SECP CUIN 0087762, 2019)"
+              }
+            ],
+            "bl_no": "COSU6178820410",
+            "consignee": {
+              "aka": "ORIENT ELECTRONIC TRADING CO",
+              "context": null,
+              "name": "ORIENT ELECTRO TRADING PVT LTD",
+              "origin_country": null,
+              "role": "Consignee",
+              "source_quote": "Consignee:       ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC\n                 TRADING CO -- name change ref SECP CUIN 0087762, 2019)"
+            },
+            "containers": [
+              "CSNU4402217"
+            ],
+            "count_state": "9 CRATES, gross wt 6,005 kg",
+            "declared_value": "USD 244,150",
+            "description": "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY,\n                 REPLACEMENT SPARES FOR CIVIL AIR NAVIGATION AID SYSTEM",
+            "destination_quote": null,
+            "destination_ref": null,
+            "filing_date": "09-11-2020",
+            "freight_forwarder": "AL-NOOR CARGO SERVICES",
+            "gd_no": "KPQA-HC-2020-119011",
+            "hs_code": "8526.91.00",
+            "port_of_discharge": "Port Qasim",
+            "shipper": {
+              "aka": null,
+              "context": null,
+              "name": "SINO-GALAXY IMPEX CO, LTD",
+              "origin_country": "China",
+              "role": "Shipper",
+              "source_quote": "Shipper:         SINO-GALAXY IMPEX CO, LTD\nShipper Ctry:    China"
+            },
+            "source_quote": "GD No: KPQA-HC-2020-119011          Filing Date: 09-11-2020\nPort of Discharge: Port Qasim\nB/L No: COSU6178820410\n\nConsignee:       ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC\n                 TRADING CO -- name change ref SECP CUIN 0087762, 2019)\nShipper:         SINO-GALAXY IMPEX CO, LTD\nShipper Ctry:    China\n\nHS Code:         8526.91.00\nDescription (as filed): \"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY,\n                 REPLACEMENT SPARES FOR CIVIL AIR NAVIGATION AID SYSTEM\"\nPkgs:            9 CRATES, gross wt 6,005 kg\nContainer:       CSNU4402217\nDeclared Value:  USD 244,150\n\nRemarks (WeBOC system-generated, exam order):\n  EXAM TYPE: GREEN CHANNEL -- NO PHYSICAL EXAMINATION\n  Risk flag auto-cleared by AEO status of freight forwarder (AL-NOOR CARGO\n  SERVICES -- AEO Cert No. PK-AEO-0231)",
+            "terminal": null
+          }
+        ]
+      },
+      "tool_name": "extract_customs_gd_bol",
+      "usage": {
+        "input_tokens": 2228,
+        "output_tokens": 2265
+      }
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 2.551098247990012,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "NAME_VARIANT; EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "Consignee:       ORIENT ELECTRO TRADING (PVT) LTD",
+              "Consignee:       ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC\n                 TRADING CO -- name change ref SECP CUIN 0087762, 2019)"
+            ],
+            "member_ids": [
+              1,
+              7,
+              10
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE; NAME_VARIANT",
+            "licensing_quotes": [
+              "Shipper:         SINO-GALAXY IMP/EXP CO. LTD\n                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)",
+              "Shipper:         SINO GALAXY IMP. & EXP. CO.",
+              "Shipper:         SINO-GALAXY IMPEX CO, LTD"
+            ],
+            "member_ids": [
+              2,
+              4,
+              8
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": {
+        "input_tokens": 2722,
+        "output_tokens": 214
+      }
+    }
+  ],
+  "candidate_id": "openai-gpt-5-6-sol",
+  "fingerprint": "983ba2071fb17d86e0d6af36040a54bfd4ce564a7991c3d2b614b2b149325848",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:05:13.683330+00:00",
+  "run_index": 1,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d05_customs_manifest"
+}

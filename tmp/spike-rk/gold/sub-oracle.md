@@ -14,6 +14,8 @@ would *reward* an extractor for inventing oracle-shaped edges from documents tha
 The slice-derived oracle measures the only thing an extractor can be responsible for: what these
 pages actually say.
 
+**Repaired 2026-07-25 (`schema_version` → `rk-spike-sub-oracle/1.1`).** Every entry resting on a single slice document is capped at `probable`: `config/credibility.yaml` sets `min_independent_groups: 2`, so one look cannot reach `confirmed` however hard its identifier is. Qualified confirms ("confirmed (as an entity)") were rulings on a NARROWED proposition, not a different status, so they are capped too — the narrowing now lives in `status_proposition` and `status` always holds a vocabulary value. `sl_e03` was re-cited on the one row that supports it and its counter-evidence moved to `sl_amb_07`. Full record in `repair_log`.
+
 **Status semantics used below.** `confirmed` / `probable` / `possible` / `insufficient-evidence`, in
 the project's sense: independence of sources, source grade, and perishability all bear on it. Two
 reprints of one claim are one source. A perishable-only basis caps at `probable`. Where the honest
@@ -38,7 +40,7 @@ disagreements — they are called out inline, and the genuine disagreements are 
 
 **Slice totals.** 7 documents · 125 gold claim rows · 27 sub-oracle nodes · 24 sub-oracle
 edge entries (of which 5 are explicitly *not derivable* and recorded as insufficient-evidence with
-their missing premises named) · 6 flagged ambiguities. For comparison, the full `answer_key`
+their missing premises named) · 7 flagged ambiguities. For comparison, the full `answer_key`
 ground truth is 18 nodes / 23 edges over 26 documents — a different measurement, on a different
 document set, and not interchangeable with this one.
 
@@ -102,7 +104,7 @@ The slice contains the false-merge trap AND its refutation: d04 states there is 
 
 ### `sl_family_hq9` — HQ-9 / Hongqi-9 family
 
-**Type:** (family — NOT a node type) · **Honest status on this slice: `confirmed (as a family label)`**
+**Type:** (family — NOT a node type) · **Honest status on this slice: `confirmed`** *(status attaches to: as a family label — not as a fielded variant)*
 
 Surface forms evidencing it: “the Chinese-origin HQ-9 family”; “the Chinese Hongqi-9”; “the HQ-9 family proper”; “China's HQ-9 long-range surface-to-air missile system”; “the HQ-9/HQ-9B/HQ-9BE/HQ-9P designator family”
 
@@ -166,7 +168,7 @@ Every COUNT of it is either withheld (d02), a hedged estimate (d19, cs01) or neg
 
 ### `sl_unit_paad` — an unnamed Pakistan Army Air Defence (PAAD) unit
 
-**Type:** unit (formation) · **Honest status on this slice: `insufficient-evidence (for a formation IDENTITY)`**
+**Type:** unit (formation) · **Honest status on this slice: `insufficient-evidence`** *(status attaches to: for a formation IDENTITY)*
 
 Surface forms evidencing it: “a Pakistan Army Air Defence (PAAD) unit”; “the newly raised/re-equipped unit”; “the unit”
 
@@ -278,91 +280,93 @@ Nothing is observed there and nobody is based there. Existence-of-a-mention only
 
 ### `sl_org_orient` — ORIENT ELECTRO TRADING (PVT) LTD
 
-**Type:** trading_org · **Honest status on this slice: `confirmed (as an entity)`**
+**Type:** trading_org · **Honest status on this slice: `probable`** *(status attaches to: as an entity (that this filer exists and is one filer), NOT as a supply-chain actor)*
 
 Surface forms evidencing it: “ORIENT ELECTRO TRADING (PVT) LTD”; “ORIENT ELECTRO TRADING PVT LTD”; “ORIENT ELECTRONIC TRADING CO”
 
 Supporting rows: `d05-r07`, `d05-r08`, `d05-r14`, `d05-r23`
 
-**Why that status.** A customs declaration is the primary record of its own filing, and this entity carries TWO registry identifiers (NTN 3298761-4, SECP CUIN 0087762) plus an address. The rename is stated with its registry reference. Identifier-backed identity does not need a second source.
+**Why that status.** A customs declaration is the primary record of its own filing, and this entity carries TWO registry identifiers (NTN 3298761-4, SECP CUIN 0087762) plus an address; the rename is stated with its registry reference. That is strong identity evidence — and it is all one document. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
 
-**What is missing.** Its role in any military supply chain. **Nothing in the slice states it.**
+**What is missing.** A second, independent look at this entity — a registry extract, a filing in another document, any non-customs source. Also its role in any military supply chain: **nothing in the slice states it.**
+
+The identifier evidence here is qualitatively the strongest anti-identity/identity signal in the slice, and it is the case with the best argument for an identifier-licensed bypass of the two-look rule. That bypass was considered and REFUSED on 2026-07-25 (see `DECISIONS.md`, "Identifier-licensed identity does NOT bypass the two-look rule"): no such rule exists in the running resolver, so putting one in the yardstick would invert the measurement.
 
 Called a 'shell'/'front' nowhere in the document — that reading is derived. The three surface forms differ by a whole token ('ELECTRO' vs 'ELECTRONIC'), so string similarity alone would under-bind them; the CUIN is what licenses the merge.
 
 ### `sl_org_sinogalaxy` — SINO-GALAXY IMP/EXP CO. LTD
 
-**Type:** trading_org · **Honest status on this slice: `confirmed (as an entity)`**
+**Type:** trading_org · **Honest status on this slice: `probable`** *(status attaches to: as an entity (that this shipper exists and is one shipper))*
 
 Surface forms evidencing it: “SINO-GALAXY IMP/EXP CO. LTD”; “SINO-GALAXY IMPEX CO, LTD”; “SINO GALAXY IMP. & EXP. CO.”; “zhang.wei@sinogalaxy-export.cn”
 
 Supporting rows: `d05-r09`, `d05-r10`, `d05-r11`, `d05-r15`
 
-**Why that status.** Shipper of record on three declarations, with a 'see also' equivalence and a shared invoice number tying two surfaces together, plus a matching email domain.
+**Why that status.** Shipper of record on three declarations, with a 'see also' equivalence and a shared invoice number tying two surfaces together, plus a matching email domain — but all three declarations are lines of ONE customs extract, i.e. one look, not three. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
 
-**What is missing.** Whether it manufactures anything (it is a trading/IMP-EXP entity by its own name).
+**What is missing.** A second, independent source on this entity. Also whether it manufactures anything (it is a trading/IMP-EXP entity by its own name).
 
 Country appears as 'CHINA' twice and 'China' once — the value-normalization case, inside one document.
 
 ### `sl_org_alnoor` — AL-NOOR CARGO SERVICES
 
-**Type:** trading_org · **Honest status on this slice: `confirmed (as an entity)`**
+**Type:** trading_org · **Honest status on this slice: `probable`** *(status attaches to: as an entity (that this forwarder exists))*
 
 Surface forms evidencing it: “AL-NOOR CARGO SERVICES”
 
 Supporting rows: `d05-r12`, `d05-r20`
 
-**Why that status.** Freight forwarder of record on two declarations with an AEO certificate number (PK-AEO-0231) — an identifier-backed entity in a primary record.
+**Why that status.** Freight forwarder of record on two declarations with an AEO certificate number (PK-AEO-0231) — an identifier-backed entity, in a single primary record. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
 
-**What is missing.** Any connection to the subject beyond forwarding these consignments.
+**What is missing.** A second, independent source on this entity. Also any connection to the subject beyond forwarding these consignments.
 
 Its AEO status is what auto-cleared the risk flag on the third declaration — an integrity fact about the RECORD, not about the goods.
 
 ### `sl_event_118834` — GD KPQA-HC-2020-118834
 
-**Type:** contract_import_event · **Honest status on this slice: `confirmed (that the declaration exists)`**
+**Type:** contract_import_event · **Honest status on this slice: `probable`** *(status attaches to: that the declaration exists — NOT that its goods are as described)*
 
 Surface forms evidencing it: “GD No: KPQA-HC-2020-118834”; “B/L No: YMLUW189234567”; “line 118834”
 
 Supporting rows: `d05-r01`, `d05-r04`, `d05-r06`, `d05-r13`, `d05-r14`, `d05-r15`, `d05-r16`
 
-**Why that status.** A customs GD extract is the primary record of the declaration; the GD and B/L numbers are its identity.
+**Why that status.** A customs GD extract is the primary record of the declaration; the GD and B/L numbers are its identity. One document, therefore one look. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
 
-**What is missing.** What was actually in it. The stated description is a CIVIL end-use ('FOR INDUSTRIAL NAVIGATION AID'), the end-user certificate is not attached, and no physical exam is recorded for this line.
+**What is missing.** A second, independent look at this declaration. And what was actually in it: the stated description is a CIVIL end-use ('FOR INDUSTRIAL NAVIGATION AID'), the end-user certificate is not attached, and no physical exam is recorded for this line.
 
 Confirmed-as-a-record is NOT confirmed-as-a-military-import. The distinction is the whole point of this document.
 
 ### `sl_event_118835` — GD KPQA-HC-2020-118835
 
-**Type:** contract_import_event · **Honest status on this slice: `confirmed (that the declaration exists)`**
+**Type:** contract_import_event · **Honest status on this slice: `probable`** *(status attaches to: that the declaration exists — NOT that its goods are as described)*
 
 Surface forms evidencing it: “GD No: KPQA-HC-2020-118835”; “B/L No: YMLUW189234568”; “GD 118835”
 
 Supporting rows: `d05-r02`, `d05-r04`, `d05-r05`, `d05-r17`, `d05-r19`
 
-**Why that status.** As 118834.
+**Why that status.** As 118834: one primary record, one independent look. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
 
-**What is missing.** Its contents beyond the filed description; the Annex A line-item detail is present but the scan is explicitly 'poor' and one designator is truncated.
+**What is missing.** A second, independent look. And its contents beyond the filed description — the Annex A line-item detail is present but the scan is explicitly 'poor' and one designator is truncated.
 
 **Shares container TCNU7712204 and the same vessel voyage with 118834.** Maximum relational pull toward an over-merge that would corrupt the import count. The document's own '(shared, see line 118834)' cross-reference proves it treats them as two lines.
 
 ### `sl_event_119011` — GD KPQA-HC-2020-119011
 
-**Type:** contract_import_event · **Honest status on this slice: `confirmed (that the declaration exists)`**
+**Type:** contract_import_event · **Honest status on this slice: `probable`** *(status attaches to: that the declaration exists — NOT that its goods are as described)*
 
 Surface forms evidencing it: “GD No: KPQA-HC-2020-119011”; “B/L No: COSU6178820410”
 
 Supporting rows: `d05-r03`, `d05-r05`, `d05-r06`, `d05-r20`
 
-**Why that status.** As 118834. Different vessel, line, container and date.
+**Why that status.** As 118834. Different vessel, line, container and date — but the same single source document. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
 
-**What is missing.** Contents; no physical examination was performed (GREEN CHANNEL).
+**What is missing.** A second, independent look. And its contents: no physical examination was performed (GREEN CHANNEL).
 
 Same consignee, same shipper cluster, same HS code as 118834 — the pair most likely to be wrongly merged on name+neighbourhood alone.
 
 ### `sl_gap_tel_count` — TEL / battery / launcher count
 
-**Type:** known_gap · **Honest status on this slice: `confirmed (the gap is real)`**
+**Type:** known_gap · **Honest status on this slice: `confirmed`** *(status attaches to: the gap is real)*
 
 Surface forms evidencing it: “The exact number of batteries/launchers (TELs) inducted was not disclosed”; “"sufficient numbers"”; “estimated at 6–8 TELs”; “no unit markings or signage”
 
@@ -376,7 +380,7 @@ The count must never be inferred from how many reports merged. In this slice the
 
 ### `sl_gap_designation` — unit designation / order-of-battle documentation
 
-**Type:** known_gap · **Honest status on this slice: `confirmed (the gap is real, and it is corpus-wide)`**
+**Type:** known_gap · **Honest status on this slice: `confirmed`** *(status attaches to: the gap is real, and it is corpus-wide)*
 
 Surface forms evidencing it: “unit numbers, basing locations, or the precise contractual designations”; “no unit markings or signage visible in any pass to date”; “confirmed order-of-battle documentation”; “not releasing order-of-battle details for sensitive air defence assets”
 
@@ -390,7 +394,7 @@ Supporting rows: `d02-r11`, `d04-r16`, `d17b-r09`, `d17b-r10`, `d20-r14`, `cs01-
 
 ### `sl_gap_ht233_maker` — HT-233 manufacturer
 
-**Type:** known_gap · **Honest status on this slice: `confirmed (the gap is real, on this slice)`**
+**Type:** known_gap · **Honest status on this slice: `confirmed`** *(status attaches to: the gap is real, on this slice)*
 
 Supporting rows: `d19-r05`, `cs01-r09`, `d05-r17`, `cs01-r07`
 
@@ -402,7 +406,7 @@ Arrived at independently of the full answer key, which reaches the same conclusi
 
 ### `sl_areas` — Karachi/Sindh coastal sector; strategic air defence belt; Arabian Sea approach; Punjab border sector; PUNJAB AIR DEFENCE BELT
 
-**Type:** area_of_operations · **Honest status on this slice: `probable (as areas)`**
+**Type:** area_of_operations · **Honest status on this slice: `probable`** *(status attaches to: as areas)*
 
 Surface forms evidencing it: “its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector”; “positions oriented toward the Arabian Sea approach”; “near the Punjab border sector”; “PAKISTAN — PUNJAB AIR DEFENCE BELT”
 
@@ -445,11 +449,15 @@ Supporting rows: `d04-r07`, `d04-r08`
 
 ### `sl_e03` — `same-as`: sl_var_hq9p → HQ-9P
 
-**Basis:** stated · **Honest status on this slice: `confirmed`**
+**Basis:** stated · **Honest status on this slice: `probable`**
 
-Supporting rows: `d04-r02`, `d02-r07`, `d19-r09`, `cs01-r01`
+Supporting rows: `d04-r02`
 
-**Why that status.** Three independent sources treat the slash/no-slash forms as one designator, and d04 states it outright ('some regional trade reporting still uses HQ-9P'). Non-perishable, design-layer.
+**Why that status.** ONE source states it, and states it cleanly: d04 (trade-media/C) — 'some regional trade reporting still uses HQ-9P' (`d04-r02`), an unhedged explicit equivalence at variant level. One independent look, so `probable`. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
+
+**What is missing.** A second, independent source treating the slash and no-slash forms as one designator — and a resolution of the transitive counter-evidence recorded as `sl_amb_07`.
+
+**Citation repaired 2026-07-25.** This entry previously claimed `confirmed` on 'three independent sources' while citing four rows, only one of which supports the proposition. Dropped: `d02-r07` (a FAMILY-level parenthetical, 'the Chinese Hongqi-9 (HQ-9P/FD-2000 family)' — and it is the FD-2000 row, not an HQ-9/P≡HQ-9P statement) and `cs01-r01` (an `ATTR:family` row that does not contain the string 'HQ-9P' as a separate designator at all). Moved to the tension list: `d19-r09`, which is COUNTER-evidence rather than support — it asserts HQ-9BE ≡ HQ-9P, which together with `d04-r07` (HQ-9/P distinct-from HQ-9BE) entails HQ-9/P ≢ HQ-9P, the OPPOSITE equivalence. It is **not** being overridden; it is held as a live contradiction (`sl_amb_07`).
 
 ### `sl_e04` — `same-as`: sl_var_hq9p → FD-2000
 
@@ -537,13 +545,13 @@ The geometry (large octagonal, on a prepared hardstand ~380 m east of the TEL cl
 
 ### `sl_e11` — `observed-at`: sl_comp_tel → sl_site_old_rawalpindi
 
-**Basis:** stated · **Honest status on this slice: `confirmed as a NEGATIVE observation for the 2025-06-11 pass window`**
+**Basis:** stated · **Honest status on this slice: `probable`** *(status attaches to: as a NEGATIVE observation for the 2025-06-11 pass window)*
 
 Supporting rows: `d17b-r03`, `d17b-r05`, `d17b-r06`, `d17b-r07`
 
-**Why that status.** d17b (imagery/B) looked for TELs, tarped TEL-sized objects, staging and generator trailers, and reports none of them, with the cloud fraction and the confidence-by-segment stated. A well-scoped negative from a grade-B source is strong evidence *for the window it covers*.
+**Why that status.** d17b (satellite/B) looked for TELs, tarped TEL-sized objects, staging and generator trailers, and reports none of them, with the cloud fraction and the confidence-by-segment stated. A well-scoped negative from a grade-B source is strong evidence *for the window it covers* — but it is a single collection pass in a single document. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades. Independently of the look count, single-pass imagery is capped at `probable` by the running decoy-risk gate (`config/credibility.yaml` `gates.decoy_risk.cap_at_probable`), so `probable` is the correct ceiling here twice over.
 
-**What is missing.** Nothing, for the stated scope. For the broader question 'is the site vacated' the document itself names the residual: dispersal, maintenance rotation to an unobserved facility, or a collection-timing gap. Next coverage: 5-7 days from 2025-06-11.
+**What is missing.** A second pass, or any non-IMINT look at the same window. For the broader question 'is the site vacated' the document itself names the residual: dispersal, maintenance rotation to an unobserved facility, or a collection-timing gap. Next coverage: 5-7 days from 2025-06-11.
 
 **The subject end is confirmed and the object end is not.** The equipment absence is solid; the SITE it is absent from cannot be identified (see sl_site_old_rawalpindi). A negative observation at an unidentifiable place cannot retire an occupancy elsewhere.
 
@@ -590,31 +598,43 @@ Supporting rows: `d19-r12`, `d20-r01`, `d20-r03`, `d20-r06`, `d20-r09`
 
 ### `sl_e15` — `distinct-from`: sl_event_118834 → sl_event_118835
 
-**Basis:** stated (distinct identifiers) · **Honest status on this slice: `confirmed`**
+**Basis:** stated (distinct identifiers) · **Honest status on this slice: `probable`**
 
 Supporting rows: `d05-r04`
 
-**Why that status.** Two distinct GD numbers and two distinct B/L numbers in a primary record, plus the document's own cross-reference treating them as separate lines. Identifier-level anti-identity is the strongest form available.
+**Why that status.** Two distinct GD numbers and two distinct B/L numbers in a primary record, plus the document's own cross-reference treating them as separate lines. Identifier-level anti-identity is the strongest form available — and it is stated once, in one document. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
+
+**What is missing.** A second, independent record distinguishing the two declarations.
+
+The identifier evidence here is qualitatively the strongest anti-identity/identity signal in the slice, and it is the case with the best argument for an identifier-licensed bypass of the two-look rule. That bypass was considered and REFUSED on 2026-07-25 (see `DECISIONS.md`, "Identifier-licensed identity does NOT bypass the two-look rule"): no such rule exists in the running resolver, so putting one in the yardstick would invert the measurement.
 
 **The over-merge trap:** they share a consignee, a shipper cluster, a vessel voyage and a CONTAINER. Name similarity and shared neighbourhood both argue for merging; only the identifiers say no. Merging them would silently halve the import count.
 
 ### `sl_e16` — `distinct-from`: sl_event_118834 → sl_event_119011
 
-**Basis:** stated (distinct identifiers) · **Honest status on this slice: `confirmed`**
+**Basis:** stated (distinct identifiers) · **Honest status on this slice: `probable`**
 
 Supporting rows: `d05-r06`
 
-**Why that status.** Distinct GD/B/L, different vessel, line, container and date.
+**Why that status.** Distinct GD/B/L, different vessel, line, container and date — all read off one document. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
+
+**What is missing.** A second, independent record distinguishing the two declarations.
+
+The identifier evidence here is qualitatively the strongest anti-identity/identity signal in the slice, and it is the case with the best argument for an identifier-licensed bypass of the two-look rule. That bypass was considered and REFUSED on 2026-07-25 (see `DECISIONS.md`, "Identifier-licensed identity does NOT bypass the two-look rule"): no such rule exists in the running resolver, so putting one in the yardstick would invert the measurement.
 
 Same consignee and same HS code — the pair most exposed to a name-and-neighbourhood merge.
 
 ### `sl_e17` — `distinct-from`: sl_event_118835 → sl_event_119011
 
-**Basis:** stated (distinct identifiers) · **Honest status on this slice: `confirmed`**
+**Basis:** stated (distinct identifiers) · **Honest status on this slice: `probable`**
 
 Supporting rows: `d05-r05`
 
-**Why that status.** As above.
+**Why that status.** As sl_e16: identifier-level anti-identity, stated once in one document. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
+
+**What is missing.** A second, independent record distinguishing the two declarations.
+
+The identifier evidence here is qualitatively the strongest anti-identity/identity signal in the slice, and it is the case with the best argument for an identifier-licensed bypass of the two-look rule. That bypass was considered and REFUSED on 2026-07-25 (see `DECISIONS.md`, "Identifier-licensed identity does NOT bypass the two-look rule"): no such rule exists in the running resolver, so putting one in the yardstick would invert the measurement.
 
 ### `sl_e18` — `distinct-from`: sl_site_sialkot → sl_site_pasrur
 
@@ -642,21 +662,29 @@ Notable shape: **anti-identity evidence arriving before any identity evidence**.
 
 ### `sl_e20` — `same-as`: sl_org_orient → ORIENT ELECTRONIC TRADING CO
 
-**Basis:** stated (registry rename with CUIN) · **Honest status on this slice: `confirmed`**
+**Basis:** stated (registry rename with CUIN) · **Honest status on this slice: `probable`**
 
 Supporting rows: `d05-r08`
 
-**Why that status.** A corporate-registry rename cited with its identifier (SECP CUIN 0087762, 2019) in a primary customs record. Identifier-licensed identity does not need corroboration.
+**Why that status.** A corporate-registry rename cited with its identifier (SECP CUIN 0087762, 2019) in a primary customs record. One document, one look. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
+
+**What is missing.** A second, independent source on the rename — an SECP registry extract, or the new name appearing in any other document.
+
+The identifier evidence here is qualitatively the strongest anti-identity/identity signal in the slice, and it is the case with the best argument for an identifier-licensed bypass of the two-look rule. That bypass was considered and REFUSED on 2026-07-25 (see `DECISIONS.md`, "Identifier-licensed identity does NOT bypass the two-look rule"): no such rule exists in the running resolver, so putting one in the yardstick would invert the measurement.
 
 The surfaces differ by a whole token, so string similarity would UNDER-bind. This is the one place in the slice where the fast path to confirmed identity (a shared unique identifier) genuinely exists.
 
 ### `sl_e21` — `same-as`: sl_org_sinogalaxy → SINO-GALAXY IMPEX CO, LTD
 
-**Basis:** stated ('see also' + shared invoice number) · **Honest status on this slice: `confirmed`**
+**Basis:** stated ('see also' + shared invoice number) · **Honest status on this slice: `probable`**
 
 Supporting rows: `d05-r10`
 
-**Why that status.** An explicit 'see also' plus a shared invoice reference (#SG-20-4471) in a primary record.
+**Why that status.** An explicit 'see also' plus a shared invoice reference (#SG-20-4471) in a primary record. One document, one look. **Capped at `probable` (2026-07-25).** The supporting evidence all sits in ONE document, which is ONE independent look. The running rule — `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` — makes `confirmed` unreachable on a single look regardless of how good that look is. A yardstick that confirmed here would be more confident than the system it grades.
+
+**What is missing.** A second, independent source binding the two shipper surfaces.
+
+The identifier evidence here is qualitatively the strongest anti-identity/identity signal in the slice, and it is the case with the best argument for an identifier-licensed bypass of the two-look rule. That bypass was considered and REFUSED on 2026-07-25 (see `DECISIONS.md`, "Identifier-licensed identity does NOT bypass the two-look rule"): no such rule exists in the running resolver, so putting one in the yardstick would invert the measurement.
 
 The THIRD surface ('SINO GALAXY IMP. & EXP. CO.') is licensed only transitively — see d05-r11, which is honestly labelled derived-required.
 
@@ -741,6 +769,12 @@ cs01: officials characterised the system in 2013 as 'already inducted in limited
 **Verdict: `probable ~125 km; attribute agreement is actively misleading here`** · rows: `d02-r08`, `d04-r04`, `cs01-r08`
 
 Three sources, three figures, one designator, and every one hedged ('understood to', 'generally credited', 'reported to have'). d04 disowns its own figure at L19 as 'indicative rather than authoritative'. Consequence for identity: numeric attribute AGREEMENT cannot be a merge signal on this corpus, and numeric DISAGREEMENT cannot be a wall — the sources disagree about the same object.
+
+### `sl_amb_07` — HQ-9/P ≡ HQ-9P (d04) vs the transitive denial of it via HQ-9BE (d19 + d04)
+
+**Verdict: `probable same-as, with a live transitive contradiction that must be surfaced, not resolved`** · rows: `d04-r02`, `d19-r09`, `d04-r07`
+
+d04 states HQ-9/P and HQ-9P are the same designator rendered two ways (`d04-r02`, unhedged). d19 states HQ-9BE is 'sometimes rendered HQ-9P in Pakistani service literature' (`d19-r09`, hedged, and disclaimed by d19 itself at L19). d04 also states HQ-9/P and HQ-9BE are DISTINCT systems (`d04-r07`, hedged: 'appear to be genuinely separate procurement lines'). Chain the second and third and you get HQ-9/P ≢ HQ-9P — the negation of the first. All three rows are in the slice; none can be preferred on grade alone (C-that-argues vs B-that-disclaims-itself). Missing: an authoritative designator mapping. Faithful behaviour: keep the alias as `probable` and surface the transitive conflict for an analyst — never silently merge, never silently wall. Moved here on 2026-07-25 from `sl_e03`'s supporting rows, where it had been counted as SUPPORT.
 
 ---
 

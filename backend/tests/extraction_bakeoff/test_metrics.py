@@ -1,0 +1,613 @@
+"""Every scored line, plus the rule that a metric with no substrate reports nothing rather than zero."""
+
+from __future__ import annotations
+
+import pytest
+
+from eval.extraction.matcher import match_claims
+from eval.extraction.metrics import (
+    NO_BINDING_SUBSTRATE,
+    NO_CLUSTERING,
+    NO_LICENSING_REGISTRY,
+    MetricValue,
+    citation_faithfulness,
+    coref_binding,
+    cost_metric,
+    discriminator_metrics,
+    extract_only_stated,
+    graph_recall,
+    kind_tagging,
+    latency_metric,
+    structured_output_reliability,
+    surface_metrics,
+    tally_discriminators,
+)
+from eval.extraction.policy import Pricing
+from eval.extraction.recording import CallRecord
+
+from .fixtures import POLICY, entity, registry, triple
+
+DOC = (
+    "North Ridge Foundry supplies the Type-7 Coupler to the Eastvale Pumping Station. "
+    "The station is operated by the Regional Water Board."
+)
+TEXTS = {"doc1.txt": DOC}
+
+
+# ── the MetricValue invariant ─────────────────────────────────────────────────────────────────────
+
+def test_unavailable_metric_can_never_carry_a_number() -> None:
+    with pytest.raises(ValueError, match="never publish a number"):
+        MetricValue(name="x", value=0.0, status="unavailable", reason="no substrate")
+    with pytest.raises(ValueError, match="needs a reason"):
+        MetricValue(name="x", value=None, status="unavailable")
+    with pytest.raises(ValueError, match="no value"):
+        MetricValue(name="x", value=None, status="measured")
+
+
+def test_a_zero_denominator_reports_unavailable_not_zero() -> None:
+    metric = kind_tagging(match_claims([], [], POLICY))
+    assert metric.status == "unavailable" and metric.value is None
+
+
+# ── surface ───────────────────────────────────────────────────────────────────────────────────────
+
+def test_surface_metrics_report_precision_recall_f1() -> None:
+    gold = [triple("g1", "North Ridge Foundry", "Type-7 Coupler")]
+    got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler")]
+    values = surface_metrics(match_claims(gold, got, POLICY))
+    assert values["surface_f1"].value == pytest.approx(1.0)
+
+
+def test_extracting_nothing_scores_recall_zero_but_precision_undefined() -> None:
+    gold = [triple("g1", "North Ridge Foundry", "Type-7 Coupler")]
+    values = surface_metrics(match_claims(gold, [], POLICY))
+    assert values["surface_recall"].value == 0.0
+    assert values["surface_precision"].status == "unavailable"
+
+
+def test_an_empty_gold_slice_is_unavailable_not_perfect() -> None:
+    values = surface_metrics(match_claims([], [triple("c1", "A", "B")], POLICY))
+    assert all(v.status == "unavailable" for v in values.values())
+
+
+def test_precision_reports_how_much_of_its_false_positive_mass_is_gold_coverage() -> None:
+    """Finding 6: this precision denominator penalises thoroughness as readily as invention, and says so.
+
+    The gold curates 65 claims against 150–210 emissions a run, and 94.8% / 97.9% of the charged false
+    positives are stated by the document they cite under the harness's OWN grounding test. That is gold
+    coverage, not fabrication — so the ceiling is MEASURED and printed beside the number rather than being
+    excused away (excusing them would assume the conclusion and drive precision toward 1.0), and the line
+    carries no composite weight.
+    """
+    gold = [triple("g1", "North Ridge Foundry", "Type-7 Coupler", span=(0, 40))]
+    got = [
+        triple("c1", "North Ridge Foundry", "Type-7 Coupler", span=(0, 40)),
+        # unlabeled by the gold, but the document states it outright — thoroughness, not invention
+        triple("c2", "Eastvale Pumping Station", "Regional Water Board",
+               predicate="operated-by", span=(0, len(DOC))),
+        # stated nowhere: a real false positive
+        triple("c3", "Northern Smelting Union", "XT455", span=(0, len(DOC))),
+    ]
+    values = surface_metrics(match_claims(gold, got, POLICY), TEXTS, POLICY)
+    detail = values["surface_precision"].detail
+    assert detail["charged_false_positives"] == 2
+    assert detail["charged_false_positives_grounded_in_own_document"] == 1
+    # Without the texts the harness must say it did not measure it, never imply zero.
+    bare = surface_metrics(match_claims(gold, got, POLICY))
+    assert bare["surface_precision"].detail["charged_false_positives_grounded_in_own_document"] is None
+    assert "not measured" in bare["surface_precision"].detail["grounding_note"]
+
+
+# ── citation faithfulness ─────────────────────────────────────────────────────────────────────────
+
+def test_a_claim_citing_the_right_span_is_faithful() -> None:
+    span = (0, DOC.index("Station") + len("Station"))
+    got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler", span=span)]
+    metric = citation_faithfulness(got, TEXTS, POLICY)
+    assert metric.value == pytest.approx(1.0)
+
+
+def test_a_claim_citing_a_span_that_does_not_contain_it_is_unfaithful() -> None:
+    span = (DOC.index("The station"), len(DOC))
+    got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler", span=span)]
+    assert citation_faithfulness(got, TEXTS, POLICY).value == pytest.approx(0.0)
+
+
+def test_an_out_of_bounds_span_is_a_failure_not_an_excuse() -> None:
+    got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler", span=(5000, 5100))]
+    metric = citation_faithfulness(got, TEXTS, POLICY)
+    assert metric.value == pytest.approx(0.0)
+    assert metric.detail["span_out_of_bounds"]
+
+
+def test_a_faithful_but_dehyphenated_designator_is_not_reported_as_fabrication() -> None:
+    """The identifier rule has to reach the grounding lane, and this is where it matters most.
+
+    ``citation_faithfulness`` and ``extract_only_stated`` are the two metrics this bake-off declares
+    non-negotiable. Under the prose reading, a model that wrote ``Type7`` where the document says ``Type-7``
+    was scored as citing text that does not contain its claim — a FALSE fabrication finding against a model
+    that quoted the page correctly. Measured on the real slice documents at the declared 0.85 floor, the
+    prose reading scored five such surfaces 0.75–0.83 (absent) where the designator reading scores 1.00.
+    """
+    span = (0, DOC.index("Station") + len("Station"))
+    got = [triple("c1", "North Ridge Foundry", "Type7", span=span)]
+    assert citation_faithfulness(got, TEXTS, POLICY).value == pytest.approx(1.0)
+    prose = POLICY.model_copy(update={"identifier_policy": "prose"})
+    assert citation_faithfulness(got, TEXTS, prose).value == pytest.approx(0.0)
+
+
+def test_the_identifier_rule_cannot_launder_a_fabrication() -> None:
+    """Gluing removes punctuation *inside* a letters-and-digits token, so an invented surface only becomes
+    groundable if the document already states the same string in another rendering — which is what
+    "grounded" means. An invented designator stays ungrounded on both lanes."""
+    span = (0, DOC.index("Station") + len("Station"))
+    got = [triple("c1", "North Ridge Foundry", "XT455", span=span)]
+    assert citation_faithfulness(got, TEXTS, POLICY).value == pytest.approx(0.0)
+    assert extract_only_stated(got, TEXTS, POLICY).value == pytest.approx(0.0)
+
+
+def test_an_unsourced_claim_counts_against_faithfulness() -> None:
+    got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler", file="")]
+    metric = citation_faithfulness(got, TEXTS, POLICY)
+    assert metric.value == pytest.approx(0.0)
+    assert metric.detail["unsourced"] == ["c1"]
+
+
+def test_image_refs_are_excluded_and_reported_never_silently_passed() -> None:
+    got = [triple("c1", "Something", "Somewhere", file="frame.png", span=None)]
+    metric = citation_faithfulness(got, TEXTS, POLICY)
+    assert metric.status == "unavailable"
+    assert metric.detail["not_char_addressable"] == ["c1"]
+
+
+def test_faithfulness_separates_invention_from_mis_location() -> None:
+    """Finding 4, made visible where the number is printed.
+
+    Widen this metric's haystack from the cited span to the whole cited document and it IS
+    ``extract_only_stated`` — measured byte-identically on all ten recorded runs, which is how one
+    string-containment test came to carry 9.0 of 33.5 composite weight under two names and to fire two
+    vetoes. The *value* is unchanged (the conjunction is the honest thing to measure: a mis-cited true
+    claim is a traceability failure), but the failures are now split, so a reader can see which half is the
+    duplicate. ``ungrounded_anywhere`` IS extract-only-stated's failure set; ``grounded_elsewhere`` is the
+    only part of this line the other one does not already say.
+    """
+    early = (0, DOC.index("Station") + len("Station"))
+    late = (DOC.index("The station"), len(DOC))
+    got = [
+        triple("ok", "North Ridge Foundry", "Type-7 Coupler", span=early),
+        # true of the document, cited at the wrong end of it: mis-located, not invented
+        triple("mislocated", "North Ridge Foundry", "Type-7 Coupler", span=late),
+        # stated nowhere at all: invented
+        triple("invented", "Northern Smelting Union", "XT455", span=early),
+    ]
+    metric = citation_faithfulness(got, TEXTS, POLICY)
+    assert metric.detail["grounded_elsewhere_in_document"] == ["mislocated"]
+    assert metric.detail["ungrounded_anywhere"] == ["invented"]
+    # The split is a decomposition, not a re-definition: both still cost the same number.
+    assert metric.value == pytest.approx(1 / 3)
+    # ...and the invented half is exactly what the other metric charges for.
+    eos = extract_only_stated(got, TEXTS, POLICY)
+    assert eos.detail["unsupported"] == ["invented"]
+
+
+def test_the_two_non_negotiables_are_one_test_at_two_localities() -> None:
+    """The duplication itself, asserted rather than described.
+
+    Give faithfulness the WHOLE document as the cited span and it must agree with extract-only-stated
+    exactly. If this ever stops holding, the two metrics have genuinely diverged and the weights argument
+    in ``config/bakeoff.yaml`` needs revisiting — which is why it is a test and not a comment.
+    """
+    whole = (0, len(DOC))
+    got = [
+        triple("ok", "North Ridge Foundry", "Type-7 Coupler", span=whole),
+        triple("invented", "Northern Smelting Union", "XT455", span=whole),
+    ]
+    assert (citation_faithfulness(got, TEXTS, POLICY).value
+            == pytest.approx(extract_only_stated(got, TEXTS, POLICY).value))
+
+
+def test_an_injected_judge_replaces_the_lexical_proxy() -> None:
+    got = [triple("c1", "Wholly Different", "Other Thing", span=(0, 40))]
+    metric = citation_faithfulness(got, TEXTS, POLICY, judge=lambda claim, text: True)
+    assert metric.value == pytest.approx(1.0)
+    assert metric.detail["method"] == "entailment-judge"
+
+
+# ── extract-only-stated (the fabrication line) ────────────────────────────────────────────────────
+
+def test_a_claim_about_something_absent_from_the_document_is_unsupported() -> None:
+    got = [
+        triple("c1", "North Ridge Foundry", "Type-7 Coupler"),
+        triple("c2", "Sunmarket Holdings", "Ballistic Interceptor"),
+    ]
+    metric = extract_only_stated(got, TEXTS, POLICY)
+    assert metric.value == pytest.approx(0.5)
+    assert metric.detail["unsupported"] == ["c2"]
+
+
+def test_claims_with_no_text_source_are_reported_as_ungradable() -> None:
+    got = [triple("c1", "Anything", "At All", file="frame.png")]
+    metric = extract_only_stated(got, TEXTS, POLICY)
+    assert metric.status == "unavailable"
+    assert metric.detail["ungradable_no_text_source"] == ["c1"]
+
+
+# ── structured output ─────────────────────────────────────────────────────────────────────────────
+
+def _call(payload: dict | None, *, error: str | None = None,
+          offered: tuple[str, ...] = ("orgs",)) -> CallRecord:
+    return CallRecord(lane="text", tool_name="t", offered_fields=offered, payload=payload,
+                      latency_s=0.1, error=error)
+
+
+def test_structured_output_counts_failures_and_invented_fields() -> None:
+    calls = [
+        _call({"orgs": []}),
+        _call({"orgs": [], "totally_made_up": 1}),
+        _call(None, error="RuntimeError: no tool call"),
+    ]
+    metric = structured_output_reliability(calls)
+    assert metric.value == pytest.approx(1 / 3)
+    assert metric.detail["invented_top_level_fields"] == {"t": ["totally_made_up"]}
+
+
+def test_a_schema_with_no_declared_properties_cannot_accuse_anyone() -> None:
+    metric = structured_output_reliability([_call({"anything": 1}, offered=())])
+    assert metric.value == pytest.approx(1.0)
+
+
+# ── A7 discriminators ─────────────────────────────────────────────────────────────────────────────
+
+GOLD_ENTITY = entity(
+    "g1", "North Ridge Foundry",
+    discriminators={"operator": "the Regional Water Board", "geography": None,
+                    "designation": None, "time": None},
+)
+
+
+def test_a_stated_discriminator_carried_through_is_captured() -> None:
+    payload = {"manufacturers": [{"name": "North Ridge Foundry",
+                                  "context": {"operator": "the Regional Water Board"}}]}
+    tally = tally_discriminators([payload], [GOLD_ENTITY], POLICY)
+    assert tally.captured == 1 and tally.missed == 0 and tally.fabricated == 0
+    assert tally.correct_abstention == 3
+    values = discriminator_metrics(tally)
+    assert values["discriminator_capture"].value == pytest.approx(1.0)
+    assert values["discriminator_fabrication_avoidance"].value == pytest.approx(1.0)
+
+
+def test_inventing_an_unstated_discriminator_is_counted_as_fabrication() -> None:
+    payload = {"manufacturers": [{"name": "North Ridge Foundry",
+                                  "context": {"operator": "the Regional Water Board",
+                                              "geography": "somewhere the source never said"}}]}
+    tally = tally_discriminators([payload], [GOLD_ENTITY], POLICY)
+    assert tally.fabricated == 1
+    assert discriminator_metrics(tally)["discriminator_fabrication_avoidance"].value == \
+        pytest.approx(2 / 3)
+
+
+def test_a_missing_stated_discriminator_is_a_miss_not_a_fabrication() -> None:
+    payload = {"manufacturers": [{"name": "North Ridge Foundry"}]}
+    tally = tally_discriminators([payload], [GOLD_ENTITY], POLICY)
+    assert tally.missed == 1 and tally.fabricated == 0
+    assert discriminator_metrics(tally)["discriminator_capture"].value == pytest.approx(0.0)
+
+
+def test_mentions_that_align_to_no_gold_claim_are_reported_not_graded() -> None:
+    payload = {"manufacturers": [{"name": "Some Other Entity", "context": {"operator": "x"}}]}
+    tally = tally_discriminators([payload], [GOLD_ENTITY], POLICY)
+    assert tally.ungradable_mentions == 1
+    assert discriminator_metrics(tally)["discriminator_capture"].status == "unavailable"
+
+
+def test_an_empty_discriminator_denominator_blames_the_candidate_not_the_slice() -> None:
+    """A candidate whose mentions align to nothing must not be reported as an unlabeled GOLD.
+
+    Both are "not measured", but they send an operator to different files: one is a model that read the
+    document badly, the other is a hole in the answer key. On the real slice 95 discriminator slots are
+    labeled, so "the gold labels none" would be flatly false — and it is the same wrong-file failure the
+    coref channel's cause reporting already exists to avoid.
+    """
+    payload = {"manufacturers": [{"name": "Some Other Entity", "context": {"operator": "x"}}]}
+    tally = tally_discriminators([payload], [GOLD_ENTITY], POLICY)
+    assert tally.aligned == 0
+    reason = discriminator_metrics(tally)["discriminator_capture"].reason or ""
+    assert "no model mention aligned" in reason
+    assert "NOT about the slice" in reason
+
+
+def test_a_genuinely_unlabeled_slice_still_says_so() -> None:
+    """The other half: when a mention DID align and the gold labels nothing, blame the slice."""
+    unlabeled = entity("g9", "North Ridge Foundry")   # no discriminators stated
+    payload = {"manufacturers": [{"name": "North Ridge Foundry"}]}
+    tally = tally_discriminators([payload], [unlabeled], POLICY)
+    assert tally.aligned == 1
+    reason = discriminator_metrics(tally)["discriminator_capture"].reason or ""
+    assert "the gold slice labels no stated discriminators" in reason
+    assert "aligned entity claim" in reason
+
+
+def test_the_mention_walk_finds_nested_mentions_in_any_format() -> None:
+    payload = {"tender": {"oem": {"name": "North Ridge Foundry",
+                                  "context": {"operator": "the Regional Water Board"}}}}
+    assert tally_discriminators([payload], [GOLD_ENTITY], POLICY).captured == 1
+
+
+# ── coref: implemented; the substrate shipped, so "unavailable" now means nobody bound ───────────
+
+def test_coref_binding_reports_no_clustering_not_a_number() -> None:
+    """A cluster with two mentions the model bound NEITHER of: substrate exists, clustering does not."""
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="c1"),
+            entity("g2", "the Foundry", coref_cluster="c1")]
+    got = [entity("c1", "North Ridge Foundry"), entity("c2", "the Foundry")]   # referent_id None
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["c1"]))
+    assert metric.status == "unavailable" and metric.value is None
+    assert metric.reason == NO_CLUSTERING
+
+
+def test_coref_binding_that_aligned_nothing_blames_the_candidate_not_the_gold() -> None:
+    """The top-weighted criterion must not report a labeled slice as unlabeled.
+
+    A candidate whose claims align with no gold claim reaches no cluster label, and the honest reason is
+    that nothing aligned. Reporting "the gold carries no coref_cluster labels" points the operator at the
+    answer file to fix an extraction problem — and on the real slice, where 51 of 65 claims are labeled,
+    it is false.
+    """
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A")]
+    got = [entity("c1", "Something Else Entirely", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A"]))
+    assert metric.status == "unavailable" and metric.value is None
+    assert "no extracted claim aligned" in (metric.reason or "")
+    assert "NOT about the slice" in (metric.reason or "")
+    assert "1 gold claim(s) do carry coref_cluster labels" in (metric.reason or "")
+
+
+def test_coref_binding_on_an_alignment_with_no_labels_blames_the_alignment() -> None:
+    """The other half: claims aligned, but none of the aligned gold carries a label."""
+    gold = [entity("g1", "North Ridge Foundry")]          # no coref_cluster
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A"]))
+    assert metric.status == "unavailable"
+    assert "none of the 1 aligned gold claim(s) carry coref_cluster labels" in (metric.reason or "")
+
+
+def test_coref_binding_computes_bcubed_once_referents_exist() -> None:
+    """The metric is real, not a stub: give it referent ids and it scores."""
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A"),
+            entity("g2", "the Foundry", coref_cluster="A")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+           entity("c2", "the Foundry", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A"]))
+    assert metric.status == "measured" and metric.value == pytest.approx(1.0)
+
+
+def test_coref_binding_penalises_a_wrong_split() -> None:
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A"),
+            entity("g2", "the Foundry", coref_cluster="A")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+           entity("c2", "the Foundry", referent_id="ref:doc1-2")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A"]))
+    assert metric.status == "measured" and metric.value is not None and metric.value < 1.0
+
+
+# ── coref: the three repairs (RK-BAKEOFF scorer repair, 2026-07-26) ───────────────────────────────
+
+def test_a_bind_the_gold_marks_anti_coreference_is_never_credited() -> None:
+    """THE ONE THIS METRIC EXISTS TO GET RIGHT: over-merging must never pay.
+
+    ``coref_cluster`` is one field with two opposite meanings, and the registry is the only place that
+    says which. On the shipped slice the ONLY two clusters carrying more than one entity-form claim are
+    both anti-coreference traps — three separately identified import events, two contrastively enumerated
+    sites — so a metric that reads a shared label as a shared referent paid a model **+0.273 / +0.280**
+    for committing exactly the over-merge this project exists to prevent, on the criterion weighted
+    highest. That is 29x the composite gap that decided the last verdict.
+
+    Under the repair the two systems below are scored against the same gold: one holds the trap's
+    mentions apart, one merges them. The merger may never come out ahead.
+    """
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="TRAP"),
+            entity("g2", "the Foundry Annexe", coref_cluster="TRAP")]
+    reg = registry(anti_coref=["TRAP"])
+
+    correct = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+               entity("c2", "the Foundry Annexe", referent_id="ref:doc1-2")]
+    merged = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+              entity("c2", "the Foundry Annexe", referent_id="ref:doc1-1")]
+
+    held_apart = coref_binding(match_claims(gold, correct, POLICY), reg)
+    over_merged = coref_binding(match_claims(gold, merged, POLICY), reg)
+
+    assert held_apart.detail["bcubed_precision"] == pytest.approx(1.0)
+    assert over_merged.detail["bcubed_precision"] < 1.0
+    assert over_merged.detail["over_bound_pairs"] == 1
+    assert held_apart.detail["over_bound_pairs"] == 0
+    assert held_apart.detail["anti_coref_claims_held_as_singletons"] == 2
+    # Whatever else changes, the over-merge may never score better than holding them apart.
+    scores = [m.value if m.status == "measured" else 0.0 for m in (held_apart, over_merged)]
+    assert scores[1] <= scores[0]
+
+
+def test_an_unbound_claim_is_its_own_singleton_not_a_shared_none_cluster() -> None:
+    """Standard B-cubed, and the reason it is not a nicety.
+
+    ``referent_id`` is ``None`` for every claim a model deliberately left a singleton, and ``None ==
+    None``, so comparing the raw field folds every such claim into ONE enormous system cluster and reports
+    the most careful model as the most reckless over-merger. Here: two gold clusters of two, a system that
+    bound each correctly and left a fifth claim unbound. Precision must stay 1.0 — the unbound claim is a
+    singleton, not a member of some phantom cluster shared with everything else that abstained.
+    """
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A"),
+            entity("g2", "the Foundry", coref_cluster="A"),
+            entity("g3", "Eastvale Pumping Station", "basing_site", coref_cluster="B"),
+            entity("g4", "the Station", "basing_site", coref_cluster="B"),
+            entity("g5", "the Regional Water Board", "operator", coref_cluster="C")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+           entity("c2", "the Foundry", referent_id="ref:doc1-1"),
+           entity("c3", "Eastvale Pumping Station", "basing_site", referent_id="ref:doc1-2"),
+           entity("c4", "the Station", "basing_site", referent_id="ref:doc1-2"),
+           entity("c5", "the Regional Water Board", "operator")]      # abstained: referent_id is None
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A", "B", "C"]))
+    assert metric.status == "measured"
+    assert metric.detail["bcubed_precision"] == pytest.approx(1.0)
+    assert metric.detail["over_bound_pairs"] == 0
+    assert metric.value == pytest.approx(1.0)
+
+
+def test_two_abstentions_are_not_evidence_of_a_bind_between_them() -> None:
+    """The same defect from the other side: two claims in DIFFERENT gold clusters, neither bound.
+
+    Under the ``None``-collapse they shared a system cluster and cost each other precision. They must not.
+    """
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A"),
+            entity("g2", "the Foundry", coref_cluster="A"),
+            entity("g3", "Eastvale Pumping Station", "basing_site", coref_cluster="B"),
+            entity("g4", "the Station", "basing_site", coref_cluster="B")]
+    got = [entity("c1", "North Ridge Foundry"), entity("c2", "the Foundry"),
+           entity("c3", "Eastvale Pumping Station", "basing_site", referent_id="ref:doc1-2"),
+           entity("c4", "the Station", "basing_site", referent_id="ref:doc1-2")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A", "B"]))
+    assert metric.status == "measured"
+    assert metric.detail["bcubed_precision"] == pytest.approx(1.0)
+
+
+def test_a_gold_whose_positive_clusters_are_all_singletons_is_unmeasured_not_one() -> None:
+    """An empty positive denominator must read UNMEASURED — never a 1.000 nobody earned.
+
+    After the two repairs above, every positive cluster on the shipped slice holds exactly one scoreable
+    claim, and B-cubed over singletons is 1.000 by construction for every candidate whatever it did. That
+    number would be a fabrication wearing a measurement's clothes, on the top-weighted and REQUIRED
+    criterion — so the metric refuses it, and the refusal blocks the verdict. Re-weighting the criterion
+    until it produces a number is the thing this test exists to forbid.
+    """
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A"),
+            entity("g2", "Eastvale Pumping Station", "basing_site", coref_cluster="B")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+           entity("c2", "Eastvale Pumping Station", "basing_site", referent_id="ref:doc1-2")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A", "B"]))
+    assert metric.status == "unavailable" and metric.value is None
+    assert metric.reason == NO_BINDING_SUBSTRATE
+    assert metric.detail["gold_clusters_with_2plus_scoreable_claims"] == 0
+
+
+def test_a_claim_form_the_pipeline_never_stamps_a_referent_on_is_not_graded() -> None:
+    """A triple names two mentions and has no single referent, so ``coref.py`` never stamps one on it.
+
+    Grading such a row scores our own claim representation rather than the model, and drags every gold
+    cluster's recall to 1/k for a decision no candidate made. It is excluded and COUNTED, so the reason a
+    denominator is thin stays visible instead of looking like a model's failure.
+    """
+    gold = [triple("g1", "North Ridge Foundry", "Type-7 Coupler", coref_cluster="A"),
+            triple("g2", "the Foundry", "the Coupler", coref_cluster="A")]
+    got = [triple("c1", "North Ridge Foundry", "Type-7 Coupler"),
+           triple("c2", "the Foundry", "the Coupler")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A"]))
+    assert metric.status == "unavailable" and metric.value is None
+    assert metric.detail["unscoreable_by_form"] == 2
+
+
+def test_cluster_labels_with_no_registry_are_refused_rather_than_guessed() -> None:
+    """No registry means no way to tell "one referent" from "hold apart". Guessing credits the over-merge."""
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="A"),
+            entity("g2", "the Foundry", coref_cluster="A")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+           entity("c2", "the Foundry", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY))          # no registry supplied
+    assert metric.status == "unavailable" and metric.reason == NO_LICENSING_REGISTRY
+
+
+def test_an_unregistered_cluster_tag_is_treated_as_unlicensed_not_as_identity() -> None:
+    """Fail safe in the direction that cannot pay for a harm: an unknown tag never licenses a bind."""
+    gold = [entity("g1", "North Ridge Foundry", coref_cluster="MYSTERY"),
+            entity("g2", "the Foundry", coref_cluster="MYSTERY")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1"),
+           entity("c2", "the Foundry", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["SOMETHING_ELSE"]))
+    assert metric.detail["anti_coref_claims_held_as_singletons"] == 2
+    assert metric.detail["over_bound_pairs"] == 1
+
+
+def test_coref_without_gold_labels_is_unavailable_for_a_different_reason() -> None:
+    gold = [entity("g1", "North Ridge Foundry")]
+    got = [entity("c1", "North Ridge Foundry", referent_id="ref:doc1-1")]
+    metric = coref_binding(match_claims(gold, got, POLICY), registry(licensed=["A"]))
+    assert metric.status == "unavailable" and "coref_cluster labels" in metric.reason
+
+
+# ── graph recall ──────────────────────────────────────────────────────────────────────────────────
+
+def _view(nodes: list[tuple[str, str, str]], edges: list[tuple[str, str, str]]):
+    from chanakya.schemas import GraphView
+
+    return GraphView.model_validate({
+        "nodes": [{"id": i, "type": t, "name": n} for i, t, n in nodes],
+        "edges": [{"id": f"e{k}", "type": t, "source": s, "target": o}
+                  for k, (t, s, o) in enumerate(edges)],
+    })
+
+
+def _oracle(tmp_path, nodes, edges):
+    from eval.extraction.gold import load_sub_oracle
+
+    from .fixtures import write_sub_oracle
+
+    return load_sub_oracle(write_sub_oracle(tmp_path / "oracle.json", nodes, edges))
+
+
+def test_graph_recall_matches_on_type_and_name_not_ids(tmp_path) -> None:
+    oracle = _oracle(
+        tmp_path,
+        [{"id": "n1", "type": "manufacturer", "name": "North Ridge Foundry"},
+         {"id": "n2", "type": "component", "name": "Type-7 Coupler"}],
+        [{"type": "supplies-component", "source": "n1", "target": "n2"}],
+    )
+    view = _view([("mfr_x9", "manufacturer", "North Ridge Foundry"),
+                  ("cmp_q2", "component", "Type-7 Coupler")],
+                 [("supplies-component", "mfr_x9", "cmp_q2")])
+    values = graph_recall(view, oracle, POLICY)
+    assert values["graph_node_recall"].value == pytest.approx(1.0)
+    assert values["graph_edge_recall"].value == pytest.approx(1.0)
+
+
+def test_a_reversed_edge_is_reported_and_credited_to_nobody(tmp_path) -> None:
+    oracle = _oracle(
+        tmp_path,
+        [{"id": "n1", "type": "manufacturer", "name": "North Ridge Foundry"},
+         {"id": "n2", "type": "component", "name": "Type-7 Coupler"}],
+        [{"type": "supplies-component", "source": "n1", "target": "n2"}],
+    )
+    view = _view([("a", "manufacturer", "North Ridge Foundry"), ("b", "component", "Type-7 Coupler")],
+                 [("supplies-component", "b", "a")])
+    values = graph_recall(view, oracle, POLICY)
+    assert values["graph_edge_recall"].value == pytest.approx(0.0)
+    assert values["graph_edge_recall"].detail["reversed_direction_not_credited"]
+
+
+def test_an_empty_oracle_is_unavailable_not_perfect(tmp_path) -> None:
+    oracle = _oracle(tmp_path, [], [])
+    values = graph_recall(_view([], []), oracle, POLICY)
+    assert values["graph_recall"].status == "unavailable"
+
+
+# ── cost + latency ────────────────────────────────────────────────────────────────────────────────
+
+def test_cost_is_unpriced_rather_than_zero_when_no_pricing_is_declared() -> None:
+    metric = cost_metric({"input_tokens": 1000, "output_tokens": 500}, None)
+    assert metric.status == "unavailable" and "UNPRICED" in metric.reason
+
+
+def test_cost_is_unavailable_when_the_provider_reported_no_usage() -> None:
+    metric = cost_metric(None, Pricing(input_per_mtok=1.0, output_per_mtok=2.0))
+    assert metric.status == "unavailable" and metric.value is None
+
+
+def test_cost_is_computed_when_both_usage_and_prices_exist() -> None:
+    metric = cost_metric({"input_tokens": 1_000_000, "output_tokens": 500_000},
+                         Pricing(input_per_mtok=3.0, output_per_mtok=15.0))
+    assert metric.value == pytest.approx(3.0 + 7.5)
+    assert metric.direction == "lower_is_better"
+
+
+def test_latency_is_unavailable_when_no_call_was_made() -> None:
+    assert latency_metric(0.0, 0).status == "unavailable"
+    assert latency_metric(1.5, 3).value == pytest.approx(1.5)

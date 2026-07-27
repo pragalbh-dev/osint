@@ -1,0 +1,237 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 19.40964175434783,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "China Precision Machinery Import-Export Corporation",
+            "name_b": "CPMIEC",
+            "source_quote": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+          },
+          {
+            "name_a": "LY-80",
+            "name_b": "HQ-16",
+            "source_quote": "LY-80 (HQ-16)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "location_text": "Baluchistan",
+            "name": "Baluchistan",
+            "site_type": "undisclosed range",
+            "source_quote": "trials reportedly conducted at an undisclosed range in Baluchistan"
+          },
+          {
+            "location_text": "Karachi and the Sindh coastal sector",
+            "name": "Karachi and the Sindh coastal sector",
+            "site_type": "strategic air defence belt",
+            "source_quote": "strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+          },
+          {
+            "location_text": "Punjab border sector",
+            "name": "Punjab border sector",
+            "site_type": "secondary battery",
+            "source_quote": "secondary battery near the Punjab border sector"
+          }
+        ],
+        "components": [
+          {
+            "component_class": "phased-array engagement radar",
+            "functional_role": "engagement radar",
+            "name": "HT-233",
+            "source_quote": "associated HT-233 phased-array engagement radars"
+          }
+        ],
+        "denials": [
+          {
+            "object": "Pakistani operational context",
+            "predicate": "verified",
+            "source_quote": "though this ATBM function has not been independently verified in a Pakistani operational context",
+            "subject": "ATBM function"
+          },
+          {
+            "object": "satellite imagery analysis available to this desk",
+            "predicate": "corroborated",
+            "source_quote": "though this latter deployment has not been corroborated by satellite imagery analysis available to this desk",
+            "subject": "secondary battery near the Punjab border sector"
+          }
+        ],
+        "events": [
+          {
+            "date_text": "2013",
+            "event_kind": "induction",
+            "quantity_text": "limited numbers",
+            "recipient": "Pakistan",
+            "source_quote": "characterised the system in 2013 as \"already inducted in limited numbers\"",
+            "system": "HQ-9/P"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "CPMIEC",
+            "name": "China Precision Machinery Import-Export Corporation",
+            "origin_country": "China",
+            "role": "manufacturer",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": "As of this writing",
+            "object": "Air Defence Command",
+            "relation": "operated-by",
+            "source_quote": "As of this writing, the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P"
+          },
+          {
+            "date_text": "As of this writing",
+            "object": "Karachi and the Sindh coastal sector",
+            "relation": "based-at",
+            "source_quote": "operate the HQ-9/P within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+          },
+          {
+            "object": "Punjab border sector",
+            "relation": "based-at",
+            "source_quote": "a secondary battery near the Punjab border sector"
+          },
+          {
+            "object": "HQ-9/P",
+            "relation": "component-of",
+            "source_quote": "associated HT-233 phased-array engagement radars"
+          },
+          {
+            "object": "HQ-9/P",
+            "relation": "manufactures",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+          },
+          {
+            "date_text": "2015",
+            "object": "Central Air Command",
+            "relation": "equips",
+            "source_quote": "places Pakistani holdings at two operational battalions (approximately eight to twelve TEL launchers per battalion equivalent, figures vary by source) assigned to the PAF's Central Air Command"
+          }
+        ],
+        "sources": [
+          {
+            "name": "South Asia Defence Monitor",
+            "source_quote": "South Asia Defence Monitor — Air Defence Systems Database",
+            "source_type": "Air Defence Systems Database"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "operator": "Pakistan Air Force"
+            },
+            "name": "Air Defence Command",
+            "service_branch": "Pakistan Air Force",
+            "source_quote": "Pakistan Air Force's Air Defence Command"
+          },
+          {
+            "context": {
+              "operator": "PAF"
+            },
+            "name": "Central Air Command",
+            "service_branch": "PAF",
+            "source_quote": "assigned to the PAF's Central Air Command"
+          }
+        ],
+        "variants": [
+          {
+            "context": {
+              "operator": "Pakistan Air Force"
+            },
+            "family": "HQ-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Air Force",
+            "range_text": "200 km",
+            "source_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "name": "HQ-9",
+            "source_quote": "China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "name": "S-300PMU series",
+            "source_quote": "frequently compared in open literature to the Russian S-300PMU series owing to broad similarities"
+          },
+          {
+            "name": "Crotale",
+            "source_quote": "its ageing Crotale and Spada point-defence batteries"
+          },
+          {
+            "name": "Spada",
+            "source_quote": "its ageing Crotale and Spada point-defence batteries"
+          },
+          {
+            "designators": [
+              "HQ-16"
+            ],
+            "name": "LY-80",
+            "source_quote": "shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 6.793263464234769,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "China Precision Machinery Import-Export Corporation (CPMIEC)"
+            ],
+            "member_ids": [
+              2,
+              15
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "LY-80 (HQ-16)"
+            ],
+            "member_ids": [
+              10,
+              16
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:01:58.351348+00:00",
+  "run_index": 2,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "cs01_stale_orbat"
+}

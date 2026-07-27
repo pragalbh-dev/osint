@@ -1,0 +1,163 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 31.103125016205013,
+      "offered_fields": [
+        "rows"
+      ],
+      "payload": {
+        "rows": [
+          {
+            "aliases": [
+              {
+                "name_a": "SINO-GALAXY IMP/EXP CO. LTD",
+                "name_b": "SINO-GALAXY IMPEX CO, LTD",
+                "source_quote": "(see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)"
+              }
+            ],
+            "bl_no": "YMLUW189234567",
+            "consignee": {
+              "context": {
+                "geography": "Karachi"
+              },
+              "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+              "role": "Consignee",
+              "source_quote": "ORIENT ELECTRO TRADING (PVT) LTD\n                 Suite 4-C, Sharae Faisal Commercial Complex,\n                 Karachi -- NTN 3298761-4"
+            },
+            "containers": [
+              "TCNU7712204",
+              "TCNU7712341"
+            ],
+            "declared_value": "USD 612,400 (CIF PQ)",
+            "description": "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE, FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT",
+            "filing_date": "04-11-2020",
+            "freight_forwarder": "AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
+            "gd_no": "KPQA-HC-2020-118834",
+            "hs_code": "8526.91.00",
+            "port_of_discharge": "PORT MUHAMMAD BIN QASIM (PQ)",
+            "shipper": {
+              "aka": "SINO-GALAXY IMPEX CO, LTD",
+              "name": "SINO-GALAXY IMP/EXP CO. LTD",
+              "origin_country": "CHINA",
+              "role": "Shipper",
+              "source_quote": "SINO-GALAXY IMP/EXP CO. LTD\n                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)\nShipper Ctry:    CHINA (Origin: Tianjin Xingang)"
+            },
+            "source_quote": "GD No: KPQA-HC-2020-118834          Filing Date: 04-11-2020\nPort of Discharge: PORT MUHAMMAD BIN QASIM (PQ)\nTerminal Handler: Pakistan International Bulk Terminal\nVessel: MV YM INCEPTION  Voy: 0091E   Line: Yang Ming (SCAC YMLU)\nB/L No: YMLUW189234567\n\nConsignee:       ORIENT ELECTRO TRADING (PVT) LTD\n                 Suite 4-C, Sharae Faisal Commercial Complex,\n                 Karachi -- NTN 3298761-4\nShipper:         SINO-GALAXY IMP/EXP CO. LTD\n                 (see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)\nShipper Ctry:    CHINA (Origin: Tianjin Xingang)\nNotify Party:    same as consignee\n\nHS Code:         8526.91.00\nDescription (as filed): \"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY -- SPARE,\n                 FOR INDUSTRIAL NAVIGATION AID, NOT FOR RESALE, 1 LOT\"\nPkgs:            14 WOODEN CRATES, gross wt 9,870 kg\nContainer:       TCNU7712204 / TCNU7712341 (2 x 40ft HC)\nDeclared Value:  USD 612,400 (CIF PQ)\nFreight Fwdr:    AL-NOOR CARGO SERVICES, Bin Qasim Town, Karachi",
+            "terminal": "Pakistan International Bulk Terminal"
+          },
+          {
+            "aliases": [],
+            "bl_no": "YMLUW189234568",
+            "consignee": {
+              "name": "ORIENT ELECTRO TRADING (PVT) LTD",
+              "role": "Consignee",
+              "source_quote": "Consignee:       ORIENT ELECTRO TRADING (PVT) LTD"
+            },
+            "containers": [
+              "TCNU7712204"
+            ],
+            "declared_value": "USD 188,900",
+            "description": "ELECTRONIC ASSEMBLY, ANTENNA FEED SUB-UNIT, TEST EQPT ACCESSORY, PARTS OF SURVEILLANCE INSTRUMENT N.E.S.",
+            "destination_quote": "\"consignee to arrange onward clearance -- final destination Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area, coordinate with local agent before release\"",
+            "destination_ref": "Air Defence Depot, ~12 km NNW of Kala Chitta / Attock Cantt area",
+            "filing_date": "04-11-2020",
+            "gd_no": "KPQA-HC-2020-118835",
+            "hs_code": "8526.92.00",
+            "port_of_discharge": "BIN QASIM",
+            "shipper": {
+              "name": "SINO GALAXY IMP. & EXP. CO.",
+              "origin_country": "CHINA",
+              "role": "Shipper",
+              "source_quote": "Shipper:         SINO GALAXY IMP. & EXP. CO.\nShipper Ctry:    CHINA"
+            },
+            "source_quote": "GD No: KPQA-HC-2020-118835          Filing Date: 04-11-2020\nPort of Discharge: BIN QASIM\nVessel: MV YM INCEPTION  Voy: 0091E\nB/L No: YMLUW189234568\n\nConsignee:       ORIENT ELECTRO TRADING (PVT) LTD\nShipper:         SINO GALAXY IMP. & EXP. CO.\nShipper Ctry:    CHINA\n\nHS Code:         8526.92.00\nDescription (as filed): \"ELECTRONIC ASSEMBLY, ANTENNA FEED SUB-UNIT, TEST\n                 EQPT ACCESSORY, PARTS OF SURVEILLANCE INSTRUMENT N.E.S.\"\nPkgs:            6 CRATES, gross wt 4,120 kg\nContainer:       TCNU7712204 (shared, see line 118834)\nDeclared Value:  USD 188,900\n\nAnnex A / Line-Item Detail (attached to GD 118835, page 2 of 2 -- scan quality poor):\n  Item 1  -- WAVEGUIDE ASSY, X-BAND, QTY 4\n  Item 2  -- SERVO DRIVE UNIT, AZ/EL, QTY 2 .......... ref dwg HT233-\n             -- FrOm: zhang.wei@sinogalaxy-export.cn\n             Subject: RE: shipping docs pkg 2 attached pls confirm\n             consignee addr for CD papers, urgent -- thx\n  Item 3  -- IFF TRANSPONDER INTERFACE MODULE, QTY 1\n  Item 4  -- CALIBRATION FIXTURE, RADAR TEST BENCH, QTY 1\n\nEnd-user certificate on file: NOT ATTACHED TO GD (ref. letter DGDP/IMP/2020/2246\ncited in broker cover note, copy not scanned)\nDelivery instructions (broker note, handwritten annotation on file copy):\n  \"consignee to arrange onward clearance -- final destination Air Defence\n  Depot, ~12 km NNW of Kala Chitta / Attock Cantt area, coordinate with\n  local agent before release\""
+          },
+          {
+            "aliases": [
+              {
+                "name_a": "ORIENT ELECTRO TRADING PVT LTD",
+                "name_b": "ORIENT ELECTRONIC TRADING CO",
+                "source_quote": "ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC TRADING CO -- name change ref SECP CUIN 0087762, 2019)"
+              }
+            ],
+            "bl_no": "COSU6178820410",
+            "consignee": {
+              "aka": "ORIENT ELECTRONIC TRADING CO",
+              "name": "ORIENT ELECTRO TRADING PVT LTD",
+              "role": "Consignee",
+              "source_quote": "ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC TRADING CO -- name change ref SECP CUIN 0087762, 2019)"
+            },
+            "containers": [
+              "CSNU4402217"
+            ],
+            "declared_value": "USD 244,150",
+            "description": "RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY, REPLACEMENT SPARES FOR CIVIL AIR NAVIGATION AID SYSTEM",
+            "filing_date": "09-11-2020",
+            "freight_forwarder": "AL-NOOR CARGO SERVICES",
+            "gd_no": "KPQA-HC-2020-119011",
+            "hs_code": "8526.91.00",
+            "port_of_discharge": "Port Qasim",
+            "shipper": {
+              "name": "SINO-GALAXY IMPEX CO, LTD",
+              "origin_country": "China",
+              "role": "Shipper",
+              "source_quote": "Shipper:         SINO-GALAXY IMPEX CO, LTD\nShipper Ctry:    China"
+            },
+            "source_quote": "GD No: KPQA-HC-2020-119011          Filing Date: 09-11-2020\nPort of Discharge: Port Qasim\nVessel: MV COSCO SHIPPING ARIES  Voy: 118W  Line: COSCO\nB/L No: COSU6178820410\n\nConsignee:       ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC\n                 TRADING CO -- name change ref SECP CUIN 0087762, 2019)\nShipper:         SINO-GALAXY IMPEX CO, LTD\nShipper Ctry:    China\n\nHS Code:         8526.91.00\nDescription (as filed): \"RADAR APPARATUS PARTS / ELECTRONIC ASSEMBLY,\n                 REPLACEMENT SPARES FOR CIVIL AIR NAVIGATION AID SYSTEM\"\nPkgs:            9 CRATES, gross wt 6,005 kg\nContainer:       CSNU4402217\nDeclared Value:  USD 244,150\n\nRemarks (WeBOC system-generated, exam order):\n  EXAM TYPE: GREEN CHANNEL -- NO PHYSICAL EXAMINATION\n  Risk flag auto-cleared by AEO status of freight forwarder (AL-NOOR CARGO\n  SERVICES -- AEO Cert No. PK-AEO-0231)"
+          }
+        ]
+      },
+      "tool_name": "extract_customs_gd_bol",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 14.620464812964201,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC TRADING CO -- name change ref SECP CUIN 0087762, 2019)",
+              "Consignee:       ORIENT ELECTRO TRADING (PVT) LTD"
+            ],
+            "member_ids": [
+              1,
+              7,
+              10
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "(see also SINO-GALAXY IMPEX CO, LTD -- inv. #SG-20-4471)",
+              "Shipper:         SINO GALAXY IMP. & EXP. CO."
+            ],
+            "member_ids": [
+              2,
+              4,
+              8
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:02:17.853578+00:00",
+  "run_index": 2,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d05_customs_manifest"
+}

@@ -1,0 +1,1064 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        277,
+        448
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "Site identity as \"the forward HQ-9/P site\" rests on prior open-source association rather than confirmed order-of-battle documentation",
+        "operator_branch": "fielded by Pakistan"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        450,
+        741
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "near the port road turnoff, not the garrison itself",
+          "raw": "near the port road turnoff, not the garrison itself",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass",
+        "site_signature_geometry": "the previously noted perimeter berm and access road configuration largely unchanged from the 2024-11 baseline",
+        "site_type": "suspected forward SAM deployment area"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        878,
+        945
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "northern tree line"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "northern tree line"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d17b-withheld-gap-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "obscured tree-line segment / perimeter coverage",
+        "northern tree line"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the anaphor has 6 type-compatible antecedents in this document, not exactly one (an 'unknown'-typed mention counts as compatible on purpose — a second undeclared endpoint is precisely what an extractor under-reach would hide, and it must FAIL the gate, not pass it)",
+      "_coref_quotes": [
+        "Cloud cover: ~15%, partial obscuration along the northern tree line",
+        "Shadow analysis at the given sun angle does not suggest concealed elongated objects under the tree canopy fringe, though the analyst notes partial obscuration limits confidence along roughly 20% of the perimeter.",
+        "Analyst confidence: moderate on hardstand/laydown areas, low along obscured tree-line segment."
+      ],
+      "_coref_referent": "ref:d17b-withheld-gap-c1",
+      "_object_mention": "d17b-withheld-gap-l15",
+      "_subject_mention": "d17b-withheld-gap-l22-6",
+      "source_quote": "Cloud cover: ~15%, partial obscuration along the northern tree line"
+    },
+    "claim_id": "d17b-withheld-gap-l15-2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          878,
+          945
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "frame": null,
+        "line": 22,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1761,
+          1973
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+        "frame": null,
+        "line": 39,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3885,
+          3979
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "northern tree line",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "obscured tree-line segment / perimeter coverage"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d17b-withheld-gap-l22-6",
+      "d17b-withheld-gap-l15"
+    ],
+    "referent_id": "ref:chunk0-d17b-withheld-gap-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "transporter-erector-launchers (TELs)",
+        "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-06-11",
+        "occupancy_state": "not visible / negative TEL presence observation for the pass window noted"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "transporter-erector-launchers (TELs)"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "transporter-erector-launchers (TELs)"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "radar trailer"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "month",
+      "half": null,
+      "kind": "label",
+      "month": 11,
+      "quarter": null,
+      "raw": "2024-11",
+      "year": 2024
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "possible radar trailer footprint"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "possible radar trailer footprint"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 11,
+        "quarter": null,
+        "raw": "2024-11",
+        "year": 2024
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1631,
+        1760
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "canvas-covered or tarped objects of TEL-consistent dimensions"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "canvas-covered or tarped objects of TEL-consistent dimensions"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1875,
+        1972
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "obscured tree-line segment / perimeter coverage"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "obscured tree-line segment / perimeter coverage"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d17b-withheld-gap-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l24",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1975,
+        2162
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "unusual vehicle staging, generator trailers, or the tented storage typically associated with missile canister or spares handling"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "unusual vehicle staging, generator trailers, or the tented storage typically associated with missile canister or spares handling"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l26",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2384
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "structure"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "administration or guard structure"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l26-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2384
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 2.0
+        },
+        "object_type": "light vehicles"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "light vehicles"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l34",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3363,
+        3543
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "coverage of unobserved facility / collection-timing gap"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "coverage of unobserved facility / collection-timing gap"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l34-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3544,
+        3810
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "follow-up confirmation of persistence of the negative finding"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "follow-up confirmation of persistence of the negative finding"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l38",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 38,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3824,
+        3882
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "SAR cross-check"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "SAR cross-check"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l40",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 40,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4117,
+        4172
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "unit identification / order-of-battle documentation"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "unit identification / order-of-battle documentation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l41",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 41,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4176,
+        4314
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "pixel-level baseline comparison"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "pixel-level baseline comparison"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "Overhead frame of a dense urban block grid surrounding a large fenced polygonal bare-earth parcel containing a circular symmetrical landscaped/paved feature and rows of low buildings.",
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "0360adabf9dc4af5c34c5f77a5a84ab0baaa75025802a8115fdfa68808a3dffe",
+        "pdq_quality": 100,
+        "phash": "dd3f7208fdc4a2a0",
+        "sha256": "3e87315fe312358e6ecdefb5c2ffb91a2d9797db8348c3d7d137889d00db3ed4"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d17b-withheld-gap-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "caption_vs_image_consistency": "No external caption supplied; description derived solely from visible content.",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": "small rectangular objects (probable parked vehicles) in the linear row near the center of the open parcel",
+          "value": null
+        },
+        "description": "Nadir-looking, apparently high-resolution multispectral/natural-color frame of a built-up urban area. A regular street grid of wide multi-lane roads with median markings and marked crosswalks divides the scene into rectangular blocks. Most blocks are filled with repeating parallel rows of elongated multi-story buildings casting consistent shadows toward the upper part of the frame, indicating uniform building heights and a common sun angle. Several blocks in the right half show active earthworks: cleared soil, spoil piles, foundation excavations, and partially completed rectangular structures. A running track with an oval infield sits in a block on the left-center. Dominating the center of the frame is a large irregular polygonal parcel of bare, light-brown compacted earth, bounded by roads and by a straight linear edge/wall on its northeast side. Within this parcel is a prominent bilaterally symmetric circular feature roughly 150-200 m across, composed of curved paved paths, radial segments, and lobed planting or paved beds around a central axial spine with a small central pad and a slender linear element. South of the circle a series of formal rectangular pads, plazas, low flat-roofed buildings and tree/shrub rows are arranged along a central axis, terminating near the parcel's southern corner. A short linear row of small uniform rectangular objects, consistent with parked vehicles, lies just south of the circular feature; individual items are small and closely spaced, so an exact tally is not attempted. Perimeter access roads and gates connect the parcel to the surrounding street grid. Lower-left and lower-center blocks contain older, smaller-footprint structures with blue-toned roofs and irregular lots. No revetments, berms, hardened shelters, or military-style dispersal geometry are visible; the enclosed parcel reads as a landscaped/ceremonial or institutional compound under partial construction.",
+        "frame_kind": "single-frame natural-color overhead satellite image, near-nadir, urban scene",
+        "geometry_tokens": [
+          "street grid",
+          "rectangular blocks",
+          "parallel building rows",
+          "polygonal enclosed parcel",
+          "bare-earth pad",
+          "circular symmetric layout",
+          "radial segments",
+          "axial spine",
+          "rectangular pads",
+          "plazas",
+          "perimeter wall",
+          "access roads",
+          "gates",
+          "construction excavations",
+          "spoil piles",
+          "oval track",
+          "tree lines",
+          "parking strip"
+        ],
+        "gsd_note": "Individual vehicles, crosswalk stripes and single trees are discernible but not sub-vehicle detail, implying roughly sub-meter ground sample distance.",
+        "observed_features": [
+          {
+            "arrangement": "central, bounded by surrounding street grid",
+            "feature": "large polygonal bare-earth parcel",
+            "note": "graded, light-toned compacted soil with faint track marks",
+            "shape": "irregular polygon"
+          },
+          {
+            "arrangement": "radially symmetric about a north-south axis",
+            "feature": "circular symmetric landscaped/paved feature",
+            "note": "curved walkways, radial beds, small central pad and slender linear element",
+            "shape": "circle with lobed internal segments"
+          },
+          {
+            "arrangement": "aligned along a central axis south of the circle",
+            "feature": "rectangular pads and plazas",
+            "shape": "rectangles"
+          },
+          {
+            "arrangement": "grouped in clusters within the open parcel",
+            "feature": "low flat-roofed buildings",
+            "shape": "rectangular footprints"
+          },
+          {
+            "arrangement": "parallel rows within grid blocks, uniform spacing and shadow length",
+            "feature": "repeating multi-story residential-type building rows",
+            "shape": "elongated rectangles"
+          },
+          {
+            "arrangement": "orthogonal grid crossing the frame",
+            "feature": "wide multi-lane roads with medians and crosswalks",
+            "shape": "linear"
+          },
+          {
+            "arrangement": "several blocks on the right and left margins",
+            "feature": "construction/earthwork zones",
+            "note": "spoil piles, excavations, partial foundations",
+            "shape": "irregular cleared patches"
+          },
+          {
+            "arrangement": "single instance in a left-center block",
+            "feature": "oval running track with infield",
+            "shape": "oval"
+          },
+          {
+            "arrangement": "single tight line on a paved strip",
+            "feature": "linear row of small uniform rectangular objects",
+            "note": "consistent with parked vehicles; too small/closely spaced for a reliable tally",
+            "shape": "small rectangles"
+          },
+          {
+            "arrangement": "flanking axial walkways and street edges",
+            "feature": "tree and shrub rows",
+            "shape": "linear dotted lines"
+          },
+          {
+            "arrangement": "northeast side of the open parcel",
+            "feature": "perimeter wall/linear boundary edge",
+            "shape": "straight line"
+          }
+        ],
+        "occupancy_state": "Surrounding blocks appear occupied and in active use; the central polygonal parcel is largely open and unoccupied bare earth with a landscaped/paved core and a small number of parked-vehicle-like objects; several peripheral blocks are under active construction.",
+        "resolution_sufficiency": "sufficient for coarse structure, layout and vehicle-scale detection; insufficient to resolve individual object types or fine equipment features",
+        "site_signature_geometry": "Nadir-looking, apparently high-resolution multispectral/natural-color frame of a built-up urban area. A regular street grid of wide multi-lane roads with median markings and marked crosswalks divides the scene into rectangular blocks. Most blocks are filled with repeating parallel rows of elongated multi-story buildings casting consistent shadows toward the upper part of the frame, indicating uniform building heights and a common sun angle. Several blocks in the right half show active earthworks: cleared soil, spoil piles, foundation excavations, and partially completed rectangular structures. A running track with an oval infield sits in a block on the left-center. Dominating the center of the frame is a large irregular polygonal parcel of bare, light-brown compacted earth, bounded by roads and by a straight linear edge/wall on its northeast side. Within this parcel is a prominent bilaterally symmetric circular feature roughly 150-200 m across, composed of curved paved paths, radial segments, and lobed planting or paved beds around a central axial spine with a small central pad and a slender linear element. South of the circle a series of formal rectangular pads, plazas, low flat-roofed buildings and tree/shrub rows are arranged along a central axis, terminating near the parcel's southern corner. A short linear row of small uniform rectangular objects, consistent with parked vehicles, lies just south of the circular feature; individual items are small and closely spaced, so an exact tally is not attempted. Perimeter access roads and gates connect the parcel to the surrounding street grid. Lower-left and lower-center blocks contain older, smaller-footprint structures with blue-toned roofs and irregular lots. No revetments, berms, hardened shelters, or military-style dispersal geometry are visible; the enclosed parcel reads as a landscaped/ceremonial or institutional compound under partial construction.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d17b_withheld_gap"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  }
+]

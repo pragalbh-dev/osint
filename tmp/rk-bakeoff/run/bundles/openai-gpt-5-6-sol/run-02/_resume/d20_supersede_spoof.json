@@ -1,0 +1,242 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 206.40230449428782,
+      "offered_fields": [
+        "posts"
+      ],
+      "payload": {
+        "posts": [
+          {
+            "body": "exclusive 🚨 sources telling me the HQ9B btry that was sitting at Rahwali has QUIETLY relocated, gone since early this wk, moved out toward the old Rawalpindi site. nobody talking abt it openly but convoy was seen night time. big move if true 👀",
+            "handle": "@faisal_defencewatch (Faisal Baig | Defence & Security tracker)",
+            "negations": [],
+            "posted_at": "2025-06-11",
+            "sightings": [
+              {
+                "activity": "was sitting",
+                "location_text": "Rahwali",
+                "source_quote": "the HQ9B btry that was sitting at Rahwali",
+                "system": "HQ9B",
+                "time_text": null,
+                "unit": "btry"
+              },
+              {
+                "activity": "has QUIETLY relocated, gone",
+                "location_text": "Rahwali",
+                "source_quote": "the HQ9B btry that was sitting at Rahwali has QUIETLY relocated, gone since early this wk",
+                "system": "HQ9B",
+                "time_text": "since early this wk",
+                "unit": "btry"
+              },
+              {
+                "activity": "moved out toward",
+                "location_text": "the old Rawalpindi site",
+                "source_quote": "moved out toward the old Rawalpindi site",
+                "system": "HQ9B",
+                "time_text": "since early this wk",
+                "unit": "btry"
+              },
+              {
+                "activity": "was seen",
+                "location_text": null,
+                "source_quote": "convoy was seen night time",
+                "system": null,
+                "time_text": "night time",
+                "unit": "convoy"
+              }
+            ],
+            "source_quote": "\"exclusive 🚨 sources telling me the HQ9B btry that was sitting at Rahwali has QUIETLY relocated, gone since early this wk, moved out toward the old Rawalpindi site. nobody talking abt it openly but convoy was seen night time. big move if true 👀\"",
+            "status_url": "[link unavailable, account locked/protected — h/t retweet by @PakSkiesWatch]"
+          },
+          {
+            "body": "Satellite imagery from earlier this year confirms HQ-9/P (HIMADS) battery co-located near Rahwali airbase, Gujranwala — consistent with the reported 2025 redeployment. No sign of it leaving per open-source imagery.",
+            "handle": "@SushantNMehta (Sushant Mehta)",
+            "negations": [
+              {
+                "object": "near Rahwali airbase, Gujranwala",
+                "predicate": "leaving",
+                "source_quote": "No sign of it leaving per open-source imagery.",
+                "subject": "HQ-9/P (HIMADS) battery"
+              }
+            ],
+            "posted_at": "2025-05-09 (~14:20 IST per search result)",
+            "sightings": [
+              {
+                "activity": "co-located",
+                "location_text": "near Rahwali airbase, Gujranwala",
+                "source_quote": "Satellite imagery from earlier this year confirms HQ-9/P (HIMADS) battery co-located near Rahwali airbase, Gujranwala — consistent with the reported 2025 redeployment.",
+                "system": "HQ-9/P (HIMADS)",
+                "time_text": "earlier this year",
+                "unit": "battery"
+              }
+            ],
+            "source_quote": "\"Satellite imagery from earlier this year confirms HQ-9/P (HIMADS) battery co-located near Rahwali airbase, Gujranwala — consistent with the reported 2025 redeployment. No sign of it leaving per open-source imagery.\"",
+            "status_url": "https://x.com/SushantNMehta/status/1920812234981123412"
+          },
+          {
+            "body": "per the Rahwali 'left the base' claim going around — cannot confirm, would want imagery before believing it. single unverified source afaik. treating with caution 🤷",
+            "handle": "@IndoPacSentry (OSINT hobby account, ~4,200 followers)",
+            "negations": [],
+            "posted_at": "2025-06-11",
+            "sightings": [],
+            "source_quote": "\"per the Rahwali 'left the base' claim going around — cannot confirm, would want imagery before believing it. single unverified source afaik. treating with caution 🤷\"",
+            "status_url": "https://x.com/IndoPacSentry/status/1932556781234567890"
+          },
+          {
+            "body": "RT @faisal_defencewatch huge if confirmed. HQ9B out of Rahwali, redeployed near the port road area allegedly. keeping eyes open. anyone near GRW area can confirm convoy movement pls DM 🙏🙏",
+            "handle": "@PakSkiesWatch (fan-run aviation/AD spotting page)",
+            "negations": [],
+            "posted_at": "2025-06-11",
+            "sightings": [
+              {
+                "activity": "out of",
+                "location_text": "Rahwali",
+                "source_quote": "HQ9B out of Rahwali",
+                "system": "HQ9B",
+                "time_text": null,
+                "unit": null
+              },
+              {
+                "activity": "redeployed",
+                "location_text": "near the port road area",
+                "source_quote": "redeployed near the port road area allegedly",
+                "system": "HQ9B",
+                "time_text": null,
+                "unit": null
+              }
+            ],
+            "source_quote": "\"RT @faisal_defencewatch huge if confirmed. HQ9B out of Rahwali, redeployed near the port road area allegedly. keeping eyes open. anyone near GRW area can confirm convoy movement pls DM 🙏🙏\"",
+            "status_url": "[status link not recoverable — post since deleted/edited per Wayback partial cache]"
+          },
+          {
+            "body": "Following up on yesterday's report — HQ9B battery gone from Rahwali per my contact, redeployment underway, will not disclose more for opsec reasons. trust the process 🇵🇰",
+            "handle": "@DefenceHawkPK (self-described \"open source defence analyst\")",
+            "negations": [],
+            "posted_at": "2025-06-12",
+            "sightings": [
+              {
+                "activity": "gone from",
+                "location_text": "Rahwali",
+                "source_quote": "HQ9B battery gone from Rahwali per my contact",
+                "system": "HQ9B",
+                "time_text": null,
+                "unit": "battery"
+              },
+              {
+                "activity": "redeployment underway",
+                "location_text": null,
+                "source_quote": "redeployment underway",
+                "system": "HQ9B",
+                "time_text": null,
+                "unit": "battery"
+              }
+            ],
+            "source_quote": "\"Following up on yesterday's report — HQ9B battery gone from Rahwali per my contact, redeployment underway, will not disclose more for opsec reasons. trust the process 🇵🇰\"",
+            "status_url": "https://x.com/DefenceHawkPK/status/1932890123456789012"
+          },
+          {
+            "body": "Seeing chatter about an HQ-9/P 'move' out of Rahwali. No imagery, no second source, one guy's thread going viral. Would treat as unconfirmed until proven otherwise — this happens every few months with this site.",
+            "handle": "@SushantNMehta (Sushant Mehta)",
+            "negations": [
+              {
+                "object": "imagery",
+                "predicate": "has",
+                "source_quote": "No imagery",
+                "subject": "HQ-9/P 'move' out of Rahwali"
+              },
+              {
+                "object": "second source",
+                "predicate": "has",
+                "source_quote": "no second source",
+                "subject": "HQ-9/P 'move' out of Rahwali"
+              }
+            ],
+            "posted_at": "2025-06-12",
+            "sightings": [],
+            "source_quote": "\"Seeing chatter about an HQ-9/P 'move' out of Rahwali. No imagery, no second source, one guy's thread going viral. Would treat as unconfirmed until proven otherwise — this happens every few months with this site.\"",
+            "status_url": "https://x.com/SushantNMehta/status/1932901239876543210"
+          },
+          {
+            "body": "to ppl asking for proof — I don't share sources sorry 🙏 but trust me its moved. Rahwali site basically empty now allegedly, whole btry gone to new loc. more soon inshallah",
+            "handle": "@faisal_defencewatch",
+            "negations": [
+              {
+                "object": null,
+                "predicate": "contains",
+                "source_quote": "Rahwali site basically empty now allegedly",
+                "subject": "Rahwali site"
+              }
+            ],
+            "posted_at": "2025-06-12",
+            "sightings": [
+              {
+                "activity": "gone to",
+                "location_text": "new loc",
+                "source_quote": "whole btry gone to new loc",
+                "system": null,
+                "time_text": "now",
+                "unit": "whole btry"
+              }
+            ],
+            "source_quote": "\"to ppl asking for proof — I don't share sources sorry 🙏 but trust me its moved. Rahwali site basically empty now allegedly, whole btry gone to new loc. more soon inshallah\"",
+            "status_url": "[link unavailable, account locked/protected]"
+          },
+          {
+            "body": null,
+            "handle": "@grey_falcon_osint (small OSINT aggregator account)",
+            "negations": [],
+            "posted_at": "2025-06-13",
+            "sightings": [],
+            "source_quote": "Paraphrase: Account reposted the \"Rahwali empty\" claim without independent verification, adding only that \"several people are sharing this now\" and linking back to @faisal_defencewatch's original post as the sole source.",
+            "status_url": "exact caption unrecoverable, page since restricted; paraphrase from cached search snippet"
+          }
+        ]
+      },
+      "tool_name": "extract_social_post",
+      "usage": {
+        "input_tokens": 1568,
+        "output_tokens": 1848
+      }
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 10.075965529773384,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "NAME_VARIANT",
+            "licensing_quotes": [
+              "Handle: @faisal_defencewatch (Faisal Baig | Defence & Security tracker)",
+              "Handle: @faisal_defencewatch"
+            ],
+            "member_ids": [
+              1,
+              6
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": {
+        "input_tokens": 2145,
+        "output_tokens": 74
+      }
+    }
+  ],
+  "candidate_id": "openai-gpt-5-6-sol",
+  "fingerprint": "983ba2071fb17d86e0d6af36040a54bfd4ce564a7991c3d2b614b2b149325848",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:13:11.286784+00:00",
+  "run_index": 2,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d20_supersede_spoof"
+}

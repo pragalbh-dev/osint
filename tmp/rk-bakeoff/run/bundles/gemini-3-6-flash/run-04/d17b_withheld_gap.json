@@ -1,0 +1,537 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        393,
+        448
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "operator_branch": "Pakistan"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "observation",
+      "_subject_mention": "d17b-withheld-gap-l9"
+    },
+    "claim_id": "d17b-withheld-gap-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        393,
+        448
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan",
+      "object_value": null,
+      "predicate": "operated-by",
+      "subject": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l9-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        450,
+        601
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "near the port road turnoff, not the garrison itself",
+          "raw": "near the port road turnoff, not the garrison itself",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "negative TEL presence"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "transporter-erector-launchers (TELs)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "transporter-erector-launchers (TELs)",
+        "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+      }
+    },
+    "claim_id": "d17b-withheld-gap-l22-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-06-11",
+        "occupancy_state": "negative / absent"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "the old Rawalpindi-area site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1359,
+        1486
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "transporter-erector-launchers (TELs)"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "transporter-erector-launchers (TELs)"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1487,
+        1630
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "month",
+      "half": null,
+      "kind": "label",
+      "month": 11,
+      "quarter": null,
+      "raw": "2024-11",
+      "year": 2024
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "object_type": "radar trailer footprint"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "radar trailer footprint"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 11,
+        "quarter": null,
+        "raw": "2024-11",
+        "year": 2024
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l22-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1544,
+        1629
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "radar trailer"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l34",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3623,
+        3729
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "follow-up imagery pass"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "follow-up imagery pass"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_event_time_rung": "sibling-document-observation",
+      "caption_text": "Overhead view of an enclosed facility with a distinctive circular multi-lobed driveway layout, surrounded by dense urban development.",
+      "image_fingerprint": {
+        "exif": {},
+        "pdq_hash": "0360adabf9dc4af5c34c5f77a5a84ab0baaa75025802a8115fdfa68808a3dffe",
+        "pdq_quality": 100,
+        "phash": "dd3f7208fdc4a2a0",
+        "sha256": "3e87315fe312358e6ecdefb5c2ffb91a2d9797db8348c3d7d137889d00db3ed4"
+      },
+      "media_type": "image/png"
+    },
+    "claim_id": "d17b-withheld-gap-full",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.png",
+      "frame": null,
+      "line": null,
+      "page": null,
+      "region": "full",
+      "row": null,
+      "span": null
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "vlm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "caption_vs_image_consistency": "consistent",
+        "count": {
+          "approx": true,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": "vehicles or small structures",
+          "value": null
+        },
+        "description": "High-resolution overhead optical imagery showing an open rectangular/trapezoidal ground plot situated within a dense urban street grid. The central portion of the plot features a prominent circular ground structure composed of paved loops and rounded driveways radiating in a multi-lobed arrangement around a central point. South of this circular pattern are several low-rise rectangular buildings, paved courtyards, and small structures. A diagonal feature (road, embankment, or rail track) borders the upper right side of the open lot. The surrounding area consists of multi-lane city streets, multi-story residential building complexes, construction sites, and a sports track visible to the west.",
+        "frame_kind": "satellite optical",
+        "geometry_tokens": [
+          "circular layout",
+          "radial driveways",
+          "rectangular buildings",
+          "linear tracks",
+          "urban grid"
+        ],
+        "gsd_note": "Sub-meter resolution, sufficient to detail facility ground patterns, road networks, and building footprints.",
+        "observed_features": [
+          {
+            "arrangement": "radial / multi-lobed loop",
+            "feature": "paved loop track",
+            "note": "Symmetrical circular layout with curved internal paths",
+            "shape": "circular"
+          },
+          {
+            "arrangement": "grid / aligned rows",
+            "feature": "buildings",
+            "note": "Low-rise structures south of the circular pad layout",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "linear border",
+            "feature": "diagonal track / road",
+            "note": "Extends along the northeastern boundary of the open field",
+            "shape": "linear"
+          },
+          {
+            "arrangement": "grid network",
+            "feature": "urban road network",
+            "note": "Paved multi-lane streets surrounding the site",
+            "shape": "grid"
+          }
+        ],
+        "occupancy_state": "occupied / operational structure",
+        "resolution_sufficiency": "sufficient",
+        "site_signature_geometry": "High-resolution overhead optical imagery showing an open rectangular/trapezoidal ground plot situated within a dense urban street grid. The central portion of the plot features a prominent circular ground structure composed of paved loops and rounded driveways radiating in a multi-lobed arrangement around a central point. South of this circular pattern are several low-rise rectangular buildings, paved courtyards, and small structures. A diagonal feature (road, embankment, or rail track) borders the upper right side of the open lot. The surrounding area consists of multi-lane city streets, multi-story residential building complexes, construction sites, and a sports track visible to the west.",
+        "site_type": "observed-imagery-site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "imagery-site:d17b_withheld_gap"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  }
+]

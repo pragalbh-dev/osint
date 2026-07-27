@@ -1,0 +1,202 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "image",
+      "latency_s": 11.360227118246257,
+      "offered_fields": [
+        "caption",
+        "caption_vs_image_consistency",
+        "count_abstained",
+        "count_object",
+        "description",
+        "features",
+        "frame_kind",
+        "geometry_tokens",
+        "gsd_note",
+        "object_count_max",
+        "object_count_min",
+        "occupancy_state",
+        "resolution_sufficiency"
+      ],
+      "payload": {
+        "caption": "Satellite view of an urban sector centered on a large compound with a circular ground layout.",
+        "caption_vs_image_consistency": "consistent",
+        "count_abstained": true,
+        "count_object": "vehicles and ground objects",
+        "description": "Satellite overhead frame depicting an urban sector centered around a large fenced compound. The compound contains a central circular and cloverleaf network of paved access roads, driveways, circular revetments or raised berms, and rectangular hardstands. To the south of the circular pad network are several administrative or support buildings and secondary yards. The surrounding urban perimeter consists of dense high-rise and low-rise residential structures, paved multi-lane avenues forming an orthogonal grid, an athletic track to the west, and ground development areas to the east.",
+        "features": [
+          {
+            "arrangement": "symmetrical cloverleaf",
+            "feature": "circular road network and pads",
+            "note": "Central loop drives and curved access paths around raised ground or berms",
+            "shape": "circular / radial"
+          },
+          {
+            "arrangement": "linear array",
+            "feature": "hardstands and parking pads",
+            "note": "Paved rectangular areas adjacent to circular road loops",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "grid layout",
+            "feature": "surrounding urban buildings and road network",
+            "note": "Dense multi-story structures surrounding the compound along major roadways",
+            "shape": "rectangular grid"
+          },
+          {
+            "arrangement": "adjacent facility",
+            "feature": "running track / field",
+            "note": "Oval athletic track located directly west of the central site boundary",
+            "shape": "oval"
+          }
+        ],
+        "frame_kind": "satellite",
+        "geometry_tokens": [
+          "circular_loop",
+          "cloverleaf_pattern",
+          "rectangular_hardstands",
+          "road_grid",
+          "raised_berms",
+          "oval_track"
+        ],
+        "gsd_note": "Satellite imagery with sufficient detail to discern road networks, building footprints, and hardstand arrangements.",
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient"
+      },
+      "tool_name": "read_overhead_image",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 16.637084204237908,
+      "offered_fields": [
+        "assessed_types",
+        "collection_gaps",
+        "components",
+        "observations",
+        "occupancy",
+        "relations",
+        "site",
+        "source_quote",
+        "units"
+      ],
+      "payload": {
+        "assessed_types": [
+          {
+            "confidence_language": "suspected",
+            "context": {
+              "geography": "Southern Approaches",
+              "operator": "Pakistan",
+              "time": "2025-06-11"
+            },
+            "name": "HQ-9P",
+            "operator_branch": "Pakistan",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan"
+          }
+        ],
+        "collection_gaps": [
+          {
+            "description": "partial obscuration limits confidence along roughly 20% of the perimeter",
+            "source_quote": "though the analyst notes partial obscuration limits confidence along roughly 20% of the perimeter"
+          },
+          {
+            "description": "a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding",
+            "next_coverage_due": "within the next 5–7 days",
+            "source_quote": "a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding"
+          }
+        ],
+        "components": [
+          {
+            "context": {
+              "geography": "the old Rawalpindi-area site",
+              "operator": "Pakistan",
+              "time": "2025-06-11"
+            },
+            "functional_role": "launcher",
+            "name": "transporter-erector-launchers (TELs)",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "context": {
+              "time": "2024-11"
+            },
+            "functional_role": "radar",
+            "name": "radar trailer",
+            "source_quote": "what was assessed as a possible radar trailer footprint is empty in the current image"
+          }
+        ],
+        "observations": [
+          {
+            "count_state": "absent",
+            "location_text": "hardstands or along the access spur",
+            "object_count_text": "0",
+            "object_type": "transporter-erector-launchers (TELs)",
+            "pass_date": "2025-06-11",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "count_state": "present",
+            "location_text": "cleared laydown area",
+            "object_count_text": "1 possible footprint",
+            "object_type": "radar trailer footprint",
+            "pass_date": "2024-11",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "occupancy": [
+          {
+            "observed": "transporter-erector-launchers (TELs)",
+            "observed_date": "2025-06-11",
+            "occupancy_state": "absent",
+            "site": "the old Rawalpindi-area site",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          }
+        ],
+        "relations": [
+          {
+            "object": "Pakistan",
+            "relation": "operated-by",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan",
+            "subject": "HQ-9P"
+          }
+        ],
+        "site": {
+          "context": {
+            "geography": "near the port road turnoff, not the garrison itself",
+            "operator": "Pakistan"
+          },
+          "location_text": "near the port road turnoff, not the garrison itself",
+          "name": "the old Rawalpindi-area site",
+          "site_type": "suspected forward SAM deployment area",
+          "source_quote": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself"
+        }
+      },
+      "tool_name": "extract_imagery_geoint",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 6.362531230784953,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:02:41.205387+00:00",
+  "run_index": 3,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d17b_withheld_gap"
+}

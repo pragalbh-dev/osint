@@ -1,0 +1,381 @@
+# RK-BAKEOFF — the extractor-model bake-off knobs (plan §8).
+#
+# Every number the bake-off's VERDICT depends on lives here, not in code: the replication count, the
+# minimum margin, the match policy's leniency, the gate patterns, the criterion weights. The matcher's
+# leniency IS the measurement, so it has to be readable and changeable by whoever reads the scorecard.
+#
+# This file is NOT read by `chanakya` — `ConfigStore` seeds from an explicit list of eight section files
+# and ignores everything else. It is an EVAL-side config, kept next to the others because that is where
+# this project keeps operator-editable knobs.
+#
+# Nothing here is tuned to any observed result: the implementer of the scorer is corpus-blind and has
+# never seen a candidate's output. These are declared-in-advance defaults, chosen on general principle.
+
+schema_version: rk-bakeoff/1.0
+
+# ── Replication: how many times each candidate is run, and when ranking is even allowed ────────────
+# Re-extraction is empirically NON-DETERMINISTIC on a small slice. One run per candidate therefore
+# measures a sample, not a model. `min_runs_for_ranking` is a hard structural floor: below it the
+# comparative report refuses to rank at all and returns INSUFFICIENT_REPLICATION — the same posture the
+# system takes toward a thin evidence base.
+replication:
+  runs_per_candidate: 5
+  min_runs_for_ranking: 3
+
+# ── The minimum-margin rule: when is a gap REAL? ───────────────────────────────────────────────────
+# A difference between two candidates on a metric is "material" only when
+#     |mean_a - mean_b|  >=  max(min_absolute, noise_multiplier * pooled_sd)
+# where pooled_sd = sqrt((sd_a^2 + sd_b^2) / 2) over the N runs. Anything smaller is reported as
+# NO MEASURED DIFFERENCE and can never produce a winner.
+#   min_absolute      floor on the gap in the metric's own units (rates are 0..1), so a vanishingly
+#                     small but low-variance gap is still not called material.
+#   noise_multiplier  how many pooled standard deviations the gap must clear.
+margin:
+  min_absolute: 0.03
+  noise_multiplier: 2.0
+  # Optional per-metric override of `min_absolute`, keyed by metric name.
+  per_metric_min_absolute: {}
+
+# ── Gating preconditions (PASS/FAIL to WIN — never weighted) ───────────────────────────────────────
+gates:
+  # A model id matching any of these is a FLOATING ALIAS: it can silently change under us, which breaks
+  # both reproducibility and KEYLESS==LIVE (the frozen seed would stop equalling what live produces).
+  floating_alias_patterns: ["-latest", ":latest", "@latest", "latest"]
+  # A production winner's client must live on the shipped ingest path — a client that only exists under
+  # `backend/eval` cannot be the producer that freezes the seed bundles, so it cannot restore
+  # KEYLESS==LIVE by construction.
+  production_client_package: "chanakya.ingest"
+  # The NON-NEGOTIABLE criteria. Naming a metric here does two things, and neither of them is a weight:
+  #
+  #   1. it must be MEASURED. A declared non-negotiable that no run scored reads as gate UNKNOWN, and
+  #      UNKNOWN blocks — otherwise a non-negotiable is traded away simply by failing to measure it.
+  #   2. it may not be traded against score. Before the weighted composite may name a winner, that winner
+  #      must not be MATERIALLY worse than any rival on one of these — "materially" being the same margin
+  #      rule used everywhere else, so no new threshold is invented (see compare.decide).
+  #
+  # The `null` is the optional ABSOLUTE floor, and it stays null: picking that number is a human judgement
+  # about how much fabrication is tolerable, and a scorer that invents it has decided the question it was
+  # built to measure. The relative veto needs no such number.
+  #
+  # `trap_avoidance` is declared HERE and deliberately carries NO weight below. It is the project's one
+  # non-negotiable expressed as a metric — did the candidate assert something the document does not say, at
+  # the places the labeled slice knows the answer — and inside a composite it would be just a heavy weight.
+  # Any weight is a price a good-enough model can pay: a model far enough ahead on F1 could buy past a
+  # worse fabrication record, then re-extract and re-freeze the graded oracle, writing ungrounded claims
+  # into the evidence layer wearing valid citations, which nothing downstream catches.
+  non_negotiable_floors:
+    citation_faithfulness: null
+    extract_only_stated: null
+    trap_avoidance: null
+
+# ── Criterion weights (plan §8: "weighted to what the replumb depends on", highest first) ──────────
+# Only metrics whose unit is a rate (0..1) enter the weighted composite. Cost and latency are REPORTED
+# with their own per-metric verdicts and deliberately excluded from the composite: folding seconds and
+# dollars into a 0..1 score needs a normalisation constant nobody has justified, and inventing one would
+# manufacture separation. They are human tie-breakers.
+weights:
+  # Top-weighted, and now MEASURABLE: S3 (RK-COREF) shipped extraction pass 2, a second forced-tool call
+  # whose schema carries the model's own mention clustering, and whose accepted clusters mint the
+  # referent id this metric scores. It is flag-gated — see `required_metrics` below.
+  coref_binding: 5.0
+  discriminator_capture: 4.5
+  # A7's other half: of the discriminators the source does NOT state, how many did the model correctly
+  # leave empty? Inventing an operator or a location is the same failure as inventing a claim, so this
+  # is weighted alongside the fabrication line rather than treated as a nicety.
+  discriminator_fabrication_avoidance: 4.0
+  structured_output_reliability: 3.0
+  surface_recall: 3.0
+  graph_recall: 3.0
+  determinism: 2.0
+  kind_tagging: 0.5             # low — it self-corrects (D-13.5)
+  # NOT LISTED, ON PURPOSE — every one of these is REPORTED, none is composited:
+  #   citation_faithfulness — a veto, not a weight. See (1) below.
+  #   extract_only_stated   — a veto, not a weight. See (1) below.
+  #   trap_avoidance        — a veto, not a weight. See gates.non_negotiable_floors above.
+  #   surface_f1,
+  #   surface_precision     — the precision term is ~95–98% gold-coverage artefact. See (2) below.
+  #   graph_node_recall,
+  #   graph_edge_recall     — already inside `graph_recall`; weighting them too pays for them twice.
+  #   identity_over_read    — N=2. The gold's own reporting rule is "report the raw count, never a
+  #                           two-decimal rate, and never rank on it", so it is emitted as a `count`,
+  #                           which the composite refuses structurally (only 0..1 rates are composited).
+  #
+  # REVISED 2026-07-26 (RK-BAKEOFF scorer repair), on two findings measured against the recorded runs.
+  # Both changes are stated with their DIRECTION, because both were made after the numbers were known and
+  # a reader is owed the chance to check them for motivated reasoning.
+  #
+  # (1) A NON-NEGOTIABLE IS A VETO, NEVER ALSO A PRICE. This block used to weight `citation_faithfulness`
+  #     and `extract_only_stated` at 4.5 each while the comment under `trap_avoidance` argued — correctly
+  #     — that "a non-negotiable inside a composite is only a heavy weight, and any weight is a price a
+  #     good-enough model can pay". The doctrine was right and was applied to one of the three. It is now
+  #     applied to all three: every declared non-negotiable carries weight 0 and vetoes instead.
+  #
+  #     What forced the issue is that the two were also THE SAME MEASUREMENT. Widen citation
+  #     faithfulness's haystack from the cited span to the whole cited document and it is byte-identical
+  #     to extract-only-stated on all ten recorded runs — one string-containment test, two names, 9.0 of
+  #     33.5 composite weight (26.9%) and two vetoes fired by one number. The conjunction is still worth
+  #     MEASURING (a mis-cited true claim is a traceability failure, not a fabrication), so both lines
+  #     stay, both stay vetoes, and `citation_faithfulness.detail` now splits its failures into invention
+  #     vs mis-location so a reader can see which half is the duplicate.
+  #
+  #     Direction: on the recorded runs both metrics favour gemini. Removing them from the composite does
+  #     NOT weaken that — it strengthens it. A weight is a price a rival can outbid; a veto cannot be, and
+  #     `compare.decide` applies the veto to whoever leads the composite. This gives the model that is
+  #     better on the non-negotiables MORE power over the verdict, not less.
+  #
+  # (2) SURFACE F1 IS HALF AN ARTEFACT, SO IT IS REPLACED BY THE HALF THAT IS NOT. The gold curates 65
+  #     claims; the recorded runs emit 150–210 each, and 94.8% / 97.9% of the emissions charged as false
+  #     positives are stated by the document they cite under the harness's OWN grounding test — the test
+  #     behind `extract_only_stated`, which reads 0.955/0.985 on the same runs. So surface precision here
+  #     is largely a measure of what the answer file happens to cover; it scales with how much of a
+  #     document a model reads, so it does not cancel between candidates; and F1 harmonic-means a valid
+  #     recall against it. Recall's denominator is the gold's own curated set and has no such defect.
+  #
+  #     So `surface_recall` takes the 3.0 and `surface_f1` is reported at weight 0 beside
+  #     `surface_precision`. The obvious objection — "recall alone rewards emitting everything" — is
+  #     answered by the three lines that already punish emitting what the document does not say:
+  #     `extract_only_stated` and `trap_avoidance` (vetoes) and `discriminator_fabrication_avoidance`
+  #     (4.0). What recall-without-precision rewards on THIS gold is reading more of a real document,
+  #     which is what the project wants from an extractor.
+  #
+  #     Direction: `surface_recall` separates in favour of opus (+0.068 against a 0.046 margin) where
+  #     `surface_f1` separates nobody. Stated plainly rather than buried. It cannot be tuning-to-win:
+  #     `coref_binding` is REQUIRED and now honestly UNMEASURED, so the verdict is INSUFFICIENT_CRITERIA
+  #     and no weighting can name a winner at all.
+  #
+  # NOT CHANGED, and why: `graph_node_recall` separates cleanly (+0.069) and stays at 0 because
+  # `graph_recall` — composited at 3.0 — already contains it, and paying for the nodes twice is the same
+  # double-count as (1). `discriminator_capture` keeps 4.5 despite never clearing its own margin;
+  # re-weighting a metric for being noisy is tuning to this sample, not a correction.
+
+# ── Required criteria: no winner may be named while any of these is UNMEASURED ─────────────────────
+# A weight and a requirement are different things. A weighted metric that cannot be scored is excluded
+# from the composite and named in the exclusions; a REQUIRED one blocks the verdict outright
+# (INSUFFICIENT_CRITERIA). Plan §8 splits this bake-off into a Wave-0 screen and a "definitive pass
+# after RK-ATOMS / RK-COREF", because the two TOP-weighted criteria cannot be measured until those land.
+# Listing them here is what stops a Wave-0 run from rendering a finished-looking scorecard that has
+# measured only the low-weight half — nobody re-runs a bake-off that already has a verdict.
+#
+# The block lifts by itself: measure them and the verdict proceeds. Removing a name from this list is a
+# decision to rank without it, and should be made deliberately rather than to make a red run go green.
+#
+# `coref_binding` no longer blocks for want of a channel — S3 built one, and pass 2 is now unconditional.
+# On the CURRENT labeled slice it blocks for a reason that lives in the reference side and cannot be
+# fixed by any candidate or by any weight (measured 2026-07-26, and left blocking on purpose):
+#
+#   The gold clusters MENTIONS; the system indexes CLAIMS; and `chanakya.ingest.coref` mints a referent
+#   only onto ENTITY-form claims, because a relationship claim names two mentions and has no single
+#   referent. 36 of the 51 cluster-tagged gold rows are triple- or event-form and are therefore
+#   structurally unscoreable. Of what remains, the ONLY two clusters carrying 2+ entity claims are both
+#   ANTI_COREF traps — groups a correct system must hold APART — so once the scorer stops crediting a
+#   forbidden bind (which used to pay +0.273/+0.280, on the top-weighted line, for the archetypal harm),
+#   every remaining positive cluster has exactly ONE scoreable claim and B-cubed is 1.000 by construction
+#   for everybody.
+#
+# So the metric reports UNMEASURED with an empty positive denominator, and that blocks the verdict. That
+# is the right outcome and it is NOT to be papered over by re-weighting the criterion to something that
+# produces a number: a fabricated 1.000 on the criterion weighted highest is exactly the failure this
+# harness exists to refuse. What lifts it is a gold that carries 2+ entity-form mentions inside a
+# licensed identity cluster — a data-side fix, filed for the gold hand.
+required_metrics:
+  - coref_binding           # UNMEASURED on this slice — empty positive denominator; see above
+  - discriminator_capture   # needs A7 discriminators graded against the labeled slice
+
+# ── The claim-match policy: what counts as the same claim ──────────────────────────────────────────
+# This is the measurement. Read it before reading any number the scorecard prints.
+match_policy:
+  # Similarity function over normalised surfaces (rapidfuzz), scaled to 0..1.
+  #   token_sort_ratio — order-insensitive, duplicate-sensitive (DEFAULT)
+  #   token_set_ratio  — also ignores non-shared tokens; much more lenient
+  #   partial_ratio    — best matching substring; very lenient
+  #   ratio            — plain edit similarity; order-sensitive
+  #
+  # Why token_sort_ratio and not the usual token_set_ratio: token_set_ratio compares the shared-token
+  # intersection, so it scores "C Works" against "Invented Works" at 0.83 — a near-match for a name the
+  # model made up that happens to share one token with the truth. That is precisely the failure this
+  # bake-off exists to catch, and a matcher that launders it would report fabrication as recall.
+  # token_sort_ratio scores that pair 0.57 (rejected) while still accepting real surface variation
+  # ("North Ridge Foundry" vs "North Ridge Foundry Ltd" = 0.90).
+  #
+  # The cost is the opposite error: a legitimate match with an added qualifier ("Type-7 Coupler" vs
+  # "Type-7 Coupler assembly" = 0.76) can be missed. That error direction is the safer one here — missed
+  # matches add run-to-run variance, and more variance makes the margin rule MORE reluctant to call a
+  # gap material, whereas leniency quietly inflates every candidate and hides the fabrication line.
+  # The gold owner sanity-checked this against the labeled sample on 2026-07-25 and kept it; what that
+  # audit DID change is the identifier rule below.
+  similarity: token_sort_ratio
+  # A gold claim and an extracted claim may only pair if these hold.
+  require_same_form: true       # triple / entity / event must agree
+  require_same_polarity: true   # a negation is NOT a match for the assertion
+  predicate_policy: normalized  # exact | normalized (casefold + unify -_/space) | ignore
+  entity_type_policy: normalized
+
+  # ── The identifier rule (DECIDED 2026-07-25 by the gold owner, against the labeled slice) ─────────
+  # Two knobs, one subject: how the matcher reads a DESIGNATOR. They were deferred to whoever owns the
+  # labeled gold precisely because re-tuning the kernel moves every number this bake-off produces, and
+  # every figure below is measured over the gold's own 247 distinct surfaces — not taste.
+  #
+  # THE RULE, in words a reviewer can check:
+  #   (a) Where `- _ / .` joins parts of a token that mixes LETTERS AND DIGITS, the punctuation is a
+  #       rendering choice and is deleted: HQ-9/P ≡ HQ9P, HT-233 ≡ HT233, KPQA-HC-2020-118834 ≡
+  #       KPQAHC2020118834. Everywhere else it stays a word boundary: AL-NOOR CARGO, fire-control/
+  #       engagement and supplies-component are unchanged, and 2024-11 is a date, not an identifier.
+  #       Both readings are scored and the BETTER one kept, so (a) can only ever ADD a match.
+  #   (b) A DESIGNATOR DISAGREEMENT IS A VETO. Per role, the identifier-shaped tokens of the two surfaces
+  #       must be equal or nested (an empty set nests into anything, so prose is untouched). Nested, not
+  #       equal, so `the FT-2000` may pair with `the FT-2000 (sometimes rendered FT-2000A)`. NOT
+  #       prefix-tolerant: {hq9} does not nest into {hq9p}, so HQ-9 and HQ-9/P stay different things.
+  #
+  # WHY (a), measured. `prose` — the previous, emergent behaviour — rewrote hyphens to spaces before
+  # scoring, splitting HT-233 into two tokens while HT233 stayed one; token_sort_ratio then scored that
+  # pair 0.5455, a NON-match for a variant any analyst calls the same designator. Across the labeled gold
+  # 16 of 61 legitimately de-hyphenated designator surfaces fell below the 0.70 role floor and 24 of 61
+  # below the 0.80 pair floor. Under `designator_aware`: 0 of 61 below either. This corpus is made of
+  # exactly that shape, so the loss was systematic, hit every candidate, and added variance to a
+  # comparison already fighting non-determinism.
+  #
+  # WHY (b) — the finding that actually decided this. The fear was that loosening the kernel would start
+  # matching HQ-9A to HQ-9B. Measured: THE PROSE KERNEL ALREADY DID. HQ-9A/HQ-9B scored 0.80,
+  # HQ-9B/HQ-9BE 0.91, FT-2000/FT-2000A 0.93, S-400/S-300 0.80 and two different GD numbers 0.95 — all
+  # above the role floor, because one changed character in a six-character designator is a tiny edit
+  # distance and splitting it into tokens lets the shared tokens carry the pair. Over 684 pairs of
+  # genuinely-different designator spellings, prose conflated 40; with the veto, 0. Over all 30,371 cross
+  # pairs of the gold's own surfaces, pairs above the role floor fall 128 → 84, and those the gold labels
+  # as DIFFERENT NODES fall 30 → 9. So the decision is tighter on over-merge and looser on legitimate
+  # variants at once; it is not a leniency trade.
+  #
+  # WHAT IT COSTS, stated rather than buried. Exactly two same-node pairs in the labeled sample stop
+  # matching, both to the veto:
+  #   * `the FT-2000` vs `FT-2000A` (0.7368 → veto). This gold declares FT-2000/FT-2000A ONE node because
+  #     d04 says "sometimes rendered"; in general a suffixed designator IS a different variant (HQ-9B vs
+  #     HQ-9BE), so the veto is right in the general case and wrong on this documented alias. Fixing it
+  #     needs an alias table, and an alias-aware matcher hands the extractor credit for resolution work it
+  #     did not do.
+  #   * `HT-233-band engagement-radar parameters` vs `HT-233 engagement radar` (0.7419 → veto), because the
+  #     glue swallows an adjacent hyphenated word into the identifier (`ht233band` ≠ `ht233`).
+  # Both err toward a MISSED match — the safer direction, for the reason given above the similarity knob.
+  #
+  # WHAT IT DOES NOT FIX. 9 cross-node pairs still clear the role floor and every one is prose, not a
+  # designator: `the HQ-9B system` vs `the system` (0.80), `the PAF variant` vs `the Army variant`
+  # (0.8387), `the site` vs `the system` (0.7778). Those are anaphora and operator discriminators; this
+  # matcher compares surfaces and can see neither. Set `identifier_agreement: ignore` to reproduce the
+  # pre-decision numbers — a measurement-policy choice for a reader, not a compatibility switch.
+  identifier_policy: designator_aware    # prose | designator_aware
+  identifier_agreement: nested_or_equal  # ignore | nested_or_equal
+  # Per-role similarity floor (subject, object, name, each participant) and the floor on their mean.
+  role_min_similarity: 0.70
+  pair_min_similarity: 0.80
+  # Span agreement between the gold doc_ref and the extracted doc_ref, as intersection-over-union.
+  #   ignore  — spans play no part in pairing
+  #   bonus   — span IoU nudges the pair score (does not gate) — default
+  #   require — a pair with resolvable spans on both sides must clear `span_iou_floor`
+  span_policy: bonus
+  span_iou_floor: 0.30
+  span_bonus_weight: 0.15
+  # Grounding checks (citation faithfulness + extract-only-stated) use this floor when asking "does this
+  # surface actually appear in the cited span / anywhere in the document?" (rapidfuzz partial_ratio).
+  grounding_similarity: 0.85
+
+# ── Per-provider request pacing ────────────────────────────────────────────────────────────────────
+# The run has ONE global `--concurrency`, and that turned out to be the wrong shape. On 2026-07-26 the
+# live three-way run died on `openai.RateLimitError`: that account is capped at 3 requests per minute, the
+# harness fanned eight calls at it, and the exception ended the process — throwing away two other
+# candidates' completed, paid-for work along with it. A cap is a property of an ACCOUNT, not of a model,
+# and nothing here modelled it.
+#
+# So pacing is declared per PROVIDER (keyed by `candidates[].provider`) and enforced per candidate. A
+# capped lane takes as long as its cap takes; the other lanes run at full speed beside it, because each
+# candidate holds its own limiter. A provider not named here is unpaced.
+#
+# THROTTLING IS NOT RETRYING, and the distinction is load-bearing. The retry wrapper re-dials TRANSPORT
+# faults only — a call that never got a response tells us nothing about the model, so retrying it recovers
+# a measurement that was never taken. A RETURNED response is never retried, whatever its status, because
+# `structured_output_reliability` exists to score exactly that. A 429 IS a returned response. The honest
+# answer to a cap is therefore to stay under it, never to retry through it — retrying a 429 would launder
+# a provider's own behaviour into a better number inside the instrument built to expose it.
+#
+# `requests_per_minute` paces request STARTS evenly (one call every 60/rpm seconds) rather than allowing a
+# burst-then-wait bucket: a bucket empties its whole allowance into the first instant of every window,
+# which is the exact shape that trips a cap whose window does not line up with ours.
+#
+# PACE UNDER THE CAP, NEVER ON IT (measured 2026-07-26, second live run). Declaring the account's exact
+# cap — 3/min, i.e. one start every 20.0s — died again at document 11 of 35 on the same 429: "Limit 3,
+# Used 3, Requested 1". Spacing at exactly 60/cap puts three starts inside every trailing minute, so the
+# next start races the provider's own window boundary, and any jitter — network latency, a transport
+# retry that does not re-take a slot, a window that begins a few hundred ms after ours — makes the fourth
+# request land while three are still counted. The declared rate is therefore the account cap MINUS a
+# margin, not the cap. This costs wall-clock in one lane and buys the run's survival; it changes no gate,
+# no weight, no margin rule and no match policy, and it is not a retry — a returned 429 is still never
+# re-issued.
+rate_limits:
+  openai:
+    requests_per_minute: 2      # account cap is 3/min; paced at 2 (one start every 30.0s) for headroom
+    max_concurrent: 1
+    note: >-
+      MEASURED, not guessed: this account returned 429 on 2026-07-26 under the run's default fan-out, and
+      again when paced at exactly its 3/min cap. Declared at 2/min so the pacing sits UNDER the cap rather
+      than on its boundary. Raise it if the account is upgraded — it is an account property and belongs in
+      config, not in code.
+  # anthropic and google are deliberately absent = unpaced. Neither has rate-limited this project's runs,
+  # and inventing a cap nobody has hit would slow a lane for a fact not in evidence.
+
+# ── The candidates ────────────────────────────────────────────────────────────────────────────────
+# Each entry is a *declaration*, not a promise that it can be exercised: `key_env` and `sdk_module` are
+# checked at run time and an unexercisable candidate is reported as such rather than scored.
+#
+# `pricing` is null everywhere on purpose. Nobody here knows these models' real prices, and a fabricated
+# price is a fabricated benchmark line; cost is reported as UNPRICED until a human fills these in.
+candidates:
+  - id: anthropic-opus-5
+    label: "Anthropic Opus 5"
+    provider: anthropic
+    # PINNED. `claude-opus-5` is the complete, concrete id — the Anthropic scheme carries no date suffix
+    # on a current model, and appending one 404s. It is not a floating alias: it does not resolve to
+    # "whatever Opus is newest", it names Opus 5 and nothing else.
+    model_id: claude-opus-5
+    client_module: chanakya.ingest.client
+    client_class: AnthropicExtractionClient
+    sdk_module: anthropic
+    key_env: ANTHROPIC_API_KEY
+    multimodal: native
+    freezes_seed: true
+    pricing: null
+
+  - id: gemini-3-6-flash
+    label: "Gemini Flash 3.6"
+    provider: google
+    # PINNED, and deliberately NOT `gemini-flash-latest` (which the shipped extraction client still uses
+    # as its live-resilience default). The alias tracks whatever Flash is current, so a frozen seed would
+    # silently stop equalling what live produces — it fails the pinned-model-id gate by design.
+    # `gemini-3.6-flash` reports version `3.6-flash-07-2026` from the models endpoint; that version
+    # string is metadata, not an addressable id, so the concrete id is this.
+    model_id: gemini-3.6-flash
+    client_module: chanakya.ingest.client
+    client_class: GeminiExtractionClient
+    sdk_module: google.genai
+    key_env: GEMINI_API_KEY
+    multimodal: native
+    freezes_seed: true
+    pricing: null
+
+  - id: openai-gpt-5-6-sol
+    label: "OpenAI GPT 5.6 Sol"
+    provider: openai
+    # PINNED. The OpenAI models endpoint exposes no dated snapshot for the 5.6 family (`gpt-5.6-sol`,
+    # `-luna`, `-terra` and nothing else), so this IS the concrete id — there is no more specific one to
+    # pin to.
+    model_id: gpt-5.6-sol
+    # PROMOTED 2026-07-26. This client previously lived under `backend/eval` and therefore FAILED the
+    # KEYLESS==LIVE gate — a candidate that could be measured but could never be the producer freezing the
+    # seed bundles, i.e. one that could not win whatever it scored. The fix was made where the gate
+    # pointed, not to the gate: the client moved to `chanakya/ingest/client.py` beside the Gemini and
+    # Anthropic clients, and `openai` was added to the shipped image's dependencies (pyproject `[openai]`
+    # extra, installed in the Dockerfile) so it can actually run live in the container. Only now is
+    # `freezes_seed: true` a true statement about this candidate rather than an aspiration.
+    client_module: chanakya.ingest.client
+    client_class: OpenAIExtractionClient
+    sdk_module: openai
+    key_env: OPENAI_API_KEY
+    multimodal: native
+    freezes_seed: true
+    pricing: null

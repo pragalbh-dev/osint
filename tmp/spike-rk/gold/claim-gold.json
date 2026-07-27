@@ -14,7 +14,10 @@
     "coref_cluster",
     "discriminators",
     "evidence_mode",
-    "notes"
+    "notes",
+    "scoring_status",
+    "exclusion_class",
+    "exclusion_reason"
   ],
   "predicate_vocabulary": {
     "<ontology edge_type>": "A relationship claim on a declared edge from config/ontology.yaml (based-at, observed-at, inducted-into, imported-by, exported-by, equips, supplies-component, manufactures, design-authority-for, component-of, replenishes).",
@@ -70,12 +73,13 @@
   "shapes_the_corpus_cannot_supply": "**Target shapes the frozen corpus cannot supply** (each is a finding the data pass owes — detail in\n`DATA-FINDINGS.md`):\n\n1. **A stated formation-at-site basing.** No document in the slice — and, on a corpus-wide check, no\n   document at all — names a *designated* formation and the site it is based at. Confirms the plan's\n   §B6 gap.\n2. **Two same-type FORMATION instances that must not merge.** The corpus has this shape at *site* level\n   (d19's Sialkot/Pasrur), at *event* level (d05's three declarations) and at *design* level (d04's two\n   variants) — but never two individuated formations. cs01 gives a cardinality, not two mentions. The\n   OOB-undercount trap (two batteries at one garrison) is not authored.\n3. **Any unit-level discriminator.** No designation, no serial, no unit marking anywhere. Five of the\n   seven slice documents state its absence explicitly.\n4. **Two genuinely independent sources on one instance.** Within the slice, d19 is the only document\n   claiming multi-signal corroboration, and all of its signals sit inside one self-declared aggregator.\n",
   "counts": {
     "documents": 7,
-    "rows": 125,
+    "rows": 127,
     "coref_clusters": 32,
     "not_a_claim_rows": 11,
-    "anti_coref_rows": 6,
+    "anti_coref_rows": 8,
     "unmodelled_rows": 19,
-    "negative_polarity_rows": 27
+    "negative_polarity_rows": 29,
+    "scored_claim_rows_excluded": 2
   },
   "documents": [
     {
@@ -965,7 +969,7 @@
     {
       "row_id": "d02-r11",
       "doc_id": "d02_ispr_induction",
-      "subject_surface": "the exact number of batteries/launchers (TELs) inducted",
+      "subject_surface": "The exact number of batteries/launchers (TELs) inducted",
       "predicate": "ENTITY_EXISTS",
       "object_surface": "known_gap",
       "tier3_attributes": {
@@ -983,7 +987,7 @@
         "time": "unknown"
       },
       "evidence_mode": "negative-observation",
-      "notes": "Absence stated in the source's own voice, with the REASON. This is the model case for 'insufficient evidence, and here is why coverage will not improve'."
+      "notes": "Absence stated in the source's own voice, with the REASON. This is the model case for 'insufficient evidence, and here is why coverage will not improve'. [GOLD-REPAIR 2026-07-26: Sentence-initial capital lowercased by the annotator. d02 L17 opens 'The exact number of batteries/launchers (TELs) inducted was not disclosed'. The gap IS named in the source's own voice; only the case was wrong.]"
     },
     {
       "row_id": "d02-r12",
@@ -1176,7 +1180,7 @@
     {
       "row_id": "d04-r05",
       "doc_id": "d04_armyrec_ranges",
-      "subject_surface": "a longer-ranged variant ... the HQ-9BE",
+      "subject_surface": "a longer-ranged variant referred to in most recent trade literature as the HQ-9BE",
       "predicate": "ENTITY_EXISTS",
       "object_surface": "variant",
       "tier3_attributes": {
@@ -1195,7 +1199,7 @@
         "time": "October 2021"
       },
       "evidence_mode": "stated-hedged",
-      "notes": "'is believed to operate'."
+      "notes": "'is believed to operate'. [GOLD-REPAIR 2026-07-26: ELLIPSIS RESTORED. d04 L9 states the span contiguously; the annotator's '...' elided 'referred to in most recent trade literature as'. Note the repair makes the surface LONGER, not easier to match.]"
     },
     {
       "row_id": "d04-r06",
@@ -1490,7 +1494,7 @@
       "doc_id": "d19_rahwali_confirm",
       "subject_surface": "the TEL and battery-command cluster",
       "predicate": "observed-at",
-      "object_surface": "Rahwali airfield, in the northeast dispersal area",
+      "object_surface": "Rahwali airfield",
       "tier3_attributes": {
         "observation_date": "27 March",
         "platform": "Planet SkySat, 0.5m",
@@ -1507,7 +1511,7 @@
         "time": "27 March 2025"
       },
       "evidence_mode": "stated",
-      "notes": "A PRESENCE claim. 'confirms ... first detected on the single-pass collection reported earlier this quarter' references an earlier report NOT in this slice — so the 'confirmation' partly rests on out-of-slice evidence."
+      "notes": "A PRESENCE claim. 'confirms ... first detected on the single-pass collection reported earlier this quarter' references an earlier report NOT in this slice — so the 'confirmation' partly rests on out-of-slice evidence. [GOLD-REPAIR 2026-07-26: FUSION UNDONE. Two separate document surfaces were joined by an annotator comma: 'Rahwali airfield' (d19 L11, sentence-initial) and 'in the northeast dispersal area' (same sentence, clause-final). The place role is the site, which the gold already declares as a basing_site at d19-r01; the sub-area is recorded in tier3_attributes.]"
     },
     {
       "row_id": "d19-r03",
@@ -1558,7 +1562,7 @@
       "doc_id": "d19_rahwali_confirm",
       "subject_surface": "a large octagonal engagement radar signature, believed to be the HT-233 fire-control/engagement radar",
       "predicate": "observed-at",
-      "object_surface": "its prepared hardstand roughly 380 m east of the TEL cluster, Rahwali airfield",
+      "object_surface": "its prepared hardstand roughly 380 m east of the TEL cluster",
       "tier3_attributes": {
         "radar_band": "HT-233-band",
         "geometry": "large octagonal",
@@ -1575,7 +1579,7 @@
         "time": "27 March 2025"
       },
       "evidence_mode": "stated-hedged",
-      "notes": "The ONLY designation-shaped discriminator in the doc, and the doc disowns it: 'the vendor's characterization, not independently re-derived by this desk'."
+      "notes": "The ONLY designation-shaped discriminator in the doc, and the doc disowns it: 'the vendor's characterization, not independently re-derived by this desk'. [GOLD-REPAIR 2026-07-26: APPENDED RESOLUTION REMOVED. The leading portion is verbatim at d19 L11; ', Rahwali airfield' is the annotator resolving which site the hardstand is at. The offset is already in tier3_attributes.]"
     },
     {
       "row_id": "d19-r06",
@@ -1600,7 +1604,7 @@
     {
       "row_id": "d19-r07",
       "doc_id": "d19_rahwali_confirm",
-      "subject_surface": "a commercial ELINT aggregator feed",
+      "subject_surface": "A commercial ELINT aggregator feed",
       "predicate": "ENTITY_EXISTS",
       "object_surface": "source",
       "tier3_attributes": {
@@ -1618,7 +1622,7 @@
         "time": "during the reporting window"
       },
       "evidence_mode": "stated-attributed",
-      "notes": "FINDING: the second 'independent' signal is an UNNAMED vendor relayed through an unnamed intermediary, and the doc admits 'no further geolocation detail released at this subscription tier'. Its independence is asserted, not demonstrable, and it lives inside the same document as the first signal."
+      "notes": "FINDING: the second 'independent' signal is an UNNAMED vendor relayed through an unnamed intermediary, and the doc admits 'no further geolocation detail released at this subscription tier'. Its independence is asserted, not demonstrable, and it lives inside the same document as the first signal. [GOLD-REPAIR 2026-07-26: Sentence-initial capital lowercased by the annotator. d19 L13 reads 'A commercial ELINT aggregator feed (operator not disclosed to subscribers, ...)'.]"
     },
     {
       "row_id": "d19-r08",
@@ -1640,7 +1644,10 @@
         "time": "29 March 2025"
       },
       "evidence_mode": "stated",
-      "notes": "A third observation, same discipline (optical), different platform. Platform-independence is not discipline-independence."
+      "notes": "A third observation, same discipline (optical), different platform. Platform-independence is not discipline-independence. [GOLD-REPAIR 2026-07-26: moved out of the scored set — see exclusion_reason.]",
+      "scoring_status": "excluded_from_scoring",
+      "exclusion_class": "malformed_triple",
+      "exclusion_reason": "NOT A WELL-FORMED CLAIM. The row is <'a repeat optical pass on 29 March', observed-at, 'the radar hardstand occupied and TEL count unchanged, Rahwali airfield'>. Both roles are wrong for the predicate: the subject is a collection event, not a thing that can be at a place, and the object is a two-proposition finding clause, not a place. No faithful repair is available that is not already a different gold row — the radar-on-its-hardstand observation is d19-r05 and the TEL cluster is d19-r02, so rewriting this row would duplicate them. The document sentence is real and is retained here in full; it is simply not expressible as one triple, and a slice that scores VERBATIM TRIPLE extraction cannot hold it."
     },
     {
       "row_id": "d19-r09",
@@ -1685,7 +1692,7 @@
     {
       "row_id": "d19-r11",
       "doc_id": "d19_rahwali_confirm",
-      "subject_surface": "a PAF/Army Air Defence Command HQ-9BE ... battery",
+      "subject_surface": "a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery",
       "predicate": "observed-at",
       "object_surface": "Rahwali",
       "tier3_attributes": {
@@ -1702,7 +1709,7 @@
         "time": "reporting period 24–31 March 2025"
       },
       "evidence_mode": "stated",
-      "notes": "**THE presence/formation borderline.** A named COMMAND + an anonymous BATTERY is not a named formation, so this is `observed-at`, not a stated `based-at`. Getting this wrong mints a formation the source never named."
+      "notes": "**THE presence/formation borderline.** A named COMMAND + an anonymous BATTERY is not a named formation, so this is `observed-at`, not a stated `based-at`. Getting this wrong mints a formation the source never named. [GOLD-REPAIR 2026-07-26: ELLIPSIS RESTORED. d19 L15 states the span contiguously; the annotator's '...' elided the parenthetical. The restored surface is longer, not easier to match.]"
     },
     {
       "row_id": "d19-r12",
@@ -1747,7 +1754,7 @@
     {
       "row_id": "d19-r14",
       "doc_id": "d19_rahwali_confirm",
-      "subject_surface": "Sialkot-area dispersal site",
+      "subject_surface": "Sialkot-area",
       "predicate": "ENTITY_EXISTS",
       "object_surface": "basing_site",
       "tier3_attributes": {
@@ -1757,7 +1764,7 @@
       "doc_ref_span": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass.",
       "doc_ref_line": 17,
       "polarity": "positive",
-      "coref_cluster": "d19-C4-othersites",
+      "coref_cluster": "d19-C4a-sialkot",
       "discriminators": {
         "operator": "unknown",
         "geography": "Sialkot area",
@@ -1765,7 +1772,7 @@
         "time": "07 March pass"
       },
       "evidence_mode": "stated",
-      "notes": "THIN: named region, no coords, no equipment claim, no operator. Existence only."
+      "notes": "THIN: named region, no coords, no equipment claim, no operator. Existence only. [GOLD-REPAIR 2026-07-26: COORDINATION DISTRIBUTED BY THE ANNOTATOR. d19 L17 names the pair once: 'the previously tracked Sialkot-area and Pasrur dispersal sites'. The head noun is shared across the coordination, so no contiguous document surface reads 'Sialkot-area dispersal site'; the document's own distinguishing surface for this member is 'Sialkot-area'. The site type is already carried by the entity type (basing_site) and by tier3_attributes.site_type. Sibling d19-r15 ('Pasrur dispersal site') needs no repair only because it happens to fall at the end of the coordination.] [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd19-C4-othersites' -> 'd19-C4a-sialkot'. 'd19-C4-othersites' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d19-r15",
@@ -1780,7 +1787,7 @@
       "doc_ref_span": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass.",
       "doc_ref_line": 17,
       "polarity": "positive",
-      "coref_cluster": "d19-C4-othersites",
+      "coref_cluster": "d19-C4b-pasrur",
       "discriminators": {
         "operator": "unknown",
         "geography": "Pasrur",
@@ -1788,19 +1795,19 @@
         "time": "07 March pass"
       },
       "evidence_mode": "stated",
-      "notes": "THIN, as r14."
+      "notes": "THIN, as r14. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd19-C4-othersites' -> 'd19-C4b-pasrur'. 'd19-C4-othersites' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d19-r16",
       "doc_id": "d19_rahwali_confirm",
-      "subject_surface": "Sialkot-area dispersal site",
+      "subject_surface": "Sialkot-area",
       "predicate": "distinct-from",
       "object_surface": "Pasrur dispersal site",
       "tier3_attributes": {},
       "doc_ref_span": "the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state",
       "doc_ref_line": 17,
       "polarity": "positive",
-      "coref_cluster": "d19-C4-othersites",
+      "coref_cluster": "d19-C4-contrast",
       "discriminators": {
         "operator": "unknown",
         "geography": "unknown",
@@ -1808,7 +1815,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated",
-      "notes": "Stated by enumeration + explicit cardinality ('both'). This is the corpus's cleanest two-same-type-instances-that-must-not-merge case — but at SITE level, not formation level."
+      "notes": "Stated by enumeration + explicit cardinality ('both'). This is the corpus's cleanest two-same-type-instances-that-must-not-merge case — but at SITE level, not formation level. [GOLD-REPAIR 2026-07-26: Same coordination-distribution repair as d19-r14; object 'Pasrur dispersal site' is verbatim and unchanged.] [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd19-C4-othersites' -> 'd19-C4-contrast'. 'd19-C4-othersites' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d19-r17",
@@ -1820,7 +1827,7 @@
       "doc_ref_span": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period",
       "doc_ref_line": 17,
       "polarity": "positive",
-      "coref_cluster": "d19-C4-othersites",
+      "coref_cluster": "d19-C4-contrast",
       "discriminators": {
         "operator": "unknown",
         "geography": "unknown",
@@ -1828,7 +1835,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated",
-      "notes": "Contrasted with Rahwali by the paragraph structure ('No new activity ... at the previously tracked' vs the Rahwali paragraph's new detection)."
+      "notes": "Contrasted with Rahwali by the paragraph structure ('No new activity ... at the previously tracked' vs the Rahwali paragraph's new detection). [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd19-C4-othersites' -> 'd19-C4-contrast'. 'd19-C4-othersites' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d19-r18",
@@ -1913,7 +1920,7 @@
       "doc_ref_span": "GD No: KPQA-HC-2020-118834          Filing Date: 04-11-2020",
       "doc_ref_line": 12,
       "polarity": "positive",
-      "coref_cluster": "d05-C4-events",
+      "coref_cluster": "d05-C4a-gd118834",
       "discriminators": {
         "operator": "unknown",
         "geography": "PORT MUHAMMAD BIN QASIM (PQ)",
@@ -1921,7 +1928,7 @@
         "time": "04-11-2020"
       },
       "evidence_mode": "stated",
-      "notes": "The GD number and B/L number ARE the event's identity — the only hard identifiers in the slice."
+      "notes": "The GD number and B/L number ARE the event's identity — the only hard identifiers in the slice. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd05-C4-events' -> 'd05-C4a-gd118834'. 'd05-C4-events' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d05-r02",
@@ -1943,7 +1950,7 @@
       "doc_ref_span": "GD No: KPQA-HC-2020-118835          Filing Date: 04-11-2020",
       "doc_ref_line": 35,
       "polarity": "positive",
-      "coref_cluster": "d05-C4-events",
+      "coref_cluster": "d05-C4b-gd118835",
       "discriminators": {
         "operator": "unknown",
         "geography": "BIN QASIM",
@@ -1951,7 +1958,7 @@
         "time": "04-11-2020"
       },
       "evidence_mode": "stated",
-      "notes": "Shares a container and a vessel voyage with r01 — maximum relational pull toward a merge that would corrupt the supply-chain count."
+      "notes": "Shares a container and a vessel voyage with r01 — maximum relational pull toward a merge that would corrupt the supply-chain count. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd05-C4-events' -> 'd05-C4b-gd118835'. 'd05-C4-events' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d05-r03",
@@ -1974,7 +1981,7 @@
       "doc_ref_span": "GD No: KPQA-HC-2020-119011          Filing Date: 09-11-2020",
       "doc_ref_line": 68,
       "polarity": "positive",
-      "coref_cluster": "d05-C4-events",
+      "coref_cluster": "d05-C4c-gd119011",
       "discriminators": {
         "operator": "unknown",
         "geography": "Port Qasim",
@@ -1982,7 +1989,7 @@
         "time": "09-11-2020"
       },
       "evidence_mode": "stated",
-      "notes": "Different vessel, different line, different container."
+      "notes": "Different vessel, different line, different container. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd05-C4-events' -> 'd05-C4c-gd119011'. 'd05-C4-events' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d05-r04",
@@ -1994,7 +2001,7 @@
       "doc_ref_span": "Container:       TCNU7712204 (shared, see line 118834)",
       "doc_ref_line": 48,
       "polarity": "positive",
-      "coref_cluster": "d05-C4-events",
+      "coref_cluster": "d05-C4-contrast",
       "discriminators": {
         "operator": "unknown",
         "geography": "unknown",
@@ -2002,7 +2009,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated",
-      "notes": "Licensed by distinct GD/B/L identifiers AND by the doc's own cross-reference treating them as two lines. THE canonical over-merge case."
+      "notes": "Licensed by distinct GD/B/L identifiers AND by the doc's own cross-reference treating them as two lines. THE canonical over-merge case. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd05-C4-events' -> 'd05-C4-contrast'. 'd05-C4-events' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d05-r05",
@@ -2014,7 +2021,7 @@
       "doc_ref_span": "GD No: KPQA-HC-2020-119011          Filing Date: 09-11-2020",
       "doc_ref_line": 68,
       "polarity": "positive",
-      "coref_cluster": "d05-C4-events",
+      "coref_cluster": "d05-C4-contrast",
       "discriminators": {
         "operator": "unknown",
         "geography": "unknown",
@@ -2022,7 +2029,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated",
-      "notes": "Distinct identifiers, dates, vessels."
+      "notes": "Distinct identifiers, dates, vessels. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd05-C4-events' -> 'd05-C4-contrast'. 'd05-C4-events' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d05-r06",
@@ -2034,7 +2041,7 @@
       "doc_ref_span": "GD No: KPQA-HC-2020-119011          Filing Date: 09-11-2020",
       "doc_ref_line": 68,
       "polarity": "positive",
-      "coref_cluster": "d05-C4-events",
+      "coref_cluster": "d05-C4-contrast",
       "discriminators": {
         "operator": "unknown",
         "geography": "unknown",
@@ -2042,7 +2049,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated",
-      "notes": "Same HS code as 118834 — the shape most likely to be merged."
+      "notes": "Same HS code as 118834 — the shape most likely to be merged. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd05-C4-events' -> 'd05-C4-contrast'. 'd05-C4-events' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d05-r07",
@@ -2479,7 +2486,7 @@
       "doc_id": "d17b_withheld_gap",
       "subject_surface": "transporter-erector-launchers (TELs)",
       "predicate": "observed-at",
-      "object_surface": "any of the hardstands or along the access spur (the suspected forward site)",
+      "object_surface": "any of the hardstands or along the access spur",
       "tier3_attributes": {
         "platform": "commercial EO, sub-meter resolution, pansharpened",
         "cloud_cover": "~15%, partial obscuration along the northern tree line",
@@ -2496,14 +2503,14 @@
         "time": "2025-06-11"
       },
       "evidence_mode": "negative-observation",
-      "notes": "THE negative observation. Absence looked for and reported — evidence, not silence."
+      "notes": "THE negative observation. Absence looked for and reported — evidence, not silence. [GOLD-REPAIR 2026-07-26: ANNOTATOR LOCATOR STRIPPED, per the gold's own mention_verbatim_note rule. d17b L22 reads '... on any of the hardstands or along the access spur at the time of this pass'. '(the suspected forward site)' is the annotator naming which site; the document's own surface for that site is labelled separately at d17b-r01.]"
     },
     {
       "row_id": "d17b-r04",
       "doc_id": "d17b_withheld_gap",
       "subject_surface": "a possible radar trailer footprint",
       "predicate": "observed-at",
-      "object_surface": "The cleared laydown area (the suspected forward site)",
+      "object_surface": "The cleared laydown area",
       "tier3_attributes": {
         "comparison": "in the 2024-11 chip showed what was assessed as a possible radar trailer footprint"
       },
@@ -2518,7 +2525,7 @@
         "time": "2025-06-11 vs 2024-11 baseline"
       },
       "evidence_mode": "negative-observation",
-      "notes": "A CHANGE claim: something assessed as present in Nov-2024 is absent now. Note the prior assessment was itself hedged ('possible')."
+      "notes": "A CHANGE claim: something assessed as present in Nov-2024 is absent now. Note the prior assessment was itself hedged ('possible'). [GOLD-REPAIR 2026-07-26: ANNOTATOR LOCATOR STRIPPED, per mention_verbatim_note. d17b L22 reads 'The cleared laydown area that in the 2024-11 chip showed ...'.]"
     },
     {
       "row_id": "d17b-r05",
@@ -2674,7 +2681,7 @@
     {
       "row_id": "d17b-r12",
       "doc_id": "d17b_withheld_gap",
-      "subject_surface": "\"fresh HQ-9/P TEL deployment confirmed near port road site, imagery pending\"",
+      "subject_surface": "fresh HQ-9/P TEL deployment",
       "predicate": "observed-at",
       "object_surface": "near port road site",
       "tier3_attributes": {
@@ -2692,7 +2699,7 @@
         "time": "2025-06-11 0640Z"
       },
       "evidence_mode": "stated-attributed",
-      "notes": "A POSITIVE claim, reported not endorsed, that directly opposes r03's negative — but the doc says the two may not even be about the same place. The contradiction is itself unresolvable, which is the honest finding."
+      "notes": "A POSITIVE claim, reported not endorsed, that directly opposes r03's negative — but the doc says the two may not even be about the same place. The contradiction is itself unresolvable, which is the honest finding. [GOLD-REPAIR 2026-07-26: PROPOSITION REPLACED BY ITS ENTITY HEAD. The annotator's surface was the whole reported assertion (and mis-transcribed it: d17b L30 has the comma inside the closing quote). observed-at relates a thing observed to a place; the document's own surfaces for those two roles, both inside the quoted post, are 'fresh HQ-9/P TEL deployment' and 'near port road site'. evidence_mode stays stated-attributed, so 'the document reports rather than endorses this' is unchanged.]"
     },
     {
       "row_id": "d17b-r13",
@@ -2810,7 +2817,7 @@
       "doc_ref_span": "moved out toward the old Rawalpindi site",
       "doc_ref_line": 6,
       "polarity": "positive",
-      "coref_cluster": "d20-AMBIG-2",
+      "coref_cluster": "d20-AMBIG-2a-rawalpindi",
       "discriminators": {
         "operator": "unknown",
         "geography": "the old Rawalpindi site (no name, no coords, 'old' as the only qualifier)",
@@ -2818,7 +2825,7 @@
         "time": "early week of 2025-06-11"
       },
       "evidence_mode": "stated-attributed",
-      "notes": "The positive half. 'toward' is not 'at' — even the claimed arrival is hedged into a direction of travel."
+      "notes": "The positive half. 'toward' is not 'at' — even the claimed arrival is hedged into a direction of travel. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd20-AMBIG-2' -> 'd20-AMBIG-2a-rawalpindi'. 'd20-AMBIG-2' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d20-r04",
@@ -2875,7 +2882,7 @@
       "doc_ref_span": "\"RT @faisal_defencewatch huge if confirmed. HQ9B out of Rahwali, redeployed near the port road area allegedly. keeping eyes open. anyone near GRW area can confirm convoy movement pls DM 🙏🙏\"",
       "doc_ref_line": 30,
       "polarity": "positive",
-      "coref_cluster": "d20-AMBIG-2",
+      "coref_cluster": "d20-AMBIG-2b-portroad",
       "discriminators": {
         "operator": "unknown",
         "geography": "near the port road area (no coords)",
@@ -2883,7 +2890,7 @@
         "time": "2025-06-11"
       },
       "evidence_mode": "stated-attributed",
-      "notes": "**CONTRADICTS r03 while retweeting it.** Same origin claim, different destination. This is the row that proves an echo can *mutate* content, not merely repeat it."
+      "notes": "**CONTRADICTS r03 while retweeting it.** Same origin claim, different destination. This is the row that proves an echo can *mutate* content, not merely repeat it. [GOLD-REPAIR 2026-07-26: coref_cluster retagged 'd20-AMBIG-2' -> 'd20-AMBIG-2b-portroad'. 'd20-AMBIG-2' is a WITHHOLDING registry cluster (licensing_category begins ANTI_COREF or AMBIGUOUS) — its members must not be bound, or the document does not settle whether they co-refer — and a shared row-level tag is read by the scorer as 'these should share a referent'. The registry entry is unchanged and still carries the category, the mentions and the annotator's note.]"
     },
     {
       "row_id": "d20-r07",
@@ -2935,7 +2942,7 @@
       "doc_id": "d20_supersede_spoof",
       "subject_surface": "whole btry",
       "predicate": "observed-at",
-      "object_surface": "Rahwali site basically empty now allegedly",
+      "object_surface": "Rahwali site",
       "tier3_attributes": {},
       "doc_ref_span": "\"to ppl asking for proof — I don't share sources sorry 🙏 but trust me its moved. Rahwali site basically empty now allegedly, whole btry gone to new loc. more soon inshallah\"",
       "doc_ref_line": 54,
@@ -2948,7 +2955,7 @@
         "time": "2025-06-12"
       },
       "evidence_mode": "stated-attributed",
-      "notes": "Same author as Post 1, one day later, with an explicit refusal to source and a third (unnamed) destination. Same origin, so no corroboration."
+      "notes": "Same author as Post 1, one day later, with an explicit refusal to source and a third (unnamed) destination. Same origin, so no corroboration. [GOLD-REPAIR 2026-07-26: PREDICATION TRIMMED TO THE PLACE. d20 POST 7: 'Rahwali site basically empty now allegedly, whole btry gone to new loc.' The observed-at object must be a place; 'basically empty now allegedly' is the predication the row's NEGATIVE polarity already encodes. Verbatim before and after — this row is not one of the 16, it was found by the pseudo-triple sweep.]"
     },
     {
       "row_id": "d20-r10",
@@ -3052,12 +3059,15 @@
         "time": "unknown"
       },
       "evidence_mode": "negative-observation",
-      "notes": "Every discriminator slot in this document is empty: no post names a service branch, a designation, or a coordinate. The relocation is a FORMATION-level claim asserted with zero formation evidence."
+      "notes": "Every discriminator slot in this document is empty: no post names a service branch, a designation, or a coordinate. The relocation is a FORMATION-level claim asserted with zero formation evidence. [GOLD-REPAIR 2026-07-26: moved out of the scored set — see exclusion_reason.]",
+      "scoring_status": "excluded_from_scoring",
+      "exclusion_class": "annotator_inference",
+      "exclusion_reason": "AN INFERRED, NOT A STATED, GAP. The row labels a known_gap named 'the battery / the formation' — a slash-alternation of two generic nouns that appears nowhere in d20 — cited against POST 6's 'No imagery, no second source, one guy's thread going viral.' That span states missing CORROBORATION; the gap the row asserts is that no post ever identifies the formation, which is an absence-of-mention the annotator observed across the whole document and which the document nowhere states. It is a correct and valuable analytic observation (the notes and tier3_attributes are kept verbatim) but it is not a verbatim-extractable claim, so it does not belong in a slice scoring verbatim extraction. NOT deleted, and NOT replaced by POST 6's own stated gap ('No imagery, no second source') — adding a row is a coverage decision for the corpus owner, not a repair."
     },
     {
       "row_id": "d20-r15",
       "doc_id": "d20_supersede_spoof",
-      "subject_surface": "@faisal_defencewatch (Post 1)",
+      "subject_surface": "@faisal_defencewatch",
       "predicate": "ENTITY_EXISTS",
       "object_surface": "source",
       "tier3_attributes": {
@@ -3076,7 +3086,7 @@
         "time": "2025-06-11"
       },
       "evidence_mode": "stated",
-      "notes": "The origin post's own URL is unrecoverable — the claim cannot be traced to a live artifact, only to a retweet of it."
+      "notes": "The origin post's own URL is unrecoverable — the claim cannot be traced to a live artifact, only to a retweet of it. [GOLD-REPAIR 2026-07-26: ANNOTATOR LOCATOR STRIPPED. '(Post 1)' is exactly the locator form mention_verbatim_note names ('(Post 3)', '(Post 4, a retweet of Post 1)') and rules annotation rather than document text. Which post it is stays in doc_ref_line/span.]"
     },
     {
       "row_id": "d20-r16",
@@ -3232,7 +3242,7 @@
       "doc_id": "cs01_stale_orbat",
       "subject_surface": "China Precision Machinery Import-Export Corporation (CPMIEC)",
       "predicate": "manufactures",
-      "object_surface": "The missile itself / the HQ-9/P",
+      "object_surface": "The missile itself",
       "tier3_attributes": {},
       "doc_ref_span": "with a secondary anti-tactical ballistic missile (ATBM) capability against short-range ballistic missiles claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
       "doc_ref_line": 17,
@@ -3245,7 +3255,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated",
-      "notes": "**Stated cleanly and — on the wider corpus — FALSE.** CPMIEC is the export agent, not the maker (d22 argues this explicitly; d23 is the same conflation). The gold labels what the document says; the sub-oracle must hold it at `possible` and record that the slice alone cannot refute it."
+      "notes": "**Stated cleanly and — on the wider corpus — FALSE.** CPMIEC is the export agent, not the maker (d22 argues this explicitly; d23 is the same conflation). The gold labels what the document says; the sub-oracle must hold it at `possible` and record that the slice alone cannot refute it. [GOLD-REPAIR 2026-07-26: SLASH ALTERNATION COLLAPSED TO THE CITED SENTENCE'S OWN SURFACE. cs01 L17: 'The missile itself is reported to ... claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)'. 'The missile itself' is the subject of the cited sentence and is a registry mention of cs01-C1-hq9p, so the identity to 'the HQ-9/P' is carried by the coref registry, not by a slash in the role surface.]"
     },
     {
       "row_id": "cs01-r08",
@@ -3272,7 +3282,7 @@
       "doc_id": "cs01_stale_orbat",
       "subject_surface": "associated HT-233 phased-array engagement radars",
       "predicate": "equips",
-      "object_surface": "the HQ-9/P battery",
+      "object_surface": "the HQ-9/P",
       "tier3_attributes": {
         "component_class": "phased-array engagement radar"
       },
@@ -3287,7 +3297,7 @@
         "time": "unknown"
       },
       "evidence_mode": "stated-hedged",
-      "notes": "Stated inside the generic composition, so this is a DESIGN-layer equips claim. It is also the third hedged HT-233 mention in the slice ('associated'), none of which is an independent positive identification."
+      "notes": "Stated inside the generic composition, so this is a DESIGN-layer equips claim. It is also the third hedged HT-233 mention in the slice ('associated'), none of which is an independent positive identification. [GOLD-REPAIR 2026-07-26: ANNOTATOR RESOLUTION REPLACED BY THE DOCUMENT'S SURFACE. cs01 L11 says 'Battery composition is estimated at ... associated HT-233 phased-array engagement radars'; the system whose battery composition it describes is 'the HQ-9/P' (L11, L9), verbatim. The gold's own note already calls this a DESIGN-layer equips claim.]"
     },
     {
       "row_id": "cs01-r10",
@@ -3434,6 +3444,169 @@
       },
       "evidence_mode": "stated",
       "notes": "A database record retrieved from a cache — two timestamps, neither of which is a publication date."
+    },
+    {
+      "row_id": "d05-r25",
+      "doc_id": "d05_customs_manifest",
+      "subject_surface": "GD No: KPQA-HC-2020-118834",
+      "predicate": "ANTI_COREF:distinct-stated-identifiers",
+      "object_surface": "GD No: KPQA-HC-2020-118835",
+      "tier3_attributes": {},
+      "doc_ref_span": "Container:       TCNU7712204 (shared, see line 118834)",
+      "doc_ref_line": 48,
+      "polarity": "negative",
+      "coref_cluster": "d05-C4-events",
+      "discriminators": {
+        "operator": "unknown",
+        "geography": "unknown",
+        "designation": "unknown",
+        "time": "unknown"
+      },
+      "evidence_mode": "stated",
+      "notes": "NEGATIVE GOLD, added 2026-07-26 by the gold repair, and the slice's cleanest over-merge trap. The two GDs share a consignee, a shipper, a vessel, a filing date, an HS-code family AND a container, so name similarity and shared neighbourhood both argue for one event. Only the distinct GD and B/L identifiers say no — and the cited line is the document making the distinction in its own voice: it names the container as SHARED and cross-references the OTHER line by number, which is a document that knows it has two lines. Previously this prohibition existed only as the licensing_category on registry cluster d05-C4-events, which the adapter emitted as a POSITIVE binding target on rows d05-r01/r02/r03."
+    },
+    {
+      "row_id": "d19-r21",
+      "doc_id": "d19_rahwali_confirm",
+      "subject_surface": "Sialkot-area",
+      "predicate": "ANTI_COREF:stated-enumeration",
+      "object_surface": "Pasrur dispersal site",
+      "tier3_attributes": {},
+      "doc_ref_span": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass.",
+      "doc_ref_line": 17,
+      "polarity": "negative",
+      "coref_cluster": "d19-C4-othersites",
+      "discriminators": {
+        "operator": "unknown",
+        "geography": "unknown",
+        "designation": "unknown",
+        "time": "unknown"
+      },
+      "evidence_mode": "stated",
+      "notes": "NEGATIVE GOLD, added 2026-07-26 by the gold repair. Two sites of the same type, same operator, same region, adjacent in one clause, each with essentially no discriminating context — and the document makes the cardinality explicit with 'both'. Enumeration plus a stated count is the licence to keep them apart. Previously this prohibition existed only as the licensing_category on registry cluster d19-C4-othersites, which the adapter emitted as a POSITIVE binding target on rows d19-r14/r15."
     }
-  ]
+  ],
+  "mention_verbatim_note": "**Mention strings in `documents[].coref_clusters[].mentions` are ANNOTATED, not always verbatim.** All 120 mentions occur verbatim in their document EXCEPT 13 (all in `d20_supersede_spoof`'s four clusters and `d17b-AMBIG-1`) which carry a trailing annotator locator in parentheses — \"(Post 3)\", \"(Post 4, a retweet of Post 1)\", \"(this report's AOI)\". The locator is which post the mention came from, which the flat text cannot otherwise express; it is annotation, not document text. Any scorer doing exact-match against document spans MUST strip a trailing parenthetical before comparing. Verified 2026-07-25: with that one normalization, 120/120 mentions and 120/120 licensing quotes are verbatim. `doc_ref_span` on the 125 claim rows needs no such normalization — 125/125 are verbatim as written, at the stated line.",
+  "cluster_count_note": "**Two different cluster counts exist and must not be conflated.** `counts.coref_clusters: 32` is the size of the CURATED registry in `documents[].coref_clusters` — the multi-mention chains with a licensing category, licensing quote and mention list; that registry is the coref gold a bake-off would score against. Separately, the `coref_cluster` tag on claim rows takes 48 distinct values: the 32 registry clusters plus 16 ad-hoc tags minted for rows that sit outside a curated chain (`*-C*-gap`, `*-C*-source`, extra `*-AMBIG-*` tags, `-` for none). Those 16 are row bookkeeping, NOT scoreable coref clusters, and mostly have a single member. One registry cluster (`d17b-C2-baseline`, 4 mentions) is legitimately used by no claim row — it is a coref chain over prose that states no ontology-domain claim. Documented 2026-07-25; no labels changed.\n\n**Amended 2026-07-26 (gold repair).** Two of the 32 curated registry clusters are not co-reference clusters at all: `d05-C4-events` and `d19-C4-othersites` carry an `ANTI_COREF` licensing_category, meaning their members must NOT be bound. Writing one shared `coref_cluster` tag across the members of a contrast set is a labelling error — the adapter hands curated cluster tags to the scorer as the gold clustering, so those two were the artifact instructing a candidate to merge the pairs the corpus planted to catch merging, and they were the only two clusters in the slice with 2+ entity-form claims. The member rows now carry per-member bookkeeping tags (`d05-C4a-gd118834`, `d19-C4a-sialkot`, …) and the relation rows carry `*-C4-contrast`; the registry entries are unchanged, and the prohibitions are stated explicitly as ANTI_COREF negative-gold rows `d05-r25` and `d19-r21`. The same leak was swept for at one order down: `d20-AMBIG-2` (AMBIGUOUS — a retweet that changes the destination) also tagged two positive claims, `d20-r03` and `d20-r06`, and those are retagged too. Four further withholding clusters (`d04-ANTI-1`, `d19-AMBIG-1`, `d17b-AMBIG-1`, `d20-AMBIG-1`) tag exactly ONE positive claim each: a singleton tag instructs no binding between rows, so it is left as authored and reported rather than removed. Every other curated cluster carries a positive licence (EXPLICIT_EQUIVALENCE / NAME_VARIANT / UNAMBIGUOUS_ANAPHOR) and is untouched.",
+  "audit_log": [
+    {
+      "date": "2026-07-25",
+      "by": "DATA hand (RK-BAKEOFF)",
+      "scope": "Independent audit of the gold slice for the same defect class found in the sub-oracle.",
+      "verified_clean": [
+        "125/125 `doc_ref_span` values occur verbatim in their cited document (Unicode-normalized: curly quotes, en/em dashes, NBSP, whitespace).",
+        "125/125 `doc_ref_line` values point at the line the span starts on.",
+        "0 rows cite a document outside the 7-document slice.",
+        "0 duplicate `row_id`s; 0 duplicate (doc, subject, predicate, object) tuples.",
+        "0 direct label contradictions: no surface pair carries both `same-as` and `distinct-from`.",
+        "Declared counts reproduce exactly: 7 documents, 125 rows, 11 not-a-claim, 6 anti-coref, 19 unmodelled, 27 negative-polarity.",
+        "`polarity` and `evidence_mode` are coherent: every `negative-observation` row is negative-polarity."
+      ],
+      "documented_not_changed": [
+        "13 of 120 curated coref mentions carry an annotator locator suffix and are not byte-verbatim — see `mention_verbatim_note`.",
+        "Row-level `coref_cluster` tags (48 distinct) are a superset of the curated registry (32) — see `cluster_count_note`."
+      ],
+      "judgement_calls_reported_not_fixed": [
+        "`cs01-r07` labels `manufactures CPMIEC -> HQ-9/P` as `stated`, and it IS stated cleanly by cs01 — but it is FALSE on the wider corpus (d22/d23 make CPMIEC the export agent). The gold correctly labels what the document says; a scorer must not read a claim-gold row as a truth claim about the world.",
+        "8 rows carry `evidence_mode: stated` while their quoted span contains a hedge word. In each case the hedge attaches to a DIFFERENT proposition than the one labeled (e.g. `d19-r11`'s hedge is on the designator rendering, not on the sighting). Reviewed individually; no relabel made."
+      ]
+    },
+    {
+      "date": "2026-07-26",
+      "by": "GOLD hand (RK-BAKEOFF gold repair)",
+      "scope": "Repair of the labeled slice against the three defects the bake-off diagnosis established: 16 rows carrying a role surface that appears nowhere in their cited document; two ANTI_COREF registry clusters tagging positive claims; annotator-composed pseudo-triples. Every change is justified against the DOCUMENT. No model output, bundle or scorecard was consulted while authoring these repairs — the inputs were the seven corpus documents and the gold's own labelling conventions.",
+      "the_16_non_verbatim_rows": {
+        "transcription_slip_corrected": [
+          "d02-r11",
+          "d19-r07"
+        ],
+        "annotator_composition_repaired": [
+          "d04-r05",
+          "d19-r02",
+          "d19-r05",
+          "d19-r11",
+          "d19-r14",
+          "d19-r16",
+          "d17b-r03",
+          "d17b-r04",
+          "d17b-r12",
+          "d20-r15",
+          "cs01-r07",
+          "cs01-r09"
+        ],
+        "moved_out_of_the_scored_set": [
+          "d19-r08",
+          "d20-r14"
+        ],
+        "reading": "14 of the 16 were labelling errors — a lowercased sentence-initial capital, an annotator '...', a trailing locator the gold's own mention_verbatim_note already rules is annotation, a comma fusing two spans, a slash offering two surfaces for one role, a coordination the annotator distributed. Correcting them is honest: the claim is unchanged, only the surface now quotes the document. 2 could not be repaired without authoring a new claim and were moved out of the scored set, named, with the reason."
+      },
+      "pseudo_triples_outside_the_16": {
+        "repaired": [
+          "d20-r09"
+        ],
+        "excluded": [
+          "d19-r08"
+        ]
+      },
+      "documented_not_changed": [
+        "d19-r17 <'the previously tracked Sialkot-area and Pasrur dispersal sites', distinct-from, 'Rahwali airfield'> has a plural subject denoting two entities, so it is really two claims. Left as authored: splitting it would ADD a gold row, which changes the denominator upward and is a coverage decision, not a repair.",
+        "d05-r04/r05/r06 (pairwise distinct-from over three GD numbers) are contested by the bake-off diagnosis as 'an assertion the document does not make'. Left as authored: d05 lists three GD line items with three distinct GD numbers and three distinct B/L numbers, and states a cross-reference between two of them ('Container: TCNU7712204 (shared, see line 118834)'), which is the document treating them as separate lines in its own voice. Deleting them would raise every candidate's recall on a contestable reading, which is exactly the direction a gold owner must not move.",
+        "d17b-r14 labels 'follow-up tasking' as a POSITIVE-polarity known_gap. Semantically odd (a recommendation is not a gap) but the surface is verbatim and it is outside this repair's mandate.",
+        "The 4 entity:variant rows label long mention noun phrases rather than bare designators. That is the gold's stated convention, not a defect; shortening them to 'HQ-9BE' etc. would be rewording labels so extractors match them more easily. Explicitly rejected."
+      ],
+      "anti_coref_routing": {
+        "retagged_rows": [
+          "d05-r01",
+          "d05-r02",
+          "d05-r03",
+          "d05-r04",
+          "d05-r05",
+          "d05-r06",
+          "d19-r14",
+          "d19-r15",
+          "d19-r16",
+          "d19-r17",
+          "d20-r03",
+          "d20-r06"
+        ],
+        "prohibitions_added_as_negative_gold": [
+          "d05-r25",
+          "d19-r21"
+        ],
+        "registry_entries_changed": "none"
+      },
+      "ceilings_declared": [
+        "1_the_gold_is_curated_not_exhaustive",
+        "2_verbatim_extractability",
+        "3_the_positive_coref_binding_denominator_is_empty",
+        "purpose"
+      ]
+    }
+  ],
+  "not_verbatim_extractable": {
+    "reading": "These rows are real observations about real sentences, and they are NOT deleted. But neither is a claim a verbatim extractor could produce, so scoring them caps absolute recall for every candidate on an authoring artefact rather than on anything about extraction. Each row carries `scoring_status: excluded_from_scoring` with its class and reason. NOTE: the adapter does not yet read that field, so both rows are STILL in the derived `claims` array and still in the recall denominator. Until the adapter honours `scoring_status`, read scored recall against a denominator of 63, not 65.",
+    "rows": [
+      "d19-r08",
+      "d20-r14"
+    ],
+    "adapter_change_required": "In `adapt_claim_gold`'s row loop, before the `_to_claim` branch: if `row.get('scoring_status') == 'excluded_from_scoring'`, build the claim as usual but append it to a new `excluded_from_scoring['not_verbatim_extractable']['rows']` bucket instead of to `claims`, and add those gold_ids to `_reconcile`'s `buckets` map and to its negative-polarity sum (d20-r14 is negative-polarity, so the declared count of 27 breaks otherwise)."
+  },
+  "ceilings": {
+    "purpose": "Three ceilings this slice imposes on any candidate. None is a defect in a candidate and none is fixable by a scorer knob. Report every absolute number against the relevant ceiling, or do not report it.",
+    "1_the_gold_is_curated_not_exhaustive": {
+      "measured": "65 scored rows over 3,846 words of document = 1.69 labeled claims per 100 words, and the density varies four-fold across the seven documents (0.66/100w in cs01_stale_orbat to 2.69/100w in d05_customs_manifest). A gold that enumerated everything its documents state would not vary by document type; this one is curated by analytic interest.",
+      "consequence": "PRECISION IS UNINTERPRETABLE IN ABSOLUTE TERMS. Precision's denominator is everything the candidate emitted, and this gold does not enumerate everything the documents license, so a grounded, correctly-cited claim over an unlabeled sentence is charged as a false positive. Precision here therefore measures how closely a candidate's output volume matches this gold's CURATION volume — it rewards terseness, which for an OSINT extractor is the wrong direction. Any F1 built on it inherits the defect and, being a harmonic mean, cancels genuine recall signal against it.",
+      "how_to_report": "Report RECALL against the verbatimness ceiling below. Report precision only as a paired diagnostic alongside the emission count, never as a quality score, and never rank two candidates on precision-based F1 against this slice.",
+      "explicitly_rejected": "Padding the gold with rows until it matches what a candidate emitted. That is labelling from the thing being graded — the worst available direction — and it is rejected outright. The honest fix is exhaustive labelling of all seven documents by a hand that has not seen any candidate's output, which is a data investment, not a repair."
+    },
+    "2_verbatim_extractability": {
+      "measured": "After the 2026-07-26 repair, 63 of 65 scored rows have every role surface quotable from their cited document (was 49/65), and 44 of 65 have every role surface inside their own cited span (was 34/65). The 2 remaining are d19-r08 and d20-r14, both declared in `not_verbatim_extractable` with the reason no faithful label is recoverable.",
+      "consequence": "Absolute recall for a verbatim extractor is capped at 63/65 = 0.969, not 1.00, until the adapter honours `scoring_status` and drops those two from the denominator (then 63/63). The in-span figure of 44/65 is a separate and softer ceiling: it caps the LEXICAL GROUNDING proxies, which look for the role surface inside the cited span only."
+    },
+    "3_the_positive_coref_binding_denominator_is_empty": {
+      "measured": "No curated registry cluster carrying a POSITIVE licence (EXPLICIT_EQUIVALENCE / NAME_VARIANT / UNAMBIGUOUS_ANAPHOR) contains two or more entity-form claim rows. Before the 2026-07-26 repair this was masked: the only two clusters with 2+ entity-form claims were `d05-C4-events` and `d19-C4-othersites`, both ANTI_COREF — so the slice's entire positive binding denominator was made of pairs that must NOT be bound, and B-cubed paid a candidate for merging them. That is fixed; what it exposes is that there was never a positive one.",
+      "consequence": "B-cubed over this slice CANNOT reward a correct positive bind between two system-indexable claims, because no such pair is labeled. Report coref binding as UNMEASURABLE ON THIS GOLD, with this reason named. Do NOT re-weight it silently to zero — that converts an honest gap into an invisible one — and do not read a number produced from the singleton clusters as a binding measurement.",
+      "what_would_fix_it": "At least one curated cluster in which two ENTITY-form claim rows genuinely co-refer and the document licenses the bind. `d05-C1-consignee` is the natural candidate — its own note calls it 'The ONLY identifier-backed equivalence in the slice' — but it currently carries one entity row and one triple row. This is corpus work, not a scorer fix, and it must be done without reference to any candidate's output."
+    }
+  }
 }

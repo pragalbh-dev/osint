@@ -1,0 +1,1729 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        53
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "think-tank digest"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "IISS Military Balance+ / Open-Source Airpower Monitor"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        329,
+        444
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Gujranwala along the GT Road corridor, Punjab",
+          "raw": "~10 km NW of Gujranwala along the GT Road corridor, Punjab",
+          "resolved_place_ref": null,
+          "surface_format": "relative",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "occupancy_state": "radar hardstand occupied and TEL count unchanged",
+        "site_signature_geometry": "Six TEL-pattern vehicles remain in a fan arrangement ... a large octagonal engagement radar signature ... on its prepared hardstand roughly 380 m east of the TEL cluster",
+        "site_type": "Pakistan Army/PAF joint-use facility"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Rahwali airfield"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        446,
+        508
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "commercial EO imagery"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Planet SkySat"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        446,
+        661
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "quantity": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 6.0
+        }
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Rahwali airfield, in the northeast dispersal area",
+        "raw": "Rahwali airfield, in the northeast dispersal area",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "TEL and battery-command cluster"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d19-rahwali-confirm-l11",
+      "_undated_perishable": true
+    },
+    "claim_id": "d19-rahwali-confirm-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        446,
+        661
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Rahwali airfield",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9BE battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        509,
+        661
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "battery command"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "battery-command cluster"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "TEL"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "TEL-pattern vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "this digest uses \"HQ-9B\" generically per prior issues unless a source specifies otherwise",
+        "designators": [
+          "HQ-9",
+          "HQ-9B",
+          "HQ-9BE",
+          "HQ-9P"
+        ],
+        "family": "HQ-9",
+        "site_signature_geometry": "a fan arrangement consistent with prior HQ-9B associated deployments elsewhere"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d19-rahwali-confirm-l11-7"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d19-rahwali-confirm-l11-7",
+      "_subject_mention": "d19-rahwali-confirm-l11-7"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9B",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d19-rahwali-confirm-l11-7"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d19-rahwali-confirm-l11-7"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        663,
+        776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l11-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        778,
+        994
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "fire-control/engagement radar",
+        "functional_role": "fire-control/engagement radar associated with the HQ-9B system"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d19-rahwali-confirm-l11",
+      "_subject_mention": "d19-rahwali-confirm-l11-12",
+      "_undated_perishable": true
+    },
+    "claim_id": "d19-rahwali-confirm-l11-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        778,
+        994
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Rahwali airfield",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "HT-233",
+        "radar hardstand and TELs"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the anaphor has 9 type-compatible antecedents in this document, not exactly one (an 'unknown'-typed mention counts as compatible on purpose — a second undeclared endpoint is precisely what an extractor under-reach would hide, and it must FAIL the gate, not pass it)",
+      "_coref_quotes": [
+        "believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand",
+        "again shows the radar hardstand occupied and TEL count unchanged"
+      ],
+      "_coref_referent": "ref:d19-rahwali-confirm-c3",
+      "_subject_mention": "d19-rahwali-confirm-l11-12",
+      "source_quote": "believed to be the HT-233 fire-control/engagement radar associated with the HQ-9B system, is again visible on its prepared hardstand"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-14",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          824,
+          956
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "frame": null,
+        "line": 13,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1777,
+          1841
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "radar hardstand and TELs",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d19-rahwali-confirm-l11-12"
+    ],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d19-rahwali-confirm-l11-7",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d19-rahwali-confirm-l11-12",
+      "source_quote": "the HT-233 fire-control/engagement radar associated with the HQ-9B system"
+    },
+    "claim_id": "d19-rahwali-confirm-l11-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        839,
+        912
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9B",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1250,
+        1522
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "ELINT relay, relayed via a third-party maritime/air RF-monitoring service"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "commercial ELINT aggregator feed"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l13-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1387,
+        1522
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "the same general locale",
+        "raw": "the same general locale",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HT-233-band engagement-radar emitter"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l13-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1676,
+        1842
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Rahwali airfield",
+        "raw": "Rahwali airfield",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "radar hardstand and TELs"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d19-rahwali-confirm-l11",
+      "_undated_perishable": true
+    },
+    "claim_id": "d19-rahwali-confirm-l13-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1676,
+        1842
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Rahwali airfield",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "radar hardstand and TELs"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2418,
+        2604
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "consistent with a recent redeployment rather than a long-standing emplacement",
+        "designators": [
+          "HQ-9BE",
+          "HQ-9P"
+        ],
+        "family": "HQ-9",
+        "operator_branch": "PAF/Army Air Defence Command"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2418,
+        2604
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "PAF/Army Air Defence Command"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF/Army Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_relane_reason": "'operated-by' reoriented (?->unit)",
+      "_subject_mention": "d19-rahwali-confirm-l15-2",
+      "_undated_perishable": true,
+      "source_quote": "this is the first collection cycle to associate a PAF/Army Air Defence Command HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery with the location"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2418,
+        2604
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE battery",
+      "object_value": null,
+      "predicate": "operated-by",
+      "subject": "PAF/Army Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d19-rahwali-confirm-l15",
+      "_subject_mention": "d19-rahwali-confirm-l15"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2418,
+        2604
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d19-rahwali-confirm-l15"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-5",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2418,
+          2604
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2497,
+          2578
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9BE",
+        "HQ-9BE battery"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
+      "_coref_quotes": [
+        "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery"
+      ],
+      "_coref_referent": "ref:d19-rahwali-confirm-c1",
+      "_subject_mention": "d19-rahwali-confirm-l15",
+      "source_quote": "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2497,
+        2586
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE battery",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d19-rahwali-confirm-l15"
+    ],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9BE",
+        "HQ-9P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery"
+      ],
+      "_coref_referent": "ref:d19-rahwali-confirm-c1",
+      "_subject_mention": "d19-rahwali-confirm-l15",
+      "source_quote": "HQ-9BE (export variant, sometimes rendered HQ-9P in Pakistani service literature) battery"
+    },
+    "claim_id": "d19-rahwali-confirm-l15-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2497,
+        2586
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9BE"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d19-rahwali-confirm-l15"
+    ],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l15-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2685,
+        2801
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "command/guidance van"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "command/guidance van"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3070,
+        3238
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_state": "remains in a \"last confirmed\" state from the 07 March pass",
+        "site_type": "dispersal site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pasrur dispersal site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3070,
+        3238
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_state": "remains in a \"last confirmed\" state from the 07 March pass",
+        "site_type": "dispersal site"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Sialkot-area dispersal site"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "Sialkot-area dispersal site",
+        "Pasrur dispersal site"
+      ],
+      "_object_mention": "d19-rahwali-confirm-l17",
+      "_subject_mention": "d19-rahwali-confirm-l17-2",
+      "source_quote": "No new activity to report at the previously tracked Sialkot-area and Pasrur dispersal sites this period; both remain in a \"last confirmed\" state from the 07 March pass."
+    },
+    "claim_id": "d19-rahwali-confirm-l17-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3070,
+        3238
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Pasrur dispersal site",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "Sialkot-area dispersal site"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d19-rahwali-confirm-l17-2",
+      "d19-rahwali-confirm-l17"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3332,
+        3505
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "CASIC export HQ-9BE marketing designation",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "PLA domestic HQ-9B baseline"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "PLA domestic HQ-9B baseline",
+        "CASIC export HQ-9BE marketing designation"
+      ],
+      "source_quote": "how Pakistani service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing designation"
+    },
+    "claim_id": "d19-rahwali-confirm-l19-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3380,
+        3505
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "CASIC export HQ-9BE marketing designation",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "PLA domestic HQ-9B baseline"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "HQ-9B",
+        "PLA domestic HQ-9B baseline"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the anaphor has 7 type-compatible antecedents in this document, not exactly one (an 'unknown'-typed mention counts as compatible on purpose — a second undeclared endpoint is precisely what an extractor under-reach would hide, and it must FAIL the gate, not pass it)",
+      "_coref_quotes": [
+        "how Pakistani service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing designation; this digest uses \"HQ-9B\" generically per prior issues unless a source specifies otherwise"
+      ],
+      "_coref_referent": "ref:d19-rahwali-confirm-c2",
+      "_subject_mention": "d19-rahwali-confirm-l11-7",
+      "source_quote": "how Pakistani service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing designation; this digest uses \"HQ-9B\" generically per prior issues unless a source specifies otherwise"
+    },
+    "claim_id": "d19-rahwali-confirm-l19-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3380,
+        3596
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "PLA domestic HQ-9B baseline",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d19-rahwali-confirm-l11-7"
+    ],
+    "referent_id": "ref:chunk0-d19-rahwali-confirm-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l19-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3453,
+        3505
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "role": "export designation holder for HQ-9BE"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "manufactures",
+      "_object_mention": "d19-rahwali-confirm-l15",
+      "_relane_reason": "'manufactures'@(variant->manufacturer) reversed -> manufactures",
+      "_subject_mention": "d19-rahwali-confirm-l19-4",
+      "source_quote": "the CASIC export HQ-9BE marketing designation"
+    },
+    "claim_id": "d19-rahwali-confirm-l19-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3460,
+        3505
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d19-rahwali-confirm-l22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d19_rahwali_confirm.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3603,
+        3727
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "prior digest issues"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "prior digest issues (14 Feb 2025, 07 Mar 2025)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d19_rahwali_confirm",
+    "targets": null
+  }
+]

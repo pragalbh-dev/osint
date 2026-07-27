@@ -1,0 +1,263 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 22.853489274159074,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "LY-80",
+            "name_b": "HQ-16",
+            "source_quote": "LY-80 (HQ-16)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "context": {
+              "geography": "Baluchistan"
+            },
+            "location_text": "Baluchistan",
+            "name": "Baluchistan",
+            "site_type": "range",
+            "source_quote": "undisclosed range in Baluchistan"
+          },
+          {
+            "context": {
+              "geography": "Karachi"
+            },
+            "location_text": "Karachi",
+            "name": "Karachi",
+            "source_quote": "approaches to Karachi"
+          },
+          {
+            "context": {
+              "geography": "Sindh coastal sector"
+            },
+            "location_text": "Sindh coastal sector",
+            "name": "Sindh coastal sector",
+            "source_quote": "Sindh coastal sector"
+          },
+          {
+            "context": {
+              "geography": "Punjab border sector"
+            },
+            "location_text": "Punjab border sector",
+            "name": "Punjab border sector",
+            "source_quote": "Punjab border sector"
+          }
+        ],
+        "components": [
+          {
+            "context": {
+              "designation": "TEL"
+            },
+            "functional_role": "transporter-erector-launcher",
+            "name": "TEL",
+            "quantity_text": "six",
+            "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+          },
+          {
+            "component_class": "radar",
+            "context": {
+              "designation": "HT-233"
+            },
+            "functional_role": "phased-array engagement radars",
+            "name": "HT-233",
+            "source_quote": "associated HT-233 phased-array engagement radars"
+          }
+        ],
+        "events": [
+          {
+            "date_text": "2013",
+            "event_kind": "induction",
+            "quantity_text": "limited numbers",
+            "recipient": "Pakistan",
+            "source_quote": "characterised the system in 2013 as \"already inducted in limited numbers,\"",
+            "system": "HQ-9/P"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "CPMIEC",
+            "name": "China Precision Machinery Import-Export Corporation",
+            "origin_country": "China",
+            "role": "manufacturer",
+            "source_quote": "manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+          }
+        ],
+        "relations": [
+          {
+            "object": "HQ-9/P",
+            "relation": "manufactures",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+            "subject": "China Precision Machinery Import-Export Corporation"
+          },
+          {
+            "object": "Air Defence Command",
+            "relation": "operated-by",
+            "source_quote": "Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "HQ-9/P",
+            "relation": "component-of",
+            "source_quote": "associated HT-233 phased-array engagement radars",
+            "subject": "HT-233"
+          },
+          {
+            "date_text": "2015",
+            "object": "Central Air Command",
+            "relation": "equips",
+            "source_quote": "assigned to the PAF's Central Air Command",
+            "subject": "HQ-9/P"
+          }
+        ],
+        "sources": [
+          {
+            "name": "South Asia Defence Monitor",
+            "source_quote": "South Asia Defence Monitor — Air Defence Systems Database",
+            "source_type": "Database"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "operator": "Pakistan Air Force"
+            },
+            "name": "Air Defence Command",
+            "service_branch": "Pakistan Air Force",
+            "source_quote": "Pakistan Air Force's Air Defence Command"
+          },
+          {
+            "context": {
+              "operator": "PAF"
+            },
+            "name": "Central Air Command",
+            "service_branch": "PAF",
+            "source_quote": "PAF's Central Air Command"
+          }
+        ],
+        "variants": [
+          {
+            "context": {
+              "designation": "HQ-9/P",
+              "operator": "Pakistan Air Force's Air Defence Command"
+            },
+            "family": "HQ-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Air Force's Air Defence Command",
+            "range_text": "200 km",
+            "source_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "context": {
+              "designation": "HQ-9",
+              "operator": "PLA"
+            },
+            "name": "HQ-9",
+            "operator_branch": "PLA",
+            "source_quote": "China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "context": {
+              "designation": "S-300PMU"
+            },
+            "name": "S-300PMU",
+            "source_quote": "Russian S-300PMU series"
+          },
+          {
+            "context": {
+              "designation": "Crotale"
+            },
+            "name": "Crotale",
+            "source_quote": "ageing Crotale"
+          },
+          {
+            "context": {
+              "designation": "Spada"
+            },
+            "name": "Spada",
+            "source_quote": "Spada point-defence batteries"
+          },
+          {
+            "context": {
+              "designation": "LY-80"
+            },
+            "designators": [
+              "HQ-16"
+            ],
+            "name": "LY-80",
+            "range_text": "shorter-range",
+            "source_quote": "shorter-range LY-80 (HQ-16) batteries"
+          },
+          {
+            "context": {
+              "designation": "HQ-16"
+            },
+            "name": "HQ-16",
+            "source_quote": "LY-80 (HQ-16)"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 10.90530924871564,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "China Precision Machinery Import-Export Corporation (CPMIEC)"
+            ],
+            "member_ids": [
+              2,
+              18
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "LY-80 (HQ-16)"
+            ],
+            "member_ids": [
+              10,
+              11
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:01:22.401796+00:00",
+  "run_index": 1,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "cs01_stale_orbat"
+}

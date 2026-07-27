@@ -1,0 +1,197 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "image",
+      "latency_s": 10.356655580922961,
+      "offered_fields": [
+        "caption",
+        "caption_vs_image_consistency",
+        "count_abstained",
+        "count_object",
+        "description",
+        "features",
+        "frame_kind",
+        "geometry_tokens",
+        "gsd_note",
+        "object_count_max",
+        "object_count_min",
+        "occupancy_state",
+        "resolution_sufficiency"
+      ],
+      "payload": {
+        "caption_vs_image_consistency": null,
+        "count_abstained": true,
+        "count_object": "vehicles and equipment",
+        "description": "An overhead satellite frame displaying a prominent ground facility surrounded by dense urban development. The central portion of the facility features a large circular driveway and pad system arranged in a symmetrical radial pattern around a central line and pad. To the south of this circular structure, there are several rectangular buildings, paved assembly or parking aprons holding rows of small objects/vehicles, and connecting access roads. The surrounding area consists of city blocks with high-rise and mid-rise residential structures, paved roadways, and ongoing construction sites.",
+        "features": [
+          {
+            "arrangement": "radial",
+            "feature": "circular pad layout",
+            "note": "Symmetrical circular pad and loop pattern in the center of the open ground area",
+            "shape": "circular"
+          },
+          {
+            "arrangement": "aligned",
+            "feature": "rectangular buildings",
+            "note": "Several structures located south of the circular section",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "parallel rows",
+            "feature": "parking aprons",
+            "note": "Paved aprons with small parked objects south of the circular layout",
+            "shape": "rectangular"
+          },
+          {
+            "arrangement": "network",
+            "feature": "road network",
+            "note": "Internal access tracks and surrounding city street grid",
+            "shape": "linear"
+          }
+        ],
+        "frame_kind": "satellite",
+        "geometry_tokens": [
+          "circular_layout",
+          "radial_pads",
+          "cloverleaf_pattern",
+          "access_roads",
+          "rectangular_buildings",
+          "parking_aprons"
+        ],
+        "gsd_note": "Sub-meter overhead imagery clearly depicting facility layout and surrounding urban context.",
+        "object_count_max": null,
+        "object_count_min": null,
+        "occupancy_state": "occupied",
+        "resolution_sufficiency": "sufficient"
+      },
+      "tool_name": "read_overhead_image",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 14.935665163211524,
+      "offered_fields": [
+        "assessed_types",
+        "collection_gaps",
+        "components",
+        "observations",
+        "occupancy",
+        "relations",
+        "site",
+        "source_quote",
+        "units"
+      ],
+      "payload": {
+        "assessed_types": [
+          {
+            "context": {
+              "designation": "HQ-9P",
+              "operator": "Pakistan"
+            },
+            "name": "HQ-9P",
+            "operator_branch": "Pakistan",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan"
+          }
+        ],
+        "collection_gaps": [
+          {
+            "description": "Partial cloud obscuration and single-pass nature of collection require follow-up tasking.",
+            "missing_slot": "tree canopy fringe visual observation",
+            "next_coverage_due": "within the next 5–7 days",
+            "source_quote": "Given the partial cloud obscuration and single-pass nature of this collection, a follow-up tasking is recommended within the next 5–7 days to confirm persistence of the negative finding"
+          }
+        ],
+        "components": [
+          {
+            "functional_role": "launcher",
+            "name": "transporter-erector-launchers (TELs)",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "functional_role": "radar",
+            "name": "radar trailer",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "observations": [
+          {
+            "count_state": "absent",
+            "location_text": "the old Rawalpindi-area site near the port road turnoff",
+            "object_count_text": "No transporter-erector-launchers (TELs) are visible",
+            "object_type": "transporter-erector-launchers (TELs)",
+            "pass_date": "2025-06-11",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "count_state": "observed",
+            "location_text": "the old Rawalpindi-area site near the port road turnoff",
+            "object_count_text": "what was assessed as a possible radar trailer footprint",
+            "object_type": "radar trailer footprint",
+            "pass_date": "2024-11",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "occupancy": [
+          {
+            "observed": "transporter-erector-launchers (TELs)",
+            "observed_date": "2025-06-11",
+            "occupancy_state": "absent",
+            "site": "the old Rawalpindi-area site",
+            "source_quote": "No transporter-erector-launchers (TELs) are visible on any of the hardstands or along the access spur at the time of this pass."
+          },
+          {
+            "observed": "radar trailer footprint",
+            "observed_date": "2024-11",
+            "occupancy_state": "empty in current image",
+            "site": "the old Rawalpindi-area site",
+            "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
+          }
+        ],
+        "relations": [
+          {
+            "object": "Pakistan",
+            "relation": "operated-by",
+            "source_quote": "HQ-9P long-range air defense system fielded by Pakistan",
+            "subject": "HQ-9P"
+          }
+        ],
+        "site": {
+          "context": {
+            "geography": "near the port road turnoff"
+          },
+          "location_text": "near the port road turnoff",
+          "name": "the old Rawalpindi-area site",
+          "site_type": "suspected forward SAM deployment area",
+          "source_quote": "The site in question — referred to in prior open reporting simply as \"the old Rawalpindi-area site\" near the port road turnoff, not the garrison itself"
+        },
+        "source_quote": "Ref: OSINT-VIS-0625-114\nSubject: Air Defense Infrastructure, Southern Approaches — Site Activity Check"
+      },
+      "tool_name": "extract_imagery_geoint",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 4.666840597987175,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:03:51.803033+00:00",
+  "run_index": 5,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d17b_withheld_gap"
+}

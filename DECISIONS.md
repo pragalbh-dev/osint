@@ -1430,6 +1430,147 @@ three of the orchestrator's own artifacts.**
 | **D1 is understated: the over-merge also DELETES an honest refusal** | The same identity error does not merely add a fabricated relocation — it turns an edge correctly labelled `insufficient` (with a Known Gap naming the missing corroboration) into `stale` **with no gap at all**. It fabricates a claim *and* erases the system's own admission of ignorance | **G16 asserts three things** (C2): no confirmed formation merge · no drawn relocation · **no Known-Gap deletion and no `insufficient → stale`** |
 | **Corrections to my own work — logged because a reviewer should see them** | (i) **Three matcher bugs**, one score-changing: `any_of` read the wrong key so it could **never pass**; `count_equals … 0` was structurally unpassable (scoring UNRESOLVED exactly when the implementation was *right*); per-case invariants were undispatched. **13/24 → 15/24.** (ii) My **anti-fabrication invariant did not catch fabrication** — it pooled stated values across *all* documents, so a value transplanted onto a thin instance passed; now scoped per instance, negative-control verified. (iii) **C1–C4 never left `tmp/conv`**, and **A1/A5 encoded the referent atom as the primary id key with the claim atom as a "fallback"** — the inverted, forbidden ordering, about to be frozen at S1 | *A check that cannot fail is a check that lies* — I criticised a gate for that and shipped two harness checks with the same flaw. A1/A5 are now **claim-atom-primary**; C1–C10 are folded into §5b and cited from the stage scopes; G19 and the G15/G16/G18 amendments are wired into the gate table, stage gate lists and owned test paths |
 
+## RK-BAKEOFF — integration triage of the three blind hands (2026-07-25, `bakeoff/rk-impl`)
+
+Merged the impl-blind spec gates (`bakeoff/rk-test`) onto the harness branch. 37 tests were red. **32 of
+them were a binding artefact, not a defect**: the spec's name-discovery found two of its four surfaces
+with incompatible signatures (`TypeError` before the assertion) and missed the other two entirely, so
+those gates silently graded the deliberately-wrong NAIVE stand-in — while a single global `USING_STAND_IN`
+flag printed *"checked against the shipped eval.extraction harness"* on every failure. **A red carrying a
+false attribution is the same defect class as a green carrying a false claim**, and this one would have
+sent the next reader to "fix" a module that was already correct. Fixed by an explicit binding layer
+(`tests/bakeoff/_impl_binding.py`) plus per-surface provenance. Five genuine divergences remained.
+
+| Ruling | Call | Reasoning | Alternative rejected |
+|---|---|---|---|
+| **The composite must respect metric direction** (IMPL DEFECT, severe) | Invert `lower_is_better` rates before they enter the weighted composite; refuse to composite a metric whose direction the candidates disagree on | `composite_series` summed raw values while ranking the composite higher-is-better. Measured: with fabrication weighted 4.5, a model fabricating 40% of the time scored **0.56 against a clean model's 0.32** — the harness actively selected for the behaviour the project calls disqualifying, and every per-metric line still read correctly. Latent under today's weights (no lower-is-better *rate* is weighted) but the next natural metric anyone adds is a rate of something bad | Leaving it as "latent, not reachable". A defect whose trigger is *adding an obvious metric* is a trap, not a non-issue |
+| **A non-negotiable is a veto, not a weight** (test hand right) | Before `WINNER` is issued, the leader must not be *materially* worse than any rival on a metric named in `gates.non_negotiable_floors`; else `NON_NEGOTIABLE_REGRESSION` | Inside a composite these are heavy weights, and **any weight is a price a good-enough model can pay**. The winner re-freezes the graded oracle, writing ungrounded claims into the evidence layer wearing valid citations — nothing downstream catches that. The check reuses the existing margin rule, so it **invents no threshold** and only an already-established difference can veto | The implementer's refusal to pick a floor was right about *absolute* thresholds but does not cover the *relative* case, which needs no constant. Reuses the existing floors block as the declaration site rather than adding a second list |
+| **A REQUIRED metric blocks the verdict; a merely weighted one is excluded and named** (test hand right, scoped) | New `required_metrics` config list → `INSUFFICIENT_CRITERIA`. Declared: `coref_binding`, `discriminator_capture` | Plan §8 splits this into a Wave-0 screen and a definitive pass *because* the two top-weighted criteria are unmeasurable today. A Wave-0 winner asserts the missing half could not have mattered — and **nobody re-runs a bake-off that already has a verdict**. This is the project's own "insufficient evidence to assess" rule turned on its own instrument. The block **lifts automatically** when they are measured | Blocking on *any* unavailable weighted metric (over-broad, would fire on cost/latency); and doing nothing (the impl's exclude-and-name), which is right for weights but not for a criterion declared decisive |
+| **An out-of-bounds citation span is unfaithful** (impl right, SPEC FIXTURE wrong) | Fixed the test fixture, not the check | The fixture cited `(0, 96)` of a 95-char document. Python's forgiving slice is a language accident, not a licence: a span that does not exist is provenance that does not resolve, and one-click traceability is what makes this system's output admissible | Loosening the impl to tolerate overruns — that is the metric this project can least afford to make lenient |
+| **The matcher's hyphenation weakness is PINNED, not tuned** (finding, deliberately not fixed) | Re-bracketed the thresholds (.50/.99) on the author's own claim pair; added a test asserting the current behaviour | Measured: `HT-233` vs `HT233` scores **0.5455**. `normalize_surface` rewrites `-_/` to a space (right for predicates), splitting `HT-233` into two tokens while `HT233` stays one; `token_sort_ratio` then punishes the split. This corpus's key surfaces are exactly that shape (HQ-9/P, HT-233, FD-2000), so a legitimate de-hyphenated variant scores a **non-match** — depressing recall for every candidate and adding variance | Re-tuning the kernel here. That changes every number the bake-off produces and would be done by someone who has now read the gold — the exact failure the matcher's own docstring warns against. It belongs to the gold owner, against a labeled sample |
+
+**Also fixed (IMPL DEFECT, found only by running the real loader against the real gold):** the gold loader
+read the sentinel string `"unknown"` as a *stated* discriminator. 349 of the slice's 500 discriminator
+slots are that string, so `discriminator_capture`'s denominator swelled from 151 to 500 (a perfect model
+scores ~0.30) and `discriminator_fabrication_avoidance` lost its denominator entirely — and **a model that
+literally emits the word "unknown" would outscore one that correctly abstains**, rewarding the fabrication
+the metric exists to catch. Null, absent and sentinel are now one case.
+
+**Disclosure for the design note:** the bake-off **cannot run today**, and the blocker is not model keys.
+The labeled gold (`rk-spike-claim-gold/1.0`) and the scorer's declared contract (`rk-bakeoff-claim-gold/1.x`)
+are different schemas — different row keys, no `form` field, quoted-string spans instead of char offsets,
+and 38 of 125 rows that are *negative* gold (NOT_A_CLAIM / ANTI_COREF / AMBIGUOUS / UNMODELLED) which would
+cap a perfect model's recall at ~0.70 if loaded naively. Writing that translation is the next task and it
+carries semantic calls that belong to the gold's owner, not to the scorer.
+
+**Coref-binding — the top-weighted criterion — is unmeasurable, for a reason nobody had stated.** Gold
+*exists* (32 doc-local clusters, 120 mentions); the earlier "zero coref annotations" finding is true only
+of the frozen `answer_key.json`, which the bake-off does not use. What is missing is the **output channel**:
+the model-facing extraction tool schema has no coref/cluster field anywhere (the only hits are docstring
+prose), and `ClaimRecord.referent_id` is written by nothing — `dedup.py` only renames ids that already
+exist. Every candidate would therefore emit an identical empty clustering, so scoring it would measure the
+schema, not the model. This is a *stronger* statement than "no yardstick", because it names the fix: coref
+becomes measurable the moment extraction offers a mention-cluster field (RK-COREF/S3), and the gold is
+already sitting there waiting.
+
+### RK-BAKEOFF (DATA) — the sub-oracle may not be more confident than the system it grades (2026-07-25)
+
+Repair of `tmp/spike-rk/gold/sub-oracle.json` / `.md` under the user-ratified directive
+`tmp/conv/FOR-DATA-C-sub-oracle-single-source-confirm.md`. The sub-oracle is the **yardstick** the three
+bake-off candidates are scored against, so a defect in it is a defect in the measuring instrument, not a data
+nit. Repair script (re-runnable, fails loudly rather than drifting the two artifacts apart):
+`tmp/spike-rk/repair_sub_oracle.py`. Full record in the artifact's own `repair_log`.
+
+| Decision | Why | → |
+|---|---|---|
+| **All twelve single-source entries capped at `probable`.** Measured, not assumed: exactly 12 entries rest on one slice document — 5 bare `confirmed` (`sl_e15/16/17/20/21`) and 7 **qualified** confirms (`sl_org_orient`, `sl_org_sinogalaxy`, `sl_org_alnoor`; `sl_event_118834/118835/119011`; `sl_e11`) | The running rule is `config/credibility.yaml` `min_independent_groups: 2`, enforced in `credibility/status.py::assign_status` against `_effective_looks()`. One document is one look. A yardstick that confirms on one look scores the system as **under-confident exactly where the system is being correctly cautious** — it inverts the measurement in the direction that flatters us | Post-repair the sub-oracle carries **6** `confirmed` entries, every one of which clears the rule with margin under the *stricter* effective-looks arithmetic (same-discipline groups count 0.5): 2.0–3.5 weighted looks. `sl_gap_ht233_maker` sits exactly at the 2.0 floor |
+| **A QUALIFIED confirm is a status claim and is subject to the cap.** `status` now always holds one of the four declared vocabulary values; the qualification moved verbatim into a new `status_proposition` field | The parenthetical narrows the **proposition**, not the **status** — and narrowing a proposition buys no second look. Structurally it is also unsafe: any scorer normalising `status` reads a leading "confirmed" as `confirmed`, so a free-text status silently escapes the one rule the yardstick exists to hold. The strongest counter — *a primary record is self-evidencing for its own existence* — is real but is **not** a rule the running resolver implements, and this artifact's job is to state the ceiling the running system should reach | **rejects** treating the qualifier as a separate, exempt status tier. Analytic content is preserved, not deleted: the narrowed proposition is now a first-class field and is rendered in the `.md` |
+| **Identifier-licensed identity does NOT bypass the two-look rule.** Scope: the whole sub-oracle, and any future slice oracle. A shared unique identifier inside ONE primary record (a bill of lading, a GD number, an SECP CUIN) is **one look**, however hard the identifier | The directive offered this bypass explicitly. Refused because **no such rule exists in the running resolver** — there is no identifier fast-path anywhere in `credibility/` — so writing one into the yardstick would make the yardstick disagree with the system by construction, which is the precise defect being repaired. It is also the wrong direction of error for a measuring instrument: the project already holds that *differing identifiers veto, shared ones do not confirm* (RK-SPIKE, 2026-07-24) | **Roadmap, not build:** if identifier-licensed confirmation is ever wanted, it belongs in the resolver first and in the oracle second, never the reverse. The five entries with the strongest claim to it (`sl_e15/16/17/20/21`) carry a note saying exactly that, so a reviewer sees a decision rather than an inconsistency |
+| **`sl_e03` (`same-as` HQ-9/P ↔ HQ-9P) re-cited on the one row that supports it; its counter-evidence moved to the tension list as `sl_amb_07`** | The entry claimed `confirmed` on "three independent sources" while citing four rows, of which **one** supports the proposition (`d04-r02`, unhedged, variant level). `d02-r07` is a FAMILY-level parenthetical and is in fact the *FD-2000* row; `cs01-r01` is an `ATTR:family` row that never asserts the equivalence. `d19-r09` is **counter-evidence**: HQ-9BE ≡ HQ-9P, which chained with `d04-r07` (HQ-9/P ≠ HQ-9BE) entails HQ-9/P ≢ HQ-9P | **rejects** "counter-evidence overridden": it is held as a live, flagged contradiction, which is what the corpus is built to test. Status drops to `probable` (one look). The claim-gold row itself was already honest about the collision — the defect was in the sub-oracle's citation, not in the labels |
+| **Not changed: independence DETECTION (deferred defect D11), and the flagship Rahwali confirm** | The rule (two independent looks ⇒ confirmed) is correct and stays; only the *keying* of independence on publisher/source-type rather than evidential lineage is roadmap (same root cause as C8, 2026-07-25) | The slice's Rahwali entry `sl_e09` was already `probable` **before** this repair — because the slice deliberately omits d18's first pass, not because anything was demoted here |
+
+### RK-BAKEOFF integration triage — the gold adapter and the harness on one branch (2026-07-25)
+
+Merged `bakeoff/rk-data` (the gold adapter) into `bakeoff/rk-impl` (the scorer). One conflict, in this
+ledger, both append-only blocks kept. Suite green at **1698 passed / 7 skipped / 2 xfailed**; the data
+hand's 4 scorer-gated tests now execute for real rather than skipping, which is why the skip count did not
+rise. **Both deciding checks were re-derived independently rather than taken on report:** a candidate
+emitting exactly the positive gold scores recall **1.0000** through the adapter, and a candidate that also
+emits the 11 `not_a_claim` traps keeps recall 1.0000 while precision falls **1.0000 → 0.8553** — traps cost
+precision and steal no recall. The instrument is sound.
+
+| Ruling | Call | Reasoning | Alternative rejected |
+|---|---|---|---|
+| **The unwired precision exclusions are a measurement defect, not a footnote — and the scorecard must say so on every run** (SPEC GAP, quantified) | Added §5 to the rendered scorecard: precision is `matched/extracted`, three of the gold's four negative classes are declared neutral, and **nothing calls** `precision_exclusions`. A test asserts the disclosure and its position below the numbers | Measured, not estimated: a candidate emitting the 65 positive claims plus all 27 neutral-class spans scores precision **0.7065** against a wired **1.0000** — an unearned loss of **0.2935** (0.2262 for the 19 `UNMODELLED` rows alone). The note's "up to 11 precision points" was wrong on every construction. It does **not** cancel between candidates: the penalty scales with how much of a document a model reads, so it **favours the terser extractor** and lands on `surface_f1` (weight 3.0) — the same defect class as the composite-direction bug (a harness selecting for the behaviour the project calls bad) | **Wiring it here.** That redefines precision for every candidate and needs a weight decision for `trap_avoidance`, so it changes what every bake-off number means — the orchestrator's call, not the integration hand's. Also rejected: absorbing it silently, which reports a lower bound as a score |
+| **`0.6960` is not the naive recall ceiling; `0.5200` is** (FIXTURE ARTEFACT in a justification, direction conservative) | Both figures now asserted separately, in the adapter docstring, the test, and the slice-limits note | 0.696 = 87/125 credits the perfect model with matching the **22 attribute rows** — rows the adapter excludes *precisely because the pipeline cannot express an attribute as a claim*. So it describes a model that cannot exist and understates the artefact by 0.18. Measured through the real matcher, a candidate emitting only what the pipeline can produce scores **0.5200**, so the adapter is worth **0.48** recall, not 0.30 | Deleting the 0.696 assertion. It is a true measurement of a real construction; the defect was the label "the same perfect model", so both are kept and distinguished rather than one replaced |
+| **`NO_ELIGIBLE_CANDIDATE` on a text-only document set is correct behaviour, not a bug** (verified, no change) | Left alone | Running the harness on the 7 documents the slice cites yields no eligible candidate, because the slice cites `d17b_withheld_gap.txt` and **no image document** — so `image_calls_total=0`, the imagery gate reads UNKNOWN, and UNKNOWN blocks. A gate nobody exercised is not a gate anybody passed. Adding the real `.png` frame makes both scripted candidates eligible | Treating it as a gating defect and relaxing the gate to pass on an unexercised imagery path — that is the one gate this project can least afford to make lenient |
+
+**End-to-end verified offline on the real inputs** (real adapted gold, real sub-oracle, 7 real corpus docs,
+scripted no-network client, zero API calls): the coref precondition **refuses before any client is built**
+when `coref_binding` is required and the channel is dormant, naming the flag; with the channel on and a
+required metric genuinely unmeasured the verdict is **`INSUFFICIENT_CRITERIA`** with `winner=None`; with
+nothing required and no separation it is **`NO_MEASURED_DIFFERENCE`**. The harness refuses to name a winner
+in exactly the cases it should, and still reaches `WINNER` when a real separation exists.
+
+### RK-BAKEOFF (DATA / GOLD OWNER) — the identifier match rule, decided against the labeled sample (2026-07-25)
+
+The one knob that decides whether `HT233` counts as `HT-233` was deferred to this hand **twice**, with a
+stated reason: re-tuning the match kernel moves every number the bake-off produces, so it must be settled
+against a labeled sample rather than by whoever has just read the gold and is tempted to tune to it. Settled
+here, by measurement over the **247 distinct surfaces** of the labeled slice — re-derived on every test run
+by `backend/tests/gold_adapter/test_identifier_match_policy.py`, so no figure below is remembered.
+
+**Both deciding checks are unmoved, and are now asserted under every setting of the new rule** (a perfect
+model's surfaces are byte-identical to the gold's, so the rule must not be what produces the number): a
+candidate emitting exactly the positive gold still scores recall and precision **1.0000** on 65 pairs, and a
+trap-emitting candidate still keeps recall 1.0000 while precision falls to **0.8553 (65/76)**. Suite
+**1712 passed / 7 skipped / 2 xfailed** (baseline 1697, +15 new tests, no regressions). Zero API calls.
+
+| Ruling | Call | Reasoning (measured) | Alternative rejected |
+|---|---|---|---|
+| **Punctuation inside a letters-and-digits token is typographic, not a word boundary** | New `identifier_policy: designator_aware` in `config/bakeoff.yaml`. `HQ-9/P` ≡ `HQ9P`, `HT-233` ≡ `HT233`, `KPQA-HC-2020-118834` ≡ `KPQAHC2020118834`; prose is untouched (`AL-NOOR CARGO`, `fire-control/engagement`, `supplies-component`) and a date is not an identifier (`2024-11` stays split). Both readings are scored and the **better** is kept, so it can only ever add a match | The old kernel rewrote `-_/` to a space everywhere, splitting `HT-233` into two tokens while `HT233` stayed one; `token_sort_ratio` scored that pair **0.5455 — a non-match**. Across the labeled gold that cost **16 of 61** legitimately de-hyphenated designator surfaces at the 0.70 role floor and **24 of 61** at the 0.80 pair floor. This corpus's key surfaces are *all* that shape (HQ-9/P, HQ-9BE, HT-233, FD-2000, S-400), so the loss was systematic, charged every candidate, and added variance to a comparison already fighting non-determinism. Under the new rule: **0 of 61** below either floor | **Leaving it and stating the ceiling** (the third option offered). Refused because the loss is not a ceiling a reader can correct for — it is unevenly distributed across candidates by how often each renders a designator bare, so it is *variance*, not a constant offset. Also rejected: replacing the prose reading rather than taking the max, which lowered two legitimate article-only pairs (`HQ-9/P` vs `The HQ-9/P`, 0.75 → 0.667) below the floor |
+| **A designator disagreement is a VETO, not a low score** | New `identifier_agreement: nested_or_equal`. Per role, the identifier token sets must be equal or nested (empty nests into anything, so prose is unaffected); nested rather than equal so `the FT-2000` may pair with `the FT-2000 (sometimes rendered FT-2000A)`; **not** prefix-tolerant, so `HQ-9` is not `HQ-9/P` | This is the finding that decided the whole call, and it inverts the reason the question was deferred. The worry was that catching `HT233` would start merging `HQ-9A` into `HQ-9B` — **the old kernel already did**: HQ-9A/HQ-9B 0.80, HQ-9B/HQ-9BE 0.91, FT-2000/FT-2000A 0.93, S-400/S-300 0.80, two different GD numbers 0.95, two different B/L numbers 0.95. One changed character in a six-character designator is a tiny edit distance, and splitting it into tokens lets the *shared* tokens carry the pair — so no threshold on fuzzy similarity can separate them. Genuinely-different designator pairs conflated at the role floor: **40 of 684 → 0**. Across all 30,371 cross pairs of the slice's surfaces, pairs above the role floor **128 → 84**, and those the gold labels as *different nodes* **30 → 9** | **Raising the role floor instead.** Under the glue all 61 legitimate variants score exactly 1.0000, so a higher floor looked free — but it is not: it would also drop the added-qualifier matches the config's own note defends (`Type-7 Coupler` vs `Type-7 Coupler assembly`, 0.7568). A veto scoped to the discriminator is the targeted fix; a higher floor is a blunt one |
+| **The same rule governs the grounding proxies, not just the matcher** | `metrics._lexically_grounded` now asks the same question under the same readings | The half that mattered most, and it is on the **non-negotiable** lines. Measured against the real slice documents at the declared 0.85 floor, the prose reading scored a *faithful* de-hyphenated designator as ABSENT from the document that states it — `HT233` vs d19 **0.80**, `HQ9P` vs d02 **0.75**, `HQ9BE` **0.80**, `FD2000` **0.83**, the GD number **0.81** — i.e. it reported a model that quoted the page correctly as **fabricating**, on `citation_faithfulness` and `extract_only_stated`. All five now read 1.00 | **Scoping the fix to the matcher only.** That leaves the harness saying "this document does not state HT233" about a document that states HT-233 — a false fabrication finding, which is a worse error than the recall dent it was fixing. It cannot launder a real fabrication: gluing only deletes punctuation *inside* a letters-and-digits token, so an invented surface becomes groundable only if the document already states the same string in another rendering, which is what grounded means (asserted) |
+| **What it costs, stated rather than absorbed** | Two same-node pairs in the slice stop matching, both to the veto, and both are pinned by an equality assertion so the cost cannot grow unnoticed | `the FT-2000` vs `FT-2000A` (0.7368 → veto): this gold declares them ONE node because d04 says "sometimes rendered", but in general a suffixed designator *is* a different variant (HQ-9B vs HQ-9BE), so the veto is right in the general case and wrong on this documented alias. `HT-233-band engagement-radar parameters` vs `HT-233 engagement radar` (0.7419 → veto): the glue swallows the adjacent hyphenated word, so `ht233band` ≠ `ht233`. Both err toward a **missed** match — the safer direction, for the reason the config already gives: misses add variance and variance makes the margin rule *more* reluctant to call a gap material, whereas leniency inflates every candidate and hides the fabrication line | **Recovering the FT-2000 alias with an alias table.** An alias-aware matcher hands the extractor credit for resolution work it did not do — the surface module's own stated rule |
+| **The residual over-match is named, and it is not about designators** | Recorded in the slice-limits note as a limit on what a surface-F1 number means | **9 cross-node pairs still clear the role floor and every one is prose**: `the HQ-9B system` vs `the system` (0.80), `the PAF variant` vs `the Army variant` (0.8387), `the site` vs `the system` (0.7778), the Sialkot/Pasrur phrase pair (0.7789). Those are anaphora and an *operator* discriminator; a surface matcher can see neither. So the matcher **separates designators and does not separate referents** — a bake-off number is evidence about reading, not about entity resolution | Extending the veto to the operator/geography discriminators. That is resolution work in the matcher, out of scope for a measuring instrument, and the slice has too few such pairs to calibrate it |
+| **The policy is declared and configurable, never emergent** | Both knobs live in `config/bakeoff.yaml` with the rule written in prose plus every number above; `MatchPolicy.describe()` prints them above every score; a rejected pair reports the reason `identifier` | The matcher's leniency IS the measurement, so it may not be a side effect of a normalisation helper's regex. `identifier_agreement: ignore` reproduces the pre-decision numbers — a measurement-policy control for a reader, not a compatibility path | Hard-coding the decided behaviour. A reader who cannot switch it off cannot tell how much of a score is the matcher's generosity |
+
+The pinned tripwire that used to assert "a de-hyphenated designator is a non-match" did its job — it made
+this a deliberate re-tuning rather than a silent drift — and is **re-armed pointing at the decided
+behaviour**, now asserting *both* directions so neither can move quietly:
+`test_a_dehyphenated_designator_matches_and_a_sibling_designator_does_not`.
+
+### RK-BAKEOFF integration — the driver, and two defects the driver exposed (2026-07-25)
+
+Both hands merged (`bakeoff/rk-data` into `bakeoff/rk-impl`; two conflicts, both pure import-line unions in
+`matcher.py`/`metrics.py`, resolved as unions). Three test functions disappear relative to the merge base and
+**all three are deliberate replacements**, verified individually rather than assumed: the data hand re-armed
+its hyphenation tripwire, and the impl hand retired the "a null floor means no gate at all" and "the
+scorecard discloses the exclusions are unwired" tests because it changed both of those behaviours. Suite
+**1790 passed / 7 skipped / 2 xfailed**. Zero API calls.
+
+**The three deciding checks were re-run independently** (own script, real loaders, real matcher, shipped
+policy — not either hand's tests): a perfect model scores recall **1.0000**; a fabricator is penalised
+(precision 1.0000 → **0.8553**, 0 of 11 traps credited as matches, 0 exclusions granted, trap line 0.0000)
+and steals no recall; and the new third check passes — a **verbose-but-honest** model (positives + all 27
+neutral spans) now scores precision **1.0000** where the raw denominator would have given 0.7065. The
+inversion is gone: unwired, the instrument preferred the fabricator (0.8553) to the honest reader (0.7065).
+
+| Decision | Call | Reasoning |
+|---|---|---|
+| **The driver derives its slice from the gold, never from a list typed into a CLI** | New `run` subcommand + `eval/extraction/driver.py`. The document set is the adapted gold's own `docs`/`doc_paths`; each document's source type and co-located frames come from the **pipeline's source registry**; a labeled document missing from either raises rather than being skipped | A document quietly added or dropped changes what a recall number means and is invisible on the scorecard. Deriving the slice from the answer file makes the two impossible to disagree. Source type is not guessable: it selects the extraction tool, so guessing it would measure the guess |
+| **The real corpus image is not bolted on** | `d17b_withheld_gap` is registered with `d17b_withheld_gap.png` as a co-located frame (ING-8), so the imagery lane fires on the real frame the same way the seed recorder loads it. The driver refuses to run at all if the slice yields no frame | Without an image call the imagery gate reads UNKNOWN and disqualifies every candidate — a wasted budget. Refusing up front is the same discipline as the coref precondition |
+| **The spend is stated as a floor and a ceiling, then reconciled against the actual** | `SpendPlan` prints candidates/docs/passes/runs and a call range before anything is spent; `RunScore.calls_total` (new) lets the driver close the loop with what was really spent, and it warns if the actual falls outside the projection | One of the three call classes is genuinely conditional — pass 2 does not dispatch on a document that yielded fewer than two mentions — so a single confident estimate would be wrong in one direction and would teach an operator to ignore the line. Measured on the dry run: **13 calls/run**, i.e. pass 2 fired on 5 of 7 documents |
+| **A candidate already failing a dry gate is not paid for** | `driver.blocked_before_spending` reuses `gates.dry_gates` — the same function `preflight` prints — and the driver skips those candidates by default, naming them and why; `--include-blocked` buys their diagnostic numbers anyway | A gate is pass/fail to win, so calls spent on a gate-failing candidate cannot change the outcome. On the shipped config `openai-gpt-5-6-sol` fails `keyless_equals_live`, so this is **a third of the budget**. Reusing preflight's own function is what stops the driver from skipping a candidate preflight called fine. UNKNOWN counts as blocked, exactly as it does everywhere else |
+| **DEFECT FOUND AND FIXED: three "unmeasured" reasons blamed the gold for the candidate's failure** | `coref_binding` and both discriminator metrics reported "the gold slice carries no coref_cluster labels" / "labels no stated discriminators" whenever their denominator was empty. But the denominator is empty *either* because the slice is unlabeled *or* because *nothing aligned* — and on this slice **51 of 65 claims carry cluster labels and 95 discriminator slots are labeled**, so the message was simply false. `DiscriminatorTally.aligned` (new) lets the two causes be told apart, and each now names the real one | This is the wrong-file failure the coref channel's own cause reporting already exists to avoid: it sends an operator to the answer key to fix an extraction problem. In a measuring instrument a misattributed cause is worse than a blank, because it looks like a finding. Found only by running the driver — no test covered it |
+| **The dry run's `INSUFFICIENT_CRITERIA` is the client's limit, not the instrument's** | Verified separately that **both required metrics are measurable on this slice**: with a well-behaved oracle `coref_binding` reads 1.0000 over 51 graded pairs and `discriminator_capture` 1.0000 over 47 captures; a model that binds nothing reads UNMEASURED (never 0), and one that over-clusters scores a real, poor 0.1166 | The dry client is corpus-blind on purpose, so its claims do not align and the two required metrics cannot be reached — which would otherwise leave "will a real run reach a verdict at all?" unanswered before spending $10–25. It will |
+
+**Cost of a real run, corrected.** Prior estimate ~225 calls assumed three candidates. With the
+gate-blocked candidate skipped it is **2 candidates × 5 runs × 8–15 calls = 80–150 calls**, and the measured
+call pattern (13/run) puts the likely figure at **~130**, rising toward 150 as a stronger model triggers
+pass 2 on all 7 documents. With `--include-blocked` it is 120–225, measured 195. Roughly **$5–15**,
+dominated by Opus 5.
+
 ### RK-COREF (S3) adversarial review — five blocking defects closed (2026-07-25)
 
 A review of the S3 stage found five blockers. All five were reproduced by measurement before being fixed and
@@ -1523,6 +1664,205 @@ and `make check`) · mypy back to the base 289 · 1222 backend + 196 frontend te
 **Still true, still disclosed:** the lens half reaches no UI surface (see AH-1's disclosure) — it is honest
 in `GET /view?subject=` and in ASK's tool reads only. ASK has no observable/alert tool, so it cannot see the
 *observable* half either; both are roadmap, not build.
+
+### RK-BAKEOFF — the GPT candidate promoted to a production client, so the bake-off is a real three-way (2026-07-26)
+
+All three candidates worked — each passed a live smoke call and the recorded imagery gate on a real corpus
+frame — but `openai-gpt-5-6-sol` **could not win**, and not for any reason about the model. Its client had
+been written at `backend/eval/extraction/gpt_client.py`, in the tree that *measures* candidates, and
+`openai` was declared nowhere in the shipped image. That fails `keyless_equals_live`, and the gate is right
+to fail it: KEYLESS==LIVE is the promise that a reviewer with no API key gets the same graph the live system
+produces, and it holds only when the frozen seed bundles were produced by the same code the live extractor
+runs. Code parked beside the harness can be measured; it can never be the producer that freezes the seed.
+
+So the bake-off was quietly a two-horse race wearing three declarations, and the fix belonged where the
+gate pointed — never at the gate.
+
+| Decision | Call | Reasoning |
+|---|---|---|
+| **The client moved onto the shipped ingest path** | `OpenAIExtractionClient` now lives in `chanakya/ingest/client.py` beside `GeminiExtractionClient` and `AnthropicExtractionClient`; `build_extraction_client` gained an OpenAI branch, **appended** after Gemini and Anthropic | Placement is the gate's whole subject. Appending rather than inserting means every existing keyed deployment resolves to exactly the client it resolved to before — the promotion adds a provider, it does not re-point production |
+| **`openai` was added to the shipped image, not just the dev box** | New `[openai]` extra in `backend/pyproject.toml`, installed by the Dockerfile (`pip install "/src/backend[gemini,openai]"`) alongside `[gemini]`. The floor is `>=1.66` — the Responses API — because an older SDK installs cleanly and then 500s on the first live call | A provider whose SDK is missing from the container cannot run live in it, so it cannot be the code that froze the seed. This is the second half of the same gate, and it is a real dependency decision rather than a config edit |
+| **`[openai]` rides along with `[dev]` in CI and `make install`** | `pip install -e ".[dev,openai]"` | The client's offline tests monkeypatch the real SDK module, and the gate proves live-capability *by importing*. Without the package the tests would error at collection and the gate would read FAIL for a reason about the runner rather than the code — either one is a measuring instrument reporting on itself |
+| **Only now is `freezes_seed: true` true** | The candidate's declaration in `config/bakeoff.yaml` flipped `client_module` to `chanakya.ingest.client` and `freezes_seed` to `true`, with the reason recorded inline | The flag was `false` because the placement made it false. Flipping it *first* would have been the bent-gate version of this change: a declaration asserting a property the code did not have |
+| **The pinned id survived the move, and no reasoning knob came with it** | The class still takes `model_id` with **no default** (a wrong-but-plausible id cannot ride along); `DEFAULT_OPENAI_MODEL = "gpt-5.6-sol"` is the pinned id the factory passes. No sampling parameter and no `reasoning`/`reasoning_effort` is sent on any call | The provider's own suggested workaround for function tools on `/v1/chat/completions` is "set `reasoning_effort` to `none`" — which would benchmark a deliberately weakened model under a pinned id, and would ship that weakened model to production. The client uses `/v1/responses` instead and the model keeps its native reasoning |
+
+**Nothing about the gate changed.** `gates.py`, `production_client_package` and the pass/fail semantics are
+byte-identical; the candidate passes because the condition is now satisfied, not because it was loosened.
+
+**Verified.** `preflight` reports **3/3 ELIGIBLE** — all three PASS `vlm_imagery_path` (on the already-paid
+recorded probe), `keyless_equals_live`, `pinned_model_id` and `exercisable`; the three non-negotiable metric
+gates remain ahead of every candidate, as they should. Full suite **1792 passed / 7 skipped / 2 xfailed**,
+`ruff` clean, mypy unchanged at its pre-existing baseline. **Zero API calls were made** for this change.
+
+**Corrects an earlier ledger line.** The 2026-07-25 RK-BAKEOFF integration entry says "on the shipped config
+`openai-gpt-5-6-sol` fails `keyless_equals_live`, so this is a third of the budget", and its cost estimate
+is built on two candidates being paid for. That is no longer the state: a real run now spends on **three**
+candidates, so the projection returns to roughly **3 × 5 × 8–15 = 120–225 calls**, ~195 at the measured
+13-calls-per-run pattern. The driver's skip-the-blocked behaviour is unchanged and simply has nobody to skip.
+
+### RK-BAKEOFF — the live run: no verdict, one real bug fixed, and a rate limit that stopped it (2026-07-26)
+
+The authorised three-way live run was attempted. **It did not complete, so there is no primary extractor
+and none was chosen.** Full report: `tmp/conv/RK-BAKEOFF-RESULT.md`.
+
+Preflight was genuinely 3/3 ELIGIBLE — the GPT promotion held up and nothing was excluded by configuration.
+Three attempts were made and each died differently; the first two were our own defect.
+
+| Decision | What was done | Why |
+|---|---|---|
+| **No winner is recorded, because none was measured** | `run_bakeoff` raised before `decide()` on every attempt, so **no metric was computed for any candidate**. Two candidates' raw claim bundles survive on disk; they are reported in the result doc explicitly as *not* a ranking | This is the project's non-negotiable turned on its own instrument. Claim count is not a scored metric and more is not better — an over-extractor emits more claims and scores worse on the three veto lines. Naming a primary extractor on surviving bundles would be the exact failure the gates exist to forbid |
+| **A real concurrency bug in the shipped Gemini client, found and fixed** | `GeminiExtractionClient._sdk_client()` had an **unguarded lazy init**. `extract_many` fans across threads, so every thread built its own `genai.Client`; the orphans' `__del__` closed transports that sibling threads were still using. Surfaced as `[SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC]` (attempt 1) and `Cannot send a request, as the client has been closed` (attempt 2). Fixed with double-checked locking, keeping the laziness that keeps the optional dep optional | Both failures look like network faults and neither is one. This affects **any concurrent Gemini ingest**, which is the shipped path; it was invisible because it cannot happen sequentially. Anthropic and OpenAI build their SDK client in `__init__`, which is why Opus completed 5/5 runs on all three attempts. Verified 15/15 clean at concurrency 8 on the real lane, then confirmed by Gemini's 5/5 clean runs in attempt 3 |
+| **Transport faults are retried; returned responses never are** | New `eval/extraction/resilience.py` wraps the live client factory and retries only calls that **never received an HTTP response**. A 429, a 500, a refusal, a reply with no forced tool call is raised on the first attempt | A run is ~195 billed calls in one un-resumable process, so a single blip must not discard the comparison. But retrying a *returned* response would launder `structured_output_reliability` — the metric that exists to expose exactly that — inside the instrument built to measure it. The predicate treats any exception carrying a status code or response as final, whatever it is named |
+| **A 429 was NOT retried, and NOT scored against the model** | Attempt 3 died on `gpt-5.6-sol` with an account cap of **3 requests/minute** ("Limit 3, Used 3" — no payment method on the account) | Correct on both counts. It is a returned response, so the retry rule leaves it alone. And it is a fact about the **account's billing tier**, not the model — scoring it as unreliability would let the bake-off pick an extractor based on which entitlement the operator happens to hold. Lifting it is an operator action (fund the account) or a harness feature (per-provider rate limiting, which does not exist — there is one global `--concurrency`) |
+| **Stopped instead of buying a fourth attempt** | Cumulative actual spend **~330 calls against an authorised 225 ceiling**, with **Opus paid 3× (~225 calls) rather than 1×**, because it completed five full runs on every attempt and was re-paid each time | The standing instruction is to stop and report rather than spend when the plan runs materially above budget. A fourth attempt is another ~195 calls and still a gamble against a cap that cannot be fixed from this repository |
+
+**The instrument itself came out well.** The spend plan printed before every attempt was accurate to the
+call; the dry run walked the whole path at zero cost and correctly returned `INSUFFICIENT_CRITERIA` from a
+scripted client; preflight blocked nothing it should not have. `gates.py`, the weights, the margin rule and
+the match policy were **not touched** at any point.
+
+**Known limitation, and the highest-value next change if this is ever re-run at this cost:** the harness has
+**no resume**. Per-candidate scores live only in memory, so one exception discards every call already bought
+— which is how ~225 Opus calls became unusable. Checkpointing a completed candidate's `CandidateScore` would
+close that; the retry wrapper only closes the transport-fault case.
+
+**Also stated in the result doc, so a future verdict is not over-read:** five of the slice's six source types
+appear exactly once; 16 of 65 gold claims carry a role surface appearing nowhere in their document, so
+absolute recall is capped for any verbatim extractor and only comparative numbers mean anything; binding
+precision rests on 8 items; and cost is UNPRICED by design — while the operationally decisive cost factor
+turned out to be a rate limit, which no metric in the config models at all.
+
+### RK-BAKEOFF — the run becomes survivable: resume, per-provider pacing, and the coref block lifts (2026-07-26)
+
+Three attempts at the live three-way bake-off died three times — twice on a Gemini concurrency race (a real
+shipped-path bug, since fixed), once on `openai.RateLimitError` from an account capped at **3 requests per
+minute**. `anthropic-opus-5` finished all five of its runs on *every* attempt and was **paid for three
+times**, because the harness held everything in memory: one exception discarded ~225 already-billed calls
+and produced no scorecard at all. Nothing was scored. Three things changed, and none of them is a
+workaround for the thing they protect.
+
+**1. The coref block lifts by merge, not by deletion.** `coref_binding` is the top-weighted criterion and is
+declared in `required_metrics`, so an unmeasurable one returns `INSUFFICIENT_CRITERIA` — a completed,
+perfect run would still have bought nothing. Preflight had been reporting the channel `UNAVAILABLE
+[gated_off]`, blaming `resolution.earned_identity.enabled`. That was **stale**: `design/resolution-redesign`
+deleted the staging flags outright and made the identity machinery, coreference producer included,
+unconditional. Merging it reports the channel **LIVE with nothing flipped**. The tempting alternative —
+dropping `coref_binding` from `required_metrics` to force a verdict — was refused: it converts an honest gap
+into a silent one.
+
+The merge conflicted only in this ledger (both sides append; both blocks kept) and turned 8 tests red. Every
+one was the flag-deletion **seam** the `coref_channel` module had documented in advance, so the seam was
+executed rather than the tests relaxed: `FLAG`, `_EARNED_IDENTITY_KEY`, the `GATED_OFF` cause with its
+branch and remedy, and `with_channel_on` are gone. What replaced the last of those is `without_channel`, and
+the reversal is the point — with pass 2 unconditional an operator can no longer switch it *on*, so the
+remaining decision is whether to **decline to pay** for it. `--no-coref` had quietly become a lie (it set a
+variable the run then overwrote from the now-always-live channel, printed LIVE and spent the second call
+anyway); it now suppresses the producer block on that run's bundle only, and reads as the config gap it is.
+
+**2. Resume, keyed at the document.** Each document's claims *and* its call records are written the instant
+it lands, and a later invocation reuses them. Both halves are stored because three criteria
+(`structured_output_reliability`, both discriminator lines, cost/latency) are measured **at the call** and
+never reach a `ClaimRecord` — a claims-only cache would resume into a run whose reliability line was
+silently unmeasured. Two rules are non-negotiable and tested:
+
+* **A resumed run says so.** `determinism` is a measured, weighted line; runs stitched across sittings were
+  sampled over provider-side change as well as model variance. The scorecard carries a provenance section,
+  stamps the `determinism` row `cross-invocation`, and names `--no-resume` as the way to buy a
+  single-sitting number. A wholly-replayed scorecard is separately marked "replayed, not re-run".
+* **Changed inputs are never reused.** The key is the pinned model id + the document set (identity *and*
+  content) + a prompt/schema digest **derived** from the shipped system prompts and every tool's live
+  `model_json_schema()` — not a hand-bumped constant, which is the kind nobody bumps on the commit where it
+  mattered. A fourth component is the **producer kind**: `--dry-run` walks the identical path with a double
+  that reports the candidate's real `model_id`, so without it every dry run would leave bundles a live run
+  would happily reuse and the scorecard would rank three models on invented text with every gate green. Dry
+  runs also now default to their own output directory, so they cannot overwrite a paid run's receipts.
+
+**3. Per-provider pacing, declared in `config/bakeoff.yaml`.** One global `--concurrency` was the wrong
+shape: a cap is a property of an *account*, not a model. `rate_limits.openai` is set to the measured 3
+req/min with `max_concurrent: 1`; anthropic and google are deliberately absent (= unpaced), because
+inventing a cap nobody has hit would slow a lane for a fact not in evidence. Each candidate holds its **own**
+limiter, so the capped lane is the only slow one. `--concurrency` now bounds documents in flight rather than
+raw calls; rate is the knob that matters against a cap.
+
+**The retry discipline is unchanged and was deliberately not widened.** Retry transport faults only; a
+returned response is never re-issued, whatever its status. A 429 *is* a returned response, so the honest
+answer to a cap is to stay under it — retrying one would launder `structured_output_reliability` inside the
+instrument built to expose it. Pacing is that discipline's other half, not an exception to it.
+
+**Measured, not asserted.** A full `--dry-run` walks the whole path for zero calls and reaches
+`INSUFFICIENT_CRITERIA` — the correct dry verdict, since the scripted double declines to cluster and aligns
+with no gold, leaving `coref_binding`, both discriminator lines and `kind_tagging` honestly unmeasured. The
+throttle is exercised in that dry run against a virtual clock, so the wall-clock projection is the harness's
+own arithmetic rather than a number worked out on paper: the GPT lane costs **13m–24m40s of pacing alone**
+(40–75 calls at 20s spacing), the other two lanes run at full speed beside it, and a three-way re-run is
+therefore ~30 minutes end to end and ~195 calls — of which nothing already on disk is re-bought.
+
+### RK-BAKEOFF — the bake-off ran, and it REFUSES to name a winner (2026-07-26, `bakeoff/rk-impl`)
+
+**DECISION: no primary extractor is selected. `claude-opus-5` and `gemini-3.6-flash` are measured
+indistinguishable; `gpt-5.6-sol` could not be measured. The incumbent arrangement stands unchanged, and any
+change to it is a human judgement made outside this measurement and must be recorded as one.**
+
+Preflight was **3/3 ELIGIBLE** with the coref channel **LIVE**, the plan printed **120–225 calls (~195)**
+before spending, and the slice carried the real corpus image, so the imagery gate read evidence rather than
+UNKNOWN. **~177 calls actually billed** (174 persisted: Opus 75, Gemini 75, GPT 24; ≤3 lost in flight) —
+**under the projection** — over **37m14s** wall clock.
+
+**The result.** Five runs each. Composite (weighted mean per run of the nine weighted rate metrics): Opus
+**0.6252 ± 0.0140**, Gemini **0.6157 ± 0.0269**. Gap **0.0095** against a required margin of **0.0429** —
+the gap is 4.5× *smaller* than the noise it must clear. Verdict `NO_MEASURED_DIFFERENCE`. Both required
+metrics were measured, so this is a measured tie, not `INSUFFICIENT_CRITERIA`. Nothing was re-weighted,
+excluded or relaxed to produce it, and **no winner was manufactured out of jitter** — which is this
+project's own non-negotiable applied to its own instrument.
+
+**The vetoes split, and that is the decision-relevant finding.** Gemini is materially better on two of the
+three non-negotiables (`citation_faithfulness` +0.044; `extract_only_stated` +0.030 — which clears the
+absolute floor by 0.0002 and is the weakest material call on the board). Opus is materially better on the
+third (`trap_avoidance` +0.127 over a 0.091 margin — the most robust single finding, on an 11-trap
+denominator) and on `graph_recall` (+0.050). So there is **no free tie-break**: any pick trades one
+non-negotiable against another in the open, which is the veto rule working rather than deadlocking. The
+top-weighted criterion, `coref_binding`, is squarely inside noise for both (~0.35) — a finding about the
+task, not a separator.
+
+**Both surviving candidates keep the two structural properties the replumb depends on**, so neither is what
+separates them: each passes `vlm_imagery_path` on evidence (recorded probe + **5/5 standalone-image calls
+this run**, i.e. 6/6), and each passes `keyless_equals_live` because its client lives on the shipped
+`chanakya.ingest` path and is declared the seed producer — a frozen seed bundle it produces is therefore
+what live produces. Both ids are pinned: `claude-opus-5` and `gemini-3.6-flash` are concrete, not floating
+aliases. Whichever a human eventually picks from the tied pair, the VLM path and KEYLESS==LIVE hold by
+construction.
+
+**`gpt-5.6-sol` is unmeasured, not judged.** Its lane stopped at 11 of 35 documents on **two independent
+OpenAI account entitlements**: 3 requests/minute, then — once pacing cleared that — **10,000 tokens/minute
+against ~6,500-token extraction requests**, which admits roughly one call a minute. Finishing it would have
+cost ~52 more calls (~226 total, past the authorised 225 ceiling) and ~50 minutes, chasing a wall that had
+already moved once. Stopped and reported instead. **The rendered scorecard does not mention this candidate
+at all** — a narrowed run reports only what it ran — so the record lives in `tmp/conv/RK-BAKEOFF-RESULT.md`,
+and nothing about that model's extraction quality may be inferred in either direction.
+
+**One config change, and it is not a measurement knob.** `rate_limits.openai` moved 3 → **2 req/min**:
+pacing at *exactly* the account cap puts three starts inside every trailing minute, so the fourth races the
+provider's window boundary and any jitter loses. Pace **under** a cap, never on it. No gate, weight, margin
+rule or match-policy value was touched, and the retry discipline is unchanged — a returned 429 is still
+never re-issued, because `structured_output_reliability` exists to score what a provider returns.
+
+**Resume earned its keep.** Attempt A died on the RPM cap having completed both unpaced lanes; attempt B
+re-entered with **81 of 105 document-extractions reusable** and re-bought none of them; the final scorecard
+was rendered from a **zero-call replay** and is stamped "Replayed, not re-run". Both scored candidates were
+sampled in one sitting, so `determinism` (a weighted, measured line) means what it normally means. The
+previous sitting's identical failure discarded ~225 already-billed calls and produced nothing.
+
+**What this cannot decide, recorded so it is not discovered later:** five of six source types appear
+exactly once (a per-type claim is an anecdote); 16 of 65 gold claims carry a role surface appearing nowhere
+in their document, so absolute recall is capped for any verbatim extractor and only comparative numbers
+mean anything (`surface_f1` ≈ 0.20 for both is a floor artefact, not a reading score); binding precision
+rests on 8 items; and **cost is UNPRICED** — the operationally decisive cost this run actually met was a
+rate limit, which no metric models. More runs cannot break the tie: the margin's absolute floor is 0.03, so
+a 0.0095 composite gap is structurally immaterial. **A harder, larger labeled slice — more traps, more
+negative binding pairs — is the only lever that would separate them.**
+
+Full scorecard, arithmetic and interpretation: `tmp/conv/RK-BAKEOFF-RESULT.md`; machine-readable output and
+the paid receipts under `tmp/rk-bakeoff/run/`.
 
 ### DEFAULT-ON — the identity re-key stops being a staged flag, and the loopholes the flags were hiding (2026-07-25)
 

@@ -12,17 +12,20 @@ import base64
 import dataclasses
 import json
 import os
+import sys
 
 import httpx
 import pytest
 import respx
 
 from chanakya.ingest.client import (
+    DEFAULT_OPENAI_MODEL,
     MODEL,
     AnthropicExtractionClient,
     ExtractionCall,
     ExtractionClient,
     GeminiExtractionClient,
+    OpenAIExtractionClient,
     ScriptedExtractionClient,
     build_extraction_client,
 )
@@ -78,8 +81,14 @@ def test_scripted_client_raises_when_exhausted() -> None:
 # ── build_extraction_client (keyed → live client; keyless → None) ─────────────────────────────────
 
 def test_build_client_keyless_returns_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keyless means *no* provider key, so every one of the three has to be cleared here.
+
+    Missing ``OPENAI_API_KEY`` from this list would leave the keyless-boot claim untested on a machine that
+    happens to carry an OpenAI key — the claim being that a reviewer with no key falls through to the
+    frozen bundles rather than to a live extractor."""
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     assert build_extraction_client() is None
 
 
@@ -105,6 +114,23 @@ def test_build_client_model_id_override(monkeypatch: pytest.MonkeyPatch) -> None
     client = build_extraction_client(model_id="claude-opus-4-8-custom")
     assert isinstance(client, AnthropicExtractionClient)
     assert client.model_id == "claude-opus-4-8-custom"
+
+
+def test_build_client_falls_through_to_openai(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Third in precedence, and third on purpose: appending rather than inserting leaves every existing
+    keyed deployment resolving to exactly the client it resolved to before."""
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "test-openai")
+    client = build_extraction_client()
+    assert isinstance(client, OpenAIExtractionClient)
+    assert client.model_id == DEFAULT_OPENAI_MODEL
+
+
+def test_the_openai_default_model_is_a_pinned_id_not_a_floating_alias() -> None:
+    """A ``-latest`` style id would let the frozen seed silently stop equalling what live produces, which
+    is the failure KEYLESS==LIVE exists to prevent. There is deliberately nothing here to fall back to."""
+    assert not DEFAULT_OPENAI_MODEL.endswith(("-latest", ":latest", "@latest", "latest"))
 
 
 # ── AnthropicExtractionClient (respx-mocked round-trip, offline) ──────────────────────────────────
@@ -271,3 +297,57 @@ def test_anthropic_extract_text_only_stays_bare_string() -> None:
     body = json.loads(route.calls.last.request.content)
     # no images → the content is a plain string (unchanged wire shape, back-compatible)
     assert body["messages"][0]["content"] == "only text"
+
+
+
+# ── the lazy-init race (found by RK-BAKEOFF, 2026-07-26) ──────────────────────────────────────────
+
+def test_gemini_builds_exactly_one_sdk_client_under_concurrency(monkeypatch: pytest.MonkeyPatch) -> None:
+    """`_sdk_client` must build one client even when many threads reach it cold, simultaneously.
+
+    `lane.extract_many` fans extraction across threads, so an unguarded lazy init lets every thread build
+    its own `genai.Client`. All but one are then unreachable, and google-genai's httpx wrapper closes its
+    transport in `__del__` — so the orphans tear down sockets that sibling threads are still using. This
+    killed two paid RK-BAKEOFF runs, in the two shapes the race produces:
+    `httpx.ReadError: [SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC]` and
+    `RuntimeError: Cannot send a request, as the client has been closed`.
+
+    The constructor sleeps so the window is wide and the assertion does not depend on scheduler luck:
+    unguarded, all eight threads are inside it at once and eight clients are built.
+    """
+    import threading as _threading
+    import time as _time
+    import types as _types
+
+    built: list[object] = []
+    lock = _threading.Lock()
+
+    def _fake_client(**_: object) -> object:
+        _time.sleep(0.05)  # hold the window open
+        sdk = object()
+        with lock:
+            built.append(sdk)
+        return sdk
+
+    google_mod = _types.ModuleType("google")
+    genai_mod = _types.ModuleType("google.genai")
+    genai_mod.Client = _fake_client  # type: ignore[attr-defined]
+    google_mod.genai = genai_mod  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "google", google_mod)
+    monkeypatch.setitem(sys.modules, "google.genai", genai_mod)
+
+    client = GeminiExtractionClient(api_key="k", model_id="gemini-3.6-flash")
+    seen: list[object] = []
+
+    def worker() -> None:
+        seen.append(client._sdk_client())
+
+    threads = [_threading.Thread(target=worker) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join(timeout=15)
+
+    assert len(built) == 1, f"built {len(built)} SDK clients — the lazy init is racing"
+    assert len(seen) == 8
+    assert len({id(s) for s in seen}) == 1, "threads received different SDK client objects"

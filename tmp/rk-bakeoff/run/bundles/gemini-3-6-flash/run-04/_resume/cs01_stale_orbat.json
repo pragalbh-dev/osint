@@ -1,0 +1,219 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 17.420517936348915,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "LY-80",
+            "name_b": "HQ-16",
+            "source_quote": "LY-80 (HQ-16)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "location_text": "Karachi",
+            "name": "Karachi",
+            "source_quote": "approaches to Karachi"
+          },
+          {
+            "location_text": "Baluchistan",
+            "name": "Baluchistan",
+            "site_type": "range",
+            "source_quote": "undisclosed range in Baluchistan"
+          }
+        ],
+        "components": [
+          {
+            "component_class": "phased-array engagement radar",
+            "functional_role": "engagement radar",
+            "name": "HT-233",
+            "source_quote": "associated HT-233 phased-array engagement radars"
+          }
+        ],
+        "events": [
+          {
+            "date_text": "2013",
+            "event_kind": "induction",
+            "quantity_text": "limited numbers",
+            "recipient": "Pakistan",
+            "source_quote": "characterised the system in 2013 as \"already inducted in limited numbers,\"",
+            "system": "HQ-9/P"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "CPMIEC",
+            "name": "China Precision Machinery Import-Export Corporation",
+            "origin_country": "China",
+            "role": "manufacturer",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+          }
+        ],
+        "relations": [
+          {
+            "object": "Air Defence Command",
+            "relation": "operated-by",
+            "source_quote": "Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "China Precision Machinery Import-Export Corporation",
+            "relation": "manufactures",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "HQ-9/P",
+            "relation": "component-of",
+            "source_quote": "associated HT-233 phased-array engagement radars",
+            "subject": "HT-233"
+          },
+          {
+            "date_text": "2015",
+            "object": "Central Air Command",
+            "relation": "equips",
+            "source_quote": "assigned to the PAF's Central Air Command",
+            "subject": "HQ-9/P"
+          }
+        ],
+        "sources": [
+          {
+            "name": "South Asia Defence Monitor",
+            "source_quote": "South Asia Defence Monitor — Air Defence Systems Database",
+            "source_type": "database"
+          },
+          {
+            "name": "China Precision Machinery Import-Export Corporation",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+            "source_type": "manufacturer"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "operator": "Pakistan Air Force"
+            },
+            "name": "Air Defence Command",
+            "service_branch": "Pakistan Air Force",
+            "source_quote": "Pakistan Air Force's Air Defence Command"
+          },
+          {
+            "context": {
+              "operator": "PAF"
+            },
+            "name": "Central Air Command",
+            "service_branch": "PAF",
+            "source_quote": "PAF's Central Air Command"
+          }
+        ],
+        "variants": [
+          {
+            "context": {
+              "operator": "Pakistan Air Force's Air Defence Command"
+            },
+            "designators": [
+              "HQ-9/P"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Air Force's Air Defence Command",
+            "range_text": "200 km",
+            "source_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "designators": [
+              "HQ-9"
+            ],
+            "name": "HQ-9",
+            "source_quote": "China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "designators": [
+              "S-300PMU"
+            ],
+            "name": "S-300PMU",
+            "source_quote": "Russian S-300PMU series"
+          },
+          {
+            "name": "Crotale",
+            "source_quote": "ageing Crotale and Spada point-defence batteries"
+          },
+          {
+            "name": "Spada",
+            "source_quote": "ageing Crotale and Spada point-defence batteries"
+          },
+          {
+            "designators": [
+              "LY-80",
+              "HQ-16"
+            ],
+            "family": "HQ-16",
+            "name": "LY-80",
+            "source_quote": "shorter-range LY-80 (HQ-16) batteries already fielded"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 6.999070378951728,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "China Precision Machinery Import-Export Corporation (CPMIEC)"
+            ],
+            "member_ids": [
+              2,
+              14
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "LY-80 (HQ-16)"
+            ],
+            "member_ids": [
+              10,
+              15
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:03:17.120338+00:00",
+  "run_index": 4,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "cs01_stale_orbat"
+}

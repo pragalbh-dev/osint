@@ -1,0 +1,219 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 15.944899870082736,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "High to Medium Air Defence System",
+            "name_b": "HIMADS",
+            "source_quote": "High to Medium Air Defence System (HIMADS)"
+          },
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HQ-9P",
+            "source_quote": "reportedly the HQ-9/P, was formally inducted... variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+          },
+          {
+            "name_a": "Inter-Services Public Relations",
+            "name_b": "ISPR",
+            "source_quote": "Inter-Services Public Relations (ISPR)"
+          },
+          {
+            "name_a": "Pakistan Army Air Defence",
+            "name_b": "PAAD",
+            "source_quote": "Pakistan Army Air Defence (PAAD)"
+          }
+        ],
+        "basing_sites": [
+          {
+            "context": {
+              "geography": "Karachi",
+              "operator": "Pakistan Army Air Defence",
+              "time": "14 October 2021"
+            },
+            "location_text": "Karachi",
+            "name": "Army Air Defence Centre",
+            "site_type": "Air Defence Centre",
+            "source_quote": "Army Air Defence Centre, Karachi"
+          }
+        ],
+        "components": [
+          {
+            "context": {
+              "designation": "CLIAD"
+            },
+            "functional_role": "Command, Control, Communication and Intelligence Air Defence network",
+            "name": "CLIAD network",
+            "source_quote": "Command, Control, Communication and Intelligence Air Defence (CLIAD) network"
+          }
+        ],
+        "denials": [
+          {
+            "object": "order-of-battle details for sensitive air defence assets",
+            "predicate": "was not disclosed",
+            "source_quote": "The exact number of batteries/launchers (TELs) inducted was not disclosed",
+            "subject": "exact number of batteries/launchers (TELs) inducted"
+          }
+        ],
+        "events": [
+          {
+            "date_text": "14 October 2021",
+            "event_kind": "induction",
+            "location_text": "Army Air Defence Centre, Karachi",
+            "recipient": "Pakistan Army Air Defence",
+            "source_quote": "Rawalpindi – 14 October 2021: The Chief of Army Staff (COAS), General Qamar Javed Bajwa, today visited the Army Air Defence Centre, Karachi, where a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit.",
+            "system": "HQ-9/P",
+            "unit": "Pakistan Army Air Defence (PAAD) unit"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "ISPR",
+            "context": {
+              "geography": "Rawalpindi",
+              "operator": "Pakistan Armed Forces"
+            },
+            "name": "Inter-Services Public Relations",
+            "origin_country": "Pakistan",
+            "role": "military PR agency",
+            "source_quote": "Inter-Services Public Relations (ISPR)\nRawalpindi"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": "14 October 2021",
+            "object": "Pakistan Army Air Defence",
+            "relation": "inducted-into",
+            "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit.",
+            "subject": "HQ-9/P"
+          },
+          {
+            "date_text": "14 October 2021",
+            "object": "Army Air Defence Centre, Karachi",
+            "relation": "based-at",
+            "source_quote": "visited the Army Air Defence Centre, Karachi, where a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+            "subject": "HQ-9/P"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "geography": "Pakistan",
+              "operator": "Pakistan Army"
+            },
+            "name": "Pakistan Army Air Defence",
+            "service_branch": "Pakistan Army",
+            "source_quote": "Pakistan Army Air Defence (PAAD) unit"
+          },
+          {
+            "context": {
+              "geography": "Karachi",
+              "operator": "Pakistan Army Air Defence"
+            },
+            "home_garrison": "Karachi",
+            "name": "Army Air Defence Centre",
+            "service_branch": "Pakistan Army Air Defence",
+            "source_quote": "Army Air Defence Centre, Karachi"
+          }
+        ],
+        "variants": [
+          {
+            "confidence_language": "reportedly / believed to be",
+            "context": {
+              "designation": "HQ-9/P",
+              "geography": "Pakistan",
+              "operator": "Pakistan Army Air Defence",
+              "time": "14 October 2021"
+            },
+            "designators": [
+              "HQ-9/P",
+              "HQ-9P",
+              "FD-2000",
+              "HIMADS"
+            ],
+            "family": "Hongqi-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Army Air Defence",
+            "range_text": "well beyond 100 km",
+            "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service with a Pakistan Army Air Defence (PAAD) unit... variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family) long-range surface-to-air missile, is understood to extend Pakistan's ground-based air defence envelope well beyond 100 km"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 11.364901339169592,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "Inter-Services Public Relations (ISPR)"
+            ],
+            "member_ids": [
+              1,
+              6
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "Pakistan Army Air Defence (PAAD)"
+            ],
+            "member_ids": [
+              2,
+              12
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+              "variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+            ],
+            "member_ids": [
+              4,
+              7,
+              8,
+              9,
+              11
+            ]
+          }
+        ],
+        "contrasts": []
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:03:59.482215+00:00",
+  "run_index": 5,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d02_ispr_induction"
+}
