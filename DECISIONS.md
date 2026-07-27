@@ -2586,3 +2586,61 @@ the nine schemas a model is shown while extracting. The ASK agent's `graph_*` to
 (`chanakya/agent/tool_specs.py`) are hand-written model-facing descriptions that were never read under this
 rule. They are a different subsystem on a branch about the extraction prompt, so widening now would be scope
 creep; the same dump, pointed at that module, is the next person's twenty minutes.
+
+## INGEST — a relationship's endpoints must be things the extractor also listed (2026-07-27, `design/resolution-redesign`)
+
+**The defect, and where it was NOT.** The obvious suspicion was that relation endpoints go untyped. They
+do not: the extractor already keeps a document-local `name -> entity_type` map of everything it emitted and
+types each endpoint from it, and on the frozen corpus **216 of 218 relationship claims type both ends** (the
+two misses are `exported-by -> China` / `imported-by -> Pakistan`, where the end is a country and no
+ontology type applies). The leak was the **identity lanes**. Stated `same-as` / `distinct-from` pairs go out
+through the raw `triple` path, which types nothing — so a distinction between two battalion numbers the model
+never *also* listed as units minted two anonymous nodes (`8417 AD`, `8471 AD`) beside a properly typed
+sibling (`8477 AD`).
+
+That failure is worse than a missing node. The entire purpose of recording a distinction is to stop two
+look-alikes being fused (the D1 harm: a fabricated relocation, and the pair popped off the analyst's queue).
+An untyped node cannot be scored against, merged with, or vetoed from the sibling it was named to be held
+apart from — so the veto is faithfully recorded and then lands nowhere, and the queue reads as adjudicated
+when nothing was adjudicated.
+
+**Decisions taken.** Two halves, deliberately split by what each can reach.
+
+1. **`ground_identity_pair()` — deterministic, no model involved.** An identity pair is by construction two
+   things of the *same kind*; that sameness is what makes them confusable and is why the document linked or
+   separated them. Where one end was declared as an entity and the other merely named, the kind transfers.
+   Fires only when exactly one end is typed, runs *before* the pair's own triple so the minted mention also
+   anchors that endpoint, and stamps `_entity_type_from_sibling` in tier-3 — **a borrowed type stays one hop
+   from its justification and can never be read back as one the source stated.** This is the reviewable
+   surface: we infer a *kind*, never an identity, and never a fact.
+2. **A `GROUNDING` rule in the system prompt.** Every name used as an end of a relationship, alias pair or
+   distinction must also appear among the items listed in the same call. This is the only half that reaches a
+   pair with **both** ends bare, which no deterministic rule can repair. It states *why* (an unlisted end
+   carries no kind, so it attaches to nothing) rather than commanding it, and explicitly carves out the ends
+   that legitimately are not items — a country, a date, a quantity — because without that carve-out the rule
+   is satisfiable by **invention**, trading an untyped graph for a fabricated one. That trade is the one we
+   never make.
+
+**Measured, against a same-model / same-thinking-budget control** (`gemini-3.6-flash`, 16k budget, with and
+without the change; 32/32 documents, 0 failures both runs). Claims roughly flat (857 -> 890) and nodes flat
+(310 -> 305), so this is not a recall change:
+
+* endpoint-typing unresolved **3 -> 0**; untyped nodes **18 -> 11**
+* edges **361 -> 499 (+38%)** — the same evidence now connects
+* confirmed nodes **15 -> 25**; insufficient **7 -> 4**
+* `basing_site` prefix/qualifier splits **6 -> 1**, including the Karachi
+  `Probable Long-Range SAM Emplacement` / `…, Malir District, Karachi, …` split
+* the clause-as-participant failures (`what was TRANSFERRED`, `what is FIELDED`, `the System`) and the
+  named-but-unlisted components (`HQ-9/P TEL`, `TAS5380`, `HT-233 (H-200) engagement radar array`) are gone
+
+**What is left, stated so the improvement is not mistaken for a fix.** Every one of the 11 remaining untyped
+nodes is an **imagery object description** used as the subject of an observation (`six-object fan`,
+`Four canister-type objects…`, `light vehicles`). That is a single, well-characterised cause and a separate
+piece of work, not a residue. Separately, the *cross-document* site-alias class is untouched — one place
+still arrives as `Karachi (Malir)`, `fortified air defense site, Malir District` and the fully-qualified
+emplacement name, which share no prefix and need a resolver rule, not an extractor one.
+
+**Not adopted.** These bundles are a measurement, not a new frozen seed: the control model
+(`gemini-3.6-flash` @16k) is not the model behind the shipped seed (`gemini-flash-latest`), so adopting them
+would break `keyless == live` until that is settled. Recorded here because the *fix* is committed and the
+*seed* is not.
