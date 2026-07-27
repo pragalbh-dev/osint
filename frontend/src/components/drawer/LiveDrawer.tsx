@@ -43,6 +43,9 @@ const STATUS_GLOSS: Record<Status, string> = {
 /** Status-less edges that are an IDENTITY question rather than a version link (see the verdict block). */
 const IDENTITY_LINK_TYPES = new Set(['same-as', 'distinct-from'])
 
+/** The half of the empty-envelope sentence that names a machine finding rather than a human ruling. */
+const GROUND_IS_INFERENCE = 'the resolver’s own inference'
+
 function chipStatusFor(status: Status): ChipStatus {
   if (status === 'confirmed') return 'confirmed'
   if (status === 'contradicted' || status === 'insufficient') return 'gap'
@@ -336,15 +339,29 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
             claim count is the number of rows actually rendered. A status-less link is not scored,
             so it has no independent looks — printing "0 independent looks" would read as a
             shortfall rather than as "this is not the kind of thing looks are counted for". */}
-        <div style={{ font: '12px/1.4 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginTop: 10 }}>
-          {[
-            `${model.sources} source${model.sources === 1 ? '' : 's'}`,
-            statusless ? null : `${looks} independent look${looks === 1 ? '' : 's'}`,
-            `${model.claimCount} claim${model.claimCount === 1 ? '' : 's'} on file`,
-          ]
-            .filter(Boolean)
-            .join(' · ')}
-        </div>
+        {/* An identity decision with no claims is not thin evidence — it is a decision whose ground
+            is CONFIGURATION or an inference, and there is no document to count. Printing
+            "0 sources · 0 claims on file" over a curated veto reads as missing data and invites the
+            analyst to go looking for evidence that was never supposed to exist. */}
+        {model.identity && !model.identity.claimBacked ? (
+          <div style={{ font: '12px/1.5 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginTop: 10 }}>
+            No claims are counted here, and none are missing: this decision&rsquo;s ground is{' '}
+            {model.identity.ground === 'curated' || model.identity.ground === 'analyst'
+              ? 'a recorded human ruling'
+              : GROUND_IS_INFERENCE}
+            , not a document. It is stated below.
+          </div>
+        ) : (
+          <div style={{ font: '12px/1.4 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginTop: 10 }}>
+            {[
+              `${model.sources} source${model.sources === 1 ? '' : 's'}`,
+              statusless ? null : `${looks} independent look${looks === 1 ? '' : 's'}`,
+              `${model.claimCount} claim${model.claimCount === 1 ? '' : 's'} on file`,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </div>
+        )}
       </Section>
 
       {/* a relocation, told as a relocation: what moved, from where, to where, and the two
@@ -405,9 +422,37 @@ function DrawerBody({ model }: { model: LiveDrawerModel }) {
           >
             {model.identity.leftName} ↮ {model.identity.rightName}
           </div>
-          <div style={{ font: '12.5px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
-            {model.identity.reason}
+          {/* WHO decided, before WHY. A derived wall drawn like a curated one tells the analyst a
+              person already ruled on this pair, which is precisely the thing that would stop them
+              checking a machine inference. Never asserts a person the backend did not name. */}
+          <div
+            style={{
+              display: 'inline-block',
+              marginBottom: 9,
+              padding: '2px 7px',
+              borderRadius: 3,
+              border: '1px solid var(--hairline-strong)',
+              font: '10px/1.4 ui-monospace,Menlo,monospace',
+              letterSpacing: '0.04em',
+              color:
+                model.identity.ground === 'curated' || model.identity.ground === 'analyst'
+                  ? 'var(--text)'
+                  : 'var(--text-dim)',
+            }}
+          >
+            {model.identity.groundLabel}
           </div>
+          <div style={{ font: '12.5px/1.55 ui-sans-serif,system-ui,sans-serif', color: 'var(--text-dim)', marginBottom: 10 }}>
+            {model.identity.groundSentence}
+          </div>
+          {/* the rail's own words, verbatim — a paraphrase would put ours between the analyst and
+              the rule that fired. Absent for the claim-asserted rails, whose ground is the quoted
+              sentence in the evidence below rather than a computed string. */}
+          {model.identity.reason && (
+            <div style={{ font: '12.5px/1.6 ui-sans-serif,system-ui,sans-serif', color: 'var(--text)' }}>
+              {model.identity.reason}
+            </div>
+          )}
           {model.identity.suppressedCandidateReason && (
             <div
               style={{

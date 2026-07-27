@@ -55,8 +55,16 @@ function StateBadge({ label, open }: { label: string; open: boolean }) {
 function Firing({ firing }: { firing: LiveFiring }) {
   return (
     <div className="mt-[10px] border-t border-hairline pt-[10px] first:mt-0 first:border-t-0 first:pt-0">
+      {/* The subject reads as the app names it everywhere else — the map and the review queue
+          already render `unit_hq9b` as "the PAF HQ-9B fire unit". The raw id stays underneath as the
+          technical handle for a log or a citation, never as the analyst-facing line. */}
       {firing.subject && (
-        <div className="mb-[6px] font-mono text-[10.5px] text-text-faint">subject · {firing.subject}</div>
+        <div className="mb-[6px] text-[12px] text-text-dim">
+          {firing.subjectName ?? firing.subject}
+          {firing.subjectName && firing.subjectName !== firing.subject && (
+            <span className="ml-[6px] font-mono text-[10px] text-text-faint">{firing.subject}</span>
+          )}
+        </div>
       )}
 
       {firing.changed && (firing.changed.from || firing.changed.to) && (
@@ -78,7 +86,11 @@ function Firing({ firing }: { firing: LiveFiring }) {
           .join('  ·  ')}
       </div>
 
-      <AlertEvidence provenance={firing.provenance} holdReasons={firing.holdReasons} />
+      <AlertEvidence
+        provenance={firing.provenance}
+        holdReasons={firing.holdReasons}
+        originContest={firing.originContest}
+      />
     </div>
   )
 }

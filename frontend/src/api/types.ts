@@ -163,6 +163,12 @@ export interface KnownGap {
   next_coverage_due?: string | null
   related_ref?: string | null
   missing_slots?: string[]
+  /** WHEN coverage is next due, in the backend's own words — including the honest
+   *  "unscheduled — no collection is tasked against this gap" case, which a bare null
+   *  `next_coverage_due` cannot say. Rendered verbatim; never paraphrased into ours. */
+  coverage_statement?: string | null
+  /** the same absence, also raised on other elements — so one gap is not counted N times. */
+  also_raised_as?: string[]
 }
 
 /** The evidence behind a fired Alert (schemas/view.py AlertProvenance; added 2026-07-20).

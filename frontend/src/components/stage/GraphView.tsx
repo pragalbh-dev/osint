@@ -40,7 +40,8 @@ import {
   NODE_W,
   ROLE_LABEL,
   ROW_H,
-  countIdentityEdges,
+  countProposals,
+  countSeparations,
   egoNodes,
   groupByType,
   planGraph,
@@ -89,9 +90,38 @@ function buildElements(
     grabbable: false,
   }))
   const edgeEls: cytoscape.ElementDefinition[] = edges.map((e) => ({
-    data: { id: e.id, source: e.source, target: e.target, kind: e.kind, etype: e.type ?? '' },
+    data: {
+      id: e.id,
+      source: e.source,
+      target: e.target,
+      kind: e.kind,
+      etype: e.type ?? '',
+      // Identity edges carry their own label. `glabel` is the always-on mark — a bare ≠ or ? , small
+      // enough to stay calm across a hundred of them — and `glabelFull` adds WHO decided, shown in
+      // focus mode where there are few enough edges to read a word on each. An unlabelled wall is
+      // indistinguishable from a relationship, which is the defect this closes.
+      glabel: identityMark(e.kind),
+      glabelFull: identityMark(e.kind) + (e.ground ? ` ${groundWord(e.ground)}` : ''),
+    },
   }))
   return [...nodeEls, ...halos, ...heads, ...edgeEls]
+}
+
+/** The mark an identity edge always wears: a separation is barred, a proposal is a question. */
+function identityMark(kind: GraphEdgeDef['kind']): string {
+  if (kind === 'e-wall') return '≠'
+  if (kind === 'e-merge-candidate') return '?'
+  return ''
+}
+
+/** One word for the authority behind the decision — never claims a person where the machine
+ *  inferred. Mirrors IDENTITY_GROUND_LABEL, shortened for a canvas label. */
+function groundWord(ground: string): string {
+  if (ground === 'curated') return 'curated'
+  if (ground === 'analyst') return 'analyst'
+  if (ground === 'sourced') return 'sourced'
+  if (ground === 'unrecorded') return 'ground unrecorded'
+  return 'derived'
 }
 
 function cyStyle(): cytoscape.CytoscapeOptions['style'] {
@@ -124,6 +154,10 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
     },
     { selector: '.confirmed', style: { 'border-width': 2, 'border-style': 'solid', 'border-color': COLORS.live, 'background-color': fresh } },
     { selector: '.probable', style: { 'border-width': 1.5, 'border-style': 'dashed', 'border-color': COLORS.live, 'background-color': fresh } },
+    // POSSIBLE — the rung below probable: one thin look. Dotted teal, matching --border-possible,
+    // so the ladder reads solid → dashed → dotted as the evidence thins. It was previously drawn
+    // byte-identically to `.probable`, which said 58 weak leads were as good as 168 supported ones.
+    { selector: '.possible', style: { 'border-width': 1.5, 'border-style': 'dotted', 'border-color': COLORS.live, 'background-color': fillFor('aging') } },
     { selector: '.chokepoint', style: { 'border-width': 1.5, 'border-style': 'dashed', 'border-color': COLORS.live, 'background-color': fresh } },
     { selector: '.stale', style: { 'border-width': 2, 'border-style': 'solid', 'border-color': COLORS.history, 'background-color': staleFill, color: GREY_TEXT } },
     { selector: '.gap', style: { 'border-width': 1.5, 'border-style': 'dashed', 'border-color': COLORS.history, 'background-opacity': 0, color: GREY_TEXT } },
@@ -191,8 +225,32 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
         'arrow-scale': 0.7,
       },
     },
-    // other status-less edges (same-as / distinct-from) — identity, never truth
+    // other status-less edges — identity, never truth
     { selector: '.e-link', style: { 'line-style': 'dotted', 'line-color': COLORS.history, opacity: 0.6 } },
+    // A SEPARATION — "these two records are NOT the same thing". It must not read as a connection,
+    // so it is barred at BOTH ends (a line stopped, not a line joining) and carries a ≠ at all
+    // times. Achromatic: identity is bookkeeping about our records, never a truth status, so it
+    // stays out of the teal/coral families entirely.
+    {
+      selector: '.e-wall',
+      style: {
+        'line-style': 'dashed',
+        'line-color': COLORS.history,
+        width: 1.4,
+        opacity: 0.85,
+        'source-arrow-shape': 'tee',
+        'target-arrow-shape': 'tee',
+        'source-arrow-color': COLORS.history,
+        'target-arrow-color': COLORS.history,
+        'arrow-scale': 0.6,
+      },
+    },
+    // A PROPOSED merge — the opposite statement, and still a question. Faint, dotted, unbarred,
+    // marked with a "?": the analyst has not ruled, and the picture may not imply they have.
+    {
+      selector: '.e-merge-candidate',
+      style: { 'line-style': 'dotted', 'line-color': COLORS.history, width: 1, opacity: 0.5 },
+    },
     // in focus mode the edge type is spelled out: a two-hop trace is only auditable if the
     // analyst can read WHICH relationship each hop is, not just that a line exists.
     {
@@ -208,7 +266,34 @@ function cyStyle(): cytoscape.CytoscapeOptions['style'] {
         'text-rotation': 'autorotate',
       },
     },
+    // Identity edges keep their OWN label in every mode — after `.labelled` so focus mode does not
+    // replace "≠" with the raw ontology type. In focus the label grows the authority word, because
+    // "a person ruled this" and "the machine inferred this" are different instructions and there is
+    // room to say which once the canvas is down to one chain.
+    {
+      selector: 'edge.e-wall, edge.e-merge-candidate',
+      style: {
+        label: 'data(glabel)',
+        'font-size': 11,
+        'font-family': 'ui-monospace, Menlo, monospace',
+        color: COLORS.textDim,
+        'text-background-color': COLORS.bg,
+        'text-background-opacity': 0.9,
+        'text-background-padding': '2px',
+        'text-rotation': 'none',
+      },
+    },
+    {
+      selector: 'edge.e-wall.labelled, edge.e-merge-candidate.labelled',
+      style: { label: 'data(glabelFull)', 'font-size': 9 },
+    },
     { selector: '.sel', style: { 'overlay-color': COLORS.accent, 'overlay-opacity': 0.16, 'overlay-padding': 7 } },
+    // A selected EDGE needs its own emphasis: an overlay on a 1px line is invisible, so the
+    // selection is carried by the line itself going accent-coloured and thicker.
+    {
+      selector: 'edge.sel',
+      style: { 'line-color': COLORS.accent, width: 2.4, opacity: 1, 'source-arrow-color': COLORS.accent, 'target-arrow-color': COLORS.accent },
+    },
     { selector: '.faded', style: { opacity: 0.16 } },
     { selector: '.hidden', style: { display: 'none' } },
   ]
@@ -238,16 +323,32 @@ function syncGraph(cy: cytoscape.Core, state: SyncState) {
     label.rahwali = 'Rahwali\n' + (confirmed ? 'confirmed · 2025' : 'single pass · 2025')
   }
 
+  // An EDGE can be the selection now (it opens the same provenance drawer a node does). Focus is
+  // a node concept, so a selected edge focuses on the pair it joins: the analyst asked about this
+  // relationship, and its two endpoints are what the relationship is between.
+  const selEdge = sel != null ? cy.$id(sel) : null
+  const selectedEdge = selEdge != null && selEdge.nonempty() && selEdge.isEdge() ? selEdge : null
+  const focusRoots = selectedEdge
+    ? [selectedEdge.source().id(), selectedEdge.target().id()]
+    : sel != null
+      ? [sel]
+      : []
+
   // LIVE: focus is an EGO-GRAPH at a chosen hop depth over the drawn edges. Everything
   // outside it is hidden rather than dimmed — at ~50 nodes, dimming still leaves a tangle
   // to read past, and the point of focusing is to be able to read one chain.
   const focus =
-    plan && sel && (plan.canvasNodes.has(sel) || plan.positions.has(sel))
-      ? egoNodes(plan.adjacency, sel, hops)
+    plan && focusRoots.some((r) => plan.canvasNodes.has(r) || plan.positions.has(r))
+      ? focusRoots.reduce<Set<string>>((acc, root) => {
+          for (const id of egoNodes(plan.adjacency, root, hops)) acc.add(id)
+          return acc
+        }, new Set<string>())
       : null
 
-  // DEMO keeps its original closed-neighbourhood fade (the hero choreography).
-  const selNode = !plan && sel ? cy.$id(sel) : null
+  // DEMO keeps its original closed-neighbourhood fade (the hero choreography) — anchored on a NODE
+  // only. Edges are selectable now, and letting one anchor the fade would rewrite the frozen demo's
+  // choreography from a gesture it never had.
+  const selNode = !plan && sel ? cy.$id(sel).filter((el) => el.isNode()) : null
   const neigh = selNode && selNode.nonempty() ? selNode.closedNeighborhood() : null
 
   const onCanvas = (id: string): boolean => {
@@ -301,6 +402,10 @@ function syncGraph(cy: cytoscape.Core, state: SyncState) {
         else if (focus) cls.push('labelled')
       }
       if (!plan && sel && e.source().id() !== sel && e.target().id() !== sel) cls.push('faded')
+      // …unless it IS the selection. An edge is a first-class element of the graph: it carries
+      // claims, a status and a Known Gap of its own, so it has to be reachable and it has to show
+      // that it was reached.
+      if (e.id() === sel) cls.push('sel')
       e.classes(cls.join(' '))
     })
   })
@@ -336,20 +441,28 @@ export function GraphView() {
   const planRef = useRef(plan)
   planRef.current = plan
 
-  const identityCount = useMemo(() => countIdentityEdges(graph.edges), [graph])
+  const separationCount = useMemo(() => countSeparations(graph.edges), [graph])
+  const proposalCount = useMemo(() => countProposals(graph.edges), [graph])
   const evidenceCount = useMemo(
     () => graph.nodes.filter((n) => EVIDENCE_NODE_TYPES.has(n.type ?? '')).length,
     [graph],
   )
-  const focused = isLive && selected != null && plan != null && plan.positions.has(selected)
+  // An edge selection focuses the pair it joins, so "focused" has to accept an edge id too.
+  const selectedEdgeDef = useMemo(
+    () => (selected == null ? undefined : graph.edges.find((e) => e.id === selected)),
+    [graph, selected],
+  )
+  const focusAnchor = selectedEdgeDef?.source ?? selected
+  const focused = isLive && focusAnchor != null && plan != null && plan.positions.has(focusAnchor)
   // …and it may be an entity with NO relationships (picked out of the tray). That is a
   // finding, so the readout says it rather than reporting "1 of 48".
-  const focusIsolated = focused && selected != null && plan != null && !plan.canvasNodes.has(selected)
+  const focusIsolated =
+    focused && focusAnchor != null && plan != null && !plan.canvasNodes.has(focusAnchor)
   const visibleCount = useMemo(() => {
     if (!plan) return 0
-    if (!focused || selected == null) return plan.canvasNodes.size
-    return egoNodes(plan.adjacency, selected, hops).size
-  }, [plan, focused, selected, hops])
+    if (!focused || focusAnchor == null) return plan.canvasNodes.size
+    return egoNodes(plan.adjacency, focusAnchor, hops).size
+  }, [plan, focused, focusAnchor, hops])
 
   // mount — build the graph. In demo the element set is a stable reference so this runs
   // once (preset never moves). In live it rebuilds when the adapted /view data changes.
@@ -383,6 +496,11 @@ export function GraphView() {
       if (id.endsWith('_halo') || id.startsWith(COL_HEAD_PREFIX)) return
       select(id) // store routes rahwali → drawer
     })
+    // Roughly half of the graph's evidence hangs off EDGES — 22 of the 48 Known Gaps among it —
+    // and until now no surface could hand the provenance drawer an edge id, so none of it was
+    // reachable from the main picture. `GET /evidence/{id}` resolves nodes, edges and events
+    // alike, and the drawer's identity block was already written for exactly this.
+    cy.on('tap', 'edge', (evt) => select(evt.target.id()))
     cy.on('tap', (evt) => {
       if (evt.target === cy) select(null)
     })
@@ -432,7 +550,8 @@ export function GraphView() {
         <>
           <LayerBar
             layers={layers}
-            toggleIdentity={() => setLayers((l) => ({ ...l, identity: !l.identity }))}
+            toggleSeparations={() => setLayers((l) => ({ ...l, separations: !l.separations }))}
+            toggleProposals={() => setLayers((l) => ({ ...l, proposals: !l.proposals }))}
             // sources carry claims, not relationships, so turning the evidence layer on
             // lands them in the tray rather than on the canvas — open it, or the chip
             // looks like it did nothing.
@@ -443,13 +562,22 @@ export function GraphView() {
                 return { ...l, evidence: on }
               })
             }
-            identityCount={identityCount}
+            separationCount={separationCount}
+            proposalCount={proposalCount}
             evidenceCount={evidenceCount}
+            undrawableIdentity={plan.undrawableIdentity}
             shown={visibleCount}
             total={plan.canvasNodes.size}
             focused={focused}
-            focusLabel={focused && selected ? nameOf(graph.nodes, selected) : null}
+            focusLabel={
+              focused && selected
+                ? selectedEdgeDef
+                  ? `${nameOf(graph.nodes, selectedEdgeDef.source)} ↔ ${nameOf(graph.nodes, selectedEdgeDef.target)}`
+                  : nameOf(graph.nodes, selected)
+                : null
+            }
             focusIsolated={focusIsolated}
+            focusIsEdge={selectedEdgeDef != null}
             hops={hops}
             setHops={setHops}
             clearFocus={() => select(null)}
@@ -470,7 +598,7 @@ export function GraphView() {
         </>
       )}
 
-      <Legend mode={mode} live={isLive} identityOn={layers.identity} />
+      <Legend mode={mode} live={isLive} layers={layers} />
     </div>
   )
 }
@@ -562,15 +690,19 @@ function chipStyle(on: boolean): CSSProperties {
 
 interface LayerBarProps {
   layers: GraphLayers
-  toggleIdentity: () => void
+  toggleSeparations: () => void
+  toggleProposals: () => void
   toggleEvidence: () => void
-  identityCount: number
+  separationCount: number
+  proposalCount: number
   evidenceCount: number
+  undrawableIdentity: number
   shown: number
   total: number
   focused: boolean
   focusLabel: string | null
   focusIsolated: boolean
+  focusIsEdge: boolean
   hops: number
   setHops: (h: number) => void
   clearFocus: () => void
@@ -600,11 +732,19 @@ function LayerBar(p: LayerBarProps) {
         </span>
         <button
           type="button"
-          style={chipStyle(p.layers.identity)}
-          title="same-as / distinct-from — bookkeeping about our records, not about the world"
-          onClick={p.toggleIdentity}
+          style={chipStyle(p.layers.separations)}
+          title="“these two records are NOT the same thing” — the walls that stop two look-alikes fusing into one unit's before-and-after"
+          onClick={p.toggleSeparations}
         >
-          identity links · {p.identityCount}
+          separations · {p.separationCount}
+        </button>
+        <button
+          type="button"
+          style={chipStyle(p.layers.proposals)}
+          title="“these two records MIGHT be the same thing” — un-adjudicated merge proposals; the review queue asks each one"
+          onClick={p.toggleProposals}
+        >
+          proposed merges · {p.proposalCount}
         </button>
         <button
           type="button"
@@ -642,9 +782,23 @@ function LayerBar(p: LayerBarProps) {
         {!p.focused
           ? `${p.total} connected entities`
           : p.focusIsolated
-            ? 'no relationship has been asserted about this entity — its provenance is still one click away'
+            ? p.focusIsEdge
+              ? 'this decision is about an entity no relationship has been asserted for — the decision itself is still fully traceable'
+              : 'no relationship has been asserted about this entity — its provenance is still one click away'
             : `${p.shown} of ${p.total} connected entities shown`}
       </div>
+
+      {/* Nothing is silently dropped. An identity edge never PROMOTES an entity onto the canvas
+          (that would empty the "no asserted relationship" tray with bookkeeping rather than
+          knowledge), so the ones it cannot draw are counted and named here instead of vanishing. */}
+      {p.undrawableIdentity > 0 && (p.layers.separations || p.layers.proposals) && (
+        <div style={{ font: '10px/1.4 ui-monospace,Menlo,monospace', color: 'var(--text-faint)', maxWidth: 430 }}>
+          {p.undrawableIdentity} more identity {p.undrawableIdentity === 1 ? 'decision is' : 'decisions are'} on file
+          about {p.undrawableIdentity === 1 ? 'an entity' : 'entities'} with no asserted relationship — held out of
+          the whole-graph view; pick {p.undrawableIdentity === 1 ? 'it' : 'one'} from the tray below to draw{' '}
+          {p.undrawableIdentity === 1 ? 'it' : 'them'}.
+        </div>
+      )}
     </div>
   )
 }
@@ -741,19 +895,29 @@ function UnconnectedTray(p: TrayProps) {
   )
 }
 
-function Legend({ mode, live, identityOn }: { mode: 'demo' | 'live'; live: boolean; identityOn: boolean }) {
+function Legend({ mode, live, layers }: { mode: 'demo' | 'live'; live: boolean; layers: GraphLayers }) {
   // DEMO keeps the mockup's legend verbatim (its stale node really does carry a stale
   // fill). LIVE drops "fill = freshness": the live adapter has no freshness band, so every
   // live fill is the fresh one — claiming otherwise would teach a distinction the screen
   // isn't drawing.
+  //
+  // The trust ladder is stated in FULL. It previously named two of the six statuses the graph
+  // actually draws, which taught the analyst that everything not solid was "probable" — including
+  // the possible rung, the contradictions and the evidence gaps.
   const lines = live
     ? [
         'columns = supply-chain role',
-        'border: solid = confirmed · dashed = probable',
+        'teal border: solid = confirmed · dashed = probable · dotted = possible',
+        'grey: solid = superseded (history) · dashed, unfilled = insufficient evidence',
+        'coral = credible sources disagree',
         'dashed ring = candidate chokepoint',
-        'grey arrow = replaced by',
-        ...(identityOn ? ['dotted grey = identity link (same-as / distinct-from)'] : []),
-        'click a node = focus its ego-graph + open provenance',
+        'grey arrow = replaced by (dashed = not yet adjudicated)',
+        ...(layers.separations ? ['≠ barred grey line = held apart — NOT the same thing'] : []),
+        ...(layers.proposals ? ['? faint dotted = proposed merge, not yet adjudicated'] : []),
+        ...(layers.separations || layers.proposals
+          ? ['focus an element to read who decided: curated / analyst / sourced / derived']
+          : []),
+        'click a node or an edge = focus it + open its provenance',
       ]
     : ['border = status · fill = freshness · dashed ring = candidate chokepoint']
   return (
@@ -762,11 +926,23 @@ function Legend({ mode, live, identityOn }: { mode: 'demo' | 'live'; live: boole
         position: 'absolute',
         bottom: 14,
         right: 18,
-        font: '10.5px/1.4 ui-monospace,Menlo,monospace',
+        font: '10.5px/1.5 ui-monospace,Menlo,monospace',
         color: 'var(--text-faint)',
         textAlign: 'right',
         zIndex: 4,
         pointerEvents: 'none',
+        // The live legend spells the whole trust ladder out, which is several lines over a canvas
+        // that reaches the corner. Without a surface behind it the words and the graph overprint
+        // and neither is readable — a legend nobody can read is the same as no legend.
+        ...(live
+          ? {
+              padding: '9px 12px',
+              borderRadius: 4,
+              background: 'rgba(16,19,21,0.92)',
+              border: '1px solid var(--hairline)',
+              maxWidth: 420,
+            }
+          : null),
       }}
       data-mode={mode}
     >
