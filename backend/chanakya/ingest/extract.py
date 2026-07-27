@@ -765,6 +765,26 @@ _SYSTEM_BASE = (
     "stated subject-relation-object with its own date and quote: a sentence stating two facts gives two "
     "items, one fact stated twice gives one. A thing and a relationship about that thing are different kinds "
     "of item, not a duplicate. "
+    # ── endpoint grounding. Relations are ALREADY typed from the entities the same call declared
+    # (``_Emitter._entity_types``), and that recovery works: 216 of 218 relationship claims on the frozen
+    # corpus type both ends. The leak is the IDENTITY lanes — a stated distinction whose two unit numbers
+    # ('8417 AD', '8471 AD') appear nowhere else in the output mints two anonymous nodes, and an anonymous
+    # node cannot be scored against, merged with, or vetoed from the very sibling it was named to be held
+    # apart from. ``ground_identity_pair`` repairs the one-end-typed case deterministically after the fact;
+    # this asks the model not to create the case, which is the only thing that reaches a both-ends-bare pair.
+    #
+    # It says WHY (an unlisted end has no kind, so it attaches to nothing) rather than merely commanding it,
+    # and it carves out the ends that legitimately are NOT items — a country, a date, a quantity. Without
+    # that carve-out the rule is satisfiable by invention, which trades a typed graph for a fabricated one.
+    "GROUNDING — every name you use as an end of a relationship, an alias pair or a distinction must ALSO "
+    "appear among the items you list in this same call, spelled the same way. If you state that one unit is "
+    "distinct from another, or that something is based at a place, then each end has to exist as a unit, "
+    "system, component, site, organisation or event you emitted. A name that appears only inside a "
+    "relationship carries no kind, so nothing downstream can tell what sort of thing it is or match it to "
+    "the same thing named elsewhere — it enters the picture anonymous. If the document names something "
+    "precisely enough for you to relate it, it names it precisely enough to list. A country, a date or a "
+    "quantity is NOT an item: where an end is one of those, use the field the tool provides for it (an "
+    "origin/country slot, a date slot, a quantity slot) rather than inventing an item to satisfy this rule. "
     "When you record a relationship the source dates — where something is based or was "
     "seen, when a system entered service, when a shipment moved — copy the source's own date wording "
     "into that relation's `date_text`; leave it empty when the source gives no such date. "
@@ -1007,6 +1027,12 @@ _DATED_CLASSES: frozenset[str] = frozenset({"perishable", "semi-durable"})
 _RUNG_ATTR = "_event_time_rung"
 _UNDATED_ATTR = "_undated_perishable"
 
+#: Tier-3 key stamped on an entity whose type was taken from the other end of a stated identity pair rather
+#: than declared by the document (:meth:`_Emitter.ground_identity_pair`). Its value is the sibling name the
+#: type came from, so the borrowed kind is one hop from its justification and can never be read back as
+#: something the source itself typed.
+_TYPE_FROM_SIBLING_ATTR = "_entity_type_from_sibling"
+
 #: The ladder, in order. ``stated`` — the source dated the relationship itself. ``observation`` — the
 #: enclosing observation/sentence (an imagery pass date, a post timestamp) supplied it. ``report_time``
 #: — nothing dated the fact, so the document's own report date bounds it (an upper bound on when the
@@ -1163,6 +1189,29 @@ class _Emitter:
             Triple(subject=subject, predicate=predicate, object=obj, object_value=object_value),
             "relationship", ref, polarity=polarity, event_time=event_time, attributes=attributes,
         )
+
+    def ground_identity_pair(self, a: str, b: str, ref: DocRef) -> None:
+        """Give an identity pair's undeclared end the entity type of its declared sibling.
+
+        A stated ``same-as`` / ``distinct-from`` pair is by construction two things of the SAME kind — that
+        sameness of kind is what makes them confusable, and is the whole reason the document bothered to
+        link or separate them. So where this document declared one end as an entity and merely *named* the
+        other, the kind transfers. Without this an identity pair mints anonymous endpoints (measured on the
+        frozen corpus: ``8417 AD`` / ``8471 AD`` alongside a properly typed ``8477 AD``), and an untyped node
+        can never be scored against, merged with, or vetoed from the typed siblings it was named to be held
+        apart from — the veto is faithfully recorded and then lands nowhere, which is worse than not
+        recording it, because the queue reads as adjudicated.
+
+        Fires only when exactly one end is typed (with neither there is nothing to copy, and with both there
+        is nothing to fix), and stamps :data:`_TYPE_FROM_SIBLING_ATTR` in tier-3 so a borrowed type is
+        auditable and never passes for one the source stated. Runs BEFORE the pair's own triple, so the
+        minted mention also anchors that triple's endpoint (:meth:`_mention_refs`).
+        """
+        ta, tb = self._entity_types.get(a), self._entity_types.get(b)
+        if ta is None and tb is not None:
+            self.entity(tb, a, ref, attributes={_TYPE_FROM_SIBLING_ATTR: b})
+        elif tb is None and ta is not None:
+            self.entity(ta, b, ref, attributes={_TYPE_FROM_SIBLING_ATTR: a})
 
     def _mention_refs(self, attributes: dict[str, Any] | None, subject: str,
                       obj: str) -> dict[str, Any] | None:
@@ -1379,11 +1428,16 @@ def _emit_relations(em: _Emitter, mentions: list[dict[str, Any]], *,
 
 def _emit_aliases(em: _Emitter, mentions: list[dict[str, Any]], predicate: str, *,
                   cite_row: bool = False) -> None:
-    """Stated ``same-as`` / ``distinct-from`` pairs → relationship claims (the extract-raw guardrail)."""
+    """Stated ``same-as`` / ``distinct-from`` pairs → relationship claims (the extract-raw guardrail).
+
+    Both ends are also grounded first — see :meth:`_Emitter.ground_identity_pair` for why an identity pair's
+    two ends must share a kind, and what an ungrounded end costs.
+    """
     for al in mentions:
         a, b = _str(al, "name_a"), _str(al, "name_b")
         if a and b:
             ref = _resolve_doc_ref(em.loaded, _str(al, "source_quote"), fallback=a, cite_row=cite_row)
+            em.ground_identity_pair(a, b, ref)
             em.triple(a, predicate, b, ref)
 
 
