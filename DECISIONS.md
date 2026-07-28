@@ -2644,3 +2644,119 @@ emplacement name, which share no prefix and need a resolver rule, not an extract
 (`gemini-3.6-flash` @16k) is not the model behind the shipped seed (`gemini-flash-latest`), so adopting them
 would break `keyless == live` until that is settled. Recorded here because the *fix* is committed and the
 *seed* is not.
+
+## MONITOR/VIEW — the relocation tripwire, and the four gates that were each hiding the next (2026-07-28, `design/resolution-redesign`)
+
+The flagship `obs-basing-relocation` beat fired **0 alerts** and had done for some time. It now fires 1
+(`unit_hq9b`, after-state `site_rahwali`, `probable`, four backing claims). Four independent defects were
+stacked, each invisible until the one in front of it was cleared, so they are recorded together — the
+sequence is the finding.
+
+### 1. An extraction over-read split the design node
+
+`d19` line 19 reads: *"readers should note continuing inconsistency across open sources in how Pakistani
+service designators map to the PLA domestic HQ-9B baseline versus the CASIC export HQ-9BE marketing
+designation; this digest uses 'HQ-9B' generically per prior issues unless a source specifies otherwise."*
+
+That is a remark about **what to call a thing**, and the document goes on to adopt one of the two labels for
+its own use — i.e. it treats them as interchangeable. It was extracted as `HQ-9B distinct-from HQ-9BE`.
+
+The claim did not come from the extraction pass's `distinctions` slot but from the **coreference pass's**
+CONTRAST instruction, whose examples (`"unlike"`, an enumeration naming both) the word *versus* matched.
+Both prompts now carry the same carve-out, stated as a reason rather than a rule: a document noting that
+sources are inconsistent, that a designator is *"sometimes rendered"* another way, or that a label *"maps to
+A versus B"*, is describing confusion over the NAME; two names contrasted in one sentence are neither a
+merge nor a contrast, and the pair is reported in neither field.
+
+**Consequence when it fired.** `HQ-9B`, `HQ-9BE` and the curated anchor `var_hq9be` — whose alias list
+contains *both* those forms — stood as three separate design nodes, because binding either form to the
+anchor would have placed a vetoed pair inside one cluster. The basing derivation mints one presence per
+design, so the same unit-at-Rahwali fact derived **twice** and its corroboration never pooled: `possible`
+against a `probable` floor. With the claim gone the three collapse to one and the basing reaches
+`probable`. The curated trap it is often confused with — `HQ-9/P` ≠ `HQ-9BE`, Army vs PAF — is untouched and
+still holds.
+
+**Shortcut, stated.** The corrected prompt was verified by re-extracting `d19` (`gemini-3.6-flash`), which
+removed the claim — but the same-model re-roll also reshaped that document's occupancy structure enough to
+fragment the unit further (ordinary run-to-run drift, not the prompt change). Rather than adopt a worse
+bundle, the prior bundle was kept and the single over-read claim removed from it by hand. **One claim
+deleted from a frozen bundle**, with the prompt fix behind it so a future re-record cannot reintroduce it.
+A reviewer should know the bundle is hand-touched at exactly one claim.
+
+### 2. The site-class third state was scoped to the whole subject, not to the unknown bucket
+
+`retag_instances` withdrew **every** supersede nomination a subject had the moment *one* of its basings had
+an absent or unmappable `site_type`. `unit_hq9b` has a basing at Sargodha with no stated site class at all,
+so the flagship relocation was **structurally unable to fire** however good the alias table became — a veto
+cast by an unrelated edge, not a refusal.
+
+Now the third state is applied **per bucket**. Every unresolved class already normalises to the one shared
+`absent_bucket`, so the unknowns stay together and none is separated by tagging the rest; they still fuse
+nothing and still raise their named gap. Two basings whose classes are both known and equal can now order
+against each other — the case C1 exists to judge. Residual cost is a **missed** intermediate stop of unknown
+class between two known ends, which is named in the gap rather than silent; the manufactured-relocation
+direction is unchanged.
+
+Three measured vocabulary rows added alongside (`airbase` → `airfield`, `airfield dispersal pad` →
+`airfield`, `station` → `garrison`), each read the same way the existing two-axis row is: the place-kind
+noun governs and the emplacement inside it does not. Reading `airfield dispersal pad` by its modifier
+instead would file it as `dispersal_site`, split the flagship's two ends into different buckets, and —
+correctly, by the doctrine — turn a relocation into two concurrent basings. That reading was rejected
+deliberately, not overlooked.
+
+### 3. A half-bounded interval was treated as an undated one
+
+`_interval` / `edge_bounds` returned `None` unless **both** bounds were present, so *"based at Nur Khan
+until Oct 2021"* was unorderable. But the only question asked of the older side is *does it end before the
+newer one begins?*, and an unstated **start** can only extend backwards, away from the newer interval — it
+can never manufacture an overlap the stated bounds do not already show. An unstated **end** is the dangerous
+half (it may run on into the newer position, which is a contradiction, not a retirement) and stays
+unorderable. Open-start intervals now carry an `OPEN_START` sentinel that sorts before every ISO date; the
+mirror case, where the *newer* side is the open one, is explicitly `UNORDERABLE` rather than falling through
+to `CONTRADICTION`, because an unknown start is not evidence of a clash.
+
+### 4. "The unit's current position" was whichever site name sorted first
+
+`_active_edges` broke ties by `sorted(...)[0]` on the edge id whenever no supersede link existed — which is
+precisely the state of a subject an analyst is watching *because* its history is unsettled. The flagship
+alert therefore reported its before-state as `Army Air Defence Centre, Karachi`: alphabetically first, and
+in fact the **oldest** basing on the unit.
+
+Two ranks now sit above the id sort, applied as stable sorts in ascending order of priority so each earlier
+one survives as the next tie-break:
+
+* **locatable before unlocatable** — using `place_identity_precision_classes` from config, the same list
+  `resolve.places` already uses to decide when two mentions may *be* one place, and excluded there for the
+  same reason: two batteries both described as being in Punjab are not one battery.
+* **then recency**, by the edge's own asserted validity; undated ranks last.
+
+**Why the precision rank was needed, and what was tried first.** Recency alone promoted a cloud-obscured
+`d10` holding whose site had resolved only to *Punjab province* — a **150 km** envelope — because it carried
+the latest date (the pass was flown; nothing was seen through the cloud). The intended fix was to rank on
+*observation* recency so a carried-forward holding could not outrank a real sighting. **That is not
+implementable on this corpus**, and the attempt is recorded because the negative result is load-bearing:
+
+* *stated collection gaps* — `d10` declares one, but so does the Rahwali pass (four). Every honest imagery
+  report names what it could not see, so the signal demotes the good sightings equally.
+* *the extractor's `_observed_absence` marker* — present on `d10`, and would have been exact. But it is
+  triggered by **hedged wording**, not absence: `"Configuration is assessed as likely HQ-9B"` trips it just
+  as `"believed to be an active HQ-9/P position"` does, so it fires on the hero sighting too. (Separately a
+  real defect — hedged sightings are recorded as absences and never drawn as edges. Not addressed here.)
+* *an earlier observation date* — none exists; `2025-05-10` is the genuine pass date.
+
+Keying the rank on a signal already observed to misfire on the demo's own sighting was rejected: that is the
+scripted-path failure mode this repo has been bitten by before.
+
+**Outcome, and an honest correction.** With both ranks the before-state is `fortified air defense site,
+Malir District` (pad precision, 2022-03-09) — **not** Nur Khan. That is correct on the evidence: among
+positions the graph can actually point at, Malir is the unit's most recent fix before Rahwali, four months
+later than the Nur Khan sighting. The expectation that the beat "should" read Nur Khan → Rahwali was
+narrative pattern-matching, not a reading of the data.
+
+### Left open, stated rather than implied
+
+* `unit_hq9b` still carries six concurrent basings, three of them 15 km–150 km envelopes. The tripwire now
+  ignores those when choosing a prior position, but they are still **drawn as basings**. An area that size is
+  an area of operations, and the ontology already has a separate node type for one.
+* If the Malir basing belongs to `unit_paad` (Army) rather than the PAF fire unit, the defect is the
+  attribution, not the tripwire — a resolution question.

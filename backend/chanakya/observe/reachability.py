@@ -58,6 +58,7 @@ from .evaluator import (  # the evaluator's OWN fire-time helpers (below)
     _candidates,
     _in_scope,
     _watched,
+    positional_classes,
 )
 from .observable import (
     ARM_ONLY,
@@ -328,7 +329,9 @@ def trigger_reachability(
         )
 
     kind, type_name = ct.element_kind, ct.type_filter
-    candidates = _candidates(view, ct)
+    # Same ranking inputs the evaluator fires with — a reachability check that read candidates a
+    # different way would be reporting on a tripwire other than the one that runs.
+    candidates = _candidates(view, ct, positional_classes(config))
     count = len(candidates)
 
     # 1. Modelling gap — the ontology has no such relation/type, so no ingest could ever produce one.

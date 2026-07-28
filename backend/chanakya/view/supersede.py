@@ -42,20 +42,37 @@ from chanakya.credibility.supersession import (
 )
 from chanakya.schemas import ClaimRecord, DateValue, EdgeView, Triple, canonical_iso_bounds
 
+#: Lower bound of an interval that reaches back indefinitely ("held this position **up to** Oct 2021" —
+#: no start stated). Sorts before every ISO date, which is exactly where an open start belongs, and is
+#: already the sort fallback :func:`order_instance_edges` uses.
+OPEN_START = ""
+
 
 def _interval(claims: list[ClaimRecord]) -> tuple[str, str] | None:
-    """The ``event_time`` **interval** a target is asserted over — ``None`` when any claim is undated
-    or only half-bounded (D-P4.4 iii: *missing* ⇒ unorderable, never guessed).
+    """The ``event_time`` **interval** a target is asserted over — ``None`` when the **upper** bound is
+    missing on any claim (D-P4.4 iii: what is missing is never guessed).
 
-    Both bounds matter. Taking only the upper bound let a vague ``"2025"`` (upper ``2025-12-31``)
-    outrank a precise ``2025-03-27``; and the span is the **union** across the target's claims rather
-    than ``max``, so a late *restatement* of an old fact widens that fact's interval into overlap
-    (→ contradiction → HITL) instead of silently making the old fact "newest" and reversing the arrow.
+    The upper bound is the load-bearing one. The lower bound still counts where it exists — taking only the
+    upper bound let a vague ``"2025"`` (upper ``2025-12-31``) outrank a precise ``2025-03-27`` — and the
+    span is the **union** across the target's claims rather than ``max``, so a late *restatement* of an old
+    fact widens that fact's interval into overlap (→ contradiction → HITL) instead of silently making the
+    old fact "newest" and reversing the arrow.
+
+    A **missing start** is not the same defect as a missing end, and used to be treated as one. "Based at
+    Nur Khan until Oct 2021" is an ordinary way to state a position a unit has since left: the interval is
+    open at the bottom, not unknown. It remains fully comparable for the only question asked of the older
+    side — *does it end before the newer one begins?* — because an unstated start can only extend
+    **backwards**, away from the newer interval, and so can never manufacture an overlap the stated bounds
+    do not already show. A missing END is the dangerous half and stays unorderable: an interval that may run
+    on indefinitely could overlap the newer one, and that is a contradiction, not a retirement.
     """
     bounds = [canonical_iso_bounds(c.event_time) for c in claims]
-    if any(lo is None or hi is None for lo, hi in bounds):
+    if any(hi is None for _, hi in bounds):
         return None
-    return min(lo for lo, _ in bounds if lo), max(hi for _, hi in bounds if hi)
+    upper = max(hi for _, hi in bounds if hi)
+    if any(lo is None for lo, _ in bounds):
+        return OPEN_START, upper
+    return min(lo for lo, _ in bounds if lo), upper
 
 
 # How two targets' intervals relate — the (iii) branch of the supersede rule.
@@ -70,12 +87,18 @@ def _relation(older: tuple[str, str], newer: tuple[str, str]) -> str:
       in two places at one instant
     * **identical but vague** (e.g. two claims that say only "2025") → ``unorderable``: there is no
       ordering signal at all, so neither retire nor assert a clash — hand it to HITL
+    * **newer side open at the bottom** → ``unorderable``: an interval that reaches back indefinitely may
+      or may not overlap the older one, and an unstated start is not evidence of a clash. (The mirror case
+      — the *older* side open at the bottom — is decided by the first branch and needs no special case:
+      its unstated start runs away from the newer interval, so ``o_hi < n_lo`` settles it either way.)
     * **any other overlap** → ``contradiction``: the two facts are asserted over intersecting time on a
       slot that is single-valued
     """
     (o_lo, o_hi), (n_lo, _) = older, newer
     if o_hi < n_lo:
         return ORDERED
+    if n_lo == OPEN_START:
+        return UNORDERABLE
     if older == newer:
         return CONTRADICTION if o_lo == o_hi else UNORDERABLE
     return CONTRADICTION

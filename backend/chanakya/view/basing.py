@@ -43,7 +43,7 @@ from chanakya.ontology import EdgeLaneIndex, LayerRouting, NodeTypeIndex
 from chanakya.schemas import ClaimRecord, ConfigBundle, DateValue, EdgeView, KnownGap, NodeView
 from chanakya.schemas.values import canonical_iso_bounds
 
-from .supersede import order_instance_edges
+from .supersede import OPEN_START, order_instance_edges
 
 _SITE_TYPE = "basing_site"
 _UNIT_TYPE = "unit"
@@ -399,10 +399,15 @@ def derive(
 
 
 def edge_bounds(edge: EdgeView) -> tuple[str, str] | None:
-    """A derived edge's inherited validity as a fully-bounded interval, or ``None`` (⇒ unorderable).
+    """A derived edge's inherited validity as an orderable interval, or ``None`` (⇒ unorderable).
 
     Shared with ``layers.retag_instances``, which has to re-run the ordering inside each re-bucketed
-    instance and must read validity the same way this module wrote it.
+    instance and must read validity the same way this module wrote it — and it must read the OPEN-START
+    case the same way too, which is why the sentinel comes from ``supersede`` rather than being spelled
+    again here. An interval with a stated end and no stated start is orderable against a later one; one
+    with no stated end is not. The reasoning is on :func:`supersede._interval`.
     """
     lo, hi = canonical_iso_bounds(edge.time_interval)
-    return (lo, hi) if lo is not None and hi is not None else None
+    if hi is None:
+        return None
+    return (lo if lo is not None else OPEN_START), hi

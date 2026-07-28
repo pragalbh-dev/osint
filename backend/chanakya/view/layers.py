@@ -146,13 +146,24 @@ def retag_instances(
     So the decision is per ``(subject, predicate)`` and covers **every** basing of that subject — stated and
     rebuild-derived alike, which is why it runs after the derivation rather than during keying:
 
-    * **all classes known** ⇒ split into per-class instances and re-run the ordering inside each. Two
+    * **classes known** ⇒ split into per-class instances and re-run the ordering inside each. Two
       concurrent basings at different kinds of site stop being a manufactured before/after.
-    * **any class unknown** (absent *or* stated-but-unmappable — for keying, the same condition) ⇒ **no
-      de-confliction**: the whole group keeps one untagged instance, so nothing is separated. **No fusion**:
-      the nomination is withdrawn, so an unresolved class can never manufacture a relocation. **A named
-      gap**, so the withheld supersede is a visible refusal rather than a non-event. Never one without the
-      other two.
+    * **classes unknown** (absent *or* stated-but-unmappable — for keying, the same condition) ⇒ they all
+      share the ONE ``absent_bucket``, so no unknown is separated from another unknown. **No fusion**: the
+      nomination is withdrawn inside that bucket, so an unresolved class can never manufacture a
+      relocation. **A named gap**, so the withheld supersede is a visible refusal rather than a non-event.
+      Never one without the other two.
+
+    **The third state is scoped to the unknown bucket, not to the whole subject.** It used to withdraw every
+    nomination the subject had the moment *one* of its basings had an unreadable class — and that is not a
+    refusal, it is a veto by an unrelated edge. A busy subject accumulates vague basings ("air defense node",
+    "long-range SAM battery position", a site with no stated class at all), so under the old rule no subject
+    with a single vague sighting anywhere in its history could ever show a relocation, however cleanly the
+    two ends of that relocation were classed. Suppressing per bucket keeps the guarantee that matters — an
+    unresolved class still fuses nothing, and still says so in a gap — while letting two basings whose
+    classes are *both* known and equal order against each other, which is the case C1 was built to judge.
+    The residual cost is a MISSED intermediate (an unknown-class stop between two known ends), and it is
+    named in the gap rather than silent; the manufactured-relocation direction is unchanged.
 
     A group with a single member is a special case of "nothing to fuse": its class is applied if known, and
     if unknown it simply keeps the untagged key with no suppression and no gap — a "cannot assess a
@@ -173,25 +184,34 @@ def retag_instances(
         for edge, _bucket, raw, mapped in resolved:
             if raw and not mapped:
                 edge.attrs[STATED_TAG] = raw  # keep the unresolved class visible on the edge itself
-        if all(mapped for _e, _b, _r, mapped in resolved):
-            by_bucket: dict[str, list[EdgeView]] = {}
-            for edge, bucket, _raw, _mapped in resolved:
-                edge.edge_instance = lane.edge_instance_key(subject, predicate, edge.target, bucket)
-                by_bucket.setdefault(bucket, []).append(edge)
-            if len(by_bucket) > 1:
-                # The classes genuinely separated this subject's basings, so the ordering the untagged key
-                # produced spanned instances that are not comparable. Clear it and re-order within each.
-                for edge in group:
-                    clear_supersede_nomination(edge)
-                for bucket_edges in by_bucket.values():
-                    order(bucket_edges, {e.id: intervals(e) for e in bucket_edges})
-            continue
-        if len(group) > 1:
+        unresolved = [edge for edge, _b, _r, mapped in resolved if not mapped]
+        if unresolved and len(group) == 1:
+            continue  # a lone basing has nothing to fuse: leave its key untagged, unsuppressed, un-gapped
+        by_bucket: dict[str, list[EdgeView]] = {}
+        for edge, bucket, _raw, _mapped in resolved:
+            edge.edge_instance = lane.edge_instance_key(subject, predicate, edge.target, bucket)
+            by_bucket.setdefault(bucket, []).append(edge)
+        # Every unresolved class normalises to the SAME `absent_bucket`, so this is exactly one bucket and
+        # the unknowns stay together — nothing is separated from an unknown by tagging the rest.
+        unknown_bucket = next(
+            (bucket for edge, bucket, _r, mapped in resolved if not mapped), None
+        )
+        if len(by_bucket) > 1:
+            # The classes genuinely separated this subject's basings, so the ordering the untagged key
+            # produced spanned instances that are not comparable. Clear it and re-order within each.
             for edge in group:
+                clear_supersede_nomination(edge)
+            for bucket, bucket_edges in by_bucket.items():
+                if bucket == unknown_bucket:
+                    continue  # no fusion inside the third state — see the class docstring
+                order(bucket_edges, {e.id: intervals(e) for e in bucket_edges})
+        if unknown_bucket is not None:
+            for edge in by_bucket[unknown_bucket]:
                 clear_supersede_nomination(edge)
                 edge.attrs[SUPERSEDE_SUPPRESSED] = "instance-key-tag-unmappable"
             raw = next((r for _e, _b, r, m in resolved if r and not m), None)
-            gaps.append(unmapped_tag_gap(group[0].edge_instance or subject, predicate, attr, raw))
+            anchor = by_bucket[unknown_bucket][0].edge_instance or subject
+            gaps.append(unmapped_tag_gap(anchor, predicate, attr, raw))
     return gaps
 
 

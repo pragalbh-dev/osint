@@ -37,6 +37,7 @@ from chanakya.schemas import (
     GraphView,
     NodeView,
     ObservableDef,
+    canonical_iso_bounds,
 )
 
 from .dsl import MISSING, evaluate_condition, resolve_field, within_area
@@ -87,13 +88,67 @@ def _group_key(el: Element, ct: CompiledTrigger) -> str:
 
 # ── active-element resolution (supersede-aware) ────────────────────────────────────────────────
 
-def _active_edges(view: GraphView, ct: CompiledTrigger) -> dict[str, EdgeView]:
+def _validity_rank(edge: EdgeView) -> tuple[str, str]:
+    """How recent an edge's asserted validity is — ``(end, start)``, ``("", "")`` when it is undated.
+
+    Sorted **descending**, so the latest-ending assertion ranks first and an undated edge ranks last: an
+    edge nobody dated cannot be shown to be a subject's current state, so it must never outrank one that
+    is dated. Read off the edge's own ``time_interval``, the same validity the supersede ordering reads.
+    """
+    lo, hi = canonical_iso_bounds(edge.time_interval)
+    return (hi or "", lo or "")
+
+
+def positional_classes(config: ConfigBundle) -> frozenset[str]:
+    """Gazetteer precision classes precise enough to be a *position* — from config, never spelled here.
+
+    The same list ``resolve.places`` already uses to decide when "both mentions resolved to this anchor"
+    may become "both mentions are the same place" (``place_identity_precision_classes``). The area rungs
+    are excluded there for exactly the reason they must be excluded here: two batteries both described as
+    being in Punjab are not one battery, and a whole province is not somewhere a unit can be said to have
+    moved *from*. Absent/empty config ⇒ empty set ⇒ the rank below is inert and ordering is unchanged.
+    """
+    return frozenset(str(c) for c in (getattr(config.resolution, "place_identity_precision_classes", None) or []))
+
+
+def _is_positional(edge: EdgeView, nodes: dict[str, NodeView], classes: frozenset[str]) -> bool:
+    """Does this edge's target resolve to a place precise enough to be a position?
+
+    ``False`` covers three cases that are the same for this purpose — a coarse anchor (province/city/
+    district), a located node whose precision the gazetteer never classed, and a target with no location
+    at all. All three mean the same thing: nothing here can be pointed at. Non-place targets land in the
+    same bucket and therefore all rank equally, so a tripwire over non-geographic edges is unaffected.
+    """
+    if not classes:
+        return False
+    node = nodes.get(edge.target)
+    coords = (node.attrs or {}).get("coordinates") if node is not None else None
+    if not isinstance(coords, dict):
+        return False
+    return str(coords.get("precision_class") or "") in classes
+
+
+def _active_edges(view: GraphView, ct: CompiledTrigger, classes: frozenset[str]) -> dict[str, EdgeView]:
     """Map grouping key → the *active* edge (the one not superseded), filtered by the trigger's type.
 
     When several edges share a key (the before→after of a relocation), the active one is the live edge
-    (``superseded_by is None``); ``supersedes`` breaks a tie toward the newest; a stable id sort keeps
-    it deterministic (G2 spirit).
+    (``superseded_by is None``); ``supersedes`` breaks a tie toward the newest.
+
+    **Beyond that the tie-break is position-then-recency, not id order.** A supersede link only exists once
+    the pair has been *ordered and promoted*, which is exactly what has not happened yet for a subject the
+    analyst is watching precisely because its history is unsettled. A busy unit carries many concurrent live
+    basings, and picking among them by sorted id makes "this subject's current position" mean "whichever
+    site name sorts first" — which then rides into the alert as its ``before`` state and misstates the very
+    movement the tripwire exists to report.
+
+    Recency alone is not enough either, and the failure is instructive: the freshest basing on a watched
+    unit was a cloud-obscured holding whose "site" had resolved only to *Punjab province* — a 150 km
+    envelope. It carried the latest date because the pass was flown, not because anything was seen. Ranking
+    a **locatable** target above an unlocatable one first is what separates a position from an area, and it
+    is a property the graph already carries rather than a judgement made here. Recency orders what is left;
+    the id sort stays underneath as the deterministic final tie-break (G2 spirit).
     """
+    nodes = {n.id: n for n in view.nodes}
     groups: dict[str, list[EdgeView]] = defaultdict(list)
     for e in view.edges:
         if ct.type_filter is not None and e.type != ct.type_filter:
@@ -102,8 +157,12 @@ def _active_edges(view: GraphView, ct: CompiledTrigger) -> dict[str, EdgeView]:
     active: dict[str, EdgeView] = {}
     for key, group in groups.items():
         live = [e for e in group if e.superseded_by is None]
-        pool = [e for e in live if e.supersedes is not None] or live or group
-        active[key] = sorted(pool, key=lambda e: e.id)[0]
+        # Stable sorts applied in ASCENDING order of priority: id, then validity, then locatability —
+        # so the last one dominates and each earlier one survives as the next tie-break.
+        pool = sorted([e for e in live if e.supersedes is not None] or live or group, key=lambda e: e.id)
+        pool.sort(key=_validity_rank, reverse=True)
+        pool.sort(key=lambda e: _is_positional(e, nodes, classes), reverse=True)
+        active[key] = pool[0]
     return active
 
 
@@ -112,9 +171,9 @@ def _active_nodes(view: GraphView, ct: CompiledTrigger) -> dict[str, NodeView]:
             if ct.type_filter is None or n.type == ct.type_filter}
 
 
-def _candidates(view: GraphView, ct: CompiledTrigger) -> dict[str, Any]:
+def _candidates(view: GraphView, ct: CompiledTrigger, classes: frozenset[str]) -> dict[str, Any]:
     """Active candidate elements of the trigger's kind, keyed by the declared grouping key."""
-    return _active_edges(view, ct) if ct.element_kind == "edge" else _active_nodes(view, ct)
+    return _active_edges(view, ct, classes) if ct.element_kind == "edge" else _active_nodes(view, ct)
 
 
 def _state_value(el: EdgeView | NodeView | None, ct: CompiledTrigger) -> Any:
@@ -236,9 +295,9 @@ def _alert(obs: ObservableDef, ct: CompiledTrigger, subject: str, before: Any, a
 # ── per-mode detectors ─────────────────────────────────────────────────────────────────────────
 
 def _crossing(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
-              scope: set[str] | None) -> list[Alert]:
-    prev_active = _candidates(prev, ct)
-    new_active = _candidates(new, ct)
+              scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
+    prev_active = _candidates(prev, ct, classes)
+    new_active = _candidates(new, ct, classes)
 
     out: list[Alert] = []
     for key, el in new_active.items():
@@ -259,9 +318,9 @@ def _crossing(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: Gra
 
 
 def _exists(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
-            scope: set[str] | None) -> list[Alert]:
-    prev_keys = set(_candidates(prev, ct))
-    new_active = _candidates(new, ct)
+            scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
+    prev_keys = set(_candidates(prev, ct, classes))
+    new_active = _candidates(new, ct, classes)
 
     out: list[Alert] = []
     for key, el in new_active.items():
@@ -278,11 +337,11 @@ def _exists(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: Graph
 
 
 def _match(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
-           scope: set[str] | None) -> list[Alert]:
+           scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
     if ct.state_field is None or ct.op is None:
         return []
-    prev_active = _candidates(prev, ct)
-    new_active = _candidates(new, ct)
+    prev_active = _candidates(prev, ct, classes)
+    new_active = _candidates(new, ct, classes)
 
     out: list[Alert] = []
     for key, el in new_active.items():
@@ -311,7 +370,7 @@ def _fire(obs: ObservableDef, prev: GraphView, new: GraphView, config: ConfigBun
     if ct.mode == ARM_ONLY:
         return []
     scope = resolve_scope(obs, new, config)
-    return _DETECTORS[ct.mode](obs, ct, prev, new, scope)
+    return _DETECTORS[ct.mode](obs, ct, prev, new, scope, positional_classes(config))
 
 
 def evaluate(prev_view: GraphView | None, view: GraphView, config: ConfigBundle) -> list[Alert]:
@@ -342,7 +401,7 @@ def arm(observable: ObservableDef, view: GraphView, config: ConfigBundle) -> lis
     if ct.mode not in (EXISTS, MATCH):
         return []
     scope = resolve_scope(observable, view, config)
-    return _DETECTORS[ct.mode](observable, ct, _EMPTY, view, scope)
+    return _DETECTORS[ct.mode](observable, ct, _EMPTY, view, scope, positional_classes(config))
 
 
 def _condition_text(cond: Any) -> str:

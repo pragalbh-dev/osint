@@ -518,6 +518,21 @@ layer_routing:
     # the place; "airfield site" is the place — PAF Base Nur Khan. The place-kind noun governs, which is
     # also what makes Rawalpindi->Rahwali one instance (both airfields) rather than two unrelated buckets.
     "prepared revetment complex / airfield site": airfield
+    # d17/d19 (re-record, measured): the two ends of the flagship relocation as extraction NOW states them.
+    # Both are the same two-axis shape the row above resolves, so they take the same reading — the
+    # place-kind noun governs and the emplacement inside it does not.
+    #   'airbase'               -> plain synonym of the vocabulary's `airfield` (site_rawalpindi).
+    #   'airfield dispersal pad'-> "airfield" is the place; a "dispersal pad" is a hardstand WITHIN it, the
+    #                              same axis "prepared revetment complex" sits on (site_rahwali). Reading the
+    #                              modifier instead would file it as `dispersal_site`, split the flagship's
+    #                              two ends into different buckets, and — per the doctrine above — correctly
+    #                              turn a relocation into two concurrent basings. The place-kind noun is what
+    #                              the vocabulary enumerates, so it is what governs.
+    "airbase": airfield
+    "airfield dispersal pad": airfield
+    # d10/n03: "station" in Pakistani service usage is a home station (the permanent establishment a unit is
+    # posted to), the same sense `centre` carries above — not a rail/relay sense.
+    "station": garrison
   # DELIBERATELY NOT MAPPED: n03's site kinds. Two rows keyed to 'revetted launch position' and 'unimproved
   # hardstand' were carried here and are WITHDRAWN. They were predicted from n03's wording by the hand that
   # wrote n03 in the same pass, so key and document were authored together and the row could not miss. A row
