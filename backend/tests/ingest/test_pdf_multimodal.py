@@ -21,10 +21,18 @@ from chanakya.ingest.extract import (
 from chanakya.ingest.loaders import LoadedDoc, PageImage, Region
 from chanakya.schemas.claim import ClaimRecord, EntityDescriptor
 from chanakya.schemas.config_models import ConfigBundle
+from tests.ingest._coref_double import is_coref_call, no_coref
 
 
 class _RecordingClient:
-    """Records each ``extract`` call's ``(text, images)`` and replays queued filled dicts in order."""
+    """Records each **pass-1** ``extract`` call's ``(text, images)`` and replays queued fills in order.
+
+    Extraction pass 2 (in-document coreference, live once the RK-COREF stage flag is on) is a different
+    concern from windowing, and is answered off-queue from the shared double exactly as the ingest conftest
+    does for :class:`~chanakya.ingest.client.ScriptedExtractionClient`. It is still recorded — in
+    :attr:`coref_calls` — so nothing is swallowed silently; ``calls`` simply keeps meaning what every
+    assertion below already reads it as, the windowed pass-1 calls.
+    """
 
     model_id = "recording"
 
@@ -32,9 +40,13 @@ class _RecordingClient:
         self._responses = list(responses)
         self._i = 0
         self.calls: list[tuple[str, list[tuple[bytes, str]]]] = []
+        self.coref_calls: list[str] = []
 
     def extract(self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
                 images: Any = ()) -> dict[str, Any]:
+        if is_coref_call(tool_name, input_schema):
+            self.coref_calls.append(text)
+            return no_coref()
         self.calls.append((text, list(images)))
         out = self._responses[self._i]
         self._i += 1

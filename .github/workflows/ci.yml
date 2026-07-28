@@ -24,8 +24,12 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      # `[openai]` alongside `[dev]`: the OpenAI extraction client's offline tests monkeypatch the real SDK
+      # module, and RK-BAKEOFF's KEYLESS==LIVE gate proves a provider is live-capable by importing it.
+      # Without the package those tests would error at collection and the gate would read FAIL for a reason
+      # that is about this runner rather than about the code.
       - name: Install backend + dev deps
-        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev,openai]"
 
       - name: Ruff (lint)
         run: ruff check .
@@ -33,5 +37,28 @@ jobs:
       - name: Mypy (types)
         run: mypy
 
-      - name: Pytest (unit + G1–G12 gates)
-        run: python -m pytest
+      # CI enforces PRODUCT BEHAVIOUR only — the shipped system: graph build, credibility, HITL, retrieval,
+      # API, ingestion, and the G1–G12 abstraction gates.
+      #
+      # The three excluded directories are RESEARCH INSTRUMENTATION built for the one-off RK-BAKEOFF
+      # extractor comparison: the comparison harness, its scoring metrics, and the census of the labelled
+      # gold slice it scored against. They assert properties of a measurement already taken and written up
+      # (tmp/conv/RK-BAKEOFF-RESULT.md, -DIAGNOSIS.md) — not of anything that ships. They stay in the repo
+      # and a bare `pytest` still runs them locally; they simply must not gate a merge, because a deliberate
+      # repair to the labelled data, or a re-record of the corpus, legitimately moves their numbers without
+      # anything being broken.
+      #
+      # `--ignore` rather than a `-m "not research"` marker on purpose: a marker deselects but still
+      # IMPORTS, and two of these modules do real work at import time (loading config/bakeoff.yaml, an
+      # importlib call on a binding module). `--ignore` never opens the files, so a collection error in
+      # retired instrumentation can never break CI for the product.
+      #
+      # Verified before excluding: no product coverage is lost. Every shipped path these brush against is
+      # covered directly under tests/ingest/ (provider clients, tool-payload validation, imagery, coref,
+      # PDF), and nothing under chanakya/ imports from eval/ — the dependency direction is one-way.
+      - name: Pytest (product behaviour + G1–G12 gates)
+        run: >
+          python -m pytest
+          --ignore=tests/gold_adapter
+          --ignore=tests/bakeoff
+          --ignore=tests/extraction_bakeoff

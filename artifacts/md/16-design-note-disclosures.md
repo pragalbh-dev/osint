@@ -128,3 +128,105 @@ deliberate, defensible choices, not apologies.
 ---
 
 *(Append new disclosures here as they arise. Keep each one framed as a deliberate, defensible choice.)*
+
+## Resolution substrate — from the RK-SPIKE audit (2026-07-24)
+
+These are properties of the **shipped** resolution layer that the identity re-key (`spine/13`) is being built
+to fix. Each was verified against code, not inferred. They are stated here because a reader who assumes the
+graded behaviour degrades *gracefully* would be wrong in specific, nameable ways.
+
+- **Relational scaffolding is a step function, not a gradient.** The status-weighted relational signal counts
+  only **completed** merges — a merely `probable` anchor contributes **exactly zero**. So the design's
+  "the fuzzy instance layer resolves by its connections to well-resolved anchors" holds only where those
+  anchors actually merge; where they sit at `probable`, the scaffolding is not weakened, it is **absent**.
+  Accepted deliberately: the fix reintroduces a feedback loop that threatens the monotone-termination
+  argument the clustering fixpoint rests on, and its absence errs toward honest fragmentation — which the
+  design declares the goal.
+- **Places are named as a clean anchor but are not mechanically one.** The place-resolution pass runs *after*
+  entity resolution, so place merges are invisible while pairs are being scored: two units based at
+  differently-named-but-identical sites do not share a neighbour key. Combined with the point above, the
+  anchor-scaffolding lever is weaker than the architecture describes in **two independent ways**.
+- **A name-only pair can still fuse at a lowered per-type floor.** The "name alone caps at *possible*" policy
+  is applied where pairs are *collected for review*, not on the path that actually unions nodes — so at the
+  reduced organisation-type floor a pair agreeing on nothing but its name can auto-merge. Unreachable at the
+  strict global floor; reachable at the lowered one. A guard that did not follow a lowered threshold.
+- **Identity caps are permeable to name-sameness.** The perishable-evidence cap short-circuits when a
+  "durable trigger" is present, and an exact normalized-name match counts as one — so name sameness can
+  launder a confirm that rests only on transient evidence.
+- **Source-independence is enforced for claim corroboration but not for identity merges.** Two derivative
+  reprints of one source can each contribute to an identity merge; nothing in the merge path notices they are
+  not independent. (The "independent identity signal" ledger is about signal *classes* — attribute,
+  relational, temporal — not about source independence, and should not be read as that guard.)
+- **Independence is detected by publisher, not by evidential lineage — a deliberate, deferred refinement.**
+  The *rule* is the right one and is enforced: an assessment reaches `confirmed` only on **two independent
+  looks**. What counts as "independent" is currently keyed on the source's identity and type, so where one
+  source's report openly *reads* another's, the system may count two looks where a strict reading sees one.
+  The architecture already has the correct concept one level down — a derived claim "shares an independence
+  group with its premises so it can never self-corroborate" — so extending that same logic to a source that
+  cites a prior report is a small, well-seamed change we have chosen to schedule rather than rush. Stated
+  because it is the honest boundary of a corroboration claim, not because it is unknown.
+- **An order-of-battle undercount is reachable without any merge at all.** Where two candidate formations are
+  associated with one observed equipment sighting, the attribution pass keeps the best-evidenced one and
+  discards the other **without recording a skip** — every other rejection path in that pass records its
+  reason. The re-key's requirement is explicit: two candidates ⇒ two attributions, or one plus a named gap,
+  never a silent pick.
+- **The most consequential one: an identity error can become a movement assessment.** Unit-to-site basing is
+  functional and keyed on the unit, so fusing two co-located batteries makes their two sites read as one
+  unit's before-and-after; the supersession step then promotes that pair, **removes it from the analyst's
+  queue** ("adjudicated by the machine"), and draws a relocation. This is why the re-key treats the
+  co-location cap as **anti-fabrication machinery** rather than order-of-battle hygiene, and why its gate must
+  assert the absence of a *drawn relocation edge* rather than merely the absence of a confirmed merge.
+
+## Identity scoring — name is capped, not rarity-graded (2026-07-25)
+
+- **A name contributes a flat, capped score — not a rarity-weighted one.** The design describes name similarity
+  as *rarity-graded* (a distinctive name counting for more than a common one), and that grading is **not built**:
+  it has no implementation, and no observable contract for it was ever stated, so it could not even be tested.
+  It is **deferred and stated rather than quietly claimed**. What *is* built is the part the safety argument
+  actually rests on — a **ceiling**: a pair agreeing on nothing but its name can never exceed the weakest
+  verdict, whatever the name's rarity. So the guard against name-as-identity holds; only the precision gain of
+  rewarding a distinctive name is outstanding. The contract is recorded so it is testable when added: all else
+  equal, the name component must be monotonically non-increasing in how often the matched tokens occur across
+  the inventory.
+
+## HITL, identity and supersession — owed from the DEFAULT-ON close-out (2026-07-26)
+
+- **A machine cap can overrule an explicit human ACCEPT — deliberately, and it is the safe direction.** Our
+  stated HITL rule is that an analyst override *mutates graph state, not just a log*. There is one live
+  exception: on the two co-located batteries, an analyst pressing **accept** gets `applied=false`, because
+  the co-location cap refuses the fusion. That cap is the anti-fabrication machinery — fusing those two
+  units is exactly what would make their two sites read as one unit's before-and-after and draw a
+  **relocation that never happened**. So the refusal is correct, and it is *acknowledged* with a receipt
+  naming the ground rather than silently ignored. But it is an inversion of our own rule and should be
+  **explained as deliberate rather than discovered by a reviewer clicking accept.** The general principle we
+  actually implement is narrower and worth stating as such: a human override mutates state **wherever
+  mutating it cannot manufacture an assessment**; where it can, the system refuses *and says so*.
+- **A retirement is visible; how thinly it is evidenced is not.** `stale` means "we knew this and the world
+  moved on" — a claim about the past — so it is now conditioned on the assertion having reached the
+  confirmed *magnitude*. It is **not** conditioned on having had more than one independent look, because
+  that bar would reclassify our own flagship relocation beat from history to open question. The shortfall is
+  recorded in the stage's gate vector, but that field reaches no analyst surface, so what the analyst sees
+  is *that* an assertion was retired, not that the retirement rests on a single source. Stated as a partial
+  close, because the honest version of "we condition staleness on the evidence" has a footnote.
+- **Several credibility and identity beats are tested on fixtures and inert on the frozen corpus.** The
+  overruled-proposal record that rides a wall, the supersede path itself, and the hero relocation beat (held
+  behind an unauthored site-class alias map) all pass their tests and do nothing on the real data. A green
+  suite is not evidence that these have run in anger. We would rather name the gap than let a passing test
+  count as a demonstration.
+- **A computed judgement that never reaches the human is this system's characteristic failure.** Twice in
+  one integration pass, the defect was not a wrong answer but a right answer with no route to the analyst —
+  a decision recorded and not applied, a gap register that stated nothing about coverage, a watch-list tier
+  no surface fetched. It is worth saying in the note that this, rather than hallucination, is the failure
+  mode an auditable OSINT system has to be engineered against, and that our tests now assert *arrival* on a
+  surface rather than mere computation.
+- **A machine cap can now overrule an explicit human instruction, and we chose to keep it that way**
+  (noted 2026-07-26, user-aware; owed a design-note paragraph). An analyst who *accepts* the merge on the
+  flagship pair — the Army PAAD unit and "the PAF HQ-9B fire unit" — gets `applied: false`, with the
+  co-location cap named as the ground. That sits against our own stated HITL rule that overrides mutate
+  graph state: here the override is **refused**, not applied. We keep it because that refusal is the exact
+  mechanism preventing the fabricated relocation the system exists to avoid, and because it is acknowledged
+  with a specific checkable reason rather than failing silently. Honest framing for the note: **HITL is not
+  unconditional authority — an analyst can overrule a machine *inference*, but cannot instruct the system to
+  assert an identity the evidence forbids; the disagreement is surfaced rather than settled by seniority.**
+  State it as a deliberate asymmetry, not an oversight, and say plainly that the *reject* direction does
+  propagate, mutates the graph, and survives a rebuild.

@@ -1,0 +1,435 @@
+# ===========================================================================
+# RK-SPIKE prototype configuration — every threshold, cap, category list and
+# marker list the prototype uses. Nothing numeric or policy-bearing lives as a
+# code literal (mirrors the project's G6 no-magic-numbers gate).
+#
+# HOW RATIONALES WORK: the loader (`protoconfig.py`) attaches the comment block
+# immediately above a leaf key to that key's path and REFUSES TO LOAD if any
+# leaf key lacks one. So a rationale here is enforced, not decorative.
+#
+# EVERY value below was chosen on general principle by a corpus-blind hand.
+# Two devices keep that honest:
+#   (1) where the decisions doc says a value should be a BAND NAME, it is a band
+#       name (see `caps:`) — never a float, so it cannot be silently retuned;
+#   (2) where a value IS a float, it is pinned by a stated INVARIANT rather than
+#       by observed behaviour, and `scoring.invariants` is machine-checked at
+#       load time. If an invariant fails the prototype refuses to run.
+# ===========================================================================
+
+grades:
+  # Source grades, best first. The vocabulary itself, not a tuned knob.
+  order: [A, B, C, D, E]
+  # The floor the CURRENT code applies to the two grade-gated identity channels
+  # (the critical-attribute wall's `critical_veto_min_grade`, and the
+  # source-stated `same-as` rail). Recorded here as the reference point the next
+  # line is defined relative to — not as a value this prototype chose.
+  stated_same_as_min_grade: C
+  # D-13.17 / R10.1: an authoritative coref bind FUSES uncapped and unbanded,
+  # whereas a source-stated `same-as` only RAISES. The harder-acting channel must
+  # carry the better evidence, so this floor is one grade STRICTLY ABOVE
+  # `stated_same_as_min_grade`. Principled, not tuned: it is a relation between
+  # two channels' authority, and it moves automatically if the reference moves.
+  coref_authoritative_min_grade: B
+
+coref:
+  # D-13.17: the only categories that may ever mint ONE SHARED referent atom.
+  # Both are admitted only behind a deterministic gate below; the category alone
+  # is a model self-report and is never sufficient.
+  authoritative_categories: [EXPLICIT_EQUIVALENCE, UNAMBIGUOUS_ANAPHOR]
+  # D-13.17: NAME_VARIANT is raise-only PERMANENTLY. An authoritative bind
+  # bypasses banding, so "authoritative NAME_VARIANT" is exactly the
+  # exact-normalized-name auto-merge lane D-13.1 exists to delete, rebuilt on
+  # another predicate and immune to D-13.10's name ceiling.
+  raise_only_categories: [NAME_VARIANT]
+  # The EXPLICIT_EQUIVALENCE deterministic gate needs a *structural* equivalence
+  # signal in the licensing quote, not merely two names near each other. This is
+  # the closed, re-derivable list of surface markers that assert equivalence.
+  # Kept small and language-general on purpose: a long list would drift into
+  # "any sentence mentioning both", which is the gate collapsing. Note the
+  # deliberate ABSENCE of bare "or": it is ambiguous between equivalence and
+  # disjunction, and a deterministic check on an ambiguous marker is still
+  # ambiguous. Given that an authoritative bind fuses uncapped, the error
+  # asymmetry says lose the recall and let the analyst close it.
+  equivalence_markers: [aka, a k a, also known as, also called, otherwise known as, i e, that is, formerly, redesignated, renamed, short for, abbreviated as, designated]
+  # A parenthetical wrapping one of the two surface forms — "Long Form (SHORT)" —
+  # is the canonical apposition/acronym-expansion shape and is itself the
+  # equivalence marker. Structural and re-derivable by any reader, which is the
+  # bar D-13.17 sets for an authoritative category.
+  parenthetical_counts_as_marker: true
+  # The UNAMBIGUOUS_ANAPHOR gate asks "is the antecedent type-unique in this
+  # document". Two entity types in the same class are things an anaphor could
+  # confuse, so they count against uniqueness. Same-name-different-spelling of a
+  # TYPE is a schema fact, never corpus data.
+  type_compatibility_classes: [[unit, fire_unit, formation], [variant, design, system], [basing_site, place, site], [manufacturer, trading_org, org]]
+  # Decline reasons (D-13.18). Vocabulary, not a knob — listed so the set of
+  # things that can de-group an authoritative cluster is enumerable on a call.
+  decline_reasons: [critical-discriminator-conflict, stated-contrast-within-cluster]
+
+citizens:
+  # spine/13 §3a routing. Layer is a static property of the TYPE (never computed
+  # per mention), so this is a schema table, not a tuned threshold.
+  layer_by_type:
+    unit: instance
+    fire_unit: instance
+    formation: instance
+    variant: design
+    design: design
+    component: design
+    manufacturer: design
+    trading_org: design
+    basing_site: anchor
+    place: anchor
+    site: anchor
+  # An unrecognised type is treated as instance-layer: the conservative choice,
+  # because instance-layer carries the STRICTER identity policy (name is never
+  # sufficient, co-location is capped). Defaulting to `design` would hand an
+  # unknown type the permissive profile.
+  default_layer: instance
+  # A design-layer or anchor-layer node is not a presence/formation citizen; it
+  # gets its own citizen name so the output never mislabels a design node as an
+  # instance-layer citizen.
+  citizen_by_layer:
+    design: design
+    anchor: anchor
+  formation_evidence:
+    # spine/13 §3a: a formation is minted ONLY on organizational evidence. These
+    # are the attribute slots that constitute a stated organizational identity.
+    attrs: [designator, base_designator, export_designator, unit_designator, echelon, parent_unit]
+    # …and these are the predicates that assert an organizational relationship.
+    # `observed-at` is deliberately ABSENT: a frame can state that equipment is
+    # at a place, never that a named formation is based there (G15).
+    predicates: [based-at, inducted-into, subordinate-to, commanded-by]
+
+discriminators:
+  # The discriminator bag, in ladder order (D-13.20). `name` is DELIBERATELY NOT
+  # a member: D-13.20's enabling change is splitting name OUT of the discriminator
+  # channel, so putting it back in the bag would undo the thing being demonstrated.
+  bag: [unique_id, designation, operator, geography, time, echelon]
+  # Instance-layer slots whose ABSENCE is an actionable collection gap and must
+  # be named rather than left silent. Chosen because these are exactly the slots
+  # whose absence structurally blocks a confirm (see `confirm.triggers`), so
+  # naming them tells the analyst what collection would unblock the assessment.
+  gap_on_unknown_slots: [designation, operator, time]
+  slots:
+    unique_id:
+      # D-13.20's load-bearing call: `hard_id_fields.unique` is a list of
+      # composite AND-keys. A bare designator is NOT an identifier (designations
+      # are reused across armies and across time); (operator, designation)
+      # together is. Declaring the key compositely makes the operator requirement
+      # STRUCTURAL rather than dependent on a namespace check that is broken in
+      # the Phase-2 fixpoint (D4).
+      composite_keys: [[operator, designation]]
+      # Highest weight in the bag: an AND-key match is the strongest
+      # attribute-level identity evidence available without a serial number.
+      weight: 0.30
+      # An identifier does not decay: it is a property of the referent, not of
+      # where the referent happened to be.
+      perishable: false
+      # Differing identifiers veto. The codebase already embodies exactly this
+      # asymmetry for bills of lading (differing ids veto, shared ones do not
+      # confirm alone) — D-13.20 says preserve it, do not "fix" it.
+      wall_on_conflict: true
+    designation:
+      # Slots a source may state a formation designation in.
+      attrs: [designator, unit_designator, base_designator, export_designator]
+      # Equal to `unique_id`: the designation is the non-perishable rung the whole
+      # ladder is built around, and under-weighting it would push identity onto
+      # the perishable rungs, which is the failure direction that fabricates.
+      weight: 0.30
+      # A designation persists through moves — that is what makes a formation a
+      # formation (spine/13 §3a).
+      perishable: false
+      # Top rung of the ladder: differing designation is a hard veto.
+      wall_on_conflict: true
+    operator:
+      # Slots a source may state the operating organisation / branch / country in.
+      attrs: [service_branch, operator_branch, operator, country, origin_country]
+      # Below designation because an operator is shared by every formation in
+      # that operator's order of battle — necessary for identity, never
+      # sufficient for it.
+      weight: 0.20
+      # An operator change is a real-world event, not observational decay.
+      perishable: false
+      # An operator conflict is the single most dangerous over-merge class for an
+      # operator-scoped OOB map (D4), so it walls.
+      wall_on_conflict: true
+      # R5.2: value normalization is a PREREQUISITE to walling on this slot. If a
+      # stated value cannot be normalized we cannot tell 'PAF' from 'Pakistan Air
+      # Force', so a mismatch is NOT evidence of difference — it is a gap. Walling
+      # on an unnormalized value SHATTERS legitimate merges; this makes that
+      # impossible by construction.
+      require_normalization_to_wall: true
+    geography:
+      # A site is usually reached through a relationship, not an attribute
+      # (spine/13 §7: "discriminators are attributes + relationships + derived geo").
+      from_predicates: [based-at, observed-at, deployed-at, located-at, garrisoned-at]
+      # …and sometimes stated as an attribute instead.
+      attrs: [coordinates, home_garrison, location, site]
+      # Below operator because geography is PERISHABLE: an agreement here is
+      # evidence about a moment, not about a referent.
+      weight: 0.15
+      # spine/13 §7 guard (a): geography is perishable, so geo agreement alone can
+      # never confirm a formation. This flag is what the perishable cap consumes
+      # (the D-13.9(a) guard the shipped config declares but does not yet read).
+      perishable: true
+      # A formation legitimately occupies many sites over time, so multiple values
+      # are normal here and must not read as a conflict.
+      multivalued: true
+      # spine/13 §7: "incompatible geo at overlapping times" is the wall — two
+      # different places at the SAME time cannot be one referent.
+      wall_on_conflict: true
+      # …and only at overlapping times, because different places at different
+      # times is a relocation hypothesis, not a contradiction.
+      wall_requires_time_overlap: true
+      # Matches how the geo veto is actually wired today (consulted pairwise
+      # inside `vetoed()`, absent from the transitive `veto` set). Kept
+      # non-transitive deliberately: a perishable, pairwise-observed conflict is
+      # not evidence about a third party.
+      transitive_wall: false
+    time:
+      # An observation's stated event time.
+      from_edge_field: event_time
+      # Lowest non-zero weight: a shared observation window is weak identity
+      # evidence on its own but is the axis continuity is measured on.
+      weight: 0.05
+      # Trivially perishable — it IS the time axis.
+      perishable: true
+      # An instance witnessed on several dates is normal, not contradictory.
+      multivalued: true
+      # Two different dates are not a conflict; they are a sequence. The conflict
+      # lives on `geography` (different place, same time), never here.
+      wall_on_conflict: false
+    echelon:
+      # Organizational level, when a source states one.
+      attrs: [echelon, formation_level]
+      # Deliberately low: it discriminates weakly.
+      weight: 0.05
+      # An echelon is a structural property, not an observation.
+      perishable: false
+      # Deliberately NOT a wall: sources routinely describe one referent at
+      # different granularity ("battery" inside "battalion"), so walling here
+      # would shatter legitimate merges on a reporting-style difference.
+      wall_on_conflict: false
+  # Two point dates conflict only when their stated precision windows actually
+  # intersect. Zero tolerance because widening the window would MANUFACTURE
+  # conflicts the sources did not state — the fabrication direction.
+  time_overlap_tolerance_days: 0
+
+scoring:
+  weights:
+    # D-13.10 / R3.1-R3.3: `name` is a separate signal from `discriminator` and is
+    # weighted so that a perfect name match CANNOT reach the probable floor. That
+    # is not a tuned number — it is the invariant `name < probable_floor` solved
+    # for the weight, and it is machine-checked in `invariants` below.
+    name: 0.20
+    # The discriminator channel must be able to reach `probable` on its own, so
+    # its weight is >= probable_floor. Also solved from an invariant, not tuned.
+    discriminator: 0.50
+    # The remainder. Relational is recall/presence support (spine/13 §6 lever 2)
+    # and is F9-limited (only completed merges carry weight), so it is weighted
+    # below discriminator on purpose.
+    relational: 0.30
+  bands:
+    # A pair reaches the analyst's merge queue when the evidence is at least as
+    # strong as full agreement on the discriminator channel alone. Defined by
+    # that statement, then read off the weights — not chosen by observing pairs.
+    probable_floor: 0.45
+    # A pair is worth showing as a weak lead once ANY single channel contributes.
+    # Set at or below the name weight so a name match lands here (D-13.10 says a
+    # name match REACHES possible — the cap is a ceiling, not a mute).
+    possible_floor: 0.15
+  invariants:
+    # D-13.10: a name-only pair must not reach `probable`. Asserted at load time
+    # against the weights/floors above, so a later config edit cannot quietly
+    # break the invariant the cap exists to protect.
+    name_alone_below_probable: true
+    # …and it must still reach `possible`, because name is a legitimate recall
+    # channel; suppressing it entirely would hide leads rather than cap them.
+    name_alone_reaches_possible: true
+    # Full discriminator agreement must reach `probable` with no name and no
+    # relational support, or the ladder's own rungs could not queue a pair.
+    full_discriminator_reaches_probable: true
+  # Signals are rounded before emission so identical input yields byte-identical
+  # output across platforms (float formatting is the only nondeterminism risk in
+  # an otherwise pure pipeline).
+  round_digits: 4
+
+relational:
+  # A DATED relationship to the same neighbour at two different times is not the
+  # same relationship, so the time belongs in the neighbour key for these
+  # predicates. Discovered by building this: without it, a CONFIRMED relocation
+  # manufactures relational evidence that its origin and destination are the same
+  # place — both sites end up holding an identical "based-at <that unit>" key and
+  # the pair is pushed into the analyst's merge queue as a probable place merge.
+  # Production patches the same hole from the other side, with a co-instance
+  # relocation exclusion (resolve/scoring.py:337-350); scoping the key by the
+  # stated time is that fix stated positively. D-13.20's ladder does not mention
+  # either, which is a gap in the decision text, not in the code.
+  time_scoped_predicates: [based-at, observed-at, deployed-at, garrisoned-at]
+
+name_channel:
+  # The two name views are combined with `max` INSIDE the name channel. This is
+  # explicitly not the criticized fusion: D-13.20 objects to `max(name_similarity,
+  # attribute_agreement)` because it collapses two DIFFERENT ladder rungs into
+  # one number. Combining two spellings-of-the-same-signal is a different act.
+  combine: max
+  # The standard Jaro-Winkler prefix scale (Winkler 1990). Reproducing the
+  # reference metric the production code already uses via rapidfuzz — a published
+  # constant, not a knob.
+  jaro_winkler_prefix_scale: 0.1
+  # The standard Jaro-Winkler prefix cap. Same reasoning.
+  jaro_winkler_prefix_cap: 4
+  rarity:
+    # spine/13 §7 and D-13.2/D-13.10 both rest on a "rarity-graded name" score
+    # that has no implementation anywhere in the codebase. The prototype builds
+    # one so the claim stops being aspirational.
+    enabled: true
+    # Add-one smoothing on the IDF denominator. The textbook smoothing choice; it
+    # keeps a token seen in every document from scoring exactly zero, so a
+    # common-token-only match degrades smoothly instead of falling off a cliff.
+    smoothing: 1.0
+
+caps:
+  # EVERY value in this block is a BAND NAME, not a float — D-13.19's explicit
+  # instruction. A coefficient was rejected there because at the shipped
+  # thresholds a x0.5 penalty drops a pair TWO bands, silently out of the
+  # analyst's queue; a band ceiling is threshold-independent and says the intent
+  # directly: "not automatically", never "not at all".
+  #
+  # D-13.10: a pair supported only by name similarity reaches at most `possible`.
+  name_alone: possible
+  # spine/13 §7 guard (a): perishable-only evidence cannot confirm. Not fused;
+  # queued and reported (D8 — there is no "probable merge").
+  perishable_only: probable
+  # D-13.14 / G16, and per D1 this is ANTI-FABRICATION machinery, not OOB hygiene:
+  # it is the only thing standing between an identity error and a drawn,
+  # positively-asserted relocation. A formation merge resting on shared
+  # design+site+operator is not fused.
+  co_location_formation: probable
+  # D-13.19: a same-document pair the source itself enumerated as siblings is
+  # capped at probable — it reaches the analyst with its licensing quote and can
+  # never auto-merge. ABSENCE of contrast is neutral, never a prior FOR merging.
+  same_doc_stated_contrast: probable
+  # D-13.20 rung 2: a composite-AND-key match "lifts all caps". Lifting is scoped
+  # to the caps that are ABSENCE-of-evidence restraints. `same_doc_stated_contrast`
+  # is deliberately absent from this list: it is POSITIVE stated anti-identity
+  # evidence, and evidence is weighed against evidence, never lifted by it.
+  lifted_by_composite_unique_id: [name_alone, perishable_only, co_location_formation]
+
+confirm:
+  # `confirmed` means THE PAIR FUSED. There is no score threshold for fusion on
+  # purpose: D-13.20 says the top rungs are SHAPES, not scores, and a score floor
+  # would re-admit name similarity (a component of the total) into the fusion
+  # decision — exactly the leakage D-13.10 forbids. So fusion requires a
+  # structural trigger below, no wall, and no ceiling.
+  triggers:
+    composite_unique_id_match:
+      # Every component of a configured composite AND-key present on both sides
+      # and equal. spine/13 §7: the unique id is the FAST PATH to confirmed.
+      # One source suffices because an id match is the source stating identity,
+      # not two sources agreeing by coincidence.
+      min_independent_sources: 1
+    temporal_continuity:
+      # A shared non-perishable discriminator plus a temporally exclusive dated
+      # sequence — spine/13 §6's "designation re-appearing at a new site". One
+      # source suffices because a witnessed sequence IS the continuity evidence.
+      min_independent_sources: 1
+    corroborated_designation:
+      # A shared designation with operator agreement but no complete AND-key.
+      # R5.1: one shared designation string may never confirm alone, so this
+      # trigger demands INDEPENDENT corroboration — two distinct documents.
+      min_independent_sources: 2
+  # R3.2 / D3(b): a name-derived trigger must never count as durable support for
+  # the purposes of a cap. Name may buy a comparison; it may never buy the thing
+  # a cap exists to withhold. Set false permanently; it exists as a switch only
+  # so the prohibition is visible and auditable rather than implicit.
+  name_derived_triggers_allowed: false
+
+relocation:
+  # Predicates whose object is a place, so a change of object over time is a
+  # candidate movement.
+  predicates: [based-at, observed-at, deployed-at, garrisoned-at]
+  # THE D1 GUARD. A relocation edge may be drawn only when the underlying
+  # identity reached this status. Any other status withholds the edge WITH a
+  # reason and a named gap. Stated as a status name rather than a number so it
+  # cannot be nudged.
+  drawn_requires_identity_status: confirmed
+  # A single source that authoritatively co-refers its own mentions and dates two
+  # placements is making an explicit transition claim (spine/13 §5: the source is
+  # authority on its own referents), and it is grade-gated by the authoritative
+  # bind's own floor. Exposed as a switch because it is the one place the D1
+  # guard admits a single-source identity, and that deserves to be auditable.
+  allow_single_source_authoritative_identity: true
+
+normalization:
+  # R5.2: config-driven, analyst-editable equivalence classes, applied BEFORE
+  # conflict detection and before any namespace/AND-key derivation. The classes
+  # below are NEUTRAL PLACEHOLDERS for the prototype's invented domain — a
+  # corpus-blind hand must not seed real-world operator aliases. The real table
+  # is a data/analyst artefact. Note the safe-degradation property: an EMPTY
+  # table produces no false walls, only gaps.
+  equivalence_classes:
+    operator:
+      - [northern directorate, nd, north directorate]
+      - [coastal directorate, cd, coast directorate]
+      - [inland directorate, id, inland dte]
+  # Ordinal spellings of the same designator are the same designator. Language
+  # -general orthography, not domain data.
+  designator_ordinals:
+    "1st": "1"
+    first: "1"
+    "2nd": "2"
+    second: "2"
+    "3rd": "3"
+    third: "3"
+    "4th": "4"
+    fourth: "4"
+    "5th": "5"
+    fifth: "5"
+    "6th": "6"
+    sixth: "6"
+    "7th": "7"
+    seventh: "7"
+    "8th": "8"
+    eighth: "8"
+    "9th": "9"
+    ninth: "9"
+    "10th": "10"
+    tenth: "10"
+    "11th": "11"
+    eleventh: "11"
+    "12th": "12"
+    twelfth: "12"
+  # Script substitution rules, mirroring the production normalizer's `rules`
+  # argument. Empty here: the prototype's cases are Latin-script, and inventing
+  # transliterations for a corpus this hand has not seen would be fabrication.
+  transliteration: {}
+  # Rendered between the stated values of a multi-valued discriminator slot. A
+  # display choice; kept in config so the output format is not a code literal.
+  multivalue_join: " | "
+
+output:
+  # Values in the emitted discriminator bag are the STATED (raw) source values,
+  # while all comparison runs on the normalized form. Provenance discipline: the
+  # analyst must see what the source said, not what the normalizer made of it.
+  display_stated_values: true
+  # A cross-type pair is a SKIP in production, with an escape hatch. The
+  # prototype surfaces it as a named wall instead, because every other rejection
+  # path in the design is required to be visible (cf. D2, where a silent
+  # truncation is the defect) — a skip that emits nothing is the shape of that bug.
+  emit_type_incompatible_pairs: true
+
+gaps:
+  # Analyst-facing prose only — no thresholds, no numbers baked in (G6-clean, and
+  # the same discipline as `_perishable_confirm_reason` in production). Each
+  # template names WHAT IS MISSING and WHAT WOULD CLOSE IT, per the
+  # non-negotiable's "insufficient evidence" contract.
+  sentences:
+    formation-unresolved: "Presence at {geography} is supported, but the formation identity is not: the only agreement between {a} and {b} is shared design, site and operator, which cannot distinguish one formation from two co-located ones. Missing: {missing}. Held at {ceiling} pending a unit-level discriminator or an analyst decision."
+    formation-count-unresolved: "At {geography} there are {n} candidate formations that did not resolve to one another. The presence is confirmed; the formation count is unresolved. Missing: {missing}. Reporting a single formation here would undercount the order of battle."
+    discriminator-unstated: "No source states the {missing} for {about}. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+    relocation-unconfirmed: "A movement from {frm} to {to} is consistent with the observations, but the identity that would make it one referent's movement is {status}. No relocation is asserted. Missing: {missing}."
+    grouping-declined: "A within-document coreference grouping over {about} was declined: {detail}. The mentions are held at claim-atom granularity and raised for an analyst; nothing was merged on the strength of the proposal."
+    coref-held-loose: "A within-document coreference proposal over {about} did not clear its {detail} gate, so it was held as a candidate rather than binding. Licensing quote: {quote}"
+    operator-unnormalized: "The stated operator values {detail} for {about} are not in the normalization table, so no operator conflict could be tested and no wall was applied. The pair is left to the analyst rather than walled on an untested string comparison."
+    contrast-vs-identifier: "The source both enumerated {a} and {b} as separate siblings and gave them the same composite identifier. That is a contradiction within one document; the pair is not fused and is raised as stated."

@@ -282,6 +282,37 @@ def load_html(html: str, file: str) -> LoadedDoc:
 
 # ── image ────────────────────────────────────────────────────────────────────────────────────────
 
+#: Magic-byte signatures, longest-prefix first. Only the formats a provider will accept are worth
+#: sniffing — anything else falls through to the extension map and then to ``application/octet-stream``.
+_IMAGE_MAGIC: tuple[tuple[bytes, str], ...] = (
+    (b"\x89PNG\r\n\x1a\n", "image/png"),
+    (b"\xff\xd8\xff", "image/jpeg"),
+    (b"GIF87a", "image/gif"),
+    (b"GIF89a", "image/gif"),
+    (b"BM", "image/bmp"),
+    (b"II*\x00", "image/tiff"),
+    (b"MM\x00*", "image/tiff"),
+)
+
+
+def _sniff_media_type(data: bytes) -> str | None:
+    """The image's media type read from its BYTES, not from its filename. ``None`` ⇒ unrecognised.
+
+    A filename is a claim about content, and in OSINT material it is routinely a false one: an image that
+    has been through a social platform has been transcoded, and it keeps whatever extension the person who
+    saved it typed. Four of this corpus's nine ``.png`` frames are in fact JPEG — and they are exactly the
+    re-share/recycled-image documents, i.e. the corpus is being *realistic* and the loader was being naive.
+    Declaring the wrong type to a provider is a hard 400, so trusting the extension silently cost us every
+    image-bearing document in a keyed re-record. Bytes first, extension only as a fallback.
+    """
+    if data.startswith(b"RIFF") and data[8:12] == b"WEBP":  # RIFF container: the tag is at offset 8
+        return "image/webp"
+    for signature, media_type in _IMAGE_MAGIC:
+        if data.startswith(signature):
+            return media_type
+    return None
+
+
 def load_image(data: bytes, file: str, *, media_type: str | None = None) -> LoadedDoc:
     """Package an image: no text (the VLM reads it downstream), one whole-image region + raw bytes.
 
@@ -289,7 +320,7 @@ def load_image(data: bytes, file: str, *, media_type: str | None = None) -> Load
     loader only carries the bytes + a citable image region so provenance exists before any read.
     """
     ext = PurePosixPath(file).suffix.lower()
-    media_type = media_type or {
+    media_type = media_type or _sniff_media_type(data) or {
         ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
         ".webp": "image/webp", ".tif": "image/tiff", ".tiff": "image/tiff",
         ".bmp": "image/bmp", ".gif": "image/gif",

@@ -20,7 +20,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -31,7 +31,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "source_type": "think-tank"
+        "source_type": "think tank"
       },
       "entity_type": "source",
       "form": "entity",
@@ -39,6 +39,99 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l3-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 3,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        130,
+        164
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "database"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Military Balance+"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        205,
+        278
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "annex"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "2025 Military Balance defence-industrial annex"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -48,6 +141,69 @@
     "asserts": "entity",
     "attributes": null,
     "claim_id": "d22-deep-tier-supplier-l10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        515,
+        584
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9 family"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c5",
+      "_coref_evidence": "NAME_VARIANT",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "'NAME_VARIANT' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another predicate — immune to the very cap that replaced it",
+      "_coref_quotes": [
+        "associated with the HQ-9 family and its export derivative, the HQ-9/P (in Pakistani service).",
+        "exported alongside the HQ-9P to Pakistan"
+      ],
+      "_coref_referent": "ref:d22-deep-tier-supplier-c5",
+      "_object_mention": "d22-deep-tier-supplier-l14-5",
+      "_subject_mention": "d22-deep-tier-supplier-l10-3",
+      "source_quote": "associated with the HQ-9 family and its export derivative, the HQ-9/P (in Pakistani service)."
+    },
+    "claim_id": "d22-deep-tier-supplier-l10-2",
     "doc_ref": [
       {
         "bbox": null,
@@ -58,21 +214,21 @@
         "region": null,
         "row": null,
         "span": [
-          487,
-          546
+          515,
+          608
         ]
       },
       {
         "bbox": null,
         "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
         "frame": null,
-        "line": 10,
+        "line": 14,
         "page": null,
         "region": null,
         "row": null,
         "span": [
-          487,
-          584
+          1094,
+          1134
         ]
       }
     ],
@@ -80,7 +236,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -88,15 +244,20 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HT-233"
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "d22-deep-tier-supplier-l10-3",
+      "d22-deep-tier-supplier-l14-5"
+    ],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c5",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -105,7 +266,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d22-deep-tier-supplier-l10-2",
+    "claim_id": "d22-deep-tier-supplier-l10-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -116,14 +277,14 @@
       "row": null,
       "span": [
         551,
-        584
+        607
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -133,13 +294,17 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "family": "HQ-9 family",
+        "operator_branch": "Pakistani service"
+      },
       "entity_type": "variant",
       "form": "entity",
       "name": "HQ-9/P"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c5",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -148,9 +313,13 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d22-deep-tier-supplier-l10-2"
+      "_as_stated_predicate": "exported-by",
+      "_object_mention": "d22-deep-tier-supplier-l10-3",
+      "_relane_reason": "'exported-by'@(variant->manufacturer) reversed -> manufactures",
+      "_subject_mention": "d22-deep-tier-supplier-l14-9",
+      "source_quote": "CPMIEC... markets and contracts the sale of the HQ-9/P system as a package (missiles, launchers, radar, C2 vehicles) to foreign customers including Pakistan"
     },
-    "claim_id": "d22-deep-tier-supplier-l10-3",
+    "claim_id": "d22-deep-tier-supplier-l10-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -168,7 +337,55 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "CPMIEC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l14-5",
+      "_subject_mention": "d22-deep-tier-supplier-l10-3"
+    },
+    "claim_id": "d22-deep-tier-supplier-l10-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 10,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        578,
+        584
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -186,6 +403,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -194,7 +412,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d22-deep-tier-supplier-l10-4",
+    "claim_id": "d22-deep-tier-supplier-l10-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -204,7 +422,7 @@
       "region": null,
       "row": null,
       "span": [
-        652,
+        694,
         723
       ]
     },
@@ -212,7 +430,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -222,56 +440,16 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "origin_country": "China"
+      },
       "entity_type": "manufacturer",
       "form": "entity",
       "name": "CASC"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d22_deep_tier_supplier",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d22-deep-tier-supplier-l10-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
-      "frame": null,
-      "line": 10,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        652,
-        723
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "CASIC"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -290,7 +468,7 @@
       "region": null,
       "row": null,
       "span": [
-        1063,
+        1005,
         1089
       ]
     },
@@ -298,7 +476,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -308,21 +486,32 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
+      "attrs": {
+        "component_class": "phased-array engagement radar",
+        "functional_role": "engagement radar",
+        "model_designation": "HT-233"
+      },
+      "entity_type": "component",
       "form": "entity",
-      "name": "HQ-9"
+      "name": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d22-deep-tier-supplier-l10",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d22-deep-tier-supplier-l14",
+      "source_quote": "HT-233 phased-array engagement radar, associated with HQ-9/HQ-9A/HQ-9B batteries"
+    },
     "claim_id": "d22-deep-tier-supplier-l14-2",
     "doc_ref": {
       "bbox": null,
@@ -333,7 +522,7 @@
       "region": null,
       "row": null,
       "span": [
-        1063,
+        1009,
         1089
       ]
     },
@@ -341,7 +530,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -351,13 +540,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9A"
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -376,7 +567,7 @@
       "region": null,
       "row": null,
       "span": [
-        1063,
+        1047,
         1089
       ]
     },
@@ -384,7 +575,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -394,13 +585,16 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "family": "HQ-9 family"
+      },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9B"
+      "name": "HQ-9A"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -419,15 +613,15 @@
       "region": null,
       "row": null,
       "span": [
-        1331,
-        1382
+        1047,
+        1089
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -438,24 +632,23 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "role": "export and foreign-trade entity"
+        "family": "HQ-9 family"
       },
-      "entity_type": "manufacturer",
+      "entity_type": "variant",
       "form": "entity",
-      "name": "China Precision Machinery Import-Export Corporation"
+      "name": "HQ-9B"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "d22-deep-tier-supplier-l14-4"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d22-deep-tier-supplier-l14-5",
     "doc_ref": {
       "bbox": null,
@@ -466,15 +659,175 @@
       "region": null,
       "row": null,
       "span": [
-        1331,
-        1382
+        1094,
+        1134
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9 family"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l14-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1331,
+        1391
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "export and foreign-trade entity"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "CPMIEC",
+        "China Precision Machinery Import-Export Corporation"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_referent": "ref:d22-deep-tier-supplier-c1",
+      "_object_mention": "d22-deep-tier-supplier-l14-6",
+      "_subject_mention": "d22-deep-tier-supplier-l14-9",
+      "source_quote": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "claim_id": "d22-deep-tier-supplier-l14-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1331,
+        1391
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "China Precision Machinery Import-Export Corporation",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "CPMIEC"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d22-deep-tier-supplier-l14-9",
+      "d22-deep-tier-supplier-l14-6"
+    ],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l14-9",
+      "_subject_mention": "d22-deep-tier-supplier-l14-6"
+    },
+    "claim_id": "d22-deep-tier-supplier-l14-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1331,
+        1391
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -492,16 +845,108 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "d22-deep-tier-supplier-l18-2"
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l14-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1462,
+        1582
+      ]
     },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "export and foreign-trade entity"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CPMIEC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l14-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2035,
+        2128
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "T/R front end"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "T/R front end"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d22-deep-tier-supplier-l18",
     "doc_ref": {
       "bbox": null,
@@ -513,14 +958,14 @@
       "row": null,
       "span": [
         2778,
-        2916
+        2809
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -530,14 +975,16 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Beijing Institute of Radio Measurement",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "CASIC's 23rd Research Institute"
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CASIC"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -557,14 +1004,14 @@
       "row": null,
       "span": [
         2778,
-        2929
+        2910
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -574,13 +1021,17 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "origin_country": "China",
+        "role": "radar house"
+      },
       "entity_type": "manufacturer",
       "form": "entity",
-      "name": "CASIC's 23rd Research Institute"
+      "name": "23rd Research Institute"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -589,6 +1040,7 @@
   {
     "asserts": "relationship",
     "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l18-6",
       "_subject_mention": "d22-deep-tier-supplier-l18-2"
     },
     "claim_id": "d22-deep-tier-supplier-l18-3",
@@ -602,14 +1054,14 @@
       "row": null,
       "span": [
         2778,
-        2929
+        2910
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -620,13 +1072,14 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "BIRM",
+      "object": "Beijing Institute of Radio Measurement",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "CASIC's 23rd Research Institute"
+      "subject": "23rd Research Institute"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -634,7 +1087,23 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "23rd Research Institute",
+        "Beijing Institute of Radio Measurement"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "CASIC's 23rd Research Institute, more commonly rendered in English-language literature as the Beijing Institute of Radio Measurement (BIRM, 北京无线电测量研究所)."
+      ],
+      "_coref_referent": "ref:d22-deep-tier-supplier-c2",
+      "_object_mention": "d22-deep-tier-supplier-l18-6",
+      "_subject_mention": "d22-deep-tier-supplier-l18-2",
+      "source_quote": "CASIC's 23rd Research Institute, more commonly rendered in English-language literature as the Beijing Institute of Radio Measurement (BIRM, 北京无线电测量研究所)."
+    },
     "claim_id": "d22-deep-tier-supplier-l18-4",
     "doc_ref": {
       "bbox": null,
@@ -645,15 +1114,15 @@
       "region": null,
       "row": null,
       "span": [
-        2872,
-        2916
+        2778,
+        2930
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -661,16 +1130,20 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
       "form": "triple",
-      "object": "BIRM",
+      "object": "Beijing Institute of Radio Measurement",
       "object_value": null,
-      "predicate": "same-as",
-      "subject": "Beijing Institute of Radio Measurement"
+      "predicate": "coref-same-as",
+      "subject": "23rd Research Institute"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "d22-deep-tier-supplier-l18-2",
+      "d22-deep-tier-supplier-l18-6"
+    ],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -678,8 +1151,72 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "23rd Research Institute",
+        "BIRM"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "CASIC's 23rd Research Institute, more commonly rendered in English-language literature as the Beijing Institute of Radio Measurement (BIRM, 北京无线电测量研究所)."
+      ],
+      "_coref_referent": "ref:d22-deep-tier-supplier-c2",
+      "_object_mention": "d22-deep-tier-supplier-l18-8",
+      "_subject_mention": "d22-deep-tier-supplier-l18-2",
+      "source_quote": "CASIC's 23rd Research Institute, more commonly rendered in English-language literature as the Beijing Institute of Radio Measurement (BIRM, 北京无线电测量研究所)."
+    },
     "claim_id": "d22-deep-tier-supplier-l18-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2778,
+        2930
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "BIRM",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "23rd Research Institute"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d22-deep-tier-supplier-l18-2",
+      "d22-deep-tier-supplier-l18-8"
+    ],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l18-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -697,7 +1234,57 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "radar house"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "Beijing Institute of Radio Measurement"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l18-8",
+      "_subject_mention": "d22-deep-tier-supplier-l18-6"
+    },
+    "claim_id": "d22-deep-tier-supplier-l18-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2872,
+        2929
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -708,24 +1295,172 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "北京无线电测量研究所",
+      "object": "BIRM",
       "object_value": null,
       "predicate": "same-as",
       "subject": "Beijing Institute of Radio Measurement"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "d22-deep-tier-supplier-l18-7"
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l18-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2931,
+        2986
+      ]
     },
-    "claim_id": "d22-deep-tier-supplier-l18-6",
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "radar house"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "BIRM"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_rejected_relation": {
+        "object": "Second Academy",
+        "predicate": "component-of",
+        "reason": "no edge for (manufacturer->manufacturer)",
+        "source_quote": "BIRM sits organisationally under CASIC's Second Academy"
+      }
+    },
+    "claim_id": "d22-deep-tier-supplier-l18-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2931,
+        2986
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "BIRM"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_rejected_relation": {
+        "object": "CASIC",
+        "predicate": "component-of",
+        "reason": "no edge for (manufacturer->manufacturer)",
+        "source_quote": "CASIC's Second Academy"
+      }
+    },
+    "claim_id": "d22-deep-tier-supplier-l18-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2964,
+        2986
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "Second Academy"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l18-11",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -743,7 +1478,166 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "Second Academy"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l18-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2964,
+        2996
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "中国航天科工二院"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Second Academy",
+        "中国航天科工二院"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "CASIC's Second Academy (中国航天科工二院"
+      ],
+      "_coref_referent": "ref:d22-deep-tier-supplier-c3",
+      "_object_mention": "d22-deep-tier-supplier-l18-12",
+      "_subject_mention": "d22-deep-tier-supplier-l18-11",
+      "source_quote": "CASIC's Second Academy (中国航天科工二院"
+    },
+    "claim_id": "d22-deep-tier-supplier-l18-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2964,
+        2996
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "中国航天科工二院",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Second Academy"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d22-deep-tier-supplier-l18-11",
+      "d22-deep-tier-supplier-l18-12"
+    ],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l18-12",
+      "_subject_mention": "d22-deep-tier-supplier-l18-11"
+    },
+    "claim_id": "d22-deep-tier-supplier-l18-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2964,
+        2996
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -757,19 +1651,26 @@
       "object": "中国航天科工二院",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "CASIC's Second Academy"
+      "subject": "Second Academy"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d22-deep-tier-supplier-l18-7",
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "design-authority-for",
+      "_object_mention": "d22-deep-tier-supplier-l10",
+      "_relane_reason": "'design-authority-for'@(manufacturer->variant) -> manufactures",
+      "_subject_mention": "d22-deep-tier-supplier-l18-11",
+      "source_quote": "CASIC's Second Academy (中国航天科工二院, the same parent academy responsible for HQ-9 system integration more broadly)"
+    },
+    "claim_id": "d22-deep-tier-supplier-l18-15",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -787,7 +1688,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -797,13 +1698,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "CASIC's Second Academy"
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "Second Academy"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -830,7 +1733,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -844,30 +1747,36 @@
         "coordinates": {
           "geocode_candidates": [],
           "precision_class": null,
-          "proposed_alias": "Haidian District, in western Beijing",
-          "raw": "Haidian District, in western Beijing",
+          "proposed_alias": "Yongding Road, Haidian District, in western Beijing",
+          "raw": "Yongding Road, Haidian District, in western Beijing",
           "resolved_place_ref": null,
           "surface_format": "toponym",
           "wgs84_lat": null,
           "wgs84_lon": null
-        }
+        },
+        "site_type": "facility"
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Yongding Road"
+      "name": "Yongding Road facility"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": {
-      "_object_mention": "d22-deep-tier-supplier-l20",
-      "_undated_perishable": true
+      "_rejected_relation": {
+        "object": "Yongding Road facility",
+        "predicate": "based-at",
+        "reason": "no edge for (manufacturer->basing_site)",
+        "source_quote": "BIRM's facility is generally located by open-source compilers on Yongding Road (永定路), Haidian District, in western Beijing"
+      }
     },
     "claim_id": "d22-deep-tier-supplier-l20-2",
     "doc_ref": {
@@ -887,7 +1796,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -897,14 +1806,14 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Yongding Road",
-      "object_value": null,
-      "predicate": "based-at",
-      "subject": "Beijing Institute of Radio Measurement"
+      "attrs": {},
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "23rd Research Institute"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -923,7 +1832,7 @@
       "region": null,
       "row": null,
       "span": [
-        4150,
+        4154,
         4198
       ]
     },
@@ -931,7 +1840,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -944,10 +1853,11 @@
       "attrs": {},
       "entity_type": "variant",
       "form": "entity",
-      "name": "JY-"
+      "name": "JY- series"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -966,7 +1876,7 @@
       "region": null,
       "row": null,
       "span": [
-        4150,
+        4154,
         4198
       ]
     },
@@ -974,7 +1884,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -987,10 +1897,11 @@
       "attrs": {},
       "entity_type": "variant",
       "form": "entity",
-      "name": "YLC-"
+      "name": "YLC- series"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -998,7 +1909,14 @@
   },
   {
     "asserts": "entity",
-    "attributes": null,
+    "attributes": {
+      "_rejected_relation": {
+        "object": "CASIC",
+        "predicate": "component-of",
+        "reason": "no edge for (manufacturer->manufacturer)",
+        "source_quote": "CASIC's 4th Academy"
+      }
+    },
     "claim_id": "d22-deep-tier-supplier-l24",
     "doc_ref": {
       "bbox": null,
@@ -1017,7 +1935,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1027,25 +1945,22 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "role": "solid-rocket-motor house"
-      },
+      "attrs": {},
       "entity_type": "manufacturer",
       "form": "entity",
-      "name": "CASIC's 4th Academy"
+      "name": "4th Academy"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "d22-deep-tier-supplier-l24"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d22-deep-tier-supplier-l24-2",
     "doc_ref": {
       "bbox": null,
@@ -1064,7 +1979,120 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "中国航天科工四院"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "4th Academy",
+        "中国航天科工四院"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "CASIC's 4th Academy (中国航天科工四院"
+      ],
+      "_coref_referent": "ref:d22-deep-tier-supplier-c4",
+      "_object_mention": "d22-deep-tier-supplier-l24-2",
+      "_subject_mention": "d22-deep-tier-supplier-l24-5",
+      "source_quote": "CASIC's 4th Academy (中国航天科工四院"
+    },
+    "claim_id": "d22-deep-tier-supplier-l24-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4348,
+        4377
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "中国航天科工四院",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "4th Academy"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d22-deep-tier-supplier-l24-5",
+      "d22-deep-tier-supplier-l24-2"
+    ],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l24-2",
+      "_subject_mention": "d22-deep-tier-supplier-l24-5"
+    },
+    "claim_id": "d22-deep-tier-supplier-l24-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4348,
+        4377
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1078,10 +2106,11 @@
       "object": "中国航天科工四院",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "CASIC's 4th Academy"
+      "subject": "4th Academy"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -1090,7 +2119,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d22-deep-tier-supplier-l24-3",
+    "claim_id": "d22-deep-tier-supplier-l24-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -1108,7 +2137,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1118,13 +2147,17 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "basing_site",
+      "attrs": {
+        "origin_country": "China",
+        "role": "solid-rocket-motor house"
+      },
+      "entity_type": "manufacturer",
       "form": "entity",
-      "name": "Xi'an area"
+      "name": "4th Academy"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d22-deep-tier-supplier-c4",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -1132,15 +2165,8 @@
   },
   {
     "asserts": "entity",
-    "attributes": {
-      "_rejected_relation": {
-        "object": "Xi'an area",
-        "predicate": "based-at",
-        "reason": "no edge for (manufacturer->basing_site)",
-        "source_quote": "CASIC's 4th Academy (中国航天科工四院, headquartered in the Xi'an area"
-      }
-    },
-    "claim_id": "d22-deep-tier-supplier-l24-4",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l24-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
@@ -1150,15 +2176,15 @@
       "region": null,
       "row": null,
       "span": [
-        4348,
-        4410
+        4652,
+        4688
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1168,13 +2194,16 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "manufacturer",
+      "attrs": {
+        "functional_role": "interceptor motor"
+      },
+      "entity_type": "component",
       "form": "entity",
-      "name": "CASIC's 4th Academy"
+      "name": "boost motor"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -1193,15 +2222,15 @@
       "region": null,
       "row": null,
       "span": [
-        5512,
-        5607
+        5453,
+        5510
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1212,20 +2241,166 @@
     "kind": "observation",
     "payload": {
       "attrs": {},
-      "entity_type": "manufacturer",
+      "entity_type": "component",
       "form": "entity",
-      "name": "CETC"
+      "name": "T/R module or MMIC foundry"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l30-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 30,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        5567,
+        5607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CETC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l31",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 31,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        5657,
+        5726
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "terminal-guidance package"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "seeker-head"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d22-deep-tier-supplier-l32",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 32,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        5731,
+        5819
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "fire-control loop integration"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "datalink/waveform"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_object_mention": "d22-deep-tier-supplier-l34-3",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d22-deep-tier-supplier-l10-3",
+      "_undated_perishable": true,
+      "source_quote": "the export configuration delivered to Pakistan (reportedly comprising an estimated four to six HQ-9/P battalions"
+    },
     "claim_id": "d22-deep-tier-supplier-l34",
     "doc_ref": {
       "bbox": null,
@@ -1237,14 +2412,14 @@
       "row": null,
       "span": [
         6058,
-        6235
+        6170
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1254,40 +2429,23 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "count_state": "estimated",
-        "quantity": {
-          "approx": false,
-          "count_state": null,
-          "max": null,
-          "min": null,
-          "unit": "/P",
-          "value": 9.0
-        }
-      },
-      "event_type": "InductionEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/P",
-        "Pakistan"
-      ],
-      "time_interval": null
+      "form": "triple",
+      "object": "HQ-9/P battalion",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d22-deep-tier-supplier-l34-4",
-      "_subject_mention": "d22-deep-tier-supplier-l10-2",
-      "_undated_perishable": true
-    },
+    "asserts": "event",
+    "attributes": null,
     "claim_id": "d22-deep-tier-supplier-l34-2",
     "doc_ref": {
       "bbox": null,
@@ -1306,7 +2464,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1316,26 +2474,46 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Punjab",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "quantity": {
+          "approx": true,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "/P",
+          "value": 9.0
+        }
+      },
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Sindh and Punjab provinces",
+        "raw": "Sindh and Punjab provinces",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P",
+        "Pakistan",
+        "HQ-9/P battalion"
+      ],
+      "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d22-deep-tier-supplier-l34-5",
-      "_subject_mention": "d22-deep-tier-supplier-l10-2",
-      "_undated_perishable": true
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d22-deep-tier-supplier-l34-3",
     "doc_ref": {
       "bbox": null,
@@ -1346,15 +2524,15 @@
       "region": null,
       "row": null,
       "span": [
-        6058,
-        6333
+        6128,
+        6332
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1364,14 +2542,16 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Sindh",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "echelon": "battalion"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "HQ-9/P battalion"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -1398,7 +2578,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1410,22 +2590,32 @@
     "payload": {
       "attrs": {
         "coordinates": {
-          "geocode_candidates": [],
+          "geocode_candidates": [
+            {
+              "confidence": 0.9,
+              "label": "Punjab province, Pakistan",
+              "lat": 31.1471,
+              "lon": 72.7097,
+              "source": "gazetteer"
+            }
+          ],
           "precision_class": null,
-          "proposed_alias": "Punjab province, Pakistan",
-          "raw": "Punjab province, Pakistan",
+          "proposed_alias": "Punjab province",
+          "raw": "Punjab province",
           "resolved_place_ref": null,
           "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
-        }
+          "wgs84_lat": 31.1471,
+          "wgs84_lon": 72.7097
+        },
+        "site_type": "fielding location"
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Punjab"
+      "name": "Punjab site"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",
@@ -1452,7 +2642,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1464,22 +2654,130 @@
     "payload": {
       "attrs": {
         "coordinates": {
-          "geocode_candidates": [],
+          "geocode_candidates": [
+            {
+              "confidence": 0.9,
+              "label": "Sindh province, Pakistan",
+              "lat": 25.8943,
+              "lon": 68.5247,
+              "source": "gazetteer"
+            }
+          ],
           "precision_class": null,
-          "proposed_alias": "Sindh province, Pakistan",
-          "raw": "Sindh province, Pakistan",
+          "proposed_alias": "Sindh province",
+          "raw": "Sindh province",
           "resolved_place_ref": null,
           "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
-        }
+          "wgs84_lat": 25.8943,
+          "wgs84_lon": 68.5247
+        },
+        "site_type": "fielding location"
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Sindh"
+      "name": "Sindh site"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l34-4",
+      "_subject_mention": "d22-deep-tier-supplier-l34-3",
+      "_undated_perishable": true
+    },
+    "claim_id": "d22-deep-tier-supplier-l34-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        6242,
+        6332
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Punjab site",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "HQ-9/P battalion"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d22_deep_tier_supplier",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d22-deep-tier-supplier-l34-5",
+      "_subject_mention": "d22-deep-tier-supplier-l34-3",
+      "_undated_perishable": true
+    },
+    "claim_id": "d22-deep-tier-supplier-l34-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d22_deep_tier_supplier.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        6242,
+        6332
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Sindh site",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "HQ-9/P battalion"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d22_deep_tier_supplier",

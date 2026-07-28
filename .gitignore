@@ -40,3 +40,5 @@ tracker/todo
 tmp/qa/fixshots/
 tmp/qa/**/*.png
 **/screenshots/
+corpus/scenarios/hq9p_sandbox/
+tmp/spike-rk/proto/__pycache__/

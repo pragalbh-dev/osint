@@ -1,0 +1,480 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 236.75528137106448,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "China Aerospace Science and Industry Corporation",
+            "name_b": "CASIC",
+            "source_quote": "China Aerospace Science and Industry Corporation (CASIC)"
+          },
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HQ-9P",
+            "source_quote": "reportedly designated HQ-9/P (some regional trade reporting still uses HQ-9P"
+          },
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "FD-2000",
+            "source_quote": "reportedly designated HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+          },
+          {
+            "name_a": "FT-2000",
+            "name_b": "FT-2000A",
+            "source_quote": "the FT-2000 (sometimes rendered FT-2000A)"
+          },
+          {
+            "name_a": "S-400 Triumf",
+            "name_b": "Triumph",
+            "source_quote": "S-400 Triumf (referred to in some Indian press as the \"Triumph\" system"
+          },
+          {
+            "name_a": "S-400 Triumf",
+            "name_b": "SA-21",
+            "source_quote": "S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+          }
+        ],
+        "basing_sites": [],
+        "components": [
+          {
+            "component_class": "missile rounds",
+            "context": {
+              "designation": null,
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "count_state": null,
+            "functional_role": null,
+            "name": "different missile rounds",
+            "quantity_text": null,
+            "radar_band": null,
+            "source_quote": "different missile rounds, reportedly different engagement radars"
+          },
+          {
+            "component_class": "engagement radars",
+            "context": {
+              "designation": null,
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "count_state": null,
+            "functional_role": "engagement",
+            "name": "different engagement radars",
+            "quantity_text": null,
+            "radar_band": null,
+            "source_quote": "different missile rounds, reportedly different engagement radars"
+          },
+          {
+            "component_class": "seeker",
+            "context": {
+              "designation": null,
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "count_state": null,
+            "functional_role": "passive anti-radiation",
+            "name": "passive anti-radiation seeker",
+            "quantity_text": null,
+            "radar_band": null,
+            "source_quote": "the FT-2000 (sometimes rendered FT-2000A) — which uses a passive anti-radiation seeker"
+          },
+          {
+            "component_class": "seeker",
+            "context": {
+              "designation": null,
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "count_state": null,
+            "functional_role": "semi-active radar homing",
+            "name": "semi-active radar homing",
+            "quantity_text": null,
+            "radar_band": null,
+            "source_quote": "the semi-active radar homing employed by the HQ-9 family proper"
+          }
+        ],
+        "denials": [
+          {
+            "object": "FT-2000",
+            "predicate": "has acquired",
+            "source_quote": "There is no confirmed evidence that Pakistan has acquired the FT-2000",
+            "subject": "Pakistan"
+          },
+          {
+            "object": "the claim that Pakistan operates \"FT-2000 batteries\"",
+            "predicate": "was able to substantiate",
+            "source_quote": "a claim this publication was unable to substantiate through any primary Pakistani MoD or ISPR statement",
+            "subject": "this publication"
+          },
+          {
+            "object": "HQ-9BE variant specifically to Pakistan",
+            "predicate": "has officially confirmed export",
+            "source_quote": "Chinese state media, for its part, has never officially confirmed export of the HQ-9BE variant specifically to Pakistan",
+            "subject": "Chinese state media"
+          }
+        ],
+        "distinctions": [
+          {
+            "name_a": "Army and PAF systems",
+            "name_b": "a single system fielded twice",
+            "source_quote": "the Army and PAF systems appear to be genuinely separate procurement lines rather than a single system fielded twice"
+          },
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HQ-9BE",
+            "source_quote": "the Army and PAF systems appear to be genuinely separate procurement lines rather than a single system fielded twice — different missile rounds, reportedly different engagement radars"
+          }
+        ],
+        "events": [
+          {
+            "count_state": null,
+            "date_text": "Nearly three years after induction was first confirmed",
+            "event_kind": "induction",
+            "location_text": null,
+            "quantity_text": null,
+            "recipient": "Pakistan",
+            "source_quote": "Nearly three years after induction was first confirmed by open-source imagery, Pakistan's use of the Chinese-origin HQ-9 family remains one of the more under-reported developments in South Asian air defence",
+            "supplier": null,
+            "system": "HQ-9 family",
+            "unit": null
+          },
+          {
+            "count_state": null,
+            "date_text": null,
+            "event_kind": "transfer",
+            "location_text": null,
+            "quantity_text": null,
+            "recipient": "Pakistan Air Force",
+            "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE. PAF sourcing suggests this variant, procured under a separate contract",
+            "supplier": null,
+            "system": "HQ-9BE",
+            "unit": null
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "CASIC",
+            "context": null,
+            "name": "China Aerospace Science and Industry Corporation",
+            "origin_country": null,
+            "role": "manufacturer",
+            "source_quote": "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)"
+          },
+          {
+            "aka": "China Aerospace Science and Industry Corporation",
+            "context": null,
+            "name": "CASIC",
+            "origin_country": null,
+            "role": "markets",
+            "source_quote": "CASIC markets a lower-tier, medium-range derivative — the FT-2000 (sometimes rendered FT-2000A)"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": null,
+            "object": "Pakistan Army's Air Defence Command",
+            "relation": "operated-by",
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P",
+            "subject": "HQ-9/P"
+          },
+          {
+            "date_text": null,
+            "object": "Pakistan Air Force",
+            "relation": "operated-by",
+            "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE",
+            "subject": "HQ-9BE"
+          },
+          {
+            "date_text": null,
+            "object": "HQ-9 family",
+            "relation": "manufactures",
+            "source_quote": "Chinese export SAMs, not clarified by either Islamabad or the manufacturer, China Aerospace Science and Industry Corporation (CASIC)",
+            "subject": "China Aerospace Science and Industry Corporation (CASIC)"
+          },
+          {
+            "date_text": null,
+            "object": "FT-2000",
+            "relation": "manufactures",
+            "source_quote": "CASIC markets a lower-tier, medium-range derivative — the FT-2000 (sometimes rendered FT-2000A)",
+            "subject": "CASIC"
+          },
+          {
+            "date_text": null,
+            "object": "FT-2000",
+            "relation": "component-of",
+            "source_quote": "the FT-2000 (sometimes rendered FT-2000A) — which uses a passive anti-radiation seeker",
+            "subject": "passive anti-radiation seeker"
+          },
+          {
+            "date_text": null,
+            "object": "HQ-9 family",
+            "relation": "component-of",
+            "source_quote": "the semi-active radar homing employed by the HQ-9 family proper",
+            "subject": "semi-active radar homing"
+          }
+        ],
+        "sources": [
+          {
+            "name": "open-source imagery",
+            "source_quote": "Nearly three years after induction was first confirmed by open-source imagery",
+            "source_type": "open-source imagery"
+          },
+          {
+            "name": "regional trade reporting",
+            "source_quote": "some regional trade reporting still uses HQ-9P",
+            "source_type": "trade reporting"
+          },
+          {
+            "name": "older brochures",
+            "source_quote": "the export designation FD-2000 continues to circulate in older brochures",
+            "source_type": "brochures"
+          },
+          {
+            "name": "PAF sourcing",
+            "source_quote": "PAF sourcing suggests this variant, procured under a separate contract, is intended for strategic point-defence of high-value air bases and possibly key command nodes",
+            "source_type": "sourcing"
+          },
+          {
+            "name": "regional analyst briefing",
+            "source_quote": "per at least one regional analyst briefing seen by this publication, possibly different fire-control architectures tailored to each service's requirements",
+            "source_type": "analyst briefing"
+          },
+          {
+            "name": "CASIC promotional material",
+            "source_quote": "CASIC promotional material displayed at recent defence exhibitions has featured the HQ-9BE nomenclature prominently alongside references to \"South Asian customer\" interest",
+            "source_type": "promotional material"
+          }
+        ],
+        "units": [
+          {
+            "alert_posture": null,
+            "context": {
+              "designation": null,
+              "geography": null,
+              "operator": "Pakistan Army",
+              "time": null
+            },
+            "echelon": null,
+            "home_garrison": null,
+            "name": "Pakistan Army's Air Defence Command",
+            "service_branch": "Pakistan Army",
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P"
+          }
+        ],
+        "variants": [
+          {
+            "confidence_language": null,
+            "context": {
+              "designation": "HQ-9",
+              "geography": "Pakistan",
+              "operator": null,
+              "time": null
+            },
+            "designators": [
+              "HQ-9"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9 family",
+            "operator_branch": null,
+            "range_text": null,
+            "signature_geometry": null,
+            "source_quote": "Pakistan's use of the Chinese-origin HQ-9 family"
+          },
+          {
+            "confidence_language": "reportedly designated; generally credited",
+            "context": {
+              "designation": "HQ-9/P",
+              "geography": null,
+              "operator": "The Pakistan Army's Air Defence Command",
+              "time": null
+            },
+            "designators": [
+              "HQ-9/P",
+              "HQ-9P",
+              "FD-2000"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Army's Air Defence Command",
+            "range_text": "in the region of 125 km",
+            "signature_geometry": null,
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures, particularly from the system's original 2015-era marketing push). The Army variant is generally credited with an engagement range in the region of 125 km"
+          },
+          {
+            "confidence_language": "is believed to operate; referred to in most recent trade literature; publicly estimated",
+            "context": {
+              "designation": "HQ-9BE",
+              "geography": null,
+              "operator": "the Pakistan Air Force",
+              "time": null
+            },
+            "designators": [
+              "HQ-9BE"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9BE",
+            "operator_branch": "Pakistan Air Force",
+            "range_text": "around 260 km",
+            "signature_geometry": null,
+            "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE. PAF sourcing suggests this variant, procured under a separate contract, is intended for strategic point-defence of high-value air bases and possibly key command nodes, with a publicly estimated maximum intercept range around 260 km"
+          },
+          {
+            "confidence_language": null,
+            "context": {
+              "designation": "FT-2000",
+              "geography": null,
+              "operator": null,
+              "time": null
+            },
+            "designators": [
+              "FT-2000",
+              "FT-2000A"
+            ],
+            "family": null,
+            "name": "FT-2000",
+            "operator_branch": null,
+            "range_text": "medium-range",
+            "signature_geometry": null,
+            "source_quote": "CASIC markets a lower-tier, medium-range derivative — the FT-2000 (sometimes rendered FT-2000A) — which uses a passive anti-radiation seeker rather than the semi-active radar homing employed by the HQ-9 family proper"
+          },
+          {
+            "confidence_language": null,
+            "context": {
+              "designation": "SA-21",
+              "geography": "India",
+              "operator": null,
+              "time": null
+            },
+            "designators": [
+              "S-400 Triumf",
+              "Triumph",
+              "SA-21"
+            ],
+            "family": "S-400",
+            "name": "S-400 Triumf",
+            "operator_branch": null,
+            "range_text": null,
+            "signature_geometry": null,
+            "source_quote": "India's S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": {
+        "input_tokens": 5998,
+        "output_tokens": 2380
+      }
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 4.423380930908024,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)"
+            ],
+            "member_ids": [
+              7,
+              8,
+              26
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "the Chinese-origin HQ-9 family",
+              "despite the shared \"HQ-9\" family name"
+            ],
+            "member_ids": [
+              10,
+              19
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "designated HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+            ],
+            "member_ids": [
+              11,
+              20,
+              21
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "the FT-2000 (sometimes rendered FT-2000A)"
+            ],
+            "member_ids": [
+              13,
+              22
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "India's S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+            ],
+            "member_ids": [
+              14,
+              23,
+              24
+            ]
+          }
+        ],
+        "contrasts": [
+          {
+            "left_id": 11,
+            "licensing_quote": "both the Pakistan Army and the Pakistan Air Force (PAF) continue to field distinct variants of the system under different program names.",
+            "right_id": 12
+          },
+          {
+            "left_id": 27,
+            "licensing_quote": "the Army and PAF systems appear to be genuinely separate procurement lines rather than a single system fielded twice",
+            "right_id": 28
+          }
+        ]
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": {
+        "input_tokens": 2642,
+        "output_tokens": 334
+      }
+    }
+  ],
+  "candidate_id": "openai-gpt-5-6-sol",
+  "fingerprint": "983ba2071fb17d86e0d6af36040a54bfd4ce564a7991c3d2b614b2b149325848",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:08:10.652036+00:00",
+  "run_index": 1,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d04_armyrec_ranges"
+}

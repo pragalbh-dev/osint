@@ -2,25 +2,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d07-sat-confirm-karachi-l6",
+    "claim_id": "d07-sat-confirm-karachi-l1",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
       "frame": null,
-      "line": 6,
+      "line": 1,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        194,
-        229
+        0,
+        38
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -43,21 +43,200 @@
           ],
           "precision_class": "pad",
           "proposed_alias": null,
-          "raw": "Malir District, Karachi, Sindh Province, Pakistan (24.9012 N, 67.2034 E)",
+          "raw": "24.9012 N, 67.2034 E, Malir District, Karachi Division, Sindh, Pakistan",
           "resolved_place_ref": null,
           "surface_format": "DMS",
           "wgs84_lat": 24.9012,
           "wgs84_lon": 67.2034
         },
-        "site_signature_geometry": "petal/ring-pattern surface-to-air missile pad",
+        "occupancy_state": "active or newly constructed",
+        "site_signature_geometry": "A roughly circular graded pad, approximate diameter 90-110m, is visible with six radial spurs terminating in what are believed to be TEL revetments — earthen berms 2-3m in estimated height, open-topped, oriented outward from a central hub.",
         "site_type": "long-range SAM battery position"
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Probable Long-Range SAM Emplacement"
+      "name": "fortified air defense site, Malir District"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_event_time_rung": "observation",
+      "_object_mention": "d07-sat-confirm-karachi-l1",
+      "_relane_reason": "'operated-by'@(basing_site->unit) reversed -> based-at",
+      "_subject_mention": "d07-sat-confirm-karachi-l31-2",
+      "source_quote": "...reportedly part of Pakistan Army Air Defence Command's continuing long-range SAM buildout."
+    },
+    "claim_id": "d07-sat-confirm-karachi-l1-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        38
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-09",
+      "kind": "exact",
+      "raw": "2022-03-09"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "fortified air defense site, Malir District",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "Pakistan Army Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "observation",
+      "_object_mention": "d07-sat-confirm-karachi-l31-2",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d07-sat-confirm-karachi-l13-2",
+      "source_quote": "...reportedly part of Pakistan Army Air Defence Command's continuing long-range SAM buildout."
+    },
+    "claim_id": "d07-sat-confirm-karachi-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        644,
+        650
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-09",
+      "kind": "exact",
+      "raw": "2022-03-09"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence Command",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l13-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        644,
+        875
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "MODERATE-HIGH confidence",
+        "operator_branch": "Pakistan Army Air Defence Command",
+        "site_signature_geometry": "petal or flower layout signature associated with HQ-9/P and analogous S-300/400-family battery construction, intended to provide blast separation between launcher vehicles and a central engagement/guidance radar position"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -94,7 +273,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -105,14 +284,22 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "dimensions": "approximate diameter 90-110m",
-        "object_type": "graded pad with six radial spurs terminating in TEL revetments"
+        "count": {
+          "approx": false,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 6.0
+        },
+        "dimensions": "approximate diameter 90-110m, earthen berms 2-3m in estimated height",
+        "object_type": "earthworks / circular graded pad with radial spurs and revetments"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "graded pad with six radial spurs terminating in TEL revetments"
+        "earthworks / circular graded pad with radial spurs and revetments"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -123,6 +310,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -159,7 +347,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -170,14 +358,22 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": "fielded",
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 1.0
+        },
         "dimensions": "approx. 15-20m diameter",
-        "object_type": "raised circular foundation"
+        "object_type": "revetment construction / raised circular foundation at pad center"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "raised circular foundation"
+        "revetment construction / raised circular foundation at pad center"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -188,6 +384,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -219,7 +416,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -231,14 +428,16 @@
     "payload": {
       "attrs": {
         "component_class": "radar",
-        "functional_role": "engagement radar"
+        "functional_role": "engagement radar",
+        "model_designation": "HT-233"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "HT-233 or derivative"
+      "name": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -252,7 +451,9 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_event_time_rung": "stated"
+      "_event_time_rung": "stated",
+      "_object_mention": "d07-sat-confirm-karachi-l1",
+      "occupancy_state": "at least two revetments occupied"
     },
     "claim_id": "d07-sat-confirm-karachi-l25",
     "doc_ref": {
@@ -265,7 +466,7 @@
       "row": null,
       "span": [
         2141,
-        2386
+        2329
       ]
     },
     "event_time": {
@@ -277,7 +478,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -288,13 +489,14 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "Probable Long-Range SAM Emplacement, Malir District, Karachi, Sindh Province, Pakistan",
+      "object": "fortified air defense site, Malir District",
       "object_value": null,
       "predicate": "observed-at",
-      "subject": "HQ-9/P TEL"
+      "subject": "elongated objects compatible with HQ-9/P TEL"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -319,7 +521,7 @@
       "row": null,
       "span": [
         2141,
-        2485
+        2600
       ]
     },
     "event_time": {
@@ -331,7 +533,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -344,20 +546,20 @@
       "attrs": {
         "count": {
           "approx": true,
-          "count_state": "fielded",
+          "count_state": null,
           "max": null,
           "min": null,
           "unit": null,
           "value": 2.0
         },
         "dimensions": "approx. 9-11m in length",
-        "object_type": "object(s)"
+        "object_type": "elongated objects compatible with HQ-9/P TEL"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "object(s)"
+        "elongated objects compatible with HQ-9/P TEL"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -368,6 +570,116 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l25-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 25,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2162,
+        2329
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "launcher",
+        "functional_role": "transporter-erector-launcher",
+        "model_designation": "HQ-9/P TEL"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HQ-9/P TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d07-sat-confirm-karachi-l13-2",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d07-sat-confirm-karachi-l25-3",
+      "source_quote": "dimensions broadly compatible with an HQ-9/P TEL"
+    },
+    "claim_id": "d07-sat-confirm-karachi-l25-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 25,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2281,
+        2329
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HQ-9/P TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -392,7 +704,7 @@
       "row": null,
       "span": [
         2602,
-        2824
+        3071
       ]
     },
     "event_time": {
@@ -404,7 +716,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -415,14 +727,14 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "dimensions": "~6m width",
-        "object_type": "perimeter berm and secondary access road"
+        "dimensions": "unpaved access road ~6m width",
+        "object_type": "pad and revetments, perimeter berm, secondary access road, several small rectangular objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "perimeter berm and secondary access road"
+        "pad and revetments, perimeter berm, secondary access road, several small rectangular objects"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -433,56 +745,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2022-03-14",
-      "kind": "exact",
-      "raw": "2022-03-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d07_sat_confirm_karachi",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d07-sat-confirm-karachi-l31",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
-      "frame": null,
-      "line": 31,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3250,
-        3340
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "service_branch": "Pakistan Army"
-      },
-      "entity_type": "unit",
-      "form": "entity",
-      "name": "Pakistan Army Air Defence Command"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -496,13 +759,127 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "equips",
-      "_event_time_rung": "observation",
-      "_object_mention": "d07-sat-confirm-karachi-l31",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d07-sat-confirm-karachi-l31-3",
-      "source_quote": "reportedly part of Pakistan Army Air Defence Command's continuing long-range SAM buildout."
+      "_event_time_rung": "stated",
+      "_object_mention": "d07-sat-confirm-karachi-l1",
+      "occupancy_state": "present near pad's southern edge"
     },
+    "claim_id": "d07-sat-confirm-karachi-l27-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2940,
+        2973
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-09",
+      "kind": "exact",
+      "raw": "2022-03-09"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "fortified air defense site, Malir District",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "several small rectangular objects"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "based-at",
+      "_event_time_rung": "stated",
+      "_object_mention": "d07-sat-confirm-karachi-l1",
+      "_relane_reason": "'based-at'@(variant->basing_site) -> observed-at",
+      "_subject_mention": "d07-sat-confirm-karachi-l13-2",
+      "source_quote": "The petal/ring pad geometry, revetment count, and TEL-consistent object dimensions are judged sufficient to assess this site as a likely HQ-9/P battery position"
+    },
+    "claim_id": "d07-sat-confirm-karachi-l31",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 31,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3088,
+        3248
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-09",
+      "kind": "exact",
+      "raw": "2022-03-09"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "fortified air defense site, Malir District",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d07-sat-confirm-karachi-l31-2",
     "doc_ref": {
       "bbox": null,
@@ -517,16 +894,11 @@
         3340
       ]
     },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2022-03-09",
-      "kind": "exact",
-      "raw": "2022-03-09"
-    },
+    "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -536,14 +908,18 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Pakistan Army Air Defence Command",
-      "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "designator": "Pakistan Army Air Defence Command",
+        "echelon": "command",
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Army Air Defence Command"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -557,25 +933,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d07-sat-confirm-karachi-l31-3",
+    "claim_id": "d07-sat-confirm-karachi-l43",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
       "frame": null,
-      "line": 31,
+      "line": 43,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        3341,
-        3567
+        4446,
+        4535
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -586,15 +962,123 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "confidence_language": "MODERATE",
-        "family": "HQ-9"
+        "missing_slots": [
+          "SAR pass"
+        ]
       },
-      "entity_type": "variant",
+      "entity_type": "known_gap",
       "form": "entity",
-      "name": "HQ-9/P"
+      "name": "SAR pass"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l44",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 44,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4538,
+        4660
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "Imagery collect (2022-01-27 to 2022-03-09)"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "Imagery collect (2022-01-27 to 2022-03-09)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2022-03-14",
+      "kind": "exact",
+      "raw": "2022-03-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d07_sat_confirm_karachi",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d07-sat-confirm-karachi-l45",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d07_sat_confirm_karachi.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4663,
+        4759
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "ELINT/SIGINT cross-cue"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "ELINT/SIGINT cross-cue"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",
@@ -609,7 +1093,7 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "Satellite view of a specialized oval compound with radial bays, surrounded by agricultural fields.",
+      "caption_text": "Overhead satellite view showing a sub-circular earthwork layout with loop road, internal berms, and adjacent support buildings set within agricultural fields.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "d988240c4799d3050ff3c99f7bc343dff50442e3a1c6eb9f0e65eb90a43682ba",
@@ -639,7 +1123,7 @@
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -674,47 +1158,49 @@
           "count_state": "fielded",
           "max": null,
           "min": null,
-          "unit": null,
+          "unit": "small equipment/vehicles",
           "value": null
         },
-        "description": "The image shows a highly distinctive oval-shaped compound situated within a flat agricultural landscape. The central compound is defined by an outer oval ring road enclosing a series of scalloped, loop-like, or petal-shaped hardstands and driving bays that radiate outward from a central north-south axis road. Within these radial bays, several small unidentified objects or vehicles are parked on the paved surfaces. To the west of the oval compound lies a support or administrative area containing several rectangular buildings, courtyards, and cleared spaces. Additional rectangular buildings and tree-lined parking areas are located directly south of the oval compound. The entire facility is surrounded by a dense patchwork of rectangular agricultural fields and dirt access roads.",
-        "frame_kind": "satellite",
+        "description": "An overhead optical image depicting a specialized facility surrounded by agricultural fields. The central feature is a sub-circular perimeter loop track containing multiple curved and horseshoe-shaped earthen berms/revetments surrounding hardstands and central pads. To the west and south of the loop compound are several rectangular buildings, paved aprons, courtyards, and support structures linked by access roads. Rectangular agricultural plots frame the entire site.",
+        "frame_kind": "satellite_optical",
         "geometry_tokens": [
-          "oval",
-          "radial",
-          "lobed",
-          "rectangular",
-          "linear"
+          "circular_loop_road",
+          "earthen_berms",
+          "revetments",
+          "hardstands",
+          "rectangular_buildings",
+          "agricultural_fields"
         ],
+        "gsd_note": "Medium-resolution optical imagery; large spatial geometry and earthworks visible, but small ground objects cannot be individually resolved.",
         "observed_features": [
           {
-            "arrangement": "concentric/oval",
-            "feature": "ring road",
-            "note": "Outer boundary of the central compound",
-            "shape": "oval"
+            "arrangement": "enclosing central earthworks",
+            "feature": "loop track / perimeter road",
+            "note": "paved or clear surface forming a rounded perimeter",
+            "shape": "sub-circular"
           },
           {
-            "arrangement": "radial",
-            "feature": "hardstand",
-            "note": "Scalloped, loop-like paved bays radiating from a central spine",
-            "shape": "lobed"
+            "arrangement": "symmetrical internal grouping",
+            "feature": "earthen berms / revetments",
+            "note": "raised earth embankments forming enclosed or semi-enclosed bays",
+            "shape": "horseshoe and linear"
           },
           {
-            "arrangement": "clustered",
-            "feature": "building",
-            "note": "Support and administrative buildings to the west and south",
+            "arrangement": "clustered to south and west",
+            "feature": "support buildings",
+            "note": "structures with flat/pitched roofs adjacent to main track",
             "shape": "rectangular"
           },
           {
-            "arrangement": "grid",
-            "feature": "road",
-            "note": "Agricultural access roads surrounding the area",
-            "shape": "linear"
+            "arrangement": "surrounding complex",
+            "feature": "agricultural fields",
+            "note": "patterned plots with varying crop/vegetation cover",
+            "shape": "rectangular grid"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "The image shows a highly distinctive oval-shaped compound situated within a flat agricultural landscape. The central compound is defined by an outer oval ring road enclosing a series of scalloped, loop-like, or petal-shaped hardstands and driving bays that radiate outward from a central north-south axis road. Within these radial bays, several small unidentified objects or vehicles are parked on the paved surfaces. To the west of the oval compound lies a support or administrative area containing several rectangular buildings, courtyards, and cleared spaces. Additional rectangular buildings and tree-lined parking areas are located directly south of the oval compound. The entire facility is surrounded by a dense patchwork of rectangular agricultural fields and dirt access roads.",
+        "site_signature_geometry": "An overhead optical image depicting a specialized facility surrounded by agricultural fields. The central feature is a sub-circular perimeter loop track containing multiple curved and horseshoe-shaped earthen berms/revetments surrounding hardstands and central pads. To the west and south of the loop compound are several rectangular buildings, paved aprons, courtyards, and support structures linked by access roads. Rectangular agricultural plots frame the entire site.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -723,6 +1209,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2022-03-14",

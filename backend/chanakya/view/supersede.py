@@ -40,22 +40,39 @@ from chanakya.credibility.supersession import (
     PENDING_NEWER,
     PENDING_OLDER,
 )
-from chanakya.schemas import ClaimRecord, EdgeView, Triple, canonical_iso_bounds
+from chanakya.schemas import ClaimRecord, DateValue, EdgeView, Triple, canonical_iso_bounds
+
+#: Lower bound of an interval that reaches back indefinitely ("held this position **up to** Oct 2021" —
+#: no start stated). Sorts before every ISO date, which is exactly where an open start belongs, and is
+#: already the sort fallback :func:`order_instance_edges` uses.
+OPEN_START = ""
 
 
 def _interval(claims: list[ClaimRecord]) -> tuple[str, str] | None:
-    """The ``event_time`` **interval** a target is asserted over — ``None`` when any claim is undated
-    or only half-bounded (D-P4.4 iii: *missing* ⇒ unorderable, never guessed).
+    """The ``event_time`` **interval** a target is asserted over — ``None`` when the **upper** bound is
+    missing on any claim (D-P4.4 iii: what is missing is never guessed).
 
-    Both bounds matter. Taking only the upper bound let a vague ``"2025"`` (upper ``2025-12-31``)
-    outrank a precise ``2025-03-27``; and the span is the **union** across the target's claims rather
-    than ``max``, so a late *restatement* of an old fact widens that fact's interval into overlap
-    (→ contradiction → HITL) instead of silently making the old fact "newest" and reversing the arrow.
+    The upper bound is the load-bearing one. The lower bound still counts where it exists — taking only the
+    upper bound let a vague ``"2025"`` (upper ``2025-12-31``) outrank a precise ``2025-03-27`` — and the
+    span is the **union** across the target's claims rather than ``max``, so a late *restatement* of an old
+    fact widens that fact's interval into overlap (→ contradiction → HITL) instead of silently making the
+    old fact "newest" and reversing the arrow.
+
+    A **missing start** is not the same defect as a missing end, and used to be treated as one. "Based at
+    Nur Khan until Oct 2021" is an ordinary way to state a position a unit has since left: the interval is
+    open at the bottom, not unknown. It remains fully comparable for the only question asked of the older
+    side — *does it end before the newer one begins?* — because an unstated start can only extend
+    **backwards**, away from the newer interval, and so can never manufacture an overlap the stated bounds
+    do not already show. A missing END is the dangerous half and stays unorderable: an interval that may run
+    on indefinitely could overlap the newer one, and that is a contradiction, not a retirement.
     """
     bounds = [canonical_iso_bounds(c.event_time) for c in claims]
-    if any(lo is None or hi is None for lo, hi in bounds):
+    if any(hi is None for _, hi in bounds):
         return None
-    return min(lo for lo, _ in bounds if lo), max(hi for _, hi in bounds if hi)
+    upper = max(hi for _, hi in bounds if hi)
+    if any(lo is None for lo, _ in bounds):
+        return OPEN_START, upper
+    return min(lo for lo, _ in bounds if lo), upper
 
 
 # How two targets' intervals relate — the (iii) branch of the supersede rule.
@@ -70,46 +87,55 @@ def _relation(older: tuple[str, str], newer: tuple[str, str]) -> str:
       in two places at one instant
     * **identical but vague** (e.g. two claims that say only "2025") → ``unorderable``: there is no
       ordering signal at all, so neither retire nor assert a clash — hand it to HITL
+    * **newer side open at the bottom** → ``unorderable``: an interval that reaches back indefinitely may
+      or may not overlap the older one, and an unstated start is not evidence of a clash. (The mirror case
+      — the *older* side open at the bottom — is decided by the first branch and needs no special case:
+      its unstated start runs away from the newer interval, so ``o_hi < n_lo`` settles it either way.)
     * **any other overlap** → ``contradiction``: the two facts are asserted over intersecting time on a
       slot that is single-valued
     """
     (o_lo, o_hi), (n_lo, _) = older, newer
     if o_hi < n_lo:
         return ORDERED
+    if n_lo == OPEN_START:
+        return UNORDERABLE
     if older == newer:
         return CONTRADICTION if o_lo == o_hi else UNORDERABLE
     return CONTRADICTION
 
 
-def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[EdgeView]:
-    """Build the EdgeView(s) for one resolved edge instance, applying supersede/contradict.
+def _representative_event_time(claims: list[ClaimRecord]) -> DateValue | None:
+    """The edge's validity anchor — the ``event_time`` of its earliest-dated claim (D7, §1B).
 
-    One EdgeView per distinct ``(source, type, target)``; supersede/contradict links are set across
-    them when the instance holds more than one target.
+    Mirrors ``EventView.time_interval``: a real, verbatim ``event_time`` carried onto the derived edge,
+    not a synthesized span. When several claims corroborate the same ``(source, predicate, target)`` the
+    earliest asserted validity is the anchor — deterministic (canonical lower bound, then ``claim_id``).
+    Undated claims are ignored; ``None`` when no supporting claim is dated. **Data availability only** —
+    no supersede / ordering decision (the >1-target branch below and Stage 3B own that).
     """
-    by_target: dict[tuple[str, str, str], list[ClaimRecord]] = defaultdict(list)
-    for c in claims:
-        t = cast(Triple, c.payload)  # caller guarantees relationship claims (payload is a Triple)
-        by_target[(t.subject, t.predicate, t.object)].append(c)
+    dated = [c for c in claims if canonical_iso_bounds(c.event_time)[0] is not None]
+    if not dated:
+        return None
+    earliest = min(dated, key=lambda c: (canonical_iso_bounds(c.event_time)[0] or "", c.claim_id))
+    return earliest.event_time
 
-    edges: list[EdgeView] = []
-    for (subj, pred, obj), cs in sorted(by_target.items()):
-        edges.append(
-            EdgeView(
-                id=f"e:{subj}:{pred}:{obj}",
-                type=pred,
-                source=subj,
-                target=obj,
-                edge_instance=edge_instance,
-                claim_ids=sorted(c.claim_id for c in cs),
-            )
-        )
 
+def order_instance_edges(
+    edges: list[EdgeView], intervals: dict[str, tuple[str, str] | None]
+) -> list[EdgeView]:
+    """Apply supersede/contradict ordering across the edges of ONE instance, in place.
+
+    Factored out of :func:`build_instance_edges` so the **derived** layer runs the identical rule: the
+    rebuild-materialized basing edges (``view/basing.py``) are not built from claim groups, so they cannot
+    reuse the claim-shaped path — but a state change must not be invisible in the one layer that derives it,
+    and a second copy of this rule would be free to drift. ``intervals`` maps edge id → the ``event_time``
+    interval that edge is asserted over, ``None`` when it is undated or half-bounded (D-P4.4 iii: *missing*
+    ⇒ unorderable, never guessed).
+    """
     if len(edges) <= 1:
         return edges  # single target → plain corroboration, nothing to supersede
 
-    # Order the targets by their asserted intervals; resolve state-change vs contradiction vs uncertainty.
-    timed = [(e, _interval(by_target[(e.source, e.type, e.target)])) for e in edges]
+    timed = [(e, intervals.get(e.id)) for e in edges]
     if any(iv is None for _, iv in timed):
         for e, _ in timed:
             e.attrs[CANDIDATE] = True  # can't order → don't overwrite; HITL adjudicates
@@ -142,3 +168,31 @@ def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[
             newest_edge.attrs[PENDING_OLDER] = sorted({*pending, older_edge.id})
             newest_edge.attrs[GATE] = GATE_PENDING
     return edges
+
+
+def build_instance_edges(edge_instance: str, claims: list[ClaimRecord]) -> list[EdgeView]:
+    """Build the EdgeView(s) for one resolved edge instance, applying supersede/contradict.
+
+    One EdgeView per distinct ``(source, type, target)``; supersede/contradict links are set across
+    them when the instance holds more than one target.
+    """
+    by_target: dict[tuple[str, str, str], list[ClaimRecord]] = defaultdict(list)
+    for c in claims:
+        t = cast(Triple, c.payload)  # caller guarantees relationship claims (payload is a Triple)
+        by_target[(t.subject, t.predicate, t.object)].append(c)
+
+    edges: list[EdgeView] = []
+    for (subj, pred, obj), cs in sorted(by_target.items()):
+        edges.append(
+            EdgeView(
+                id=f"e:{subj}:{pred}:{obj}",
+                type=pred,
+                source=subj,
+                target=obj,
+                edge_instance=edge_instance,
+                claim_ids=sorted(c.claim_id for c in cs),
+                time_interval=_representative_event_time(cs),  # D7/§1B: validity carried onto the edge
+            )
+        )
+    intervals = {e.id: _interval(by_target[(e.source, e.type, e.target)]) for e in edges}
+    return order_instance_edges(edges, intervals)

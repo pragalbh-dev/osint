@@ -1,0 +1,65 @@
+COUNTING WHAT YOU CAN SEE
+An independent re-derivation of the Pakistani long-range SAM holding
+
+Occasional Paper 2025/06 · South Asia Air and Missile Defence Programme
+Published 12 May 2025. Supersedes the figure quoted in our own 2023 backgrounder, which is withdrawn.
+
+SUMMARY
+
+The figure "approximately 4 battalions" is quoted widely for Pakistan's long-range surface-to-air holding.
+This paper traces where that figure is published, and reports a separate count derived from imagery and
+arrived at without reference to it. Our result is that the holding is not fewer than three fire units. We
+do not adopt the published figure.
+
+1. WHERE THE PUBLISHED FIGURE IS CARRIED
+
+We identified three outlets carrying "approximately 4 battalions" for the Pakistani holding: a
+Jane's-adjacent aggregator, a regional trade blog, and a Quetta-based English-language defence site.
+
+All three attribute the figure to the SIPRI Arms Transfers Database. None of the three reports imagery, an
+interview, a document or a count of its own. Two of the three reproduce the surrounding sentence
+near-verbatim from the earliest of them; the wording of the third differs but the figure and the
+attribution are the same.
+
+Two properties of the SIPRI register are relevant and are not reproduced in any of the three. SIPRI
+describes its delivery figures as estimates. And the register records what was TRANSFERRED, which is a
+different quantity from what is FIELDED: transferred equipment can sit in training establishments, in
+depot, written off, or in reserve, and a register of transfers does not separate those from equipment on
+an operational fire unit. Our own 2023 backgrounder repeated the figure with neither property attached,
+which is why it is withdrawn here.
+
+2. WHAT WE COUNTED, AND HOW
+
+We reviewed archived commercial electro-optical imagery over Pakistan for the period 2019 to March 2025,
+tasked and untasked, against a published signature description for the HQ-9 family. Our unit of counting
+was the PREPARED POSITION: a graded, revetted position whose layout matches the reference signature. The
+method, the frame list and the per-position tables are in the appendix, which is not distributed with the
+public version of this paper.
+
+We identified six prepared positions of the relevant signature type. Of those six, three showed PERSISTENT
+occupancy — equipment present on every usable frame across at least four passes spanning at least six
+months. Two showed INTERMITTENT occupancy: equipment present on some frames and absent on others, with no
+pattern we could resolve against exercise or maintenance cycles we had no access to. One was prepared and
+never observed occupied on any frame we hold.
+
+3. THE PANO AQIL POSITIONS
+
+The cantonment at Pano Aqil in northern Sindh carries two of our six prepared positions, about five and a
+half kilometres apart. Both were occupied on every pass in the most recent collection. The two differ in
+one observable: the engagement radar planform is not the same at both.
+
+Order-of-battle references place two long-range air defence regiments at that cantonment, and separately
+record an air defence battery there that they are unable to allocate to either regiment. No source
+available to us attaches any position at that cantonment to any named formation, and we hold no frame from
+either position carrying a unit marking or a formation caption.
+
+4. RESULT
+
+Not fewer than three fire units, on the strength of three persistently occupied positions. We state no
+upper bound: the three remaining positions cannot be allocated between additional units, alternate
+positions of the first three, and training or depot holdings, and our imagery coverage of Pakistan is not
+complete.
+
+---
+Correspondence to the programme. Appendix A (frame list, per-position tables, signature reference) is
+available to accredited researchers on request. Figures in this paper are as at 31 March 2025.

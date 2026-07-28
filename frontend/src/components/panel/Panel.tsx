@@ -6,12 +6,14 @@ import { AskBar } from './AskBar'
 import { ZeroView } from './views/ZeroView'
 import { HeroAnswer } from './views/HeroAnswer'
 import { GapsView } from './views/GapsView'
+import { KnownGapsView } from './views/KnownGapsView'
 import { LiveAnswer } from './views/LiveAnswer'
 import { MergeCard } from './views/MergeCard'
 import { OverrideCard } from './views/OverrideCard'
 import { AlertCard } from './views/AlertCard'
 import { LiveCard } from './views/LiveCard'
 import { CredView } from './views/CredView'
+import { RefusalsView } from '@/components/panel/views/RefusalsView'
 import { WatchView } from './views/WatchView'
 
 export function Panel() {
@@ -26,9 +28,11 @@ export function Panel() {
         {panelView === 'zero' && <ZeroView />}
         {panelView === 'hero' && <HeroAnswer />}
         {panelView === 'gaps' && <GapsView />}
+        {panelView === 'knowngaps' && <KnownGapsView />}
         {panelView === 'answer' && <LiveAnswer />}
         {panelView === 'cred' && <CredView />}
         {panelView === 'watch' && <WatchView />}
+        {panelView === 'refusals' && <RefusalsView />}
         {/* card slot — LIVE renders the derived review item; DEMO the scripted cards */}
         {panelView === 'card' && live && <LiveCard />}
         {panelView === 'card' && !live && activeCard === 'merge' && <MergeCard />}

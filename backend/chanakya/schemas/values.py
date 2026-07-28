@@ -122,6 +122,41 @@ def canonical_iso_bounds(value: DateValue | None) -> tuple[str | None, str | Non
     return lo, hi
 
 
+def _has_explicit_validity_interval(value: DateValue | None) -> bool:
+    """True only for a **closed** ``Period`` range — an explicitly *stated* start..end validity window.
+
+    A point/coarse date (``ExactDate``/``LabelDate``) or an ``as_of`` period is a *when-true* anchor, not
+    a "valid until": it says the value held around then, never that it stopped holding then. So it does
+    **not** bound validity from above — the report date does (see :func:`report_bounded_validity`).
+    """
+    return isinstance(value, Period) and value.period_type == "range" and value.end is not None
+
+
+def report_bounded_validity(
+    event_time: DateValue | None, report_time: DateValue | None
+) -> tuple[str | None, str | None]:
+    """``(valid_from, valid_until)`` for a value — **report_time is an upper bound on validity** (D7, §1B).
+
+    Pure, offline, rebuild-safe (reads only :func:`canonical_iso_bounds`; no clock/parse — G1). A value
+    asserted true at ``event_time`` is presumed valid only up to when its source could still vouch for it
+    — its report date. So:
+
+    * ``valid_from``  = the lower bound of ``event_time`` (the stated validity **anchor**), else ``None``.
+    * ``valid_until`` = ``event_time``'s **explicit** upper bound when it states a closed validity interval
+      (a ``Period`` ``range`` with an ``end``); otherwise ``report_time``'s upper bound. ``None`` when
+      neither axis is available.
+
+    This only **records** the coupling. No ordering / supersede / staleness decision is made here — that
+    logic (the succession core) is deferred to Stage 3B, which consumes this data.
+    """
+    ev_lo, ev_hi = canonical_iso_bounds(event_time)
+    _, rep_hi = canonical_iso_bounds(report_time)
+    valid_from = ev_lo
+    explicit_end = ev_hi if _has_explicit_validity_interval(event_time) else None
+    valid_until = explicit_end if explicit_end is not None else rep_hi
+    return valid_from, valid_until
+
+
 # ── Locations ────────────────────────────────────────────────────────────────────────────────
 
 # Coarsest identity a place node needs (md/13; matches config/places.yaml precision_class).

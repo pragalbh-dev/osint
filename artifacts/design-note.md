@@ -16,10 +16,10 @@ origin chain. Open sources only, planning awareness rather than targeting-grade,
 
 The build is **one reusable spine plus a thin use-case layer**. The spine — the claim model, entity
 resolution, credibility, human adjudication, freshness, retrieval — is subject-agnostic and took most of
-the engineering; the HQ-9/P layer is a specification on top of it. The current graph is built from **499
+the engineering; the HQ-9/P layer is a specification on top of it. The current graph is built from **492
 sourced claims extracted from 26 documents**, nine of them overhead imagery plus a schematic read out of
-a PDF, yielding a knowledge view of 175 nodes, 92 edges and 21 named evidence gaps — of which the
-subject lens an analyst actually works in scopes to 33 nodes, 65 edges and 9 gaps. The corpus carries
+a PDF, yielding a knowledge view of 169 nodes, 80 edges and 20 named evidence gaps — of which the
+subject lens an analyst actually works in scopes to 30 nodes, 52 edges and 8 gaps. The corpus carries
 planted adversarial material rather than mere volume: a false attribution of the engagement radar to the
 wrong organisation, a decoy social cluster asserting a relocation that never happened, and a byte-identical
 image reshared across three accounts. Each is there to be rejected, and the worked query below rejects the
@@ -78,7 +78,9 @@ decisions an analyst can actually take, without the grouping ever deciding any o
 
 **4. Adaptation.** Perishable facts decay — a basing position sits on a garrison half-life of 540 days,
 while a manufacturing relationship does not decay at all — and coverage gaps are first-class objects with
-a next-coverage-due date. This is what makes the system a monitor rather than a one-shot analysis:
+a next-coverage-due date, now including the unresolved-identity tail: the mentions the system cannot yet
+confirm as one entity or safely hold apart, reported as their own gap rather than papered over by a guess.
+This is what makes the system a monitor rather than a one-shot analysis:
 judgement stays honest as sources close and as the picture ages underneath it.
 
 ## From document to claim to graph
@@ -93,7 +95,7 @@ flowchart LR
   end
   subgraph S2[" 2 · EVIDENCE — the only thing anyone writes to "]
     direction TB
-    EV[("APPEND-ONLY CLAIMS<br/>499 sourced · exact spans<br/>immutable, never deleted")]
+    EV[("APPEND-ONLY CLAIMS<br/>492 sourced · exact spans<br/>immutable, never deleted")]
     DRV["Derivation passes<br/>append inference claims<br/>that carry their premises"]
     DEC[("DECISION LEDGER<br/>analyst accept / reject / override")]
     EV --- DRV
@@ -105,7 +107,7 @@ flowchart LR
   end
   subgraph S4[" 4 · WHAT THE ANALYST SEES "]
     direction TB
-    KV["KNOWLEDGE VIEW<br/>175 nodes · 92 edges · 21 gaps<br/>subject lens: 33 · 65 · 9"]
+    KV["KNOWLEDGE VIEW<br/>169 nodes · 80 edges · 20 gaps<br/>subject lens: 30 · 52 · 8"]
     ASK["Ask — cited, or refuses"]
     OBS["Tripwires"]
     VIZ["Map + graph explorer"]
@@ -160,16 +162,34 @@ be unrelated systems. The corpus supplies both errors in their pure form. **LY-8
 character, and are the same system** — an export designation and its domestic original — and the only
 thing that says so is that they hang off the same manufacturer and the same component set. **FD-2000 and
 FT-2000 differ by a single character, and are unrelated.** Any measure of spelling gets both of these
-exactly backwards, which is why shared neighbourhood carries the most weight, alongside attribute
-similarity, temporal consistency and explicit source assertions.
+exactly backwards, which is why shared neighbourhood carries the weight. A curated alias, a shared hard
+identifier or an exact name still seeds identity directly — the high-precision floor, veto-gated so a known
+trap pair can never slip through it — but a bare name *resemblance*, with nothing relational behind it, no
+longer buys a merge on its own: it enters as a *possible* link to be earned or discarded, not an asserted
+identity.
 
-The result lands in one of three bands — merge, adjudicate, keep apart. The band boundary is set
-precision-first because the errors are asymmetric: a missed merge is recoverable by iteration or a human,
-while a confident wrong merge corrupts the order-of-battle invisibly. Both pairs above end up in front of
-a person rather than being decided, which is the intended outcome and not a failure of nerve. Every merge
-is a
-reversible overlay rather than a destructive collapse, so an analyst can undo the machine's identity
-decisions — which is the difference between a human in the loop and a human watching.
+**Identity is an assessment, held to the same evidentiary bar as any other.** It is not a string verdict
+but an evidence-backed hypothesis carried at *possible*, *probable* or *confirmed* — and, exactly like a
+claim, it reaches *confirmed* only on genuinely independent and durable support: a merge resting on a
+single look, or only on a here-today signal such as a posture certain to change, is held no higher than
+*probable*. The signals that move it are typed by what they *mean* for
+identity rather than averaged into one similarity number. A **critical** attribute — the kind that defines
+the thing, such as which service operates a unit — is a hard wall: when two mentions disagree on it, no
+amount of other similarity may merge across, full stop. That wall is itself credibility-gated, so a single
+low-grade source cannot shatter a well-supported identity by asserting a conflict — below a grade floor the
+disagreement is routed to a human rather than enforced. A **supporting** attribute nudges the score and, on
+conflict, queues rather than blocks; a **neutral** one keeps both values with their provenance and touches
+identity not at all. And a fact that legitimately changes over time — a posture, a readiness state — is
+read as a *succession*, not a contradiction, so a unit that has moved is not mistaken for two units.
+
+The result still resolves to one of three actions — merge, adjudicate, keep apart — but the action now
+sits under the status. The boundary is precision-first because the errors are asymmetric: a missed merge is
+recoverable by iteration or a human, while a confident wrong merge corrupts the order-of-battle invisibly.
+Both pairs above go in front of a person rather than being decided — and so does the subtlest case, a pair
+that looks like one entity yet would fuse two clusters a wall is deliberately holding apart, which surfaces
+as a flagged candidate an analyst must clear rather than an automatic bridge. Every merge is a reversible
+overlay rather than a destructive collapse, so an analyst can undo the machine's identity decisions — which
+is the difference between a human in the loop and a human watching.
 
 **Retrieval separates composing an answer from judging it.** A question runs a think-act-observe loop
 bounded at eight turns, in which the model plans the traversal while seven deterministic tools do the
@@ -273,12 +293,14 @@ watched — one resolved fire unit — and *what class of change* counts, an occ
 edge. Neither origin, destination, nor year. A tripwire naming its destination would fire exactly once, on
 the move it already encodes, and would be confirming a relocation rather than detecting one; the sites
 appear only in the fired alert. And the corpus contains a planted low-grade adversary cluster asserting the
-*reverse* move, that the battery has quietly left Rahwali. The tripwire stays silent on it, because
-retiring a position requires four conditions — same functional slot, a different value, separable time
-intervals, and a newer claim that independently reaches *probable* with a clean deception check. Short of
-that it becomes a **candidate held for a human**, with readable reasons attached: *newer below probable*,
-*deception gate: decoy risk*. One decoy-flagged look cannot retire a two-look position. Holding is the
-default; retirement is earned.
+*reverse* move, that the battery has quietly left Rahwali. The tripwire stays silent on it. A change over
+time is not a contradiction to be silently overwritten; it is put through a **succession test** that asks
+whether two facts about one functional slot are an ordered move, a genuine contradiction, or simply
+unorderable. Retiring a position is the ordered case, and it requires four things to line up — the same
+functional slot, a different value, separable time intervals, and a newer claim that independently reaches
+*probable* with a clean deception check. Short of that the change becomes a **candidate held for a human**,
+with readable reasons attached: *newer below probable*, *deception gate: decoy risk*. One decoy-flagged look
+cannot retire a two-look position. Holding is the default; retirement is earned.
 
 ## What this system cannot do
 
@@ -290,9 +312,11 @@ China publishes aggregates, Pakistan has no feed). The confirming satellite fram
 genuine SAM sites relabelled to scenario locations and recorded as such: a fabricated confirming image is
 precisely what the integrity layer should catch, so we do not use one.
 
-The historical rewind is **transaction time**: "as we knew it on this date", never "as it was". A true
-valid-time rewind is roadmap work and would degrade badly here, because most claims carry no event date at
-all.
+The historical rewind is **transaction time**: "as we knew it on this date", never "as it was". The
+substrate for valid time now exists — claims carry their own event, report and ingest times, and the graph
+surfaces value-timelines and edge validity intervals — but the rewind *surface* that would reconstruct the
+world *as it was* on a past date is roadmap work, and event-date coverage is still partial enough that it
+would land unevenly.
 
 **Of the four questions this map sets out to answer, sustainment is the one it currently does not.** What
 they have, where it is, and where the dependencies break are all answered on evidence; how the capability
@@ -314,12 +338,12 @@ AGPL-licensed, which is fine for a hosted evaluation and would need replacing in
 
 The architecture's central bet — derive everything from an append-only log — is what makes provenance,
 reversibility and reproducibility nearly free, and it is also the first thing to break. **The rebuild is
-linear in the log.** At 499 claims a full recompute is milliseconds; past roughly a million edges it must
+linear in the log.** At 492 claims a full recompute is milliseconds; past roughly a million edges it must
 become incremental, and the derived view must persist rather than live in memory, which moves it behind a
 property-graph store while the log-and-rebuild contract above it stays put.
 
 **Resolution scales worse than the graph does.** Identity is recomputed from scratch on every rebuild, and
-candidate generation is all-pairs within a block — tolerable at 175 nodes, quadratic pain past that. It needs
+candidate generation is all-pairs within a block — tolerable at 169 nodes, quadratic pain past that. It needs
 real blocking and namespacing by country and domain, because collision risk grows quietly with size: two
 unrelated "Factory 404"s in one graph is a false merge waiting to happen, and false merges are the failure
 mode that hides. A persistent resolution register, rather than a from-scratch pass, is the structural fix.

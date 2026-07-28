@@ -1,0 +1,1347 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        86
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "official press release"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Inter-Services Public Relations (ISPR)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Inter-Services Public Relations (ISPR)",
+        "An ISPR official, speaking on background"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "Inter-Services Public Relations (ISPR)",
+        "An ISPR official, speaking on background"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c2",
+      "_object_mention": "d02-ispr-induction-l17-2",
+      "_subject_mention": "d02-ispr-induction-l1",
+      "source_quote": "Inter-Services Public Relations (ISPR)"
+    },
+    "claim_id": "d02-ispr-induction-l4",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 4,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          37,
+          75
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 17,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1603,
+          1643
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "An ISPR official, speaking on background",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Inter-Services Public Relations (ISPR)"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l1",
+      "d02-ispr-induction-l17-2"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        158,
+        458
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count_state": "not disclosed"
+      },
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Army Air Defence Centre, Karachi",
+        "raw": "Army Air Defence Centre, Karachi",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P",
+        "Pakistan Army Air Defence (PAAD) unit",
+        "Pakistan Army Air Defence (PAAD) unit"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-10-14",
+        "kind": "exact",
+        "raw": "14 October 2021"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        247,
+        412
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Karachi",
+          "raw": "Karachi",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "Army Air Defence Centre"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Army Air Defence Centre, Karachi"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d02-ispr-induction-l11-2",
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        247,
+        412
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Army Air Defence Centre, Karachi",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "High to Medium Air Defence System (HIMADS)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HIMADS"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "FD-2000"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+        "The system, believed to be a variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family) long-range surface-to-air missile"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c1",
+      "_subject_mention": "d02-ispr-induction-l11-11",
+      "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service"
+    },
+    "claim_id": "d02-ispr-induction-l11-6",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          305,
+          412
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          793,
+          910
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-11"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "High to Medium Air Defence System (HIMADS)"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+        "The system, believed to be a variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family) long-range surface-to-air missile"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c1",
+      "_object_mention": "d02-ispr-induction-l11-4",
+      "_subject_mention": "d02-ispr-induction-l11-11",
+      "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service"
+    },
+    "claim_id": "d02-ispr-induction-l11-7",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          305,
+          412
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          793,
+          910
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "High to Medium Air Defence System (HIMADS)",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-11",
+      "d02-ispr-induction-l11-4"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HIMADS"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms across 2 verbatim spans and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+        "The system, believed to be a variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family) long-range surface-to-air missile"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c1",
+      "_subject_mention": "d02-ispr-induction-l11-11",
+      "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service"
+    },
+    "claim_id": "d02-ispr-induction-l11-8",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          305,
+          412
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          793,
+          910
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HIMADS",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-11"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "Hongqi-9"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+        "The system, believed to be a variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family) long-range surface-to-air missile"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c1",
+      "_subject_mention": "d02-ispr-induction-l11-11",
+      "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service"
+    },
+    "claim_id": "d02-ispr-induction-l11-9",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          305,
+          412
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          793,
+          910
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Hongqi-9",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-11"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service",
+        "The system, believed to be a variant of the Chinese Hongqi-9 (HQ-9P/FD-2000 family) long-range surface-to-air missile"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c1",
+      "_subject_mention": "d02-ispr-induction-l11-11",
+      "source_quote": "a new High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P, was formally inducted into service"
+    },
+    "claim_id": "d02-ispr-induction-l11-10",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          305,
+          412
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          793,
+          910
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-11"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "reportedly the HQ-9/P; believed to be a variant of the Chinese Hongqi-9",
+        "designators": [
+          "HQ-9/P",
+          "HQ-9P",
+          "FD-2000",
+          "Hongqi-9"
+        ],
+        "family": "Hongqi-9 (HQ-9P/FD-2000 family)",
+        "operator_branch": "Pakistan Army Air Defence (PAAD)",
+        "range_km": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "km",
+          "value": 100.0
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Hongqi-9",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d02-ispr-induction-l11-11",
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d02-ispr-induction-l11-17",
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence (PAAD) unit",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        378,
+        457
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Army Air Defence (PAAD)"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Army Air Defence (PAAD) unit"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_subject_mention": "d02-ispr-induction-l11-11"
+    },
+    "claim_id": "d02-ispr-induction-l11-18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        378,
+        457
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence (PAAD)",
+      "object_value": null,
+      "predicate": "operated-by",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        658,
+        790
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "network within which the newly commissioned system is integrated"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "Command, Control, Communication and Intelligence Air Defence (CLIAD) network"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d02-ispr-induction-l11-11",
+      "_relane_reason": "'component-of'@(variant->component) reversed -> equips",
+      "_subject_mention": "d02-ispr-induction-l13",
+      "source_quote": "integration of the newly commissioned system within the Command, Control, Communication and Intelligence Air Defence (CLIAD) network"
+    },
+    "claim_id": "d02-ispr-induction-l13-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        658,
+        790
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "Command, Control, Communication and Intelligence Air Defence (CLIAD) network"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        820,
+        910
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1408,
+        1602
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "launcher"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "batteries/launchers (TELs)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1603,
+        1774
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "background official statement"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "An ISPR official, speaking on background"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2449,
+        2645
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "alert_posture": "achieving operational readiness of the newly commissioned system within a short span of time",
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Army Air Defence"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  }
+]

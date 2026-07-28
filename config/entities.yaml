@@ -102,6 +102,17 @@ entities:
   - entity_id: comp_ht233
     type: component
     canonical_name: "HT-233 engagement radar"
+    # What an ANSWER calls this radar. The cluster legitimately EARNS the surface form "Type 305B" — d14
+    # states the alias outright ("HT-233 engagement radar (also rendered Type 305B in some translations)")
+    # — and the merge is the resolver doing its job. But every source that reaches for that designator
+    # hedges it: d01 says "terminology is not standardized across sources, and it is not clear whether the
+    # unit fielded is identical to the PLA's domestic HT-233 or a modified export variant"; d14 says
+    # "tentatively assessed"; d06 says "PAF does not confirm or deny specific radar nomenclature". Letting
+    # the elected cluster name fall on the hedged translation variant made the flagship answer state
+    # "the fire-control chokepoint is Type 305B" flat — a candidate designator spoken as settled identity,
+    # which is the one thing this system may not do. The hedge belongs in the prose and the drawer; the
+    # node's NAME should be the designator the sources agree on. Same mechanism as unit_hq9b below.
+    display_name: "HT-233 engagement radar"
     aliases:
       - "HT-233"
       - "HT-233 engagement radar"
@@ -180,6 +191,15 @@ entities:
       - "PAF"
       - "Pakistan Air Force"
       - "PAF air defence squadrons"
+      # Same referent under the spelling and head-noun the current extractor reaches for. Their absence
+      # split the relocation across two unit nodes — the Nur Khan "before" landed on
+      # `ent:unit:PAF air defense units` while the Rahwali "after" landed here — so the tripwire had no
+      # before/after pair on ONE subject and fired nothing. This anchor is deliberately aliased BY SERVICE
+      # (no source designates the formation; see the note above), so a service-level phrase belongs here.
+      # What must never appear is an Army form, and `distinct_from: [unit_paad]` holds that regardless.
+      - "PAF air defense units"
+      - "PAF air defence units"
+      - "PAF air defense squadrons"
     distinct_from: [unit_paad]
 
   # ── Basing sites ───────────────────────────────────────────────────────────────────────────────

@@ -64,6 +64,17 @@
         }
       ],
       "target": "comp_gizmo",
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2021",
+        "year": 2021
+      },
       "type": "supplies-component"
     },
     {
@@ -91,6 +102,7 @@
       "supersedes": null,
       "supporting_claims": [],
       "target": "site_north",
+      "time_interval": null,
       "type": "supersedes"
     },
     {
@@ -160,6 +172,12 @@
         }
       ],
       "target": "site_north",
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-06-01",
+        "kind": "exact",
+        "raw": "Jun 2021"
+      },
       "type": "based-at"
     },
     {
@@ -227,6 +245,12 @@
         }
       ],
       "target": "site_south",
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-01",
+        "kind": "exact",
+        "raw": "May 2025"
+      },
       "type": "based-at"
     },
     {
@@ -292,6 +316,12 @@
         }
       ],
       "target": "comp_gizmo",
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-03-01",
+        "kind": "exact",
+        "raw": ""
+      },
       "type": "fields"
     }
   ],
@@ -389,6 +419,18 @@
   },
   "nodes": [
     {
+      "attr_history": {
+        "functional_role": [
+          {
+            "claim_id": "d01-e2",
+            "event_time": null,
+            "report_time": null,
+            "valid_from": null,
+            "valid_until": null,
+            "value": "engagement_fire_control"
+          }
+        ]
+      },
       "attrs": {
         "functional_role": "engagement_fire_control"
       },
@@ -458,6 +500,18 @@
       "type": "component"
     },
     {
+      "attr_history": {
+        "tier": [
+          {
+            "claim_id": "d01-e3",
+            "event_time": null,
+            "report_time": null,
+            "valid_from": null,
+            "valid_until": null,
+            "value": "prime"
+          }
+        ]
+      },
       "attrs": {
         "tier": "prime"
       },
@@ -530,6 +584,7 @@
       "type": "manufacturer"
     },
     {
+      "attr_history": {},
       "attrs": {},
       "claim_ids": [
         "d01-e4"
@@ -597,6 +652,7 @@
       "type": "basing_site"
     },
     {
+      "attr_history": {},
       "attrs": {},
       "claim_ids": [
         "d01-e5"
@@ -664,6 +720,23 @@
       "type": "basing_site"
     },
     {
+      "attr_history": {
+        "echelon": [
+          {
+            "claim_id": "d01-e1",
+            "event_time": null,
+            "report_time": {
+              "boundary_source": "explicit",
+              "iso_date": "2021-03-01",
+              "kind": "exact",
+              "raw": "1 Mar 2021"
+            },
+            "valid_from": null,
+            "valid_until": "2021-03-01",
+            "value": "battalion"
+          }
+        ]
+      },
       "attrs": {
         "echelon": "battalion"
       },

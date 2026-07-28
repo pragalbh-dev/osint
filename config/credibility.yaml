@@ -21,6 +21,14 @@ source_class_factors:
   customs-tender:        {authority: 0.55, process: 0.55, directness: 0.55, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.61
   exporter-state-media:  {authority: 0.60, process: 0.80, directness: 0.50, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.70 (Global Times; authored, not doc-anchored)
   named-social:          {authority: 0.15, process: 0.10, directness: 0.70, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.35
+  # An enthusiast/spotter COMPILATION with a stated method — no standing whatever, but its own photographs
+  # and a published correction log. The table had no rung for this shape and the nearest two were both
+  # wrong: `named-social` has the right authority but the wrong FORM (and, measured, `source_type` also
+  # selects the extraction schema, so filing a register as social routed it to the social-post tool and the
+  # document extracted ZERO claims), while `curated-register` has the right form and SIPRI's authority,
+  # which would score a hobbyist compilation like a treaty database. Low authority, high process, high
+  # directness — the credit is for method and for having taken the photograph, never for standing.
+  contributor-register:  {authority: 0.20, process: 0.70, directness: 0.75, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.56
   anon-social:           {authority: 0.05, process: 0.05, directness: 0.20, track_record: 0.50, intrinsic_plausibility: 1.0}  # R≈0.25
 
 integrity_penalties:
@@ -72,6 +80,27 @@ supersede_floor:
   min_independent_looks: 1      # >=1 independent look (weighted, same measure as min_independent_groups)
   newer_status_allow: [probable, confirmed]   # the newer assertion's own label must be a live assessment
   blocking_gate_flags: [adversary-denial, decoy-risk, contradiction]  # "clean deception gate" (spine/04 §3.4)
+  # THE EARNED-IDENTITY GATE (R1.4). The four conditions above are all about the newer CLAIM. None of them
+  # asks whether the SUBJECT is one thing. That matters because promoting does three things at once: it
+  # retires the older position, it POPS THE PAIR OUT OF THE ANALYST'S QUEUE ("adjudicated by the machine"),
+  # and — when the two targets differ — it DRAWS a relocation. `based-at` is functional and unit-keyed, so
+  # if an identity error fused two co-located batteries their two sites became one unit's before/after, and
+  # that error is then laundered into a positively-asserted movement the analyst is never asked about: the
+  # non-negotiable breached with no component lying. So machine promotion is only legitimate over an
+  # identity the system EARNED. Scoped to promotions that would DRAW a relocation (differing targets) — a
+  # same-target refresh asserts no movement — and it holds when the subject's identity is still an OPEN
+  # QUESTION: a build-materialized provisional instance, or an endpoint of an open `candidate` merge (a
+  # same-as the resolver put in front of the analyst and nobody has adjudicated).
+  # WHAT THIS IS NOT: the node's assessed status. The legitimate flagship relocation sits at `probable`, so
+  # reading the confidence label would suppress the very beat this is meant to leave working. The test is in
+  # the MERGE-BAND vocabulary — is the identity decision open? — not on the confidence scale. A never-merged
+  # subject, and one whose merges are all settled, both pass: no identity decision is pending, so there is
+  # none to distrust, and holding those would stop every honest relocation and teach the analyst to ignore
+  # the queue. Held ⇒ `candidate_supersede` stays and the analyst decides, which D-P4.4 already makes the
+  # DEFAULT outcome.
+  # There is NO KNOB here. The gate was declared as `require_earned_identity: true` — a boolean with no
+  # number to tune, i.e. a switch for turning a safety prohibition off. A prohibition that closes a
+  # fabrication path cannot be optional, so it is now part of the pass and not part of the config.
 
 # ── the assertable band (ASK; spine/09) ──────────────────────────────────────────────────────────
 # Which assessed statuses are strong enough for an ANSWER to *rest on* a link — i.e. to walk it as the
@@ -151,14 +180,27 @@ attribution_proposer:
     fingerprint_attrs: [site_signature_geometry, observable_fingerprint, equipment_fingerprint]  # geometry-bearing attrs
     variant_hop_edges: [inducted-into, equips]                         # 1-hop from the variant to reach unit/component fingerprints
 
-# INGEST basing proposer (ingest/basing.py) — the ATTRIBUTION layer of the two-layer basing model
-# (EVAL RCA D-P4.1/2/3). No source states "formation X is based at site Y"; sources state that equipment was
-# OBSERVED AT a site (`observed-at`, the observed layer) and that equipment serves with a formation
-# (`inducted-into`). This pass derives the missing `<unit, based-at, site>` edge from that pair as a cited
-# `inference` claim carrying BOTH premises and the observation's valid time — offline, upstream of the append,
-# never inside rebuild() (gate G1). Raise-only: it sets no status and no confidence, SCORE prices it, and an
-# inference shares an independence group with its premises so it can never self-corroborate to confirmed.
-# Unlike attribution_proposer this is a pure graph derivation — no model call, so it runs KEYLESS.
+# THE DERIVED BASING EDGE (view/basing.py) — the ATTRIBUTION layer of the two-layer basing model
+# (EVAL RCA D-P4.1/2/3). USUALLY no source states "formation X is based at site Y" directly; the common
+# open-source case is equipment OBSERVED AT a site (`observed-at`, the observed layer) plus equipment serving
+# with a formation (`inducted-into`), and the derivation supplies the missing `<unit, based-at, site>` edge
+# from that pair. (When a source DOES name a formation at a site — an ORBAT / military-balance reference —
+# that is a STATED `based-at`: extractor-emitted, kind=observation, normal credibility, able to confirm. This
+# derivation is the FALLBACK for the usual unstated case, never the only source of the edge; and stated is
+# not the same as trusted — a grade-E stated basing still runs through source grade and lands at possible.)
+#
+# WHERE IT RUNS CHANGED IN RK-LAYER (A4/D-13.6/G17). It used to run OFFLINE and MINT a `kind=inference`
+# ClaimRecord which it APPENDED to the evidence log — derived output frozen into the append-only record,
+# which is the bi-level architecture inverted, and which lets a conclusion outlive its premises across a
+# re-record. Now `rebuild()` materializes the edge itself, every rebuild, CITING ITS TWO PREMISE CLAIM-ATOMS
+# so the analyst still clicks straight through to the sighting and the induction — with NO mint and NO
+# append anywhere under rebuild. The knobs did not move: they describe the derivation, and the derivation is
+# unchanged. What was `python -m chanakya.ingest basing` is gone, and so are the `*__basing.json` bundles it
+# froze (the loader still reads existing ones with layer_routing OFF, which is what keeps the flag-off view
+# byte-identical; DATA removes them from the corpus).
+# The derived edge is capped: it carries the `derived-inference` gate flag and cannot reach `confirmed`
+# however well its premises are corroborated (D-13.13's weaker provenance path). The minted form got that
+# ceiling for free by sharing an independence group with its premises; citing them directly needs it stated.
 # Absent block => dormant (no code-literal defaults).
 basing_proposer:
   occupancy_edge_types: [observed-at]     # the OBSERVED layer this reads (equipment seen at a site)
@@ -166,22 +208,45 @@ basing_proposer:
   equipment_hop_edges: [equips]           # 1 hop from an observed COMPONENT to the variant that carries the association
   derived_edge: based-at                  # the lane the derived attribution is written on (must be declared in ontology.yaml)
   require_located_site: true              # only a site you can point to (coordinate or gazetteer match) can be a BASE — a province or an "air defence sector" is an area of operation, not a basing site (md/13 precision spec)
-  max_units_per_site: 1                   # cap the attribution fan-out: the best-evidenced formation only, not every candidate
-  max_claims_per_pass: 20                 # budget cap; every non-firing occupancy edge is logged with its reason
+  # Cap the attribution fan-out. R2.1/G15: exceeding it is NO LONGER SILENT — the discarded candidates are
+  # named in a Known Gap ("formation count at this site is unresolved: designation coverage needed"). The old
+  # pass took formations[:1] and recorded nothing, while every other rejection path in it logged a reason —
+  # an order-of-battle UNDERCOUNT with no merge involved, which is exactly why neither the presence/formation
+  # gate nor the co-location cap could see it. Raise this to 2 and you get two attributions instead; either
+  # answer is honest, and the choice is a config dial. What is not honest is keep-one-and-say-nothing.
+  max_units_per_site: 1
+  # The affirmative-occupancy vocabulary, as a DENYLIST input: most sources state no occupancy word at all
+  # and demanding one would suppress every honest sighting, but a source saying the site is EMPTY must never
+  # ground a positive basing (without it, "TELs gone from the old site" derived a basing at the one place the
+  # document says the unit left). It is declared here because the imagery lane applies the same vocabulary
+  # (`ingest/imagery._OCCUPIED_TOKENS`) and the two must agree or "an empty site is not a deployment" means
+  # two different things in two places — and because nothing under rebuild() may import an ingest module,
+  # which would drag `make_claim_id` into the rebuild-reachable call graph (G17).
+  occupied_tokens: [occupied, garrison, active, deployed, manned, present, occupation]
 
 # INGEST in-document coreference (ingest/coref.py) — extraction pass 2. A second, scoped forced-tool call per
 # document that groups mentions the document itself treats as one entity ("CPMIEC" / "the export agency"), each
 # group licensed by a verbatim quote. Emits `coref-same-as` claims only; it never merges anything itself — the
 # merge is derived at rebuild, so a split stays native.
 #
-# DORMANT BY DEFAULT — deliberately left commented out. Enabling it costs a SECOND extraction call per document
-# and re-records every frozen bundle, while nothing consumes the clusters yet: RESOLVE does not honour
-# `coref-same-as` until the reconciliation lands (it is not in resolve.scoring's identity predicates, so it is
-# inert to merge scoring by design). Turn it on together with that honor policy, not before. With no extraction
-# key it emits nothing rather than guessing, in any case.
+# The producer is ON, and THIS BLOCK IS THE ONLY SWITCH. It used to ride a second, unrelated flag in
+# resolution.yaml as well, so a deployment that had declared this block still emitted nothing until another
+# file was edited — two switches for one motion, which is how a configured capability comes to look broken.
+# The honour policy it was waiting for is in place: the doc-local cluster is the mint grain (it is where the
+# referent atom is minted), the per-link deterministic gates and the source-grade floor decide what may bind,
+# and D-13.18 lets the rebuild DECLINE a grouping outright. Declaring a category here only makes it
+# PROPOSABLE; which categories may auto-bind is the separate, stricter decision in
+# resolution.yaml -> earned_identity.authoritative_categories.
 #
-# coreference:
-#   # Which evidence kinds may be emitted. Drop UNAMBIGUOUS_ANAPHOR to run conservative (stated equivalences and
-#   # name variants only) — anaphora is the highest-reach, highest-risk category. Order is not significance.
-#   categories: [EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR]
-#   max_mentions: 120             # cost guard: a document offering more mentions is skipped whole, never truncated
+# Cost is real and stated: a SECOND extraction call per document, and every frozen bundle must be re-recorded
+# to carry coreference at all (there are zero coref annotations in the current bundles — ruling M4 — which is
+# why S3's gates are exercised on abstract fixtures). With no extraction key it emits nothing rather than
+# guessing, so the keyless boot is unaffected either way.
+coreference:
+  # Which evidence kinds may be emitted. Drop UNAMBIGUOUS_ANAPHOR to run conservative (stated equivalences and
+  # name variants only) — anaphora is the highest-reach, highest-risk category. Order is not significance.
+  # NOTE this is the PRODUCER list (what may be proposed at all); which of them may auto-BIND is a separate,
+  # stricter decision in resolution.yaml -> earned_identity.authoritative_categories, behind a per-link
+  # structural gate and a source-grade floor. Proposing is cheap; binding is not.
+  categories: [EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR]
+  max_mentions: 120             # cost guard: a document offering more mentions is skipped whole, never truncated

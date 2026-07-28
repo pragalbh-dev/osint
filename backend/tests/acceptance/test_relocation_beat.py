@@ -36,6 +36,14 @@ def test_staged_ingest_adds_the_relocation_evidence(scenario: harness.ScenarioIn
     assert len(after.edges) > len(before.edges)
 
 
+# CLOSED 2026-07-26 by RK-DATA, exactly as the retired marker's own "TO CLOSE" instruction specified: the
+# DATA pass populated `layer_routing.site_type_aliases` (three entries — 'centre'->garrison,
+# 'deployment site'->dispersal_site, 'prepared revetment complex / airfield site'->airfield), so all four of
+# `unit_hq9b`'s stated site classes now normalise. The third state was NOT weakened; it still applies to
+# every value that carries no kind-of-place content. Rawalpindi and Rahwali land in one `airfield` instance
+# bucket and the relocation promotes; the Karachi `garrison` and Sargodha `dispersal_site` basings sit in
+# buckets of their own and stay concurrently valid, which is what C1 is for. Rationale and the measured
+# before/after: tmp/conv/RK-DATA-authoring-spec.md §2.
 def test_relocation_alert_fires_once_with_before_after_and_provenance(alerts: list) -> None:
     """Exactly one alert: the watched unit moved from one site to another, with the claims behind both."""
     assert len(alerts) == 1, [a.observable_id for a in alerts]
@@ -58,6 +66,10 @@ def test_relocation_alert_fires_once_with_before_after_and_provenance(alerts: li
     )
 
 
+# CLOSED 2026-07-26 by RK-DATA — same cause and same fix as the marker retired above. Note what this
+# assertion is now worth: with the site classes readable, the alert set is checked to be exactly the watched
+# unit, so a mapping that over-mapped (sending unrelated strings to one class and manufacturing collateral
+# relocations) would fail HERE rather than passing quietly. That is why the unmapped values stayed unmapped.
 def test_the_only_alert_is_the_watched_unit(alerts: list) -> None:
     """No collateral firing: one subject, and it is the declared watched instance (not, say, a factory
     whose street address resolved differently between the two rebuilds)."""

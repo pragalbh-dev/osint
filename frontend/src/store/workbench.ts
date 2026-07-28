@@ -19,7 +19,18 @@ import {
 export type Stage = 'map' | 'graph'
 // 'answer' is the LIVE-only unified answer view (POST /ask → answer or refusal);
 // demo keeps its two authored views 'hero' (the walk) and 'gaps' (the refusals).
-export type PanelView = 'zero' | 'hero' | 'gaps' | 'card' | 'cred' | 'watch' | 'answer'
+// 'knowngaps' is the LIVE roster of named absences read straight off /view.known_gaps — the
+// non-negotiable given a first-class surface. 'gaps' remains the demo's authored refusal panel.
+export type PanelView =
+  | 'zero'
+  | 'hero'
+  | 'gaps'
+  | 'knowngaps'
+  | 'card'
+  | 'cred'
+  | 'watch'
+  | 'refusals'
+  | 'answer'
 export type DocId = 'd18' | 'd19' | 'd20'
 export type Mode = 'demo' | 'live'
 
@@ -78,6 +89,8 @@ interface WorkbenchState {
   backToZero: () => void
   openCred: () => void
   openWatch: () => void
+  openKnownGaps: () => void
+  openRefusals: () => void
 
   // live ask
   setAskQuestion: (q: string) => void
@@ -170,6 +183,8 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   backToZero: () => set({ panelView: 'zero' }),
   openCred: () => set({ panelView: 'cred' }),
   openWatch: () => set({ panelView: 'watch' }),
+  openKnownGaps: () => set({ panelView: 'knowngaps' }),
+  openRefusals: () => set({ panelView: 'refusals' }),
 
   // LIVE only — POST /ask and append the structured answer (or refusal) to the running
   // chat thread. Guarded to live mode so the demo never fetches; the forming answer IS the

@@ -17,6 +17,8 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
+from pydantic import Field
+
 from .base import Record
 from .values import DateValue, Location, Period
 
@@ -81,6 +83,31 @@ class MaterialityAttrs(Record):
     contributing_refs: list[str] = []  # claim/edge IDs so the attribute still cites its basis
 
 
+class AttrValueClaim(Record):
+    """One asserted value for a derived node attribute, with the time axes it was asserted over (D7, §1B).
+
+    The **retained history** the assembler no longer drops. ``NodeView.attrs[k]`` still holds the single
+    first-claim-wins scalar every existing consumer reads; ``NodeView.attr_history[k]`` keeps *every*
+    value any claim asserted for that attribute, so a later — possibly conflicting — value is simply
+    another entry and nothing is hidden. **Role-agnostic:** values are retained regardless of the
+    attribute's critical/supporting/neutral role (that classification lives in RESOLVE / Stage 1A, never
+    here). The time carrier mirrors ``EventView.time_interval`` (events already carry an interval
+    end-to-end; nodes/edges did not).
+
+    ``event_time`` is the stated validity anchor; ``report_time`` the publication date. ``valid_from`` /
+    ``valid_until`` are the report-bounded validity window from :func:`values.report_bounded_validity`
+    (report_time as the upper bound where no explicit validity interval was stated) — a pure record, no
+    decision. Ordering / supersede / contradiction over these entries is deferred to Stage 3B.
+    """
+
+    value: Any = None
+    claim_id: str
+    event_time: DateValue | None = None  # when true in the world (stated validity anchor)
+    report_time: DateValue | None = None  # when the source published (upper bound on validity)
+    valid_from: str | None = None  # ISO lower bound of validity (from event_time), pure-derived
+    valid_until: str | None = None  # ISO upper bound of validity (report_time, unless explicit interval)
+
+
 class _Assessed(Record):
     """Fields shared by nodes and edges — the assessment attached to a derived element."""
 
@@ -102,6 +129,12 @@ class NodeView(_Assessed):
     attrs: dict[str, Any] = {}  # per-type attributes (functional_role, decoy_risk_flag, …)
     location: Location | None = None
     materiality: MaterialityAttrs | None = None  # precomputed (SCORE); None until it runs
+    # Retained per-attribute value history (D7, §1B). ADDITIVE: ``attrs`` above is unchanged (first-claim
+    # -wins scalar); this maps each claim-asserted attribute → the full time-ordered series of every value
+    # asserted for it — the entity's timeline. SURFACED on the wire (a target output — "store previous
+    # values, makes the KG more useful"); the frozen ``expected_view.json`` must be regenerated to match
+    # (data-refresh ledger §A). Empty until the assembler folds attrs.
+    attr_history: dict[str, list[AttrValueClaim]] = Field(default_factory=dict)
 
 
 class EdgeView(_Assessed):
@@ -117,6 +150,11 @@ class EdgeView(_Assessed):
     supersedes: str | None = None  # the older edge this one retires
     # Identity confidence — lives ONLY on same-as edges, NEVER fed into assertion_confidence (G5).
     merge_confidence: float | None = None
+    # Validity interval carried onto the edge (D7, §1B) — mirrors ``EventView.time_interval``, which
+    # already carries an interval end-to-end. Populated from the edge's claim ``event_time``(s). SURFACED
+    # on the wire (a target output; frozen ``expected_view.json`` regenerated to match — data-refresh
+    # ledger §A). ``None`` when no supporting claim is dated.
+    time_interval: Period | DateValue | None = Field(default=None)
 
 
 class EventView(_Assessed):
@@ -139,9 +177,20 @@ class KnownGap(Record):
     id: str
     what_missing: str  # rendered from a template keyed off the unmet slot (never regenerated prose)
     observability_ceiling: ObservabilityCeiling
-    next_coverage_due: str | None = None  # only meaningful for a *confirmable* ceiling
+    next_coverage_due: str | None = None  # a DATE, and only when a source's numeric cadence produced one
+    # …and the second clause of the non-negotiable, in words the analyst can act on. ALWAYS populated:
+    # "names what is missing AND when next coverage is due" was met by a bare ``next_coverage_due: null``
+    # on 34 of 37 gaps, which states nothing — it is indistinguishable from a field nobody filled in.
+    # Derived by ``sufficiency.coverage_statement``, never authored and never invented: it names the date
+    # and the interval where one exists, and where none does it says which source class could close the gap
+    # and why that class has no revisit date. An honest "no scheduled coverage" is compliant; a null is not.
+    coverage_statement: str = ""
     related_ref: str | None = None  # the node/edge this gap hangs off
     missing_slots: list[str] = []
+    # Other gap ids that raised this IDENTICAL statement about this same node and were collapsed into it.
+    # Several raw pairs can canonicalise onto one node, and rendering one finding five times reads as five
+    # findings; the raw ids are kept here so the presentation collapses without the record doing so.
+    also_raised_as: list[str] = []
 
 
 class AlertProvenance(Record):

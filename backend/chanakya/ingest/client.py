@@ -3,23 +3,42 @@
 INGEST pulls structured claims out of a source by handing the model a single strict extraction
 tool and *forcing* it to fill that tool's arguments (provider-native function-calling — never free-text
 parsing, never DSPy/litellm). This module is the seam the transformer (``extract.py``) and the imagery
-reader (``imagery.py``) are written against, so those layers never import ``anthropic`` / ``google-genai``
-directly. That indirection buys the same three things the ASK seam (``agent.client``) does — but the
+reader (``imagery.py``) are written against, so those layers never import ``anthropic`` / ``google-genai`` /
+``openai`` directly. That indirection buys the same three things the ASK seam (``agent.client``) does — but the
 shape is different, so this is a *separate* seam, not a reuse of that one:
 
 * **offline, deterministic tests + byte-stable bundles** — inject a :class:`ScriptedExtractionClient`
   that replays queued tool-argument dicts in order (gate G10 / determinism);
 * **keyless boot** — :func:`build_extraction_client` returns ``None`` when no key is present, and the
   caller falls back to the frozen bundle-append path (never a fabricated extraction);
-* **an optional second provider** — Gemini is PRIMARY (master §1: native function-calling), Anthropic is
-  the optional second impl; either slots behind the one :class:`ExtractionClient` protocol.
+* **interchangeable providers** — Gemini is PRIMARY (master §1: native function-calling), Anthropic is the
+  second impl, OpenAI the third; each slots behind the one :class:`ExtractionClient` protocol.
+
+All three live *here*, on the shipped ingest path, and that placement is load-bearing rather than tidy.
+KEYLESS==LIVE — a reviewer with no key gets the same graph the live system produces — holds only when the
+frozen seed bundles were produced by the *same code* the live extractor runs. A client kept off this path
+(RK-BAKEOFF's OpenAI candidate originally lived under ``backend/eval``) can be measured but can never be
+the producer that freezes the seed, so it cannot win the bake-off however well it extracts. Adding a
+provider is therefore a class here plus a :func:`build_extraction_client` branch plus its SDK in the
+shipped image's dependencies — never a client parked beside the harness that measures it.
 
 Rules honoured here (master §, spine/08–09, INGEST contract):
 
-* **No sampling params.** Neither the Gemini nor the Anthropic call passes ``temperature`` / ``top_p`` /
-  ``top_k`` (400 on Opus 4.8; deliberately omitted for Gemini too) — ``model_conf`` is held at 1.0.
+* **A malformed reply raises; it is never coerced.** A response without the forced tool call raises, and
+  a filled-arguments payload whose *shape* contradicts the schema we offered raises too
+  (:class:`~chanakya.toolargs.MalformedToolPayload`) — including the case where the provider stopped at
+  the token budget, whose fragment is an incomplete answer rather than a short one. Both are the same
+  principle: coercion turns a malformed reply into an empty extraction that is indistinguishable from an
+  honest "found nothing", and this system's one non-negotiable is that a gap must be *explicit*. A
+  truncated call is retryable in principle, but this seam does not retry — re-rolling a *returned*
+  response is sampling until the answer is liked, and the real remedy (a bigger budget, or a narrower
+  input) belongs to the caller, not the transport. See :mod:`chanakya.toolargs`.
+* **No sampling params.** No provider call passes ``temperature`` / ``top_p`` / ``top_k`` / ``seed`` (400
+  on Opus 4.8; deliberately omitted for Gemini and OpenAI too) — ``model_conf`` is held at 1.0. Nor does
+  the OpenAI call pass ``reasoning``/``reasoning_effort``: see :class:`OpenAIExtractionClient`.
 * **Forced single tool.** Exactly one tool is offered per call and the model is *required* to call it
-  (Anthropic ``tool_choice={"type":"tool",...}``; Gemini ``FunctionCallingConfig(mode=ANY, ...)``).
+  (Anthropic ``tool_choice={"type":"tool",...}``; Gemini ``FunctionCallingConfig(mode=ANY, ...)``; OpenAI
+  ``tool_choice={"type":"function","name":…}``).
 * **Subject-blind.** This seam never sees a subject/anchor — it forwards the generic, ontology-TYPE-keyed
   ``input_schema`` its caller built (gates G9/G11). It is a pure transport; it does not build schemas,
   map fields, or resolve anything.
@@ -27,25 +46,57 @@ Rules honoured here (master §, spine/08–09, INGEST contract):
   a ``ClaimRecord`` before ``store.append``. Nothing in this module ever runs inside ``rebuild()``.
 
 Provider SDKs are imported **lazily** (inside the client constructors), so importing this module never
-requires ``anthropic`` or ``google-genai`` to be installed or configured.
+requires ``anthropic``, ``google-genai`` or ``openai`` to be installed or configured.
 """
 
 from __future__ import annotations
 
 import base64
+import json
 import os
+import threading
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
+from chanakya.toolargs import validate_tool_arguments
+
 # ── model + call defaults (config-adjacent constants, no magic numbers buried in logic) ───────────
 
-MODEL = "claude-opus-4-8"  # Anthropic extraction model (md/07); forced tool_use, no sampling params
-# PRIMARY extractor: native function-calling + multimodal, fast, keyed. The floating ``-latest`` alias
-# tracks the current Gemini flash so a pinned id going "no longer available to new users" (which is what
-# happened to gemini-2.5-flash) never dead-ends live extraction; overridable via ``build_extraction_client``.
-DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
-MAX_TOKENS = 8192  # a single doc's worth of tool arguments; well under the streaming/timeout threshold
+# Anthropic extraction model; forced tool_use, no sampling params. PINNED to the exact id RK-BAKEOFF
+# measured (``config/bakeoff.yaml`` → candidate ``anthropic-opus-5``) and that performed the keyed re-record
+# of the frozen bundles: ``keyless_equals_live`` only holds if the model which produced the seed is the one
+# live extraction uses, so this constant and that candidate must not drift apart. ``claude-opus-5`` is the
+# complete concrete id — the Anthropic scheme carries no date suffix on a current model and appending one
+# 404s — and it is not a floating alias: it names Opus 5 and nothing else.
+MODEL = "claude-opus-5"
+# PRIMARY extractor: native function-calling + multimodal, fast, keyed. PINNED, for the same reason
+# ``DEFAULT_OPENAI_MODEL`` is: this is the model that froze the seed bundles, so a floating ``-latest``
+# would let live extraction silently drift off what keyless boot replays and break ``keyless_equals_live``
+# without changing a line of code. The alias used to sit here to survive a pinned id being retired (which
+# is what happened to gemini-2.5-flash); that risk is real but it is a *loud* failure — live extraction
+# stops, and the fix is one constant — whereas alias drift is a *silent* one that invalidates the seed.
+# Overridable per call via ``build_extraction_client(model_id=...)`` / ``ingest extract --model``.
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
+# Third provider. PINNED, and deliberately not an alias: the OpenAI models endpoint exposes no dated
+# snapshot for the 5.6 family, so this IS the concrete id. There is no ``-latest`` fallback here on
+# purpose — a floating id would let the frozen seed silently stop equalling what live produces.
+DEFAULT_OPENAI_MODEL = "gpt-5.6-sol"
+# One document's worth of tool arguments. Raised from 8192, which the keyed re-record proved is not enough:
+# `d05_customs_manifest` (a row-heavy bill-of-lading table) had its tool call cut off mid-token, and
+# `validate_tool_arguments` correctly refused the truncated payload rather than recording a half-row.
+# Two things pushed it over at once, and both are properties of the pinned model rather than of that
+# document: Opus 5 emits materially more per document than the previous extractor (the bake-off's most
+# robust finding), and on Opus 5 thinking is ON by default — where it was off by default on Opus 4.8 — so
+# reasoning tokens now come out of the SAME ceiling as the tool arguments. A row-heavy table is simply where
+# the sum first exceeded it. This is generous headroom, not a tuned value: truncation is silent-ish data
+# loss at the point where the graph's evidence is created, so the ceiling should never be the thing that
+# decides what a document says.
+MAX_TOKENS = 32000
+#: Transport-level retries (connection errors and 408/409/429/5xx), NOT content retries — see the
+#: constructor note. The SDK default of 2 does not survive a sustained provider overload across a ~73-call
+#: recording run.
+TRANSPORT_MAX_RETRIES = 8
 
 
 # ── the call descriptor ──────────────────────────────────────────────────────────────────────────
@@ -120,27 +171,37 @@ class ScriptedExtractionClient:
     "LLM/VLM paths tested with mocked/scripted clients"). ``extract`` and ``read_image`` draw from the
     *same* FIFO queue, so a doc that runs text-then-image dequeues in that order. Ignores the live inputs
     (it is a pure replay) and raises if the caller asks for more calls than were recorded.
+
+    Replayed payloads are shape-checked against the caller's schema exactly as a live provider's are: a
+    recorded bundle is a *provider answer we froze*, so a structurally invalid one must fail here rather
+    than replay as a silent empty extraction. ``validate=False`` opts a test double out when it is
+    deliberately feeding a malformed payload to exercise a downstream rail.
     """
 
-    def __init__(self, responses: Sequence[dict[str, Any]], *, model_id: str = "scripted") -> None:
+    def __init__(self, responses: Sequence[dict[str, Any]], *, model_id: str = "scripted",
+                 validate: bool = True) -> None:
         self._queue: list[dict[str, Any]] = list(responses)
         self._i = 0
         self.model_id = model_id
+        self._validate = validate
 
-    def _next(self) -> dict[str, Any]:
+    def _next(self, *, tool_name: str, input_schema: dict[str, Any]) -> dict[str, Any]:
         if self._i >= len(self._queue):
             raise RuntimeError(
                 "ScriptedExtractionClient exhausted: more extraction calls were requested than recorded"
             )
         out = self._queue[self._i]
         self._i += 1
-        return out
+        if not self._validate:
+            return out
+        return validate_tool_arguments(out, input_schema=input_schema, tool_name=tool_name,
+                                       provider="scripted")
 
     def extract(
         self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
         images: Sequence[tuple[bytes, str]] = (),
     ) -> dict[str, Any]:
-        return self._next()
+        return self._next(tool_name=tool_name, input_schema=input_schema)
 
     def read_image(
         self,
@@ -151,7 +212,20 @@ class ScriptedExtractionClient:
         image: bytes,
         media_type: str,
     ) -> dict[str, Any]:
-        return self._next()
+        return self._next(tool_name=tool_name, input_schema=input_schema)
+
+
+def _finish_reason(candidate: Any) -> str | None:
+    """Gemini's ``finish_reason`` as a plain string (it ships as an enum), or ``None`` if unreported.
+
+    Only used to recognise a *truncated* forced call: a candidate that ended because the output budget
+    ran out left an incomplete argument object behind, which is not something the payload's own shape can
+    always reveal (a list cut between two complete entries still parses).
+    """
+    raw = getattr(candidate, "finish_reason", None)
+    if raw is None:
+        return None
+    return str(getattr(raw, "name", raw))
 
 
 # ── Gemini client (PRIMARY, live) ──────────────────────────────────────────────────────────────────
@@ -171,13 +245,35 @@ class GeminiExtractionClient:
         # a missing SDK surfaces a clear ImportError at call time, not at build.
         self._api_key = api_key
         self._client: Any = None
+        # The lazy init below runs under concurrency and MUST be guarded — see `_sdk_client`.
+        self._client_lock = threading.Lock()
         self.model_id = model_id
 
     def _sdk_client(self) -> Any:
-        if self._client is None:
-            from google import genai
+        """The SDK client, built once. The lock is load-bearing, not defensive.
 
-            self._client = genai.Client(api_key=self._api_key) if self._api_key else genai.Client()
+        ``lane.extract_many`` fans extraction out across threads (``asyncio.to_thread`` under a
+        semaphore), so several threads reach this method simultaneously on a cold client. Unguarded, each
+        one sees ``self._client is None`` and builds its own ``genai.Client``; the last assignment wins and
+        every other instance becomes unreachable. ``google-genai``'s httpx wrapper closes its transport in
+        ``__del__``, so those orphans take their sockets down as they are collected — while sibling threads
+        are still using them.
+
+        That is not a hypothetical. It broke the RK-BAKEOFF live run twice on 2026-07-26, in the two shapes
+        this race produces: ``httpx.ReadError: [SSL: DECRYPTION_FAILED_OR_BAD_RECORD_MAC]`` when a
+        connection was torn down mid-response, and ``RuntimeError: Cannot send a request, as the client has
+        been closed`` when a thread reached a client that had already been collected. Both look like
+        network faults and neither is one. The Anthropic and OpenAI clients construct their SDK client in
+        ``__init__`` and were never exposed to this.
+        """
+        if self._client is None:
+            with self._client_lock:
+                if self._client is None:  # re-checked under the lock: the first test is unsynchronised
+                    from google import genai
+
+                    self._client = (
+                        genai.Client(api_key=self._api_key) if self._api_key else genai.Client()
+                    )
         return self._client
 
     def _call(
@@ -186,6 +282,12 @@ class GeminiExtractionClient:
         from google.genai import types
 
         declaration = types.FunctionDeclaration(name=tool_name, parameters_json_schema=input_schema)
+        # Thinking is ON by this model's own default and CANNOT be switched off (``thinking_budget=0`` is a
+        # 400) — measured, not assumed. So the default call already reasons; ``CHANAKYA_GEMINI_THINK`` only
+        # raises the ceiling, for the experiment of whether more deliberation fixes a reasoning-shaped
+        # extraction error (an inverted relation direction, a formation recorded at the wrong echelon).
+        # Unset ⇒ byte-identical to the shipped behaviour.
+        budget = os.environ.get("CHANAKYA_GEMINI_THINK")
         config = types.GenerateContentConfig(
             system_instruction=system or None,
             tools=[types.Tool(function_declarations=[declaration])],
@@ -195,6 +297,7 @@ class GeminiExtractionClient:
                     allowed_function_names=[tool_name],
                 )
             ),
+            **({"thinking_config": types.ThinkingConfig(thinking_budget=int(budget))} if budget else {}),
         )
         response = self._sdk_client().models.generate_content(
             model=self.model_id, contents=contents, config=config
@@ -204,7 +307,10 @@ class GeminiExtractionClient:
             for part in getattr(content, "parts", None) or []:
                 fn_call = getattr(part, "function_call", None)
                 if fn_call is not None and fn_call.name == tool_name:
-                    return dict(fn_call.args or {})
+                    return validate_tool_arguments(
+                        dict(fn_call.args or {}), input_schema=input_schema, tool_name=tool_name,
+                        provider="Gemini", stop_reason=_finish_reason(candidate),
+                    )
         raise RuntimeError(f"Gemini returned no forced function call for tool {tool_name!r}")
 
     def extract(
@@ -248,24 +354,46 @@ class AnthropicExtractionClient:
     def __init__(self, api_key: str | None = None, *, model_id: str = MODEL) -> None:
         import anthropic
 
-        self._client: Any = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+        # TRANSPORT retries only, and that is not a softening of the no-retry rule above. That rule forbids
+        # re-rolling a *returned* response — re-asking until a malformed or truncated payload comes back the
+        # way we wanted is sampling until the answer is liked, and the SDK never does it: it retries only
+        # connection errors and 408/409/429/5xx, never a 200 whose body we dislike. So the distinction
+        # enforces itself. The default of 2 was measured insufficient: a re-record is ~73 serial calls, and
+        # a single transient `overloaded_error` from the provider killed a whole run partway, leaving the
+        # bundle directory half-rewritten — this path has no resume, so one blip costs everything already
+        # spent. Retrying the transport is free of the correctness objection and is what makes a long
+        # recording survivable.
+        opts: dict[str, Any] = {"max_retries": TRANSPORT_MAX_RETRIES}
+        if api_key:
+            opts["api_key"] = api_key
+        self._client: Any = anthropic.Anthropic(**opts)
         self.model_id = model_id
 
     def _call(
         self, *, tool_name: str, input_schema: dict[str, Any], system: str, content: Any
     ) -> dict[str, Any]:
         tool = {"name": tool_name, "input_schema": input_schema}
-        response = self._client.messages.create(
+        # STREAMED, not a plain create: at MAX_TOKENS this size the SDK refuses a non-streaming request
+        # (it estimates the call could outlive the HTTP timeout) and a long extraction would die on the
+        # connection rather than on anything about the document. `get_final_message()` still hands back the
+        # same assembled Message, so the tool-use handling below is unchanged — we take the timeout
+        # protection and ignore the individual events.
+        with self._client.messages.stream(
             model=self.model_id,
             max_tokens=MAX_TOKENS,
             system=system,
             messages=[{"role": "user", "content": content}],
             tools=[tool],
             tool_choice={"type": "tool", "name": tool_name},
-        )
+        ) as stream:
+            response = stream.get_final_message()
         for block in response.content:
             if getattr(block, "type", None) == "tool_use" and block.name == tool_name:
-                return dict(block.input)
+                return validate_tool_arguments(
+                    dict(block.input) if isinstance(block.input, dict) else block.input,
+                    input_schema=input_schema, tool_name=tool_name, provider="Anthropic",
+                    stop_reason=getattr(response, "stop_reason", None),
+                )
         raise RuntimeError(f"Anthropic returned no forced tool_use for tool {tool_name!r}")
 
     @staticmethod
@@ -307,12 +435,160 @@ class AnthropicExtractionClient:
         )
 
 
+# ── OpenAI client (third, live) ────────────────────────────────────────────────────────────────────
+
+class OpenAIExtractionClient:
+    """Live extractor on the OpenAI **Responses** API with a forced function call — the third impl.
+
+    Carries the full surface the other two carry: the text lane, the PDF-page multimodal lane
+    (``extract(images=…)``), and the subject-blind standalone-imagery lane (:meth:`read_image`). Dropping
+    the imagery lane is a disqualifier, not a weakness, so a partial client would make this provider
+    unusable rather than merely worse.
+
+    **Why Responses and not Chat Completions.** The first cut used ``chat.completions.create`` and it does
+    not work on ``gpt-5.6-sol``, which rejects the request outright: *"Function tools with
+    reasoning_effort are not supported for gpt-5.6-sol in /v1/chat/completions. To use function tools, use
+    /v1/responses or set reasoning_effort to 'none'."* The API offers two ways out and only one of them is
+    honest — setting ``reasoning_effort='none'`` would run a *deliberately weakened* model under a pinned
+    id, which is a rigged comparison in the bake-off and an undisclosed downgrade in production. So the
+    client moved to ``/v1/responses`` and the model keeps its native reasoning. That is a transport
+    change; nothing about what is asked of the model changed.
+
+    ``model_id`` has **no default here**: it is supplied by the caller (``build_extraction_client`` passes
+    :data:`DEFAULT_OPENAI_MODEL`, RK-BAKEOFF passes the pinned id from its candidate declaration) and is
+    stamped onto every claim's ``Extraction.version``, so provenance records the exact version that
+    produced the claim. A class-level default is what lets a wrong-but-plausible id ride along unnoticed.
+
+    ``openai`` is imported lazily so importing this module never requires the SDK.
+    """
+
+    def __init__(self, api_key: str | None = None, *, model_id: str) -> None:
+        import openai
+
+        if not model_id:
+            raise ValueError("OpenAIExtractionClient needs an explicit pinned model_id (no default)")
+        self._client: Any = openai.OpenAI(api_key=api_key) if api_key else openai.OpenAI()
+        self.model_id = model_id
+        #: Token usage of the most recent call, or ``None`` when the API returned none. Callers that price
+        #: a run read this; it is never invented when absent (see :func:`_openai_usage_dict`).
+        self.last_usage: dict[str, int] | None = None
+
+    @staticmethod
+    def _image_block(image: bytes, media_type: str) -> dict[str, Any]:
+        """A base64 data-URI image part (the Responses ``input_image`` shape)."""
+        encoded = base64.standard_b64encode(image).decode("ascii")
+        return {"type": "input_image", "image_url": f"data:{media_type};base64,{encoded}"}
+
+    @staticmethod
+    def _text_block(text: str) -> dict[str, Any]:
+        return {"type": "input_text", "text": text}
+
+    def _call(
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, content: Any,
+    ) -> dict[str, Any]:
+        """Force exactly one function call and return its parsed arguments as a plain dict.
+
+        ``strict`` is deliberately left off the tool: every extraction schema in this project is
+        all-optional by construction (a required field is how a model is pushed into inventing an operator
+        or a date the source never stated), and strict mode demands the opposite. Turning it on would
+        trade the anti-fabrication property for a validation guarantee — exactly backwards here.
+
+        Two things are *absent* on purpose, and both are honesty rules rather than style:
+
+        * **No sampling parameter** — no ``temperature`` / ``top_p`` / ``seed``, the same rule the Gemini
+          and Anthropic clients are held to.
+        * **No ``reasoning`` / ``reasoning_effort``** — the model runs at its own default, for the reason
+          given in the class docstring.
+
+        An empty ``system`` sends **no** instructions key at all, rather than an explicit ``null``: the
+        claim is that no system message was sent, and only omission states that unambiguously.
+        """
+        request: dict[str, Any] = {
+            "model": self.model_id,
+            "input": [{"role": "user", "content": content}],
+            "tools": [{"type": "function", "name": tool_name, "parameters": input_schema}],
+            "tool_choice": {"type": "function", "name": tool_name},
+            "max_output_tokens": MAX_TOKENS,
+        }
+        if system:
+            request["instructions"] = system
+        response = self._client.responses.create(**request)
+        self.last_usage = _openai_usage_dict(getattr(response, "usage", None))
+
+        for item in getattr(response, "output", None) or []:
+            if getattr(item, "type", None) != "function_call":
+                continue  # reasoning items and message items ride the same list; skip them
+            if getattr(item, "name", None) != tool_name:
+                continue
+            args = getattr(item, "arguments", None)
+            if isinstance(args, dict):
+                return dict(args)
+            parsed = json.loads(args or "{}")
+            if not isinstance(parsed, dict):
+                raise RuntimeError(
+                    f"OpenAI returned non-object arguments for tool {tool_name!r}: {type(parsed).__name__}"
+                )
+            return parsed
+        raise RuntimeError(f"OpenAI returned no forced function call for tool {tool_name!r}")
+
+    def extract(
+        self, *, tool_name: str, input_schema: dict[str, Any], system: str, text: str,
+        images: Sequence[tuple[bytes, str]] = (),
+    ) -> dict[str, Any]:
+        # Text-only sends the prose as a bare string, matching Anthropic (`content=text`) and Gemini
+        # (`contents=text`): a parts array for one provider and a bare string for the others is a harness
+        # difference that would read as a model difference. Page images become a text part plus one image
+        # part per page, so prose, tables and figures are read together.
+        content: Any = text
+        if images:
+            content = [self._text_block(text), *(self._image_block(d, m) for d, m in images)]
+        return self._call(tool_name=tool_name, input_schema=input_schema, system=system, content=content)
+
+    def read_image(
+        self,
+        *,
+        tool_name: str,
+        input_schema: dict[str, Any],
+        system: str,
+        image: bytes,
+        media_type: str,
+    ) -> dict[str, Any]:
+        return self._call(
+            tool_name=tool_name, input_schema=input_schema, system=system,
+            content=[self._image_block(image, media_type)],
+        )
+
+
+def _openai_usage_dict(usage: Any) -> dict[str, int] | None:
+    """Normalise the SDK usage object to ``{input_tokens, output_tokens}``, or ``None`` if absent.
+
+    Reads the Responses API's own names first and falls back to the Chat Completions ones, so a mixed or
+    older SDK still prices correctly. Returns ``None`` rather than zeros when the API reports nothing: a
+    zero token count would price a run at zero dollars, which is a fabricated benchmark line.
+    """
+    if usage is None:
+        return None
+    prompt = getattr(usage, "input_tokens", None)
+    if prompt is None:
+        prompt = getattr(usage, "prompt_tokens", None)
+    completion = getattr(usage, "output_tokens", None)
+    if completion is None:
+        completion = getattr(usage, "completion_tokens", None)
+    if prompt is None and completion is None:
+        return None
+    return {"input_tokens": int(prompt or 0), "output_tokens": int(completion or 0)}
+
+
 # ── client resolution (keyed → live; keyless → None → bundles path) ───────────────────────────────
 
 def build_extraction_client(model_id: str | None = None) -> ExtractionClient | None:
-    """Resolve the extraction client from the environment: Gemini if keyed, else Anthropic, else ``None``.
+    """Resolve the extraction client from the environment: Gemini → Anthropic → OpenAI → ``None``.
 
-    Gemini is PRIMARY (``GEMINI_API_KEY``); Anthropic is the optional second (``ANTHROPIC_API_KEY``).
+    Gemini is PRIMARY (``GEMINI_API_KEY``); Anthropic is second (``ANTHROPIC_API_KEY``); OpenAI is third
+    (``OPENAI_API_KEY``). The order is precedence, not preference-of-the-day: it is the order the shipped
+    system has always used, and appending rather than inserting keeps every existing keyed deployment
+    resolving to exactly the client it resolved to before.
+
     ``None`` means "no live extractor" — the caller falls back to the keyless frozen-bundle append path,
     never a fabricated extraction. ``model_id`` overrides the chosen provider's default model.
     """
@@ -320,4 +596,6 @@ def build_extraction_client(model_id: str | None = None) -> ExtractionClient | N
         return GeminiExtractionClient(model_id=model_id or DEFAULT_GEMINI_MODEL)
     if os.environ.get("ANTHROPIC_API_KEY"):
         return AnthropicExtractionClient(model_id=model_id or MODEL)
+    if os.environ.get("OPENAI_API_KEY"):
+        return OpenAIExtractionClient(model_id=model_id or DEFAULT_OPENAI_MODEL)
     return None

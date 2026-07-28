@@ -1,26 +1,209 @@
 [
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l4",
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d17-rawalpindi-2021-l12-3",
+      "occupancy_state": "occupied"
+    },
+    "claim_id": "d17-rawalpindi-2021-l1",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
       "frame": null,
-      "line": 4,
+      "line": 1,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        122,
-        139
+        0,
+        23
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-08-03",
+      "kind": "exact",
+      "raw": "03 AUG 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAF Base Nur Khan",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9B fire unit (six TELs and engagement radar)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17-rawalpindi-2021-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        376,
+        594
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "moderate-to-high confidence",
+        "family": "HQ-9",
+        "operator_branch": "PAF"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d17-rawalpindi-2021-l12-3",
+      "_subject_mention": "d17-rawalpindi-2021-l12"
+    },
+    "claim_id": "d17-rawalpindi-2021-l12-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        376,
+        727
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 10,
+        "quarter": null,
+        "raw": "Oct 2021",
+        "year": 2021
+      },
+      "kind": "period",
+      "period_type": "range",
+      "start": null
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAF Base Nur Khan",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17-rawalpindi-2021-l12-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        710,
+        989
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -43,15 +226,15 @@
           ],
           "precision_class": "pad",
           "proposed_alias": null,
-          "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84), ~1.5 km NE of the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District, Punjab, Pakistan",
+          "raw": "Grid: 43S CT 23715 21242 (MGRS, WGS84); ~1.5 km NE of the main Nur Khan runway threshold, within the eastern perimeter security belt of the base, Rawalpindi District, Punjab, Pakistan",
           "resolved_place_ref": null,
           "surface_format": "MGRS",
           "wgs84_lat": 33.61638816251397,
           "wgs84_lon": 73.09971192513768
         },
         "occupancy_state": "active or near-active fire-unit site",
-        "site_signature_geometry": "Grid: 43S CT 23715 21242 (MGRS, WGS84)",
-        "site_type": "prepared revetment complex / airfield site"
+        "site_signature_geometry": "prepared revetment complex; revetted position with central hardstand surrounded by semi-radial launcher arrangement and separate radar hardstand ~180m to the NNW",
+        "site_type": "airbase"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -59,238 +242,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_event_time_rung": "stated",
-      "_object_mention": "d17-rawalpindi-2021-l4",
-      "_subject_mention": "d17-rawalpindi-2021-l28"
-    },
-    "claim_id": "d17-rawalpindi-2021-l12",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        507,
-        512
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-08-03",
-      "kind": "exact",
-      "raw": "03 AUG 2021"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "PAF Base Nur Khan",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_event_time_rung": "stated",
-      "_object_mention": "d17-rawalpindi-2021-l4",
-      "_subject_mention": "d17-rawalpindi-2021-l28"
-    },
-    "claim_id": "d17-rawalpindi-2021-l12-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        507,
-        512
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-09-22",
-      "kind": "exact",
-      "raw": "22 SEP 2021"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "PAF Base Nur Khan",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_event_time_rung": "stated",
-      "_object_mention": "d17-rawalpindi-2021-l4",
-      "_subject_mention": "d17-rawalpindi-2021-l28"
-    },
-    "claim_id": "d17-rawalpindi-2021-l12-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        507,
-        512
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-09",
-      "kind": "exact",
-      "raw": "09 OCT 2021"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "PAF Base Nur Khan",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_event_time_rung": "stated",
-      "_object_mention": "d17-rawalpindi-2021-l4",
-      "occupancy_state": "occupied"
-    },
-    "claim_id": "d17-rawalpindi-2021-l22",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 22,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1372,
-        1564
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-08-03",
-      "kind": "exact",
-      "raw": "03 AUG 2021"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "PAF Base Nur Khan",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9B fire unit"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -304,7 +256,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l22-2",
+    "claim_id": "d17-rawalpindi-2021-l22",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
@@ -315,7 +267,7 @@
       "row": null,
       "span": [
         1372,
-        1620
+        1784
       ]
     },
     "event_time": {
@@ -327,7 +279,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -347,13 +299,13 @@
           "value": 6.0
         },
         "dimensions": "estimated 8-9m length per object",
-        "object_type": "elongated TEL-type objects"
+        "object_type": "canisterized launchers / TEL-type objects and engagement radar"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "elongated TEL-type objects"
+        "canisterized launchers / TEL-type objects and engagement radar"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -364,6 +316,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -377,7 +330,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l22-3",
+    "claim_id": "d17-rawalpindi-2021-l22-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
@@ -387,180 +340,15 @@
       "region": null,
       "row": null,
       "span": [
-        1409,
-        1564
+        1667,
+        1871
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "launcher",
-        "functional_role": "launcher"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "canisterized launchers"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l22-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 22,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1621,
-        1784
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-08-03",
-      "kind": "exact",
-      "raw": "03 AUG 2021"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "object_type": "radar-type object"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "radar-type object"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2021-08-03",
-        "kind": "exact",
-        "raw": "03 AUG 2021"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l22-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 22,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1700,
-        1870
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "confidence_language": "tentatively consistent"
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HT-233"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l22-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 22,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1732,
-        1748
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -572,14 +360,16 @@
     "payload": {
       "attrs": {
         "component_class": "radar",
-        "functional_role": "engagement radar"
+        "functional_role": "engagement radar",
+        "model_designation": "HT-233"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "engagement radar"
+      "name": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -591,16 +381,15 @@
     "targets": null
   },
   {
-    "asserts": "entity",
+    "asserts": "relationship",
     "attributes": {
-      "_rejected_relation": {
-        "object": "HQ-9B",
-        "predicate": "component-of",
-        "reason": "no edge for (variant->variant)",
-        "source_quote": "engagement radar associated with the HQ-9B fire unit (possibly HT-233 or a derivative)"
-      }
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d17-rawalpindi-2021-l12",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d17-rawalpindi-2021-l22-2",
+      "source_quote": "engagement radar associated with the HQ-9B fire unit (possibly HT-233 or a derivative"
     },
-    "claim_id": "d17-rawalpindi-2021-l22-7",
+    "claim_id": "d17-rawalpindi-2021-l22-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
@@ -610,15 +399,15 @@
       "region": null,
       "row": null,
       "span": [
-        1795,
-        1801
+        1732,
+        1817
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -628,13 +417,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HT-233"
+      "form": "triple",
+      "object": "HQ-9B",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -648,7 +439,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l22-8",
+    "claim_id": "d17-rawalpindi-2021-l22-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
@@ -666,7 +457,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -678,15 +469,75 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "radar type identification"
+          "positive radar type identification"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "radar type identification"
+      "name": "positive radar type identification"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d17-rawalpindi-2021-l12-3",
+      "occupancy_state": "occupied (reduced count)"
+    },
+    "claim_id": "d17-rawalpindi-2021-l23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1874,
+        2049
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-09-22",
+      "kind": "exact",
+      "raw": "22 SEP 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAF Base Nur Khan",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9B fire unit element (four TELs and support infrastructure)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -700,7 +551,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l23",
+    "claim_id": "d17-rawalpindi-2021-l23-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
@@ -711,7 +562,7 @@
       "row": null,
       "span": [
         1874,
-        1962
+        2203
       ]
     },
     "event_time": {
@@ -723,7 +574,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -740,15 +591,15 @@
           "max": null,
           "min": null,
           "unit": null,
-          "value": 4.0
+          "value": 1.0
         },
-        "object_type": "visible objects"
+        "object_type": "launchers, generator trailers, soft-skin utility vehicles, command/comms shelter"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "visible objects"
+        "launchers, generator trailers, soft-skin utility vehicles, command/comms shelter"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -759,6 +610,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -772,34 +624,55 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_event_time_rung": "stated",
-      "_object_mention": "d17-rawalpindi-2021-l4",
-      "occupancy_state": "occupied"
+      "_coref_cluster": "c1",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "HQ-9B fire unit (six TELs and engagement radar)",
+        "HQ-9B fire unit (six TELs and repositioned radar)"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the antecedent is undeclared — no entity claim asserts it, so nothing in the document states what the anaphor is being resolved TO",
+      "_coref_quotes": [
+        "launcher count at the same position appears reduced to four visible objects; assessed as maintenance rotation or partial redeployment rather than site abandonment, given continued presence of support infrastructure (generator trailers, two soft-skin utility vehicles, what is believed to be a command/comms shelter).",
+        "The fire unit is assessed with moderate-to-high confidence as an HQ-9B battery element occupied through the reporting period at the former Chaklala airfield site, now PAF Base Nur Khan."
+      ],
+      "_coref_referent": "ref:d17-rawalpindi-2021-c1",
+      "source_quote": "launcher count at the same position appears reduced to four visible objects; assessed as maintenance rotation or partial redeployment rather than site abandonment, given continued presence of support infrastructure (generator trailers, two soft-skin utility vehicles, what is believed to be a command/comms shelter)."
     },
-    "claim_id": "d17-rawalpindi-2021-l23-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1874,
-        2101
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-09-22",
-      "kind": "exact",
-      "raw": "22 SEP 2021"
-    },
+    "claim_id": "d17-rawalpindi-2021-l23-3",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+        "frame": null,
+        "line": 23,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1887,
+          2203
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+        "frame": null,
+        "line": 28,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2515,
+          2700
+        ]
+      }
+    ],
+    "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -810,13 +683,14 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "PAF Base Nur Khan",
+      "object": "HQ-9B fire unit (six TELs and repositioned radar)",
       "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9B fire unit"
+      "predicate": "coref-same-as",
+      "subject": "HQ-9B fire unit (six TELs and engagement radar)"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d17-rawalpindi-2021-c1",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -828,78 +702,57 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l23-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2103,
-        2121
-      ]
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "HQ-9B fire unit (six TELs and engagement radar)",
+        "HQ-9B fire unit element (four TELs and support infrastructure)"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the antecedent is undeclared — no entity claim asserts it, so nothing in the document states what the anaphor is being resolved TO",
+      "_coref_quotes": [
+        "launcher count at the same position appears reduced to four visible objects; assessed as maintenance rotation or partial redeployment rather than site abandonment, given continued presence of support infrastructure (generator trailers, two soft-skin utility vehicles, what is believed to be a command/comms shelter).",
+        "The fire unit is assessed with moderate-to-high confidence as an HQ-9B battery element occupied through the reporting period at the former Chaklala airfield site, now PAF Base Nur Khan."
+      ],
+      "_coref_referent": "ref:d17-rawalpindi-2021-c1",
+      "source_quote": "launcher count at the same position appears reduced to four visible objects; assessed as maintenance rotation or partial redeployment rather than site abandonment, given continued presence of support infrastructure (generator trailers, two soft-skin utility vehicles, what is believed to be a command/comms shelter)."
     },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "support_vehicle",
-        "functional_role": "support"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "generator trailers"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
     "claim_id": "d17-rawalpindi-2021-l23-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2123,
-        2153
-      ]
-    },
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+        "frame": null,
+        "line": 23,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1887,
+          2203
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+        "frame": null,
+        "line": 28,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          2515,
+          2700
+        ]
+      }
+    ],
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -909,67 +762,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "component_class": "support_vehicle",
-        "functional_role": "utility"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "soft-skin utility vehicles"
+      "form": "triple",
+      "object": "HQ-9B fire unit element (four TELs and support infrastructure)",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9B fire unit (six TELs and engagement radar)"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l23-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 23,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2155,
-        2201
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "shelter",
-        "functional_role": "command/comms"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "command/comms shelter"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": "ref:chunk0-d17-rawalpindi-2021-c1",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -1006,7 +807,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1023,15 +824,15 @@
           "max": null,
           "min": null,
           "unit": null,
-          "value": 6.0
+          "value": 1.0
         },
-        "object_type": "launcher"
+        "object_type": "launchers, engagement radar"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "launcher"
+        "launchers, engagement radar"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -1042,6 +843,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -1056,7 +858,7 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "stated",
-      "_object_mention": "d17-rawalpindi-2021-l4",
+      "_object_mention": "d17-rawalpindi-2021-l12-3",
       "occupancy_state": "occupied"
     },
     "claim_id": "d17-rawalpindi-2021-l24-2",
@@ -1082,7 +884,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1096,113 +898,11 @@
       "object": "PAF Base Nur Khan",
       "object_value": null,
       "predicate": "observed-at",
-      "subject": "HQ-9B fire unit"
+      "subject": "HQ-9B fire unit (six TELs and repositioned radar)"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l24-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 24,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2447,
-        2498
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "missing_slots": [
-          "radar repositioning confirmation"
-        ]
-      },
-      "entity_type": "known_gap",
-      "form": "entity",
-      "name": "radar repositioning confirmation"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d17_rawalpindi_2021",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17-rawalpindi-2021-l28",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
-      "frame": null,
-      "line": 28,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2515,
-        2882
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "confidence_language": "moderate-to-high confidence",
-        "family": "HQ-9"
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -1234,7 +934,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1246,15 +946,16 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "additional dispersed elements"
+          "additional dispersed fire units outside current image footprints"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "additional dispersed elements"
+      "name": "additional dispersed fire units outside current image footprints"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -1278,15 +979,68 @@
       "region": null,
       "row": null,
       "span": [
-        4003,
-        4024
+        3872,
+        4025
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "maintenance or training-cycle schedule for PAF air defense units"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "maintenance or training-cycle schedule for PAF air defense units"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d17-rawalpindi-2021-l34-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3954,
+        4025
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1305,6 +1059,69 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d17_rawalpindi_2021",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_event_time_rung": "observation",
+      "_object_mention": "d17-rawalpindi-2021-l34-2",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d17-rawalpindi-2021-l12",
+      "source_quote": "known maintenance or training-cycle schedule for PAF air defense units."
+    },
+    "claim_id": "d17-rawalpindi-2021-l34-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17_rawalpindi_2021.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3954,
+        4025
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-09",
+      "kind": "exact",
+      "raw": "09 OCT 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAF air defense units",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -1319,7 +1136,7 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "Overhead view of a secured compound with a circular loop road and associated buildings in a forested area.",
+      "caption_text": "Overhead optical view of a facility complex featuring a central circular loop road, scattered buildings, access roads, and surrounding forested terrain.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "3a6942328ce713e2677b5343e859fbc9a009a68395a7ac25d1dd8ad340137f7e",
@@ -1341,15 +1158,27 @@
       "span": null
     },
     "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-09",
-      "kind": "exact",
-      "raw": "09 OCT 2021"
+      "approximate": false,
+      "as_of": null,
+      "end": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 10,
+        "quarter": null,
+        "raw": "Oct 2021",
+        "year": 2021
+      },
+      "kind": "period",
+      "period_type": "range",
+      "start": null
     },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1360,52 +1189,60 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Consistent",
+        "caption_vs_image_consistency": "consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": null,
           "min": null,
-          "unit": "buildings and structures",
+          "unit": "structures and building footprints",
           "value": null
         },
-        "description": "The image depicts a heavily forested hill containing a secured installation. In the center is a loop road network with several cleared pads containing rectangular shelters or small buildings. To the northeast, a larger support compound is visible, consisting of multiple administrative and utility buildings, barracks, and cleared plots connected by service roads. Another built-up area with agricultural fields and residential/support structures is situated to the southwest. Several small, irregular ponds and water reservoirs are visible in the surrounding terrain, and a multi-lane highway runs along the far left edge of the frame.",
-        "frame_kind": "satellite",
+        "description": "An overhead optical image showing rural/forested terrain with an integrated facility. Near the center, a cleared area contains a circular access road with several small rectangular structures or pads positioned around and inside the loop. To the northeast and southwest, clusters of rectangular buildings are connected by access roads. A multi-lane highway is visible in the upper-left corner, cleared agricultural fields appear in the upper-right, and several small dark water reservoirs are scattered throughout the wooded surroundings.",
+        "frame_kind": "satellite_optical",
         "geometry_tokens": [
-          "loop road",
-          "rectangular shelters",
-          "support buildings",
-          "water bodies"
+          "circular_loop",
+          "linear_roads",
+          "rectangular_footprints",
+          "cleared_pads",
+          "irregular_water_bodies"
         ],
+        "gsd_note": "Medium-resolution satellite imagery showing ground facility layout, road networks, and land cover; individual vehicle-sized objects cannot be resolved.",
         "observed_features": [
           {
-            "arrangement": "central loop",
-            "feature": "loop road",
-            "note": "A teardrop or circular road network containing several pads.",
-            "shape": "circular"
+            "arrangement": "circular loop",
+            "feature": "ring access road",
+            "note": "Unpaved or paved track forming an oval loop enclosing small cleared pads and structures",
+            "shape": "circular / oval"
           },
           {
-            "arrangement": "grouped on pads",
-            "feature": "rectangular shelters",
-            "note": "Small rectangular structures located within the loop road cleared areas.",
+            "arrangement": "dispersed clusters",
+            "feature": "rectangular buildings",
+            "note": "Multiple small to medium rectangular building footprints arranged along access roads",
             "shape": "rectangular"
           },
           {
-            "arrangement": "clustered",
-            "feature": "support buildings",
-            "note": "Numerous buildings making up the support compound to the northeast.",
-            "shape": "rectangular"
+            "arrangement": "parallel ribbons",
+            "feature": "multi-lane highway",
+            "note": "Dual-carriageway road visible in the upper-left corner running diagonally",
+            "shape": "linear"
           },
           {
-            "arrangement": "scattered",
-            "feature": "water bodies",
-            "note": "Small ponds or reservoirs around the base of the hill.",
+            "arrangement": "dispersed",
+            "feature": "water reservoirs",
+            "note": "Dark impoundments/ponds bordered by vegetation",
             "shape": "irregular"
+          },
+          {
+            "arrangement": "contiguous parcels",
+            "feature": "agricultural fields",
+            "note": "Cleared land parcels in the upper-right quadrant",
+            "shape": "polygonal"
           }
         ],
-        "occupancy_state": "undetermined",
+        "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "The image depicts a heavily forested hill containing a secured installation. In the center is a loop road network with several cleared pads containing rectangular shelters or small buildings. To the northeast, a larger support compound is visible, consisting of multiple administrative and utility buildings, barracks, and cleared plots connected by service roads. Another built-up area with agricultural fields and residential/support structures is situated to the southwest. Several small, irregular ponds and water reservoirs are visible in the surrounding terrain, and a multi-lane highway runs along the far left edge of the frame.",
+        "site_signature_geometry": "An overhead optical image showing rural/forested terrain with an integrated facility. Near the center, a cleared area contains a circular access road with several small rectangular structures or pads positioned around and inside the loop. To the northeast and southwest, clusters of rectangular buildings are connected by access roads. A multi-lane highway is visible in the upper-left corner, cleared agricultural fields appear in the upper-right, and several small dark water reservoirs are scattered throughout the wooded surroundings.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -1414,6 +1251,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",

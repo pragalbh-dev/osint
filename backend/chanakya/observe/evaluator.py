@@ -37,6 +37,7 @@ from chanakya.schemas import (
     GraphView,
     NodeView,
     ObservableDef,
+    canonical_iso_bounds,
 )
 
 from .dsl import MISSING, evaluate_condition, resolve_field, within_area
@@ -47,8 +48,10 @@ from .observable import (
     INSTANCE_KEY,
     MATCH,
     CompiledTrigger,
+    ScopeResolution,
     compile_trigger,
     resolve_scope,
+    resolve_scope_detail,
 )
 
 _EMPTY = GraphView()
@@ -85,13 +88,67 @@ def _group_key(el: Element, ct: CompiledTrigger) -> str:
 
 # ── active-element resolution (supersede-aware) ────────────────────────────────────────────────
 
-def _active_edges(view: GraphView, ct: CompiledTrigger) -> dict[str, EdgeView]:
+def _validity_rank(edge: EdgeView) -> tuple[str, str]:
+    """How recent an edge's asserted validity is — ``(end, start)``, ``("", "")`` when it is undated.
+
+    Sorted **descending**, so the latest-ending assertion ranks first and an undated edge ranks last: an
+    edge nobody dated cannot be shown to be a subject's current state, so it must never outrank one that
+    is dated. Read off the edge's own ``time_interval``, the same validity the supersede ordering reads.
+    """
+    lo, hi = canonical_iso_bounds(edge.time_interval)
+    return (hi or "", lo or "")
+
+
+def positional_classes(config: ConfigBundle) -> frozenset[str]:
+    """Gazetteer precision classes precise enough to be a *position* — from config, never spelled here.
+
+    The same list ``resolve.places`` already uses to decide when "both mentions resolved to this anchor"
+    may become "both mentions are the same place" (``place_identity_precision_classes``). The area rungs
+    are excluded there for exactly the reason they must be excluded here: two batteries both described as
+    being in Punjab are not one battery, and a whole province is not somewhere a unit can be said to have
+    moved *from*. Absent/empty config ⇒ empty set ⇒ the rank below is inert and ordering is unchanged.
+    """
+    return frozenset(str(c) for c in (getattr(config.resolution, "place_identity_precision_classes", None) or []))
+
+
+def _is_positional(edge: EdgeView, nodes: dict[str, NodeView], classes: frozenset[str]) -> bool:
+    """Does this edge's target resolve to a place precise enough to be a position?
+
+    ``False`` covers three cases that are the same for this purpose — a coarse anchor (province/city/
+    district), a located node whose precision the gazetteer never classed, and a target with no location
+    at all. All three mean the same thing: nothing here can be pointed at. Non-place targets land in the
+    same bucket and therefore all rank equally, so a tripwire over non-geographic edges is unaffected.
+    """
+    if not classes:
+        return False
+    node = nodes.get(edge.target)
+    coords = (node.attrs or {}).get("coordinates") if node is not None else None
+    if not isinstance(coords, dict):
+        return False
+    return str(coords.get("precision_class") or "") in classes
+
+
+def _active_edges(view: GraphView, ct: CompiledTrigger, classes: frozenset[str]) -> dict[str, EdgeView]:
     """Map grouping key → the *active* edge (the one not superseded), filtered by the trigger's type.
 
     When several edges share a key (the before→after of a relocation), the active one is the live edge
-    (``superseded_by is None``); ``supersedes`` breaks a tie toward the newest; a stable id sort keeps
-    it deterministic (G2 spirit).
+    (``superseded_by is None``); ``supersedes`` breaks a tie toward the newest.
+
+    **Beyond that the tie-break is position-then-recency, not id order.** A supersede link only exists once
+    the pair has been *ordered and promoted*, which is exactly what has not happened yet for a subject the
+    analyst is watching precisely because its history is unsettled. A busy unit carries many concurrent live
+    basings, and picking among them by sorted id makes "this subject's current position" mean "whichever
+    site name sorts first" — which then rides into the alert as its ``before`` state and misstates the very
+    movement the tripwire exists to report.
+
+    Recency alone is not enough either, and the failure is instructive: the freshest basing on a watched
+    unit was a cloud-obscured holding whose "site" had resolved only to *Punjab province* — a 150 km
+    envelope. It carried the latest date because the pass was flown, not because anything was seen. Ranking
+    a **locatable** target above an unlocatable one first is what separates a position from an area, and it
+    is a property the graph already carries rather than a judgement made here. Recency orders what is left;
+    the id sort stays underneath as the deterministic final tie-break (G2 spirit).
     """
+    nodes = {n.id: n for n in view.nodes}
     groups: dict[str, list[EdgeView]] = defaultdict(list)
     for e in view.edges:
         if ct.type_filter is not None and e.type != ct.type_filter:
@@ -100,8 +157,12 @@ def _active_edges(view: GraphView, ct: CompiledTrigger) -> dict[str, EdgeView]:
     active: dict[str, EdgeView] = {}
     for key, group in groups.items():
         live = [e for e in group if e.superseded_by is None]
-        pool = [e for e in live if e.supersedes is not None] or live or group
-        active[key] = sorted(pool, key=lambda e: e.id)[0]
+        # Stable sorts applied in ASCENDING order of priority: id, then validity, then locatability —
+        # so the last one dominates and each earlier one survives as the next tie-break.
+        pool = sorted([e for e in live if e.supersedes is not None] or live or group, key=lambda e: e.id)
+        pool.sort(key=_validity_rank, reverse=True)
+        pool.sort(key=lambda e: _is_positional(e, nodes, classes), reverse=True)
+        active[key] = pool[0]
     return active
 
 
@@ -110,9 +171,9 @@ def _active_nodes(view: GraphView, ct: CompiledTrigger) -> dict[str, NodeView]:
             if ct.type_filter is None or n.type == ct.type_filter}
 
 
-def _candidates(view: GraphView, ct: CompiledTrigger) -> dict[str, Any]:
+def _candidates(view: GraphView, ct: CompiledTrigger, classes: frozenset[str]) -> dict[str, Any]:
     """Active candidate elements of the trigger's kind, keyed by the declared grouping key."""
-    return _active_edges(view, ct) if ct.element_kind == "edge" else _active_nodes(view, ct)
+    return _active_edges(view, ct, classes) if ct.element_kind == "edge" else _active_nodes(view, ct)
 
 
 def _state_value(el: EdgeView | NodeView | None, ct: CompiledTrigger) -> Any:
@@ -233,17 +294,33 @@ def _alert(obs: ObservableDef, ct: CompiledTrigger, subject: str, before: Any, a
 
 # ── per-mode detectors ─────────────────────────────────────────────────────────────────────────
 
+def _superseded_prior(el: Element, prev_by_id: dict[str, EdgeView]) -> EdgeView | None:
+    """The assertion this element **records** having overtaken, if that edge was in the prior view.
+
+    ``_active_edges`` derives a subject's prior state by ranking its live edges (locatable, then recent).
+    That is a *heuristic for* the question ``supersedes`` already answers exactly: rebuild() ordered this
+    instance's edges in time, inside one site-class bucket, and named the one being retired. Where that
+    link exists it is strictly better evidence than any re-derivation, and using it also keeps the alert's
+    ``before`` and the graph's own supersession arrow from telling an analyst two different stories about
+    the same movement. The rank stays underneath for the ordinary case: most crossings retire nothing, and
+    a subject with several concurrent live assertions still needs its prior state chosen somehow.
+    """
+    superseded = el.supersedes if isinstance(el, EdgeView) else None
+    return prev_by_id.get(superseded) if superseded else None
+
+
 def _crossing(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
-              scope: set[str] | None) -> list[Alert]:
-    prev_active = _candidates(prev, ct)
-    new_active = _candidates(new, ct)
+              scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
+    prev_active = _candidates(prev, ct, classes)
+    new_active = _candidates(new, ct, classes)
+    prev_by_id = {e.id: e for e in prev.edges}
 
     out: list[Alert] = []
     for key, el in new_active.items():
         watched = _watched(el)
         if not _in_scope(watched, scope) or not _geo_ok(el, ct):
             continue
-        prev_el = prev_active.get(key)
+        prev_el = _superseded_prior(el, prev_by_id) or prev_active.get(key)
         new_state = _state_value(el, ct)
         prev_state = _state_value(prev_el, ct)
         # A crossing needs a *known prior state* that differs — first-appearance is `new_edge`, not a
@@ -257,9 +334,9 @@ def _crossing(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: Gra
 
 
 def _exists(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
-            scope: set[str] | None) -> list[Alert]:
-    prev_keys = set(_candidates(prev, ct))
-    new_active = _candidates(new, ct)
+            scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
+    prev_keys = set(_candidates(prev, ct, classes))
+    new_active = _candidates(new, ct, classes)
 
     out: list[Alert] = []
     for key, el in new_active.items():
@@ -276,11 +353,11 @@ def _exists(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: Graph
 
 
 def _match(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
-           scope: set[str] | None) -> list[Alert]:
+           scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
     if ct.state_field is None or ct.op is None:
         return []
-    prev_active = _candidates(prev, ct)
-    new_active = _candidates(new, ct)
+    prev_active = _candidates(prev, ct, classes)
+    new_active = _candidates(new, ct, classes)
 
     out: list[Alert] = []
     for key, el in new_active.items():
@@ -309,7 +386,7 @@ def _fire(obs: ObservableDef, prev: GraphView, new: GraphView, config: ConfigBun
     if ct.mode == ARM_ONLY:
         return []
     scope = resolve_scope(obs, new, config)
-    return _DETECTORS[ct.mode](obs, ct, prev, new, scope)
+    return _DETECTORS[ct.mode](obs, ct, prev, new, scope, positional_classes(config))
 
 
 def evaluate(prev_view: GraphView | None, view: GraphView, config: ConfigBundle) -> list[Alert]:
@@ -340,20 +417,37 @@ def arm(observable: ObservableDef, view: GraphView, config: ConfigBundle) -> lis
     if ct.mode not in (EXISTS, MATCH):
         return []
     scope = resolve_scope(observable, view, config)
-    return _DETECTORS[ct.mode](observable, ct, _EMPTY, view, scope)
+    return _DETECTORS[ct.mode](observable, ct, _EMPTY, view, scope, positional_classes(config))
 
 
 def _condition_text(cond: Any) -> str:
     return f"{cond.field} {cond.op or 'changes'}" + ("" if cond.value is None else f" {cond.value!r}")
 
 
-def explain(observable: ObservableDef) -> dict[str, Any]:
+def explain(
+    observable: ObservableDef,
+    view: GraphView | None = None,
+    config: ConfigBundle | None = None,
+) -> dict[str, Any]:
     """Introspect how an observable compiles (mode, scope inputs, arm-only reason) — for the config UI.
 
     Also reports what the compile **did not** use: ``unconsumed_keys`` names every trigger key that was
     dropped (``ConfigModel`` is ``extra="allow"``, so nothing else can catch a typo or an aspirational
     key) and ``unconsumed_warning`` says so in one sentence for the analyst's confirm screen. A silently
     ignored key is how a tripwire ends up meaning something other than what it reads like.
+
+    **Anchor honesty (AH-1).** ``watch_instances`` used to be echoed back verbatim with no statement of
+    whether any of them resolved to a real node — so a tripwire watching nothing explained itself exactly
+    like a healthy one. Pass ``view`` + ``config`` and the same scoping used at fire time runs here:
+    ``unresolved_anchors`` names every anchor that binds to nothing and ``anchor_warning`` says what that
+    means in one sentence. Without a view the check *cannot* be done, and ``anchor_check`` says so rather
+    than implying a clean bill of health — an unperformed check is never reported as a pass.
+
+    **Trigger reachability (AH-3).** The anchor check answers "can I see my target?"; ``reachability``
+    answers the other half — "given that I can see everything, could the condition I watch for occur on
+    this graph at all?". A tripwire watching for an edge type the view holds none of, or compiling to
+    arm-only, is armed and permanently silent, and that silence used to read as an all-clear on every
+    list surface. Carried here so the proposer's confirm screen states it *before* the analyst arms it.
     """
     ct = compile_trigger(observable.trigger)
     out = {
@@ -381,5 +475,85 @@ def explain(observable: ObservableDef) -> dict[str, Any]:
         out["unconsumed_warning"] = (
             "these trigger keys were not used by the compiled tripwire and have no effect: "
             + ", ".join(ct.unconsumed)
+        )
+    out.update(_anchor_explanation(observable, view, config))
+    # Imported at call time, not module scope: ``reachability`` reuses this module's fire-time helpers
+    # (``_candidates``/``_watched``/``_in_scope``) so its verdict cannot drift from what actually fires,
+    # which makes the dependency one-way at import and two-way only here.
+    from .reachability import trigger_reachability
+
+    reach = trigger_reachability(observable, view, config)
+    out["reachability"] = reach.as_dict()
+    if reach.warning:
+        out["reachability_warning"] = reach.warning
+    return out
+
+
+def _anchor_explanation(
+    observable: ObservableDef, view: GraphView | None, config: ConfigBundle | None
+) -> dict[str, Any]:
+    """The anchor half of ``explain`` — what resolved, what did not, and what that means (AH-1)."""
+    if view is None or config is None:
+        return {
+            "anchor_check": "not performed — no view supplied, so whether these anchors resolve is unknown",
+            "unresolved_anchors": None,
+        }
+    detail = resolve_scope_detail(observable, view, config)
+    out: dict[str, Any] = {
+        "anchor_check": "ok" if detail.warning is None else detail.severity,
+        "anchors_requested": list(detail.requested),
+        "anchors_resolved": detail.resolved_map,
+        "anchor_resolution": dict(detail.resolution_via or {}),
+        "unresolved_anchors": list(detail.missing),
+        # AH-2 — an anchor awaiting coverage is not a broken one; keep them apart on every surface.
+        "anchors_pending_coverage": list(detail.pending_coverage),
+        "anchors_dangling": list(detail.dangling),
+        "anchor_severity": detail.severity,
+        "anchors_declared_in": dict(detail.declared_in or {}),
+        "watched_node_count": detail.watched_node_count,  # None = unscoped (watches everything)
+        "watching_nothing": detail.watching_nothing,
+    }
+    if detail.warning:
+        out["anchor_warning"] = detail.warning
+    return out
+
+
+def anchor_diagnostics(config: ConfigBundle, view: GraphView) -> list[dict[str, Any]]:
+    """Every armed observable whose declared anchors do **not** all resolve against ``view`` (AH-1).
+
+    The list is the API/SPA-facing form of :class:`ScopeResolution`: one entry per *broken* observable,
+    so an empty list is the positive statement "every armed tripwire's anchors bind to a real node".
+    Deterministic (config order); no clock/RNG — safe to call on any read path.
+
+    **AH-2, two corrections to what counts as reportable:**
+
+    * An ``arm-only`` observable is skipped. Both ``_fire`` and ``arm`` return on ``ARM_ONLY`` *before*
+      calling ``resolve_scope``, so its scope is provably never consulted — reporting an anchor problem
+      there blames an anchor for a silence that ``explain()`` already attributes, correctly and
+      separately, to arm-only mode. ``explain()`` still reports its anchors, so nothing is hidden.
+    * Entries carry ``severity``. A caller that renders every entry with equal loudness will cry wolf on
+      this system's own default boot state, where a deliberately-withheld document leaves a declared
+      entity uncovered; ``severity == "pending_coverage"`` is the quiet case.
+    """
+    out: list[dict[str, Any]] = []
+    for obs in config.observables.observables:
+        if compile_trigger(obs.trigger).mode == ARM_ONLY:
+            continue
+        detail: ScopeResolution = resolve_scope_detail(obs, view, config)
+        if detail.warning is None:
+            continue
+        out.append(
+            {
+                "observable_id": obs.observable_id,
+                "unresolved_anchors": list(detail.missing),
+                "resolved_anchors": detail.resolved_map,
+                "pending_coverage": list(detail.pending_coverage),
+                "dangling": list(detail.dangling),
+                "declared_in": dict(detail.declared_in or {}),
+                "severity": detail.severity,
+                "watched_node_count": detail.watched_node_count,
+                "watching_nothing": detail.watching_nothing,
+                "warning": detail.warning,
+            }
         )
     return out

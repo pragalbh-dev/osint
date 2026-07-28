@@ -1,0 +1,458 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 37.74931718735024,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "LY-80",
+            "name_b": "HQ-16",
+            "source_quote": "complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers"
+          },
+          {
+            "name_a": "TEL",
+            "name_b": "transporter-erector-launcher",
+            "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles"
+          },
+          {
+            "name_a": "China Precision Machinery Import-Export Corporation",
+            "name_b": "CPMIEC",
+            "source_quote": "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+          },
+          {
+            "name_a": "ATBM",
+            "name_b": "anti-tactical ballistic missile",
+            "source_quote": "a secondary anti-tactical ballistic missile (ATBM) capability"
+          }
+        ],
+        "basing_sites": [
+          {
+            "location_text": "oriented toward the Arabian Sea approach",
+            "name": "positions oriented toward the Arabian Sea approach",
+            "site_type": "deployment site",
+            "source_quote": "Deployment sites are believed to include positions oriented toward the Arabian Sea approach"
+          },
+          {
+            "location_text": "near the Punjab border sector",
+            "name": "secondary battery near the Punjab border sector",
+            "site_type": "deployment site",
+            "source_quote": "per unconfirmed reporting, a secondary battery near the Punjab border sector, though this latter deployment has not been corroborated by satellite imagery analysis available to this desk"
+          },
+          {
+            "location_text": "Baluchistan",
+            "name": "an undisclosed range in Baluchistan",
+            "site_type": "test range",
+            "source_quote": "following trials reportedly conducted at an undisclosed range in Baluchistan"
+          }
+        ],
+        "components": [
+          {
+            "component_class": "command-and-control vehicle",
+            "count_state": "estimated",
+            "name": "command-and-control vehicle",
+            "quantity_text": "one",
+            "source_quote": "Battery composition is estimated at one command-and-control vehicle"
+          },
+          {
+            "component_class": "TEL",
+            "count_state": "estimated",
+            "name": "single-stage TEL (transporter-erector-launcher) vehicles",
+            "quantity_text": "six, each carrying four missile canisters",
+            "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+          },
+          {
+            "component_class": "phased-array engagement radar",
+            "context": {
+              "designation": "HT-233"
+            },
+            "functional_role": "engagement radar",
+            "name": "HT-233",
+            "source_quote": "associated HT-233 phased-array engagement radars"
+          },
+          {
+            "component_class": "search/acquisition radar",
+            "functional_role": "search/acquisition",
+            "name": "search/acquisition radar element",
+            "source_quote": "and a search/acquisition radar element"
+          }
+        ],
+        "denials": [
+          {
+            "object": "in a Pakistani operational context",
+            "predicate": "has not been independently verified",
+            "source_quote": "though this ATBM function has not been independently verified in a Pakistani operational context",
+            "subject": "ATBM function"
+          },
+          {
+            "predicate": "has never been published",
+            "source_quote": "though a formal contract value has never been published",
+            "subject": "formal contract value"
+          },
+          {
+            "predicate": "no independent confirmation has surfaced",
+            "source_quote": "analysts should note that no independent confirmation of unit strength has surfaced since that assessment was first circulated",
+            "subject": "unit strength"
+          },
+          {
+            "object": "in unclassified literature",
+            "predicate": "remains unconfirmed",
+            "source_quote": "the exact terminal-phase seeker configuration (semi-active vs. reportedly upgraded active radar homing on later production lots) remains unconfirmed in unclassified literature",
+            "subject": "terminal-phase seeker configuration"
+          },
+          {
+            "object": "satellite imagery analysis available to this desk",
+            "predicate": "has not been corroborated by",
+            "source_quote": "though this latter deployment has not been corroborated by satellite imagery analysis available to this desk",
+            "subject": "secondary battery near the Punjab border sector"
+          },
+          {
+            "predicate": "never consummated",
+            "source_quote": "discussions (never consummated) with Turkey under the since-cancelled T-LORAMIDS competition",
+            "subject": "discussions with Turkey under the T-LORAMIDS competition"
+          },
+          {
+            "object": "by either government",
+            "predicate": "has not been formally retracted or updated",
+            "source_quote": "a characterisation that has not been formally retracted or updated by either government since",
+            "subject": "2013 characterisation"
+          }
+        ],
+        "distinctions": [
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HQ-9",
+            "source_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system"
+          }
+        ],
+        "events": [
+          {
+            "count_state": "characterised by Pakistani defence officials speaking on condition of anonymity",
+            "date_text": "in 2013",
+            "event_kind": "induction",
+            "quantity_text": "limited numbers",
+            "recipient": "Pakistan",
+            "source_quote": "Pakistani defence officials, speaking on condition of anonymity to a regional defence weekly, characterised the system in 2013 as \"already inducted in limited numbers\"",
+            "system": "HQ-9/P"
+          },
+          {
+            "count_state": "reported",
+            "event_kind": "transfer",
+            "quantity_text": "a third battalion reportedly in the delivery pipeline",
+            "recipient": "Pakistan",
+            "source_quote": "with a third battalion reportedly in the delivery pipeline",
+            "system": "HQ-9/P"
+          },
+          {
+            "event_kind": "exercise",
+            "location_text": "an undisclosed range in Baluchistan",
+            "source_quote": "with the HQ-9/P emerging as the preferred candidate following trials reportedly conducted at an undisclosed range in Baluchistan",
+            "system": "HQ-9/P"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "CPMIEC",
+            "name": "China Precision Machinery Import-Export Corporation",
+            "role": "manufacturer",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+          }
+        ],
+        "relations": [
+          {
+            "date_text": "As of this writing",
+            "object": "the Pakistan Air Force's Air Defence Command",
+            "relation": "operated-by",
+            "source_quote": "As of this writing, the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P",
+            "subject": "HQ-9/P"
+          },
+          {
+            "date_text": "As of this writing",
+            "object": "approaches to Karachi and the Sindh coastal sector",
+            "relation": "based-at",
+            "source_quote": "believed to operate the HQ-9/P within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+            "subject": "HQ-9/P"
+          },
+          {
+            "date_text": "a 2015 order-of-battle assessment",
+            "object": "the PAF's Central Air Command",
+            "relation": "equips",
+            "source_quote": "places Pakistani holdings at two operational battalions ... assigned to the PAF's Central Air Command",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "HQ-9/P",
+            "relation": "component-of",
+            "source_quote": "Battery composition is estimated at one command-and-control vehicle, six single-stage TEL ... associated HT-233 phased-array engagement radars, and a search/acquisition radar element",
+            "subject": "HT-233 phased-array engagement radars"
+          },
+          {
+            "object": "HQ-9/P",
+            "relation": "manufactures",
+            "source_quote": "claimed by the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)",
+            "subject": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+          },
+          {
+            "object": "positions oriented toward the Arabian Sea approach",
+            "relation": "based-at",
+            "source_quote": "Deployment sites are believed to include positions oriented toward the Arabian Sea approach",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "near the Punjab border sector",
+            "relation": "based-at",
+            "source_quote": "per unconfirmed reporting, a secondary battery near the Punjab border sector",
+            "subject": "HQ-9/P secondary battery"
+          }
+        ],
+        "sources": [
+          {
+            "name": "a 2015 order-of-battle assessment compiled by a regional military balance publication",
+            "source_quote": "A widely-cited figure — drawn from a 2015 order-of-battle assessment compiled by a regional military balance publication",
+            "source_type": "order-of-battle assessment / military balance publication"
+          },
+          {
+            "name": "a regional defence weekly",
+            "source_quote": "Pakistani defence officials, speaking on condition of anonymity to a regional defence weekly",
+            "source_type": "trade media"
+          },
+          {
+            "name": "a separate industry newsletter",
+            "source_quote": "the system's operational status was described in near-identical language by a separate industry newsletter",
+            "source_type": "industry newsletter"
+          },
+          {
+            "name": "South Asia Defence Monitor — Air Defence Systems Database",
+            "source_quote": "South Asia Defence Monitor — Air Defence Systems Database (cached copy)\nRecord ID: SADM-AD-0091",
+            "source_type": "database record"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "operator": "the Pakistan Air Force"
+            },
+            "name": "Air Defence Command",
+            "service_branch": "Pakistan Air Force",
+            "source_quote": "the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+          },
+          {
+            "context": {
+              "operator": "the PAF"
+            },
+            "name": "Central Air Command",
+            "service_branch": "PAF",
+            "source_quote": "places Pakistani holdings at two operational battalions ... assigned to the PAF's Central Air Command"
+          }
+        ],
+        "variants": [
+          {
+            "confidence_language": "believed to operate; estimates ... should be treated with caution given the near-total absence of official confirmation",
+            "context": {
+              "designation": "HQ-9/P",
+              "geography": "approaches to Karachi and the Sindh coastal sector",
+              "operator": "the Pakistan Air Force's Air Defence Command"
+            },
+            "designators": [
+              "HQ-9/P"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9/P",
+            "operator_branch": "the Pakistan Air Force's Air Defence Command",
+            "range_text": "maximum engagement range on the order of 200 km against aerodynamic targets",
+            "source_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system"
+          },
+          {
+            "context": {
+              "designation": "HQ-9",
+              "operator": "the PLA"
+            },
+            "designators": [
+              "HQ-9"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9",
+            "source_quote": "the export variant of China's HQ-9 long-range surface-to-air missile system, itself frequently compared in open literature to the Russian S-300PMU series owing to broad similarities in launcher canister design and engagement envelope"
+          },
+          {
+            "designators": [
+              "S-300PMU"
+            ],
+            "name": "S-300PMU series",
+            "source_quote": "frequently compared in open literature to the Russian S-300PMU series"
+          },
+          {
+            "context": {
+              "operator": "Pakistan"
+            },
+            "designators": [
+              "LY-80",
+              "HQ-16"
+            ],
+            "name": "LY-80",
+            "source_quote": "complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers"
+          },
+          {
+            "name": "Crotale",
+            "source_quote": "Pakistan's interest in a long-range SAM layer to supplement its ageing Crotale and Spada point-defence batteries"
+          },
+          {
+            "name": "Spada",
+            "source_quote": "Pakistan's interest in a long-range SAM layer to supplement its ageing Crotale and Spada point-defence batteries"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 9.454276548232883,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "the manufacturer, China Precision Machinery Import-Export Corporation (CPMIEC)"
+            ],
+            "member_ids": [
+              5,
+              21,
+              28
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers"
+            ],
+            "member_ids": [
+              11,
+              23
+            ]
+          },
+          {
+            "evidence": "NAME_VARIANT",
+            "licensing_quotes": [
+              "the Russian S-300PMU series"
+            ],
+            "member_ids": [
+              10,
+              22
+            ]
+          },
+          {
+            "evidence": "UNAMBIGUOUS_ANAPHOR",
+            "licensing_quotes": [
+              "the Pakistan Air Force's Air Defence Command is believed to operate the HQ-9/P"
+            ],
+            "member_ids": [
+              6,
+              24
+            ]
+          },
+          {
+            "evidence": "NAME_VARIANT",
+            "licensing_quotes": [
+              "assigned to the PAF's Central Air Command"
+            ],
+            "member_ids": [
+              7,
+              26
+            ]
+          },
+          {
+            "evidence": "NAME_VARIANT",
+            "licensing_quotes": [
+              "associated HT-233 phased-array engagement radars"
+            ],
+            "member_ids": [
+              16,
+              27
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "six single-stage TEL (transporter-erector-launcher) vehicles"
+            ],
+            "member_ids": [
+              31,
+              32
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "a secondary anti-tactical ballistic missile (ATBM) capability"
+            ],
+            "member_ids": [
+              33,
+              34
+            ]
+          },
+          {
+            "evidence": "NAME_VARIANT",
+            "licensing_quotes": [
+              "a secondary battery near the Punjab border sector"
+            ],
+            "member_ids": [
+              19,
+              30
+            ]
+          }
+        ],
+        "contrasts": [
+          {
+            "left_id": 8,
+            "licensing_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system",
+            "right_id": 9
+          },
+          {
+            "left_id": 18,
+            "licensing_quote": "Deployment sites are believed to include positions oriented toward the Arabian Sea approach and, per unconfirmed reporting, a secondary battery near the Punjab border sector",
+            "right_id": 19
+          },
+          {
+            "left_id": 2,
+            "licensing_quote": "the system's operational status was described in near-identical language by a separate industry newsletter",
+            "right_id": 3
+          },
+          {
+            "left_id": 8,
+            "licensing_quote": "complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers",
+            "right_id": 11
+          }
+        ]
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "anthropic-opus-5",
+  "fingerprint": "eec7fab36583fc2bf13c98a2b435266203842b3743157d85b9619f46ae879e57",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:00:00.970102+00:00",
+  "run_index": 4,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "cs01_stale_orbat"
+}

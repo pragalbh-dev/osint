@@ -116,68 +116,235 @@ Format = Literal[
 # ``additionalProperties: false`` and NO ``required`` list — a permissive tool schema (never Anthropic
 # strict-mode / never a forced field). The schema exists only to describe the tool; the transforms read
 # the model's filled dict *by key*, tolerantly, so a noisy LLM value never crashes extraction.
+#
+# A7 (plan §4): every mention that yields an **entity** carries a ``context`` block of the four structured
+# discriminators (:class:`MentionContext`) — the identity context the resolver needs, on one uniformly-named
+# lane instead of a different type-specific field per node type. Entity-yielding mentions only, because a
+# discriminator exists to tell two candidate *nodes* apart: a relationship / event mention names two or more
+# things and already carries its own date and place, and ``SourceMention`` is excluded because a source's
+# identity is its registry ``source_id``, never a discriminated name.
+#
+# **The rationale for the four slots lives HERE, in a comment, and not in the class docstring** — because
+# pydantic ships every class docstring and ``Field(description=…)`` **verbatim inside the tool schema**, so
+# the docstring is model-facing text, not developer text. The version that shipped until now carried Sphinx
+# roles, two internal doc references, and the sentence "Populated by the model from S1; read by nothing yet"
+# — i.e. we told the model the field was inert and then scored it. Rule for this whole module: a docstring or
+# field description is an instruction to a reader who has never seen this codebase; internal reasoning,
+# decision ids and cross-references go in ``#`` comments, which pydantic does not ship.
+#
+# Why one shared lane: the extractor could otherwise only state a discriminator through whichever
+# type-specific attribute happens to exist (``service_branch`` on a unit, ``location_text`` on a site,
+# nothing at all on a component), so the resolver would have to pattern-match a different field name per
+# node type — an untyped bag wearing typed clothes. One uniformly-named lane is what lets the identity judge
+# read a discriminator *structurally* (spine/13 §10, plan §4 A7); the slots are declared against
+# :class:`chanakya.schemas.AttrDef`'s ``discriminator`` on the ontology side. Every slot stays **optional**:
+# a required discriminator would force the model to invent an operator or a location the source never
+# stated — a fabricated assessment, the one disqualifying failure (master non-negotiable). Values are the
+# source's own words, copied; normalisation is RESOLVE's, the extractor stays extract-raw.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 
+class MentionContext(BaseModel):
+    """The identifying context for ONE named thing — who operates it, where it is, what it is formally
+    called, and when the document says that was true.
+
+    These are what a reader uses to tell two similar things apart: two battalions of the same type, two sites
+    near one town, two firms with near-identical names. Fill each slot only from what THIS document states
+    about THIS thing, in its own words. An empty slot is a real answer — it means "this document does not
+    say"; an invented one manufactures identity evidence about a thing.
+    """
+
+    operator: str | None = Field(
+        default=None,
+        description=(
+            "WHO operates / owns / controls this thing, in the source's own words ('the PAF', 'PLA Air "
+            "Force', 'Army Air Defence', 'a Chinese state exporter'). Fill ONLY when the source states it "
+            "for THIS item; leave empty otherwise. Never infer an operator from nationality or context."
+        ),
+    )
+    geography: str | None = Field(
+        default=None,
+        description=(
+            "WHERE this thing is, as the source states it — a place name, coordinates, an installation, or "
+            "a relative fix ('12 km NE of Rahwali'). Copy the surface form verbatim. Leave empty when the "
+            "source gives no location for THIS item; never supply one from general knowledge."
+        ),
+    )
+    designation: str | None = Field(
+        default=None,
+        description=(
+            "The formal designator / number / reference the source gives THIS item — a unit number "
+            "('8 AD Bn'), a model designation ('HT-233'), a contract or bill reference. Leave empty when "
+            "the source names the thing only in prose; never construct a designator."
+        ),
+    )
+    time: str | None = Field(
+        default=None,
+        description=(
+            "WHEN the source says this description of the item was true (a deployment date, an observation "
+            "date, 'as of March 2024'), NOT the publication date. Copy the source's own wording. Leave "
+            "empty when the source states no such time; never guess one."
+        ),
+    )
+
+
+# ── per-type definitions (b): what each type IS in this domain, and the neighbour it is confused with.
+#
+# Every one of these classes used to reach the model as a bare one-line label over a list of generic slots, so
+# the type boundaries were the model's to guess — and the guesses were the measured failures: an entire
+# air-defence COMMAND recorded as the thing emplaced at a dispersal pad (the correct answer was the battery),
+# a design conflated with the one deployment of it a report described. The pairs that actually collide are
+# adjacent, not arbitrary — org↔unit, unit↔command, design↔deployment, part↔whole, place↔occupant — so each
+# docstring names its own type and then names the neighbour, which is the discrimination the model has to make.
+# Kept to one added sentence each: this text ships inside the tool schema on every call.
+
 class OrgMention(BaseModel):
-    """A named organization the source states (a manufacturer, exporter, consignee, shipper…)."""
+    """A named organization the source states (a manufacturer, exporter, consignee, shipper…).
+
+    A company, agency or state enterprise that designs, builds, sells, ships or receives hardware — never the
+    military formation that operates it, and never the service or command above that formation.
+    """
 
     name: str | None = None
     role: str | None = None  # e.g. "manufacturer" | "export-agent" | "consignee" | "shipper"
     aka: str | None = None  # a STATED alias / "formerly" / "see also" for THIS org → a same-as claim
     origin_country: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None  # verbatim text this item is based on (provenance anchor)
 
 
 class UnitMention(BaseModel):
-    """A named operating/military unit or force element the source states."""
+    """A named operating/military unit or force element the source states.
+
+    A FORMATION: it carries its own designation, it persists when it moves, and it can be posted somewhere.
+    Not the service or higher command that owns it — an air-defence command owns formations and is never
+    itself emplaced at a pad — and not the equipment the formation fields.
+    """
 
     name: str | None = None
     echelon: str | None = None
     service_branch: str | None = None
+    # (c) THE INDIVIDUATING SLOT, and the one the schema had no room for at all: `unit.designator` has been
+    # declared identity-bearing since D6 and stated on zero extracted units, because a document's "22 Air
+    # Defence Regiment" had nowhere to go but the free-text name. The description works the boundary the
+    # measured failure sits on — the formation's OWN reference, not its parent's and not its equipment's —
+    # because the wrong string here is worse than an empty slot: it asserts a formation that does not exist.
+    designator: str | None = Field(
+        default=None,
+        description=(
+            "THIS formation's own number or reference, exactly as the source writes it ('22 Air Defence "
+            "Regiment', '8 AD Bn', an order-of-battle reference). It is what tells two similarly-named "
+            "formations apart, so capture it whenever the source states it. Never the designation of the "
+            "command above it, never the model number of its equipment, and never one you construct."
+        ),
+    )
     home_garrison: str | None = None
+    alert_posture: str | None = Field(
+        default=None,
+        description=(
+            "The unit's current operational/alert/readiness posture — fill ONLY when the source "
+            "explicitly states it (e.g. 'on heightened alert', 'assessed non-operational', 'routine "
+            "readiness during exercise X'). This is a TRANSIENT status expected to change over time, not "
+            "a fixed attribute — leave empty when the source says nothing about readiness; never infer it."
+        ),
+    )
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
 class VariantMention(BaseModel):
-    """A named weapon-system / variant the source states (the *value* is the source's, never fixed)."""
+    """A named weapon system or variant, under the designation the source itself uses.
+
+    A DESIGN — a model of system, taken as a type. Not one deployed example of it at a place (a design has no
+    location of its own) and not a sub-system inside it.
+    """
 
     name: str | None = None
     family: str | None = None
-    designators: list[str] = []  # stated alternate designators (each a candidate same-as)
+    # (c) This slot was already filled on 40 extracted variants and already turned into a stated-alias
+    # assertion per member; what it never had was a description, so it was reached only by a model inferring
+    # the intent from the field name. Individuating, so it is worth stating: a designation names ONE
+    # production line, where `family` above names a class every member shares by definition.
+    designators: list[str] = Field(
+        default=[],
+        description=(
+            "Every OTHER designation this source gives THIS system — an export name, a service name, a "
+            "spelling variant ('HQ-9P', 'FD-2000'). A designation names one production line precisely, which "
+            "is what tells two similarly-named systems apart, so copy each one the source states. Leave the "
+            "list empty when the source gives only one name; never add a designation from your own knowledge."
+        ),
+    )
     range_text: str | None = None
     confidence_language: str | None = None  # the source's own hedge ("consistent with", "probable")
     signature_geometry: str | None = None  # the source's CHARACTERISTIC / reference physical layout of THIS
     # weapon TYPE in general (e.g. "consistent with HQ-9 deployments", "the characteristic X site layout",
     # "associated with the X system") — set ONLY when the source generalizes a signature to the system/type,
     # NEVER a single site's own observed geometry (that belongs on the site).
+    operator_branch: str | None = Field(
+        default=None,
+        description=(
+            "The military service/branch that OPERATES this system — fill ONLY when the source "
+            "explicitly states it (e.g. 'operated by the PLA', 'in PAF service', 'Army Air Defence "
+            "operates...'). Leave empty when the source does not say who operates it; never infer the "
+            "operator from context."
+        ),
+    )
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
 class ComponentMention(BaseModel):
-    """A named sub-system / component the source states (a radar, an interceptor, a test set…)."""
+    """A named sub-system / component the source states (a radar, an interceptor, a test set…).
+
+    A PART of a larger system — a radar, launcher, round or support item. Not the whole system it belongs to,
+    and not the organization that builds it.
+    """
 
     name: str | None = None
     component_class: str | None = None
     functional_role: str | None = None
+    # (c) Added rather than aligning the config to what was already emitted, because the three slots that WERE
+    # emitted (`component_class`, `functional_role`, `radar_band`) all name a bracket of hardware — 'an
+    # engagement radar', 'S-band' — and re-pointing the identity declaration at one of those would declare a
+    # class label to be an identity, which is the exact over-merge the taxonomic axis exists to stop. The
+    # attribute is already in the ontology vocabulary and in the seeded baseline; only the capture slot was
+    # missing.
+    model_designation: str | None = Field(
+        default=None,
+        description=(
+            "THIS item's own model or type designation, exactly as the source writes it ('HT-233', 'Type "
+            "305B'). It is what tells two similarly-described items apart, so capture it whenever the source "
+            "states it. Not the designation of the larger system it belongs to; never construct one."
+        ),
+    )
     radar_band: str | None = None
     quantity_text: str | None = None
     count_state: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
 class SiteMention(BaseModel):
-    """A named place / basing-or-logistics site the source states, with any stated location string."""
+    """A named place / basing-or-logistics site the source states, with any stated location string.
+
+    A PLACE — a base, pad, revetment, depot, port or terminal. Not the formation stationed at it and not the
+    equipment seen there: a place stays the same place when its occupants change.
+    """
 
     name: str | None = None
     site_type: str | None = None
     location_text: str | None = None  # any surface form — coords / toponym / "<dist> <bearing> of X"
     signature_geometry: str | None = None
     occupancy_state: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
 class SourceMention(BaseModel):
-    """A source/register/origin the document itself names (SIPRI, a database, an upstream report)."""
+    """A source/register/origin the document itself names (SIPRI, a database, an upstream report).
+
+    A PUBLISHER or reference work this document credits for its information — never an organization taking
+    part in the trade or the operations the document describes.
+    """
 
     name: str | None = None
     source_type: str | None = None
@@ -199,26 +366,50 @@ class EventMention(BaseModel):
     source_quote: str | None = None
 
 
+# ``relation`` is typed ``str`` here; the *allowed values* are narrowed to the extractor-edge enum in the
+# tool schema at build time (:func:`_constrain_relation_enum`). The model's verb is only a hint — the
+# transform re-lanes the fact onto the edge its endpoint types imply (:meth:`_Emitter.relation`).
+#
+# ``date_text`` is the **valid-time** slot (EVAL RCA D-P4.6): *when the source says the relationship was
+# true*, not when the document was published. Every other mention type already has one
+# (``EventMention.date_text`` / ``SightingMention.time_text`` / ``PassMention.pass_date``); without it a
+# *perishable* relationship — where a unit is based, what a magazine currently holds — could never age, be
+# ordered against a later statement of the same fact, or be superseded. It stays **optional**: an identity or
+# durable relationship legitimately carries no date, and forcing one would only invite a fabricated date on
+# the ~78 identity claims that have none (D-P4.6 rejects "every relation gets a date").
+# :meth:`_Emitter.relation` resolves the fallback ladder and records which rung fired.
 class RelationMention(BaseModel):
-    """A relationship the source *explicitly states*, keyed by a generic edge TYPE (never inferred).
+    """One relationship this document *states outright*, as subject → relation → object.
 
-    ``relation`` is typed ``str`` here; the *allowed values* are narrowed to the extractor-edge enum in
-    the tool schema at build time (:func:`_constrain_relation_enum`). The model's verb is only a hint —
-    the transform re-lanes the fact onto the edge its endpoint types imply (:meth:`_Emitter.relation`).
-
-    ``date_text`` is the **valid-time** slot (EVAL RCA D-P4.6): *when the source says the relationship
-    was true*, not when the document was published. Every other mention type already has one
-    (``EventMention.date_text`` / ``SightingMention.time_text`` / ``PassMention.pass_date``); without it
-    a *perishable* relationship — where a unit is based, what a magazine currently holds — could never
-    age, be ordered against a later statement of the same fact, or be superseded. It stays **optional**:
-    an identity or durable relationship legitimately carries no date, and forcing one would only invite
-    a fabricated date on the ~78 identity claims that have none (D-P4.6 rejects "every relation gets a
-    date"). :meth:`_Emitter.relation` resolves the fallback ladder and records which rung fired.
+    Use the relation names the tool offers. Never infer a relationship the document does not state, and
+    never join two things merely because they appear near each other.
     """
 
     relation: str | None = None
-    subject: str | None = None
-    object: str | None = None
+    # Both ends carry the SAME rule, and it is about grammatical form, never about category. Deliberately no
+    # list of permitted kinds here: WHICH types an end may take is the relation's own business, declared per
+    # edge in the ontology, and a list in this description would fight that and quietly suppress a legitimate
+    # place or organisation end. What the model cannot know without being told is that the phrase has to
+    # REFER. Every measured failure was one shape — the predicate half of a sentence lifted into a
+    # participant slot ("what was TRANSFERRED", "its documented role supplying motors for other CASIC
+    # missiles"). Those name no participant, so nothing downstream can resolve them; the endpoint becomes an
+    # untyped node that can only ever be attached to the wrong thing.
+    subject: str | None = Field(
+        default=None,
+        description=(
+            "The participant this statement is ABOUT, as the document names it — system, unit, place, "
+            "organisation or event, whichever the relation takes. It must NAME a participant: never a "
+            "clause ('what was transferred'), never an activity or role ('its role supplying motors') — "
+            "name the thing transferred and the supplier instead. A referring phrase ('the engagement "
+            "radar') does name it: copy it verbatim."
+        ),
+    )
+    object: str | None = Field(
+        default=None,
+        description=(
+            "The participant at the other end, under the subject's rule — never a clause, never a role."
+        ),
+    )
     date_text: str | None = Field(
         default=None,
         description=(
@@ -231,16 +422,49 @@ class RelationMention(BaseModel):
     source_quote: str | None = None
 
 
+# ONE shape carrying BOTH halves: the ``aliases`` slot becomes a ``same-as`` claim, the ``distinctions`` slot
+# a ``distinct-from`` — the veto rail that stops two co-located same-named things being fused into one unit's
+# before-and-after. The shape is shared because the model's mechanical job is identical either way (copy the
+# two names the document links, plus the wording that links them), but the *direction* is not, and it is
+# carried by the field name alone. So the direction is stated on each field
+# (``_ALIASES_DESC`` / ``_DISTINCTIONS_DESC``) and this docstring says the field decides it, rather than
+# describing one direction and leaving the model to infer the other. A ``distinct-from`` pair misfiled as an
+# alias does not merely lose a veto — it asserts the opposite of what the document said.
 class AliasMention(BaseModel):
-    """A stated identity/non-identity between two named things → a ``same-as`` / ``distinct-from`` claim."""
+    """A pair of names THIS document itself links, plus the wording that links them.
+
+    Which way the link runs — the same thing, or explicitly NOT the same thing — is decided by *which field*
+    you put the pair in, not by anything here.
+    """
 
     name_a: str | None = None
     name_b: str | None = None
     source_quote: str | None = None
 
 
+#: The two directions, stated on the field, because the shape cannot tell them apart (see ``AliasMention``).
+_ALIASES_DESC = (
+    "Pairs of names this document states are the SAME thing — a stated alias, 'also known as', 'formerly', "
+    "an acronym beside its expansion, a spelling variant. Only a link the document makes in its own words."
+)
+_DISTINCTIONS_DESC = (
+    "The OPPOSITE field to `aliases`: pairs this document states are NOT the same thing — 'not related to', "
+    "'distinct from', 'no interoperability with'. Only when the document asserts the separation. The two "
+    "fields say opposite things; never file a pair in the wrong one. "
+    "A remark about NAMING is not a separation: a document noting that sources are inconsistent, that a "
+    "designator is 'sometimes rendered' another way, or that one label 'maps to A versus B', is describing "
+    "confusion about what to CALL a thing, not asserting that two different things exist. Leave that pair "
+    "out of both fields unless the document says the two are the same (→ `aliases`) or says outright they "
+    "are different things (→ here). Two names contrasted in one sentence is not, by itself, a distinction."
+)
+
+
+# Becomes a negative-polarity observation claim. The docstring says what to look for in the document, never
+# what the record turns into — the model can act on the first and not on the second.
 class DenialMention(BaseModel):
-    """A stated *negation* / observed absence → a negative-polarity observation claim."""
+    """A statement that something is NOT so — a denial, or an absence the observer reports ('no launchers
+    present', 'nothing unusual to report'). A stated absence is evidence: record it with the wording that
+    denies it."""
 
     subject: str | None = None
     predicate: str | None = None
@@ -249,7 +473,8 @@ class DenialMention(BaseModel):
 
 
 class ProseClaim(BaseModel):
-    """Analytic / official prose (curated-register, trade-media, think-tank, official-PR, exporter media)."""
+    """Analytic or official prose — a report, register entry, trade-press or think-tank piece, or an official
+    or company statement."""
 
     sources: list[SourceMention] = []
     manufacturers: list[OrgMention] = []
@@ -259,8 +484,8 @@ class ProseClaim(BaseModel):
     basing_sites: list[SiteMention] = []
     events: list[EventMention] = []
     relations: list[RelationMention] = []
-    aliases: list[AliasMention] = []
-    distinctions: list[AliasMention] = []
+    aliases: list[AliasMention] = Field(default=[], description=_ALIASES_DESC)
+    distinctions: list[AliasMention] = Field(default=[], description=_DISTINCTIONS_DESC)
     denials: list[DenialMention] = []
 
 
@@ -277,13 +502,14 @@ class NoticeMention(BaseModel):
 
 
 class NotamNavWarning(BaseModel):
-    """ICAO NOTAM / NAVAREA navigational-warning strings (official, machine-formatted)."""
+    """ICAO NOTAM / NAVAREA navigational warnings, in their official machine-formatted strings."""
 
     notices: list[NoticeMention] = []
 
 
 class GdRow(BaseModel):
-    """One customs Goods-Declaration / bill-of-lading row — the many-claims-per-row unit."""
+    """One customs goods-declaration / bill-of-lading row: one shipment, its parties, ports, dates and
+    cargo. A row states many separate facts — record each in its own field."""
 
     gd_no: str | None = None
     bl_no: str | None = None
@@ -300,37 +526,48 @@ class GdRow(BaseModel):
     destination_ref: str | None = None  # a STATED onward destination (kept as its own place, never resolved)
     destination_quote: str | None = None
     freight_forwarder: str | None = None
-    aliases: list[AliasMention] = []  # stated same-as within the row (spelling variants, "formerly")
+    # Same-as only: a customs row states spelling variants of one party, never a "not related" separation.
+    aliases: list[AliasMention] = Field(default=[], description=_ALIASES_DESC)
     source_quote: str | None = None
 
 
 class CustomsGdBol(BaseModel):
-    """Customs GD / bill-of-lading extract, record-per-line + annotations (customs-tender family)."""
+    """A customs goods-declaration / bill-of-lading extract — one row per shipment, plus any annotations."""
 
     rows: list[GdRow] = []
 
 
 class StockpileMention(BaseModel):
-    """A stated interceptor / spares stockpile posture — the perishable sustainment node (depth, resupply)."""
+    """A stated stock of interceptors or spares — how deep the magazine is and how long resupply takes. A
+    posture that changes, so copy any date wording the document gives it.
+
+    A HOLDING of rounds or spares — not the round or spare part itself as a design, and not the formation
+    that draws on it."""
 
     name: str | None = None
     stocked_round: str | None = None
     magazine_depth: str | None = None
     resupply_lead_time: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
 class TechDataMention(BaseModel):
-    """A stated technical-data / design-authority holding — the durable sustainment node (TDP, calibration)."""
+    """Who holds the technical data or design authority for a system — a technical data package, firmware,
+    crypto keys or a calibration reference — and whether the document says control rests abroad.
+
+    The ORGANIZATION in that role — not the system whose data it controls, and not the customer operating
+    that system."""
 
     name: str | None = None
     holds: str | None = None  # TDP | firmware | crypto-keys | calibration-ref (as the source states it)
     foreign_control: str | None = None
+    context: MentionContext | None = None  # A7 structured discriminators (all optional; absence = unknown)
     source_quote: str | None = None
 
 
 class TenderProcurement(BaseModel):
-    """A procurement tender skeleton — numbered clauses + [REDACTED] (customs-tender family)."""
+    """A procurement tender document — numbered clauses, often with passages redacted."""
 
     tender_id: str | None = None
     procuring_org: UnitMention | None = None
@@ -344,14 +581,15 @@ class TenderProcurement(BaseModel):
     # `sustained-by` edge is SCORE's derived synthesis, NOT emitted here (Phase-4 boundary).
     stockpile: StockpileMention | None = None
     techdata_authority: TechDataMention | None = None
-    aliases: list[AliasMention] = []
-    distinctions: list[AliasMention] = []  # explicit "no interoperability" / "not related" → distinct-from
+    aliases: list[AliasMention] = Field(default=[], description=_ALIASES_DESC)
+    distinctions: list[AliasMention] = Field(default=[], description=_DISTINCTIONS_DESC)
     relations: list[RelationMention] = []
     source_quote: str | None = None
 
 
 class SightingMention(BaseModel):
-    """A sighting a social post claims — a system/unit doing something somewhere at some time."""
+    """A sighting the post asserts — a system or unit doing something, somewhere, at some time, in the
+    poster's own words. Recording it is not endorsing it."""
 
     system: str | None = None
     unit: str | None = None
@@ -374,13 +612,13 @@ class PostMention(BaseModel):
 
 
 class SocialPost(BaseModel):
-    """Handle + datetime + status-URL + body, multi-post (named-social / anon-social)."""
+    """Social-media posts — one entry per post: the handle, the timestamp, the status URL and the body."""
 
     posts: list[PostMention] = []
 
 
 class PassMention(BaseModel):
-    """One imagery pass/observation — a dated read of object(s) at a resolution, with a count."""
+    """One imagery pass — a dated read of the objects seen, with a count and the resolution it was read at."""
 
     pass_date: str | None = None
     object_type: str | None = None
@@ -400,15 +638,18 @@ class GapMention(BaseModel):
     source_quote: str | None = None
 
 
+# The honestly-observable occupancy layer (D-P4.2). A satellite write-up can state that a launcher cluster /
+# radar / system type was *seen at* a named place on a named pass; it almost never states that a *designated
+# formation* is based there. So this is deliberately equipment→site (``observed-at``), a lane of its own — the
+# derived unit-attribution (``based-at``) is minted separately, from this plus a formation reference, at its
+# own lower confidence (:mod:`chanakya.ingest.basing`). Fusing the two into one confident basing assertion is
+# exactly what the corpus's recycled-image and relocation-spoof traps are built to punish.
 class OccupancyMention(BaseModel):
-    """Equipment **observed at a site** on a date — the honestly-observable occupancy layer (D-P4.2).
+    """Equipment the report says was OBSERVED AT a named place on a named date.
 
-    A satellite write-up can state that a launcher cluster / radar / system type was *seen at* a named
-    place on a named pass; it almost never states that a *designated formation* is based there. So this
-    is deliberately equipment→site (``observed-at``), a lane of its own — the derived unit-attribution
-    (``based-at``) is minted separately, from this plus a formation reference, at its own lower
-    confidence (:mod:`chanakya.ingest.basing`). Fusing the two into one confident basing assertion is
-    exactly what the corpus's recycled-image and relocation-spoof traps are built to punish.
+    What the imagery itself supports: a launcher cluster, a radar or a system type *seen at* a site on a
+    pass. Record what was seen and where — do not upgrade it into a statement that a named formation is
+    based there unless the report says so in those words.
     """
 
     observed: str | None = None       # what was seen, as the source names it (a system type, a radar, a TEL)
@@ -418,15 +659,13 @@ class OccupancyMention(BaseModel):
     source_quote: str | None = None
 
 
+# ``occupancy`` / ``units`` / ``relations`` close EVAL RCA §2.3: this schema had **no relationship slot at
+# all**, so the relocation documents (d17/d18) were *structurally* incapable of stating that anything was
+# anywhere — 21 claims between them, zero relationships. Occupancy is the lane the imagery genuinely supports;
+# ``relations`` additionally lets a write-up that plainly names a formation at a site say so directly (D-P4.1
+# overturns the old blanket no-extract rule for basing). The co-located .png runs the VLM path in imagery.py.
 class ImageryGeoint(BaseModel):
-    """Satellite GEOINT analyst *prose* (the co-located .png runs the VLM path in imagery.py).
-
-    ``occupancy`` / ``units`` / ``relations`` close EVAL RCA §2.3: this schema had **no relationship
-    slot at all**, so the relocation documents (d17/d18) were *structurally* incapable of stating that
-    anything was anywhere — 21 claims between them, zero relationships. Occupancy is the lane the
-    imagery genuinely supports; ``relations`` additionally lets a write-up that plainly names a
-    formation at a site say so directly (D-P4.1 overturns the old blanket no-extract rule for basing).
-    """
+    """A satellite-imagery analyst report in prose — the site, its dated passes, and what they showed."""
 
     site: SiteMention | None = None
     observations: list[PassMention] = []
@@ -451,15 +690,107 @@ SCHEMAS: dict[str, type[BaseModel]] = {
 
 _TOOL_NAMES: dict[str, str] = {fmt: f"extract_{fmt}" for fmt in SCHEMAS}
 
+# ── (a) the domain framing. Everything below this told the model HOW to be careful and nothing told it WHAT
+# the categories mean here, so every type boundary was inferred from a field name. Two measured consequences:
+# an entire air-defence COMMAND recorded as the thing based at an airfield dispersal pad (the correct answer
+# was the battery emplaced on it), and identity-bearing slots left empty because nothing marked them as
+# anything but more optional prose.
+#
+# The ECHELON rule is stated as a rule and then shown, because the failure is not a vocabulary gap — the model
+# knows what a command is — it is a mis-application under pressure to name *something* at the site, and a bare
+# rule generalises to the next document only if the reader can see it applied once. The second contrast is
+# deliberately from the trade half rather than the ORBAT half: the same "record the actor, not the hierarchy
+# above it" error costs a consignee on a customs row, and one instance would read as a rule about airfields.
+#
+# Deliberately says nothing about what any of it is used for. The audit rule for this whole module holds here
+# too — model-facing text describes the document, never our machinery — so the framing is the analytic
+# subject-matter ("what exists, who supplies it, who fields it, where it sits"), not the store it lands in.
 _SYSTEM_BASE = (
-    "You are a structured-extraction tool for an open-source intelligence pipeline. Read the document "
+    "You are a structured-extraction tool for an open-source intelligence pipeline. The documents concern "
+    "AIR-DEFENCE systems and the organisations that design, build, sell, operate and base them; together "
+    "they are read as one order-of-battle and supply-chain picture — what equipment exists, who supplies and "
+    "ships it, which formations field it, and where it sits. "
+    "ECHELON: the thing you record as being AT a place is the formation or the equipment actually emplaced "
+    "there, never the higher command or the service that owns it. A command owns formations; a service owns "
+    "commands; neither is itself parked on a launch pad or in a revetment. So if a report says a battery of "
+    "some system is emplaced at a dispersal pad and separately names the air-defence command that controls "
+    "it, the thing at the pad is the BATTERY — the command's control of it is a different fact, recorded "
+    "separately, and only if the report states it. The same rule runs through the trade documents: goods "
+    "arrive for the named consignee, not for the ministry or the armed service above it. "
+    "Read the document "
     "and fill the tool with ONLY facts the document explicitly states. Leave every field the document "
     "does not state empty — never invent, infer, or complete a name, number, date, or place. For every "
     "item you fill, put the exact verbatim text it is based on in `source_quote`. Extract identities as "
     "the source gives them: a stated alias, 'formerly', 'see also', spelling variant, or 'also known as' "
     "is an alias pair — NEVER merge two differently-named things into one, and never resolve a hidden or "
     "unstated identity. Use the generic type slots provided; put whatever names/designations the source "
-    "uses as values. When you record a relationship the source dates — where something is based or was "
+    "uses as values. "
+    # ── the discriminator ask. The four slots used to reach the model ONLY as field descriptions on an
+    # optional nested block whose own docstring said it was read by nothing — so this instruction is the
+    # difference between a scored field being requested and being merely available. Deliberately says what a
+    # discriminator is FOR (individuation) rather than listing values: the point generalises to a document no
+    # annotator has touched. Absence-stays-absent is stated in the same breath, because a *fabricated*
+    # discriminator is worse than a missing one — it manufactures identity evidence.
+    #
+    # It states NOTHING about what the resolver later does with a filled or empty block. The first version of
+    # this paragraph did ("two same-named things stay two things only if their context is on the record"),
+    # which reads as: leave it blank and they get merged — i.e. a standing reason to fill the field, sitting
+    # one sentence from the rule not to. Pointing a model at a downstream consequence it can influence is how
+    # you buy capture with invention; the consequences of sparse evidence are the resolver's problem, and the
+    # extractor is told only to report what the document says.
+    "Wherever a named thing offers a `context` block, fill it: the details THIS document gives that would "
+    "let a reader tell that thing apart from a similarly-named one — who operates or owns it, where it is "
+    "(at the precision the document gives), the formal designator or reference number it carries, and when "
+    "the document says that description held. Recording that context is part of naming the thing precisely; "
+    "it is not a judgement about whether two things are the same, which is not yours to make here. Fill only "
+    "what this document states about THAT thing and leave the rest empty — a guessed operator, place or "
+    "designator is worse than a blank one, because it manufactures identity evidence. "
+    # ── the unit of analysis. Two reasonable extractors differed severalfold on claim count (~208 vs ~149
+    # per run) and one model's own count swung 174→227 across five runs of the same documents, purely on how
+    # finely a sentence was split — because nothing said what one item IS. This states the project's own unit
+    # (one source, one date, one subject-predicate-object) as a rule a model can apply to an unseen document.
+    # It is NOT an instruction to emit less: bundling two stated facts into one item breaks it just as
+    # splitting one fact into two does.
+    #
+    # It opens by naming its own scope, because the paragraph above it is about IDENTITY and this one is about
+    # HOW MANY ITEMS, and the two touch the same case: a name that appears twice. Read as identity rules they
+    # contradict each other — "two same-named things can be two things" against "a repeated name is one item"
+    # — and a model left to reconcile them picks differently run to run, which shows up as claim-count
+    # instability, the exact thing the grain rule exists to remove. So the cases are made disjoint out loud.
+    #
+    # No clause tells the model to pick a "best" quote. It used to say "ONE item carrying its clearest quote",
+    # which is not the project's unit of analysis (spine/02) and is not what the pipeline does:
+    # ``dedup.dedup_within_doc`` folds restatements and keeps the **union** of every stated span, precisely so
+    # no cited span is discarded. Asking a model to rank spans invites it to paraphrase or splice one.
+    "GRAIN — this rule is about HOW MANY items to emit, not about which things are the same. One item per "
+    "stated fact. Where the SAME name appears several times in one document for the same thing, that is ONE "
+    "item, not one item per mention; two DIFFERENT names always stay two items, however obviously they look "
+    "related; and where this document itself holds two same-named things apart — a different operator, place "
+    "or designator — those are two items, each with its own context. A relationship or event is one item per "
+    "stated subject-relation-object with its own date and quote: a sentence stating two facts gives two "
+    "items, one fact stated twice gives one. A thing and a relationship about that thing are different kinds "
+    "of item, not a duplicate. "
+    # ── endpoint grounding. Relations are ALREADY typed from the entities the same call declared
+    # (``_Emitter._entity_types``), and that recovery works: 216 of 218 relationship claims on the frozen
+    # corpus type both ends. The leak is the IDENTITY lanes — a stated distinction whose two unit numbers
+    # ('8417 AD', '8471 AD') appear nowhere else in the output mints two anonymous nodes, and an anonymous
+    # node cannot be scored against, merged with, or vetoed from the very sibling it was named to be held
+    # apart from. ``ground_identity_pair`` repairs the one-end-typed case deterministically after the fact;
+    # this asks the model not to create the case, which is the only thing that reaches a both-ends-bare pair.
+    #
+    # It says WHY (an unlisted end has no kind, so it attaches to nothing) rather than merely commanding it,
+    # and it carves out the ends that legitimately are NOT items — a country, a date, a quantity. Without
+    # that carve-out the rule is satisfiable by invention, which trades a typed graph for a fabricated one.
+    "GROUNDING — every name you use as an end of a relationship, an alias pair or a distinction must ALSO "
+    "appear among the items you list in this same call, spelled the same way. If you state that one unit is "
+    "distinct from another, or that something is based at a place, then each end has to exist as a unit, "
+    "system, component, site, organisation or event you emitted. A name that appears only inside a "
+    "relationship carries no kind, so nothing downstream can tell what sort of thing it is or match it to "
+    "the same thing named elsewhere — it enters the picture anonymous. If the document names something "
+    "precisely enough for you to relate it, it names it precisely enough to list. A country, a date or a "
+    "quantity is NOT an item: where an end is one of those, use the field the tool provides for it (an "
+    "origin/country slot, a date slot, a quantity slot) rather than inventing an item to satisfy this rule. "
+    "When you record a relationship the source dates — where something is based or was "
     "seen, when a system entered service, when a shipment moved — copy the source's own date wording "
     "into that relation's `date_text`; leave it empty when the source gives no such date. "
     "A physical/visual SIGNATURE can describe either one specific SITE (that site's own observed layout) or "
@@ -701,6 +1032,12 @@ _DATED_CLASSES: frozenset[str] = frozenset({"perishable", "semi-durable"})
 _RUNG_ATTR = "_event_time_rung"
 _UNDATED_ATTR = "_undated_perishable"
 
+#: Tier-3 key stamped on an entity whose type was taken from the other end of a stated identity pair rather
+#: than declared by the document (:meth:`_Emitter.ground_identity_pair`). Its value is the sibling name the
+#: type came from, so the borrowed kind is one hop from its justification and can never be read back as
+#: something the source itself typed.
+_TYPE_FROM_SIBLING_ATTR = "_entity_type_from_sibling"
+
 #: The ladder, in order. ``stated`` — the source dated the relationship itself. ``observation`` — the
 #: enclosing observation/sentence (an imagery pass date, a post timestamp) supplied it. ``report_time``
 #: — nothing dated the fact, so the document's own report date bounds it (an upper bound on when the
@@ -857,6 +1194,29 @@ class _Emitter:
             Triple(subject=subject, predicate=predicate, object=obj, object_value=object_value),
             "relationship", ref, polarity=polarity, event_time=event_time, attributes=attributes,
         )
+
+    def ground_identity_pair(self, a: str, b: str, ref: DocRef) -> None:
+        """Give an identity pair's undeclared end the entity type of its declared sibling.
+
+        A stated ``same-as`` / ``distinct-from`` pair is by construction two things of the SAME kind — that
+        sameness of kind is what makes them confusable, and is the whole reason the document bothered to
+        link or separate them. So where this document declared one end as an entity and merely *named* the
+        other, the kind transfers. Without this an identity pair mints anonymous endpoints (measured on the
+        frozen corpus: ``8417 AD`` / ``8471 AD`` alongside a properly typed ``8477 AD``), and an untyped node
+        can never be scored against, merged with, or vetoed from the typed siblings it was named to be held
+        apart from — the veto is faithfully recorded and then lands nowhere, which is worse than not
+        recording it, because the queue reads as adjudicated.
+
+        Fires only when exactly one end is typed (with neither there is nothing to copy, and with both there
+        is nothing to fix), and stamps :data:`_TYPE_FROM_SIBLING_ATTR` in tier-3 so a borrowed type is
+        auditable and never passes for one the source stated. Runs BEFORE the pair's own triple, so the
+        minted mention also anchors that triple's endpoint (:meth:`_mention_refs`).
+        """
+        ta, tb = self._entity_types.get(a), self._entity_types.get(b)
+        if ta is None and tb is not None:
+            self.entity(tb, a, ref, attributes={_TYPE_FROM_SIBLING_ATTR: b})
+        elif tb is None and ta is not None:
+            self.entity(ta, b, ref, attributes={_TYPE_FROM_SIBLING_ATTR: a})
 
     def _mention_refs(self, attributes: dict[str, Any] | None, subject: str,
                       obj: str) -> dict[str, Any] | None:
@@ -1073,11 +1433,16 @@ def _emit_relations(em: _Emitter, mentions: list[dict[str, Any]], *,
 
 def _emit_aliases(em: _Emitter, mentions: list[dict[str, Any]], predicate: str, *,
                   cite_row: bool = False) -> None:
-    """Stated ``same-as`` / ``distinct-from`` pairs → relationship claims (the extract-raw guardrail)."""
+    """Stated ``same-as`` / ``distinct-from`` pairs → relationship claims (the extract-raw guardrail).
+
+    Both ends are also grounded first — see :meth:`_Emitter.ground_identity_pair` for why an identity pair's
+    two ends must share a kind, and what an ungrounded end costs.
+    """
     for al in mentions:
         a, b = _str(al, "name_a"), _str(al, "name_b")
         if a and b:
             ref = _resolve_doc_ref(em.loaded, _str(al, "source_quote"), fallback=a, cite_row=cite_row)
+            em.ground_identity_pair(a, b, ref)
             em.triple(a, predicate, b, ref)
 
 
@@ -1111,7 +1476,8 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("unit", name, ref, attrs={
                 "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
-                "home_garrison": _str(m, "home_garrison"),
+                "designator": _str(m, "designator"),
+                "home_garrison": _str(m, "home_garrison"), "alert_posture": _str(m, "alert_posture"),
             })
 
     for m in _items(filled, "variants"):
@@ -1123,6 +1489,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
                 "family": _str(m, "family"), "designators": _strlist(m, "designators"),
                 "range_km": _dump(rng), "confidence_language": _str(m, "confidence_language"),
                 "site_signature_geometry": _str(m, "signature_geometry"),
+                "operator_branch": _str(m, "operator_branch"),
             })
             for desig in _strlist(m, "designators"):
                 em.triple(name, "same-as", desig, ref)
@@ -1134,6 +1501,7 @@ def transform_prose_claim(filled: dict[str, Any], *, source_id: str, loaded: Loa
             em.entity("component", name, ref, attrs={
                 "component_class": _str(m, "component_class"),
                 "functional_role": _str(m, "functional_role"), "radar_band": _str(m, "radar_band"),
+                "model_designation": _str(m, "model_designation"),
             })
 
     for m in _items(filled, "basing_sites"):
@@ -1321,7 +1689,9 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
         assert oname is not None
         oref = _resolve_doc_ref(loaded, _str(org, "source_quote"), fallback=oname)
         em.entity("unit", oname, oref, attrs={"echelon": _str(org, "echelon"),
-                                              "service_branch": _str(org, "service_branch")})
+                                              "service_branch": _str(org, "service_branch"),
+                                              "designator": _str(org, "designator"),
+                                              "alert_posture": _str(org, "alert_posture")})
 
     system = _obj(filled, "system")
     if system and _str(system, "name"):
@@ -1332,7 +1702,8 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
         em.entity("variant", sname, sref, attrs={"family": _str(system, "family"),
                                                  "designators": _strlist(system, "designators"),
                                                  "range_km": _dump(rng),
-                                                 "site_signature_geometry": _str(system, "signature_geometry")})
+                                                 "site_signature_geometry": _str(system, "signature_geometry"),
+                                                 "operator_branch": _str(system, "operator_branch")})
         for desig in _strlist(system, "designators"):
             em.triple(sname, "same-as", desig, sref)
 
@@ -1351,6 +1722,7 @@ def transform_tender_procurement(filled: dict[str, Any], *, source_id: str, load
             em.entity("component", name, ref, attrs={
                 "component_class": _str(m, "component_class"),
                 "functional_role": _str(m, "functional_role"), "quantity": _dump(qty),
+                "model_designation": _str(m, "model_designation"),
             })
 
     # A sustainment tender implies sustainment NODES — the perishable spares/stockpile posture and/or the
@@ -1472,14 +1844,16 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("variant", name, ref, attrs={"family": _str(m, "family"),
                                                    "confidence_language": _str(m, "confidence_language"),
-                                                   "site_signature_geometry": _str(m, "signature_geometry")})
+                                                   "site_signature_geometry": _str(m, "signature_geometry"),
+                                                   "operator_branch": _str(m, "operator_branch")})
 
     for m in _items(filled, "components"):
         name = _str(m, "name")
         if name:
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("component", name, ref, attrs={"component_class": _str(m, "component_class"),
-                                                     "functional_role": _str(m, "functional_role")})
+                                                     "functional_role": _str(m, "functional_role"),
+                                                     "model_designation": _str(m, "model_designation")})
 
     for m in _items(filled, "units"):
         name = _str(m, "name")
@@ -1487,7 +1861,8 @@ def transform_imagery_geoint(filled: dict[str, Any], *, source_id: str, loaded: 
             ref = _resolve_doc_ref(loaded, _str(m, "source_quote"), fallback=name)
             em.entity("unit", name, ref, attrs={
                 "echelon": _str(m, "echelon"), "service_branch": _str(m, "service_branch"),
-                "home_garrison": _str(m, "home_garrison"),
+                "designator": _str(m, "designator"),
+                "home_garrison": _str(m, "home_garrison"), "alert_posture": _str(m, "alert_posture"),
             })
 
     # The OBSERVED-occupancy lane (D-P4.2 / §2.3) — what a frame can honestly state: equipment seen at a
@@ -1735,7 +2110,15 @@ def extract_document(loaded: LoadedDoc, *, source_id: str, source_type: str,
     # keyless bundle-recording path (``seed._extract_source``) — so offline can never drift from live.
     from chanakya.ingest import coref  # local: keeps the pass off the module import graph
 
-    return claims + coref.propose_coreference(
+    extra = coref.propose_coreference(
         claims, loaded=loaded, source_id=source_id, config=config, client=client,
         report_time=report_time, ingest_time=ingest_time,
     )
+    # RK-COREF (S3): the pass now also MINTS the referent atom — one per accepted document-local cluster —
+    # and stamps it on each clustered member's own entity claim, so pass 1's claims come back *revised*
+    # rather than untouched. Still additive to the content of any claim (one previously-``None`` field is
+    # filled) and a no-op wherever no cluster was accepted, so a document with no coreference is
+    # byte-identical. This is what promotes the cluster from n−1 star links to a GROUPING the rebuild can
+    # decline as a whole (D-13.18) — and it is why the referent joins ``dedup._claim_signature``: two
+    # mentions with different referents must not fold together.
+    return coref.revised_pass1(claims) + extra

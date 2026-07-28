@@ -16,7 +16,7 @@
         "row": null,
         "span": [
           105,
-          659
+          789
         ]
       },
       {
@@ -76,7 +76,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -95,6 +95,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -113,7 +114,7 @@
       "region": null,
       "row": null,
       "span": [
-        161,
+        170,
         306
       ]
     },
@@ -121,7 +122,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -153,64 +154,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d11_recycled_image",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d11-recycled-image-l4-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
-      "frame": null,
-      "line": 4,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        574,
-        613
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "surging northern sector coverage"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "northern sector",
-        "raw": "northern sector",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "PAF"
-      ],
-      "time_interval": null
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -267,7 +211,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -286,6 +230,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -312,7 +257,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -323,7 +268,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "moved into"
+        "activity": "moved into Rahwali"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -346,12 +291,14 @@
         "wgs84_lon": 74.131
       },
       "participants": [
+        "HQ-9",
         "HQ-9 units"
       ],
       "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -408,7 +355,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -427,6 +374,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -470,7 +418,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -489,6 +437,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -515,7 +464,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -555,64 +504,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d11_recycled_image",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d11-recycled-image-l30",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d11_recycled_image.txt",
-      "frame": null,
-      "line": 30,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2608,
-        2760
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "getting attention"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Pakistan's northern",
-        "raw": "Pakistan's northern",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "SAM belt"
-      ],
-      "time_interval": null
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -641,7 +533,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -660,6 +552,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",
@@ -668,7 +561,6 @@
   {
     "asserts": "entity",
     "attributes": {
-      "caption_text": "Ground-level photograph of multi-wheeled military transporter vehicles carrying large cylindrical canisters during a public parade.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
@@ -676,7 +568,7 @@
         "phash": "d5da98c72b1166c9",
         "sha256": "d51931db96679da6fbb25b17b3aa54593b6efd450fe20040b754ed1244959696"
       },
-      "media_type": "image/png"
+      "media_type": "image/jpeg"
     },
     "claim_id": "d11-recycled-image-full",
     "doc_ref": {
@@ -693,7 +585,7 @@
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -704,41 +596,45 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": 4.0,
           "min": 3.0,
-          "unit": "heavy multi-wheeled military vehicles with cylindrical canisters",
+          "unit": "heavy multi-axle vehicles with cylindrical containers",
           "value": null
         },
-        "description": "The image shows a ground-level view of a parade on a city street. Three large, multi-wheeled green military transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on their rear beds. The vehicle in the center is fully visible, showing a multi-axle chassis and a front driver's cab. In the background, a large crowd of spectators is gathered behind barriers, holding small flags. Several people in the foreground are holding up smartphones to capture photos or videos. Marching personnel in uniform are walking alongside the vehicles. Flags and lampposts line the street in the background under an overcast sky.",
-        "frame_kind": "ground photograph",
-        "gsd_note": "N/A - Ground-level photography",
+        "description": "Ground-level photograph showing a line of large multi-axle heavy wheeled vehicles moving down a paved urban street during a public event or parade. Each vehicle is fitted with a four-tube cylindrical container assembly mounted horizontally over the rear chassis. Spectators line the roadway in the foreground holding flags and recording devices. Buildings, street lamps, and decorative flags are visible along the route.",
+        "frame_kind": "ground-level street-level photograph",
+        "geometry_tokens": [
+          "roadway",
+          "column",
+          "vehicle",
+          "cylinder"
+        ],
         "observed_features": [
           {
-            "arrangement": "column/line",
-            "feature": "multi-wheeled heavy vehicle",
-            "note": "Large transport vehicles with multiple axles and green camouflage paint.",
-            "shape": "rectangular chassis with driver cab"
+            "arrangement": "column along roadway",
+            "feature": "multi-axle heavy vehicle",
+            "note": "Camouflaged heavy chassis carrying horizontal tube assemblies",
+            "shape": "elongated box"
           },
           {
-            "arrangement": "parallel group of four",
-            "feature": "cylindrical canisters",
-            "note": "Large tubes mounted horizontally/semi-obliquely on the rear of the vehicles.",
-            "shape": "cylinder"
+            "arrangement": "2x2 horizontal bundle",
+            "feature": "cylindrical containers",
+            "note": "Four large dark cylindrical tubes mounted horizontally above vehicle bed",
+            "shape": "cylindrical"
           },
           {
-            "arrangement": "dense gathering",
-            "feature": "spectators and crowd",
-            "note": "People lining the parade route, some holding up smartphones.",
-            "shape": "irregular"
+            "arrangement": "flanking roadway",
+            "feature": "spectators and sidewalk",
+            "note": "Crowd gathering along street holding handheld screens and flags",
+            "shape": "linear grouping"
           }
         ],
-        "occupancy_state": "occupied",
+        "occupancy_state": "in transit along street",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "The image shows a ground-level view of a parade on a city street. Three large, multi-wheeled green military transport vehicles are visible, each carrying a cluster of four large cylindrical canisters on their rear beds. The vehicle in the center is fully visible, showing a multi-axle chassis and a front driver's cab. In the background, a large crowd of spectators is gathered behind barriers, holding small flags. Several people in the foreground are holding up smartphones to capture photos or videos. Marching personnel in uniform are walking alongside the vehicles. Flags and lampposts line the street in the background under an overcast sky.",
+        "site_signature_geometry": "Ground-level photograph showing a line of large multi-axle heavy wheeled vehicles moving down a paved urban street during a public event or parade. Each vehicle is fitted with a four-tube cylindrical container assembly mounted horizontally over the rear chassis. Spectators line the roadway in the foreground holding flags and recording devices. Buildings, street lamps, and decorative flags are visible along the route.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -747,6 +643,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d11_recycled_image",

@@ -1,0 +1,2484 @@
+{
+  "cases": [
+    {
+      "case_id": "01-authoritative-equivalence",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1",
+            "m2"
+          ],
+          "authoritative": true,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m3"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "Depot Kestrel",
+            "time": "2024-03-01",
+            "echelon": "brigade"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1",
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m3"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": []
+    },
+    {
+      "case_id": "02-name-variant-held-loose",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": "NAME_VARIANT",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "fail"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": "NAME_VARIANT",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "fail"
+          },
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "design",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "Type-40",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "design",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "Type-40",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "possible",
+          "signals": {
+            "name": 0.8143,
+            "discriminator": 0.2857,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: designation; weighted total 0.3057."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "d01-m1, d01-m2",
+          "kind": "coref-held-loose",
+          "missing": [
+            "a corroborating source, or an analyst decision"
+          ],
+          "ceiling": "probable",
+          "sentence": "A within-document coreference proposal over d01-m1, d01-m2 did not clear its structural gate, so it was held as a candidate rather than binding. Licensing quote: the Type-40 Sounder"
+        }
+      ]
+    },
+    {
+      "case_id": "03-anaphor-type-unique",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1",
+            "m2"
+          ],
+          "authoritative": true,
+          "category": "UNAMBIGUOUS_ANAPHOR",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m3"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "coastal directorate + 7",
+            "designation": "7th",
+            "operator": "Coastal Directorate",
+            "geography": "Depot Larch",
+            "time": "2024-04-01",
+            "echelon": "brigade"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1",
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m3"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": []
+    },
+    {
+      "case_id": "04-anaphor-ambiguous-held-loose",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": "UNAMBIGUOUS_ANAPHOR",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "fail"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m3"
+          ],
+          "authoritative": false,
+          "category": "UNAMBIGUOUS_ANAPHOR",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "fail"
+          },
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "coastal directorate + 7",
+            "designation": "7th",
+            "operator": "Coastal Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "coastal directorate + 12",
+            "designation": "12th",
+            "operator": "Coastal Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "presence",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d01-m3"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.9464,
+            "discriminator": 0.1905,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "designation-conflict",
+            "identifier-conflict"
+          ],
+          "same_doc": true,
+          "reason": "Walled, so no band applies: the two sides state different formation designations; every component of a composite identity key is stated and they differ."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.7189,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.1438; held at possible by name_alone."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.7081,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.1416; held at possible by name_alone."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "d01-m1, d01-m3",
+          "kind": "coref-held-loose",
+          "missing": [
+            "a corroborating source, or an analyst decision"
+          ],
+          "ceiling": "probable",
+          "sentence": "A within-document coreference proposal over d01-m1, d01-m3 did not clear its structural gate, so it was held as a candidate rather than binding. Licensing quote: the 7th Survey Brigade"
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "operating organisation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the operating organisation for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "05-grade-floor-blocks-bind",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "fail",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "fail",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "presence",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "possible",
+          "signals": {
+            "name": 0.7625,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.1525; held at possible by name_alone."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "d01-m1, d01-m2",
+          "kind": "coref-held-loose",
+          "missing": [
+            "a corroborating source, or an analyst decision"
+          ],
+          "ceiling": "probable",
+          "sentence": "A within-document coreference proposal over d01-m1, d01-m2 did not clear its source-grade gate, so it was held as a candidate rather than binding. Licensing quote: the 3rd Survey Brigade (3 Svy Bde)"
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "operating organisation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the operating organisation for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "06-decline-on-conflict",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1",
+            "m2",
+            "m3"
+          ],
+          "authoritative": true,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "pass"
+          },
+          "declined": true,
+          "decline_reason": "critical-discriminator-conflict on designation: the members carry 2 incompatible stated values [3 <- m2=3rd; 7 <- m3=7th]"
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r4",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m3"
+          ],
+          "authoritative": false,
+          "category": "EXPLICIT_EQUIVALENCE",
+          "gate_results": {
+            "grade": "pass",
+            "structural": "pass"
+          },
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "brigade"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 7",
+            "designation": "7th",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r4"
+          ],
+          "member_claim_atoms": [
+            "d01-m3"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.627,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.1254; held at possible by name_alone."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.627,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.1254; held at possible by name_alone."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.9259,
+            "discriminator": 0.1905,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "designation-conflict",
+            "identifier-conflict"
+          ],
+          "same_doc": true,
+          "reason": "Walled, so no band applies: the two sides state different formation designations; every component of a composite identity key is stated and they differ."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "operating organisation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the operating organisation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "d01-m1, d01-m2, d01-m3",
+          "kind": "grouping-declined",
+          "missing": [
+            "an analyst decision on the grouping"
+          ],
+          "ceiling": "probable",
+          "sentence": "A within-document coreference grouping over d01-m1, d01-m2, d01-m3 was declined: critical-discriminator-conflict on designation: the members carry 2 incompatible stated values [3 <- m2=3rd; 7 <- m3=7th]. The mentions are held at claim-atom granularity and raised for an analyst; nothing was merged on the strength of the proposal."
+        }
+      ]
+    },
+    {
+      "case_id": "07-co-location-cap-same-doc",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m3"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "Northern Directorate",
+            "geography": "Depot Marten",
+            "time": "2024-07-01",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "Northern Directorate",
+            "geography": "Depot Marten",
+            "time": "2024-07-01",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d01-m3"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "probable",
+          "signals": {
+            "name": 1.0,
+            "discriminator": 0.4286,
+            "relational": 1.0
+          },
+          "ceiling": "probable",
+          "ceiling_reason": "co_location_formation: the pair agrees only on shared design, site and operator, which cannot tell one formation from two co-located ones; a unit-level discriminator (designation, identifier, witnessed continuity or an analyst) is required",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: echelon, geography, operator, time; weighted total 0.7143; held at probable by co_location_formation."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1, i2",
+          "kind": "formation-count-unresolved",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "At Depot Marten there are 2 candidate formations that did not resolve to one another. The presence is confirmed; the formation count is unresolved. Missing: unit designation. Reporting a single formation here would undercount the order of battle."
+        },
+        {
+          "about": "i1 + i2",
+          "kind": "formation-unresolved",
+          "missing": [
+            "unit designation",
+            "a unit-level discriminator"
+          ],
+          "ceiling": "probable",
+          "sentence": "Presence at Depot Marten is supported, but the formation identity is not: the only agreement between i1 and i2 is shared design, site and operator, which cannot distinguish one formation from two co-located ones. Missing: unit designation, a unit-level discriminator. Held at probable pending a unit-level discriminator or an analyst decision."
+        }
+      ]
+    },
+    {
+      "case_id": "08-co-location-with-stated-contrast",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m3"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "Northern Directorate",
+            "geography": "Depot Marten",
+            "time": "2024-07-01",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "Northern Directorate",
+            "geography": "Depot Marten",
+            "time": "2024-07-01",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d01-m3"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "probable",
+          "signals": {
+            "name": 1.0,
+            "discriminator": 0.4286,
+            "relational": 1.0
+          },
+          "ceiling": "probable",
+          "ceiling_reason": "co_location_formation: the pair agrees only on shared design, site and operator, which cannot tell one formation from two co-located ones; a unit-level discriminator (designation, identifier, witnessed continuity or an analyst) is required; same_doc_stated_contrast: the source itself enumerated these as sibling referents in one document, which is stated anti-identity evidence",
+          "walls": [],
+          "same_doc": true,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: echelon, geography, operator, time; weighted total 0.7143; held at probable by co_location_formation, same_doc_stated_contrast."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1, i2",
+          "kind": "formation-count-unresolved",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "At Depot Marten there are 2 candidate formations that did not resolve to one another. The presence is confirmed; the formation count is unresolved. Missing: unit designation. Reporting a single formation here would undercount the order of battle."
+        },
+        {
+          "about": "i1 + i2",
+          "kind": "formation-unresolved",
+          "missing": [
+            "unit designation",
+            "a unit-level discriminator"
+          ],
+          "ceiling": "probable",
+          "sentence": "Presence at Depot Marten is supported, but the formation identity is not: the only agreement between i1 and i2 is shared design, site and operator, which cannot distinguish one formation from two co-located ones. Missing: unit designation, a unit-level discriminator. Held at probable pending a unit-level discriminator or an analyst decision."
+        }
+      ]
+    },
+    {
+      "case_id": "09-contrast-vs-identifier-contradiction",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "probable",
+          "signals": {
+            "name": 1.0,
+            "discriminator": 0.8095,
+            "relational": 0.0
+          },
+          "ceiling": "probable",
+          "ceiling_reason": "same_doc_stated_contrast: the source itself enumerated these as sibling referents in one document, which is stated anti-identity evidence",
+          "walls": [],
+          "same_doc": true,
+          "reason": "durable confirm trigger(s): composite_unique_id_match; agreeing discriminators: designation, echelon, operator, unique_id; weighted total 0.6048; held at probable by same_doc_stated_contrast."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1 + i2",
+          "kind": "contrast-vs-identifier",
+          "missing": [
+            "an analyst decision on a self-contradictory source"
+          ],
+          "ceiling": "probable",
+          "sentence": "The source both enumerated i1 and i2 as separate siblings and gave them the same composite identifier. That is a contradiction within one document; the pair is not fused and is raised as stated."
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "10-relocation-withheld",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r4",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "Northern Directorate",
+            "geography": "Depot Kestrel",
+            "time": "2024-06-01",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "ND",
+            "geography": "Depot Larch",
+            "time": "2024-09-01",
+            "echelon": "battery"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d02-m1"
+          ]
+        },
+        {
+          "instance_id": "i4",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r4"
+          ],
+          "member_claim_atoms": [
+            "d02-m2"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "possible",
+          "signals": {
+            "name": 1.0,
+            "discriminator": 0.2381,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [],
+          "same_doc": false,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: echelon, operator; weighted total 0.319."
+        },
+        {
+          "a": "i1",
+          "b": "i4",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": false,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": false,
+          "reason": "entity types basing_site and unit are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i4",
+          "verdict": "possible",
+          "signals": {
+            "name": 0.835,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": false,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.167; held at possible by name_alone."
+        },
+        {
+          "a": "i3",
+          "b": "i4",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [
+        {
+          "kind": "relocation",
+          "subject": "i1 + i3",
+          "from": "Depot Kestrel",
+          "to": "Depot Larch",
+          "drawn": false,
+          "withheld_reason": "identity sub-confirmed"
+        }
+      ],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1 + i3",
+          "kind": "relocation-unconfirmed",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "A movement from Depot Kestrel to Depot Larch is consistent with the observations, but the identity that would make it one referent's movement is identity sub-confirmed. No relocation is asserted. Missing: unit designation."
+        }
+      ]
+    },
+    {
+      "case_id": "11-relocation-earned",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r4",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "Depot Kestrel",
+            "time": "2024-06-01",
+            "echelon": "brigade"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "ND",
+            "geography": "Depot Larch",
+            "time": "2024-09-01",
+            "echelon": "brigade"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d02-m1"
+          ]
+        },
+        {
+          "instance_id": "i4",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r4"
+          ],
+          "member_claim_atoms": [
+            "d02-m2"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "confirmed",
+          "signals": {
+            "name": 0.7625,
+            "discriminator": 0.8095,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [],
+          "same_doc": false,
+          "reason": "durable confirm trigger(s): composite_unique_id_match, corroborated_designation, temporal_continuity; agreeing discriminators: designation, echelon, operator, unique_id; weighted total 0.5573."
+        },
+        {
+          "a": "i1",
+          "b": "i4",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": false,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": false,
+          "reason": "entity types basing_site and unit are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i4",
+          "verdict": "possible",
+          "signals": {
+            "name": 0.835,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": false,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.167; held at possible by name_alone."
+        },
+        {
+          "a": "i3",
+          "b": "i4",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [
+        {
+          "kind": "relocation",
+          "subject": "i1 + i3",
+          "from": "Depot Kestrel",
+          "to": "Depot Larch",
+          "drawn": true,
+          "withheld_reason": null
+        }
+      ],
+      "gaps": []
+    },
+    {
+      "case_id": "12-thin-context-degrade",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r3",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r4",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m2"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "presence",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "Depot Kestrel",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d01-m2"
+          ]
+        },
+        {
+          "instance_id": "i3",
+          "citizen": "presence",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "Depot Kestrel",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r3"
+          ],
+          "member_claim_atoms": [
+            "d02-m1"
+          ]
+        },
+        {
+          "instance_id": "i4",
+          "citizen": "anchor",
+          "discriminators": {
+            "unique_id": "unknown",
+            "designation": "unknown",
+            "operator": "unknown",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r4"
+          ],
+          "member_claim_atoms": [
+            "d02-m2"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i1",
+          "b": "i3",
+          "verdict": "possible",
+          "signals": {
+            "name": 0.7681,
+            "discriminator": 0.1429,
+            "relational": 0.0
+          },
+          "ceiling": "probable",
+          "ceiling_reason": "perishable_only: every agreeing discriminator is perishable (geography), which is evidence about a moment, not about a referent",
+          "walls": [],
+          "same_doc": false,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: geography; weighted total 0.225; held at probable by perishable_only."
+        },
+        {
+          "a": "i1",
+          "b": "i4",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": false,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i3",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": false,
+          "reason": "entity types basing_site and unit are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        },
+        {
+          "a": "i2",
+          "b": "i4",
+          "verdict": "possible",
+          "signals": {
+            "name": 1.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": "possible",
+          "ceiling_reason": "name_alone: the only agreement between the two sides is their names",
+          "walls": [],
+          "same_doc": false,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.2; held at possible by name_alone."
+        },
+        {
+          "a": "i3",
+          "b": "i4",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.0,
+            "discriminator": 0.0,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "type-incompatible"
+          ],
+          "same_doc": true,
+          "reason": "entity types unit and basing_site are not in a compatible class, so the pair was never compared. Surfaced as a named wall rather than a silent skip."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "operating organisation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the operating organisation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "operating organisation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the operating organisation for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i3",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "unit designation"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the unit designation for i3. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "13-designation-spelling-veto",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + 3",
+            "designation": "3rd",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "northern directorate + iii",
+            "designation": "III",
+            "operator": "Northern Directorate",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d02-m1"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "separate",
+          "signals": {
+            "name": 0.8,
+            "discriminator": 0.1905,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [
+            "designation-conflict",
+            "identifier-conflict"
+          ],
+          "same_doc": false,
+          "reason": "Walled, so no band applies: the two sides state different formation designations; every component of a composite identity key is stated and they differ."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        }
+      ]
+    },
+    {
+      "case_id": "14-operator-unnormalized-no-wall",
+      "referent_atoms": [
+        {
+          "referent_id": "r1",
+          "doc_id": "d01",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        },
+        {
+          "referent_id": "r2",
+          "doc_id": "d02",
+          "member_local_ids": [
+            "m1"
+          ],
+          "authoritative": false,
+          "category": null,
+          "gate_results": {},
+          "declined": false,
+          "decline_reason": null
+        }
+      ],
+      "instances": [
+        {
+          "instance_id": "i1",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "southern bureau + 9",
+            "designation": "9th",
+            "operator": "Southern Bureau",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d01"
+          ],
+          "member_referent_ids": [
+            "r1"
+          ],
+          "member_claim_atoms": [
+            "d01-m1"
+          ]
+        },
+        {
+          "instance_id": "i2",
+          "citizen": "formation",
+          "discriminators": {
+            "unique_id": "sthn bureau + 9",
+            "designation": "9th",
+            "operator": "Sthn Bureau",
+            "geography": "unknown",
+            "time": "unknown",
+            "echelon": "unknown"
+          },
+          "doc_ids": [
+            "d02"
+          ],
+          "member_referent_ids": [
+            "r2"
+          ],
+          "member_claim_atoms": [
+            "d02-m1"
+          ]
+        }
+      ],
+      "pair_verdicts": [
+        {
+          "a": "i1",
+          "b": "i2",
+          "verdict": "possible",
+          "signals": {
+            "name": 1.0,
+            "discriminator": 0.2857,
+            "relational": 0.0
+          },
+          "ceiling": null,
+          "ceiling_reason": null,
+          "walls": [],
+          "same_doc": false,
+          "reason": "no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: designation; weighted total 0.3429."
+        }
+      ],
+      "derived_edges": [],
+      "gaps": [
+        {
+          "about": "i1",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i1. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i2",
+          "kind": "discriminator-unstated",
+          "missing": [
+            "observation date"
+          ],
+          "ceiling": "probable",
+          "sentence": "No source states the observation date for i2. The instance is under-determined on that axis and cannot be confirmed against a look-alike on the remaining evidence."
+        },
+        {
+          "about": "i1 + i2",
+          "kind": "operator-unnormalized",
+          "missing": [
+            "an operator normalization rule"
+          ],
+          "ceiling": "probable",
+          "sentence": "The stated operator values 'Southern Bureau', 'Sthn Bureau' for i1 + i2 are not in the normalization table, so no operator conflict could be tested and no wall was applied. The pair is left to the analyst rather than walled on an untested string comparison."
+        }
+      ]
+    }
+  ]
+}

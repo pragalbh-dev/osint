@@ -1,0 +1,247 @@
+{
+  "calls": [
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 28.961067341733724,
+      "offered_fields": [
+        "aliases",
+        "basing_sites",
+        "components",
+        "denials",
+        "distinctions",
+        "events",
+        "manufacturers",
+        "relations",
+        "sources",
+        "units",
+        "variants"
+      ],
+      "payload": {
+        "aliases": [
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "HQ-9P",
+            "source_quote": "reportedly designated HQ-9/P (some regional trade reporting still uses HQ-9P"
+          },
+          {
+            "name_a": "HQ-9/P",
+            "name_b": "FD-2000",
+            "source_quote": "reportedly designated HQ-9/P... and the export designation FD-2000 continues to circulate in older brochures"
+          },
+          {
+            "name_a": "FT-2000",
+            "name_b": "FT-2000A",
+            "source_quote": "the FT-2000 (sometimes rendered FT-2000A)"
+          },
+          {
+            "name_a": "S-400 Triumf",
+            "name_b": "Triumph",
+            "source_quote": "India's S-400 Triumf (referred to in some Indian press as the \"Triumph\" system"
+          },
+          {
+            "name_a": "S-400 Triumf",
+            "name_b": "SA-21",
+            "source_quote": "India's S-400 Triumf... and carrying the NATO designator SA-21"
+          }
+        ],
+        "denials": [
+          {
+            "object": "FT-2000",
+            "predicate": "acquired / operates",
+            "source_quote": "There is no confirmed evidence that Pakistan has acquired the FT-2000, and it is mentioned here mainly because Pakistani and Chinese trade materials occasionally list it alongside HQ-9 variants in the same product family literature, which has led to at least one erroneous claim in regional media that Pakistan operates \"FT-2000 batteries\"",
+            "subject": "Pakistan"
+          }
+        ],
+        "manufacturers": [
+          {
+            "aka": "CASIC",
+            "context": {
+              "operator": "China"
+            },
+            "name": "China Aerospace Science and Industry Corporation",
+            "origin_country": "China",
+            "role": "manufacturer",
+            "source_quote": "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)"
+          }
+        ],
+        "relations": [
+          {
+            "object": "Pakistan Army",
+            "relation": "operated-by",
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "Air Defence Command",
+            "relation": "equips",
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P",
+            "subject": "HQ-9/P"
+          },
+          {
+            "object": "Pakistan Air Force",
+            "relation": "operated-by",
+            "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE",
+            "subject": "HQ-9BE"
+          },
+          {
+            "object": "HQ-9BE",
+            "relation": "manufactures",
+            "source_quote": "the manufacturer, China Aerospace Science and Industry Corporation (CASIC)",
+            "subject": "China Aerospace Science and Industry Corporation"
+          }
+        ],
+        "units": [
+          {
+            "context": {
+              "operator": "Pakistan Army"
+            },
+            "name": "Air Defence Command",
+            "service_branch": "Pakistan Army",
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P"
+          }
+        ],
+        "variants": [
+          {
+            "context": {
+              "designation": "HQ-9/P",
+              "operator": "Pakistan Army"
+            },
+            "designators": [
+              "HQ-9/P",
+              "HQ-9P",
+              "FD-2000"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9/P",
+            "operator_branch": "Pakistan Army",
+            "range_text": "125 km",
+            "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate... credited with an engagement range in the region of 125 km"
+          },
+          {
+            "context": {
+              "designation": "HQ-9BE",
+              "operator": "Pakistan Air Force"
+            },
+            "designators": [
+              "HQ-9BE"
+            ],
+            "family": "HQ-9",
+            "name": "HQ-9BE",
+            "operator_branch": "Pakistan Air Force",
+            "range_text": "260 km",
+            "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE... maximum intercept range around 260 km"
+          },
+          {
+            "designators": [
+              "FT-2000",
+              "FT-2000A"
+            ],
+            "family": "HQ-9",
+            "name": "FT-2000",
+            "source_quote": "CASIC markets a lower-tier, medium-range derivative — the FT-2000 (sometimes rendered FT-2000A)"
+          },
+          {
+            "context": {
+              "designation": "S-400 Triumf",
+              "operator": "India"
+            },
+            "designators": [
+              "S-400 Triumf",
+              "Triumph",
+              "SA-21"
+            ],
+            "name": "S-400 Triumf",
+            "operator_branch": "India",
+            "source_quote": "India's S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+          },
+          {
+            "designators": [
+              "S-300PMU导"
+            ],
+            "name": "S-300PMU导",
+            "source_quote": "broadly comparable to early-block S-300PMU导-type systems"
+          }
+        ]
+      },
+      "tool_name": "extract_prose_claim",
+      "usage": null
+    },
+    {
+      "error": null,
+      "lane": "text",
+      "latency_s": 14.29204901214689,
+      "offered_fields": [
+        "clusters",
+        "contrasts"
+      ],
+      "payload": {
+        "clusters": [
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "China Aerospace Science and Industry Corporation (CASIC)"
+            ],
+            "member_ids": [
+              1,
+              8
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "designated HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+            ],
+            "member_ids": [
+              3,
+              9,
+              10
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "the FT-2000 (sometimes rendered FT-2000A)"
+            ],
+            "member_ids": [
+              5,
+              11
+            ]
+          },
+          {
+            "evidence": "EXPLICIT_EQUIVALENCE",
+            "licensing_quotes": [
+              "India's S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+            ],
+            "member_ids": [
+              6,
+              12,
+              13
+            ]
+          }
+        ],
+        "contrasts": [
+          {
+            "left_id": 3,
+            "licensing_quote": "It is worth stressing that despite the shared \"HQ-9\" family name, the Army and PAF systems appear to be genuinely separate procurement lines rather than a single system fielded twice",
+            "right_id": 4
+          },
+          {
+            "left_id": 14,
+            "licensing_quote": "both the Pakistan Army and the Pakistan Air Force (PAF) continue to field distinct variants of the system under different program names.",
+            "right_id": 15
+          }
+        ]
+      },
+      "tool_name": "cluster_coreferences",
+      "usage": null
+    }
+  ],
+  "candidate_id": "gemini-3-6-flash",
+  "fingerprint": "83ab92d696b7f9f5f7f747e26ff8ab1da2174e9645cf88701287fceb498e729b",
+  "invocation": "inv-20260726T155646Z-52deac",
+  "recorded_at": "2026-07-26T16:01:31.862275+00:00",
+  "run_index": 1,
+  "schema": "rk-bakeoff-resume/1",
+  "source_id": "d04_armyrec_ranges"
+}

@@ -163,6 +163,12 @@ export interface KnownGap {
   next_coverage_due?: string | null
   related_ref?: string | null
   missing_slots?: string[]
+  /** WHEN coverage is next due, in the backend's own words — including the honest
+   *  "unscheduled — no collection is tasked against this gap" case, which a bare null
+   *  `next_coverage_due` cannot say. Rendered verbatim; never paraphrased into ours. */
+  coverage_statement?: string | null
+  /** the same absence, also raised on other elements — so one gap is not counted N times. */
+  also_raised_as?: string[]
 }
 
 /** The evidence behind a fired Alert (schemas/view.py AlertProvenance; added 2026-07-20).
@@ -414,15 +420,141 @@ export interface ConfigWrite {
 export interface ConfigWriteResult {
   section: string
   version: number
+  /** Non-fatal, analyst-facing problems with what was just written — today, observables whose
+   *  anchors resolve to no node in the live view (AH-1). A warning, not a rejection: an anchor may
+   *  legitimately be armed before the entity that satisfies it exists. */
+  warnings?: string[]
+}
+
+/** One armed observable whose declared anchors do NOT all bind to a node in the current view.
+ *  `watching_nothing` is the disqualifying case — the tripwire cannot fire at all, so its silence
+ *  is not an all-clear. `watched_node_count === null` is the opposite failure: it fell back to
+ *  UNSCOPED and now evaluates the whole graph instead of the subject it declared. */
+/** How loud an anchor problem actually is (AH-2). Only the last three are faults:
+ *  - `pending_coverage` — the anchor names a DECLARED entity no source has produced yet. Expected,
+ *    self-clearing, and the shipped default boot state (documents are withheld from the seed on
+ *    purpose so a reviewer can ingest them live). Rendering it as an alarm cries wolf on a healthy
+ *    system, which trains an analyst to ignore the surface — the same failure as silence, reached
+ *    from the other side.
+ *  - `dangling` — the anchor matches no node, no declared entity and no alias. A real broken id.
+ *  - `watching_nothing` — the tripwire cannot fire at all; its silence is not an all-clear.
+ *  - `unscoped` — the opposite failure: it fell back to evaluating the WHOLE graph. */
+export type AnchorSeverity = 'pending_coverage' | 'dangling' | 'watching_nothing' | 'unscoped'
+
+export interface ObservableAnchorProblem {
+  observable_id: string
+  unresolved_anchors: string[]
+  resolved_anchors?: Record<string, string>
+  /** Misses that name a declared registry entity — awaiting coverage, not broken. */
+  pending_coverage?: string[]
+  /** Misses that match nothing anywhere — the genuine config fault. */
+  dangling?: string[]
+  /** anchor → `"watch_instances"` | `"subject:<lens id>"`; which config file to actually edit. */
+  declared_in?: Record<string, string>
+  severity?: AnchorSeverity
+  watched_node_count: number | null
+  watching_nothing: boolean
+  warning: string
+}
+
+/** Is this a fault the analyst must act on, or a coverage gap that clears itself? Defaults to
+ *  "fault" when the backend did not say, so an older/unknown payload is never quietly downgraded. */
+export function isAnchorFault(p: ObservableAnchorProblem): boolean {
+  return (p.severity ?? 'dangling') !== 'pending_coverage'
+}
+
+/** GET /config/observables → `diagnostics.anchor_check`. `checked: false` means the check could not
+ *  be run (no view yet) — which must never be rendered as a clean bill of health. */
+export interface AnchorCheck {
+  checked: boolean
+  reason?: string
+  unresolved: ObservableAnchorProblem[]
+}
+
+// ───────────────────────── trigger reachability (AH-3) ─────────────────────────
+
+/** The SECOND, independent way a tripwire can be armed-and-useless (AH-3).
+ *
+ *  The anchor check above answers "is this wire aimed at any real node?". This one answers the
+ *  question after it: "could the condition it watches for ever OCCUR?" They come apart completely — a
+ *  tripwire can resolve every anchor, watch 66 nodes, and still filter on an edge type no document in
+ *  coverage produces. That wire is armed, quiet, and structurally incapable of firing, and its quiet
+ *  reads to an analyst as an all-clear. Same defect class as the anchor bug, reached one step later.
+ *
+ *  `reachable` is the only status that means the silence carries information. */
+export type ReachabilityStatus =
+  | 'reachable'
+  | 'no_coverage'
+  | 'never_fires'
+  | 'type_not_modelled'
+  | 'attribute_not_covered'
+  | 'out_of_watch_scope'
+
+/** What KIND of gap, i.e. who has to do something about it — the only distinction that changes an
+ *  analyst's next action:
+ *  - `data` — modelled correctly, no coverage yet. SELF-HEALING: the first document asserting the
+ *    missing thing arms the wire for real, live, no restart. Nobody edits anything. Neutral register.
+ *  - `modelling` / `engine` — a FAULT. No volume of documents fixes it; a human must edit the trigger
+ *    or the ontology. Loud register.
+ *  - `scope` — the anchor check already owns this remedy, so we do NOT diagnose it a second time
+ *    beside it; two blocks saying the same thing is how a panel gets ignored. */
+export type ReachabilityGapKind = 'data' | 'modelling' | 'engine' | 'scope'
+
+/** One thing the view lacks that the trigger needs — `kind` is a machine token (`edge_type`,
+ *  `node_type`, `trigger_form`, …), `name` the specific type/field it names. */
+export interface ReachabilityMissing {
+  kind: string
+  name: string
+}
+
+export interface TriggerReachability {
+  observable_id: string
+  status: ReachabilityStatus
+  can_fire: boolean
+  gap_kind: ReachabilityGapKind | null
+  missing: ReachabilityMissing[]
+  candidate_count: number | null
+  /** `false` = the check did not run for this observable. Must NEVER render as a pass — the backend
+   *  already refuses to report "reachable" in that case and the UI has to match. */
+  checked: boolean
+  /** The backend's own full analyst-facing sentence: names the specific missing thing AND the
+   *  remedy. Rendered VERBATIM — paraphrasing it into a UI string is how the surface and the engine
+   *  drift apart. */
+  warning: string | null
+}
+
+/** Is this verdict a fault a human must act on, as opposed to a coverage gap that clears itself?
+ *
+ *  Defaults to "fault" whenever the wire cannot fire and the payload does not explain why, for the
+ *  same reason `isAnchorFault` does: an unrecognised payload is never quietly downgraded to "fine".
+ *  `checked: false` is deliberately NOT a fault — it is an *unknown*, which the UI states as such
+ *  rather than converting into either a pass or an alarm. */
+export function isReachabilityFault(r: TriggerReachability): boolean {
+  if (r.checked === false) return false // unknown — reported, but not as a fault
+  if (r.can_fire) return false
+  return r.gap_kind !== 'data' && r.gap_kind !== 'scope'
+}
+
+/** GET /config/observables → `diagnostics.trigger_reachability`. Unlike the anchor check this is
+ *  COMPLETE, not problems-only (one entry per armed observable), so a card can state the positive
+ *  verdict rather than leave the analyst to infer it from an absence. */
+export interface ReachabilityCheck {
+  checked: boolean
+  reason?: string
+  observables: TriggerReachability[]
 }
 
 /** GET /config/{section} — the read half of the hot-config seam. `value` is the stored section
  *  verbatim, so it round-trips straight back into a ConfigWrite. Serving the ARMED observable
- *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed. */
+ *  catalogue is what lets the rail say "3 armed" instead of inferring 0 from an empty alert feed.
+ *  `diagnostics` is DERIVED state about that value (never part of the round-trip) — for observables
+ *  it carries the live anchor check, so "3 armed" can't quietly mean "3 armed, 1 watching nothing",
+ *  plus the trigger-reachability check, so it can't quietly mean "3 armed, 2 that cannot fire". */
 export interface ConfigRead {
   section: string
   version: number
   value: Record<string, unknown>
+  diagnostics?: { anchor_check?: AnchorCheck; trigger_reachability?: ReachabilityCheck }
 }
 
 /** The `observables` section, as GET /config/observables returns it. */

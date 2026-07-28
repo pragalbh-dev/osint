@@ -7,6 +7,12 @@ set directly (G5):** ``dispose`` only appends a ``DecisionRecord``; the followin
 :meth:`AppState.rebuild_and_swap` lets ``rebuild()`` apply the recorded ``effects`` — so propagation is
 structural and needs **no restart** (G12, §1 invariant 3). The response is the rebuilt view, so the UI
 sees the propagated change in one round-trip.
+
+``/hitl/merge`` returns that view **plus an acknowledgement** (:class:`AdjudicationView`): what was
+received, whether the rebuilt graph actually took it, and — when it did not — on what ground. A bare ``200``
+made a refused instruction indistinguishable from an applied one, which is the escalate half of the
+non-negotiable missing on the write path. The verdict is derived by READING the rebuilt view
+(:mod:`chanakya.hitl.receipt`), never by assuming the write succeeded.
 """
 
 from __future__ import annotations
@@ -23,7 +29,14 @@ from chanakya.hitl import (
     build_status_override_item,
     dispose,
 )
-from chanakya.schemas import GraphView, HitlDecision, ReviewQueueItem
+from chanakya.hitl.receipt import receipt_fields
+from chanakya.schemas import (
+    AdjudicationReceipt,
+    AdjudicationView,
+    GraphView,
+    HitlDecision,
+    ReviewQueueItem,
+)
 
 router = APIRouter()
 
@@ -44,6 +57,27 @@ def _apply(state: AppState, item: ReviewQueueItem, decision: HitlDecision) -> Gr
     dispose(item, decision.decision, writeback, actor=decision.actor, rationale=decision.rationale)
     state.rebuild_and_swap()
     return state.view()
+
+
+def _acknowledge(
+    view: GraphView, state: AppState, item: ReviewQueueItem, decision: HitlDecision, a: str, b: str
+) -> AdjudicationView:
+    """Wrap the rebuilt view with the receipt for the instruction just given (:mod:`chanakya.hitl.receipt`).
+
+    THE ESCALATE HALF ON THE WRITE PATH. Returning ``200`` + the view was the whole response, so an
+    instruction the resolver declined to apply was indistinguishable from one it applied — measured: three
+    of fourteen accepts on the booted corpus left the view byte-identical and said nothing. The refusals
+    themselves are correct (the cross-type rail is doing its job); a silent refusal is not. The receipt is
+    derived by READING the rebuilt view, so it reports what happened rather than what was attempted.
+    """
+    records = list(state.decision.replay())
+    record = records[-1] if records else None  # the one `dispose` just appended
+    fields = (
+        receipt_fields(view, record, a, b, decision.decision)
+        if record is not None
+        else {"decision": decision.decision, "actor": decision.actor, "pair": [a, b], "recorded": False}
+    )
+    return AdjudicationView(**view.model_dump(), adjudication=AdjudicationReceipt(**fields))
 
 
 @router.post("/hitl/status", response_model=GraphView)
@@ -86,10 +120,11 @@ def hitl_alert(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
     return view
 
 
-@router.post("/hitl/merge", response_model=GraphView)
-def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> GraphView:
+@router.post("/hitl/merge", response_model=AdjudicationView)
+def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> AdjudicationView:
+    view = state.view()
     edge = next(
-        (e for e in state.view().edges if e.id == decision.subject and e.type == "same-as"),
+        (e for e in view.edges if e.id == decision.subject and e.type == "same-as"),
         None,
     )
     if edge is None:
@@ -97,12 +132,19 @@ def hitl_merge(decision: HitlDecision, state: AppState = Depends(get_state)) -> 
             404, detail={"error": "no candidate same-as edge for subject", "id": decision.subject}
         )
     breakdown = edge.attrs.get("breakdown") or {}
+    # Carry each node's NAME **as well as** its id. The id is what actually binds the decision — it is
+    # exact, and it is what the analyst clicked — and the name is carried beside it because RESOLVE's alias
+    # table is keyed on normalised names, so a *different-name* accept/reject also generalises to future
+    # mentions spelled that way. It used to be the name ALONE, which is what made the headline reject a
+    # no-op: these labels are DISPLAY names (``config/entities.yaml``), and for ``unit_hq9b`` the display
+    # name and the resolver's entity name differ, so the bar mapped back to no entities at all.
+    labels = {n.id: n.name for n in view.nodes}
     item = build_merge_item(
         item_id=decision.item_id or f"merge:{edge.id}",
-        candidate_a={"id": edge.source},
-        candidate_b={"id": edge.target},
+        candidate_a={"id": edge.source, "name": labels.get(edge.source)},
+        candidate_b={"id": edge.target, "name": labels.get(edge.target)},
         signals=[breakdown] if breakdown else [],
         merge_score=edge.merge_confidence or 0.0,
         band="needs-you",
     )
-    return _apply(state, item, decision)
+    return _acknowledge(_apply(state, item, decision), state, item, decision, edge.source, edge.target)

@@ -22,6 +22,23 @@
 | EVAL | Acceptance harness (spine gate + demo flexes) | 2 | not-started | — | all Wave-1 + DATA-C + INGEST | — |
 | SHIP | Production packaging & deploy | 2 | not-started | — | API (+X0, DATA-C, INGEST) | — |
 
+### Replumb board — identity re-key / type-instance (plan `01-replumb-implementation-plan.md`)
+_Post-deadline substrate rework. The core chain RK-ATOMS → RK-LAYER → RK-COREF → RK-NAMECUT is strict
+(plan §2); contended files are owned one stage at a time (plan §3). Contract amendments A1–A7 are logged in
+the section below + `DECISIONS.md`._
+
+| ID | Session | Wave | Status | PR | Depends (merged) | Merged commit |
+|----|---------|------|--------|----|--------------------|---------------|
+| RK-SPIKE | S0 — close micro-decisions + prototype characterize-and-cluster + claim-gold slice | 0 | **merged** (design branch) | — | — | 3525427 |
+| RK-BAKEOFF | Extractor-model bake-off + scoring harness (Wave-0 screen, then definitive pass) | 0 / post-S1+S3 | not-started | — | RK-SPIKE (screen); RK-ATOMS + RK-COREF (definitive) | — |
+| RK-ATOMS | S1 — claim atom + dormant referent field + atom-aware dedup + A7 discriminator schema | 1 | **merged** (design branch) | — | RK-SPIKE | 114a0f6 |
+| RK-LAYER | S2 — layer typing + endpoint materialization + presence/formation + basing-as-rebuild-edge | 2 | **integrated** (#63) | — | RK-ATOMS | 0cfc069 |
+| RK-COREF | S3 — coref-cluster minting (Tiers 0/1) + per-layer policy + co-location cap + relationship wall | 3 | **merged** (#63, 2026-07-25) — ~~behind `resolution.earned_identity.enabled`, shipping `false`~~ **THE FLAG IS GONE — identity is unconditional, see DEFAULT-ON below** | — | RK-LAYER | 68a129b |
+| **DEFAULT-ON** | Make identity **unconditional** (delete both staging switches, patch the loopholes) + make an analyst's decision **mutate graph state** + close the gap/coverage/watch-list honesty holes | 3.5 | **merged** (#63, 2026-07-26) — suite 1526p/7s/16x; pushed `7030387..5692ef3` | — | RK-COREF | 5692ef3 |
+| RK-NAMECUT | S4 — cut the name-key + re-anchor decisions/config + golden regen | 4 | not-started | — | RK-COREF | — |
+| RK-MATERIALITY | Two-layer operator-scoped chokepoints | 4 | not-started | — | RK-COREF | — |
+| RK-DATA | Corpus / answer-key / golden regeneration + coverage additions | 2–4 | not-started | — | contract-freeze per stage | — |
+
 ## Contract amendments (F0-amendment PRs)
 _Post-F0 changes to a frozen contract go here. Each entry: what changed, which contract §, which sessions must rebase._
 
@@ -510,3 +527,253 @@ Wave-1 siblings are unaffected → no rebase). Mirrored for the frontend in
   (N+1 + beyond §4.8).
 - **`IngestRequest.source_type: str | None = None`** (master §4.8) — the keyed live lane needs the source's
   credibility class (`ingest_document(source_type=…)`); the keyless bundle path ignores it.
+
+## Handoff — RK-SPIKE (S0), 2026-07-25
+
+**Shipped.** The three micro-decisions closed as **D-13.17…D-13.20** (spine/13 §13), plus **ten spec closures
+C1–C10** (plan §5b). A **12-item verified defect register** (`tmp/conv/rk-spike-verified-defects.md`), a
+**characterize-and-cluster prototype** (`tmp/spike-rk/proto/`, no embeddings, byte-deterministic), **24
+independently-authored acceptance cases** (`tmp/spike-rk/cases/`), an **integration matcher**
+(`tmp/spike-rk/match.py`), and the **claim-gold slice + per-slice sub-oracle + abstracted shapes**
+(`tmp/spike-rk/gold/`). Gates **G15/G16/G18 amended** and **G19 added**, wired into the gate table, the stage
+gate lists and owned test paths. Blind-case result: **15/24**, residue triaged in
+`tmp/conv/rk-spike-REVIEW-VERDICT.md` §2.
+
+**Decisions** (principle → choice → alternative rejected). *Target-first (#1)* → the coref auto-bind policy is
+set on general principle → **rejects** the shipped config's demo-preservation rationale (the data pass owes a
+re-carried earned-alias beat, best split across two documents). *Anti-fabrication (the non-negotiable)* → an
+authoritative bind needs **both** a deterministic structural gate **and** a source-grade floor → **rejects**
+trusting a model-chosen label, since a bind fuses **uncapped** while a source-stated `same-as` only raises.
+*Reversibility* → the referent atom is a **grouping signal the rebuild may decline**, and node identity is
+**claim-atom-primary** → **rejects** referent-as-address, which would make intra-document over-merge permanent.
+*Harm asymmetry* → same-doc contrast is a **band ceiling** (a band name, not a float) → **rejects** a
+coefficient (drops a pair two bands at the shipped thresholds) and the transitive `distinct-from` rail (every
+ORBAT list contains an enumeration). *Independence* → **evidential lineage, not document count**.
+
+**Deviations.** No production code (by design). The completeness critic never ran (session limit), so "what
+were all three hands never asked" is only partly answered — plan §11 now names what remains open.
+
+**Follow-ups.** (1) The anaphor gate must be **reformulated positively or reverted to raise-only** — its
+absence-test form *fails open* under extractor under-reach. (2) **D6/C8 source-independence is new code**, not
+config. (3) The **licensing quote** is written but read nowhere, so the raise-only mitigation is currently
+fictional. (4) **Rarity-graded name** has no implementation. (5) **D11** — the flagship `confirmed` may rest on
+*nominal* independence; DATA/EVAL adjudicate the source text. (6) **D12** — the ontology makes the sourced
+customs relation inexpressible while making an unsourced one easy (→ RK-LAYER). (7) The sub-oracle grades
+twelve entries `confirmed` on a single source, contradicting the system's own rule (→ DATA). (8) Case-suite
+gaps: no `absent`-gap assertion anywhere (an over-raiser passes the whole suite) and G15's positive half is
+untested.
+
+**Gate fixtures.** All new gate fixtures **must be abstract** — the data pass established that across the whole
+corpus there is essentially **one numbered formation and zero serials**, and that basing is too thin and too
+concentrated to exercise a wall, so the corpus cannot exercise G16/G18/G19 at all. That inertness is a
+legitimate consequence of sparse data with the mechanism at full strength, **not** a reason to weaken the
+ladder.
+
+> **Count corrected (2026-07-25).** This paragraph used to say "**one stated basing**". Re-measured on the
+> frozen corpus: there are **five `based-at` claims over three distinct subjects** — three on `unit_hq9b`
+> (one to `site_rawalpindi`, two to `site_rahwali`, i.e. the relocation pair), one on a PAF/Army AD Command
+> HQ-9BE battery, and one on the Beijing Institute of Radio Measurement. The **conclusion is unchanged** —
+> G18's relationship wall still has nothing to fire on, because a wall needs two *conflicting* stated
+> relationships on one subject and no `operated-by` data exists — but "one stated basing" is the kind of
+> number a reviewer re-derives, and they would have found it wrong.
+
+**Three-hands separation, evidenced.** Three worktrees on three branches with disjoint inputs: the implementer
+(`spike/rk-impl`) never read `corpus/**`, the answer key, or the cases; the test author (`spike/rk-test`) wrote
+all 24 cases from the spec and never opened the impl branch or `proto/`; the data hand (`spike/rk-data`) read
+the corpus read-only and authored **abstracted** shapes so the implementer got the structural difficulty
+without the content. The separation paid: the case author found a contradiction between two of the
+orchestrator's own requirements (→ C1), the implementer found that D-13.20 re-opened the door it was written to
+close (→ C7/C8), and the adversarial review found **three bugs in the orchestrator's own matcher** — two of
+which made the reported score wrong — plus that **A1/A5 encoded the forbidden id ordering** about to be frozen
+at S1.
+
+## Handoff — RK-ATOMS (S1), 2026-07-25
+
+**Shipped.** The claim atom is named and frozen as the canonical **post-dedup** `claim_id` (no new id minted).
+`make_referent_id`/`is_referent_id` sit beside the claim pair under a disjoint `ref:` prefix, sharing one
+normalisation rule — and `make_referent_id` is **invoked nowhere** (verified: only exports and docstrings).
+`ClaimRecord.referent_id` is optional/`None`. Dedup carries the referent through **both** id-reassignment paths.
+A7 landed on both sides of the seam: a shared mention-context block on the entity-yielding mention schemas, and
+`TypeDef.attrs` restructured to structured entries **accepting both YAML forms**, so no config file changed.
+G17's ingest-only-minting clause is an input-independent static scan with non-vacuity tests both ways.
+
+**Verified at the integration point** (plan §6 step 6): **1094 passed, 7 skipped, 2 xfailed** = the recorded
+baseline (1026/7/1) **plus exactly** the 63 test-hand tests + 5 impl-gate tests + 1 documented xfail ⇒ **no
+pre-existing test moved**. **Zero behavioural change proven on the real corpus, not only the golden fixture** —
+view hash `22d668a3…dac3a9` (160 nodes / 73 edges) identical before and after; golden md5
+`bb6f16a5…71a601` unchanged and never edited.
+
+**Decisions** (principle → choice → alternative rejected). *Identity is earned at rebuild, never assumed at
+ingest (D-13.18)* → **the referent joins `_claim_signature`**, so a differing referent **blocks** the fold and
+the conflicting-fold case is dissolved rather than adjudicated → **rejects** "one referent wins" (verified
+**input-order dependent**: `min()` returns the first minimal element and lane phase 1 is a concurrent fan-out —
+it would inherit nondeterminism into the identity substrate against G2, and silently drop evidence) and
+**rejects** "keep both on one claim" (makes the per-mention grain ambiguous exactly where S4 keys identity).
+Free at S1 because every referent is `None`. **Both hands reached this independently**, and the implementer
+additionally checked it is genuinely inert rather than inferring it from the golden — the golden path never runs
+dedup at all, so a byte-identical view is corroboration, not proof; a randomised sweep found zero order flips.
+*A gate that cannot fail is a gate that lies* → the id-defining module is exempt from the mint-site rule
+(a constructor composing a sibling constructor is not a mint) but the exemption is **earned**: a new test proves
+that module has no store access, and a planted mint elsewhere still fails.
+
+**Deviations.** None on scope. Two residual defects recorded in-code rather than fixed (both out of S1 scope):
+the dedup **representative tie-break** is pre-existing latent nondeterminism (any non-signature field differing
+between tied members leaks input order — the docstring's order-independence claim was corrected in place), and
+**claim-id references orphaned by a fold** (filed as a non-strict `xfail`, not smuggled into this stage).
+
+**Follow-ups for S2/S3 — four spec gaps the implementer found by building it.** (1) **A1's "`ClaimRecord`/
+payloads" has no answer for a relationship claim** — a referent is per-mention but a `Triple` names two ends; the
+field was restricted to entity-form claims with endpoints routed through existing mention refs, and **S3 must
+revisit if it needs per-endpoint referents**. (2) **Sharpest: A7 forbids burying discriminators in the untyped
+`attrs` bag, but there is no typed carrier on `ClaimRecord`** — as scoped, a filled discriminator either dies at
+the transform boundary or lands in the very bag A7 forbids. The reading that makes S1 coherent is that the
+structured *ontology* entry is the typing; that is an **interpretation** and **S3 must decide explicitly**.
+(3) **`TypeDef.attrs` has no production consumer today** — S2 is its first, so do not assume an accessor exists
+to extend. (4) `python3 -m pytest -q` cannot print the baseline it promises (`addopts` already carries `-q`, so
+the flag makes it `-qq` and suppresses the summary) — later stages should record `python3 -m pytest`.
+
+**Gate fixtures.** `tests/gates/test_g17_atom_mint.py` (test hand, 9 tests incl. the earned-exemption proof) and
+`tests/gates/test_g17_atoms_minted_at_ingest.py` (implementer, 5). Both survived the merge — different
+filenames, no silent overwrite; I checked, because a merge that quietly drops one hand's gate would look like a
+pass.
+
+**Three-hands separation, evidenced.** Implementer on `s1/rk-impl` stayed corpus-blind (never read `corpus/**`,
+the answer key, or `tmp/spike-rk/gold/**`) and never opened the test branch; test author on `s1/rk-test` wrote
+all 63 tests from the spec alone, proved **25 of them failed against unmodified code** before finishing, and
+never opened the impl branch or its notes; the orchestrator merged test-into-impl and ran the suite. **The
+separation paid twice:** the test hand found the fold's input-order nondeterminism (which changed the design),
+and its independent G17 gate flagged the constructor composition the implementer's own gate had waved through.
+
+## Handoff — RK-LAYER (S2), 2026-07-25
+
+**Shipped, behind one flag — `layer_routing.enabled` in `config/ontology.yaml`, shipping `false`.** One flag for
+all six mechanisms, because they are one change to what a node *is* and half of it is incoherent. Layer tags on
+the whole declared surface (15 node types / 90 attribute entries, values `design | instance | meta`); the
+straddle split + endpoint materialization; the **presence** and **formation** citizens with `count` as a
+*sourced* attribute; the offline basing pass **deleted** and replaced by a rebuild-derived edge citing its two
+premise claim-atoms; `operated-by`, D12's event↔trading_org edge (with `party_role` as an edge attribute), and a
+`site_type`-tagged supersede key; the D2 no-silent-pick clause; and R1.4's two prohibitions.
+
+**Verified at the integration point.** Independently-authored suite (`s2/rk-test`, never saw the impl) against
+the corpus-blind implementation (`s2/rk-impl`): **1184 passed, 7 skipped, 2 xfailed**, ruff clean. **Flag-off is
+byte-identical to S1** — golden md5 `bb6f16a5`, booted view `160/73/18 @22d668a3`. **Flag-on genuinely changes
+the graph**, measured independently by the orchestrator: booted **172/87/22**, full scenario **183/95/27**, two
+rebuilds byte-identical. *(An unchanged flag-on graph would have meant the stage did nothing — §5a-bis.)*
+
+**Decisions** (principle → choice → alternative rejected). *A gap must bind, not annotate* → the `site_type`
+rule is **per-`(subject, predicate)` over every basing of that subject**, applied as a **post-pass after
+derivation**, never as a key input → **rejects** the per-edge tag, which **silently killed the flagship
+relocation** (one end classified, one not, different buckets, no gap, still deterministic): **separation *is*
+de-confliction, so a partial tag is worse than none**. *This amends C1, and S3 inherits it for G18's wall.*
+*Two citizens, defined by their creating evidence* → a **new instance-layer node type** for presence →
+**rejects** reusing `unit` with a discriminator (fuses the citizens **G15** guards, so the gate would assert a
+distinction the type system denies) and `refines: unit` (a presence asserts *less*; refinement models
+*narrower*, not *weaker*). *`stale` is a freshness demotion **from confirmed*** → R1.4's two prohibitions are
+**unconditional and independent**, both behind the flag → **rejects** conditioning (b) on (a)'s trigger:
+overwriting `insufficient` with `stale` asserts the position was **once established and has merely aged**,
+which is false in the system's own vocabulary — *an assertion never established cannot age*. Retirement is
+carried by `superseded_by`, independent of the label, so the beat needs no overwrite. *Layer must classify
+honestly* → a **third value (`meta`)** → **rejects** forcing meta kinds into design/instance, which would
+corrupt the straddle-split trigger (it fires on a layer *mismatch*, so a mis-tag generates phantom splits).
+
+**Deviations.** `config/ontology.yaml` edited from S2 as designed, but also from S1 by directive (recorded).
+`imported-by → unit` left as-is pending a decision on whether it should require a stated unit.
+
+**Follow-ups.** (1) **`operated-by` has no producer** — declared but non-extractor, so nothing emits a *stated*
+one: **either someone owns the A7 extraction extension or half of G18 is fixture-only forever.** (2) **C6 is
+unimplementable as written** — it needs three values and `perishable` is a boolean; **S3 owns that file, so
+re-spec before S3 starts.** (3) **A2's "endpoint layers fall out of endpoint types" is wrong** — it cannot
+express §5's worked example, so `materializes` is an explicit per-edge declaration; correct A2. (4) **DATA owes
+the `site_type` mapping** — three alias entries were shown to restore the flagship fully *and* de-conflict
+another unit's two basings into concurrently-valid ones, which is the proof the held state is a refusal on
+specific grounds, not a disabled mechanism. (5) A **pre-existing defect** fixed here: a derived basing inherited
+the *later* of its premises' dates, so every basing of a unit shared one induction date and became unorderable
+— a 2021 sighting carried 2025. **General lesson: anything the offline passes froze is evidence about an older
+graph.**
+
+**Honest inertness (§5a-bis).** R1.4(b) is currently **inert on the real corpus in both surfaces** — on the
+booted surface the flagship's origin is `insufficient` but its Rahwali documents are withheld so it is never
+superseded; on the full surface the extra evidence lifts that edge to assessable so it correctly restates. The
+two conditions never co-occur. That is **inert-because-the-data-is-sparse with the mechanism at full strength**,
+not hidden-to-protect-a-fixture, and it is exercised by unit mirrors on both sides.
+
+**Three-hands separation, evidenced — and it paid three times.** Three worktrees, disjoint inputs: the
+implementer stayed corpus-blind; the test author wrote every test from the spec and proved they failed first;
+the data hand authored 18 abstract fixtures over 27 invented documents. **Three integration rounds each found a
+different class of defect, and every one was caught by an independently-authored mirror rather than by anything
+the implementer wrote**: a guard too broad → the wrong lever → a wrong condition. The pattern is not "be less
+cautious" — it is that **a guard needs the assertion of what must still work sitting next to it**, because every
+test an implementer can see rewards caution. The data hand separately found the two structural gaps that
+reshaped the stage (no node type for a presence; `site_type` unusable as a key), and the test author found
+**three of its own tests passing for the wrong reason**.
+
+---
+
+## Handoff — DEFAULT-ON (identity unconditional), 2026-07-26
+
+**Merged into `design/resolution-redesign` as `5692ef3`; pushed fast-forward `7030387..5692ef3`, zero
+conflicts.** Full detail in `artifacts/plan/HANDOFF-REPLUMB.md` §9. Decisions in `DECISIONS.md` (final
+section). Calibration in `tmp/conv/DEFAULT-ON-calibration-ledger.md`.
+
+**Suite:** 1526 passed, 7 skipped, 16 xfailed (baseline 1518 / 7 / 13). Every xfail is `strict` with an
+inline reason and a ledger entry. **No corpus file, answer key or golden fixture was edited.**
+
+### 1. Decisions
+
+- **Identity is unconditional. The flags are DELETED, not defaulted.** `supersede_floor.require_earned_
+  identity` is gone (config now says "There is NO KNOB here"); the row markers `requires: earned_identity`
+  and `earned_role:` are gone and registered as `_RETIRED_STAGE_KEYS` — a row carrying either now raises
+  `StageBlockError` **at construction**. The stated ground: *a gate that closes a fabrication path is not a
+  policy dial*, and *a tolerated staging marker is a compatibility mode with a shorter name*. The flag-off
+  equivalence gates were deleted with them — there is no second behaviour left to be equivalent to.
+- **An analyst's override now mutates graph state.** The wall joins `veto` (hard + transitive), the learned
+  bar is keyed on **entity ids** rather than display names, and `POST /hitl/merge` returns a receipt whose
+  verdict is derived by **reading the rebuilt view**. Pinned by 11 corpus-driven gate tests in
+  `backend/tests/gates/test_the_analyst_decision_lands_spec.py`, each booting its own app (a decision log is
+  append-only; a test inheriting another's decisions measures the wrong graph).
+- **Rulings:** a missing discriminator is not permission to cross a wall · an assertion never established
+  cannot age into history · declared-empty ≠ absent in the slot→source-class map · "no cap fired" is not a
+  reason to be invisible · one `(node, statement)` is one Known Gap.
+
+### 2. Deviations / partial closes — stated, not silent
+
+- **`stale` tightening is partial on two counts.** Conditioned on the confirmed *magnitude*, not on
+  `min_independent_groups` (the full bar flips the flagship relocation beat across 8 behavioural specs). And
+  its compensating marker lives in `gate_vector`, which **reaches no analyst surface** — one consumer in the
+  whole repo, a unit test. Pre-existing and moot here (0 elements on the supersede path), but four strings
+  in the tree claimed otherwise and were **corrected at triage** (ledger item 7).
+- **A machine cap can overrule an explicit human ACCEPT** on the headline pair (`applied=false`). The safe
+  direction, and precisely what prevents the fabricated relocation — but an inversion of the HITL rule.
+  Explain it as deliberate; do not discover it live.
+
+### 3. Follow-ups the USER must run or regenerate
+
+1. **`npm ci && npm run typecheck` in `frontend/`** — `node_modules` is absent in these worktrees, so the
+   SPA changes are the one untested claim in the pass.
+2. **`expected_view.json`** (2 xfail) — differs from the rebuilt view by exactly `coverage_statement` and
+   `also_raised_as`. Deliberately **not** regenerated by an agent.
+3. **The zero-credibility supersede fixture** (1 xfail) — giving it evidential weight is a data change.
+4. Unchanged from before: the `site_type` alias map (DATA), the keyed re-record + oracle re-freeze (needs
+   recorded user approval), the sub-oracle's twelve single-source confirms (blocks RK-BAKEOFF).
+
+### 4. Measured corpus (re-measured on this branch, post-merge)
+
+Keyless **183 nodes / 111 edges / 27 gaps / 34 walls / 14 candidates**; full corpus **196 / 123 / 33 / 38 /
+14**. Zero gaps lack a coverage statement, zero duplicate `(node, statement)` gaps, zero contradictory
+identity pairs, zero elements on the supersede path — **on both boots**. Status histogram **identical**
+before and after the merge. The only shape delta in the whole pass is gaps 37 → 27, de-duplication of
+presentation only (`also_raised_as` preserves the collapsed ids).
+
+**Direction:** this branch merges **less**, not more — more surviving nodes = fewer merges = the
+**recoverable** error. The real change is on the write path: 14/14 adjudications now land or are told why
+not, against 8/14 silently still drawn and 1 wholly inert before.
+
+### 5. How the three-hands separation was evidenced
+
+Implementer, verifier and final triage were separate hands. The verifier reconstructed the "before" state by
+`git archive` of the merge base into a scratchpad (**never** a checkout) and re-measured every claimed
+before/after itself, rather than trusting the report — which is how it caught that the implementer's stated
+compensation for the `stale` partial close was **false as written**. Triage then confirmed that
+independently with a repo-wide search before correcting the four strings. Two claims in this pass were
+measurably wrong when first written; both were caught by a hand that refused to take the previous hand's
+word.

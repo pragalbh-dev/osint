@@ -1,0 +1,1932 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        56
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "order-of-battle reference"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "open order-of-battle references"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "8477 AD"
+        ],
+        "operator_branch": "Air Defence"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "8477 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l18-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "18 Feb 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Pano Aqil Cantonment",
+            "lat": 27.8578,
+            "lon": 69.1096,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Pano Aqil Cantonment, Sukkur District",
+        "raw": "Pano Aqil Cantonment, Sukkur District",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 27.8578,
+        "wgs84_lon": 69.1096
+      },
+      "participants": [
+        "8477 AD"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-02-18",
+        "kind": "exact",
+        "raw": "18 Feb 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l18-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-22",
+      "kind": "exact",
+      "raw": "22/03/2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "quantity": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 6.0
+        }
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Ghotki bypass on the N-5",
+        "raw": "Ghotki bypass on the N-5",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "8477 AD"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-22",
+        "kind": "exact",
+        "raw": "22/03/2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "8477 AD",
+        "8471 AD"
+      ],
+      "_object_mention": "n04-tel-fleet-register-l42",
+      "_subject_mention": "n04-tel-fleet-register-l18",
+      "source_quote": "both plates are legible in PMV-A-4473, side by side, and differ in the third digit."
+    },
+    "claim_id": "n04-tel-fleet-register-l18-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "8471 AD",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "8477 AD"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n04-tel-fleet-register-l18",
+      "n04-tel-fleet-register-l42"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l18",
+      "_subject_mention": "n04-tel-fleet-register-l18"
+    },
+    "claim_id": "n04-tel-fleet-register-l18-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "8477 AD",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "8477 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "n04-tel-fleet-register-l24-3",
+      "_subject_mention": "n04-tel-fleet-register-l18"
+    },
+    "claim_id": "n04-tel-fleet-register-l18-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "18 Feb 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantonment",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "8477 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "n04-tel-fleet-register-l27",
+      "_subject_mention": "n04-tel-fleet-register-l18"
+    },
+    "claim_id": "n04-tel-fleet-register-l18-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        950,
+        957
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-22",
+      "kind": "exact",
+      "raw": "22/03/2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Ghotki bypass",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "8477 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        984,
+        1052
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "8x8 heavy transporter-erector-launcher, canisterised"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1190,
+        1196
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "WS2400"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "WS2400"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "WS2400",
+        "TAS5380"
+      ],
+      "_object_mention": "n04-tel-fleet-register-l21-5",
+      "_subject_mention": "n04-tel-fleet-register-l21",
+      "source_quote": "Two different chassis families from the same Chinese manufacturer group."
+    },
+    "claim_id": "n04-tel-fleet-register-l21-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1190,
+        1196
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "TAS5380",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "WS2400"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n04-tel-fleet-register-l21",
+      "n04-tel-fleet-register-l21-5"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l21-5",
+      "_subject_mention": "n04-tel-fleet-register-l21"
+    },
+    "claim_id": "n04-tel-fleet-register-l21-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1190,
+        1196
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "TAS5380",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "WS2400"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l21",
+      "_subject_mention": "n04-tel-fleet-register-l21"
+    },
+    "claim_id": "n04-tel-fleet-register-l21-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1190,
+        1196
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "WS2400",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "WS2400"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l21-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1221,
+        1228
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "TAS5380"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "TAS5380"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l21-5",
+      "_subject_mention": "n04-tel-fleet-register-l21-5"
+    },
+    "claim_id": "n04-tel-fleet-register-l21-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1221,
+        1228
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "TAS5380",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "TAS5380"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l22",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1302,
+        1328
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "Chinese manufacturer group"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l21-5",
+      "_subject_mention": "n04-tel-fleet-register-l22"
+    },
+    "claim_id": "n04-tel-fleet-register-l22-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1302,
+        1328
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "TAS5380",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "Chinese manufacturer group"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l21",
+      "_subject_mention": "n04-tel-fleet-register-l22"
+    },
+    "claim_id": "n04-tel-fleet-register-l22-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 22,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1302,
+        1328
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "WS2400",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "Chinese manufacturer group"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pano Aqil Cantonment",
+        "Panu Aqil Cantt."
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
+      "_coref_quotes": [
+        "entered from a contributor submission that used the \"Panu Aqil\" spelling. The archive reference submitted with it, PMV-A-4471, is the reference already carried at entry AD/2025/017, and the plate, the date and the occasion as submitted are the same."
+      ],
+      "_coref_referent": "ref:n04-tel-fleet-register-c1",
+      "_object_mention": "n04-tel-fleet-register-l54-2",
+      "_subject_mention": "n04-tel-fleet-register-l24-3",
+      "source_quote": "entered from a contributor submission that used the \"Panu Aqil\" spelling. The archive reference submitted with it, PMV-A-4471, is the reference already carried at entry AD/2025/017, and the plate, the date and the occasion as submitted are the same."
+    },
+    "claim_id": "n04-tel-fleet-register-l24",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1456,
+        1476
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Panu Aqil Cantt.",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pano Aqil Cantonment"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n04-tel-fleet-register-l24-3",
+      "n04-tel-fleet-register-l54-2"
+    ],
+    "referent_id": "ref:chunk0-n04-tel-fleet-register-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l54-2",
+      "_subject_mention": "n04-tel-fleet-register-l24-3"
+    },
+    "claim_id": "n04-tel-fleet-register-l24-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1456,
+        1476
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Panu Aqil Cantt.",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Pano Aqil Cantonment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l24-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 24,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1456,
+        1493
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Sukkur District",
+          "raw": "Sukkur District",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "cantonment"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil Cantonment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n04-tel-fleet-register-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l27",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1738,
+        1762
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "on the N-5",
+          "raw": "on the N-5",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "bypass"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Ghotki bypass"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l42",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 42,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2933,
+        2940
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "8471 AD"
+        ],
+        "operator_branch": "Air Defence"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "8471 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n04-tel-fleet-register-l42",
+      "_subject_mention": "n04-tel-fleet-register-l42"
+    },
+    "claim_id": "n04-tel-fleet-register-l42-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 42,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2933,
+        2940
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "8471 AD",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "8471 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l45",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3070,
+        3121
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "18 Feb 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Pano Aqil Cantonment",
+            "lat": 27.8578,
+            "lon": 69.1096,
+            "source": "gazetteer"
+          }
+        ],
+        "precision_class": null,
+        "proposed_alias": "Pano Aqil Cantonment",
+        "raw": "Pano Aqil Cantonment",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": 27.8578,
+        "wgs84_lon": 69.1096
+      },
+      "participants": [
+        "8471 AD"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-02-18",
+        "kind": "exact",
+        "raw": "18 Feb 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "n04-tel-fleet-register-l24-3",
+      "_subject_mention": "n04-tel-fleet-register-l42"
+    },
+    "claim_id": "n04-tel-fleet-register-l45-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3070,
+        3121
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "18 Feb 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantonment",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "8471 AD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l54",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 54,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3507,
+        3553
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-02-18",
+      "kind": "exact",
+      "raw": "18 Feb 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Panu Aqil Cantt.",
+        "raw": "Panu Aqil Cantt.",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "8477 AD"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-02-18",
+        "kind": "exact",
+        "raw": "18 Feb 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l54-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 54,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3537,
+        3553
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "site_type": "cantonment"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Panu Aqil Cantt."
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n04-tel-fleet-register-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l66",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4186,
+        4209
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designator": "22 Air Defence Regiment",
+        "echelon": "regiment",
+        "home_garrison": "Pano Aqil Cantonment",
+        "service_branch": "Air Defence"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "22 Air Defence Regiment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "22 Air Defence Regiment",
+        "47 Air Defence Regiment"
+      ],
+      "_object_mention": "n04-tel-fleet-register-l66-4",
+      "_subject_mention": "n04-tel-fleet-register-l66",
+      "source_quote": "two long-range air defence regiments at Pano Aqil Cantonment — 22 Air Defence Regiment and 47 Air Defence Regiment"
+    },
+    "claim_id": "n04-tel-fleet-register-l66-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4186,
+        4209
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "47 Air Defence Regiment",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "22 Air Defence Regiment"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n04-tel-fleet-register-l66",
+      "n04-tel-fleet-register-l66-4"
+    ],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n04-tel-fleet-register-l24-3",
+      "_subject_mention": "n04-tel-fleet-register-l66"
+    },
+    "claim_id": "n04-tel-fleet-register-l66-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4186,
+        4209
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantonment",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "22 Air Defence Regiment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n04-tel-fleet-register-l66-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4214,
+        4237
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designator": "47 Air Defence Regiment",
+        "echelon": "regiment",
+        "home_garrison": "Pano Aqil Cantonment",
+        "service_branch": "Air Defence"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "47 Air Defence Regiment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n04-tel-fleet-register-l24-3",
+      "_subject_mention": "n04-tel-fleet-register-l66-4"
+    },
+    "claim_id": "n04-tel-fleet-register-l66-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n04_tel_fleet_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4214,
+        4237
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantonment",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "47 Air Defence Regiment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-04-02",
+      "kind": "exact",
+      "raw": "2025-04-02"
+    },
+    "resolved_ref": null,
+    "source_id": "n04_tel_fleet_register",
+    "targets": null
+  }
+]

@@ -19,9 +19,20 @@ Signature: ``resolve(claims, config, prev_view=None, decisions=None) -> Partitio
 from __future__ import annotations
 
 from itertools import product
+from typing import Any
 
+from chanakya import coref_gate
+
+# resolve -> credibility is an established dependency (``rconfig`` already imports ``reliability``); the
+# layering rule this respects is the OTHER one — resolve must never import ``ingest``, which reaches the
+# LLM client. Identity is graded here by exactly the machinery every other assertion is graded by, so
+# there is no second, divergent scale to keep in step (gate G6).
+from chanakya.credibility import group_by_independence
+from chanakya.credibility.scoring import score_claims
+from chanakya.credibility.status import assign_status
 from chanakya.ontology import EdgeLaneIndex
 from chanakya.schemas import (
+    AssertionInput,
     ClaimRecord,
     ConfigBundle,
     DecisionRecord,
@@ -31,32 +42,68 @@ from chanakya.schemas import (
     pair_key,
 )
 
-from . import aliases, entities, places, scoring
+from . import aliases, cluster, entities, places, scoring
 from .aliases import AliasIndex
 from .anchor import AnchorResolution, resolve_anchors
 from .cluster import Pair, ResolveResult, finalise, resolve_entities
-from .entities import Entity, EntityGraph, as_pair, base_ref, namespace_compatible, unordered_pairs
+from .entities import (
+    Edge,
+    Entity,
+    EntityGraph,
+    as_pair,
+    base_ref,
+    mint_entity_id,
+    namespace_compatible,
+    unordered_pairs,
+)
 from .normalize import normalize
 from .places import location_attr
 from .propose import propose_candidates
-from .rconfig import ResolveConfig
+from .rconfig import (
+    BAND_POSSIBLE,
+    CEILINGS_THAT_MUST_ESCALATE,
+    ResolveConfig,
+    ceiling_withholds,
+    grade_meets_floor,
+)
 from .scoring import (
+    COREF_CLUSTER_ATTR,
+    COREF_CONTRAST_PREDICATE,
     COREF_EVIDENCE_ATTR,
+    COREF_FORMS_ATTR,
+    COREF_GATE_ATTR,
+    COREF_GATE_DETAIL_ATTR,
+    COREF_GATE_PASS,
     COREF_PREDICATE,
+    COREF_QUOTE_ATTR,
+    COREF_QUOTES_ATTR,
+    COREF_REFERENT_ATTR,
     DISTINCT_PREDICATES,
     IDENTITY_PREDICATES,
+    critical_conflict_disposition,
     has_hard_conflict,
+    identity_ledger,
 )
+
+#: The one status that licenses a fusion. Named rather than inlined so the rule reads as "identity
+#: fuses exactly when the ordinary status machine confirms it" — and so that no threshold is copied
+#: into this module (gate G6: every number stays in config).
+_IDENTITY_CONFIRMED = "confirmed"
 
 __all__ = [
     "resolve",
+    "resolve_with_types",
+    "ResolveConfig",
     "resolve_anchors",
     "AnchorResolution",
     "propose_candidates",
     "location_attr",
+    "identity_ledger",
     "IDENTITY_PREDICATES",
     "DISTINCT_PREDICATES",
     "COREF_PREDICATE",
+    "COREF_CONTRAST_PREDICATE",
+    "coref_raise_reasons",
 ]
 
 
@@ -67,6 +114,36 @@ def resolve(
     decisions: list[DecisionRecord] | None = None,
 ) -> Partition:
     """Resolve claims into entities/edges: candidate-gen → bootstrap → relational fixpoint → places."""
+    partition, _types = _resolve(claims, config, prev_view, decisions)
+    return partition
+
+
+def resolve_with_types(
+    claims: list[ClaimRecord],
+    config: ConfigBundle,
+    prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
+) -> tuple[Partition, dict[str, str]]:
+    """:func:`resolve` + the resolver's entity→ontology-type map (Stage 4 identity coverage, D11).
+
+    Identical computation to :func:`resolve`: the returned ``Partition`` is byte-for-byte the one
+    :func:`resolve` returns (gate G2). It *additionally* returns ``{entity_id: type}`` for every entity
+    the resolver knows — the complete id universe the partition's ``same_as`` / ``candidates`` /
+    ``possible`` links can reference (claim-backed entities, registry-seeded priors, and minted
+    triple-endpoints, after node-type refinement). It is a **read** of the resolver's own typing (never a
+    second, divergent notion of an entity's type), and is the ``type_of`` source
+    :func:`chanakya.view.coverage.identity_coverage` consumes.
+    """
+    return _resolve(claims, config, prev_view, decisions)
+
+
+def _resolve(
+    claims: list[ClaimRecord],
+    config: ConfigBundle,
+    prev_view: GraphView | None = None,
+    decisions: list[DecisionRecord] | None = None,
+) -> tuple[Partition, dict[str, str]]:
+    """Shared body: the identity :class:`Partition` + the resolver's post-refinement entity→type map."""
     cfg = ResolveConfig.from_bundle(config)
     lane = EdgeLaneIndex(config.ontology)  # the edge index: endpoint typing + the functional instance key
     graph = entities.build(claims, lane)
@@ -91,17 +168,31 @@ def resolve(
     place_of = places.place_matches(graph, cfg)
 
     # Effective alias table = seeded config ∪ registry classes ∪ replayed merge_adjudication(accept)s.
-    alias_idx = aliases.build(cfg.alias_table, cfg.transliteration, decisions, cfg.registry_alias_table)
+    # G19's Phase-1 half rides ``AliasIndex``'s own default now: an alias equivalence must rest on a real LINK
+    # between two DIFFERENT surface forms, never on a name being reflexively equal to itself.
+    alias_idx = aliases.build(
+        cfg.alias_table, cfg.transliteration, decisions, cfg.registry_alias_table,
+    )
 
     # veto = configured distinct-from (by name) ∪ registry distinct-from (by entity id) ∪ gazetteer-distinct
     # place pairs (Karachi-Port ≠ Port-Qasim) ∪ source-asserted distinct-from claims — computed up front so
     # it hard-vetoes an entity-level merge too, not just surfaces as an edge.
-    veto = (
-        _veto_pairs(graph, cfg, alias_idx)
-        | _registry_veto(graph, cfg)
-        | places.place_distinct_pairs(graph, cfg, place_of)
-        | _claim_distinct_pairs(graph, cfg, alias_idx)
-    )
+    # G18, EVERY RAIL: each veto channel also states its GROUND, keyed by pair, and the grounds are collected
+    # in one dict here rather than at each call site. A wall nobody can read is indistinguishable from a
+    # missing edge, and — measured — nineteen of the thirty walls drawn on the booted corpus were DERIVED
+    # findings (gazetteer, hard identifier) rendering the string "explicit do-not-merge (hard veto)": the
+    # identical text used for a genuinely curated analyst veto, so three distinct grounds collapsed into one
+    # and the word "explicit" misattributed machine inference to a person.
+    wall_grounds: dict[Pair, str] = {}
+    curated_veto = _veto_pairs(graph, cfg, alias_idx) | _registry_veto(graph, cfg)
+    place_walls, place_wall_reasons = places.place_distinct_pairs(graph, cfg, place_of)
+    stated_walls = _claim_distinct_pairs(graph, cfg, alias_idx)
+    # Least specific first: a later rail's more specific finding wins the same pair (the same precedence
+    # rule the critical/relationship rails already used between themselves).
+    wall_grounds.update({p: _curated_wall_reason() for p in curated_veto})
+    wall_grounds.update({p: _stated_wall_reason() for p in stated_walls})
+    wall_grounds.update(place_wall_reasons)
+    veto = curated_veto | place_walls | stated_walls
 
     # P3.1 (RES-1) — endpoint-as-mention. Runs BEFORE the fixpoint so ``graph.edges`` already carry entity
     # ids when ``merge_score`` runs; that is what revives the relational + source-asserted terms.
@@ -114,26 +205,184 @@ def resolve(
     # do-not-merge about a mention that only *became* an entity in the line above. Idempotent (a set union).
     # T3b-C — and add the hard-identifier rail: two entities whose names state DIFFERENT bill-of-lading /
     # contract references are a veto, not a low score (config/ontology.yaml ``identifier_patterns``).
-    veto |= _claim_distinct_pairs(graph, cfg, alias_idx) | _identifier_veto(graph, cfg)
+    # D5/D6/3A — and the declared-critical-attribute rail, now credibility-gated: two same-type entities
+    # STATING different values of a critical attribute (a different country/branch, a unique serial) WALL
+    # only when the conflict is trustworthy on both sides (each conflicting value attested by a source
+    # at/above ``critical_veto_min_grade``). Below the floor the pair is not walled — it is RAISED to the
+    # analyst (``crit_raises``, threaded into the resolver as a block-merge-and-review set), so one flaky
+    # low-grade source cannot silently shatter a well-corroborated merge (D5 take-care a).
+    crit_walls, crit_wall_reasons, crit_raises = _critical_attribute_walls(graph, cfg)
+    # D-13.8/G18 (S3, NEW code) — the RELATIONSHIP rail the judge never had. A stated `based-at`/`operated-by`
+    # conflict at overlapping times within one site class is a hard wall; an unreadable class or an undated
+    # statement takes C7's third state (no wall, no fusion, a named reason). The walls join `veto` on purpose:
+    # that channel is hard AND transitive, re-applied in `finalise`, visible to the D9 bridge alarm and DRAWN,
+    # whereas the geo veto's channel is pairwise and invisible — and G18 would pass over either.
+    rel_walls, rel_wall_reasons, rel_raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
+    stated_walls_2 = _claim_distinct_pairs(graph, cfg, alias_idx)
+    ident_walls, ident_wall_reasons = _identifier_veto(graph, cfg)
+    # THE ANALYST'S OWN WALL, and it joins ``veto`` — the hard, transitive channel — instead of merely
+    # decorating ``wall_grounds`` below. Registering the ground without registering the wall is how a
+    # human's REJECT became a comment: the pair kept its place in the review queue, the resolver went on
+    # proposing the fusion, and (wherever some other rail had drawn a wall of its own) the graph asserted
+    # "same" and "not same" about one pair at once. Computed HERE, after ``_link_endpoints``, because the
+    # endpoints an analyst adjudicates are routinely mentions only *minted* into entities by that pass —
+    # the headline pair's Army-side unit among them, so a pre-mint read finds nothing to hold apart.
+    analyst_walls = {
+        frozenset(pair)
+        for pair in cluster.learned_distinct_eid_pairs(alias_idx, graph, cfg.transliteration)
+    }
+    veto |= stated_walls_2 | ident_walls | crit_walls | rel_walls | analyst_walls
+    crit_raises = {**crit_raises, **rel_raises}
+    # …and the grounds for the four rails resolved after the endpoint pass, least-specific first. The two
+    # that had a producer (critical attribute, relationship) keep their existing precedence — relationship
+    # last, as the more specific finding — and the two that had none (hard identifier, and the second read of
+    # the stated do-not-merges) now have one.
+    wall_grounds.update({p: _stated_wall_reason() for p in stated_walls_2 if p not in wall_grounds})
+    wall_grounds.update(ident_wall_reasons)
+    wall_grounds.update(crit_wall_reasons)
+    wall_grounds.update(rel_wall_reasons)
+    # The most specific ground there is: a HUMAN decided this pair apart (a `merge_adjudication` reject/split
+    # replayed from the decision log). It outranks every derived rail — an override is not a finding (G12).
+    wall_grounds.update({p: _analyst_wall_reason() for p in analyst_walls})
 
-    # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
-    # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
-    # In-document coreference is the one signal that may also *bootstrap* — and only for the evidence
-    # categories an operator opted in, uncontradicted (see :func:`_coref_pairs`); everything it cannot
-    # justify falls back into the same raise-only queue.
-    coref_authoritative, coref_raise = _coref_pairs(graph, cfg, alias_idx, veto)
+    # The proposal channels. The offline LLM's frozen proposals never auto-merge — a model's guess about
+    # identity is not evidence. In-document coreference may *bootstrap* for the evidence categories an
+    # operator opted in, uncontradicted (see :func:`_coref_pairs`), and otherwise falls back to raising.
+    #
+    # A source-stated ``same-as`` is now graded rather than categorically demoted: it merges when — and only
+    # when — the ORDINARY status machine confirms it on the ordinary corroboration terms
+    # (:func:`_identity_confirmations`), and raises in every weaker case, which is still the common one.
+    # This removes the split that had coreference bootstrapping off an explicit statement of equivalence
+    # while the extractor's ``same-as`` — the same evidence, often the same sentence — could never merge
+    # however many sources agreed. Confirmed pairs are subtracted from the raise-only set: a pair the
+    # machine has adjudicated must not also sit on the analyst's desk as an open question.
+    coref_authoritative, coref_raise, coref_declined, coref_walled = _coref_pairs(
+        graph, cfg, alias_idx, veto, lane, place_of
+    )
+    asserted_raise, asserted_walled = _identity_pairs(graph, cfg, alias_idx, veto)
+    asserted_confirmed, asserted_confidence = _identity_confirmations(
+        claims, config, graph, cfg, alias_idx, veto
+    )
+    asserted_raise -= asserted_confirmed
     raise_only = (
         _llm_pairs(graph, cfg, alias_idx, decisions)
-        | _identity_pairs(graph, cfg, alias_idx, veto)
+        | asserted_raise
         | coref_raise
     )
+    # Both channels that can state an identity a hard wall refuses. Merged here so the escalate half has one
+    # definition: an assertion the resolver overrode may not vanish, whichever pass produced it.
+    walled_assertions = {**asserted_walled, **coref_walled}
+    # D-13.19's contrastive channel: a same-document STATED contrast caps the pair at its DECLARED band — it
+    # reaches the analyst with its licensing quote and can never auto-merge. Routed through the same
+    # block-merge-and-review channel as every other cap, so "not automatically" is expressed once. ABSENCE of
+    # a contrast stays NEUTRAL: it is never a prior *for* merging either.
+    #
+    # The declared band travels WITH the pairs (``raise_ceilings``), because this is the one rail on that
+    # channel whose ceiling is a config value rather than a fixed one. The channel was band-blind, so
+    # ``contrast_ceiling: possible`` and ``: probable`` produced identical behaviour while the reason prose
+    # dutifully quoted whichever was configured — the config file describing a control the system did not
+    # have, and the analyst reading a band nobody computed. Shipped value is ``probable``, so this is
+    # byte-unchanged on the shipped configuration; what changes is that the other legal value now works.
+    contrast_caps = _contrast_ceilings(graph, cfg, alias_idx)
+    crit_raises = {**crit_raises, **coref_declined, **contrast_caps}
+    raise_ceilings = {p: cfg.earned_identity.contrast_ceiling for p in contrast_caps}
+    # …and if the declared band takes the pair OFF THE QUEUE, the escalation is re-routed rather than lost.
+    #
+    # ``contrast_ceiling: possible`` is a legal, honoured operator choice and it withholds the queue place as
+    # well as the fusion — so the pair was filed on the silent watch-list. For a NAME coincidence that triage
+    # is right (it has earned no attention); here the ground is a SOURCE going out of its way to distinguish
+    # two mentions the score says are one thing, which is either an extraction error or deception and always a
+    # finding. The refuse half held and the escalate half was lost. Each endpoint now gets a named Known Gap
+    # instead of a queue item, through a channel deliberately separate from ``identity_refusals``: that one
+    # unassesses the node, and here holding the pair apart is the CORRECT outcome — neither node is in doubt.
+    contrast_withheld = (
+        contrast_caps
+        if cfg.earned_identity.contrast_ceiling == BAND_POSSIBLE
+        and "contrast_ceiling" in CEILINGS_THAT_MUST_ESCALATE
+        else {}
+    )
+    # D-13.17/C4: the licensing evidence, finally SURFACED. It was stamped on the claim and read nowhere, so
+    # every justification of raise-only ("the analyst is handed the exact sentence") described a screen nobody
+    # could see — and with the gates in place this queue is load-bearing, not a fallback.
+    coref_reasons = coref_raise_reasons(graph, cfg, coref_authoritative, coref_raise, alias_idx)
 
-    result = resolve_entities(graph, cfg, alias_idx, veto, raise_only, coref_authoritative)
+    # RK-COREF item 11 — THE ORDERING FIX. Place identity is decided BEFORE the fixpoint and joins the
+    # bootstrap, so a place merge is visible to ``relational_score``: two units based at
+    # differently-named-but-identical sites now genuinely share a neighbour key. Ran afterwards (as it did),
+    # a place merge could never scaffold anything, so spine/13 §6's "clean anchor the instance layer
+    # crystallizes onto" was mechanically not one. This is also what makes the name cap survivable rather
+    # than merely strict — a pair can now EARN the one extra signal the cap asks for.
+    place_auto, place_hitl = places.place_merge_pairs(graph, cfg, alias_idx, veto, place_of)
+    place_authoritative: set[Pair] = {frozenset(p) for p in place_auto}
+    raise_only |= {frozenset(p) for p in place_hitl}
+
+    result = resolve_entities(
+        graph, cfg, alias_idx, veto, raise_only, coref_authoritative | asserted_confirmed,
+        raise_walls=crit_raises, raise_ceilings=raise_ceilings,
+        place_identity=place_authoritative,
+        rekey_identity=_refined_rekey_pairs(graph),
+    )
     result.candidates.extend(ambiguous)  # an endpoint with >1 irreconcilable match is adjudicated, never guessed
-    places.augment(result, graph, cfg, alias_idx, veto, place_of)  # reuses the same bands + veto
+    # G18: the wall must be READABLE. A wall nobody can read is indistinguishable from a missing edge, so the
+    # reason rides the drawn do-not-merge edge (``view/pipeline._resolution_edges``).
+    #
+    # EVERY DERIVED RAIL, not just the relationship one. G18 landed with the relationship wall and wired only
+    # that rail's reasons, so the attribute rail — the one that walls two same-named organisations stating
+    # China and Pakistan, the costliest over-merge in an operator-scoped ORBAT — drew its do-not-merge edge
+    # with the generic fallback and no ground named. Two refusals with two different causes read identically
+    # to the analyst, which is the "fixed default wearing a rationale's clothes" failure: every "a reason
+    # exists" check passes and the reason instructs nobody. The rails are merged in a fixed order so a pair
+    # walled by both gets a stable reason (the relationship rail last, as the more specific finding) — that
+    # ordering is now applied once, when ``wall_grounds`` is built above, and every rail that can draw a wall
+    # is in it: curated config/registry, source-stated, gazetteer place, hard identifier, critical attribute,
+    # relationship conflict, and the analyst's own replayed reject/split.
+    for _pair, _why in sorted(wall_grounds.items(), key=lambda kv: sorted(kv[0])):
+        _a, _b = sorted(_pair)
+        result.wall_reasons[result.key_for(_a, _b)] = _why
+    # …and the ESCALATE half for the same collision. A wall that outranked a source's stated identity owes each
+    # endpoint a named Known Gap, or the assertion the resolver overrode reached nobody. ``setdefault``, not
+    # ``update``: ``fusion_blocked``'s own type/namespace refusal is the more specific finding where both fire,
+    # and ``finalise`` prunes any entry whose endpoints ended up in one cluster along some other chain.
+    for pair, what_missing in sorted(walled_assertions.items(), key=lambda kv: sorted(kv[0])):
+        a, b = sorted(pair)
+        result.identity_refusals.setdefault(result.key_for(a, b), what_missing)
+    # The re-routed escalation for a source-stated contrast the declared band took off the queue (above).
+    for pair, why in sorted(contrast_withheld.items(), key=lambda kv: sorted(kv[0])):
+        result.withheld_escalations.setdefault(
+            result.key_for(*sorted(pair)),
+            "a SOURCE distinguishes this mention from another that the identity score reads as the SAME "
+            "entity, and the configured band withholds the pair from the review queue — so this record is the "
+            "escalation. The merge is refused (correctly). What is missing is a decision on WHY the two "
+            "readings disagree: an enumeration listing one thing twice, an extraction error, or a deliberate "
+            "conflation. Needed: an analyst adjudication, or a second source that settles whether these are "
+            f"one thing. The document's own words: {why}",
+        )
+    # A raised coreference link keeps its licensing evidence on the queue item — BESIDE any reason the
+    # resolver already recorded, never instead of it. The two answer different questions and the analyst needs
+    # both: the resolver's reason says why the merge was WITHHELD (a critical conflict, a cap), the coref
+    # reason says why it was PROPOSED and quotes the sentence that proposed it. `setdefault` looked safe and
+    # silently dropped the quote the moment any cap fired on the same pair — which, with the name cap
+    # unconditional, is the common case for a coreference link between two similar names. Losing the sentence
+    # is what makes raise-only fictional (D-13.17).
+    for pair, why in sorted(coref_reasons.items(), key=lambda kv: sorted(kv[0])):
+        a, b = sorted(pair)
+        key = result.key_for(a, b)
+        existing = result.candidate_reasons.get(key)
+        result.candidate_reasons[key] = f"{existing}\n\nALSO: {why}" if existing else why
     finalise(result, graph, cfg, veto, alias_idx)  # reconcile all merges into one flat, veto-guarded map
+    # F4 — a MISSING discriminator is not permission to cross a wall. AFTER ``finalise``, so the pairs and
+    # the walls are both canonical and the caution names the records the analyst is actually looking at
+    # (before it, the raw ids that later merge away would be quoted at them). It APPENDS to whatever reason
+    # the caps already wrote rather than competing with them in a precedence chain — the two say different
+    # things and the analyst needs both.
+    _flag_two_hop_wall_bridges(result, graph, cfg)
 
-    return _to_partition(claims, result, mention, minted, place_of, lane, graph)
+    partition = _to_partition(claims, result, mention, minted, place_of, lane, graph)
+    # The resolver's own typing, for Stage-4 coverage (D11): every entity id the partition can reference
+    # — claim-backed, registry-seeded, or minted endpoint — mapped to its refined ontology type. A read,
+    # not a re-derivation: ``graph.entities`` is the exact universe the merge decisions scored over.
+    type_map = {eid: ent.etype for eid, ent in graph.entities.items()}
+    return partition, type_map
 
 
 # ── the entity registry as a resolution prior (P3.0) ───────────────────────────────────────────
@@ -250,8 +499,16 @@ def _edge_allowed_types(graph: EntityGraph, lane: EdgeLaneIndex) -> dict[str, se
     return out
 
 
+#: ``(base type, surface form) → the entity id minted from that pair`` (RK-NAMECUT/N1). The explicit
+#: replacement for re-spelling ``ent:<type>:<form>`` and asking whether the graph has that key: it is the
+#: same question, asked of an index the mint maintains rather than of the id string's shape. Keyed on the
+#: MINT-time base type (:attr:`entities.Entity.base_type`), because ``etype`` has already been refined in
+#: place by the time anything consults this.
+type MintIndex = dict[tuple[str, str], str]
+
+
 def _settle_contradiction(
-    form: str, matches: list[str], node_type: str, graph: EntityGraph
+    form: str, matches: list[str], node_type: str, graph: EntityGraph, minted_ids: MintIndex
 ) -> str | None:
     """Where a contradictorily-typed form resolves once the ontology has ruled out a type (T3b-B).
 
@@ -267,13 +524,18 @@ def _settle_contradiction(
     which is what the registry is *for*: the extractor emits a surface form, the registry says which
     stable id owns it. Failing that, the entity a claim already declared under the surviving type. If
     neither is unambiguous the original refusal stands and the mention stays an untyped tier-3 mention.
+
+    ``minted_ids`` is that last lookup, as an explicit ``(base type, surface form) → entity id`` index
+    (RK-NAMECUT/N1). It used to be done by re-spelling ``ent:<type>:<form>`` and testing membership —
+    correct only for as long as the id format never changes, and note it has to be the type the mint
+    *keyed* under, not ``etype``: ``_refine_node_types`` has already re-typed claim-backed entities in
+    place by the time this runs, so reading the live type here would miss exactly the refined entities.
     """
     of_type = [m for m in matches if graph.entities[m].etype == node_type]
     registry = [m for m in of_type if graph.entities[m].registry]
     if len(registry) == 1:
         return registry[0]
-    declared = f"ent:{node_type}:{form}"
-    return declared if declared in graph.entities else None
+    return minted_ids.get((node_type, form))
 
 
 def _spans_veto(matches: list[str], veto: set[Pair]) -> bool:
@@ -320,6 +582,14 @@ def _link_endpoints(
     mention: dict[str, str] = {}   # surface form → entity id it resolves to
     minted: dict[str, str] = {}    # newly minted entity id → its ontology node type
     ambiguous: list[tuple[str, str]] = []
+    # The mint's own key index (RK-NAMECUT/N1) — what ``_settle_contradiction`` consults instead of
+    # re-spelling the id and testing membership. Kept LIVE (each mint below registers itself) rather than
+    # snapshotted, so it says exactly what "this id already exists" said before.
+    minted_ids: MintIndex = {
+        (ent.base_type, ent.name): eid
+        for eid, ent in graph.entities.items()
+        if ent.base_type is not None
+    }
 
     for form in surface_forms:
         if form in graph.entities:
@@ -344,7 +614,7 @@ def _link_endpoints(
             narrowed = types & allowed_types.get(form, set())
             if len(narrowed) != 1:
                 continue
-            settled = _settle_contradiction(form, matches, next(iter(narrowed)), graph)
+            settled = _settle_contradiction(form, matches, next(iter(narrowed)), graph, minted_ids)
             if settled is None:
                 continue
             mention[form] = settled
@@ -355,10 +625,14 @@ def _link_endpoints(
             continue  # un-typable (or contradictorily typed) → stays an untyped tier-3 mention
 
         node_type = next(iter(types))
-        eid = f"ent:{node_type}:{form}"
+        eid = mint_entity_id(node_type, form)
         if eid not in graph.entities:
-            graph.entities[eid] = Entity(eid=eid, etype=node_type, name=form)
+            # ``base_type`` freezes the type this id was keyed under. ``_refine_node_types`` runs again
+            # immediately after this pass and may re-type the entity in place; from then on the mint key is
+            # recoverable only from here (it used to be read back out of the id string — RK-NAMECUT/N1).
+            graph.entities[eid] = Entity(eid=eid, etype=node_type, name=form, base_type=node_type)
             minted[eid] = node_type
+            minted_ids[(node_type, form)] = eid
         mention[form] = eid
 
     for e in graph.edges:  # rewrite in place: the fixpoint scores over entity ids from here on
@@ -402,9 +676,122 @@ def _refine_node_types(
     return refined
 
 
+def _refined_rekey_pairs(graph: EntityGraph) -> set[Pair]:
+    """ONE surface string that two mint sites keyed under two different base types → one entity (T3b-A tail).
+
+    An entity id is an opaque handle minted from the base type the *claim* declared: ``ent:<base>:<name>``.
+    :func:`_refine_node_types` then re-types the entity in place and deliberately leaves the id alone (ids are
+    referenced by frozen bundles). Where two claims mention the same string under two different base types —
+    a province arriving once as a ``based-at`` object (range ``basing_site``) and once as an
+    ``area_of_operations`` — refinement makes their TYPES agree while their ids stay in two namespaces, and
+    nothing merged them.
+
+    Measured, booted corpus: FIVE duplicate place nodes (Punjab, Sindh, and three air-defence sectors), each
+    splitting one place's geocode from its edges — one copy carries the gazetteer coordinates, the other
+    carries the connections. Zero at baseline: the exact-name bootstrap used to fuse them, and the name cap —
+    correctly, for a name coincidence — now withholds a pair that agrees on nothing but its name.
+
+    This is not a name coincidence, and that is the whole point. There is ONE mention string here, recorded
+    twice by two mint sites; the "two" entities are a keying artefact of the base type each claim happened to
+    declare. So it is an EARNED trigger (``TRIGGER_REKEY``), like an alias link or a curated place anchor, and
+    the cap does not touch it. It is also strictly narrower than the exact-name bootstrap it revives: the names
+    must be byte-equal, the refined types must be equal, and at least one side's mint-time base type must
+    disagree with its own refined type — i.e. refinement must actually have moved something. Vetoes are
+    unaffected (the trigger is consulted after them, in both phases).
+
+    The mint-time base type is read from :attr:`entities.Entity.base_type`, NOT recovered from the id string
+    (RK-NAMECUT/N1). This is the one place in the system where an id's FORMAT used to drive a merge decision,
+    so it is the coupling that mattered most: while it stood, re-keying an id could silently move which pairs
+    fused. An entity with no ``base_type`` — a registry stable id, a synthesised id — has no mint key for a
+    refinement to disagree with and is skipped, exactly as the unparseable id shape used to be.
+    """
+    by_key: dict[tuple[str, str], list[str]] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        if ent.base_type is None:
+            continue  # a registry stable id / a synthesised id has no base type to disagree with
+        by_key.setdefault((ent.name, ent.etype), []).append(eid)
+    out: set[Pair] = set()
+    for (_name, etype), eids in sorted(by_key.items()):
+        if not eids or eids[1:] == []:
+            continue  # a single id for this (name, type) — nothing duplicated
+        if all(graph.entities[eid].base_type == etype for eid in eids):
+            continue  # nothing was refined: two same-named, same-typed ids cannot both be the mint's own key
+        out.update(frozenset(p) for p in unordered_pairs(sorted(eids)))
+    return out
+
+
 # ── T3b-C: the hard-identifier rail (a bill of lading is an identity, not a name) ───────────────
 
-def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
+# ── G18/B4: one truthful text per rail that can draw a wall ─────────────────────────────────────
+#
+# Three distinct grounds used to render one string — "explicit do-not-merge (hard veto)" — and only one of
+# them was explicit. The word matters: it tells an analyst a *person* already ruled on this pair, so applying
+# it to a machine inference both misattributes the decision and removes the analyst's reason to check it. Each
+# rail now says what it is and, where it is derived, says so and names what would correct it.
+
+def _curated_wall_reason() -> str:
+    """The one rail where "explicit" is TRUE: a curated do-not-merge in config/entities.yaml or the
+    ``distinct_from`` alias block. A human wrote this pair down; the resolver only instantiated it."""
+    return (
+        "explicit curated do-not-merge — this pair is written down as two different things in the curated "
+        "reference data (the entity registry / the distinct-from table), so no amount of resemblance may fuse "
+        "it. These are the flagship traps of the subject (an export designator that is NOT the design it is "
+        "usually printed beside, two commands of different services). To overturn it, change the curated "
+        "entry: the resolver will not, and an analyst merge is the only override."
+    )
+
+
+def _stated_wall_reason() -> str:
+    """A SOURCE went out of its way to say "this is not that" — the cheapest high-value evidence there is.
+
+    Distinct from the curated rail because the authority is different: a document, quotable, and the claim is
+    on the drawn edge's ``claim_ids`` — so unlike the derived rails, this one's ground is one click from the
+    sentence. Deliberately ungraded (see :func:`_claim_distinct_pairs`): the cost of honouring a wrong one is
+    two nodes an analyst can still merge.
+    """
+    return (
+        "a SOURCE states these are different — a document in evidence asserts a do-not-merge between these "
+        "two mentions (the cited claim is the sentence). Not a curated rule and not a machine inference: an "
+        "author disambiguating their own subject. Honoured ungraded, because the cost of honouring a wrong one "
+        "is two nodes an analyst can merge, while the cost of ignoring a right one is a fused distinction "
+        "nobody can recover."
+    )
+
+
+def _analyst_wall_reason() -> str:
+    """An ANALYST decided this pair apart — a ``merge_adjudication`` reject/split replayed from the log.
+
+    The most specific ground there is, and it outranks every derived rail: an override is a decision, not a
+    finding (G12). It also explains a wall that no config file mentions, which is otherwise the most
+    confusing wall an analyst can meet.
+    """
+    return (
+        "an ANALYST adjudicated these apart — a proposed merge was rejected (or an existing one split) in the "
+        "decision log, and that decision is replayed on every rebuild, so the wall holds without anyone "
+        "having to edit config. This is a human judgement about these two mentions, not a machine finding; "
+        "the audit trail is the adjudication record itself."
+    )
+
+
+def _identifier_wall_reason(ident_a: str, ident_b: str) -> str:
+    """Analyst-facing ground for the hard-identifier wall (T3b-C) — a DERIVED finding, and it says so.
+
+    Deliberately never the word *explicit*: nobody curated this pair. The resolver read a bill-of-lading /
+    contract reference out of each name and found two different ones. Naming the two references is most of
+    the value — an analyst who thinks the wall is wrong needs to know *which* identifiers were compared,
+    because the usual cause of a wrong one is an extraction that swept a reference off the wrong line.
+    """
+    return (
+        f"held apart by two DIFFERENT stated hard identifiers ({ident_a} ≠ {ident_b}). A bill-of-lading or "
+        f"contract reference is an identity, not a description, so two different ones are two different "
+        f"things — fusing them would collapse two import events into one and silently corrupt the "
+        f"supply-chain count. This wall is DERIVED by the resolver from the two names; it is not a curated "
+        f"do-not-merge. If the two references belong to one shipment, the extraction is what is wrong, and an "
+        f"analyst merge overrides this (T3b-C)."
+    )
+
+
+def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> tuple[set[Pair], dict[Pair, str]]:
     """Two same-type entities stating **different** hard identifiers → a hard veto, drawn like any other.
 
     ``config/ontology.yaml`` declares, per node type, the patterns that make a name a hard identifier
@@ -417,6 +804,11 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
 
     Absence is not disagreement (the ``has_hard_conflict`` doctrine): a prose-named contract event
     states no reference and is never vetoed by this rail. A type declaring no patterns is unaffected.
+
+    Returns ``(walls, reasons)``. The reasons are what G18 asks of *every* rail that can draw a wall, and
+    this one had none: its drawn edge carried the generic "explicit do-not-merge" label, which is false twice
+    over — the finding is derived rather than explicit, and it named neither of the two identifiers it
+    compared. Six of the thirty drawn walls on the booted corpus came from here.
     """
     ntx = cfg.node_types
     by_type: dict[str, list[tuple[str, str]]] = {}
@@ -425,11 +817,446 @@ def _identifier_veto(graph: EntityGraph, cfg: ResolveConfig) -> set[Pair]:
         if ident is not None:
             by_type.setdefault(ent.etype, []).append((eid, ident))
     out: set[Pair] = set()
+    reasons: dict[Pair, str] = {}
     for members in by_type.values():
         for (a, ident_a), (b, ident_b) in unordered_pairs(members):
             if ident_a != ident_b:
-                out.add(frozenset((a, b)))
+                pair = frozenset((a, b))
+                out.add(pair)
+                reasons[pair] = _identifier_wall_reason(*sorted((ident_a, ident_b)))
+    return out, reasons
+
+
+# ── D5/D6/3A: the declared-critical-attribute rail, credibility-gated (a serial/branch clash walls) ──
+
+def _flag_two_hop_wall_bridges(result: ResolveResult, graph: EntityGraph, cfg: ResolveConfig) -> None:
+    """Say so when ONE fragment is proposed as the same entity as BOTH sides of a hard wall (F4).
+
+    **The measured shape.** ``ent:unit:Pakistan Army Air Defence (PAAD) unit`` is a single-claim mention
+    that states no ``service_branch``. It is a live queue candidate against ``unit_hq9b`` (branch *Air
+    Force*) AND against ``unit_paad`` (branch *Pakistan Army*) — two formations the critical-attribute rail
+    holds apart with a hard do-not-merge wall. Each card read as an ordinary merge question, so a branchless
+    fragment was an adjudicable bridge across a curated wall, and the absence of the one field that would
+    decide it was doing the work of permission.
+
+    The D9 alarm does not catch this and is right not to: it fires on a DIRECT straddle (the union itself
+    fusing two walled clusters), and neither of these unions does that — ``finalise`` would refuse whichever
+    came second. So the wall holds mechanically. What was missing is that the analyst was never told the two
+    proposals are mutually exclusive, nor that the fragment is silent on the discriminator.
+
+    Nothing is withheld here: both pairs stay adjudicable, because settling which formation the mention names
+    is exactly the judgement a human is in the loop for. What changes is that the card says what it is. The
+    missing attribute is NAMED where the two walled ends genuinely disagree on a declared-critical field and
+    the fragment states none — derived from the three records, never a fixed sentence.
+    """
+    walls = {frozenset(p) for p in result.distinct_from}
+    counterparts: dict[str, set[str]] = {}
+    for a, b in result.candidates:
+        counterparts.setdefault(a, set()).add(b)
+        counterparts.setdefault(b, set()).add(a)
+
+    def shown(eid: str) -> str:
+        """Name the record the ANALYST is looking at. Matching stays on raw ids — several raw mentions can
+        collapse onto one drawn node and a canonical-only scan would miss the straddle — but quoting a raw
+        id that merged away names something the analyst cannot find on the graph."""
+        return result.canonical.get(eid, eid)
+
+    for fragment in sorted(counterparts):
+        for x, y in unordered_pairs(sorted(counterparts[fragment])):
+            if frozenset((x, y)) not in walls:
+                continue
+            missing = _undecided_discriminators(graph, cfg, fragment, x, y)
+            names = (
+                f" '{shown(fragment)}' states no {', '.join(missing)}, which is the field that would decide it."
+                if missing
+                else ""
+            )
+            for other, twin in ((x, y), (y, x)):
+                key = pair_key(*sorted((fragment, other)))
+                caution = (
+                    f"CAUTION — this is a two-step bridge across a hard wall. '{shown(fragment)}' is ALSO "
+                    f"proposed as the same entity as '{shown(twin)}', and '{shown(other)}' and "
+                    f"'{shown(twin)}' are held apart by a do-not-merge wall. At most one of the two proposals "
+                    "can be true, so accepting this one is choosing a side, not confirming a resemblance."
+                    + names + " A missing discriminator is not permission to cross a wall: if nothing states "
+                    "which of the two this mention belongs to, the correct outcome is to leave it as its own "
+                    "record."
+                )
+                existing = result.candidate_reasons.get(key)
+                result.candidate_reasons[key] = f"{existing}\n\nALSO: {caution}" if existing else caution
+
+
+def _undecided_discriminators(
+    graph: EntityGraph, cfg: ResolveConfig, fragment: str, x: str, y: str
+) -> list[str]:
+    """Declared-critical attributes on which the two walled ends disagree and the fragment is silent."""
+    ef, ex, ey = graph.entities.get(fragment), graph.entities.get(x), graph.entities.get(y)
+    if ef is None or ex is None or ey is None:
+        return []
+    out = []
+    for attr in sorted(set(cfg.critical_role_attrs(ex.etype)) | set(cfg.critical_role_attrs(ey.etype))):
+        vx, vy = (ex.attrs or {}).get(attr), (ey.attrs or {}).get(attr)
+        if vx and vy and vx != vy and not (ef.attrs or {}).get(attr):
+            out.append(attr)
     return out
+
+
+def _critical_attribute_walls(
+    graph: EntityGraph, cfg: ResolveConfig
+) -> tuple[set[Pair], dict[Pair, str], dict[Pair, str]]:
+    """Split same-type declared-critical conflicts into hard **walls** and analyst **raises** (D5 + 3A).
+
+    Returns ``(walls, wall_reasons, raises)``. ``wall_reasons`` used not to exist here, and its absence was
+    the sharpest surviving hole in the escalate half of the non-negotiable — see the ``disposition == "wall"``
+    branch below.
+
+    The D5 wall, generalised from the geographic (``geo_conflict_km``) and hard-identifier
+    (:func:`_identifier_veto`) rails to *any* attribute the ontology's ``attribute_roles`` declares
+    ``critical`` for a type. Stage 3A adds the credibility floor of D5 take-care (a): a stated critical
+    disagreement is a hard **wall** only when it is *trustworthy on both sides* — each side's conflicting
+    value attested by a source graded at/above ``critical_veto_min_grade``. Below the floor the pair is a
+    **raise** (returned separately, mapped to a human-legible reason): one flaky low-grade source must not
+    silently shatter a well-corroborated merge, so the pair goes to the analyst as a ``probable`` candidate
+    rather than being walled — or silently merged.
+
+    * ``walls`` join the veto set beside the identifier rail, so transitive enforcement, the before-scoring
+      guard and the drawn do-not-merge edge are all handled by the existing machinery
+      (``cluster.vetoed`` / ``violates_veto_transitively``).
+    * ``raises`` are threaded to the resolver as its ``raise_walls`` set: blocked from bootstrap/auto-merge
+      *and* forced into the HITL candidate queue (never dropped).
+
+    Reuses :func:`scoring.critical_conflict_disposition` (same-type, absence ≠ conflict), so "what counts
+    as a critical disagreement" keeps one definition. A type that declares no critical attribute is
+    unaffected; a pair where either side is silent is never walled. Floor OFF ⇒ every conflict is credible
+    ⇒ ``raises`` is empty and ``walls`` is exactly the pre-Stage-3A unconditional veto (byte-unchanged).
+    """
+    floor = cfg.critical_veto_min_grade
+    by_type: dict[str, list[str]] = {}
+    for eid, ent in sorted(graph.entities.items()):
+        # The enumeration is wider than the ``critical`` rows: a type that declares no critical attribute may
+        # still declare a ``constitutive`` one (C6) or hold an unreadable wall-eligible slot (C7), and both
+        # must bind the fusion path.
+        interesting = bool(cfg.critical_role_attrs(ent.etype)) or bool(cfg.constitutive_attrs(ent.etype))
+        if interesting or cfg.earned_identity.normalization_required_attrs:
+            by_type.setdefault(ent.etype, []).append(eid)
+    walls: set[Pair] = set()
+    wall_reasons: dict[Pair, str] = {}
+    raises: dict[Pair, str] = {}
+    for eids in by_type.values():
+        for a, b in unordered_pairs(eids):
+            ea, eb = graph.entities[a], graph.entities[b]
+            disposition, attrs = critical_conflict_disposition(ea, eb, cfg)
+            if disposition == "wall":
+                walls.add(frozenset((a, b)))
+                # THE REASON SURVIVES THE WALL. ``critical_conflict_disposition`` computes exactly which
+                # critical attributes are in credible disagreement and hands them back; this branch used to
+                # drop them on the floor while the *raise* branch two lines below kept them. So the softer
+                # outcome explained itself and the harder one did not, and the hardest refusal in the system
+                # reached the analyst as ``view/pipeline``'s fallback string: "explicit do-not-merge (hard
+                # veto)". No attribute named, no values quoted, identical on every rail — a curated veto an
+                # analyst wrote and a derived one the system computed read the same, which is precisely the
+                # distinction ``wall_reasons`` was introduced to draw (G18: "a wall the system *derived* does
+                # [need explanation]: a stated relationship conflict … is a finding, and a finding with no
+                # stated grounds is indistinguishable from a missing edge").
+                #
+                # The cost was not cosmetic. This is the rail that walls two same-named trading orgs stating
+                # China and Pakistan — the costliest over-merge for an operator-scoped ORBAT, and the one the
+                # analyst most needs to adjudicate. It fired correctly and told nobody why, so the analyst
+                # could not tell it from a pair that never resembled each other. Refusing to assert is half
+                # the non-negotiable; this is the other half.
+                wall_reasons[frozenset((a, b))] = _critical_wall_reason(attrs, ea, eb, floor)
+                continue
+            if disposition == "raise":
+                raises[frozenset((a, b))] = _critical_raise_reason(attrs, floor)
+                continue
+            # C7's THIRD STATE, on the attribute rail. An unreadable stated value on a slot we intend to wall
+            # on is neither a conflict nor an agreement — so it may not wall (that would shatter a legitimate
+            # merge) and it may not FUSE (that would assert an identity the evidence does not support). It
+            # joins the block-merge-and-review channel, which is what makes the gap *bind* rather than merely
+            # annotate — the rk-14 probe bug generalised: the prototype named the missing operator gap and
+            # then drew the cross-army relocation anyway.
+            unreadable = scoring.unnormalizable_critical_values(ea, eb, cfg)
+            if unreadable:
+                raises[frozenset((a, b))] = _unnormalizable_reason(unreadable)
+                continue
+            # C6's negative half: a difference on a ``constitutive`` attribute is DISTINCTNESS. Raised rather
+            # than walled, because the strength of a constitutive difference depends on the attribute being
+            # read correctly and a stated value we have not grade-checked should not shatter a cluster.
+            differing = scoring.constitutive_difference(ea, eb, cfg)
+            if differing:
+                raises[frozenset((a, b))] = _constitutive_difference_reason(differing)
+    return walls, wall_reasons, raises
+
+
+def _critical_wall_reason(
+    attrs: tuple[str, ...], a: Entity, b: Entity, floor: str | None
+) -> str:
+    """Why a credible critical-attribute disagreement holds this pair apart, in words an analyst can act on.
+
+    Quotes the **stated values on both sides**, because the attribute name alone is not the analyst's
+    instruction — "these disagree on origin_country" and "one source says China, the other Pakistan" ask for
+    different next actions, and only the second says which document to go and read. The values come off the
+    entities, never from a table, so a rail added later cannot get a stale copy (gate G6: prose only, no
+    thresholds, no code literals).
+
+    Deliberately different prose from :func:`_critical_raise_reason`: a wall and a raise are two different
+    verdicts about the same disagreement (credible on both sides vs. not), and if they read alike the analyst
+    cannot tell which one the system reached.
+    """
+    which = ", ".join(attrs) if attrs else "a critical attribute"
+    at = f" at/above the credibility floor ({floor})" if floor else ""
+    stated = "; ".join(
+        f"{k}: {a.attrs.get(k)!r} vs {b.attrs.get(k)!r}"
+        for k in (attrs or ())
+        if a.attrs.get(k) is not None or b.attrs.get(k) is not None
+    )
+    detail = f" Stated values — {stated}." if stated else ""
+    return (
+        f"held apart by a stated critical-attribute contradiction on {which}: both sides state the attribute, "
+        f"the values disagree, and each side's value is attested{at}, so this is a contradiction between two "
+        f"credible sources rather than one flaky reading.{detail} These are therefore not one entity however "
+        f"alike their names look — for an operator-scoped order of battle a wrong fusion here silently moves "
+        f"an asset from one army to another and every downstream count inherits it. The resemblance is real "
+        f"and is recorded: adjudicate which value is right, or have a source state one value for both "
+        f"mentions, and the pair resolves on its merits (D5/D6)."
+    )
+
+
+def _unnormalizable_reason(attrs: tuple[str, ...]) -> str:
+    """C7's third state on the attribute rail: no wall, no fusion, a named gap. Prose only (gate G6)."""
+    which = ", ".join(attrs)
+    return (
+        f"unreadable critical value on {which} — both sides state it, the values differ, and at least one is "
+        f"not a member of any declared equivalence class, so the system cannot tell a genuine disagreement "
+        f"from a spelling. Walling on it would shatter a legitimate merge ('PAF' vs 'Pakistan Air Force'); "
+        f"letting the pair confirm would assert an identity the evidence does not support. So it does "
+        f"NEITHER: the merge is withheld and the pair is raised with the missing normalisation named. Add the "
+        f"stated form to that attribute's equivalence classes and the pair resolves on its merits (C7)."
+    )
+
+
+def _constitutive_difference_reason(attrs: tuple[str, ...]) -> str:
+    """C6's negative half: a difference on a CONSTITUTIVE attribute is distinctness. Prose only (G6)."""
+    which = ", ".join(attrs)
+    return (
+        f"constitutive difference on {which} — this attribute is part of what the instance IS (a presence "
+        f"*is* its operator, its design, its site and its window), so it cannot change without the thing "
+        f"being a DIFFERENT instance. A difference here is therefore evidence of distinctness, not of a "
+        f"stale reading, and it is not something a later report can 'update'. The merge is withheld and the "
+        f"pair is raised: if these really are one instance, one of the two stated constitutive values is "
+        f"wrong, and that is the question to adjudicate (C6)."
+    )
+
+
+def _critical_raise_reason(attrs: tuple[str, ...], floor: str | None) -> str:
+    """The analyst-facing rationale for a below-floor critical-conflict raise (D5 take-care a)."""
+    which = ", ".join(attrs) if attrs else "a critical attribute"
+    at = f" (grade < {floor})" if floor else ""
+    return (
+        f"critical-attribute conflict on {which} below the source-credibility floor{at}: the conflicting "
+        f"value is asserted only by below-floor sources on at least one side, so the difference is not "
+        f"trustworthy enough to wall — raised for analyst adjudication (D5)."
+    )
+
+
+# ── D-13.8 / G18: the relationship-conflict WALL (NEW code — the judge had no relationship rail) ─
+
+#: The type stamped on a mention nothing in the document declared — a bare relation endpoint. It COUNTS as
+#: type-compatible in the anaphor gate, which is the clause that makes an under-reach fail the gate.
+_UNKNOWN_ETYPE = "unknown"
+#: "Exactly one type-compatible antecedent" — the cardinality the positive gate demands, named so the test
+#: reads as the rule rather than as an integer (gate G6 bans numeric literals in scoring code).
+_ONE_ANTECEDENT = 1
+
+#: The predicate whose claim was *stated by a source* rather than derived by the rebuild or a proposer.
+#: A derived basing is not a source saying "this unit is there", so it may never wall a merge on its own.
+_STATED_KIND = "observation"
+
+
+def _intervals_overlap(a: tuple[str | None, str | None], b: tuple[str | None, str | None]) -> bool:
+    """Do two ISO validity intervals overlap? An UNKNOWN bound fails **safe** — it counts as overlapping.
+
+    The wall exists to keep two units that are in different places *at the same time* apart. If we cannot
+    read when one of the statements held, we do not get to conclude they were at different times: the honest
+    reading is "possibly concurrent", and the fail-safe direction here is towards *not fusing*. (The caller
+    then softens an unknown-time conflict from a hard wall to a raise — the same asymmetry C1 gives an
+    unknown ``site_type``: never de-conflicted, but not silently walled either.)
+    """
+    lo_a, hi_a = a
+    lo_b, hi_b = b
+    if hi_a is not None and lo_b is not None and hi_a < lo_b:
+        return False
+    if hi_b is not None and lo_a is not None and hi_b < lo_a:
+        return False
+    return True
+
+
+def _same_place(a: str, b: str, graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex,
+                place_of: dict[str, places.PlaceMatch]) -> bool:
+    """Are two relationship OBJECTS the same thing, before resolution has run?
+
+    The wall is computed up front (it has to be — it joins ``veto``, which is consulted before any band), so
+    it cannot ask the partition. Three cheap, evidence-backed tests instead: the same id; the same curated
+    gazetteer anchor (the place layer's own answer to "same place", already computed in this pass); or two
+    names in one alias class. Anything else counts as *different*, which is the direction that walls — so
+    this predicate is deliberately generous, because a wrong "different" costs a legitimate merge.
+    """
+    if a == b:
+        return True
+    ma, mb = place_of.get(a), place_of.get(b)
+    if ma is not None and mb is not None and ma.place_id is not None and ma.place_id == mb.place_id:
+        return True
+    ea, eb = graph.entities.get(a), graph.entities.get(b)
+    if ea is None or eb is None:
+        return False
+    return alias_idx.equivalent(
+        normalize(ea.name, cfg.transliteration), normalize(eb.name, cfg.transliteration)
+    )
+
+
+def _stated_relations(
+    graph: EntityGraph, cfg: ResolveConfig, lane: EdgeLaneIndex
+) -> dict[tuple[str, str], list[tuple[str, str | None, str | None, str, bool]]]:
+    """``(subject, predicate) → [(object, lo_iso, hi_iso, scope_bucket, scope_known)]`` for wall predicates.
+
+    **C1 as amended by S2 — the scope decision is per ``(subject, predicate)``, over EVERY relationship of
+    that subject, and it is a post-pass, never a key input.** A ``based-at`` conflict is only a conflict
+    *within one kind of site*: a unit at its garrison and concurrently at a forward site is one unit with two
+    valid basings. Scoping by class is therefore *de-confliction* — and separation IS de-confliction, so a
+    **partial** tag is worse than none. S2 measured this the hard way: a per-edge tag put the flagship
+    relocation's two ends in different buckets (one describes a revetment complex, the other an airfield) and
+    the supersede silently never fired, with nothing anywhere to say so.
+
+    So: all of a subject's classes readable ⇒ scope by class; **any** unreadable ⇒ the whole subject collapses
+    to one shared bucket with ``scope_known=False``, which the caller turns into "no wall, no fusion, a named
+    reason" rather than a silent de-confliction in either direction.
+    """
+    earned = cfg.earned_identity
+    layers = cfg.layer_routing
+    scope_attr = earned.wall_scope_attr
+    out: dict[tuple[str, str], list[tuple[str, str | None, str | None, str, bool]]] = {}
+    raw: dict[tuple[str, str], list[tuple[str, str | None, str | None, str, bool]]] = {}
+    for e in graph.edges:
+        if e.predicate not in earned.wall_predicates or e.kind != _STATED_KIND:
+            continue
+        # The scope attribute lives on the endpoint the functional key DROPS (for ``based-at``, the site,
+        # whose class says what kind of basing this is) — the same endpoint S2's ``_tag_of`` reads. A
+        # predicate the ontology gives no ``instance_key_tag`` (``operated-by``) is unscoped: a change of
+        # operator is never de-conflicted by anything, so every such relation shares one bucket.
+        tagged = lane.instance_key_tag(e.predicate) == scope_attr and bool(scope_attr)
+        if tagged:
+            obj = graph.entities.get(e.object)
+            bucket, mapped = layers.normalise_tag(obj.attrs.get(scope_attr) if obj is not None else None)
+        else:
+            bucket, mapped = "", True
+        raw.setdefault((e.subject, e.predicate), []).append(
+            (e.object, e.earliest_iso, e.latest_iso, bucket, mapped)
+        )
+    for key, rows in raw.items():
+        if all(mapped for *_rest, mapped in rows):
+            out[key] = rows
+        else:  # any unreadable class ⇒ ONE bucket for the whole subject, flagged unknown (C1 ⊂ C7)
+            out[key] = [(obj, lo, hi, "", False) for obj, lo, hi, _bucket, _mapped in rows]
+    return out
+
+
+def _relationship_walls(
+    graph: EntityGraph,
+    cfg: ResolveConfig,
+    lane: EdgeLaneIndex,
+    alias_idx: AliasIndex,
+    place_of: dict[str, places.PlaceMatch],
+) -> tuple[set[Pair], dict[Pair, str], dict[Pair, str]]:
+    """G18: a STATED ``based-at``/``operated-by`` conflict at overlapping times → ``(walls, reasons, raises)``.
+
+    **The judge had no relationship discriminator at all.** ``relational_score`` is a Jaccard over *shared*
+    neighbour keys, so it can only ever say "these two look alike because they touch the same things"; there
+    was no comparison of two candidates' basing or operator *values*, and therefore no way for the system to
+    notice that two profiles are in different places at the same time. Two units at different sites at
+    overlapping times are **different units**, and that is a cannot-link no similarity score may cross —
+    a wall, not a term.
+
+    **The channel is named deliberately.** ``walls`` join the ``veto`` set, which is hard **and transitive**,
+    re-applied in ``finalise``, visible to the D9 bridge alarm, and **drawn** as a do-not-merge edge. Built
+    the way the geographic veto is built — consulted only inside ``cluster.vetoed`` — the wall would be
+    pairwise, non-transitive **and invisible**, and G18 would still pass. ``reasons`` is what makes it
+    analyst-visible: a wall nobody can read is indistinguishable from a missing edge.
+
+    ``raises`` is C7's third state, reached when the ``site_type`` scope is unreadable on either side: **no
+    wall** (an unreadable class must not shatter a legitimate merge) **and no fusion** (it must not confirm
+    either) **plus a named reason**. All three or none.
+    """
+    walls: set[Pair] = set()
+    reasons: dict[Pair, str] = {}
+    raises: dict[Pair, str] = {}
+    if not cfg.earned_identity.wall_predicates:
+        return walls, reasons, raises
+
+    relations = _stated_relations(graph, cfg, lane)
+    subjects_by_pred: dict[str, list[str]] = {}
+    for subject, predicate in relations:
+        subjects_by_pred.setdefault(predicate, []).append(subject)
+
+    for predicate, subjects in sorted(subjects_by_pred.items()):
+        for a, b in unordered_pairs(sorted(set(subjects))):
+            ea, eb = graph.entities.get(a), graph.entities.get(b)
+            if ea is None or eb is None or ea.etype != eb.etype:
+                continue  # a cross-type pair is not fusable anyway (G19) — nothing for the wall to add
+            for oa, lo_a, hi_a, bucket_a, known_a in relations[(a, predicate)]:
+                for ob, lo_b, hi_b, bucket_b, known_b in relations[(b, predicate)]:
+                    # C1, and the trap inside it: a differing class de-conflicts ONLY when BOTH classes are
+                    # readable. Where either side's class is unknown the buckets must not be compared at all —
+                    # because separation IS de-confliction, and letting an unknown bucket differ from a known
+                    # one is precisely the silent failure S2 measured across *edges*, reproduced here across
+                    # *subjects*: the conflict quietly stops being detected while the code still looks
+                    # deterministic, with no gap and no flag. Unknown ⇒ fall through to the conflict test, and
+                    # (below) raise rather than wall.
+                    if known_a and known_b and bucket_a != bucket_b:
+                        continue  # a DIFFERING KNOWN class is not a conflict — garrison + forward site is fine
+                    if _same_place(oa, ob, graph, cfg, alias_idx, place_of):
+                        continue  # both stated the same thing — agreement, not conflict
+                    if not _intervals_overlap((lo_a, hi_a), (lo_b, hi_b)):
+                        continue  # sequential, not concurrent — that is a relocation, not two entities
+                    pair = frozenset((a, b))
+                    timed = lo_a is not None and hi_a is not None and lo_b is not None and hi_b is not None
+                    if known_a and known_b and timed:
+                        walls.add(pair)
+                        reasons[pair] = _wall_reason(predicate, bucket_a)
+                        raises.pop(pair, None)
+                    elif pair not in walls:
+                        raises[pair] = _wall_third_state_reason(predicate, known_a and known_b, timed)
+    return walls, reasons, raises
+
+
+def _wall_reason(predicate: str, bucket: str) -> str:
+    """The analyst-facing reason a relationship wall holds this pair apart (G18). Prose only (gate G6)."""
+    scope = f" within one '{bucket}' site class" if bucket else ""
+    return (
+        f"stated '{predicate}' conflict at overlapping times{scope} — two sources place these two profiles "
+        f"in different, concurrently-valid relationships that one entity cannot hold at once. Two units at "
+        f"different sites at the same time are different units, so this is a cannot-link no similarity score "
+        f"may cross: it holds transitively (no chain of merges may fuse them either) and it is not a low "
+        f"score to be argued up. If the two really are one unit, the fault is in one of the two stated "
+        f"relationships or in their dates — adjudicate those, not this wall (D-13.8/G18)."
+    )
+
+
+def _wall_third_state_reason(predicate: str, scope_known: bool, timed: bool) -> str:
+    """C7's third state on the relationship rail: no wall, no fusion, a named reason. Prose only (G6)."""
+    missing = []
+    if not scope_known:
+        missing.append("the kind of site is not stated, or is stated in words the closed vocabulary "
+                       "cannot read, on at least one of this subject's relationships")
+    if not timed:
+        missing.append("at least one of the two statements carries no readable validity interval")
+    why = "; and ".join(missing)
+    return (
+        f"unreadable '{predicate}' conflict — these two profiles state different, apparently concurrent "
+        f"relationships, but {why}. So the disagreement can be neither trusted as a wall nor waved away: "
+        f"walling on an unreadable value would shatter a legitimate merge, and letting the pair confirm "
+        f"would assert an identity the evidence does not support. The merge is withheld and the pair is "
+        f"raised with this gap named — a gap that does not bind the fusion path is decoration (C7)."
+    )
 
 
 # ── RES-4: identity read from the claim stream, source-weighted (P3.2, D-2.5 / D-P3.4) ─────────
@@ -456,6 +1283,86 @@ def _asserted_pairs(
     return out
 
 
+def _identity_claim_ids(graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex,
+                        pair: Pair) -> list[str]:
+    """Every claim asserting this pair's identity, by claim id (stable order; deduplicated)."""
+    a, b = sorted(pair)
+    out: list[str] = []
+    for e in graph.edges:
+        if e.predicate not in IDENTITY_PREDICATES or e.claim_id is None or e.claim_id in out:
+            continue
+        left = _matching_eids(e.subject, graph, cfg, alias_idx)
+        right = _matching_eids(e.object, graph, cfg, alias_idx)
+        if (a in left and b in right) or (b in left and a in right):
+            out.append(e.claim_id)
+    return sorted(out)
+
+
+def _identity_confirmations(
+    claims: list[ClaimRecord], config: ConfigBundle, graph: EntityGraph,
+    cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[Pair],
+) -> tuple[set[Pair], dict[Pair, float]]:
+    """Stated ``same-as`` pairs the ORDINARY confirmed rule confirms — the one assertion channel that fuses.
+
+    **The inconsistency this removes.** In-document coreference could bootstrap a merge off an explicit
+    statement of equivalence; the extractor's ``same-as`` — the same evidence, frequently the same sentence
+    — was structurally raise-only and could never merge whatever asserted it or however many sources agreed.
+    Two mechanisms built at different times, treating one kind of evidence two ways. The consequence was a
+    graph fragmented by construction: the reference fingerprint for a design landing on one node and the
+    site identification of that same design on another, with a curated register stating outright that the
+    two names are one thing, and nothing permitted to act on it.
+
+    **Why this is not a loosening.** Identity stops being the one assertion in the system exempt from the
+    credibility machinery and starts being graded by it: the pair's asserting claims are scored
+    (``R(source) × integrity × freshness``), pooled into independent looks by the ordinary
+    :func:`group_by_independence`, and run through the ordinary :func:`assign_status`. So a pair fuses on
+    exactly the terms any other fact reaches *confirmed* on — ``≥ min_independent_groups`` independent looks
+    clearing the ``confirmed`` threshold — and on no others. A single document, of any grade, cannot fuse
+    anything: it lands at ``probable`` and stays an open question in front of the analyst, which is what
+    keeps the co-located-battery harm out of reach. A curated register and a trade publication agreeing is
+    what confirms, and that is a stronger warrant than the curated alias table this replaces, which merges
+    on one editorial decision and no evidence at all.
+
+    Every rail downstream is inherited, not re-implemented: a vetoed pair never enters (a stated
+    do-not-merge still outranks any number of stated same-as), and ``cluster``'s bootstrap runs the same
+    veto, transitive-veto and cross-type fusion checks over this channel as over coreference's.
+
+    Returns ``(confirmed_pairs, confidence_by_pair)``; the confidences are the analyst-facing rationale.
+    """
+    if not cfg.confirmed_identity_may_fuse:
+        return set(), {}
+    pairs = {p for p in _asserted_pairs(graph, cfg, alias_idx, IDENTITY_PREDICATES) if p not in veto}
+    if not pairs:
+        return set(), {}
+    sources = config.sources.as_map()
+    credibility = score_claims(claims, sources, config)
+    claims_by_id = {c.claim_id: c for c in claims}
+
+    ordered = sorted(pairs, key=lambda p: sorted(p))  # stable → gate G2 (deterministic rebuild)
+    keyed = {pair_key(*sorted(p)): p for p in ordered}
+    inputs: list[AssertionInput] = []
+    for p in ordered:
+        cids = _identity_claim_ids(graph, cfg, alias_idx, p)
+        if not cids:
+            continue
+        inputs.append(AssertionInput(
+            element_id=pair_key(*sorted(p)),
+            element_kind="edge",
+            per_claim_credibility={c: credibility[c] for c in cids if c in credibility},
+            groups=group_by_independence(cids, claims_by_id, sources, config),
+        ))
+    if not inputs:
+        return set(), {}
+    confirmed: set[Pair] = set()
+    confidence: dict[Pair, float] = {}
+    for eid, assessment in assign_status(inputs, config).items():
+        pair = keyed.get(eid)
+        if pair is not None and assessment.status == _IDENTITY_CONFIRMED:
+            confirmed.add(pair)
+            confidence[pair] = assessment.assertion_confidence or 0.0
+    return confirmed, confidence
+
+
 def _claim_distinct_pairs(graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex) -> set[Pair]:
     """A source-stated ``distinct-from`` → a **hard veto**, on the same footing as the configured traps.
 
@@ -469,28 +1376,59 @@ def _claim_distinct_pairs(graph: EntityGraph, cfg: ResolveConfig, alias_idx: Ali
 
 def _identity_pairs(
     graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[Pair]
-) -> set[Pair]:
+) -> tuple[set[Pair], dict[Pair, str]]:
     """A source-stated ``same-as`` → a **raise-only** merge signal (never an auto-merge).
 
     The asymmetry with :func:`_claim_distinct_pairs` is the whole of D-2.5: a "these are the same" is the
-    assertion an adversary plants (the corpus cross-wires an Army variant onto the PAF one), so it is
-    gated — the two ends must agree on **type** and be namespace-compatible, and a vetoed pair is dropped
-    outright — and even then it only *proposes*. The asserting source's grade rides separately, in
-    ``source_asserted_score``: a curated register's identity claim scores higher than an anonymous
-    repost's, but neither can merge on its own.
+    assertion an adversary plants (the corpus cross-wires an Army variant onto the PAF one), so it only ever
+    *proposes*, and a vetoed pair is dropped outright — a stated do-not-merge outranks a stated same-as. The
+    asserting source's grade rides separately, in ``source_asserted_score``: a curated register's identity
+    claim scores higher than an anonymous repost's, but neither can merge on its own.
+
+    **A cross-type or cross-namespace assertion is KEPT, not dropped.** It used to be skipped here, which made
+    the escape hatch the candidate-collection loop documents ("if a source explicitly asserts the identity the
+    pair is in ``raise_only`` and still reaches the analyst — a cross-type assertion is exactly the kind of
+    thing a human should see") fictional for the source-asserted channel, while the LLM-proposal channel beside
+    it kept such pairs. A source stating that a *component* and a *variant* are one thing is either an
+    extraction error, a typing error, or deception, and all three are findings. Keeping it costs nothing in
+    safety: the pair cannot fuse — ``cluster.fusion_blocked`` refuses cross-type and cross-namespace fusion in
+    both phases unconditionally — so what the assertion buys is a queue place and a named gap, not a merge.
+
+    Returns ``(raise_only, walled)``. ``walled`` is the same channel :func:`_coref_pairs` returns and for the
+    same reason: the verdict "a stated do-not-merge outranks a stated same-as" is right, and it was being
+    reached *silently*. This function's own paragraph above argues that a contradicted assertion "is either an
+    extraction error, a typing error, or deception, and all three are findings", and buys the pair "a queue
+    place and a named gap" — while the wall case two lines below dropped the assertion outright and bought it
+    neither. Two channels can assert an identity a wall refuses; both now name it.
     """
     out: set[Pair] = set()
+    walled: dict[Pair, str] = {}
     for pair in _asserted_pairs(graph, cfg, alias_idx, IDENTITY_PREDICATES):
-        if pair in veto:
-            continue
         a, b = sorted(pair)
-        ea, eb = graph.entities[a], graph.entities[b]
-        if ea.etype != eb.etype or not namespace_compatible(ea, eb):
+        if pair in veto:
+            walled[pair] = _walled_assertion_gap(
+                graph.entities[a], graph.entities[b],
+                "a source-stated same-as", _asserted_identity_quote(graph, a, b),
+            )
             continue
         if _best_identity_weight(graph, cfg, a, b) < cfg.identity_raise_min_weight:
             continue
         out.add(pair)
-    return out
+    return out, walled
+
+
+def _asserted_identity_quote(graph: EntityGraph, a: str, b: str) -> Any:
+    """The licensing span from the best-placed source asserting ``a ≡ b``, or ``None`` if none carried one.
+
+    Read off the claim rather than paraphrased: the escalation is only adjudicable in one read if it carries
+    the document's own sentence, and an audit already found that promise fictional once.
+    """
+    for e in graph.edges:
+        if e.predicate in IDENTITY_PREDICATES and {e.subject, e.object} == {a, b}:
+            quote = (e.attributes or {}).get(COREF_QUOTE_ATTR)
+            if isinstance(quote, str) and quote.strip():
+                return quote
+    return None
 
 
 def _best_identity_weight(graph: EntityGraph, cfg: ResolveConfig, a: str, b: str) -> float:
@@ -505,10 +1443,296 @@ def _best_identity_weight(graph: EntityGraph, cfg: ResolveConfig, a: str, b: str
 
 # ── in-document coreference: authoritative-unless-contradicted (INGEST pass 2) ─────────────────
 
+def _endpoint_eids(ref: str, graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex) -> list[str]:
+    """Every entity the endpoint's surface form denotes — the id it was rewritten to **and its name-class**.
+
+    ``_link_endpoints`` rewrites a triple's endpoints onto entity ids before any of this runs, and for a form
+    no entity id matched it **mints** ``ent:<type>:<form>`` rather than attaching to the claim-backed entity
+    of the same name. So a coreference link about "8th AD Battalion" arrives pointing at a *minted twin* of the
+    profile the document meant, and ``_matching_eids`` on an id short-circuits to that twin alone.
+
+    For a channel that only ever *added* merges (which coreference used to be) that was harmless — the twin and
+    the profile merge on their exact name anyway. For a **ceiling** it is fatal: the cap lands on the twin's
+    pair while the claim-backed pair fuses beside it, i.e. a cap keyed to the wrong id form does nothing at
+    all. Expanding through the endpoint's *name* puts the whole surface-form class in scope, which is what the
+    document's mention actually denotes.
+    """
+    out = list(_matching_eids(ref, graph, cfg, alias_idx))
+    ent = graph.entities.get(ref)
+    if ent is not None and ent.name:
+        for eid in _matching_eids(ent.name, graph, cfg, alias_idx):
+            if eid not in out:
+                out.append(eid)
+    return sorted(out)
+
+
+def _licensing_spans(e: Edge) -> list[str]:
+    """The link's licensing spans, from either carrier. Verbatim-checked at ingest, where the document is."""
+    raw = (e.attributes or {}).get(COREF_QUOTES_ATTR)
+    if isinstance(raw, (list, tuple)):
+        return [str(q) for q in raw if q]
+    quote = (e.attributes or {}).get(COREF_QUOTE_ATTR)
+    if isinstance(quote, (list, tuple)):
+        return [str(q) for q in quote if q]
+    return [str(quote)] if quote else []
+
+
+def _link_forms(e: Edge, graph: EntityGraph) -> tuple[str, str]:
+    """The two members' surface forms — the stamped pair, else the endpoint entities' own names.
+
+    ``_link_endpoints`` rewrites a triple's endpoints onto entity ids before this runs, so the raw forms the
+    document used are no longer on the edge. The producer stamps them; where it did not (a hand-built claim,
+    a fixture, an older bundle) the endpoint entities' names are the same strings by construction, because
+    that is what the mint used.
+    """
+    stamped = (e.attributes or {}).get(COREF_FORMS_ATTR)
+    if isinstance(stamped, (list, tuple)):
+        try:
+            anchor, member = stamped  # a PAIR, read by unpacking — no length literal (gate G6)
+        except ValueError:
+            anchor, member = None, None
+        if anchor and member:
+            return str(anchor), str(member)
+    sub, obj = graph.entities.get(e.subject), graph.entities.get(e.object)
+    return (sub.name if sub else e.subject), (obj.name if obj else e.object)
+
+
+def _anaphor_gate_from_graph(e: Edge, graph: EntityGraph) -> tuple[bool, str]:
+    """The POSITIVE anaphor gate, recomputed from the graph — so the category is bindable from a bundle.
+
+    I first made this producer-only, on the grounds that the gate needs "the document's whole mention
+    inventory". That was half true and wholly wrong in effect: the graph carries a *document axis*
+    (``Entity.doc_ids``, added for C9) and it carries the minted endpoints too, so the inventory the gate needs
+    is right here. Requiring a stamp instead left the shipped config claiming a category binds while the
+    resolver could never bind it — and D-13.17's conditional is precisely that *"the gate IS the decision:
+    either the positive gate is built and the category binds, or the category is raise-only — never a config
+    that claims one and does the other."*
+
+    Positive, so every clause demands something be PRESENT (the original absence test failed **open** under
+    extractor under-reach, which made its failure mode anti-correlated with safety):
+
+    1. the antecedent is **named**;
+    2. the antecedent is **declared** — it carries claims of its own, so something in the document asserted it
+       rather than it arriving as a bare endpoint;
+    3. the antecedent is **ontology-typed**;
+    4. **exactly one** type-compatible mention is in scope, with an ``unknown``-typed endpoint **counting as
+       compatible**. That last clause is what makes the test bite in the right direction: a second undeclared
+       endpoint is exactly what an under-reach would hide, so it must FAIL the gate rather than pass it.
+
+    Scope is the contributing document, plus entities carrying no document at all (a minted endpoint, a
+    registry seed) — the same rule C9 uses, and for the same reason: a mention with no document cannot
+    contradict the document scope, and excluding it would hide the undeclared endpoints clause 4 exists to
+    count.
+    """
+    antecedent, anaphor = graph.entities.get(e.subject), graph.entities.get(e.object)
+    if antecedent is None or anaphor is None:
+        return False, "one end of the link is not an instantiated entity"
+    if not antecedent.name.strip():
+        return False, "the antecedent has no surface form (an anaphor needs a NAMED antecedent)"
+    if not antecedent.claim_ids:
+        return False, (
+            "the antecedent is undeclared — no entity claim asserts it, so nothing states what the anaphor "
+            "is being resolved TO"
+        )
+    if antecedent.etype == _UNKNOWN_ETYPE:
+        return False, "the antecedent is not ontology-typed (an untyped antecedent cannot be type-unique)"
+    docs = set(e.doc_ids)
+    compatible = sorted(
+        eid for eid, ent in graph.entities.items()
+        if eid != anaphor.eid
+        and (not ent.doc_ids or not docs or (ent.doc_ids & docs))
+        and ent.etype in (antecedent.etype, _UNKNOWN_ETYPE)
+    )
+    if len(compatible) != _ONE_ANTECEDENT:
+        return False, (
+            f"the anaphor has {len(compatible)} type-compatible antecedents in scope, not exactly one — an "
+            f"'unknown'-typed endpoint counts as compatible on purpose, because a second undeclared mention "
+            f"is precisely what an extractor under-reach would hide"
+        )
+    if compatible[0] != antecedent.eid:
+        return False, "the single type-compatible antecedent is not the one this link binds to"
+    return True, (
+        f"exactly one type-compatible antecedent ('{antecedent.etype}'), named and declared by its own claims"
+    )
+
+
+def _link_gate_verdict(
+    e: Edge, evidence: str, graph: EntityGraph, cfg: ResolveConfig
+) -> tuple[bool, str]:
+    """Does this coreference link clear D-13.17's deterministic gate? — **recomputed here, not trusted.**
+
+    The first cut of this stage read a verdict the producer had stamped on the claim. The independent suite
+    killed that in one line: a holder of a config bundle and a claim log — a fixture, an operator, an auditor —
+    **could not turn the policy on**, because the deciding input was an artifact only the producer knew how to
+    write. And a gate whose verdict cannot be recomputed from the evidence is not a structural check; it is a
+    second self-report one layer down, which is exactly what D-13.17 refuses.
+
+    So the split is by *what is knowable here*:
+
+    * ``EXPLICIT_EQUIVALENCE`` — **fully recomputed** from the licensing spans and the two surface forms, both
+      of which ride the claim, against the configured marker vocabulary and the shipped mark-vs-word knob.
+      Any reader can re-derive it. A stamped ``FAIL`` still loses: the producer saw the document and this side
+      did not, so it may veto but never license.
+    * ``UNAMBIGUOUS_ANAPHOR`` — the positive gate needs the document's whole mention inventory, which is not
+      in the graph. So it is honoured **only** on a stamped pass, and an unstamped anaphor link falls back to
+      raise-only. That is D-13.17's own conditional, not an improvisation: *"if the positive gate is not
+      built, ``UNAMBIGUOUS_ANAPHOR`` reverts to raise-only."*
+    * anything else, ``NAME_VARIANT`` included — never gated, therefore never bound.
+
+    Per **M12** a failing conjunct **demotes to raise-only and never vetoes**, which is the whole reason a
+    fallible structural test is admissible in this position: a false fire costs one analyst glance, with the
+    licensing spans attached, rather than a lost merge.
+    """
+    stamped = (e.attributes or {}).get(COREF_GATE_ATTR)
+    if stamped is not None and str(stamped) != COREF_GATE_PASS:
+        return False, "the producer's own gate failed on evidence only it could see (the document text)"
+    if evidence == coref_gate.EXPLICIT_EQUIVALENCE:
+        anchor, member = _link_forms(e, graph)
+        return coref_gate.explicit_equivalence(
+            _licensing_spans(e), anchor, member,
+            cfg.earned_identity.equivalence_markers, cfg.earned_identity.min_descriptor_len,
+            documents=len(e.doc_ids) or 1,
+        )
+    if evidence == coref_gate.UNAMBIGUOUS_ANAPHOR:
+        if coref_gate.differs_only_by_a_mark(
+            *_link_forms(e, graph), cfg.earned_identity.min_descriptor_len
+        ):
+            return False, (
+                "the two forms differ by a MARK, not a word — a mark distinguishes a variant rather than "
+                "naming the same thing, so no anaphoric reading licenses the bind (M1)"
+            )
+        return _anaphor_gate_from_graph(e, graph)
+    return False, (
+        f"'{evidence}' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses "
+        f"banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another "
+        f"predicate, immune to the very cap that replaced it"
+    )
+
+
+def _coref_doc_scoped_eids(
+    ref: str, doc_ids: set[str], graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex
+) -> list[str]:
+    """``_matching_eids``, restricted to entities **attested in the contributing document** (C9).
+
+    D-13.17 gates an authoritative bind on a *document-scoped* precondition — the extractor read *this one
+    document's* discourse — but the bind then instantiates through ``_matching_eids``' **global** name/alias
+    expansion, so the precondition did not bound the effect: a bind licensed by one document could fuse a
+    same-named profile built entirely from other documents. Intersecting on :attr:`Entity.doc_ids` is what
+    makes the effect as document-scoped as the licence.
+
+    An entity with no ``doc_ids`` at all — a registry seed, a minted endpoint — is **not** excluded: it
+    carries no document to contradict the scope, and excluding it would refuse the registry the very
+    canonical-id adoption it exists for.
+    """
+    out = []
+    for eid in _endpoint_eids(ref, graph, cfg, alias_idx):
+        ent = graph.entities.get(eid)
+        if ent is None:
+            continue
+        if not ent.doc_ids or (ent.doc_ids & doc_ids):
+            out.append(eid)
+    return out
+
+
+def _referent_conflict(
+    members: list[str], graph: EntityGraph, cfg: ResolveConfig, lane: EdgeLaneIndex,
+    place_of: dict[str, places.PlaceMatch], alias_idx: AliasIndex,
+) -> str | None:
+    """D-13.18: does this referent grouping contain a conflicting critical discriminator? Names it, or ``None``.
+
+    **The reversibility gap this closes, and it was disqualifying as the docs were written.** §4 promises a
+    coref cluster stays "a challengeable proposal"; D-13.11 says atoms never split; and no document stated the
+    mechanism by which a wrong grouping is undone. The resolution:
+
+    > The referent atom is **evidence about a grouping, never the address** of the provisional instance.
+    > Rebuild groups *claim* atoms; the referent is a strong grouping *signal* the grouping step consults. An
+    > intra-referent critical-discriminator conflict makes the rebuild **DECLINE** the grouping — de-grouping
+    > to claim-atom granularity and raising for an analyst. **No atom splits; the grouping declines.**
+
+    Two kinds of conflict, per **C3**, because D-13.8 declares discriminators to be attributes *and*
+    relationships and the decline mechanics as first written were attribute-only:
+
+    * **attributes** — read the full member value set (``attr_history``), **never** the first-wins scalar.
+      This is the part that is not obvious: ``Entity.attrs`` is first-claim-wins, so the losing value only
+      ever reaches ``attr_history`` and an intra-referent conflict is otherwise **invisible**;
+    * **relationships** — the *same* overlapping-time test G18 uses, under C1's site-class rule, so the
+      decline and the cross-document wall share one predicate rather than drifting apart. A coref cluster
+      that binds two mentions the relationships say are different things must decline, for the same reason
+      and by the same test.
+    """
+    for a, b in unordered_pairs(sorted(set(members))):
+        ea, eb = graph.entities.get(a), graph.entities.get(b)
+        if ea is None or eb is None:
+            continue
+        disposition, attrs = critical_conflict_disposition(ea, eb, cfg)
+        if disposition in ("wall", "raise") and attrs:
+            return f"a conflicting critical attribute ({', '.join(attrs)})"
+        # ``critical_conflict_disposition`` compares the first-wins scalar, so it cannot see a value that
+        # only ever reached history. Read the retained series directly — this is the check D-13.18 names.
+        hist = _history_conflict(ea, eb, cfg)
+        if hist:
+            return f"conflicting retained values of {hist} across the grouped mentions"
+        unreadable = scoring.unnormalizable_critical_values(ea, eb, cfg)
+        if unreadable:
+            return f"an unreadable critical value ({', '.join(unreadable)})"
+        differing = scoring.constitutive_difference(ea, eb, cfg)
+        if differing:
+            return f"a constitutive difference ({', '.join(differing)})"
+    # C3: "the check is **the same overlapping-time conflict test G18 uses**, under C1's site_type rule" — so
+    # the WALLS only. G18's third state (an unreadable site class, an undated statement) is explicitly *not* a
+    # conflict: it is "we cannot read this". Declining a grouping on it would turn every undated basing into a
+    # refusal to group, which is over-raising — the operational face of the thing the non-negotiable forbids —
+    # and it would eat the legitimate cases the same ruling protects (non-overlapping times are a relocation,
+    # and a differing site class is two valid basings). The third state already blocks fusion on its own rail.
+    walls, _reasons, _raises = _relationship_walls(graph, cfg, lane, alias_idx, place_of)
+    for a, b in unordered_pairs(sorted(set(members))):
+        if frozenset((a, b)) in walls:
+            return "a stated relationship conflict at overlapping times (the same test G18 walls on)"
+    return None
+
+
+def _history_conflict(a: Entity, b: Entity, cfg: ResolveConfig) -> str | None:
+    """A critical attribute on which the two RETAINED value series disagree — the check ``attrs`` hides.
+
+    ``Entity.attrs`` is first-claim-wins (``setdefault``), so where one mention asserted two values only the
+    first survives into the scalar and every conflict detector that reads it is blind to the second. The
+    decline must read **history**: it is comparing what a *grouping* of claim atoms collectively asserts, and
+    that is exactly the set the scalar throws away. Values compared through the C7 normaliser, so a spelling
+    is never a conflict.
+    """
+    if a.etype != b.etype:
+        return None
+    earned = cfg.earned_identity
+    # The identity-BEARING slots, which is more than the ``critical`` ones: a component of a declared
+    # composite unique key is identifying **by that declaration** — ``(service_branch, designator)`` says a
+    # designation individuates a formation within its service, so one member asserting two different
+    # designations cannot be one referent, whatever role the attribute carries for scoring.
+    key_components = sorted({attr for key in cfg.unique_id_keys(a.etype) for attr in key})
+    checked = cfg.critical_role_attrs(a.etype) + cfg.constitutive_attrs(a.etype) + key_components
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for attr in checked:  # de-duplicated, declaration order preserved (deterministic — gate G2)
+        if attr not in seen:
+            seen.add(attr)
+            ordered.append(attr)
+    for attr in ordered:
+        values: set[str] = set()
+        unreadable = False
+        for ac in a.attr_history.get(attr, []) + b.attr_history.get(attr, []):
+            canonical, mapped = earned.normalise_value(attr, ac.value)
+            values.add(canonical)
+            unreadable = unreadable or not mapped
+        if len(values) > 1 and not unreadable:
+            return attr
+    return None
+
+
 def _coref_pairs(
-    graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[Pair]
-) -> tuple[set[Pair], set[Pair]]:
-    """Split ``coref-same-as`` claims into ``(authoritative, raise_only)`` entity-id pairs.
+    graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[Pair],
+    lane: EdgeLaneIndex | None = None,
+    place_of: dict[str, places.PlaceMatch] | None = None,
+) -> tuple[set[Pair], set[Pair], dict[Pair, str], dict[Pair, str]]:
+    """Split ``coref-same-as`` claims into ``(authoritative, raise_only, declined, walled)`` entity-id pairs.
 
     A coreference claim carries something no other identity signal does: the extractor read **this one
     document's discourse** and reported which mentions it treats as one entity, with a verbatim span that
@@ -520,37 +1744,321 @@ def _coref_pairs(
     "Authoritative" is never "unconditional". A pair is demoted to raise-only — an analyst decision, with
     the licensing quote attached — whenever the two ends disagree in a way the document's local reading
     cannot settle: a different entity **type**, an incompatible **namespace** (a China/Pakistan split), or
-    a stated **hard-attribute contradiction** (:func:`scoring.has_hard_conflict`). A vetoed pair is
-    dropped outright, exactly like a source-asserted ``same-as``: a stated do-not-merge outranks any
-    reading of the prose. Demotion, not silent deletion, is the point — the evidence still reaches a human.
+    a stated **hard-attribute contradiction** (:func:`scoring.has_hard_conflict`). A vetoed pair does not
+    bind and does not merge — a stated do-not-merge outranks any reading of the prose — but it is **named**,
+    in ``walled``: demotion, not silent deletion, is the point, and the wall case was the one place the
+    sentence "the evidence still reaches a human" was not true. See the ``pair in veto`` branch.
     """
     authoritative: set[Pair] = set()
     raise_only: set[Pair] = set()
+    #: Pairs a source ASSERTED are one entity and a hard wall holds apart — the escalate half of that
+    #: collision. Routed to ``Partition.identity_refusals``, which ``rebuild()`` renders as one Known Gap per
+    #: endpoint, so each mention states in its own drawer what could not be decided about it.
+    walled_pairs: dict[Pair, str] = {}
+    #: Pairs whose GROUPING the rebuild declined (D-13.18). Returned separately because a decline has to
+    #: **bind the fusion path**, not merely withhold the coreference bind: if the pair can still fuse on the
+    #: name/containment path beside it, the decline is decoration — the same lesson C7 states for a gap.
+    declined_pairs: dict[Pair, str] = {}
     allowed = cfg.coref_authoritative_evidence
+    nsn = cfg.namespace_normaliser
+    grade_floor = cfg.earned_identity.bind_min_grade
 
+    # Group the links by their REFERENT so the grouping — not merely the pair — can be adjudicated (A1).
+    by_referent: dict[str, list[Edge]] = {}
     for e in graph.edges:
         if e.predicate != COREF_PREDICATE:
             continue
-        evidence = str((e.attributes or {}).get(COREF_EVIDENCE_ATTR) or "")
-        left = _matching_eids(e.subject, graph, cfg, alias_idx)
-        right = _matching_eids(e.object, graph, cfg, alias_idx)
+        # The GRAIN is the document-local coreference cluster; the referent atom is that grain's *name*. So
+        # group on the referent where the producer minted one and on ``(document, cluster id)`` where it did
+        # not — a hand-built claim, a fixture, a bundle recorded before the mint existed. Keying only on the
+        # referent made the decline unreachable for every one of those, i.e. D-13.18 was inert wherever the
+        # grouping was expressed the older way.
+        attrs = e.attributes or {}
+        referent = str(attrs.get(COREF_REFERENT_ATTR) or "")
+        cluster = str(attrs.get(COREF_CLUSTER_ATTR) or "")
+        doc_key = "|".join(sorted(e.doc_ids))
+        grain = referent or (f"cluster:{doc_key}:{cluster}" if cluster else f"link:{id(e)}")
+        by_referent.setdefault(grain, []).append(e)
+
+    for referent, links in sorted(by_referent.items(), key=lambda kv: kv[0]):
+        pairs_of: list[tuple[Edge, list[Pair]]] = []  # Edge is a mutable dataclass ⇒ unhashable; keep a list
+        members: list[str] = []
+        for e in links:
+            docs = set(e.doc_ids)
+            # C9: an authoritative bind may instantiate ONLY over entity ids attested in the contributing
+            # document. Without this the document-scoped LICENCE does not bound the global EFFECT. A link
+            # carrying no document at all cannot be doc-scoped, so it falls back to the endpoint expansion.
+            if docs:
+                left = _coref_doc_scoped_eids(e.subject, docs, graph, cfg, alias_idx)
+                right = _coref_doc_scoped_eids(e.object, docs, graph, cfg, alias_idx)
+            else:
+                left = _endpoint_eids(e.subject, graph, cfg, alias_idx)
+                right = _endpoint_eids(e.object, graph, cfg, alias_idx)
+            found = [
+                frozenset((a, b))
+                for a, b in product(left, right)
+                if a != b and a in graph.entities and b in graph.entities
+            ]
+            pairs_of.append((e, found))
+            for pair in found:
+                members.extend(sorted(pair))
+
+        # D-13.18: the rebuild may DECLINE the whole grouping. Checked once per referent, before any link is
+        # promoted, because the question is about the grouping rather than about a pair.
+        declined = (
+            _referent_conflict(members, graph, cfg, lane, place_of or {}, alias_idx)
+            if not referent.startswith("link:") and lane is not None
+            else None
+        )
+
+        for e, found in pairs_of:
+            attrs = e.attributes or {}
+            evidence = str(attrs.get(COREF_EVIDENCE_ATTR) or "")
+            # Unconditional, both of them. A bind fuses at 1.0 past every band, so "is this licensed?" can
+            # never depend on which stage is switched on — only on the evidence the pair carries.
+            gate_ok, _why = _link_gate_verdict(e, evidence, graph, cfg)
+            grade_ok = grade_floor is None or grade_meets_floor(cfg.source_grade(e.source_id), grade_floor)
+            for pair in found:
+                if pair in veto:
+                    # A stated do-not-merge outranks the extractor's reading of the prose — the VERDICT is
+                    # right and unchanged. What was wrong was that the assertion then vanished. A document
+                    # said "these two are the same thing", a wall said they are not, and the collision of
+                    # those two statements is a finding in its own right: either the extraction is wrong, or
+                    # one of the walling values is wrong, or a source is deliberately conflating two
+                    # organisations — and every one of those is the analyst's call, not the resolver's.
+                    #
+                    # Dropped outright, the pair became indistinguishable from two mentions that never
+                    # resembled each other: no bind, no queue item, no gap, both halves orphaned. That is the
+                    # non-negotiable's escalate half missing on the sharpest pair in the system — a
+                    # same-named look-alike straddling two operators, coref-linked, which is the costliest
+                    # over-merge in an operator-scoped ORBAT and the single most useful thing to hand a human.
+                    # Refusing to assert was never the hard part; being told is.
+                    walled_pairs[pair] = _walled_assertion_gap(
+                        graph.entities[sorted(pair)[0]], graph.entities[sorted(pair)[1]],
+                        evidence, attrs.get(COREF_QUOTE_ATTR),
+                    )
+                    continue
+                a, b = sorted(pair)
+                ea, eb = graph.entities[a], graph.entities[b]
+                contradicted = (
+                    ea.etype != eb.etype
+                    or not namespace_compatible(ea, eb, nsn)
+                    or has_hard_conflict(ea, eb, cfg)
+                )
+                may_bind = (
+                    evidence in allowed
+                    and not contradicted
+                    and gate_ok
+                    and grade_ok
+                    and declined is None
+                )
+                if may_bind:
+                    authoritative.add(pair)
+                elif declined is not None:
+                    # A DECLINED grouping is not merely un-bound: the conflict that declined it is anti-identity
+                    # evidence about the pair itself, so the pair may not fuse by any other route either. It
+                    # joins the block-merge-and-review channel with the reason — de-grouped to claim-atom
+                    # granularity and raised, which is exactly what D-13.18 specifies. No atom splits.
+                    declined_pairs[pair] = _decline_reason(declined)
+                else:
+                    # C5's partial bind: a failing link is not discarded, it becomes an injected Tier-1
+                    # candidate pair — so a cluster binds over the links that pass and each link that does
+                    # not still reaches the analyst, with its licensing evidence attached.
+                    raise_only.add(pair)
+    return authoritative, raise_only, declined_pairs, walled_pairs
+
+
+def _walled_assertion_gap(a: Entity, b: Entity, evidence: str, quote: Any) -> str:
+    """What is missing when a source ASSERTS an identity a hard wall refuses — the analyst's open question.
+
+    Written as a ``what_missing`` (``Partition.identity_refusals`` ⇒ one Known Gap per endpoint) rather than a
+    candidate reason, deliberately: a candidate invites "accept this merge", and this pair must never be
+    offered that button — the wall is a credible stated contradiction, not a low score. What the analyst is
+    owed is the *open question on each mention*: whose profile is this, given that one document says it is the
+    same as another and the attributes say it cannot be.
+
+    **Carries the document's own words where it supplied them.** The licensing quote is the only thing that
+    lets the proposal be adjudicated in one read, and an audit already found that justification fictional once
+    — the quote was stamped on the claim and read nowhere. A gap that says "a source disagreed" without the
+    sentence is an unfalsifiable assertion that two mentions might be one thing.
+    """
+    cited = f' The document\'s own words: "{quote}".' if isinstance(quote, str) and quote.strip() else ""
+    how = f" ({evidence})" if evidence else ""
+    # Names BOTH mentions rather than "the same as <the other one>": ``rebuild()`` renders one gap per
+    # ENDPOINT from this one pair-keyed string, so a text that points at a specific side reads correctly on one
+    # endpoint's drawer and wrongly on the other's.
+    pair = " and ".join(sorted((a.eid, b.eid)))
+    return (
+        f"the IDENTITY of this mention is contested and unresolved: a source read this document as stating "
+        f"that {pair} are one entity{how}, while a hard do-not-merge holds "
+        f"the two apart on stated, credibly-attested grounds — so the system asserts NEITHER the merge nor "
+        f"that the mentions are unrelated.{cited} Both readings cannot be right, and which one is wrong is "
+        f"not something the resolver can settle: it is an extraction error, a wrong attribute value, or a "
+        f"source conflating two organisations. Needed: an analyst adjudication of the do-not-merge, or a "
+        f"source that settles the conflicting attribute. Until then this mention's identity is an open "
+        f"question and nothing downstream may treat it as closed."
+    )
+
+
+def _decline_reason(what: str) -> str:
+    """Analyst-facing reason a referent GROUPING was declined (D-13.18). Prose only (gate G6)."""
+    return (
+        f"the coreference grouping was DECLINED — the extractor read this document as treating these mentions "
+        f"as one entity, but the grouped mentions carry {what}. The referent atom is evidence ABOUT a grouping, "
+        f"never an address, so the rebuild is free to refuse it: the grouping de-groups to per-mention "
+        f"granularity and the pair is raised rather than fused. No claim atom was split — nothing was "
+        f"rewritten, and re-running the rebuild after the conflict is resolved will re-form the grouping. If "
+        f"these really are one entity then one of the conflicting values is wrong, and that is the question "
+        f"to adjudicate (D-13.18)."
+    )
+
+
+def _contrast_ceilings(
+    graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex
+) -> dict[Pair, str]:
+    """A same-document **stated contrast** caps the pair at its declared band — D-13.19 decision (b).
+
+    **Why a band ceiling and not a score penalty.** With ``auto_merge: 0.85`` / ``hitl_low: 0.45``, a ×0.5
+    penalty moves a 0.85 pair to 0.425 — *below* ``hitl_low``, i.e. **two** bands, silently dropping the pair
+    out of the analyst's queue entirely. Any coefficient carries that hazard and its safe value depends on
+    thresholds that will move. A band name is threshold-independent and states the intent directly: contrast
+    means "not automatically", never "not at all".
+
+    **Why ungraded.** A grade gate would defend against a planted document — *"the 8th AD Bn and the separate
+    12th AD Bn"* — shattering a well-corroborated cluster. That risk is specific to a **veto**, and it is why
+    this is not one: a ceiling withholds one *new* fusion, cannot retract an existing merge, and a cluster can
+    still form transitively through its other pairs. Choosing the non-shattering mechanism removes the harm
+    the gate was defending against, so the gate would be a knob buying no risk reduction.
+
+    **Doc-scoped in effect, not just in licence** (the same reasoning as C9): the contrast is a fact about one
+    document's syntax, so it may not leak onto a cross-document pair through the global name expansion.
+    """
+    out: dict[Pair, str] = {}
+    if not ceiling_withholds(cfg.earned_identity.contrast_ceiling):
+        return out  # `confirmed` (or undeclared) ⇒ a stated contrast withholds nothing
+    for e in graph.edges:
+        if e.predicate != COREF_CONTRAST_PREDICATE:
+            continue
+        docs = set(e.doc_ids)
+        spans = [str(q) for q in ((e.attributes or {}).get(COREF_QUOTES_ATTR) or []) if q]
+        quote = (e.attributes or {}).get(COREF_QUOTE_ATTR)
+        cited = "; ".join(f'"{s}"' for s in spans) or (f'"{quote}"' if quote else "its own wording")
+        left = _coref_doc_scoped_eids(e.subject, docs, graph, cfg, alias_idx) if docs else []
+        right = _coref_doc_scoped_eids(e.object, docs, graph, cfg, alias_idx) if docs else []
         for a, b in product(left, right):
             if a == b or a not in graph.entities or b not in graph.entities:
                 continue
-            pair = frozenset((a, b))
-            if pair in veto:
-                continue  # a stated do-not-merge outranks the extractor's reading of the prose
-            ea, eb = graph.entities[a], graph.entities[b]
-            contradicted = (
-                ea.etype != eb.etype
-                or not namespace_compatible(ea, eb)
-                or has_hard_conflict(ea, eb, cfg)
+            out[frozenset((a, b))] = (
+                f"the source document DISTINGUISHES these two mentions in its own words — {cited}. Capped at "
+                f"'{cfg.earned_identity.contrast_ceiling}': the pair may never auto-merge, and it reaches you "
+                f"with the quote so you can judge whether the document is separating two things or merely "
+                f"listing one thing twice. Deliberately a ceiling rather than a do-not-merge: EVERY order of "
+                f"battle contains an enumeration, so treating an enumeration as a hard, transitive veto would "
+                f"let one planted list shatter a well-corroborated cluster. A ceiling withholds a new fusion "
+                f"and can retract nothing (D-13.19)."
             )
-            if evidence in allowed and not contradicted:
-                authoritative.add(pair)
-            else:
-                raise_only.add(pair)
-    return authoritative, raise_only
+    return out
+
+
+def coref_raise_reasons(
+    graph: EntityGraph, cfg: ResolveConfig, authoritative: set[Pair], raise_only: set[Pair],
+    alias_idx: AliasIndex,
+) -> dict[Pair, str]:
+    """Analyst-facing reasons for every coreference link that did **not** bind — **with its licensing spans**.
+
+    This is the mitigation that makes raise-only acceptable at all, and an audit found it fictional: the
+    licensing quote is stamped on the claim and **read nowhere**, so every justification of raise-only
+    ("the analyst is handed the exact sentence") was describing a screen nobody could see. Both decision (a)
+    and decision (b) lean on it, and D-13.17 makes it load-bearing.
+
+    So the reason names three things the analyst actually needs: *what the document said* (the verbatim
+    spans), *what kind of reading it was* (the category), and *why the system would not act on it alone*.
+
+    **That third thing is the COMPUTED ground, per pair, not a fixed sentence.** It used to fall back to
+    "the category is raise-only by policy" whenever the producer had stamped no detail — asserting a reason
+    the code had not used, while :func:`_coref_pairs` had just computed the real one (a missing equivalence
+    marker, a cross-type impossibility, a source-grade floor) and thrown it away. The reason then invited the
+    analyst to "accept the merge if you read it the same way" on a ground that was not the actual one, which
+    is a provenance over-claim about the system's own decision. :func:`_raise_ground` recomputes the same
+    tests in the same order ``may_bind`` evaluates them, so what the analyst reads is why the merge was
+    actually withheld.
+    """
+    out: dict[Pair, str] = {}
+    allowed = cfg.coref_authoritative_evidence
+    grade_floor = cfg.earned_identity.bind_min_grade
+    nsn = cfg.namespace_normaliser
+    for e in graph.edges:
+        if e.predicate != COREF_PREDICATE:
+            continue
+        attrs = e.attributes or {}
+        evidence = str(attrs.get(COREF_EVIDENCE_ATTR) or "unstated category")
+        spans = [str(q) for q in (attrs.get(COREF_QUOTES_ATTR) or []) if q]
+        if not spans:
+            quote = attrs.get(COREF_QUOTE_ATTR)
+            spans = [str(quote)] if quote else []
+        grade = cfg.source_grade(e.source_id)
+        cited = "; ".join(f'"{s}"' for s in spans) if spans else "no licensing span survived validation"
+        for a in _endpoint_eids(e.subject, graph, cfg, alias_idx):
+            for b in _endpoint_eids(e.object, graph, cfg, alias_idx):
+                pair = frozenset((a, b))
+                if a == b or pair in authoritative or pair not in raise_only or pair in out:
+                    continue
+                out[pair] = (
+                    f"in-document coreference, raised not bound — the extractor read this document's own "
+                    f"discourse as treating these two mentions as one entity, category '{evidence}', "
+                    f"licensed by {cited} (source grade {grade or 'unknown'}). It is not acted on "
+                    f"automatically because: "
+                    f"{_raise_ground(e, evidence, a, b, graph, cfg, allowed, grade_floor, nsn)}. An "
+                    f"authoritative bind fuses at full confidence and bypasses every band and cap, so it "
+                    f"must clear a deterministic structural gate AND a source-grade floor; this link did "
+                    f"not. The evidence above is the whole of what the document says — judge it against the "
+                    f"ground stated here (D-13.17)."
+                )
+    return out
+
+
+def _raise_ground(
+    e: Edge, evidence: str, a: str, b: str, graph: EntityGraph, cfg: ResolveConfig,
+    allowed: set[str], grade_floor: str | None, nsn: Any,
+) -> str:
+    """WHY this coreference link did not bind — the ground the resolver actually used, in its own words.
+
+    The same four tests :func:`_coref_pairs` conjoins in ``may_bind``, in that order, so the first one that
+    fails is the one reported. A stamped ``gate_detail`` is used only to *extend* the recomputed gate reason,
+    never to replace it: the stamp is the producer's self-report and the recomputation is the check.
+    """
+    if evidence not in allowed:
+        return (
+            f"the category '{evidence}' is not authorised to bootstrap on this deployment "
+            f"(resolution.yaml earned_identity.authoritative_categories), so a link of this kind is "
+            f"raise-only however well it reads"
+        )
+    ea, eb = graph.entities[a], graph.entities[b]
+    if ea.etype != eb.etype:
+        return (
+            f"the two mentions are typed '{ea.etype}' and '{eb.etype}' — one document's reading of its own "
+            f"discourse cannot settle a disagreement about what kind of thing this is"
+        )
+    if not namespace_compatible(ea, eb, nsn):
+        return (
+            f"the two mentions are scoped to different operators ('{ea.namespace(nsn)}' vs "
+            f"'{eb.namespace(nsn)}'), and a cross-operator fusion is the costliest over-merge there is"
+        )
+    if has_hard_conflict(ea, eb, cfg):
+        return "the two mentions STATE contradictory hard attributes, which no reading of the prose overrides"
+    gate_ok, why = _link_gate_verdict(e, evidence, graph, cfg)
+    if not gate_ok:
+        detail = str((e.attributes or {}).get(COREF_GATE_DETAIL_ATTR) or "")
+        return f"{why}{f' (producer detail: {detail})' if detail else ''}"
+    if grade_floor is not None and not grade_meets_floor(cfg.source_grade(e.source_id), grade_floor):
+        return (
+            f"the asserting document's source is graded '{cfg.source_grade(e.source_id) or 'unknown'}', "
+            f"below the '{grade_floor}' floor an identity-moving assertion has to clear"
+        )
+    return (
+        "the coreference grouping it belongs to was declined, or the pair is held apart by a rail recorded "
+        "elsewhere on this queue item — see the other reason on this pair"
+    )
 
 
 def _llm_pairs(
@@ -630,6 +2138,31 @@ def _to_partition(
     for eid, node_type in sorted((minted or {}).items()):
         endpoint_node_types.setdefault(canonical_of(eid), node_type)
 
+    # ``display_label`` — the same idea as ``endpoint_node_types``, for the other half of what a
+    # materialised endpoint needs (RK-NAMECUT/N1). The view had to name a node it materialises off an edge,
+    # and recovered the designator by SPLITTING the id: an ``ent:<type>:<form>`` id gave back its form, and
+    # anything else fell through to rendering the id itself as the node's human name. Both halves are wrong
+    # — the first reads an opaque handle, the second shows an analyst a key and calls it a name — so the
+    # elected surface form is carried explicitly instead, keyed by the POST-merge id the view will draw.
+    #
+    # Two populations, and the second is the one that is easy to miss: every entity the resolver knows
+    # (claim-backed, registry-seeded or minted — its ``name`` IS the designator, and the canonical member of
+    # a merged cluster wins), plus every triple endpoint that stayed a RAW mention. For that second kind the
+    # id and the designator are the same string today, which is exactly why it must be stated rather than
+    # inferred: nothing else records that the node has a name at all.
+    display_label: dict[str, str] = {}
+    if graph is not None:
+        for eid, ent in sorted(graph.entities.items()):
+            if not ent.name:
+                continue
+            target = canonical_of(eid)
+            if target == eid or target not in display_label:
+                display_label[target] = ent.name
+        for edge in graph.edges:  # endpoints are already rewritten onto entity ids where they resolved
+            for endpoint in (edge.subject, edge.object):
+                if endpoint and endpoint not in graph.entities:
+                    display_label.setdefault(endpoint, endpoint)
+
     # Keyed by the POST-merge id, so the view can stamp it straight onto the node. A merge that fused two
     # mentions carrying different matches keeps the better-evidenced one rather than "last write wins".
     place_refs: dict[str, PlaceRef] = {}
@@ -648,22 +2181,34 @@ def _to_partition(
     # sentence underneath it, so an analyst adjudicating the pair can read the source rather than trust a
     # number. Only for pairs an analyst will actually see (candidates + accepted merges), and only for the
     # pairs a source really spoke about — a pair with no identity claim gets no key, not an empty promise.
+    # ``licensing_claim_ids``, not ``identity_claim_ids``: this list is the drawer's contents, and a raised
+    # coreference is a source speaking to the pair even though it does not feed ``source_asserted``. With the
+    # narrower set, a raise-only NAME_VARIANT proposal — whose entire product IS the referral — reached the
+    # analyst with an empty drawer, so the one-click-to-source non-negotiable failed on the single card where
+    # the sentence is the whole case. The score itself still rides ``merge_breakdown`` and is untouched.
     identity_claims: dict[str, list[str]] = {}
     if graph is not None:
         for a, b in sorted({as_pair(p) for p in [*result.candidates, *result.same_as]}):
-            cids = scoring.identity_claim_ids(graph, a, b)
+            cids = scoring.licensing_claim_ids(graph, a, b)
             if cids:
-                identity_claims[pair_key(a, b)] = cids
+                identity_claims[result.key_for(a, b)] = cids
 
     return Partition(
         resolved_ref=resolved_ref,
         same_as=result.same_as,
         candidates=result.candidates,
+        candidate_reasons=result.candidate_reasons,
+        identity_refusals=result.identity_refusals,
+        withheld_escalations=result.withheld_escalations,
+        possible=result.possible,
         distinct_from=result.distinct_from,
+        wall_reasons={k: v for k, v in result.wall_reasons.items()},
         merge_confidence=result.merge_confidence,
         merge_breakdown=result.merge_breakdown,
         identity_claims=identity_claims,
         entity_canonical=entity_canonical,
         endpoint_node_types=endpoint_node_types,
+        display_label=display_label,
+        pair_members=dict(result.pair_members),
         place_refs=place_refs,
     )

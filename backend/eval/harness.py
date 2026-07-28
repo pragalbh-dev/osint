@@ -31,6 +31,7 @@ from chanakya import settings
 from chanakya.config import ConfigStore
 from chanakya.ingest.seed import seed_store_from_bundles
 from chanakya.observe import evaluate
+from chanakya.ontology import LayerRouting
 from chanakya.schemas import (
     Alert,
     AskAnswer,
@@ -99,7 +100,9 @@ class ScenarioInputs:
     claim_count: int
 
 
-def _seed_evidence(bdir: Path, exclude_docs: Sequence[str] = ()) -> tuple[EvidenceLog, int]:
+def _seed_evidence(
+    bdir: Path, exclude_docs: Sequence[str] = (), skip_suffixes: Sequence[str] = ()
+) -> tuple[EvidenceLog, int]:
     """Append the frozen bundles under ``bdir`` into a fresh log, optionally holding some documents back.
 
     This is *literally* the production keyless boot path — ``seed_store_from_bundles``, the same call
@@ -111,7 +114,9 @@ def _seed_evidence(bdir: Path, exclude_docs: Sequence[str] = ()) -> tuple[Eviden
     deterministic — no clock, no model, no network.
     """
     evidence = EvidenceLog()
-    return evidence, seed_store_from_bundles(evidence, bdir, exclude_docs=exclude_docs)
+    return evidence, seed_store_from_bundles(
+        evidence, bdir, exclude_docs=exclude_docs, skip_suffixes=skip_suffixes
+    )
 
 
 def load_scenario(
@@ -135,7 +140,13 @@ def load_scenario(
             f"`python -m chanakya.ingest extract --scenario {scenario}` (needs an extraction key)"
         )
     config_store = ConfigStore.seed_from(settings.config_dir())
-    evidence, count = _seed_evidence(bdir, exclude_docs)
+    # Same flag-gated retirement the app boot applies (RK-LAYER): with layer routing on, the derived basing
+    # bundles are stale output of a deleted pass and rebuild derives that edge itself.
+    evidence, count = _seed_evidence(
+        bdir,
+        exclude_docs,
+        LayerRouting.from_ontology(config_store.snapshot().ontology).retired_bundle_suffixes(),
+    )
     claims = {c.claim_id: c for c in evidence.replay()}
     return ScenarioInputs(
         scenario=scenario,

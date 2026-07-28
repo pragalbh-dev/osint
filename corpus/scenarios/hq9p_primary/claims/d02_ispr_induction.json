@@ -20,7 +20,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -31,88 +31,15 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "source_type": "official press release"
+        "source_type": "press release"
       },
       "entity_type": "source",
       "form": "entity",
-      "name": "Inter-Services Public Relations (ISPR)"
+      "name": "Inter-Services Public Relations"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d02_ispr_induction",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d02-ispr-induction-l11",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        158,
-        458
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "14 October 2021"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "count_state": "sufficient numbers"
-      },
-      "event_type": "InductionEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [],
-        "precision_class": null,
-        "proposed_alias": "Army Air Defence Centre, Karachi",
-        "raw": "Army Air Defence Centre, Karachi",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
-      },
-      "participants": [
-        "HQ-9/P",
-        "Pakistan Army Air Defence (PAAD) unit"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2021-10-14",
-        "kind": "exact",
-        "raw": "14 October 2021"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -126,25 +53,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d02-ispr-induction-l11-2",
+    "claim_id": "d02-ispr-induction-l4-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
       "frame": null,
-      "line": 11,
+      "line": 4,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        188,
-        297
+        37,
+        75
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -155,24 +82,137 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "Karachi",
-          "raw": "Karachi",
-          "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
-        },
-        "site_type": "centre"
+        "source_type": "press release"
       },
-      "entity_type": "basing_site",
+      "entity_type": "source",
       "form": "entity",
-      "name": "Army Air Defence Centre, Karachi"
+      "name": "ISPR"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Inter-Services Public Relations",
+        "ISPR"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Inter-Services Public Relations (ISPR)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c1",
+      "_object_mention": "d02-ispr-induction-l4-2",
+      "_subject_mention": "d02-ispr-induction-l4",
+      "source_quote": "Inter-Services Public Relations (ISPR)"
+    },
+    "claim_id": "d02-ispr-induction-l4-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        37,
+        75
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "ISPR",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Inter-Services Public Relations"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l4",
+      "d02-ispr-induction-l4-2"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d02-ispr-induction-l4-2",
+      "_subject_mention": "d02-ispr-induction-l4"
+    },
+    "claim_id": "d02-ispr-induction-l4-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 4,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        37,
+        75
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ISPR",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Inter-Services Public Relations"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -187,10 +227,10 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "stated",
-      "_object_mention": "d02-ispr-induction-l11-2",
-      "_subject_mention": "d02-ispr-induction-l11-5"
+      "_object_mention": "d02-ispr-induction-l11-4",
+      "_subject_mention": "d02-ispr-induction-l11-15"
     },
-    "claim_id": "d02-ispr-induction-l11-3",
+    "claim_id": "d02-ispr-induction-l11",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
@@ -200,7 +240,7 @@
       "region": null,
       "row": null,
       "span": [
-        247,
+        253,
         412
       ]
     },
@@ -213,7 +253,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -231,6 +271,177 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pakistan Army Air Defence",
+        "Army Air Defence"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "Pakistan Army Air Defence (PAAD)",
+        "Army Air Defence"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c2",
+      "_object_mention": "d02-ispr-induction-l13",
+      "_subject_mention": "d02-ispr-induction-l11-23",
+      "source_quote": "Pakistan Army Air Defence (PAAD)"
+    },
+    "claim_id": "d02-ispr-induction-l11-2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          265,
+          281
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          420,
+          452
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Army Air Defence",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pakistan Army Air Defence"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-23",
+      "d02-ispr-induction-l13"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pakistan Army Air Defence",
+        "PAAD"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms across 2 verbatim spans and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Pakistan Army Air Defence (PAAD)",
+        "Army Air Defence"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c2",
+      "_object_mention": "d02-ispr-induction-l11-24",
+      "_subject_mention": "d02-ispr-induction-l11-23",
+      "source_quote": "Pakistan Army Air Defence (PAAD)"
+    },
+    "claim_id": "d02-ispr-induction-l11-3",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          265,
+          281
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          420,
+          452
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "PAAD",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pakistan Army Air Defence"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-23",
+      "d02-ispr-induction-l11-24"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -262,55 +473,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "unit",
-      "form": "entity",
-      "name": "Army Air Defence"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d02_ispr_induction",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d02-ispr-induction-l11-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        305,
-        412
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -321,70 +484,33 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "confidence_language": "reportedly",
-        "designators": [
-          "HQ-9/P"
-        ],
-        "family": "High to Medium Air Defence System (HIMADS)"
+        "coordinates": {
+          "geocode_candidates": [
+            {
+              "confidence": 0.9,
+              "label": "Karachi (metropolitan area)",
+              "lat": 24.8607,
+              "lon": 67.0011,
+              "source": "gazetteer"
+            }
+          ],
+          "precision_class": null,
+          "proposed_alias": "Karachi",
+          "raw": "Karachi",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": 24.8607,
+          "wgs84_lon": 67.0011
+        },
+        "site_type": "centre"
       },
-      "entity_type": "variant",
+      "entity_type": "basing_site",
       "form": "entity",
-      "name": "HQ-9/P"
+      "name": "Army Air Defence Centre, Karachi"
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2021-10-14",
-      "kind": "exact",
-      "raw": "2021-10-14"
-    },
-    "resolved_ref": null,
-    "source_id": "d02_ispr_induction",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d02-ispr-induction-l11-5",
-      "_subject_mention": "d02-ispr-induction-l11-5"
-    },
-    "claim_id": "d02-ispr-induction-l11-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
-      "frame": null,
-      "line": 11,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        305,
-        412
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9/P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -399,9 +525,10 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "stated",
-      "_subject_mention": "d02-ispr-induction-l11-5"
+      "_object_mention": "d02-ispr-induction-l11-4",
+      "_subject_mention": "d02-ispr-induction-l19"
     },
-    "claim_id": "d02-ispr-induction-l11-7",
+    "claim_id": "d02-ispr-induction-l11-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
@@ -411,8 +538,8 @@
       "region": null,
       "row": null,
       "span": [
-        305,
-        458
+        265,
+        457
       ]
     },
     "event_time": {
@@ -424,7 +551,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -435,13 +562,139 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "Pakistan Army Air Defence (PAAD) unit",
+      "object": "Army Air Defence Centre, Karachi",
       "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "HQ-9/P"
+      "predicate": "based-at",
+      "subject": "newly raised/re-equipped unit"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        305,
+        457
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count_state": "not disclosed"
+      },
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Army Air Defence Centre, Karachi",
+        "raw": "Army Air Defence Centre, Karachi",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P",
+        "Pakistan Army Air Defence",
+        "newly raised/re-equipped unit"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2021-10-14",
+        "kind": "exact",
+        "raw": "14 October 2021"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        311,
+        353
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "High to Medium Air Defence System"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -465,15 +718,15 @@
       "region": null,
       "row": null,
       "span": [
-        420,
-        457
+        311,
+        353
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -484,12 +737,1111 @@
     "kind": "observation",
     "payload": {
       "attrs": {},
-      "entity_type": "unit",
+      "entity_type": "variant",
       "form": "entity",
-      "name": "Pakistan Army Air Defence (PAAD)"
+      "name": "HIMADS"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d02-ispr-induction-l11-8",
+      "_subject_mention": "d02-ispr-induction-l11-7"
+    },
+    "claim_id": "d02-ispr-induction-l11-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        311,
+        353
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HIMADS",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "High to Medium Air Defence System"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "FD-2000"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+        "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c3",
+      "_object_mention": "d02-ispr-induction-l15-3",
+      "_subject_mention": "d02-ispr-induction-l11-15",
+      "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P"
+    },
+    "claim_id": "d02-ispr-induction-l11-10",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          311,
+          376
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          837,
+          876
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-15",
+      "d02-ispr-induction-l15-3"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "High to Medium Air Defence System"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+        "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c3",
+      "_object_mention": "d02-ispr-induction-l11-7",
+      "_subject_mention": "d02-ispr-induction-l11-15",
+      "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P"
+    },
+    "claim_id": "d02-ispr-induction-l11-11",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          311,
+          376
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          837,
+          876
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "High to Medium Air Defence System",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-15",
+      "d02-ispr-induction-l11-7"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HIMADS"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms across 2 verbatim spans and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+        "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c3",
+      "_object_mention": "d02-ispr-induction-l11-8",
+      "_subject_mention": "d02-ispr-induction-l11-15",
+      "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P"
+    },
+    "claim_id": "d02-ispr-induction-l11-12",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          311,
+          376
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          837,
+          876
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HIMADS",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-15",
+      "d02-ispr-induction-l11-8"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "Hongqi-9"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+        "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c3",
+      "_object_mention": "d02-ispr-induction-l15",
+      "_subject_mention": "d02-ispr-induction-l11-15",
+      "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P"
+    },
+    "claim_id": "d02-ispr-induction-l11-13",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          311,
+          376
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          837,
+          876
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Hongqi-9",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-15",
+      "d02-ispr-induction-l15"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P",
+        "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c3",
+      "_object_mention": "d02-ispr-induction-l15-2",
+      "_subject_mention": "d02-ispr-induction-l11-15",
+      "source_quote": "High to Medium Air Defence System (HIMADS), reportedly the HQ-9/P"
+    },
+    "claim_id": "d02-ispr-induction-l11-14",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          311,
+          376
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          837,
+          876
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l11-15",
+      "d02-ispr-induction-l15-2"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "reportedly",
+        "designators": [
+          "HQ-9P",
+          "Hongqi-9",
+          "FD-2000",
+          "High to Medium Air Defence System",
+          "HIMADS"
+        ],
+        "family": "Hongqi-9",
+        "operator_branch": "Pakistan Army Air Defence",
+        "range_km": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "km",
+          "value": 100.0
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-15"
+    },
+    "claim_id": "d02-ispr-induction-l11-16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-15"
+    },
+    "claim_id": "d02-ispr-induction-l11-17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "High to Medium Air Defence System",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-15"
+    },
+    "claim_id": "d02-ispr-induction-l11-18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HIMADS",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-15"
+    },
+    "claim_id": "d02-ispr-induction-l11-19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Hongqi-9",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d02-ispr-induction-l11-15"
+    },
+    "claim_id": "d02-ispr-induction-l11-20",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "stated",
+      "_object_mention": "d02-ispr-induction-l19",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d02-ispr-induction-l11-15",
+      "source_quote": "formally inducted into service with a Pakistan Army Air Defence (PAAD) unit... addressing the officers and troops of the newly raised/re-equipped unit"
+    },
+    "claim_id": "d02-ispr-induction-l11-21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        370,
+        376
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "newly raised/re-equipped unit",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d02-ispr-induction-l11-23",
+      "_subject_mention": "d02-ispr-induction-l11-15"
+    },
+    "claim_id": "d02-ispr-induction-l11-22",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          370,
+          457
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+        "frame": null,
+        "line": 11,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          382,
+          457
+        ]
+      }
+    ],
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "14 October 2021"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army Air Defence",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        420,
+        452
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designator": "PAAD",
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Army Air Defence"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l11-24",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        420,
+        452
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAAD"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d02-ispr-induction-l11-24",
+      "_subject_mention": "d02-ispr-induction-l11-23"
+    },
+    "claim_id": "d02-ispr-induction-l11-25",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        420,
+        452
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAAD",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Pakistan Army Air Defence"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -513,15 +1865,15 @@
       "region": null,
       "row": null,
       "span": [
-        658,
-        791
+        532,
+        567
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -532,14 +1884,15 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "functional_role": "Command, Control, Communication and Intelligence network"
+        "service_branch": "Pakistan Army"
       },
-      "entity_type": "component",
+      "entity_type": "unit",
       "form": "entity",
-      "name": "Command, Control, Communication and Intelligence Air Defence (CLIAD) network"
+      "name": "Army Air Defence"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c2",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -563,15 +1916,15 @@
       "region": null,
       "row": null,
       "span": [
-        793,
-        999
+        837,
+        853
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -581,28 +1934,14 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "confidence_language": "believed to be",
-        "designators": [
-          "HQ-9P",
-          "FD-2000"
-        ],
-        "family": "Hongqi-9",
-        "range_km": {
-          "approx": false,
-          "count_state": null,
-          "max": null,
-          "min": null,
-          "unit": "km",
-          "value": 100.0
-        }
-      },
+      "attrs": {},
       "entity_type": "variant",
       "form": "entity",
-      "name": "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      "name": "Hongqi-9"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -614,10 +1953,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "d02-ispr-induction-l15"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d02-ispr-induction-l15-2",
     "doc_ref": {
       "bbox": null,
@@ -628,15 +1965,15 @@
       "region": null,
       "row": null,
       "span": [
-        793,
-        999
+        854,
+        876
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -646,14 +1983,166 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "FD-2000",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        861,
+        875
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c3",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1438,
+        1454
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "launcher",
+        "model_designation": "TEL"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "TELs"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c4",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1438,
+        1454
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "launcher"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "launchers"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c4",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",
@@ -667,27 +2156,97 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d02-ispr-induction-l15"
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "launchers",
+        "TELs"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "launchers (TELs)"
+      ],
+      "_coref_referent": "ref:d02-ispr-induction-c4",
+      "_object_mention": "d02-ispr-induction-l17",
+      "_subject_mention": "d02-ispr-induction-l17-2",
+      "source_quote": "launchers (TELs)"
     },
-    "claim_id": "d02-ispr-induction-l15-3",
+    "claim_id": "d02-ispr-induction-l17-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
       "frame": null,
-      "line": 15,
+      "line": 17,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        793,
-        999
+        1438,
+        1454
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "TELs",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "launchers"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d02-ispr-induction-l17-2",
+      "d02-ispr-induction-l17"
+    ],
+    "referent_id": "ref:chunk0-d02-ispr-induction-c4",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d02-ispr-induction-l17",
+      "_subject_mention": "d02-ispr-induction-l17-2"
+    },
+    "claim_id": "d02-ispr-induction-l17-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1438,
+        1454
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -698,13 +2257,125 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HQ-9P",
+      "object": "TELs",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "Chinese Hongqi-9 (HQ-9P/FD-2000 family)"
+      "subject": "launchers"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1846,
+        1917
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Army Air Defence"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "newly raised/re-equipped unit"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2021-10-14",
+      "kind": "exact",
+      "raw": "2021-10-14"
+    },
+    "resolved_ref": null,
+    "source_id": "d02_ispr_induction",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d02-ispr-induction-l28",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d02_ispr_induction.txt",
+      "frame": null,
+      "line": 28,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2862,
+        2877
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Rawalpindi",
+          "raw": "Rawalpindi",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        }
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "GHQ, Rawalpindi"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2021-10-14",

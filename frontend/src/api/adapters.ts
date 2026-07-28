@@ -51,8 +51,12 @@ export function statusToGraphKind(node: NodeView): GraphKind {
     case 'confirmed':
       return 'confirmed'
     case 'probable':
-    case 'possible':
       return 'probable'
+    // The rung BELOW probable — one thin look. It gets its own treatment: folding it into
+    // `probable` drew 58 weak leads exactly like 168 supported assertions, which is the same
+    // class of defect as drawing `confirmed` like `probable`, one rung down the ladder.
+    case 'possible':
+      return 'possible'
     case 'stale':
       return 'stale'
     case 'insufficient':
@@ -74,6 +78,80 @@ export const STATUSLESS_EDGE_TYPES = new Set(['same-as', 'distinct-from', 'super
 
 export function isStatuslessEdge(edge: EdgeView): boolean {
   return STATUSLESS_EDGE_TYPES.has(edge.type)
+}
+
+/** Edge types that record a SEPARATION — "these two records are NOT the same thing".
+ *
+ *  Two rails draw one, and they are not the same kind of statement, which is exactly why both
+ *  belong here rather than one of them falling through to a domain-relationship treatment:
+ *
+ *  · `distinct-from` — the resolver's own wall (curated registry entry, analyst adjudication,
+ *    gazetteer separation, hard identifier, stated attribute contradiction). Status-less: it is
+ *    bookkeeping about our records, never a claim about the world.
+ *  · `coref-distinct-from` — a SOURCE went out of its way to say "this is not that". It is an
+ *    ordinary claim-backed edge and therefore carries a status, so it is deliberately NOT in
+ *    `STATUSLESS_EDGE_TYPES`. It nevertheless asserts a separation, and on the booted corpus its
+ *    fourteen instances — including the two co-located Pano Aqil positions that ARE the
+ *    order-of-battle trap — were rendering as ordinary teal relationship lines. A separation
+ *    drawn as a connection is the picture asserting the opposite of the finding. */
+export const WALL_EDGE_TYPES = new Set(['distinct-from', 'coref-distinct-from'])
+
+export function isWallEdge(edge: EdgeView | null | undefined): boolean {
+  return edge != null && WALL_EDGE_TYPES.has(edge.type)
+}
+
+/** The AUTHORITY behind an identity decision. Presenting a machine inference as a human ruling
+ *  is a truthfulness defect, not a styling one — an analyst who reads "a person decided this"
+ *  has no reason left to check it — so the four grounds are told apart and named.
+ *
+ *  Read off the ground the backend already supplies. Each rail in `chanakya.resolve` writes ONE
+ *  deliberately distinct sentence (see `_curated_wall_reason`, `_analyst_wall_reason`,
+ *  `_stated_wall_reason`, `place_wall_reason`, `_identifier_wall_reason`) and the derived ones
+ *  are explicit that they are derived. We match on the phrase each rail owns and DEFAULT TO
+ *  DERIVED: mistaking a human ruling for a machine finding costs the analyst a redundant check;
+ *  the opposite mistake costs them the reason to check at all. */
+export type IdentityGround = 'curated' | 'analyst' | 'sourced' | 'derived' | 'unrecorded'
+
+const GROUND_MARKERS: Array<[string, IdentityGround]> = [
+  ['explicit curated do-not-merge', 'curated'],
+  ['an ANALYST adjudicated', 'analyst'],
+  ['a SOURCE states these are different', 'sourced'],
+  ['ground was not recorded', 'unrecorded'],
+]
+
+export function identityGround(edge: EdgeView | null | undefined): IdentityGround {
+  const reason = identityReason(edge)
+  if (reason) {
+    for (const [marker, ground] of GROUND_MARKERS) if (reason.includes(marker)) return ground
+    return 'derived'
+  }
+  // No stated reason. A claim-backed separation IS a source saying so — the claims below it in
+  // the drawer are the assertion. Anything else is the resolver's own inference.
+  if ((edge?.claim_ids ?? []).length > 0) return 'sourced'
+  return 'derived'
+}
+
+/** Short badge for the ground — what goes on the canvas edge and the drawer kicker. */
+export const IDENTITY_GROUND_LABEL: Record<IdentityGround, string> = {
+  curated: 'curated',
+  analyst: 'analyst ruling',
+  sourced: 'a source says so',
+  derived: 'derived',
+  unrecorded: 'ground not recorded',
+}
+
+/** One sentence naming WHO decided, in the analyst's terms. Never asserts a person where the
+ *  system only inferred. */
+export const IDENTITY_GROUND_SENTENCE: Record<IdentityGround, string> = {
+  curated:
+    'A person wrote this pair down as two different things in the curated reference data. This is configuration, not a document — there is no source to open behind it.',
+  analyst:
+    'An analyst adjudicated this pair apart, and the decision is replayed on every rebuild. A human judgement, not a machine finding — the audit trail is the adjudication record.',
+  sourced: 'A source in evidence asserts the two are different. The claims below are that assertion.',
+  derived:
+    'The system inferred this — nobody ruled on this pair. It is a machine finding you are in the loop to check.',
+  unrecorded:
+    'The rail that raised this recorded no ground. That is a defect in the rail rather than a statement about the pair — treat the decision as holding and report the missing ground.',
 }
 
 /** Edge → visual kind. Order matters:
@@ -99,6 +177,12 @@ export function edgeToKind(edge: EdgeView): EdgeKind {
       return 'e-supersede-candidate'
     return 'e-supersede'
   }
+  // A separation and a proposed merge are opposite statements about our records and must not
+  // share a treatment. The wall is checked BEFORE the status fall-through, because
+  // `coref-distinct-from` carries a real status and would otherwise be drawn as an ordinary
+  // teal relationship — a "these are not the same" line rendered as a connection.
+  if (WALL_EDGE_TYPES.has(edge.type)) return 'e-wall'
+  if (edge.type === 'same-as') return 'e-merge-candidate'
   if (isStatuslessEdge(edge)) return 'e-link'
   if (edge.superseded_by || edge.status === 'stale') return 'e-stale'
   if (edge.status === 'insufficient') return 'e-gap'
@@ -117,6 +201,23 @@ export function supersedeHoldReasons(edge: EdgeView | null | undefined): string[
   if (typeof raw === 'string') return raw ? [raw] : []
   if (Array.isArray(raw)) return raw.filter((r): r is string => typeof r === 'string' && r.length > 0)
   return []
+}
+
+/** `attrs.reason` off an identity edge — WHY the resolver refused (or only proposed) this merge.
+ *  Returned VERBATIM, for the same reason `supersedeHoldReasons` is: this is the resolver's own
+ *  computed ground, and a UI paraphrase would put our words between the analyst and the rail that
+ *  actually fired.
+ *
+ *  Two different edges carry it and both matter. On a candidate `same-as` it is the basis on which
+ *  the pair became a question at all; on a `distinct-from` it is the ground the wall rests on — and
+ *  a derived wall's ground ("these geocode to two gazetteer anchors declared distinct") is precisely
+ *  the inference the analyst is in the loop to check. The merge card previously showed only
+ *  `merge_confidence` plus the signal breakdown, which says how STRONG the resemblance is and never
+ *  why the system would not act on it. Those are different questions and only the second one carries
+ *  an instruction. */
+export function identityReason(edge: EdgeView | null | undefined): string | null {
+  const raw = edge?.attrs?.reason
+  return typeof raw === 'string' && raw.length > 0 ? raw : null
 }
 
 /** 'pending' | 'promoted' | 'held' | null — the supersession gate an edge sits behind. */
@@ -140,13 +241,30 @@ function yearOf(value?: string | null): number | null {
 // ───────────────────── analyst-facing naming (no raw ids in copy) ─────────────────────
 // `site_rahwali` is a key, not a name. Analyst-facing copy renders the node's OWN `name`
 // and keeps the id as secondary/technical detail; nothing here paraphrases or invents a
-// label — a node with no `name` falls back to its id rather than to a guess.
+// label — a node with no `name` reads as an unnamed thing OF ITS TYPE, never as its id.
+//
+// The id is an OPAQUE HANDLE (RK-NAMECUT): the backend mints it and may re-key it, so the
+// same node can carry a different id after a rebuild. Printing it where a name belongs says
+// nothing an analyst can act on and quietly promises a stability the backend never offered,
+// while "unnamed basing site" is both true and readable. An id IS still shown for a
+// reference the view does not contain at all — that is a dangling pointer, not a name, and
+// the raw handle is the only honest thing to surface for it.
 
-/** id → node.name, or the id itself when the graph has no name for it. Never invents one. */
+/** What to call a node whose graph record carries no `name` — never its id. */
+export function unnamedLabel(type?: string | null): string {
+  return `unnamed ${type ? humanizeToken(type) : 'record'}`
+}
+
+/** A node's analyst-facing label: its own name, else `unnamed <type>`. */
+export function nodeDisplayName(node: { name?: string | null; type?: string | null }): string {
+  return node.name ?? unnamedLabel(node.type)
+}
+
+/** id → the node's name (or `unnamed <type>`); the raw id only for a ref the view has no record of. */
 export function displayNameOf(view: GraphView | null | undefined, id: string): string {
   if (!view) return id
   const node = view.nodes.find((n) => n.id === id)
-  if (node?.name) return node.name
+  if (node) return nodeDisplayName(node)
   const edge = view.edges.find((e) => e.id === id)
   if (edge) {
     // an edge has no name of its own — read it as "source — type → target", each side named.
@@ -158,7 +276,7 @@ export function displayNameOf(view: GraphView | null | undefined, id: string): s
 /** Build a reusable resolver over one view (avoids re-scanning per lookup). */
 export function nameResolver(view: GraphView | null | undefined): (id: string) => string {
   if (!view) return (id) => id
-  const names = new Map(view.nodes.map((n) => [n.id, n.name ?? n.id]))
+  const names = new Map(view.nodes.map((n) => [n.id, nodeDisplayName(n)]))
   return (id) => names.get(id) ?? displayNameOf(view, id)
 }
 
@@ -265,7 +383,7 @@ export function unplacedLocations(view: GraphView): UnplacedLocation[] {
     if (typeof loc.wgs84_lat === 'number' && typeof loc.wgs84_lon === 'number') continue
     const stated = locationRawText(loc.raw)
     if (!stated) continue
-    out.push({ id: node.id, label: node.name ?? node.id, stated, type: node.type })
+    out.push({ id: node.id, label: nodeDisplayName(node), stated, type: node.type })
   }
   return out.sort((a, b) => a.label.localeCompare(b.label))
 }
@@ -339,7 +457,7 @@ export function viewToPins(view: GraphView): StagePin[] {
 
     pins.push({
       id: node.id,
-      label: node.name ?? node.id,
+      label: nodeDisplayName(node),
       lat,
       lon,
       coord,
@@ -407,7 +525,7 @@ export function clusterAreaPins(pins: StagePin[]): StagePin[] {
 export function viewToGraphNodes(view: GraphView): GraphNodeDef[] {
   return view.nodes.map((node) => ({
     id: node.id,
-    label: `${node.name ?? node.id}\n${node.type}`,
+    label: `${nodeDisplayName(node)}\n${node.type}`,
     x: 0,
     y: 0,
     kind: statusToGraphKind(node),
@@ -415,25 +533,124 @@ export function viewToGraphNodes(view: GraphView): GraphNodeDef[] {
     // separates the knowledge layer from the evidence layer (`source` nodes) and lays
     // nodes out by supply-chain role, neither of which is derivable from `kind`.
     type: node.type,
-    name: node.name ?? node.id,
+    name: nodeDisplayName(node),
   }))
 }
 
 export function viewToGraphEdges(view: GraphView): GraphEdgeDef[] {
-  return view.edges.map((edge) => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    kind: edgeToKind(edge),
-    // ontology type kept alongside the status `kind`: `e-link` collapses `same-as` and
-    // `distinct-from` into one treatment, but the graph stage has to tell a merge from a
-    // hard veto, and domain relationships from resolution bookkeeping.
-    type: edge.type,
-  }))
+  return view.edges.map((edge) => {
+    const kind = edgeToKind(edge)
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      kind,
+      // ontology type kept alongside the status `kind`: the graph stage lays out by supply-chain
+      // role and separates domain relationships from resolution bookkeeping, neither of which is
+      // derivable from `kind` alone.
+      type: edge.type,
+      // …and, for a separation or a proposal, WHO decided it. A derived wall drawn like a curated
+      // one tells the analyst a person already ruled, which is the one thing that would stop them
+      // checking a machine inference.
+      ground:
+        kind === 'e-wall' || kind === 'e-merge-candidate' ? identityGround(edge) : undefined,
+    }
+  })
 }
 
 export function viewToGraph(view: GraphView): { nodes: GraphNodeDef[]; edges: GraphEdgeDef[] } {
   return { nodes: viewToGraphNodes(view), edges: viewToGraphEdges(view) }
+}
+
+// ───────────────────────────── known gaps (the named absences) ─────────────────────────────
+// Naming absence is what this system is FOR, and the rebuilt view carries 48 of them — what is
+// missing AND when coverage is next due. Almost none of it reached the SPA: five gap-styled nodes
+// on the canvas, twenty-two hanging off edges nobody could click, and an authored demo-only panel.
+// A judgement that reaches no analyst is the same defect class as not computing it.
+//
+// Nothing here composes a coverage sentence. `coverage_statement` is the backend's own words
+// (including the honest "unscheduled — no collection is tasked against this gap", which a bare
+// null date cannot say); a gap that carries none says the schedule was not recorded rather than
+// implying one.
+
+/** The three kinds of absence, which are NOT the same kind of thing (spine/04, copy deck §5). */
+export const GAP_CEILING_LABEL: Record<ObservabilityCeiling, string> = {
+  confirmable: 'Collectable — a pending task',
+  'probable-max': 'A ceiling — more collection will not raise this',
+  'never-observable': 'A boundary — there is nothing to collect',
+}
+
+export const GAP_CEILING_BLURB: Record<ObservabilityCeiling, string> = {
+  confirmable: 'Open collection requirements. Each names what is missing and when the next look is due.',
+  'probable-max':
+    'Open sources can carry these to probable and no further. The estimate stands; more of the same collection does not change it.',
+  'never-observable':
+    'Not observable from open sources at all. Not a shortfall in our collection — a limit of the discipline.',
+}
+
+const GAP_CEILING_ORDER: ObservabilityCeiling[] = ['confirmable', 'probable-max', 'never-observable']
+
+export interface LiveGapRow {
+  id: string
+  whatMissing: string
+  ceiling: ObservabilityCeiling
+  /** the backend's coverage sentence, verbatim. '' when it recorded none. */
+  coverage: string
+  nextCoverageDue: string | null
+  missingSlots: string[]
+  /** what the gap is ABOUT — the element it was raised on. */
+  aboutRef: string | null
+  aboutName: string | null
+  /** 'node' | 'edge' when the live view still holds that element (so it is one click from its
+   *  provenance), null when the gap names a ref the view does not carry — say so, never link it. */
+  aboutKind: 'node' | 'edge' | null
+  alsoRaisedAs: string[]
+}
+
+export function viewToGaps(view: GraphView | null | undefined): LiveGapRow[] {
+  if (!view) return []
+  const nodes = new Map(view.nodes.map((n) => [n.id, n]))
+  const edges = new Map(view.edges.map((e) => [e.id, e]))
+  const resolve = nameResolver(view)
+  return (view.known_gaps ?? []).map((gap: KnownGap) => {
+    const ref = gap.related_ref ?? null
+    const aboutKind: 'node' | 'edge' | null =
+      ref == null ? null : nodes.has(ref) ? 'node' : edges.has(ref) ? 'edge' : null
+    // Most gaps state their absence in a sentence; the sufficiency templates state it as the bare
+    // slot token they are missing (`imagery_confirmation`). Underscores are stripped so a reader
+    // can read it — a rendering of the backend's own word, never a paraphrase of it or a
+    // substitution for it. A `what_missing` that is already prose is passed through untouched.
+    return {
+      id: gap.id,
+      whatMissing: /\s/.test(gap.what_missing) ? gap.what_missing : humanizeToken(gap.what_missing),
+      ceiling: gap.observability_ceiling,
+      coverage: gap.coverage_statement ?? '',
+      nextCoverageDue: gap.next_coverage_due ?? null,
+      missingSlots: gap.missing_slots ?? [],
+      aboutRef: ref,
+      aboutName: ref == null ? null : aboutKind ? displayNameOf(view, ref) : resolve(ref),
+      aboutKind,
+      alsoRaisedAs: gap.also_raised_as ?? [],
+    }
+  })
+}
+
+export interface LiveGapGroup {
+  ceiling: ObservabilityCeiling
+  label: string
+  blurb: string
+  rows: LiveGapRow[]
+}
+
+/** Grouped by ceiling in the order the refusal grammar states them (task → ceiling → boundary),
+ *  rows sorted by id so the same view always renders the same list. Empty groups are dropped. */
+export function groupGaps(rows: LiveGapRow[]): LiveGapGroup[] {
+  return GAP_CEILING_ORDER.map((ceiling) => ({
+    ceiling,
+    label: GAP_CEILING_LABEL[ceiling],
+    blurb: GAP_CEILING_BLURB[ceiling],
+    rows: rows.filter((r) => r.ceiling === ceiling).sort((a, b) => (a.id < b.id ? -1 : 1)),
+  })).filter((g) => g.rows.length > 0)
 }
 
 // ─────────────────────── live provenance drawer ───────────────────────
@@ -523,10 +740,37 @@ export interface LiveDrawerSupersession {
   newerEdgeId: string | null
 }
 
+/** The identity decision an open `same-as` / `distinct-from` element IS — with its stated GROUND.
+ *
+ *  A wall carries no confidence, no signal breakdown and no card; the ground is the whole finding, and
+ *  without it the analyst sees two nodes with a line between them and no way to tell a curated human
+ *  decision from a geodesic arithmetic result. */
+export interface LiveDrawerIdentity {
+  kind: 'wall' | 'candidate'
+  /** the resolver's own words, verbatim — never paraphrased into ours. `null` when the rail
+   *  recorded none (a claim-asserted separation carries its ground as the cited claim instead). */
+  reason: string | null
+  /** WHO decided — a human ruling, a source's sentence, or a machine inference. */
+  ground: IdentityGround
+  groundLabel: string
+  groundSentence: string
+  /** true when the decision's ground is a document you can open, false when it is configuration
+   *  or an inference. The honest answer to an empty `/evidence` envelope: a curated veto is
+   *  config, not a sourced claim, and "0 claims on file" reads like missing data instead. */
+  claimBacked: boolean
+  leftName: string
+  rightName: string
+  suppressedCandidateReason: string | null // a scored resemblance this wall overruled, if any
+  suppressedCandidateNote: string | null
+  unappliedDecision: string | null // an analyst instruction the resolver did NOT apply…
+  unappliedGround: string | null // …and the ground it was not applied on
+}
+
 export interface LiveDrawerModel {
   subjectRef: string
   subject?: LiveDrawerSubject
   supersession?: LiveDrawerSupersession
+  identity?: LiveDrawerIdentity
   status: Status
   sources: number // count of DISTINCT source_id across claims
   looks: number // clusters.length (independent looks)
@@ -702,7 +946,7 @@ export function drawerSubject(view: GraphView | null | undefined, ref: string): 
     return {
       ref,
       kind: 'node',
-      headline: `“${node.name ?? node.id}” exists, as a ${typeLabel}`,
+      headline: `“${nodeDisplayName(node)}” exists, as a ${typeLabel}`,
       typeLabel,
       statusless: false,
     }
@@ -724,6 +968,29 @@ export function drawerSubject(view: GraphView | null | undefined, ref: string): 
           ? `${subject} moved from ${dst} to ${src} — the earlier basing is now history`
           : `The recorded basing moved from ${dst} to ${src} — the earlier one is now history`,
         typeLabel: 'replaced by',
+        statusless,
+        edgeType: edge.type,
+      }
+    }
+    // An identity edge is not a relationship in the world, so it does not read as one. "A — distinct
+    // from → B" describes a link; "A and B are NOT the same thing" states the decision the drawer is
+    // about, which is what the analyst is being asked to check.
+    if (isWallEdge(edge)) {
+      return {
+        ref,
+        kind: 'edge',
+        headline: `“${src}” and “${dst}” are NOT the same thing`,
+        typeLabel: 'held apart',
+        statusless,
+        edgeType: edge.type,
+      }
+    }
+    if (edge.type === 'same-as') {
+      return {
+        ref,
+        kind: 'edge',
+        headline: `“${src}” and “${dst}” may be one and the same — proposed, not adjudicated`,
+        typeLabel: 'proposed merge',
         statusless,
         edgeType: edge.type,
       }
@@ -756,6 +1023,58 @@ export function drawerSupersession(
     toName: resolve(link.source),
     olderEdgeId,
     newerEdgeId,
+  }
+}
+
+/** The identity decision the drawer's subject IS, when the subject is an identity edge.
+ *
+ *  `identityReason()` existed and was wired at exactly ONE call site — the `same-as` branch of
+ *  `viewToReviewQueue` — so a WALL's ground reached no surface at all. That is the wrong half to drop: a
+ *  candidate `same-as` at least arrives with a merge score and a signal breakdown, whereas a
+ *  `distinct-from` is drawn with no number and no card, and its ground is the entire content of the
+ *  finding. Most of the walls on the booted corpus are DERIVED (a gazetteer separation, a hard identifier,
+ *  a stated attribute conflict, another analyst's reject) — machine inferences the analyst is in the loop
+ *  precisely to check, rendered until now as a bare line between two nodes.
+ *
+ *  Read off the view rather than the `/evidence` payload because the reason already rides the edge there;
+ *  routing it through a second channel would only create a second place for the two to disagree. */
+export function drawerIdentity(
+  view: GraphView | null | undefined,
+  ref: string,
+): LiveDrawerIdentity | undefined {
+  const edge = view?.edges.find(
+    (e) => e.id === ref && (isWallEdge(e) || e.type === 'same-as'),
+  )
+  if (!edge) return undefined
+  // A missing `reason` no longer suppresses the block. The rails that record none are exactly the
+  // claim-asserted separations, whose ground is the cited sentence below — returning `undefined`
+  // there left the analyst with a line between two nodes and no statement of what it means.
+  const reason = identityReason(edge)
+  const ground = identityGround(edge)
+  const resolve = nameResolver(view)
+  const attrs = edge.attrs ?? {}
+  const suppressed = attrs.suppressed_candidate as
+    | { reason?: string | null; note?: string | null }
+    | undefined
+  const unapplied = attrs.adjudication_not_applied as
+    | { decision?: string; actor?: string; ground?: string; instruction?: string }
+    | undefined
+  return {
+    kind: isWallEdge(edge) ? 'wall' : 'candidate',
+    reason,
+    ground,
+    groundLabel: IDENTITY_GROUND_LABEL[ground],
+    groundSentence: IDENTITY_GROUND_SENTENCE[ground],
+    claimBacked: (edge.claim_ids ?? []).length > 0,
+    leftName: resolve(edge.source),
+    rightName: resolve(edge.target),
+    // A wall that overruled a scored resemblance says so, in the resolver's own words for the proposal
+    // it suppressed — otherwise the analyst sees a wall and never learns there was a case against it.
+    suppressedCandidateReason: typeof suppressed?.reason === 'string' ? suppressed.reason : null,
+    suppressedCandidateNote: typeof suppressed?.note === 'string' ? suppressed.note : null,
+    // …and an instruction the analyst already gave that the resolver did NOT apply, with its ground.
+    unappliedDecision: typeof unapplied?.decision === 'string' ? unapplied.decision : null,
+    unappliedGround: typeof unapplied?.ground === 'string' ? unapplied.ground : null,
   }
 }
 
@@ -856,6 +1175,7 @@ export function evidenceToDrawerModel(data: ProvenanceDrawer, view?: GraphView |
     subjectRef: data.subject_ref,
     subject,
     supersession: drawerSupersession(view, data.subject_ref),
+    identity: drawerIdentity(view, data.subject_ref),
     status: data.status ?? 'insufficient',
     sources: sourceIds.size,
     looks: clusters.length,
@@ -1034,7 +1354,8 @@ export interface LiveAlertProvenanceModel {
 export interface LiveFiring {
   key: string // stable per-firing key (matches the review-queue itemId suffix)
   observableId: string
-  subject: string | null
+  subject: string | null // the raw element id — the technical handle, kept for logs/citations
+  subjectName: string | null // …and the name the rest of the app renders it by
   firedTs: string | null
   severity: string | null
   changed: { from: string; to: string } | null
@@ -1043,6 +1364,9 @@ export interface LiveFiring {
   provenance: LiveAlertProvenanceModel | null
   holdReasons: string[] // verbatim supersede_hold_reason strings off the referenced edges
   gate: string | null // 'pending' | 'promoted' | 'held'
+  /** set when the alert's stated origin and the recorded supersession disagree — see
+   *  `alertOriginContest`. Never resolved here: the card shows the contest. */
+  originContest: LiveAlertOriginContest | null
 }
 
 export interface LiveTripwire {
@@ -1059,12 +1383,80 @@ const DISPOSITION_LABEL: Record<AlertDisposition, string> = {
   'needs-more': 'held for a second look',
 }
 
-/** Compact "k: v, k: v" summary of an alert before/after snapshot. */
-function summarizeSnapshot(snap: Record<string, unknown> | undefined): string {
+/** Compact "k: v, k: v" summary of an alert before/after snapshot, in the app's own words.
+ *
+ *  The snapshot is raw graph state — `{"based-at": "site_rahwali"}` — and printing it verbatim put
+ *  `based-at: site_rahwali` on the fired-alert card while the map and the review queue rendered the
+ *  same two things as "based at" and "Rahwali airfield". The key is humanised and every value that
+ *  is an id the graph knows is swapped for that node's own name; anything the graph does not know
+ *  passes through untouched, so nothing is ever renamed into a guess. */
+function summarizeSnapshot(
+  snap: Record<string, unknown> | undefined,
+  resolve: (id: string) => string = (id) => id,
+): string {
   if (!snap) return ''
   return Object.entries(snap)
-    .map(([k, v]) => `${k}: ${v}`)
+    .map(([k, v]) => `${humanizeEdge(k)}: ${typeof v === 'string' ? resolve(v) : String(v)}`)
     .join(', ')
+}
+
+/** A fired relocation whose stated origin does NOT match the origin the graph actually recorded.
+ *
+ *  The tripwire's `before` is the basing edge that happened to be the group's representative in the
+ *  previous view — with four un-adjudicated basings on one unit that representative is decided by an
+ *  id sort, not by adjudication. The graph's own answer to "moved from where?" is the supersession:
+ *  the new `based-at` edge names, in `supersedes`, the assertion it overtook. When those two
+ *  disagree the origin is genuinely contested, and this system's whole thesis is that a contest is
+ *  reported rather than silently resolved in one surface's favour. Never picks a winner. */
+export interface LiveAlertOriginContest {
+  statedFrom: string // what the alert's own `before` snapshot named
+  statedFromRef: string | null // → the provenance drawer, when it is an element we can open
+  recordedFrom: string // the assertion the successor edge says it overtook
+  recordedFromRef: string | null
+  /** every other basing still on file for this subject that no supersession retired */
+  otherBasings: Array<{ ref: string; name: string; status: Status | null }>
+}
+
+export function alertOriginContest(
+  alert: Alert,
+  edges: Map<string, EdgeView> | undefined,
+  resolve: (id: string) => string = (id) => id,
+): LiveAlertOriginContest | null {
+  const beforeRef = alert.provenance?.before_ref ?? null
+  const afterRef = alert.provenance?.after_ref ?? null
+  if (!edges || !beforeRef || !afterRef) return null
+  const afterEdge = edges.get(afterRef)
+  const overtook = typeof afterEdge?.supersedes === 'string' ? afterEdge.supersedes : null
+  // No recorded supersession, or it names the very edge the alert called "before" → no contest.
+  if (!overtook || overtook === beforeRef) return null
+  const beforeEdge = edges.get(beforeRef)
+  const overtookEdge = edges.get(overtook)
+  const nameOfEdge = (e: EdgeView | undefined, fallback: string) =>
+    e ? resolve(e.target) : fallback
+  const subject = alert.subject ?? null
+  const otherBasings = subject
+    ? [...edges.values()]
+        .filter(
+          (e) =>
+            e.source === subject &&
+            afterEdge != null &&
+            e.type === afterEdge.type &&
+            // the three already named above (the new state, the recorded origin, the stated one)
+            e.id !== afterRef &&
+            e.id !== overtook &&
+            e.id !== beforeRef &&
+            e.superseded_by == null,
+        )
+        .sort((a, b) => (a.id < b.id ? -1 : 1))
+        .map((e) => ({ ref: e.id, name: resolve(e.target), status: e.status ?? null }))
+    : []
+  return {
+    statedFrom: nameOfEdge(beforeEdge, beforeRef),
+    statedFromRef: beforeEdge ? beforeRef : null,
+    recordedFrom: nameOfEdge(overtookEdge, overtook),
+    recordedFromRef: overtookEdge ? overtook : null,
+    otherBasings,
+  }
 }
 
 /** 'obs-basing-relocation' → 'Basing relocation'. The observable catalogue is not exposed
@@ -1099,7 +1491,11 @@ function alertProvenanceModel(alert: Alert): LiveAlertProvenanceModel | null {
 
 /** One alert → the display model, resolving its before/after element refs against the view's
  *  edges so a held supersession explains itself in the analyst's own words. */
-export function alertToFiring(alert: Alert, edges?: Map<string, EdgeView>): LiveFiring {
+export function alertToFiring(
+  alert: Alert,
+  edges?: Map<string, EdgeView>,
+  resolve: (id: string) => string = (id) => id,
+): LiveFiring {
   const provenance = alertProvenanceModel(alert)
   const refs = [alert.provenance?.before_ref, alert.provenance?.after_ref].filter(
     (r): r is string => typeof r === 'string' && r.length > 0,
@@ -1109,12 +1505,13 @@ export function alertToFiring(alert: Alert, edges?: Map<string, EdgeView>): Live
   const gate = referenced.map(supersedeGate).find((g) => g != null) ?? null
   const changed =
     alert.before || alert.after
-      ? { from: summarizeSnapshot(alert.before), to: summarizeSnapshot(alert.after) }
+      ? { from: summarizeSnapshot(alert.before, resolve), to: summarizeSnapshot(alert.after, resolve) }
       : null
   return {
     key: firingKey(alert),
     observableId: alert.observable_id,
     subject: alert.subject ?? null,
+    subjectName: alert.subject ? resolve(alert.subject) : null,
     firedTs: alert.fired_ts ?? null,
     severity: alert.severity ?? null,
     changed,
@@ -1123,6 +1520,7 @@ export function alertToFiring(alert: Alert, edges?: Map<string, EdgeView>): Live
     provenance,
     holdReasons,
     gate,
+    originContest: alertOriginContest(alert, edges, resolve),
   }
 }
 
@@ -1134,9 +1532,10 @@ export function alertToFiring(alert: Alert, edges?: Map<string, EdgeView>): Live
  *  refuses elsewhere. The panel says so instead. */
 export function viewToTripwires(view: GraphView): LiveTripwire[] {
   const edges = new Map(view.edges.map((e) => [e.id, e]))
+  const resolve = nameResolver(view)
   const byObservable = new Map<string, LiveFiring[]>()
   for (const alert of view.alerts ?? []) {
-    const firing = alertToFiring(alert, edges)
+    const firing = alertToFiring(alert, edges, resolve)
     const bucket = byObservable.get(firing.observableId)
     if (bucket) bucket.push(firing)
     else byObservable.set(firing.observableId, [firing])
@@ -1210,6 +1609,18 @@ export interface MergeDiffRow {
  *  telling us in its own words what it could not find. Both are computed; nothing is authored. */
 export interface LiveMergeEvidence {
   confidence: number | null
+  /** The resolver's own stated ground for leaving this an open question rather than merging it —
+   *  `attrs.reason` on the candidate edge, verbatim. Distinct from `matchedOn`/`differsOn`, which
+   *  argue how strong the resemblance is: this says which rail withheld the fusion and what would
+   *  settle it, i.e. it is the only part of the card that carries an instruction. `null` when the
+   *  resolver recorded none — never a stand-in sentence. */
+  reason: string | null
+  /** An instruction the analyst ALREADY gave on this pair that the resolver did not apply, and the
+   *  ground it was not applied on (`attrs.adjudication_not_applied`, replayed from the decision log on
+   *  every rebuild). Without it the card asks the identical question with no memory that it was already
+   *  answered, which is how a review loop turns into a treadmill. `null` when the pair is genuinely
+   *  un-adjudicated. */
+  alreadyDecided: { decision: string; ground: string } | null
   matchedOn: MergeSignalRow[]
   differsOn: string[]
   /** T10 — the same lines as `differsOn`, each carrying its provenance (see MergeDiffRow).
@@ -1251,6 +1662,8 @@ export interface LiveReviewContext {
   // provenance drawer) and, when a supersession was held back, the gate's own words.
   provenance?: LiveAlertProvenanceModel | null
   holdReasons?: string[]
+  /** alert only — the alert's stated origin vs the origin the graph recorded, when they disagree. */
+  originContest?: LiveAlertOriginContest | null
   // merge only — the full identity case (see LiveMergeEvidence).
   merge?: LiveMergeEvidence
   // status-override / alert only — what the decision demonstrably changes, and what it cannot say.
@@ -1359,7 +1772,7 @@ function reviewSide(id: string, node: NodeView | undefined): LiveReviewSide {
   const status = node?.status ?? null
   return {
     id,
-    label: node?.name ?? id,
+    label: node ? nodeDisplayName(node) : id,
     type,
     status,
     claimCount,
@@ -1474,7 +1887,10 @@ export function mergeDiffersOn(
 export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   const items: LiveReviewItem[] = []
   const nodeIndex = new Map(view.nodes.map((n) => [n.id, n]))
-  const nodeLabel = (id: string): string => nodeIndex.get(id)?.name ?? id
+  const nodeLabel = (id: string): string => {
+    const n = nodeIndex.get(id)
+    return n ? nodeDisplayName(n) : id
+  }
   const edgeIndex = new Map(view.edges.map((e) => [e.id, e]))
 
   // How many real (assertional) edges hang off each node — "what reconnects if you merge".
@@ -1490,6 +1906,11 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   //    names both candidates; the card carries the resolver's own per-signal case.
   for (const edge of view.edges) {
     if (edge.type !== 'same-as') continue
+    // A candidate the resolver RAISED below the analyst band is not an open question — it was already
+    // disposed of, and the ground rides the edge. Those belong on the refusals surface, not here. The
+    // backend makes the call (`attrs.triage`) because it is the side that knows the band; re-deriving it
+    // from the score in the SPA would be a second opinion about what a candidate is.
+    if (edge.attrs?.triage === 'recorded') continue
     const leftNode = nodeIndex.get(edge.source)
     const rightNode = nodeIndex.get(edge.target)
     const left = reviewSide(edge.source, leftNode)
@@ -1518,6 +1939,16 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
       }))
     const differs = mergeDifferences(leftNode, rightNode, breakdown)
     const differsOn = differs.map((row) => row.text)
+    // An instruction the analyst already gave on this pair that the resolver did not apply. The pair is
+    // still a live question — the refusal may be entirely correct (the cross-type rail, for one) — but
+    // re-asking it with no acknowledgement is the queue asking the same question forever.
+    const decided = edge.attrs?.adjudication_not_applied as
+      | { decision?: string; ground?: string }
+      | undefined
+    const alreadyDecided =
+      typeof decided?.decision === 'string' && typeof decided?.ground === 'string'
+        ? { decision: decided.decision, ground: decided.ground }
+        : null
 
     const joinedClaims = new Set([...(leftNode?.claim_ids ?? []), ...(rightNode?.claim_ids ?? [])]).size
     const reconnects = (degree.get(edge.source) ?? 0) + (degree.get(edge.target) ?? 0)
@@ -1548,7 +1979,11 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
           ? `identity match ${edge.merge_confidence.toFixed(2)} · ${matchedOn.length} of ${Object.keys(breakdown).length || 4} signals`
           : 'identity match not recorded',
       badge: band,
-      badges: [band, ...(left.chokepoint || right.chokepoint ? ['Touches a chokepoint'] : [])],
+      badges: [
+        band,
+        ...(left.chokepoint || right.chokepoint ? ['Touches a chokepoint'] : []),
+        ...(alreadyDecided ? [`You answered “${alreadyDecided.decision}” — not applied`] : []),
+      ],
       material: left.chokepoint || right.chokepoint,
       confidence: edge.merge_confidence ?? null,
       options: MERGE_OPTIONS,
@@ -1557,7 +1992,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
         left: { id: edge.source, label: left.label },
         right: { id: edge.target, label: right.label },
         dots,
-        merge: { confidence: edge.merge_confidence ?? null, matchedOn, differsOn, differs, consequence, unknowns, left, right },
+        merge: { confidence: edge.merge_confidence ?? null, reason: identityReason(edge), alreadyDecided, matchedOn, differsOn, differs, consequence, unknowns, left, right },
       },
     })
   }
@@ -1569,7 +2004,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
     const contradicted = el.status === 'contradicted'
     if (opposing.length === 0 && !contradicted) continue
     const isNode = 'name' in el
-    const label = isNode ? ((el as NodeView).name ?? el.id) : displayNameOf(view, el.id)
+    const label = isNode ? nodeDisplayName(el as NodeView) : displayNameOf(view, el.id)
     const type = isNode ? (el as NodeView).type : (el as EdgeView).type
     const material = isNode ? isChokepoint(el as NodeView) : false
     const badge = contradicted ? 'Contradiction' : 'Close call'
@@ -1610,7 +2045,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   for (const alert of view.alerts) {
     if (alert.disposition != null) continue
     const subject = alert.subject ?? alert.observable_id
-    const firing = alertToFiring(alert, edgeIndex)
+    const firing = alertToFiring(alert, edgeIndex, nodeLabel)
     const observable = humanizeObservableId(alert.observable_id)
     const subjectName = alert.subject ? nodeLabel(alert.subject) : null
     const material = alert.subject ? isChokepoint(nodeIndex.get(alert.subject)) : false
@@ -1640,6 +2075,7 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
         severity: alert.severity,
         provenance: firing.provenance,
         holdReasons: firing.holdReasons,
+        originContest: firing.originContest,
         consequence: [
           'Accepting records the change as real; dismissing marks it noise. Either way the disposition is written back and feeds tripwire tuning.',
         ],
@@ -1811,4 +2247,69 @@ export function groupReviewQueue(items: LiveReviewItem[]): LiveReviewGroup[] {
     if (ac !== bc) return bc - ac
     return a.key.localeCompare(b.key)
   })
+}
+
+
+/* ── Refused, recorded — the surface for identity the resolver already disposed of ───────────────
+ *
+ *  These are pairs it declined to fuse and said why: a value the closed vocabulary cannot read, a cap
+ *  that holds co-location short of identity, a source that already distinguished the two, a cross-type
+ *  pair that can never merge at all. Every one must stay VISIBLE — "a gap that does not bind the fusion
+ *  path is decoration" — but visible is not the same as actionable, and routing them into the decision
+ *  queue put 114 unanswerable items in front of an analyst alongside 18 real ones. A queue that asks
+ *  questions nobody can answer is how the answerable ones stop being read.
+ *
+ *  Grouped by GROUND, because the ground is what an analyst would act on if they acted at all: an
+ *  unreadable site class is a coverage task ("go read the source"), a cross-type pair is a modelling
+ *  fact, and a source-stated distinction is a finding. Counts are honest — nothing is truncated
+ *  silently; a capped group says how many it is not showing. */
+export interface RecordedRefusal {
+  id: string
+  leftLabel: string
+  rightLabel: string
+  confidence: number | null
+  reason: string
+}
+
+export interface RecordedRefusalGroup {
+  ground: string
+  items: RecordedRefusal[]
+}
+
+/** The leading clause of the resolver's own reason — its rails each open with a stable phrase, and the
+ *  remainder is the per-pair detail. Never a re-worded summary: the grouping label is the resolver's
+ *  words, so a rail that changes its mind cannot leave this surface asserting the old one. */
+function refusalGround(reason: string): string {
+  const head = reason.split('—')[0].split(/\(/)[0].trim()
+  return head.length > 0 ? head : 'ground not recorded by the rail that raised it'
+}
+
+export function viewToRecordedRefusals(view: GraphView): RecordedRefusalGroup[] {
+  const nodeIndex = new Map(view.nodes.map((n) => [n.id, n]))
+  const label = (id: string): string => {
+    const n = nodeIndex.get(id)
+    return n ? nodeDisplayName(n) : id
+  }
+  const byGround = new Map<string, RecordedRefusal[]>()
+  for (const edge of view.edges) {
+    if (edge.type !== 'same-as' || edge.attrs?.triage !== 'recorded') continue
+    const reason = typeof edge.attrs?.reason === 'string' ? edge.attrs.reason : ''
+    const ground = refusalGround(reason)
+    const row: RecordedRefusal = {
+      id: edge.id,
+      leftLabel: label(edge.source),
+      rightLabel: label(edge.target),
+      confidence: edge.merge_confidence ?? null,
+      reason,
+    }
+    const bucket = byGround.get(ground)
+    if (bucket) bucket.push(row)
+    else byGround.set(ground, [row])
+  }
+  return [...byGround.entries()]
+    .map(([ground, items]) => ({
+      ground,
+      items: items.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0) || a.id.localeCompare(b.id)),
+    }))
+    .sort((a, b) => b.items.length - a.items.length || a.ground.localeCompare(b.ground))
 }

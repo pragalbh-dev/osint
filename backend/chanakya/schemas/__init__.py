@@ -8,6 +8,8 @@ F0-amendment PR (master §2 Rule 3).
 from __future__ import annotations
 
 from .api_models import (
+    AdjudicationReceipt,
+    AdjudicationView,
     AnswerHop,
     AskAnswer,
     AskRequest,
@@ -43,8 +45,10 @@ from .claim import (
 )
 from .config_models import (
     CONFIG_SECTIONS,
+    AttrDef,
     ConfigBundle,
     CredibilityConfig,
+    DiscriminatorClass,
     EntitiesConfig,
     EntityEntry,
     EvidenceTemplate,
@@ -61,7 +65,7 @@ from .config_models import (
     TypeDef,
 )
 from .decision import Actor, DecisionRecord, DecisionType, Stage
-from .ids import is_claim_id, make_claim_id
+from .ids import REFERENT_PREFIX, is_claim_id, is_referent_id, make_claim_id, make_referent_id
 from .stage_io import AssertionAssessment, AssertionInput, Partition, PlaceRef, pair_key
 from .values import (
     BoundarySource,
@@ -78,10 +82,12 @@ from .values import (
     Quantity,
     SurfaceFormat,
     canonical_iso_bounds,
+    report_bounded_validity,
 )
 from .view import (
     Alert,
     AlertProvenance,
+    AttrValueClaim,
     ConfidenceBreakdown,
     EdgeView,
     EventView,
@@ -99,10 +105,11 @@ from .view import (
 __all__ = [
     # base
     "Record", "ConfigModel",
-    # ids
-    "make_claim_id", "is_claim_id",
+    # ids — the two atom levels (A1): claim atom (live) + referent atom (constructor only until S3)
+    "make_claim_id", "is_claim_id", "make_referent_id", "is_referent_id", "REFERENT_PREFIX",
     # values
     "ExactDate", "LabelDate", "Period", "DateSpec", "DateValue", "canonical_iso_bounds",
+    "report_bounded_validity",
     "Granularity", "BoundarySource", "Location", "GeocodeCandidate", "PrecisionClass",
     "SurfaceFormat", "Quantity", "CountState",
     # claim / evidence log
@@ -114,15 +121,17 @@ __all__ = [
     "Partition", "PlaceRef", "AssertionInput", "AssertionAssessment", "pair_key",
     # view
     "GraphView", "NodeView", "EdgeView", "EventView", "KnownGap", "Alert", "AlertProvenance",
+    "AttrValueClaim",
     "ConfidenceBreakdown", "IndependenceGroup", "Freshness", "SufficiencyEval", "MaterialityAttrs",
     "Status", "ObservabilityCeiling",
     # config
     "ConfigBundle", "CONFIG_SECTIONS", "OntologyConfig", "SourcesConfig", "CredibilityConfig",
     "ResolutionConfig", "TemplatesConfig", "SubjectsConfig", "ObservablesConfig", "TypeDef",
+    "AttrDef", "DiscriminatorClass",
     "EvidenceTemplate", "SubjectLens", "ObservableDef", "PlacesConfig", "PlaceEntry",
     "EntitiesConfig", "EntityEntry",
     # api
     "AskRequest", "PriorTurn", "AskAnswer", "AnswerHop", "RefusalPayload", "ProvenanceDrawer", "ReviewQueueItem",
-    "ReviewContext", "ReviewType", "HitlDecision", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
+    "ReviewContext", "ReviewType", "HitlDecision", "AdjudicationReceipt", "AdjudicationView", "IngestRequest", "IngestResult", "ConfigRead", "ConfigWrite",
     "ConfigWriteResult", "HealthResponse",
 ]

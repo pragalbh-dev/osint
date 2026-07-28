@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from .export import sorted_view, view_to_dict, view_to_json
 from .lens import apply_lens
-from .pipeline import apply_decision_effects, apply_retractions, rebuild
+from .pipeline import apply_decision_effects, apply_retractions, partition_with_types, rebuild
 
 __all__ = [
     "rebuild",
+    "partition_with_types",
     "apply_retractions",
     "apply_decision_effects",
     "apply_lens",

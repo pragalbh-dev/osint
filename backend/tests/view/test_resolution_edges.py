@@ -26,6 +26,10 @@ from chanakya.schemas import (
 from chanakya.view import pipeline
 from chanakya.view.pipeline import _merge_provenance, _resolution_edges, _stamp_place_refs, rebuild
 
+# The shipped `resolution.bands.hitl_low`. Pinned here rather than read from config so a band change
+# is a deliberate test edit, not a silent re-interpretation of what these fixtures are asserting.
+HITL_LOW = 0.45
+
 
 def test_resolution_edges_emitted_for_candidates_and_distinct() -> None:
     ids = {"ent:variant:hq9p", "ent:variant:ft2000", "ent:variant:hq9be"}
@@ -36,7 +40,7 @@ def test_resolution_edges_emitted_for_candidates_and_distinct() -> None:
         merge_confidence={ck: 0.72},
         merge_breakdown={ck: {"attribute": 0.9, "relational": 0.1, "total": 0.72}},
     )
-    edges = _resolution_edges(ids, part)
+    edges = _resolution_edges(ids, part, HITL_LOW)
     by_type = {e.type: e for e in edges}
     assert set(by_type) == {"same-as", "distinct-from"}
 
@@ -46,6 +50,36 @@ def test_resolution_edges_emitted_for_candidates_and_distinct() -> None:
     assert sa.attrs["breakdown"]["total"] == 0.72
     assert sa.status is None  # never scored (G5)
     assert sa.confidence is None  # no assertion_confidence on a resolution edge (G5)
+
+
+def test_candidate_same_as_carries_the_REASON_it_is_an_open_question() -> None:
+    """The resolver's reason has to reach the surface an analyst opens, not just the Partition.
+
+    Every withholding mechanism computes an analyst-facing rationale — the co-location cap's "here is the
+    discriminator nobody stated", the cross-type/cross-namespace refusal, the below-floor critical conflict,
+    the licensing coreference quote — and ``Partition.candidate_reasons`` carried all of them to exactly one
+    consumer: the test suite. The drawn candidate edge showed a score and no grounds, so the queue asked
+    "are these the same?" with no way to see why the machine would not answer. "Escalate to the analyst" is
+    not satisfied by a value in a dict.
+    """
+    ids = {"a", "b"}
+    ck = pair_key("a", "b")
+    part = Partition(
+        candidates=[("a", "b")],
+        candidate_reasons={ck: "co-location is not identity, capped at 'probable' — …"},
+        merge_confidence={ck: 0.61},
+    )
+    edge = next(e for e in _resolution_edges(ids, part, HITL_LOW) if e.type == "same-as")
+    assert edge.attrs["reason"].startswith("co-location is not identity"), (
+        "the candidate edge does not carry its reason — the grounds for the refusal never reach the drawer"
+    )
+
+
+def test_candidate_same_as_carries_no_reason_key_when_there_is_no_reason() -> None:
+    """An ordinary scored look-alike has no *stated* ground, and inventing one would be the worse failure."""
+    part = Partition(candidates=[("a", "b")], merge_confidence={pair_key("a", "b"): 0.5})
+    edge = next(e for e in _resolution_edges({"a", "b"}, part, HITL_LOW) if e.type == "same-as")
+    assert "reason" not in edge.attrs
 
 
 def test_candidate_same_as_cites_the_claims_that_assert_the_identity() -> None:
@@ -63,7 +97,7 @@ def test_candidate_same_as_cites_the_claims_that_assert_the_identity() -> None:
         merge_breakdown={key: {"attribute": 0.47, "source_asserted": 0.85, "total": 0.40}},
         identity_claims={key: ["d01-sipri-transfer-l8-13", "d14-stale-holding-l9-4"]},
     )
-    (edge,) = _resolution_edges(ids, part)
+    (edge,) = _resolution_edges(ids, part, HITL_LOW)
     assert edge.claim_ids == ["d01-sipri-transfer-l8-13", "d14-stale-holding-l9-4"]
     assert edge.status is None  # still never scored — citing evidence is not being assessed (G5)
 
@@ -75,13 +109,13 @@ def test_candidate_same_as_cites_nothing_when_no_source_asserted_the_identity() 
         candidates=[("a", "b")],
         merge_breakdown={key: {"attribute": 0.5, "source_asserted": 0.0, "total": 0.3}},
     )
-    (edge,) = _resolution_edges({"a", "b"}, part)
+    (edge,) = _resolution_edges({"a", "b"}, part, HITL_LOW)
     assert edge.claim_ids == []
 
 
 def test_resolution_edge_skipped_when_endpoint_missing() -> None:
     part = Partition(candidates=[("a", "ghost")])
-    assert _resolution_edges({"a"}, part) == []
+    assert _resolution_edges({"a"}, part, HITL_LOW) == []
 
 
 def test_merge_provenance_stamped_on_canonical_node() -> None:

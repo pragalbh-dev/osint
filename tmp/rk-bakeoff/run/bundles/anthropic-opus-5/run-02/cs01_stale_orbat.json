@@ -1,0 +1,2293 @@
+[
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l1",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        95
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "database record (cached copy)"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "South Asia Defence Monitor — Air Defence Systems Database"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        234,
+        240
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HQ-9/P",
+        "Pakistan"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        286,
+        375
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "confidence_language": "believed to operate",
+        "family": "HQ-9",
+        "operator_branch": "the Pakistan Air Force's Air Defence Command",
+        "range_km": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "km",
+          "value": 200.0
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9"
+      ],
+      "_object_mention": "cs01-stale-orbat-l9-3",
+      "_subject_mention": "cs01-stale-orbat-l9",
+      "source_quote": "The HQ-9/P is the export variant of China's HQ-9 long-range surface-to-air missile system"
+    },
+    "claim_id": "cs01-stale-orbat-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        286,
+        375
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l9",
+      "cs01-stale-orbat-l9-3"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        300,
+        375
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "HQ-9",
+        "S-300PMU series"
+      ],
+      "_object_mention": "cs01-stale-orbat-l9-5",
+      "_subject_mention": "cs01-stale-orbat-l9-3",
+      "source_quote": "itself frequently compared in open literature to the Russian S-300PMU series owing to broad similarities in launcher canister design and engagement envelope"
+    },
+    "claim_id": "cs01-stale-orbat-l9-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        377,
+        533
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "S-300PMU series",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l9-3",
+      "cs01-stale-orbat-l9-5"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        384,
+        533
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-300PMU series"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        595,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Crotale"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        595,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Spada"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "Crotale",
+        "Spada"
+      ],
+      "_object_mention": "cs01-stale-orbat-l9-7",
+      "_subject_mention": "cs01-stale-orbat-l9-6",
+      "source_quote": "its ageing Crotale and Spada point-defence batteries"
+    },
+    "claim_id": "cs01-stale-orbat-l9-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        595,
+        647
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Spada",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "Crotale"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l9-6",
+      "cs01-stale-orbat-l9-7"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        702,
+        830
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "ExerciseEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "an undisclosed range in Baluchistan",
+        "raw": "an undisclosed range in Baluchistan",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l9-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        754,
+        830
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Baluchistan",
+          "raw": "Baluchistan",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "test range"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "undisclosed range in Baluchistan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        853,
+        931
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Air Defence Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l9",
+      "_undated_perishable": true
+    },
+    "claim_id": "cs01-stale-orbat-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        853,
+        969
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "the Pakistan Air Force's Air Defence Command",
+      "object_value": null,
+      "predicate": "operated-by",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l9",
+      "_undated_perishable": true
+    },
+    "claim_id": "cs01-stale-orbat-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        901,
+        1029
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        932,
+        1029
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "approaches to Karachi and the Sindh coastal sector",
+          "raw": "approaches to Karachi and the Sindh coastal sector",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        },
+        "site_type": "strategic air defence belt"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Karachi and the Sindh coastal sector"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
+      "_coref_forms": [
+        "Karachi and the Sindh coastal sector",
+        "strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the anaphor has 10 type-compatible antecedents in this document, not exactly one (an 'unknown'-typed mention counts as compatible on purpose — a second undeclared endpoint is precisely what an extractor under-reach would hide, and it must FAIL the gate, not pass it)",
+      "_coref_quotes": [
+        "within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c4",
+      "_subject_mention": "cs01-stale-orbat-l11-4",
+      "source_quote": "within its strategic air defence belt covering approaches to Karachi and the Sindh coastal sector"
+    },
+    "claim_id": "cs01-stale-orbat-l11-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        932,
+        1029
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "strategic air defence belt covering approaches to Karachi and the Sindh coastal sector",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Karachi and the Sindh coastal sector"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-4"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1121
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-16"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l11-6"
+    },
+    "claim_id": "cs01-stale-orbat-l11-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1121
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-16",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "_undated_perishable": true,
+      "source_quote": "complementing shorter-range LY-80 (HQ-16) batteries already fielded in significant numbers"
+    },
+    "claim_id": "cs01-stale-orbat-l11-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1031,
+        1121
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "LY-80 (HQ-16) batteries"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "LY-80",
+        "HQ-16"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "LY-80 (HQ-16) batteries"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c2",
+      "_subject_mention": "cs01-stale-orbat-l11-6",
+      "source_quote": "LY-80 (HQ-16) batteries"
+    },
+    "claim_id": "cs01-stale-orbat-l11-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1059,
+        1082
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-16",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-6"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1190
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "command-and-control vehicle"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "command-and-control vehicle"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "cs01-stale-orbat-l9",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "cs01-stale-orbat-l11-10",
+      "source_quote": "Battery composition is estimated at one command-and-control vehicle"
+    },
+    "claim_id": "cs01-stale-orbat-l11-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1123,
+        1190
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "command-and-control vehicle"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1252
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "transporter-erector-launcher",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "launcher",
+        "functional_role": "each carrying four missile canisters"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "TEL (transporter-erector-launcher) vehicles",
+        "TEL"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c3",
+      "_subject_mention": "cs01-stale-orbat-l11-13",
+      "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+    },
+    "claim_id": "cs01-stale-orbat-l11-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "TEL",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-13"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "TEL (transporter-erector-launcher) vehicles",
+        "transporter-erector-launcher"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c3",
+      "_subject_mention": "cs01-stale-orbat-l11-13",
+      "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+    },
+    "claim_id": "cs01-stale-orbat-l11-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "transporter-erector-launcher",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l11-13"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "cs01-stale-orbat-l9",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "cs01-stale-orbat-l11-13",
+      "source_quote": "six single-stage TEL (transporter-erector-launcher) vehicles each carrying four missile canisters"
+    },
+    "claim_id": "cs01-stale-orbat-l11-16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1192,
+        1289
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "TEL (transporter-erector-launcher) vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1291,
+        1339
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "phased-array engagement radar",
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233 phased-array engagement radars"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "cs01-stale-orbat-l9",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "cs01-stale-orbat-l11-17",
+      "source_quote": "Battery composition is estimated at ... associated HT-233 phased-array engagement radars"
+    },
+    "claim_id": "cs01-stale-orbat-l11-18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1302,
+        1339
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233 phased-array engagement radars"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l11-19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1341,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "search/acquisition radar",
+        "functional_role": "search/acquisition"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "search/acquisition radar element"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "cs01-stale-orbat-l9",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "cs01-stale-orbat-l11-19",
+      "source_quote": "and a search/acquisition radar element"
+    },
+    "claim_id": "cs01-stale-orbat-l11-20",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1341,
+        1379
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "search/acquisition radar element"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1680,
+        1776
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "order-of-battle assessment"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "a regional military balance publication"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_endpoint_typing": "unresolved",
+      "_undated_perishable": true,
+      "source_quote": "places Pakistani holdings at two operational battalions ... assigned to the PAF's Central Air Command"
+    },
+    "claim_id": "cs01-stale-orbat-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1808,
+        1834
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "the PAF's Central Air Command",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "two operational battalions"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1952,
+        1971
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "PAF"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Central Air Command"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l15-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1973,
+        2031
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count_state": "reportedly in the delivery pipeline"
+      },
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HQ-9/P",
+        "Pakistan"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2518,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "role": "manufacturer"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "cs01-stale-orbat-l17"
+    },
+    "claim_id": "cs01-stale-orbat-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2518,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "CPMIEC",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "cs01-stale-orbat-l9"
+    },
+    "claim_id": "cs01-stale-orbat-l17-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2518,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "China Precision Machinery Import-Export Corporation",
+        "China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c1",
+      "_subject_mention": "cs01-stale-orbat-l17",
+      "source_quote": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "claim_id": "cs01-stale-orbat-l17-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2547,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "China Precision Machinery Import-Export Corporation (CPMIEC)",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l17"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "China Precision Machinery Import-Export Corporation",
+        "CPMIEC"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "China Precision Machinery Import-Export Corporation (CPMIEC)"
+      ],
+      "_coref_referent": "ref:cs01-stale-orbat-c1",
+      "_subject_mention": "cs01-stale-orbat-l17",
+      "source_quote": "China Precision Machinery Import-Export Corporation (CPMIEC)"
+    },
+    "claim_id": "cs01-stale-orbat-l17-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2547,
+        2607
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "CPMIEC",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "China Precision Machinery Import-Export Corporation"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l17"
+    ],
+    "referent_id": "ref:chunk0-cs01-stale-orbat-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2950,
+        3095
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2009",
+        "year": 2009
+      },
+      "kind": "period",
+      "period_type": "range",
+      "start": null
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "HQ-9/P",
+        "Pakistan"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2009",
+          "year": 2009
+        },
+        "kind": "period",
+        "period_type": "range",
+        "start": null
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l21-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3154,
+        3246
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "defence weekly"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "a regional defence weekly"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l21-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3482,
+        3588
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "industry newsletter"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "a separate industry newsletter"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "a regional defence weekly",
+        "a separate industry newsletter"
+      ],
+      "_object_mention": "cs01-stale-orbat-l21-3",
+      "_subject_mention": "cs01-stale-orbat-l21-2",
+      "source_quote": "the system's operational status was described in near-identical language by a separate industry newsletter"
+    },
+    "claim_id": "cs01-stale-orbat-l21-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3482,
+        3588
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "a separate industry newsletter",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "a regional defence weekly"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l21-2",
+      "cs01-stale-orbat-l21-3"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3687,
+        3778
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "oriented toward the Arabian Sea approach",
+          "raw": "oriented toward the Arabian Sea approach",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        }
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "positions oriented toward the Arabian Sea approach"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "positions oriented toward the Arabian Sea approach",
+        "secondary battery near the Punjab border sector"
+      ],
+      "_object_mention": "cs01-stale-orbat-l23-3",
+      "_subject_mention": "cs01-stale-orbat-l23",
+      "source_quote": "Deployment sites are believed to include positions oriented toward the Arabian Sea approach and, per unconfirmed reporting, a secondary battery near the Punjab border sector"
+    },
+    "claim_id": "cs01-stale-orbat-l23-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3687,
+        3860
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "secondary battery near the Punjab border sector",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "positions oriented toward the Arabian Sea approach"
+    },
+    "polarity": "positive",
+    "premises": [
+      "cs01-stale-orbat-l23",
+      "cs01-stale-orbat-l23-3"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l23-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 23,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3784,
+        3860
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "near the Punjab border sector",
+          "raw": "near the Punjab border sector",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        }
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "secondary battery near the Punjab border sector"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "cs01-stale-orbat-l27",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_chaff/docs/cs01_stale_orbat.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4022,
+        4114
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "claude-opus-5"
+    },
+    "ingest_time": null,
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "Chinese SAM",
+        "Turkmenistan"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "cs01_stale_orbat",
+    "targets": null
+  }
+]

@@ -1,0 +1,225 @@
+--- a/backend/eval/extraction/recording.py
++++ b/backend/eval/extraction/recording.py
+@@ -2,8 +2,11 @@
+ 
+ Three of the scored criteria can only be measured *at the call*, not on the finished ``ClaimRecord``s:
+ 
+-* **structured-output / tool-call reliability** — did the forced call come back at all, and did it come
+-  back inside the offered schema (no invented top-level fields)?
++* **structured-output / tool-call reliability** — did the forced call come back at all, did it come back
++  inside the offered schema (no invented top-level fields), and did each field come back in the *shape*
++  the schema declared? The third question is not decorative: a typed list field that arrives as truncated
++  unparseable text passes the first two and is then silently dropped by every consumer downstream, so a
++  metric blind to it reports a perfect score through a total loss of the payload.
+ * **discriminator capture (A7)** — ``MentionContext`` is populated by the model but consumed by nothing
+   downstream yet (RK-COREF/S3 is where it enters the identity judgement), so it never reaches a
+   ``ClaimRecord``. The only place to see it is the raw tool payload.
+@@ -19,9 +22,12 @@
+ import threading
+ import time
+ from collections.abc import Sequence
++import json
+ from dataclasses import dataclass, field
+ from typing import Any
+ 
++from chanakya.toolargs import structural_violations
++
+ 
+ @dataclass(frozen=True)
+ class CallRecord:
+@@ -36,6 +42,10 @@
+     latency_s: float
+     error: str | None = None
+     usage: dict[str, int] | None = None
++    #: The schema that was offered, verbatim — the only thing that can say what *shape* each field was
++    #: supposed to have. ``None`` on records written before this was captured; those fall back to the
++    #: schema-free truncation check in :meth:`malformed_fields`.
++    offered_schema: dict[str, Any] | None = None
+ 
+     @property
+     def ok(self) -> bool:
+@@ -52,6 +62,32 @@
+         assert self.payload is not None
+         return tuple(sorted(k for k in self.payload if k not in set(self.offered_fields)))
+ 
++    def malformed_fields(self) -> tuple[str, ...]:
++        """Fields whose returned *shape* contradicts the offered schema — the silent-loss class.
++
++        With the schema in hand this is the same container/scalar check the production client now
++        enforces (:mod:`chanakya.toolargs`), so the metric and the pipeline agree by construction on what
++        "malformed" means. Without it — a record written before the schema was captured — it falls back
++        to the signature that class actually leaves behind: a field holding text that opens like JSON and
++        does not parse, i.e. a tool call cut off mid-token. The fallback is narrower, never wider, so it
++        cannot invent a failure on an old record.
++        """
++        if not self.ok:
++            return ()
++        assert self.payload is not None
++        if self.offered_schema:
++            return tuple(v.describe() for v in structural_violations(self.payload, self.offered_schema))
++        out: list[str] = []
++        for key, value in sorted(self.payload.items()):
++            if not isinstance(value, str) or value.strip()[:1] not in ("[", "{"):
++                continue
++            try:
++                json.loads(value)
++            except ValueError:
++                out.append(f"{key}: unparseable JSON text of length {len(value)} "
++                           f"(tool call cut off mid-token)")
++        return tuple(out)
++
+ 
+ @dataclass
+ class RecordingExtractionClient:
+@@ -91,6 +127,7 @@
+                 lane=lane, tool_name=tool_name, offered_fields=self._offered(input_schema),
+                 payload=payload if isinstance(payload, dict) else None, latency_s=elapsed,
+                 error=error, usage=dict(usage) if isinstance(usage, dict) else None,
++                offered_schema=input_schema if isinstance(input_schema, dict) else None,
+             )
+             with self._lock:
+                 self.calls.append(record)
+--- a/backend/eval/extraction/resume.py
++++ b/backend/eval/extraction/resume.py
+@@ -193,6 +193,7 @@
+         "latency_s": call.latency_s,
+         "error": call.error,
+         "usage": call.usage,
++        "offered_schema": call.offered_schema,
+     }
+ 
+ 
+@@ -205,6 +206,8 @@
+         latency_s=float(row.get("latency_s") or 0.0),
+         error=row.get("error"),
+         usage=row.get("usage") if isinstance(row.get("usage"), dict) else None,
++        offered_schema=(row.get("offered_schema")
++                        if isinstance(row.get("offered_schema"), dict) else None),
+     )
+ 
+ 
+--- a/backend/eval/extraction/metrics.py
++++ b/backend/eval/extraction/metrics.py
+@@ -461,15 +461,24 @@
+ # ── structured output / tool-call reliability ─────────────────────────────────────────────────────
+ 
+ def structured_output_reliability(calls: Sequence[CallRecord]) -> MetricValue:
+-    """Fraction of forced tool calls that returned, and returned inside the offered schema."""
++    """Fraction of forced tool calls that returned, and returned inside the offered schema.
++
++    "Inside the schema" is three conditions, not two: the call returned, it invented no top-level field,
++    **and** every field it did fill came back in the declared shape. The third was missing, and its
++    absence was not academic — this metric scored a perfect 1.000 on runs where a typed list field
++    arrived as truncated unparseable text and was silently discarded downstream, which is exactly the
++    failure it exists to catch.
++    """
+     total = len(calls)
+     failed = [c for c in calls if not c.ok]
+     invented = {c.tool_name: list(c.invented_fields()) for c in calls if c.ok and c.invented_fields()}
+-    clean = sum(1 for c in calls if c.ok and not c.invented_fields())
++    malformed = {c.tool_name: list(c.malformed_fields()) for c in calls if c.ok and c.malformed_fields()}
++    clean = sum(1 for c in calls if c.ok and not c.invented_fields() and not c.malformed_fields())
+     detail = {
+         "calls": total,
+         "failed": [c.error for c in failed],
+         "invented_top_level_fields": invented,
++        "malformed_payloads": malformed,
+         "clean": clean,
+     }
+     return _rate(clean, total, "structured_output_reliability",
+--- a/backend/tests/extraction_bakeoff/test_structured_output_sees_truncation.py
++++ b/backend/tests/extraction_bakeoff/test_structured_output_sees_truncation.py
+@@ -0,0 +1,93 @@
++"""``structured_output_reliability`` must see a typed field that arrived as truncated text.
++
++It did not. On the recorded three-way run it reported **1.0000 ± 0.0** for every candidate, including the
++two opus runs whose ``clusters`` field came back as a 265- and 376-character unparseable string and was
++silently discarded — because the metric asked only "did the call return?" and "did it invent a top-level
++key?", and a malformed *value* answers both questions cleanly. A metric that scores perfect through the
++one structured-output failure that actually happened is 3.0 weight of guaranteed tie.
++
++The payload below is that real one, verbatim. Two paths are pinned, because the metric has to work on
++both: a **live** record, which now carries the schema it offered and is checked against it; and a
++**resumed** record written before the schema was captured, which falls back to the signature the class
++leaves behind (text that opens like JSON and does not parse).
++"""
++
++from __future__ import annotations
++
++import json
++
++import pytest
++
++from eval.extraction.metrics import structured_output_reliability
++from eval.extraction.recording import CallRecord
++from eval.extraction.resume import _call_from_json, _call_to_json
++
++#: Verbatim from bundles/anthropic-opus-5/run-01/_resume/d05_customs_manifest.json.
++TRUNCATED_CLUSTERS = (
++    '[{"member_ids": [1, 7, 10], "evidence": "EXPLICIT_EQUIVALENCE", "licensing_quotes": '
++    '["ORIENT ELECTRO TRADING PVT LTD (formerly ORIENT ELECTRONIC\\n                 TRADING CO -- '
++    'name change ref SECP CUIN 0087762, 2019)", "Consignee ORIENT ELECTRO TRADING (PVT) LTD /'
++)
++COREF_SCHEMA = {
++    "type": "object",
++    "properties": {
++        "clusters": {"type": "array", "items": {"type": "object"}},
++        "contrasts": {"type": "array", "items": {"type": "object"}},
++    },
++}
++
++
++def _coref_call(payload: dict, *, schema: dict | None = COREF_SCHEMA) -> CallRecord:
++    return CallRecord(lane="text", tool_name="cluster_coreferences",
++                      offered_fields=("clusters", "contrasts"), payload=payload, latency_s=0.1,
++                      offered_schema=schema)
++
++
++def test_the_fixture_is_the_real_defect() -> None:
++    assert len(TRUNCATED_CLUSTERS) == 265
++    with pytest.raises(json.JSONDecodeError, match="Unterminated string"):
++        json.loads(TRUNCATED_CLUSTERS)
++
++
++def test_a_truncated_typed_field_is_no_longer_a_perfect_score() -> None:
++    good = _coref_call({"clusters": [], "contrasts": []})
++    bad = _coref_call({"clusters": TRUNCATED_CLUSTERS})
++    # the old checks both pass on it — which is exactly why it scored 1.000
++    assert bad.ok and not bad.invented_fields()
++
++    metric = structured_output_reliability([good, bad])
++    assert metric.value == pytest.approx(0.5)
++    reported = metric.detail["malformed_payloads"]["cluster_coreferences"]
++    assert "clusters" in reported[0] and "array" in reported[0] and "string" in reported[0]
++
++
++def test_a_resumed_record_without_its_schema_still_reports_it() -> None:
++    """Bundles recorded before the schema was captured must not re-score as clean."""
++    legacy = _coref_call({"clusters": TRUNCATED_CLUSTERS}, schema=None)
++    metric = structured_output_reliability([legacy])
++    assert metric.value == pytest.approx(0.0)
++    assert "unparseable JSON text" in metric.detail["malformed_payloads"]["cluster_coreferences"][0]
++
++
++def test_the_schema_survives_the_resume_round_trip() -> None:
++    original = _coref_call({"clusters": TRUNCATED_CLUSTERS})
++    restored = _call_from_json(json.loads(json.dumps(_call_to_json(original))))
++    assert restored.offered_schema == COREF_SCHEMA
++    assert restored.malformed_fields() == original.malformed_fields()
++
++
++@pytest.mark.parametrize("payload", [
++    {"clusters": [], "contrasts": []},
++    {"clusters": [{"member_ids": [1, 2]}]},
++    {"clusters": None, "contrasts": None},   # absence is an answer, not a malformation
++])
++def test_well_formed_payloads_still_score_clean(payload: dict) -> None:
++    assert structured_output_reliability([_coref_call(payload)]).value == pytest.approx(1.0)
++
++
++def test_a_declared_string_field_holding_prose_is_not_a_malformation() -> None:
++    """Only the container boundary is checked — a string slot filled with a string is nobody's business."""
++    schema = {"type": "object", "properties": {"summary": {"type": "string"}}}
++    call = CallRecord(lane="text", tool_name="t", offered_fields=("summary",),
++                      payload={"summary": "a plain sentence"}, latency_s=0.1, offered_schema=schema)
++    assert structured_output_reliability([call]).value == pytest.approx(1.0)

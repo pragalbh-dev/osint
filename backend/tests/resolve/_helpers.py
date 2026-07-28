@@ -32,6 +32,7 @@ def mk_config(
     transliteration: dict[str, str] | None = None,
     distinct_from: dict[str, list[str]] | None = None,
     attribute_rules: dict[str, Any] | None = None,
+    attribute_roles: dict[str, Any] | None = None,
     attribute_scoring: dict[str, float] | None = None,
     hard_id_fields: dict[str, Any] | None = None,
     blocking_keys: list[str] | None = None,
@@ -50,24 +51,42 @@ def mk_config(
     containment_min_short_tokens: int | None = None,
     acronym_min_len: int | None = None,
     source_grades: dict[str, str] | None = None,
+    source_reliability_grades: dict[str, str] | None = None,
+    critical_veto_min_grade: str | None = None,
     coref_authoritative_evidence: list[str] | None = None,
     entity_geo_conflict_max_km: dict[str, float] | None = None,
     relational_support_k: int | None = None,
     auto_merge_by_type: dict[str, float] | None = None,
+    possible_floor: float | None = None,
+    hitl_low: float | None = None,
+    name_alone_caps_at_possible: bool = False,
+    earned_identity: dict[str, Any] | None = None,
     ontology: OntologyConfig | None = None,
 ) -> ConfigBundle:
+    # The gate FAILS CLOSED on an empty marker vocabulary — an unconfigured conjunct must never license the
+    # strongest fusion path in the system. So a fixture that opts into authoritative coreference has to
+    # declare what licenses one, exactly as the shipped config does.
+    if coref_authoritative_evidence and earned_identity is None:
+        earned_identity = {"equivalence_markers": ["also known as", "aka", "formerly"]}
+    bands = dict(BANDS)
+    if possible_floor is not None:
+        bands["possible_floor"] = possible_floor
+    if hitl_low is not None:
+        bands["hitl_low"] = hitl_low
     resolution = ResolutionConfig(
         coref_authoritative_evidence=coref_authoritative_evidence or [],
         entity_geo_conflict_max_km=entity_geo_conflict_max_km or {},
         relational_support_k=relational_support_k,
         auto_merge_by_type=auto_merge_by_type or {},
+        name_alone_caps_at_possible=name_alone_caps_at_possible,
         merge_weights=dict(WEIGHTS),
-        bands=dict(BANDS),
+        bands=bands,
         blocking_keys=blocking_keys or ["type", "country_or_domain_namespace", "name_token"],
         alias_table=alias_table or {},
         transliteration=transliteration or {},
         distinct_from=distinct_from or {},
         attribute_rules=attribute_rules or {},
+        attribute_roles=attribute_roles or {},
         attribute_scoring=attribute_scoring or {},
         hard_id_fields=hard_id_fields or {},
         high_alias_risk_types=high_alias_risk_types or [],
@@ -82,12 +101,23 @@ def mk_config(
         containment_min_descriptor_len=containment_min_descriptor_len,
         containment_min_short_tokens=containment_min_short_tokens,
         acronym_min_len=acronym_min_len,
+        critical_veto_min_grade=critical_veto_min_grade,
+        earned_identity=earned_identity or {},
     )
     places_cfg = PlacesConfig(places=places or [], proximity_radius_m=proximity_radius_m or {})
     # ``source_grades``: {source_id: source_class} + a one-factor rubric, so R(source) == the number below
     # and a test can state "this class is worth X" without restating the whole credibility surface.
+    # ``source_reliability_grades``: {source_id: STANAG letter} — the intrinsic reliability grade the D5
+    # credibility floor reads (a source may set a class, a grade, or both; source_type is required so an
+    # otherwise class-less source defaults to a neutral placeholder class).
+    src_kw: dict[str, dict[str, str]] = {}
+    for sid, cls in (source_grades or {}).items():
+        src_kw.setdefault(sid, {})["source_type"] = cls
+    for sid, grade in (source_reliability_grades or {}).items():
+        src_kw.setdefault(sid, {}).setdefault("source_type", "curated-register")
+        src_kw[sid]["reliability_grade"] = grade
     sources_cfg = SourcesConfig(
-        sources=[SourceRegistryEntry(source_id=sid, source_type=cls) for sid, cls in (source_grades or {}).items()]
+        sources=[SourceRegistryEntry(source_id=sid, **kw) for sid, kw in src_kw.items()]
     )
     credibility = CredibilityConfig(
         factor_weights={"authority": 1.0} if source_grades else {},
@@ -115,10 +145,10 @@ def _cid(prefix: str) -> str:
     return f"{prefix}-{_counter['n']}"
 
 
-def entity(eid: str, etype: str, name: str, **attrs: Any) -> ClaimRecord:
+def entity(eid: str, etype: str, name: str, *, source: str = "src-t", **attrs: Any) -> ClaimRecord:
     return ClaimRecord(
         claim_id=_cid(eid),
-        source_id="src-t",
+        source_id=source,
         doc_ref=DocRef(file="d.txt", span=(0, 1)),
         kind="observation",
         asserts="entity",
@@ -132,23 +162,45 @@ def coref(
     obj: str,
     *,
     evidence: str = "EXPLICIT_EQUIVALENCE",
-    quote: str = "Full Name (SHORT)",
+    #: ``None`` ⇒ a well-formed licensing span built from the two surface forms. D-13.17's gate is
+    #: recomputed by the resolver from the span + the two forms, so a fixture that wants a bind must offer a
+    #: span that genuinely licenses one; the old placeholder named neither side and licenses nothing. Pass an
+    #: explicit string to exercise a FAILING gate.
+    quote: str | None = None,
     source: str = "src-t",
     cluster: str = "c1",
+    referent: str | None = None,
+    gate: str | None = None,
+    forms: tuple[str, str] | None = None,
+    quotes: list[str] | None = None,
+    detail: str = "fixture",
+    doc: str = "d.txt",
 ) -> ClaimRecord:
     """An in-document coreference claim as INGEST's extraction pass 2 emits it (``ingest/coref.py``).
 
     Written on its own predicate, carrying the categorical evidence kind and the verbatim licensing span
     in the tier-3 bag — that bag is what ``resolve._coref_pairs`` reads to decide bootstrap vs raise-only.
     """
+    quote = quote if quote is not None else f"{subject}, also known as {obj}, per the register"
     return ClaimRecord(
         claim_id=_cid("cr"),
         source_id=source,
-        doc_ref=DocRef(file="d.txt", span=(0, 1)),
+        doc_ref=DocRef(file=doc, span=(0, 1)),
         kind="observation",
         asserts="relationship",
         payload=Triple(subject=subject, predicate="coref-same-as", object=obj),
-        attributes={"_coref_cluster": cluster, "_coref_evidence": evidence, "source_quote": quote},
+        attributes={
+            "_coref_cluster": cluster,
+            "_coref_evidence": evidence,
+            "source_quote": quote,
+            # RK-COREF (S3): the grouping grain, the per-link gate verdict and the VERBATIM span set. A link
+            # with no ``_coref_gate`` can never bind once the stage flag is on — the gate is a required
+            # precondition, so an absent verdict fails closed.
+            **({"_coref_referent": referent} if referent else {}),
+            **({"_coref_gate": gate, "_coref_gate_detail": detail} if gate else {}),
+            **({"_coref_forms": list(forms)} if forms else {}),
+            "_coref_quotes": list(quotes) if quotes is not None else [quote],
+        },
     )
 
 

@@ -12,6 +12,12 @@ from chanakya.schemas import GraphView
 from chanakya.store import DecisionLog, EvidenceLog
 from tests.fixtures import loaders
 
+# ── there is no stage flag to run this suite two ways against ──────────────────────────────────────
+#
+# A ``--earned-identity=on`` option used to copy ``config/`` into a shadow dir, rewrite
+# ``earned_identity.enabled: false`` to ``true`` and point ``settings.config_dir`` at the copy, so the suite
+# could be dual-run against the flag-off and flag-on behaviours. Both stage flags are deleted: the shipped
+# config IS the behavioural config, and a suite that can run two ways is a suite that has to be read twice.
 
 @pytest.fixture
 def golden_evidence() -> EvidenceLog:

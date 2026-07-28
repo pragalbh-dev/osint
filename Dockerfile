@@ -46,12 +46,18 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-# Manifest + package tree only (layer cache): the full pyproject dep set plus the `[gemini]` extra
-# (google-genai) so keyed live extraction can use a Gemini key — Anthropic remains the fallback, and
-# keyless boot still needs none of it. `[dev]` / `[ocr]` stay out — nothing in the served app uses them.
+# Manifest + package tree only (layer cache): the full pyproject dep set plus BOTH optional extraction
+# provider extras — `[gemini]` (google-genai) and `[openai]` — so keyed live extraction can use any of the
+# three providers the ingest seam offers; Anthropic is core, and keyless boot still needs none of them.
+# `[dev]` / `[ocr]` stay out — nothing in the served app uses them.
+#
+# `openai` is here for a specific reason, not for symmetry: a provider whose SDK is missing from this image
+# cannot run live in the shipped container, and therefore cannot be the code that froze the seed bundles —
+# which is exactly what RK-BAKEOFF's KEYLESS==LIVE gate asks. Leaving it out would keep that candidate
+# permanently unable to win no matter how it scored.
 COPY backend/pyproject.toml /src/backend/pyproject.toml
 COPY backend/chanakya /src/backend/chanakya
-RUN pip install --no-cache-dir "/src/backend[gemini]"
+RUN pip install --no-cache-dir "/src/backend[gemini,openai]"
 
 # ---- Stage 3: Python runtime — serves the API and the built SPA same-origin, one process ----
 FROM python:3.12-slim-bookworm AS runtime

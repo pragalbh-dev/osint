@@ -12,7 +12,7 @@
       "region": null,
       "row": null,
       "span": [
-        389,
+        373,
         448
       ]
     },
@@ -20,7 +20,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -36,10 +36,11 @@
       },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9P long-range air defense system"
+      "name": "HQ-9P"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -53,10 +54,8 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "equips",
-      "_object_mention": "d17b-withheld-gap-l9",
-      "_relane_reason": "'equips' reoriented (variant->?)",
-      "source_quote": "the HQ-9P long-range air defense system fielded by Pakistan"
+      "_event_time_rung": "observation",
+      "_subject_mention": "d17b-withheld-gap-l9"
     },
     "claim_id": "d17b-withheld-gap-l9-2",
     "doc_ref": {
@@ -68,15 +67,20 @@
       "region": null,
       "row": null,
       "span": [
-        389,
+        393,
         448
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -87,13 +91,14 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HQ-9P long-range air defense system",
+      "object": "Pakistan",
       "object_value": null,
-      "predicate": "equips",
-      "subject": "Pakistan"
+      "predicate": "operated-by",
+      "subject": "HQ-9P"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -118,14 +123,14 @@
       "row": null,
       "span": [
         450,
-        648
+        601
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -146,7 +151,9 @@
           "wgs84_lat": null,
           "wgs84_lon": null
         },
-        "site_type": "forward SAM deployment area"
+        "occupancy_state": "negative TEL presence observation",
+        "site_signature_geometry": "perimeter berm and access road configuration; two hardstand pads; cleared laydown area; northern and southern pad clusters; fenced compound",
+        "site_type": "suspected forward SAM deployment area"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -154,6 +161,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -185,7 +193,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -196,15 +204,17 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "launcher",
-        "functional_role": "transporter-erector-launcher"
+        "component_class": "Launcher",
+        "functional_role": "transporter-erector-launcher",
+        "model_designation": "TEL"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "transporter-erector-launchers (TELs)"
+      "name": "transporter-erector-launchers"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -246,7 +256,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -258,7 +268,7 @@
     "payload": {
       "attrs": {
         "occupancy_observed_date": "2025-06-11",
-        "occupancy_state": "negative TEL presence"
+        "occupancy_state": "negative TEL presence observation"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -266,6 +276,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -302,7 +313,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -313,6 +324,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "dimensions": "TEL-consistent dimensions",
         "object_type": "transporter-erector-launchers (TELs)"
       },
       "event_type": "SightingEvent",
@@ -330,6 +342,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -361,7 +374,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -372,15 +385,16 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "radar",
-        "functional_role": "radar trailer"
+        "component_class": "Radar",
+        "functional_role": "radar"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "possible radar trailer footprint"
+      "name": "radar trailer"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -395,7 +409,7 @@
     "asserts": "entity",
     "attributes": {
       "_observed_absence": {
-        "observed": "possible radar trailer footprint",
+        "observed": "radar trailer",
         "source_quote": "The cleared laydown area that in the 2024-11 chip showed what was assessed as a possible radar trailer footprint is empty in the current image."
       }
     },
@@ -414,20 +428,15 @@
       ]
     },
     "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 11,
-      "quarter": null,
-      "raw": "2024-11",
-      "year": 2024
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
     },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -438,8 +447,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "occupancy_observed_date": "2024-11",
-        "occupancy_state": "showed what was assessed as a possible radar trailer footprint"
+        "occupancy_observed_date": "2025-06-11",
+        "occupancy_state": "empty"
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -447,6 +456,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -488,7 +498,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -521,6 +531,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -532,8 +543,13 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d17b-withheld-gap-l9-3",
+      "_subject_mention": "d17b-withheld-gap-l22-4",
+      "occupancy_state": "assessed footprint present"
+    },
     "claim_id": "d17b-withheld-gap-l22-7",
     "doc_ref": {
       "bbox": null,
@@ -544,15 +560,25 @@
       "region": null,
       "row": null,
       "span": [
-        1761,
-        1973
+        1487,
+        1630
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "month",
+      "half": null,
+      "kind": "label",
+      "month": 11,
+      "quarter": null,
+      "raw": "2024-11",
+      "year": 2024
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -562,17 +588,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "missing_slots": [
-          "perimeter"
-        ]
-      },
-      "entity_type": "known_gap",
-      "form": "entity",
-      "name": "perimeter"
+      "form": "triple",
+      "object": "the old Rawalpindi-area site",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "radar trailer"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -586,76 +610,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d17b-withheld-gap-l24",
+    "claim_id": "d17b-withheld-gap-l22-8",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
       "frame": null,
-      "line": 24,
+      "line": 22,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1975,
-        2162
+        1900,
+        1972
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "component_class": "support",
-        "functional_role": "generator trailers"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "generator trailers"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-06-11",
-      "kind": "exact",
-      "raw": "2025-06-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d17b_withheld_gap",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d17b-withheld-gap-l34",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
-      "frame": null,
-      "line": 34,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3544,
-        3729
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -667,15 +640,148 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "northern tree line"
+          "Northern tree line / perimeter tree canopy fringe"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "northern tree line"
+      "name": "Northern tree line / perimeter tree canopy fringe"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d17b-withheld-gap-l26",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2384
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 2.0
+        },
+        "object_type": "light vehicles"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "light vehicles"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-06-11",
+        "kind": "exact",
+        "raw": "2025-06-11"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d17b_withheld_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d17b-withheld-gap-l9-3",
+      "occupancy_state": "present"
+    },
+    "claim_id": "d17b-withheld-gap-l26-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d17b_withheld_gap.txt",
+      "frame": null,
+      "line": 26,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2384
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-06-11",
+      "kind": "exact",
+      "raw": "2025-06-11"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "the old Rawalpindi-area site",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "light vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",
@@ -690,7 +796,6 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "High-resolution overhead view of a prominent wedge-shaped central compound featuring a distinctive circular looping track layout, surrounded by urban residential blocks.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "0360adabf9dc4af5c34c5f77a5a84ab0baaa75025802a8115fdfa68808a3dffe",
@@ -720,7 +825,7 @@
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -731,54 +836,59 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": null,
           "min": null,
-          "unit": null,
+          "unit": "unresolved vehicles and small ground structures",
           "value": null
         },
-        "description": "This overhead frame captures a large wedge-shaped or pentagonal central compound embedded within a densely developed urban grid. The most prominent feature inside this compound is a highly symmetrical, circular paved road or track network featuring multiple internal loops arranged in a pattern resembling a cloverleaf or stylized wheel. Directly south of this circular track are several large rectangular buildings, courtyards, and potential vehicle parks. To the west of the compound, an athletic field with a reddish oval running track is visible. The surrounding areas to the east, west, north, and south consist of uniform, grid-aligned high-rise residential buildings, commercial structures, and multi-lane roadways with standard intersections.",
-        "frame_kind": "satellite",
+        "description": "An overhead satellite image of a large central open facility set within a surrounding dense urban road grid. The facility features a distinctive central circular layout composed of symmetrical paved lobes, curved driveways, and a central longitudinal axis. South of this circular layout are several rectangular buildings, paved courtyards, and secondary structures. The northern and western perimeters feature linear diagonal ground tracks/earthworks and adjacent residential blocks and sports facilities.",
+        "frame_kind": "satellite_overhead",
         "geometry_tokens": [
-          "wedge-shaped",
-          "circular",
-          "oval",
-          "rectangular",
-          "loops",
-          "grid"
+          "circular_layout",
+          "rectangular_buildings",
+          "road_grid",
+          "linear_tracks",
+          "oval_track"
         ],
+        "gsd_note": "Medium resolution visible satellite imagery; major structural footprints, road patterns, and ground layout are clearly visible, but small individual surface vehicles and small structures cannot be uniquely resolved.",
         "observed_features": [
           {
-            "arrangement": "central",
-            "feature": "circular looping track network",
-            "note": "Symmetrical circular layout with internal clover-like loops and paths",
+            "arrangement": "symmetrical / radial",
+            "feature": "circular multi-lobed track pattern",
+            "note": "central geometric arrangement of curved paved loops and central axis",
             "shape": "circular"
           },
           {
-            "arrangement": "central",
-            "feature": "institutional compound",
-            "note": "Wedge-shaped property bounded by roads containing the circular track and buildings",
-            "shape": "wedge-shaped"
-          },
-          {
-            "arrangement": "grid",
-            "feature": "residential and commercial buildings",
-            "note": "High-density urban blocks surrounding the central compound",
+            "arrangement": "grid / linear alignment",
+            "feature": "rectangular buildings and courtyards",
+            "note": "located in the southern portion of the open central site",
             "shape": "rectangular"
           },
           {
-            "arrangement": "adjacent to central compound",
-            "feature": "athletic field",
-            "note": "Sports field with a red running track layout",
+            "arrangement": "parallel",
+            "feature": "diagonal linear ground tracks / embankments",
+            "note": "bordering the northern diagonal edge of the central property",
+            "shape": "linear"
+          },
+          {
+            "arrangement": "orthogonal grid",
+            "feature": "urban avenues and residential building blocks",
+            "note": "surrounding the central site on all four sides",
+            "shape": "rectangular / grid"
+          },
+          {
+            "arrangement": "adjacent",
+            "feature": "athletic field / running track",
+            "note": "located along the western border outside the main facility enclosure",
             "shape": "oval"
           }
         ],
-        "occupancy_state": "occupied",
+        "occupancy_state": "developed",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "This overhead frame captures a large wedge-shaped or pentagonal central compound embedded within a densely developed urban grid. The most prominent feature inside this compound is a highly symmetrical, circular paved road or track network featuring multiple internal loops arranged in a pattern resembling a cloverleaf or stylized wheel. Directly south of this circular track are several large rectangular buildings, courtyards, and potential vehicle parks. To the west of the compound, an athletic field with a reddish oval running track is visible. The surrounding areas to the east, west, north, and south consist of uniform, grid-aligned high-rise residential buildings, commercial structures, and multi-lane roadways with standard intersections.",
+        "site_signature_geometry": "An overhead satellite image of a large central open facility set within a surrounding dense urban road grid. The facility features a distinctive central circular layout composed of symmetrical paved lobes, curved driveways, and a central longitudinal axis. South of this circular layout are several rectangular buildings, paved courtyards, and secondary structures. The northern and western perimeters feature linear diagonal ground tracks/earthworks and adjacent residential blocks and sports facilities.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -787,6 +897,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-06-11",

@@ -50,6 +50,55 @@ places:
     aliases: ["Rahwali", "Rahwali Air Base", "Rahwali Airfield", "Rahwali Cantonment", "Rahwali Cantt"]
     admin: "Rahwali, Gujranwala District, Punjab, Pakistan"
 
+  - place_id: pl_pano_aqil
+    canonical_name: "Pano Aqil Cantonment"
+    kind: cantonment
+    precision_class: site
+    canonical_dd: [27.8578, 69.1096]
+    provenance: real
+    # WHY THIS ROW EXISTS. Every other station this corpus names — Nur Khan, Rahwali, Karachi, Sargodha,
+    # Gujranwala — had a gazetteer row, and this one did not, so the six RK-DATA documents introduced a whole
+    # station with no identity anchor. The consequence was not cosmetic: two mentions of the same cantonment
+    # could only meet on their NAME, `name_ceiling: possible` fires on a name-alone pair, so the two site
+    # mentions stayed two nodes, the units standing at them shared no `based-at` neighbour, and every
+    # downstream mechanism that reasons about co-location went inert for want of a co-location to read.
+    #
+    # `site`, not `city`, and that is the load-bearing field: `site` is inside
+    # `place_identity_precision_classes`, so "both mentions resolved here" may become "both mentions are this
+    # place" — the same standing Rahwali Cantonment has. A cantonment IS a thing, not an area of rough
+    # whereabouts. The 1.5 km `site` radius is jitter absorption around the centre, NOT the cantonment's
+    # extent: the two revetted launch positions the imagery read-out fixes at 2.3 km and 3.4 km from here are
+    # deliberately OUTSIDE it, so they resolve as their own emplacements and are raised for an analyst rather
+    # than swallowed into the station. That is the honest answer — a battery position is not its cantonment.
+    #
+    # TRANSLITERATION, and this row is what makes that demo LIVE rather than decorative. The corpus states
+    # this station in five spellings and two of its own documents carry a spelling note saying so. An analyst
+    # who has read that note curates the forms it lists — which is exactly what this alias list is.
+    # MEASURED on the booted corpus: with this row, "Pano Aqil" / "Pano Aqil Cantonment" / "Pano Aqil Cantt"
+    # resolve to ONE station node; with the row deleted they are three separate stations. The two documents
+    # in the co-location trap deliberately render the station differently (the register writes "Pano Aqil
+    # Cantonment", the ISPR release writes "Pano Aqil Cantt"), so the merge that puts the two batteries at
+    # one place can only happen through this anchor — nothing else in the pipeline joins those two strings.
+    #
+    # The two comma-tailed forms below are seeded but currently INERT, and that is a known pipeline
+    # limitation rather than a curation error: `place_matches` runs BEFORE endpoint minting, so a station
+    # named only as the object of a `based-at` never reaches the gazetteer even when its string is seeded
+    # here. Left in place because they become live the moment that pass ordering is fixed.
+    aliases: ["Pano Aqil", "Pano Aqil Cantonment", "Pano Aqil Cantt", "Pano Aqil Cantt.",
+              "Pano Aqil Cantonment, Sukkur District", "Pano Aqil Cantonment, Sukkur District, Sindh",
+              "Pannu Aqil", "Pannu Aqil Cantonment", "Pano Akil", "Pano Akil Cantonment"]
+    # WITHHELD from seed (earned merge, the pl_nurkhan/"Chaklala" pattern): "Panu Aqil", "Panu Aqil Cantt",
+    # "Panu Aqil Cantt.", "Panu Aqil Cantonment". Chosen deliberately over the other variants because it is
+    # the only one the corpus uses as a real location VALUE rather than only inside a spelling note — the
+    # register's carried-forward 33 AD Regt entry and the vehicle register's duplicate entry AD/2025/019 are
+    # both written that way. So the withholding costs something real and is therefore a test: until the
+    # equivalence is earned (an analyst adjudication, or an alias proposal off the two documents' own spelling
+    # notes), those two mentions stay their own un-anchored nodes and the ORBAT reads one station too many.
+    # It is deliberately NOT on the trap pair's path — that pair meets on "Pano Aqil Cantonment" and "Pano
+    # Aqil Cantt", both seeded — so the co-location cap is still what holds the two batteries apart, and the
+    # withholding is verified (measured) not to be doing that job for it.
+    admin: "Pano Aqil, Sukkur District, Sindh, Pakistan"
+
   - place_id: pl_karachi_ad
     canonical_name: "Karachi Army Air Defence site (notional, Malir area)"
     kind: sam_site
@@ -138,6 +187,28 @@ places:
     admin: "Karachi Division, Sindh, Pakistan"
     distinct_from: [pl_port_qasim, pl_karachi_port, pl_karachi_ad,
                     pl_punjab_pk, pl_sindh, pl_sargodha]      # see AREA NON-IDENTITY below
+
+  # ── NOT ADDED, and the reason is a MEASUREMENT, not a preference: Sukkur and Ghotki ────────────
+  # Both were written as ordinary AREA anchors (`pl_sukkur`, city, 27.7052/68.8574; `pl_ghotki`, district)
+  # on the same reasoning as the rows above — the documents state "Sukkur District, Sindh" verbatim, so the
+  # claim should land somewhere. Measured on the real extraction, they did active harm and were withdrawn.
+  #
+  # The mechanism, and it generalises: INGEST freezes a location phrase onto the entity, and for a station
+  # written "Pano Aqil Cantonment, Sukkur District, Sindh" the phrase it froze was the ADMIN PARENT —
+  # `raw: "Sukkur District, Sindh"`. With a Sukkur row present the offline geocoder matched that alias and
+  # stamped the CITY's coordinate onto a station-level node. `resolve_place` then reads the node's own
+  # toponym ("Pano Aqil Cantonment"), matches `pl_pano_aqil` — and drops the match, because the attached
+  # coordinate sits ~30 km away, far outside the `site` radius, so the coordinate CONTRADICTS the name.
+  # Net effect, measured: the cantonment stopped resolving to any anchor at all (`place_of = None`), and the
+  # station anchor this file exists to provide went inert. Without the Sukkur row the phrase geocodes to
+  # nothing, no coordinate is attached, and the toponym match stands (`band=auto, via=toponym`).
+  #
+  # So the rule an area anchor has to respect is narrower than "record what the source said": an area alias
+  # that can capture the admin-parent tail of a SITE-level address will hand that site the area's
+  # coordinate, and a coarse coordinate on a fine node is not a harmless approximation — it is a veto on the
+  # node's own name. Sukkur and Ghotki mentions therefore stay honest un-anchored pins for now. Doing this
+  # properly is a place-layer change (prefer an exact curated toponym over a coarser geocode of the same
+  # mention), not a gazetteer row, and it is on the roadmap rather than in this file.
 
   - place_id: pl_lahore
     canonical_name: "Lahore"

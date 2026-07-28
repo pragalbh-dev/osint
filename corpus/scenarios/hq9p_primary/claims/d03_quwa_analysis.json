@@ -1,6 +1,6 @@
 [
   {
-    "asserts": "entity",
+    "asserts": "event",
     "attributes": null,
     "claim_id": "d03-quwa-analysis-l4",
     "doc_ref": {
@@ -16,11 +16,21 @@
         113
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2017",
+      "year": 2017
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -30,23 +40,30 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "family": "HQ-9",
-        "range_km": {
-          "approx": false,
-          "count_state": null,
-          "max": null,
-          "min": null,
-          "unit": "km",
-          "value": 100.0
-        }
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "FD-2000"
+      "attrs": {},
+      "event_type": "TransferEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "FD-2000",
+        "China",
+        "Pakistan"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2017",
+        "year": 2017
+      }
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -66,14 +83,14 @@
       "row": null,
       "span": [
         279,
-        323
+        403
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -84,7 +101,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "echelon": "command",
+        "alert_posture": "operational status",
+        "echelon": "Command",
         "service_branch": "Pakistan Army"
       },
       "entity_type": "unit",
@@ -93,6 +111,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -129,7 +148,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -139,15 +158,23 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "count_state": "complete"
-      },
+      "attrs": {},
       "event_type": "InductionEvent",
       "form": "event",
-      "location": null,
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Pakistan",
+        "raw": "Pakistan",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
       "participants": [
         "FD-2000",
         "China",
+        "Army Air Defence Command",
         "Army Air Defence Command"
       ],
       "time_interval": {
@@ -164,6 +191,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -172,12 +200,9 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "equips",
       "_event_time_rung": "stated",
       "_object_mention": "d03-quwa-analysis-l6",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d03-quwa-analysis-l4",
-      "source_quote": "the Pakistan Army's Army Air Defence Command has completed induction of the FD-2000 long-range surface-to-air missile system"
+      "_subject_mention": "d03-quwa-analysis-l6-4"
     },
     "claim_id": "d03-quwa-analysis-l6-3",
     "doc_ref": {
@@ -207,7 +232,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -225,6 +250,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -243,6 +269,159 @@
       "region": null,
       "row": null,
       "span": [
+        351,
+        671
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-9/P",
+          "HQ-9P"
+        ],
+        "family": "HQ-9",
+        "operator_branch": "Army Air Defence Command",
+        "range_km": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": "km",
+          "value": 100.0
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d03-quwa-analysis-l6-4"
+    },
+    "claim_id": "d03-quwa-analysis-l6-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        351,
+        671
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d03-quwa-analysis-l6-4"
+    },
+    "claim_id": "d03-quwa-analysis-l6-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        351,
+        671
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l6-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
         427,
         488
       ]
@@ -251,7 +430,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -270,142 +449,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d03-quwa-analysis-l6-4"
-    },
-    "claim_id": "d03-quwa-analysis-l6-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 6,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        427,
-        488
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Hongqi-9",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d03-quwa-analysis-l6-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 6,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        521,
-        549
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d03-quwa-analysis-l6-8",
-      "_subject_mention": "d03-quwa-analysis-l6-6"
-    },
-    "claim_id": "d03-quwa-analysis-l6-7",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 6,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        521,
-        671
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -424,15 +468,15 @@
       "region": null,
       "row": null,
       "span": [
-        623,
-        671
+        427,
+        488
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -442,13 +486,256 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "family": "HQ-9"
+      },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9P"
+      "name": "HQ-9"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d03-quwa-analysis-l6-7",
+      "_subject_mention": "d03-quwa-analysis-l6-8"
+    },
+    "claim_id": "d03-quwa-analysis-l6-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        427,
+        488
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Hongqi-9",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9",
+        "Hongqi-9"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "China's HQ-9 family known domestically as the Hongqi-9 (红旗-9)."
+      ],
+      "_coref_referent": "ref:d03-quwa-analysis-c2",
+      "_object_mention": "d03-quwa-analysis-l6-7",
+      "_subject_mention": "d03-quwa-analysis-l6-8",
+      "source_quote": "China's HQ-9 family known domestically as the Hongqi-9 (红旗-9)."
+    },
+    "claim_id": "d03-quwa-analysis-l6-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        427,
+        489
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Hongqi-9",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l6-8",
+      "d03-quwa-analysis-l6-7"
+    ],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "FD-2000",
+        "HQ-9/P"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and equivalence marker 'designated', and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "The system is understood to be designated locally as HQ-9/P, though some Pakistani officers interviewed at recent defence expos have referred to it simply as HQ-9P without the slash, and older briefing slides circulated in 2019 still used the CASIC export brand FD-2000 exclusively."
+      ],
+      "_coref_referent": "ref:d03-quwa-analysis-c1",
+      "_object_mention": "d03-quwa-analysis-l6-13",
+      "_subject_mention": "d03-quwa-analysis-l6-4",
+      "source_quote": "The system is understood to be designated locally as HQ-9/P, though some Pakistani officers interviewed at recent defence expos have referred to it simply as HQ-9P without the slash, and older briefing slides circulated in 2019 still used the CASIC export brand FD-2000 exclusively."
+    },
+    "claim_id": "d03-quwa-analysis-l6-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        490,
+        772
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l6-4",
+      "d03-quwa-analysis-l6-13"
+    ],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "FD-2000",
+        "HQ-9P"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and equivalence marker 'designated', and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "The system is understood to be designated locally as HQ-9/P, though some Pakistani officers interviewed at recent defence expos have referred to it simply as HQ-9P without the slash, and older briefing slides circulated in 2019 still used the CASIC export brand FD-2000 exclusively."
+      ],
+      "_coref_referent": "ref:d03-quwa-analysis-c1",
+      "_object_mention": "d03-quwa-analysis-l6-15",
+      "_subject_mention": "d03-quwa-analysis-l6-4",
+      "source_quote": "The system is understood to be designated locally as HQ-9/P, though some Pakistani officers interviewed at recent defence expos have referred to it simply as HQ-9P without the slash, and older briefing slides circulated in 2019 still used the CASIC export brand FD-2000 exclusively."
+    },
+    "claim_id": "d03-quwa-analysis-l6-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        490,
+        772
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l6-4",
+      "d03-quwa-analysis-l6-15"
+    ],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -457,7 +744,149 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d03-quwa-analysis-l6-9",
+    "claim_id": "d03-quwa-analysis-l6-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        521,
+        549
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9",
+        "operator_branch": "Army Air Defence Command"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d03-quwa-analysis-l6-15",
+      "_subject_mention": "d03-quwa-analysis-l6-13"
+    },
+    "claim_id": "d03-quwa-analysis-l6-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        521,
+        671
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l6-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        623,
+        671
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9",
+        "operator_branch": "Army Air Defence Command"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l6-16",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -475,7 +904,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -495,6 +924,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -504,12 +934,12 @@
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "exported-by",
-      "_object_mention": "d03-quwa-analysis-l4",
+      "_object_mention": "d03-quwa-analysis-l6-4",
       "_relane_reason": "'exported-by'@(variant->manufacturer) reversed -> manufactures",
-      "_subject_mention": "d03-quwa-analysis-l6-9",
+      "_subject_mention": "d03-quwa-analysis-l6-16",
       "source_quote": "CASIC export brand FD-2000"
     },
-    "claim_id": "d03-quwa-analysis-l6-10",
+    "claim_id": "d03-quwa-analysis-l6-17",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -527,7 +957,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -545,118 +975,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d03-quwa-analysis-l8",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 8,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        893,
-        914
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "year",
-      "half": null,
-      "kind": "label",
-      "month": null,
-      "quarter": null,
-      "raw": "2017",
-      "year": 2017
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "event_type": "TransferEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "modern long-range SAM",
-        "China",
-        "Pakistan"
-      ],
-      "time_interval": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2017",
-        "year": 2017
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d03-quwa-analysis-l8-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 8,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1043,
-        1078
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "open procurement notices"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -675,49 +994,6 @@
       "region": null,
       "row": null,
       "span": [
-        1839,
-        1900
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "regional trade publications"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d03-quwa-analysis-l10-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 10,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
         1996,
         2088
       ]
@@ -726,7 +1002,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -752,14 +1028,31 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "S-300PMU series",
+        "SA-10/SA-20 class"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "broadly comparable to the Russian S-300PMU series — sometimes rendered in regional press as the \"SA-10/SA-20 class\" —"
+      ],
+      "_coref_referent": "ref:d03-quwa-analysis-c3",
+      "_object_mention": "d03-quwa-analysis-l12-4",
+      "_subject_mention": "d03-quwa-analysis-l12-2",
+      "source_quote": "broadly comparable to the Russian S-300PMU series — sometimes rendered in regional press as the \"SA-10/SA-20 class\" —"
+    },
     "claim_id": "d03-quwa-analysis-l12",
     "doc_ref": {
       "bbox": null,
@@ -770,15 +1063,63 @@
       "region": null,
       "row": null,
       "span": [
-        2324,
-        2339
+        2290,
+        2407
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "SA-10/SA-20 class",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "S-300PMU series"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l12-2",
+      "d03-quwa-analysis-l12-4"
+    ],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l12-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2312,
+        2405
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -791,10 +1132,11 @@
       "attrs": {},
       "entity_type": "variant",
       "form": "entity",
-      "name": "S-300PMU"
+      "name": "S-300PMU series"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c3",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -803,9 +1145,10 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d03-quwa-analysis-l12"
+      "_object_mention": "d03-quwa-analysis-l12-4",
+      "_subject_mention": "d03-quwa-analysis-l12-2"
     },
-    "claim_id": "d03-quwa-analysis-l12-2",
+    "claim_id": "d03-quwa-analysis-l12-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -823,7 +1166,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -837,21 +1180,20 @@
       "object": "SA-10/SA-20 class",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "S-300PMU"
+      "subject": "S-300PMU series"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "d03-quwa-analysis-l12-5"
-    },
-    "claim_id": "d03-quwa-analysis-l12-3",
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l12-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -861,15 +1203,15 @@
       "region": null,
       "row": null,
       "span": [
-        2466,
-        2478
+        2342,
+        2405
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -879,14 +1221,14 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "SA-21",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "S-400 Triumf"
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "SA-10/SA-20 class"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c3",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -895,9 +1237,10 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d03-quwa-analysis-l12-5"
+      "_object_mention": "d03-quwa-analysis-l12-9",
+      "_subject_mention": "d03-quwa-analysis-l12-6"
     },
-    "claim_id": "d03-quwa-analysis-l12-4",
+    "claim_id": "d03-quwa-analysis-l12-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -915,7 +1258,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -933,6 +1276,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -941,7 +1285,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d03-quwa-analysis-l12-5",
+    "claim_id": "d03-quwa-analysis-l12-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -959,7 +1303,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -976,6 +1320,468 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "S-400 Triumf",
+        "SA-21"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "S-400 Triumf (also transliterated Triumph in some Indian and Pakistani reporting, and referred to by its NATO designator SA-21 in older NATO handbooks)"
+      ],
+      "_coref_referent": "ref:d03-quwa-analysis-c4",
+      "_object_mention": "d03-quwa-analysis-l12-11",
+      "_subject_mention": "d03-quwa-analysis-l12-6",
+      "source_quote": "S-400 Triumf (also transliterated Triumph in some Indian and Pakistani reporting, and referred to by its NATO designator SA-21 in older NATO handbooks)"
+    },
+    "claim_id": "d03-quwa-analysis-l12-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2466,
+        2617
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "SA-21",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l12-6",
+      "d03-quwa-analysis-l12-11"
+    ],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "S-400 Triumf",
+        "Triumph"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "S-400 Triumf (also transliterated Triumph in some Indian and Pakistani reporting, and referred to by its NATO designator SA-21 in older NATO handbooks)"
+      ],
+      "_coref_referent": "ref:d03-quwa-analysis-c4",
+      "_object_mention": "d03-quwa-analysis-l12-9",
+      "_subject_mention": "d03-quwa-analysis-l12-6",
+      "source_quote": "S-400 Triumf (also transliterated Triumph in some Indian and Pakistani reporting, and referred to by its NATO designator SA-21 in older NATO handbooks)"
+    },
+    "claim_id": "d03-quwa-analysis-l12-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2466,
+        2617
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Triumph",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l12-6",
+      "d03-quwa-analysis-l12-9"
+    ],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l12-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2485,
+        2546
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Triumph"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l12-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2552,
+        2616
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "handbook"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "NATO handbooks"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l12-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2552,
+        2616
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "SA-21"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d03-quwa-analysis-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d03-quwa-analysis-l12-11",
+      "_subject_mention": "d03-quwa-analysis-l12-6"
+    },
+    "claim_id": "d03-quwa-analysis-l12-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2552,
+        2616
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "SA-21",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d03-quwa-analysis-l12-6",
+      "_subject_mention": "d03-quwa-analysis-l6-4"
+    },
+    "claim_id": "d03-quwa-analysis-l12-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2628,
+        2709
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-400 Triumf",
+      "object_value": null,
+      "predicate": "distinct-from",
+      "subject": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "FD-2000",
+        "S-400 Triumf"
+      ],
+      "_object_mention": "d03-quwa-analysis-l12-6",
+      "_subject_mention": "d03-quwa-analysis-l6-4",
+      "source_quote": "officials in Islamabad have been careful to note the FD-2000 is not a direct copy but rather, in the words of one retired air defence officer quoted at the seminar, \"a parallel design lineage with its own radar and seeker suite.\""
+    },
+    "claim_id": "d03-quwa-analysis-l12-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2628,
+        2857
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "S-400 Triumf",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d03-quwa-analysis-l6-4",
+      "d03-quwa-analysis-l12-6"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d03_quwa_analysis",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d03-quwa-analysis-l14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3026,
+        3102
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-16",
+        "operator_branch": "Army Air Defence Command"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "LY-80"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -987,11 +1793,11 @@
       "_as_stated_predicate": "equips",
       "_object_mention": "d03-quwa-analysis-l6",
       "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d03-quwa-analysis-l14-2",
+      "_subject_mention": "d03-quwa-analysis-l14",
       "_undated_perishable": true,
-      "source_quote": "complementing existing medium-range systems such as the LY-80 (HQ-16 derivative) already in service"
+      "source_quote": "medium-range systems such as the LY-80 (HQ-16 derivative) already in service"
     },
-    "claim_id": "d03-quwa-analysis-l14",
+    "claim_id": "d03-quwa-analysis-l14-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -1001,7 +1807,7 @@
       "region": null,
       "row": null,
       "span": [
-        3003,
+        3026,
         3102
       ]
     },
@@ -1009,7 +1815,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1027,6 +1833,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",
@@ -1035,7 +1842,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d03-quwa-analysis-l14-2",
+    "claim_id": "d03-quwa-analysis-l14-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
@@ -1053,52 +1860,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "family": "HQ-16"
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "LY-80"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d03_quwa_analysis",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d03-quwa-analysis-l16",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d03_quwa_analysis.txt",
-      "frame": null,
-      "line": 16,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3608,
-        3671
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1109,12 +1871,13 @@
     "kind": "observation",
     "payload": {
       "attrs": {},
-      "entity_type": "source",
+      "entity_type": "variant",
       "form": "entity",
-      "name": "Chinese state media"
+      "name": "HQ-16"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d03_quwa_analysis",

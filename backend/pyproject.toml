@@ -40,6 +40,16 @@ dependencies = [
 [project.optional-dependencies]
 # Optional 2nd extraction provider (INGEST). Keyless boot never needs it (master §7).
 gemini = ["google-genai>=0.3"]
+# Optional 3rd extraction provider (INGEST). Same shape as `gemini`: keyless boot never needs it, but the
+# shipped image installs it (see Dockerfile) so this provider can actually run live in the container.
+# RK-BAKEOFF's KEYLESS==LIVE gate is about which code froze the seed bundles, and a provider whose SDK is
+# absent from the image can never be that code — so declaring it here is part of making the bake-off a
+# genuine three-way rather than a two-horse race wearing three declarations.
+# The floor is the Responses API, not taste: this client calls `client.responses.create`, because the
+# pinned model rejects function tools on `/v1/chat/completions` unless reasoning is turned down — and
+# turning reasoning down would run a deliberately weakened model under a pinned id. An SDK old enough to
+# lack `responses` would install cleanly and then 500 on the first live extraction.
+openai = ["openai>=1.66"]
 # Optional rich-PDF OCR provider (INGEST, Azure Document Intelligence). Born-digital PDFs use poppler
 # and need none of this; the transform is SDK-free (fixture-tested). Keyless boot never needs it.
 ocr = ["azure-ai-documentintelligence>=1.0,<2"]
@@ -96,5 +106,6 @@ disallow_untyped_defs = false
 testpaths = ["tests"]
 markers = [
     "live: exercises a real external API (needs a key); skipped by default in CI",
+    "scripts_coref: the test scripts extraction pass 2 (coreference) itself — it opts out of the ingest conftest's off-queue coref side channel, keeping the scripted FIFO authoritative for that call",
 ]
 addopts = "-q"

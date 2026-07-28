@@ -5,17 +5,17 @@
       "posted_at": "09 May 2025, 0620 hrs PKT",
       "status_url": "https://x.com/Reh_Baloch/status/1920783341122009871"
     },
-    "claim_id": "d08-social-sighting-l1",
+    "claim_id": "d08-social-sighting-l2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 1,
+      "line": 2,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        0,
+        7,
         660
       ]
     },
@@ -23,7 +23,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -42,6 +42,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -68,14 +69,80 @@
       "row": null,
       "span": [
         231,
-        503
+        353
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "moving toward the old coastal battery turnoff"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "near the port road, Karachi side",
+        "raw": "near the port road, Karachi side",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "3-4 heavy trailers with escort, canvas covered"
+      ],
+      "time_interval": null
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-09",
+      "kind": "exact",
+      "raw": "2025-05-09"
+    },
+    "resolved_ref": null,
+    "source_id": "d08_social_sighting",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": {
+      "status_url": "https://x.com/Reh_Baloch/status/1920783341122009871"
+    },
+    "claim_id": "d08-social-sighting-l5-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        395,
+        502
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -93,21 +160,22 @@
       "location": {
         "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "near the port road, Karachi side, moving toward the old coastal battery turnoff",
-        "raw": "near the port road, Karachi side, moving toward the old coastal battery turnoff",
+        "proposed_alias": "near Malir",
+        "raw": "near Malir",
         "resolved_place_ref": null,
         "surface_format": "toponym",
         "wgs84_lat": null,
         "wgs84_lon": null
       },
       "participants": [
-        "HQ9 battery",
-        "same unit that was near Malir couple months back"
+        "HQ9",
+        "HQ9 battery"
       ],
       "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -124,17 +192,17 @@
       "posted_at": "2025-05-09",
       "status_url": "https://x.com/SindhWatch_OSINT/status/1920801205564321098"
     },
-    "claim_id": "d08-social-sighting-l9",
+    "claim_id": "d08-social-sighting-l10",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 9,
+      "line": 10,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        667,
+        674,
         1155
       ]
     },
@@ -147,7 +215,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -166,6 +234,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -182,17 +251,17 @@
       "posted_at": "09-05-2025 (posted ~11 AM local)",
       "status_url": "https://x.com/DefenceLeaks_PK/status/1920815447700213456"
     },
-    "claim_id": "d08-social-sighting-l17",
+    "claim_id": "d08-social-sighting-l18",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 17,
+      "line": 18,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1162,
+        1169,
         1717
       ]
     },
@@ -200,7 +269,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -219,6 +288,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -252,7 +322,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -263,27 +333,37 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "moving through Karachi outskirts, believed relocating from a known garrison area"
+        "activity": "moving through"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Karachi (metropolitan area)",
+            "lat": 24.8607,
+            "lon": 67.0011,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Karachi outskirts",
         "raw": "Karachi outskirts",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 24.8607,
+        "wgs84_lon": 67.0011
       },
       "participants": [
+        "HQ-9P / FD-2000",
         "HQ-9P / FD-2000 launcher convoy"
       ],
       "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -322,7 +402,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -341,6 +421,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -365,7 +446,7 @@
       "row": null,
       "span": [
         1959,
-        2061
+        2023
       ]
     },
     "event_time": {
@@ -377,7 +458,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -414,6 +495,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -430,17 +512,17 @@
       "posted_at": "9th May",
       "status_url": "https://x.com/wajahat_ali_def/status/1920830092211456789"
     },
-    "claim_id": "d08-social-sighting-l32",
+    "claim_id": "d08-social-sighting-l33",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d08_social_sighting.txt",
       "frame": null,
-      "line": 32,
+      "line": 33,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2215,
+        2222,
         2805
       ]
     },
@@ -453,7 +535,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -472,6 +554,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -510,7 +593,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -528,8 +611,8 @@
       "location": {
         "geocode_candidates": [],
         "precision_class": null,
-        "proposed_alias": "Karsaz-Korangi belt / port road area",
-        "raw": "Karsaz-Korangi belt / port road area",
+        "proposed_alias": "near Karsaz-Korangi belt / port road area",
+        "raw": "near Karsaz-Korangi belt / port road area",
         "resolved_place_ref": null,
         "surface_format": "toponym",
         "wgs84_lat": null,
@@ -547,6 +630,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",
@@ -561,7 +645,6 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "A ground-level nighttime photograph of a column of wheeled armored vehicles driving on a wet city street with onlookers on the sidewalk filming with mobile phones.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "fa62a45005fd178a3a36f82065b101a3db48bf5cf4fcc4a38b476cdcb6b3f212",
@@ -569,7 +652,7 @@
         "phash": "9a24669df1629d9c",
         "sha256": "6c0f1284a9ca2efcc10b6b2195574bd4d39c9c7f749f10fc718cd6372df1d75d"
       },
-      "media_type": "image/png"
+      "media_type": "image/jpeg"
     },
     "claim_id": "d08-social-sighting-full",
     "doc_ref": {
@@ -583,15 +666,15 @@
       "span": null
     },
     "event_time": {
-      "boundary_source": "explicit",
+      "boundary_source": "relative",
       "iso_date": "2025-05-09",
       "kind": "exact",
-      "raw": "2025-05-09"
+      "raw": "today"
     },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -602,51 +685,45 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Highly consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
-          "max": 10.0,
+          "max": 8.0,
           "min": 4.0,
-          "unit": "armored vehicles",
+          "unit": "wheeled vehicles",
           "value": null
         },
-        "description": "A ground-level photograph taken at night on a wet urban street. A column of dark-colored, multi-wheeled armored vehicles is driving down the road with their headlights illuminated, casting bright reflections on the wet asphalt. On the right, several individuals in dark jackets and hoods are standing on the sidewalk, holding up smartphones to record or photograph the passing convoy. Overhead utility wires and streetlights are visible, and a date/time stamp 'OCT 26, 23:47' is printed in the lower right corner.",
+        "description": "A ground-level nighttime photograph looking down a wet paved city street with overhead wires and streetlights. A column of large, dark-colored, multi-axle wheeled vehicles with illuminated headlights and roof marker lights is driving along the roadway. On the right sidewalk, several bystanders are standing and holding up illuminated mobile devices to record or photograph the passing vehicles.",
         "frame_kind": "ground-level photograph",
         "geometry_tokens": [
-          "line",
-          "road"
+          "linear roadway",
+          "sidewalk strip",
+          "column arrangement"
         ],
-        "gsd_note": "N/A (ground-level perspective)",
+        "gsd_note": "Ground-level perspective; ground sample distance is non-uniform and not applicable.",
         "observed_features": [
           {
-            "arrangement": "column",
-            "feature": "wheeled armored vehicles",
-            "note": "Dark tactical vehicles with roof-mounted hatches/turret structures and illuminated headlights driving in sequence.",
-            "shape": "boxy/rectangular"
+            "arrangement": "column along roadway lane",
+            "feature": "wheeled vehicles",
+            "note": "active headlights and roof-mounted structures visible",
+            "shape": "box-like heavy chassis"
           },
           {
-            "arrangement": "linear",
-            "feature": "roadway",
-            "note": "Wet asphalt street reflecting streetlights and vehicle headlights.",
-            "shape": "straight line"
+            "arrangement": "parallel to road lane",
+            "feature": "sidewalk and onlookers",
+            "note": "pedestrians holding illuminated mobile screens",
+            "shape": "linear pedestrian walkway"
           },
           {
-            "arrangement": "linear",
-            "feature": "sidewalk",
-            "note": "Paved sidewalk alongside the wet street.",
-            "shape": "straight line"
-          },
-          {
-            "arrangement": "line",
-            "feature": "pedestrians",
-            "note": "Bystanders in winter clothing holding up smartphones.",
-            "shape": "vertical profiles"
+            "arrangement": "along street overhead",
+            "feature": "overhead utility wiring and streetlights",
+            "note": "streetlights creating glare on wet asphalt",
+            "shape": "suspended wire grid"
           }
         ],
-        "occupancy_state": "occupied",
+        "occupancy_state": "active transit",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level photograph taken at night on a wet urban street. A column of dark-colored, multi-wheeled armored vehicles is driving down the road with their headlights illuminated, casting bright reflections on the wet asphalt. On the right, several individuals in dark jackets and hoods are standing on the sidewalk, holding up smartphones to record or photograph the passing convoy. Overhead utility wires and streetlights are visible, and a date/time stamp 'OCT 26, 23:47' is printed in the lower right corner.",
+        "site_signature_geometry": "A ground-level nighttime photograph looking down a wet paved city street with overhead wires and streetlights. A column of large, dark-colored, multi-axle wheeled vehicles with illuminated headlights and roof marker lights is driving along the roadway. On the right sidewalk, several bystanders are standing and holding up illuminated mobile devices to record or photograph the passing vehicles.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -655,6 +732,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-09",

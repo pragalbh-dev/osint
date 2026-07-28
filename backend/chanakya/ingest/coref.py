@@ -44,17 +44,21 @@ byte-stable and the keyless seed path inherits it unchanged (both paths call ``e
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal, get_args
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from chanakya import edge_direction
+from chanakya import coref_gate, edge_direction
 from chanakya.ingest.client import ExtractionClient
 from chanakya.ingest.loaders import LoadedDoc
 from chanakya.schemas import ClaimRecord, ConfigBundle, make_claim_id
 from chanakya.schemas.claim import EntityDescriptor, Extraction, Triple
+from chanakya.schemas.ids import make_referent_id
 from chanakya.schemas.values import DateValue
+
+_log = logging.getLogger("chanakya.ingest.coref")
 
 # ── the dedicated lane + its tier-3 keys ────────────────────────────────────────────────────────────
 
@@ -67,14 +71,55 @@ COREF_PREDICATE = "coref-same-as"
 CLUSTER_ATTR = "_coref_cluster"
 #: The categorical evidence kind that licensed the grouping (never a numeric confidence).
 EVIDENCE_ATTR = "_coref_evidence"
-#: The verbatim licensing span. Reuses the existing provenance key every other claim uses.
+#: A single VERBATIM span (the first), for a one-line drawer label. Reuses the existing provenance key every
+#: other claim uses, and stays a STRING so every existing reader keeps working. It is never a join of the set:
+#: a concatenation is a string the document does not contain (M13).
 QUOTE_ATTR = "source_quote"
+#: The licensing evidence itself: the **set of verbatim spans** (ruling M2), each occurring verbatim in the
+#: document. This is what a reader — and the resolver's own re-derivation of D-13.17's gate — reads, because
+#: the joined display string is not verbatim anything.
+QUOTES_ATTR = "_coref_quotes"
+#: The **referent atom** this link belongs to (``ref:<doc>-<cluster>``, ``schemas.ids.make_referent_id``).
+#: One per document-local cluster, minted here (S3) and carried on every member's entity claim as well as on
+#: each coref link, so the rebuild can recover the *grouping* — which it may DECLINE (D-13.18) — rather than
+#: only the pairs. It is evidence ABOUT a grouping, never an address.
+REFERENT_ATTR = "_coref_referent"
+#: The two members' verbatim surface forms, in ``[anchor, member]`` order. Load-bearing for the consumer:
+#: ``resolve._link_endpoints`` rewrites ``Edge.subject``/``Edge.object`` onto entity ids before
+#: ``_coref_pairs`` runs, so without this the resolver cannot re-derive D-13.17's "the quote contains both
+#: members' surface forms" gate and would have to take the producer's word for it.
+FORMS_ATTR = "_coref_forms"
+#: The **per-link** verdict of D-13.17's deterministic gate: ``PASS`` ⇒ this link may be authoritative if its
+#: category and its source's grade also allow; ``FAIL`` ⇒ raise-only. Per C5 the gate is evaluated per LINK
+#: (anchor→member), not per cluster: a cluster binds only over the links that pass, and each failing link
+#: becomes an injected Tier-1 candidate pair — a **partial** bind, which neither discards a well-licensed
+#: link nor lets one bad link license the rest.
+GATE_ATTR = "_coref_gate"
+#: Why the gate reached its verdict, in words — the audit trail for a check the resolver cannot re-run
+#: (the anaphor gate needs the document's whole mention inventory, which exists only here).
+GATE_DETAIL_ATTR = "_coref_gate_detail"
+GATE_PASS = "PASS"
+GATE_FAIL = "FAIL"
 
-#: The only evidence kinds a cluster may claim. Anything else is dropped.
+#: The CONTRASTIVE lane (D-13.19 decision (b)). Deliberately **not** the stated ``distinct-from`` rail: that
+#: channel is semantically narrow (an explicit "no interoperability" / "not related") and lands as a hard,
+#: transitive, **ungraded** veto — and widening an ungraded transitive veto to "any enumeration" is the worst
+#: thing this design could do, because *every ORBAT list contains an enumeration*. On its own lane a
+#: same-document syntactic contrast is a **band ceiling**: the pair reaches the analyst with its licensing
+#: quote and can never auto-merge. A ceiling cannot shatter an existing cluster; a veto can.
+CONTRAST_PREDICATE = "coref-distinct-from"
+
+#: The only evidence kinds a cluster may claim — **one definition, shipped to the model AND enforced here.**
+#: These three names used to live only in the system prompt while the tool schema declared ``evidence`` a bare
+#: nullable string, so a model that answered correctly in a slightly different shape (the label with its
+#: reasoning appended) had its cluster dropped silently; one bake-off candidate lost 7 that way. The literal
+#: type is what ``model_json_schema()`` turns into an ``enum`` the model can see, and :data:`EVIDENCE_CATEGORIES`
+#: is derived from it so the offered values and the accepted values can never drift apart again.
+EvidenceCategory = Literal["EXPLICIT_EQUIVALENCE", "NAME_VARIANT", "UNAMBIGUOUS_ANAPHOR"]
 EXPLICIT_EQUIVALENCE = "EXPLICIT_EQUIVALENCE"
 NAME_VARIANT = "NAME_VARIANT"
 UNAMBIGUOUS_ANAPHOR = "UNAMBIGUOUS_ANAPHOR"
-EVIDENCE_CATEGORIES: tuple[str, ...] = (EXPLICIT_EQUIVALENCE, NAME_VARIANT, UNAMBIGUOUS_ANAPHOR)
+EVIDENCE_CATEGORIES: tuple[str, ...] = get_args(EvidenceCategory)
 
 #: Type stamped on a mention the document never declared as an entity (a bare relation endpoint — the
 #: descriptive/elliptical reference this pass exists to rescue). It may join a typed cluster; two
@@ -94,14 +139,49 @@ class CoreferenceCluster(BaseModel):
     """One group of mentions the document treats as a single entity (multi-member only)."""
 
     member_ids: list[int] = []
-    evidence: str | None = None
+    evidence: EvidenceCategory | None = Field(
+        default=None,
+        description=(
+            "WHICH KIND of stated evidence licenses this grouping — exactly one of these three labels, "
+            "with nothing added to it: EXPLICIT_EQUIVALENCE (the document says they are the same thing — an "
+            "alias, an apposition, an acronym expansion, 'formerly'), NAME_VARIANT (the same proper name in "
+            "a trivially different surface form — spacing, casing, punctuation, an obvious transliteration "
+            "variant), UNAMBIGUOUS_ANAPHOR (a back-reference that in context can point to only one "
+            "already-introduced mention). The wording that shows it goes in `licensing_quotes`, not here."
+        ),
+    )
+    #: **A SET of verbatim spans from this one document** (ruling M2), not a single contiguous span. The
+    #: frozen corpus contains equivalences documents genuinely *assert* whose two surface forms sit tens of
+    #: lines apart, or in different fields of one record — so no single span can contain both, and a
+    #: one-span rule would make the system withhold on equivalences that really are stated. Each span must
+    #: still occur verbatim, which is the whole point: any reader can re-derive the bind. Multiple spans make
+    #: the evidence *findable*, never *stronger* — the grade floor, the mark-vs-word conjunct and C9's
+    #: document-scoping all still apply.
+    licensing_quotes: list[str] = []
+
+
+# D-13.19's contrastive channel. Optional by design, and absence means ``unknown`` rather than "no contrast":
+# a *required* field would push the extractor to invent one. It is not derivable downstream — the mention shape
+# carries no spans and pass 1 collapses one name to one claim per document, so nothing later can re-read the
+# syntax. (Docstrings and field descriptions in this module ship verbatim inside the tool schema, so internal
+# reasoning and decision ids live in comments like this one; the docstring is text for the model.)
+class CoreferenceContrast(BaseModel):
+    """Two mentions this ONE document sets apart in its own wording."""
+
+    left_id: int | None = None
+    right_id: int | None = None
     licensing_quote: str | None = None
 
 
 class CoreferenceClusters(BaseModel):
-    """The pass-2 output: only the merges. Any mention not named stays its own singleton."""
+    """Report ONLY the groupings this document licenses, plus any contrasts it draws in its own wording.
+
+    A mention you do not name is left on its own. That is the safe answer — say nothing rather than guess a
+    grouping.
+    """
 
     clusters: list[CoreferenceCluster] = []
+    contrasts: list[CoreferenceContrast] = []
 
 
 SYSTEM = """\
@@ -145,9 +225,25 @@ error (a human or a later document can still join them). Merging two DIFFERENT e
 that is hard to undo. When you are not sure, keep them separate.
 
 OUTPUT (fill the tool): report only the clusters with more than one member. For each, give the member
-mention-ids, the evidence category (EXPLICIT_EQUIVALENCE / NAME_VARIANT / UNAMBIGUOUS_ANAPHOR), and the
-exact verbatim quote from the document that licenses the grouping. If you cannot quote a licensing span, do
-not report the cluster. Any mention you do not name stays its own singleton.\
+mention-ids, the evidence category as exactly one of the three labels above and nothing else (no reasoning
+appended to the label — that belongs in the quotes), and the exact verbatim quote(s) from the document that
+license the grouping. Quote as many spans as it takes: if the
+document states the equivalence across two fields or two paragraphs, give BOTH spans rather than paraphrasing
+one. Every span must be copied verbatim. If you cannot quote any licensing span, do not report the cluster.
+Any mention you do not name stays its own singleton.
+
+ALSO report CONTRASTS: pairs of mentions this document itself sets apart in its own wording — an
+enumeration that names both as separate things ("the 8th AD Bn and the separate 12th AD Bn"), a "not to be
+confused with", "a second battery", "unlike". Give the two mention ids and the exact verbatim quote. Report
+a contrast ONLY where the document's own words do the distinguishing; if the document is merely silent
+about whether two mentions are the same, report NOTHING — silence is not a contrast.
+
+A remark about NAMING is not a contrast. When a document says sources are inconsistent about what to call
+something, that one designator is "sometimes rendered" another way, or that a label "maps to A versus B",
+it is describing confusion over the NAME, not asserting that two different things exist — and a document
+that then adopts one of the two labels for its own use is telling you they are interchangeable, not
+separate. Two names merely held up against each other in one sentence are neither a merge nor a contrast:
+report nothing for that pair and let a human settle it.\
 """
 
 
@@ -260,6 +356,59 @@ def _quote_supported(quote: str, text: str) -> bool:
     return bool(quote.strip()) and _normalized(quote) in _normalized(text)
 
 
+def supported_spans(raw: Any, text: str) -> list[str]:
+    """The licensing spans, **ordered**, iff EVERY ONE occurs verbatim in this document — else ``[]``.
+
+    Ruling M2 made the licensing evidence a *set* of spans (a document that states an equivalence across two
+    fields **has stated it**, and no single span can contain both forms). Ruling M13 settles the grain that
+    follows: **licensing evidence is per cluster; the verbatim check is per span.**
+
+    **All-or-nothing, and that is the safety property.** My first cut checked each span independently and kept
+    the ones that passed, on the reasoning that one paraphrase should not discard genuine spans. That is wrong,
+    and the independent suite caught it: *"a span set containing a sentence the document never contains was
+    accepted — the verbatim check is what makes the evidence re-derivable."* **M2 relaxed contiguity, not
+    verifiability.** A model that invents one span has not earned trust about the others, and a partly-invented
+    licence is an invented licence — which is the disqualifying class, not a recall trade.
+
+    Two failure modes are deliberately excluded by construction:
+
+    * **a sequence validated by a single check** would be strictly worse than the one quote it replaced;
+    * **a concatenated join** would let a fabricated seam pass while every individual part looked present —
+      the worst outcome available, because it would *look* verified. So no caller ever validates a join, and
+      the display rendering is a real span rather than a stitched one.
+
+    Accepts a list (M13's shape) or a bare string (one span is a set of one). Order-preserving; duplicates
+    collapse. Empty input ⇒ ``[]`` ⇒ no cluster.
+    """
+    values: list[str] = []
+    if isinstance(raw, str):
+        values = [raw]
+    elif isinstance(raw, (list, tuple)):
+        values = [v for v in raw if isinstance(v, str)]
+    if not values:
+        return []
+    out: list[str] = []
+    for span in values:
+        if not _quote_supported(span, text):
+            return []  # ONE unverifiable span invalidates the whole licence (M2/M13)
+        if span.strip() not in out:
+            out.append(span.strip())
+    return out
+
+
+def cluster_spans(entry: dict[str, Any], text: str) -> list[str]:
+    """Read a cluster's licensing evidence from either carrier, then verbatim-check every span (M13).
+
+    ``licensing_quotes`` is the sequence M13 rules for; ``licensing_quote`` is read too because the ruling
+    fixes the *grain*, not the field name, and a producer or fixture may legitimately supply either. Both go
+    through the same per-span predicate, so there is no shape that gets a weaker check.
+    """
+    raw = entry.get("licensing_quotes")
+    if raw is None:
+        raw = entry.get("licensing_quote")
+    return supported_spans(raw, text)
+
+
 def _type_compatible(members: list[Mention]) -> bool:
     """Same-type only. ``unknown`` mentions (undeclared endpoints) may join exactly one typed cluster."""
     known = {m.entity_type for m in members if m.entity_type != UNKNOWN_TYPE}
@@ -279,7 +428,7 @@ def _vetoed(members: list[Mention], distinctions: list[tuple[str, str]]) -> bool
 def valid_clusters(raw: Any, mentions: list[Mention], text: str,
                    distinctions: list[tuple[str, str]],
                    categories: tuple[str, ...] = EVIDENCE_CATEGORIES,
-                   ) -> list[tuple[list[Mention], str, str]]:
+                   ) -> list[tuple[list[Mention], str, list[str]]]:
     """Apply every over-merge rail to the model's proposal → ``(members, evidence, quote)`` triples.
 
     Dropped: an unknown/!allowed evidence category; a missing quote or one not found in the document; a
@@ -294,17 +443,38 @@ def valid_clusters(raw: Any, mentions: list[Mention], text: str,
     if not isinstance(raw, dict):
         return []
     by_id = {m.local_id: m for m in mentions}
-    accepted: list[tuple[list[Mention], str, str]] = []
+    accepted: list[tuple[list[Mention], str, list[str]]] = []
     claimed: set[int] = set()
 
     for entry in raw.get("clusters") or []:
         if not isinstance(entry, dict):
             continue
         evidence = entry.get("evidence")
-        if not isinstance(evidence, str) or evidence not in categories:
+        # A dropped cluster is a discarded answer, so the two reasons for dropping one are separated and
+        # both are said out loud. An evidence label outside the three the schema NAMES is a payload we
+        # cannot interpret — it warns, because that is the case where the model may well have been right in
+        # a shape we refuse (measured: 7 such clusters in one bake-off run, lost with no trace). A label
+        # that is legal but not enabled on this deployment is policy working as configured, so it is a
+        # lower-severity note. Neither is worth aborting a document's whole pass for: the rest of this
+        # function is a row-at-a-time rail, and one bad row must not discard the good ones.
+        if not isinstance(evidence, str) or evidence not in EVIDENCE_CATEGORIES:
+            _log.warning(
+                "coref cluster dropped: evidence=%r is not one of %s. The tool schema names the legal "
+                "labels; a label with anything appended to it is not one of them.",
+                evidence, list(EVIDENCE_CATEGORIES),
+            )
             continue
-        quote = entry.get("licensing_quote")
-        if not isinstance(quote, str) or not _quote_supported(quote, text):
+        if evidence not in categories:
+            _log.info(
+                "coref cluster dropped: %s is a legal category but is not enabled on this deployment "
+                "(config/credibility.yaml -> coreference.categories = %s).",
+                evidence, list(categories),
+            )
+            continue
+        # M2/M13: the ordered span SET, with EVERY member verbatim-checked. One unverifiable span rejects
+        # the whole cluster — a partly-invented licence is an invented licence.
+        quotes = cluster_spans(entry, text)
+        if not quotes:
             continue
         ids = entry.get("member_ids")
         if not isinstance(ids, list):
@@ -321,8 +491,133 @@ def valid_clusters(raw: Any, mentions: list[Mention], text: str,
         if any(m.local_id in claimed for m in members):
             continue  # overlapping proposals ⇒ keep the first, drop the rest (under-merge is cheap)
         claimed.update(m.local_id for m in members)
-        accepted.append((members, evidence, quote.strip()))
+        accepted.append((members, evidence, quotes))
     return accepted
+
+
+# ── D-13.17's per-LINK deterministic gates (C5) ──────────────────────────────────────────────────────
+#
+# An "authoritative" coref pair is a **Phase-1 bootstrap trigger**: it merges at hardcoded confidence 1.0 and
+# BYPASSES BANDING entirely, so no cap restrains it. Authorising a category is therefore authorising an
+# uncapped, unbanded fusion on a **model-chosen label** — which is only defensible behind a deterministic,
+# code-verified precondition. A model's self-report is not evidence; a self-report plus a structural check is.
+#
+# The gate is evaluated per LINK (anchor→member) and not per cluster (C5): the ``EXPLICIT_EQUIVALENCE`` rule
+# says the quote must contain "both members' surface forms", which is a two-member formulation with no stated
+# n-ary quantifier. Per-link conjunction would demote a whole good cluster to n singletons on one bad link;
+# per-link disjunction would let one good link license the rest. Per-link **evaluation with a partial bind**
+# is strictly better than either.
+
+
+#: The re-derivable conjuncts live in ``chanakya.resolve.coref_gate`` and are imported — never re-typed.
+#: The consumer has to compute exactly the same predicate to decide a bind (a gate whose verdict only the
+#: producer can recompute is a second self-report, not a structural check), and two copies would drift.
+#: The dependency direction is safe: ``ingest`` may import ``resolve``; ``resolve`` may never import
+#: ``ingest`` (``rebuild()`` imports ``resolve``, and ``ingest`` reaches the LLM client — gate G1).
+explicit_equivalence_gate = coref_gate.explicit_equivalence
+differs_only_by_a_mark = coref_gate.differs_only_by_a_mark
+_paren_wraps = coref_gate.paren_wraps
+_value_tokens = coref_gate.value_tokens
+
+
+def unambiguous_anaphor_gate(
+    anchor: Mention, member: Mention, mentions: list[Mention]
+) -> tuple[bool, str]:
+    """D-13.17's ``UNAMBIGUOUS_ANAPHOR`` gate, **reformulated POSITIVELY** — ``(passed, why)``.
+
+    **Why the original formulation had to be reversed.** It was an *absence* test — "the document contains no
+    second mention of a compatible type the anaphor could mean" — over a **model-produced,
+    surface-form-deduplicated** inventory. So *under-extraction makes the gate PASS*: its failure mode is
+    anti-correlated with safety, and it converts a documented extractor under-reach into an over-merge path
+    for the strongest fusion in the system. It also contradicted this design's own doctrine one section
+    later, where absence of contrast is explicitly declared neutral: same document, opposite doctrines,
+    structurally identical inputs.
+
+    The positive form demands things be *present*:
+
+    1. the antecedent is **named** (a non-empty surface form);
+    2. the antecedent is **declared** — it carries an entity claim of its own, so something in the document
+       actually asserted it rather than it arriving as a bare relation endpoint;
+    3. the antecedent is **ontology-typed** (not ``unknown``);
+    4. there is **exactly one** type-compatible mention for the anaphor to resolve to, where an
+       ``unknown``-typed mention **COUNTS as compatible**. That last clause is the one that makes the test
+       bite in the right direction: a second *undeclared* endpoint the extractor could not type is exactly
+       the mention an under-reach would hide, so counting it as compatible makes under-extraction FAIL the
+       gate instead of passing it.
+
+    Not re-derivable by the resolver — it needs the document's whole mention inventory, which exists only
+    here — so the verdict and its reason are stamped on the link for audit. That is a *code* check over the
+    model's inventory, not a model self-report, which is the distinction D-13.17 actually rests on.
+    """
+    if not anchor.name.strip():
+        return False, "the antecedent has no surface form (an anaphor needs a NAMED antecedent)"
+    if not anchor.claim_id:
+        return False, (
+            "the antecedent is undeclared — no entity claim asserts it, so nothing in the document states "
+            "what the anaphor is being resolved TO"
+        )
+    if anchor.entity_type == UNKNOWN_TYPE:
+        return False, "the antecedent is not ontology-typed (an untyped antecedent cannot be type-unique)"
+    compatible = [
+        m for m in mentions
+        if m.local_id != member.local_id
+        and (m.entity_type == anchor.entity_type or m.entity_type == UNKNOWN_TYPE)
+    ]
+    if len(compatible) != 1:
+        return False, (
+            f"the anaphor has {len(compatible)} type-compatible antecedents in this document, not exactly "
+            f"one (an 'unknown'-typed mention counts as compatible on purpose — a second undeclared endpoint "
+            f"is precisely what an extractor under-reach would hide, and it must FAIL the gate, not pass it)"
+        )
+    if compatible[0].local_id != anchor.local_id:
+        return False, "the single type-compatible antecedent is not the one this link binds to"
+    return True, (
+        f"exactly one type-compatible antecedent ('{anchor.entity_type}'), named and declared by its own "
+        f"entity claim"
+    )
+
+
+def link_gate(
+    evidence: str, quotes: list[str], anchor: Mention, member: Mention,
+    mentions: list[Mention], markers: tuple[str, ...], min_descriptor_len: int | None = None,
+) -> tuple[bool, str]:
+    """Route one anchor→member link to its category's gate — ``(passed, why)``.
+
+    **M12, and it is the reason a fallible test is admissible here at all: a failing conjunct DEMOTES the link
+    to raise-only; it never vetoes.** The mark-vs-word conjunct is a heuristic and it false-fires in *both*
+    directions — a short word looks like a mark (``TX-5 air defence``: "air" is three characters), and a long
+    mark looks like a word (``HQ-9 Export`` is a different variant, but "Export" passes any length test). Since
+    the only consequence of a false fire is that the pair reaches the analyst **with its licensing spans
+    attached**, the failure direction is benign by construction: it costs one glance, never a lost merge.
+
+    **These conjuncts are explicitly incomplete and are not presented as proof of the model's claim.** They are
+    a cheap filter *over* it. A long mark will pass, and no additional pattern rule is added to compensate —
+    that would only make a fallible test *look* authoritative while staying fallible. The residue is the
+    analyst queue's job, which is precisely why surfacing the licensing quote matters more than another
+    heuristic would.
+
+    An ungated category always fails, i.e. is always raise-only.
+    """
+    if evidence == EXPLICIT_EQUIVALENCE:
+        return coref_gate.explicit_equivalence(
+            quotes, anchor.name, member.name, markers, min_descriptor_len
+        )
+    if evidence == UNAMBIGUOUS_ANAPHOR:
+        # M1/M12 bind here too: an anaphor whose antecedent differs from it only by a mark is the same
+        # collision arriving through the other category, and the positive gate alone cannot see it. Demotion,
+        # not veto — same benign failure direction.
+        if coref_gate.differs_only_by_a_mark(anchor.name, member.name, min_descriptor_len):
+            return False, (
+                f"'{member.name}' extends '{anchor.name}' by a mark, not a word — a mark distinguishes a "
+                f"variant rather than naming the same thing, so no anaphoric reading licenses the bind (M1). "
+                f"This is a filter, not a verdict: if the reading is right, the pair is one click away"
+            )
+        return unambiguous_anaphor_gate(anchor, member, mentions)
+    return False, (
+        f"'{evidence}' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses "
+        f"banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another "
+        f"predicate — immune to the very cap that replaced it"
+    )
 
 
 # ── emission ────────────────────────────────────────────────────────────────────────────────────────
@@ -339,9 +634,11 @@ def _anchor(members: list[Mention]) -> Mention:
     return members[0]
 
 
-def coref_claims(accepted: list[tuple[list[Mention], str, str]], *, claims: list[ClaimRecord],
+def coref_claims(accepted: list[tuple[list[Mention], str, list[str]]], *, claims: list[ClaimRecord],
                  loaded: LoadedDoc, source_id: str, model_id: str,
-                 report_time: DateValue | None, ingest_time: DateValue | None) -> list[ClaimRecord]:
+                 report_time: DateValue | None, ingest_time: DateValue | None,
+                 mentions: list[Mention] | None = None, markers: tuple[str, ...] = (),
+                 min_descriptor_len: int | None = None) -> list[ClaimRecord]:
     """Turn accepted clusters into ``coref-same-as`` claims — a star from the cluster's anchor.
 
     ``kind`` follows what the claim can actually cite, because an ``inference`` **must** carry premises:
@@ -364,10 +661,22 @@ def coref_claims(accepted: list[tuple[list[Mention], str, str]], *, claims: list
     index = len(claims)  # continue the document's serial so provisional ids never collide with pass 1's
     out: list[ClaimRecord] = []
 
-    for number, (members, evidence, quote) in enumerate(accepted, start=1):
+    inventory_all = mentions or []
+    for number, (members, evidence, quotes) in enumerate(accepted, start=1):
         cluster_id = f"c{number}"
         anchor = _anchor(members)
-        ref = _resolve_doc_ref(loaded, quote, fallback=anchor.name)
+        # M2: every verbatim span becomes a cited DocRef, so the claim's provenance names the whole licensing
+        # SET rather than one of its spans — an equivalence stated across two fields is cited across both.
+        refs = [_resolve_doc_ref(loaded, q, fallback=anchor.name) for q in quotes]
+        ref: Any = refs[0] if len(refs) == 1 else refs
+        # THE REFERENT ATOM (A1): one per document-local cluster, minted here and only here. It is a
+        # *grouping signal* the rebuild consults and may DECLINE — never the address of a node — which is
+        # why it rides the attribute bag and the members' entity claims rather than replacing any id.
+        # Minted UNCONDITIONALLY. I first gated this on the stage flag, which was the same mistake as gating
+        # the gate: the referent atom is not a policy, it is the **grain** — the cluster's address in the
+        # evidence log, without which the grouping is not a thing the rebuild can adjudicate or decline. What
+        # rides the flag is whether the rebuild ACTS on the grouping, which is gated where it belongs.
+        referent = make_referent_id(doc_token, cluster_id)
         for member in members:
             if member is anchor:
                 continue
@@ -375,8 +684,23 @@ def coref_claims(accepted: list[tuple[list[Mention], str, str]], *, claims: list
             attributes: dict[str, Any] = {
                 CLUSTER_ATTR: cluster_id,
                 EVIDENCE_ATTR: evidence,
-                QUOTE_ATTR: quote,
+                # The FIRST verbatim span, for a one-line drawer label. Deliberately not a join of the set:
+                # a concatenation is a string the document does not contain, so anything that validated it
+                # would pass a seam nobody wrote (M13). ``QUOTES_ATTR`` carries the whole ordered set.
+                QUOTE_ATTR: quotes[0],
+                QUOTES_ATTR: list(quotes),
             }
+            attributes[REFERENT_ATTR] = referent
+            # C5: the gate is per LINK. Both members' forms are stamped so the resolver can RECOMPUTE the
+            # equivalence conjuncts rather than trust a verdict (a gate only the producer can recompute is a
+            # second self-report), and the producer's own verdict is stamped beside them as the audit trail
+            # for the one conjunct that needs the document text.
+            attributes[FORMS_ATTR] = [anchor.name, member.name]
+            passed, why = link_gate(
+                evidence, quotes, anchor, member, inventory_all or members, markers, min_descriptor_len,
+            )
+            attributes[GATE_ATTR] = GATE_PASS if passed else GATE_FAIL
+            attributes[GATE_DETAIL_ATTR] = why
             if anchor.claim_id:
                 attributes[edge_direction.SUBJECT_MENTION_ATTR] = anchor.claim_id
             if member.claim_id:
@@ -384,6 +708,11 @@ def coref_claims(accepted: list[tuple[list[Mention], str, str]], *, claims: list
             premises = [cid for cid in (anchor.claim_id, member.claim_id) if cid]
             out.append(ClaimRecord(
                 claim_id=make_claim_id(doc_token, _coref_locator(ref), index=index),
+                # The cluster's referent atom, on the field S1 froze for it. A relationship claim normally has
+                # no single referent (it names two mentions), but a coreference LINK is the one relationship
+                # whose two mentions belong to one grouping by construction — so the field is unambiguous
+                # here, and it is what lets the rebuild recover the grouping from the links alone.
+                referent_id=referent,
                 source_id=source_id,
                 doc_ref=ref,
                 kind="inference" if premises else "observation",
@@ -399,10 +728,134 @@ def coref_claims(accepted: list[tuple[list[Mention], str, str]], *, claims: list
     return out
 
 
+def stamp_referents(
+    claims: list[ClaimRecord], accepted: list[tuple[list[Mention], str, list[str]]], doc_token: str
+) -> list[ClaimRecord]:
+    """Return pass 1's claims with the referent atom stamped on each clustered member's ENTITY claim (A1).
+
+    The grain is deliberate: *"an entity-form claim carries the referent of the mention it names"*. A
+    relationship or event claim has two or more mentions and therefore no single referent, so it is left
+    alone — its endpoints' referents are reached through the tier-3 mention refs.
+
+    This is where the S1 field stops being dormant, and it is what makes the referent a **grouping** rather
+    than a pile of pairs: the rebuild can recover every claim atom of one cluster and decide about the
+    grouping as a whole (D-13.18), instead of only seeing n−1 star links.
+
+    Consequence worth stating, because it is load-bearing and easy to miss: the referent joins
+    ``dedup._claim_signature``, so two mentions with *different* referents no longer fold together. That is
+    S1's design working as intended (identity is earned at rebuild, never assumed at ingest), not a side
+    effect — and it is one more reason the minting rides the stage flag rather than shipping bare.
+
+    Claims are replaced, never mutated: ``model_copy`` keeps the record immutable-in-spirit and leaves any
+    claim not in a cluster **identical**, so a document with no accepted cluster is byte-unchanged.
+    """
+    by_claim: dict[str, str] = {}
+    for number, (members, _evidence, _quote) in enumerate(accepted, start=1):
+        referent = make_referent_id(doc_token, f"c{number}")
+        for member in members:
+            if member.claim_id:
+                by_claim[member.claim_id] = referent
+    if not by_claim:
+        return claims
+    return [
+        c.model_copy(update={"referent_id": by_claim[c.claim_id]})
+        if c.claim_id in by_claim and c.payload.form == "entity" and c.referent_id is None
+        else c
+        for c in claims
+    ]
+
+
+def valid_contrasts(
+    raw: Any, mentions: list[Mention], text: str
+) -> list[tuple[Mention, Mention, str]]:
+    """The model's contrast proposals, quote-checked — D-13.19's contrastive channel.
+
+    Same disposal discipline as the clusters: a contrast with no verbatim licensing span in the document is
+    dropped, because the whole point is that *the document's own words* do the distinguishing. **Absence of
+    a contrast is neutral** and is never a prior *for* merging — the same "absence is not evidence" doctrine
+    the conflict machinery already follows.
+    """
+    if not isinstance(raw, dict):
+        return []
+    by_id = {m.local_id: m for m in mentions}
+    out: list[tuple[Mention, Mention, str]] = []
+    seen: set[frozenset[int]] = set()
+    for entry in raw.get("contrasts") or []:
+        if not isinstance(entry, dict):
+            continue
+        quote = entry.get("licensing_quote")
+        if not isinstance(quote, str) or not _quote_supported(quote, text):
+            continue
+        left_id, right_id = entry.get("left_id"), entry.get("right_id")
+        if not isinstance(left_id, int) or not isinstance(right_id, int):
+            continue  # a non-integer mention id is not a mention — never guessed at
+        left, right = by_id.get(left_id), by_id.get(right_id)
+        if left is None or right is None or left.local_id == right.local_id:
+            continue
+        key = frozenset((left.local_id, right.local_id))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((left, right, quote.strip()))
+    return out
+
+
+def contrast_claims(contrasts: list[tuple[Mention, Mention, str]], *, claims: list[ClaimRecord],
+                    loaded: LoadedDoc, source_id: str, model_id: str,
+                    report_time: DateValue | None, ingest_time: DateValue | None) -> list[ClaimRecord]:
+    """Turn quote-checked contrasts into ``coref-distinct-from`` claims on their **own** lane.
+
+    Its own lane, never the stated ``distinct-from`` rail. That rail is a hard, transitive, **ungraded** veto
+    for an explicit "not related" — and widening it to "any enumeration" would be the single worst change
+    available here, because *every ORBAT list contains an enumeration*: one planted document naming "the 8th
+    AD Bn and the separate 12th AD Bn" would shatter a well-corroborated cluster. On this lane the same
+    evidence is a **band ceiling**, which withholds one new fusion and cannot retract an existing merge, so
+    the harm a grade gate would have defended against does not arise — which is exactly why the ceiling is
+    ungraded.
+    """
+    from chanakya.ingest.extract import _resolve_doc_ref, _sanitize_doc_token
+
+    doc_token = _sanitize_doc_token(source_id)
+    index = len(claims)
+    out: list[ClaimRecord] = []
+    for left, right, quote in contrasts:
+        index += 1
+        ref = _resolve_doc_ref(loaded, quote, fallback=left.name)
+        attributes: dict[str, Any] = {QUOTE_ATTR: quote, FORMS_ATTR: [left.name, right.name]}
+        if left.claim_id:
+            attributes[edge_direction.SUBJECT_MENTION_ATTR] = left.claim_id
+        if right.claim_id:
+            attributes[edge_direction.OBJECT_MENTION_ATTR] = right.claim_id
+        premises = [cid for cid in (left.claim_id, right.claim_id) if cid]
+        out.append(ClaimRecord(
+            claim_id=make_claim_id(doc_token, _coref_locator(ref), index=index),
+            source_id=source_id,
+            doc_ref=ref,
+            kind="inference" if premises else "observation",
+            polarity="positive",
+            asserts="relationship",
+            payload=Triple(subject=left.name, predicate=CONTRAST_PREDICATE, object=right.name),
+            report_time=report_time,
+            ingest_time=ingest_time,
+            premises=premises,
+            extraction=Extraction(method="llm", version=model_id, model_conf=1.0),
+            attributes=attributes,
+        ))
+    return out
+
+
 def _coref_locator(ref: Any) -> str:
-    """The claim-id locator stem for a coref edge — the licensing span's position, else a stable stem."""
+    """The claim-id locator stem for a coref edge — the licensing span's position, else a stable stem.
+
+    M2 made the provenance a **list** of DocRefs (one per verbatim span) and ``_locator`` reads a single ref,
+    so the first span supplies the stem: ids stay stable and readable, and the whole set is still cited on the
+    claim itself.
+    """
     # Local import: keeps this module off ``extract``'s import graph, so neither direction cycles.
     from chanakya.ingest.extract import _locator
+
+    if isinstance(ref, (list, tuple)):
+        ref = ref[0] if ref else None
 
     stem = _locator(ref)
     return stem if stem != "x" else "coref"
@@ -411,7 +864,15 @@ def _coref_locator(ref: Any) -> str:
 # ── config + the public pass ────────────────────────────────────────────────────────────────────────
 
 def _coref_cfg(config: ConfigBundle) -> dict[str, Any]:
-    """The pass's knobs from ``credibility.yaml → coreference`` (hot-config). ``{}`` ⇒ dormant."""
+    """The pass's knobs from ``credibility.yaml → coreference`` (hot-config). ``{}`` ⇒ not configured.
+
+    **One switch, and it is this block.** The pass used to ride the S3 staging flag as well, so a deployment
+    that had declared the producer block still emitted nothing until a second, unrelated file was edited —
+    two switches for one motion, which is how a configured capability comes to look broken. The block itself
+    is the declaration: it names the categories, the cost guard and the mention budget, and an absent block
+    is an honest "this deployment does not run the second extraction pass" (the cost is a real one — one
+    extra extraction call per document).
+    """
     return dict(getattr(config.credibility, "coreference", None) or {})
 
 
@@ -462,27 +923,82 @@ def propose_coreference(claims: list[ClaimRecord], *, loaded: LoadedDoc, source_
         text=build_prompt(loaded.text, mentions, _stated_pairs(claims, _SAME_AS), distinctions),
     )
     accepted = valid_clusters(raw, mentions, loaded.text, distinctions, categories)
-    if not accepted:
+    earned = _earned_identity(config)
+    contrasts = valid_contrasts(raw, mentions, loaded.text)
+    if not accepted and not contrasts:
         return []
-    return coref_claims(
+    from chanakya.ingest.extract import _sanitize_doc_token
+
+    out = coref_claims(
         accepted, claims=claims, loaded=loaded, source_id=source_id, model_id=client.model_id,
-        report_time=report_time, ingest_time=ingest_time,
-    )
+        report_time=report_time, ingest_time=ingest_time, mentions=mentions,
+        markers=earned.equivalence_markers, min_descriptor_len=earned.min_descriptor_len,
+    ) if accepted else []
+    if contrasts:
+        out += contrast_claims(
+            contrasts, claims=claims, loaded=loaded, source_id=source_id, model_id=client.model_id,
+            report_time=report_time, ingest_time=ingest_time,
+        )
+    if accepted:
+        # The same atom is stamped on pass 1's own entity claims, so the grouping is recoverable from the
+        # members and not only from the n−1 star links — which is what lets the rebuild adjudicate (and
+        # DECLINE) the grouping as a whole rather than pair by pair (D-13.18).
+        _stamped[:] = stamp_referents(claims, accepted, _sanitize_doc_token(source_id))
+    return out
+
+
+#: Scratch hand-back for the referent stamping. ``propose_coreference`` keeps its historic signature (a list
+#: of *additional* claims) so no caller or test has to change shape; :func:`revised_pass1` reads the stamped
+#: pass-1 list the same call produced. Module-level and overwritten per call, which is safe because extraction
+#: of one document is a single synchronous call and the value is consumed immediately by ``extract_document``.
+_stamped: list[ClaimRecord] = []
+
+
+def revised_pass1(fallback: list[ClaimRecord]) -> list[ClaimRecord]:
+    """Pass 1's claims as the last :func:`propose_coreference` call left them (referents stamped), else as-is."""
+    out = list(_stamped) if _stamped else list(fallback)
+    _stamped.clear()
+    return out
+
+
+def _earned_identity(config: ConfigBundle) -> Any:
+    """The identity tunables, read through RESOLVE's typed reader so the two sides share one definition."""
+    from chanakya.resolve.rconfig import EarnedIdentity
+
+    return EarnedIdentity.from_resolution(config.resolution)
 
 
 __all__ = [
     "CLUSTER_ATTR",
+    "CONTRAST_PREDICATE",
     "COREF_PREDICATE",
     "EVIDENCE_ATTR",
     "EVIDENCE_CATEGORIES",
+    "FORMS_ATTR",
+    "GATE_ATTR",
+    "GATE_DETAIL_ATTR",
+    "GATE_FAIL",
+    "GATE_PASS",
+    "QUOTES_ATTR",
     "QUOTE_ATTR",
+    "REFERENT_ATTR",
     "TOOL_NAME",
     "CoreferenceCluster",
     "CoreferenceClusters",
+    "CoreferenceContrast",
     "Mention",
     "build_prompt",
+    "contrast_claims",
     "coref_claims",
+    "differs_only_by_a_mark",
+    "explicit_equivalence_gate",
     "inventory",
+    "link_gate",
     "propose_coreference",
+    "revised_pass1",
+    "stamp_referents",
+    "supported_spans",
+    "unambiguous_anaphor_gate",
     "valid_clusters",
+    "valid_contrasts",
 ]

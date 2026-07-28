@@ -281,3 +281,109 @@ as graph edges so they'd be reachable — that is exactly the twin-node/self-loo
 `backend/chanakya/view/pipeline.py` (`_resolution_edges`);
 `backend/tests/view/test_resolution_edges.py`, `backend/tests/resolve/test_entity_resolution.py`,
 `backend/tests/acceptance/test_merge_candidate_provenance.py`. Branch `qa/t10-merge-card-evidence`.
+
+---
+
+## AH-1 — the anchor check reaches the Watch panel (2026-07-25, `fix/anchor-resolution-honesty`)
+
+**What changed (additive, non-breaking):**
+
+* `ConfigRead` gains `diagnostics: dict` — **derived** state, never part of the read-modify-write
+  round-trip (`value` is untouched, so `GET → edit → POST` is unaffected). For the `observables`
+  section it carries `diagnostics.anchor_check`:
+  `{checked: bool, reason?: string, unresolved: ObservableAnchorProblem[]}`.
+  `checked: false` means the check could **not** be run and must never render as a clean bill of health.
+  An empty `unresolved` on `checked: true` is the positive statement "every armed tripwire's anchors bind".
+* `ObservableAnchorProblem` = `{observable_id, unresolved_anchors[], resolved_anchors{}, watched_node_count:
+  number|null, watching_nothing: bool, warning: string}`. `watching_nothing` = the tripwire cannot fire at
+  all; `watched_node_count === null` = the opposite failure, it fell back to **unscoped** and now evaluates
+  the whole graph. `warning` is a complete analyst-facing sentence — **render it verbatim**, do not compose
+  your own, or the API and the screen will drift on what the fault means.
+* `ConfigWriteResult` gains `warnings: string[]` — non-fatal problems with what was just written. Arming a
+  tripwire against a typo'd instance id returns **200 with a warning**, not a 422 (an anchor may legitimately
+  be declared before the entity exists). A client that drops `warnings` silently re-creates the bug.
+
+**Why:** a tripwire whose anchors resolve to nothing watched an empty set — 0 alerts, no error, nothing
+anywhere — so "no alerts" read as an all-clear. The catalogue read said "3 armed" identically whether those
+three were watching the graph or watching nothing.
+
+**Frontend consumption (in this branch):** `useAnchorCheck()` (same query key as `useArmedObservables`, so no
+extra fetch) → the Watch panel renders a per-tripwire complaint plus a banner, and `watchSummary()` gains a
+4th arg so the rail reads `3 armed · 1 watching nothing · none fired`. Demo-mode output is unchanged.
+
+**Not surfaced:** the lens half. `apply_lens` now emits a Known Gap for an unresolved anchor and carries
+`meta.anchor_warning`, but the SPA calls `useLiveSync()` with **no subject**, so it never requests a lensed
+view — there is no screen for it to land on. Honest state: API + ASK tool reads only.
+
+## AH-2 — anchor check gains a severity (additive, 2026-07-25)
+
+Follow-up to the AH-1 entry above. Same endpoints, same shapes; three new **optional** fields on each
+`diagnostics.anchor_check.unresolved[]` entry (and on `explain()`):
+
+- `severity`: `"pending_coverage" | "dangling" | "watching_nothing" | "unscoped"`
+- `pending_coverage[]` / `dangling[]`: the unresolved anchors split by whether the id names a **declared
+  registry entity** (uncovered, self-clearing) or nothing at all (a real broken id)
+- `declared_in`: anchor → `"watch_instances"` | `"subject:<lens id>"` — which config file to edit
+
+**Rendering rule (load-bearing).** Do **not** render every entry with equal loudness. `pending_coverage`
+is the shipped default boot state — two documents are withheld from the seed on purpose, so one lens
+anchor is legitimately uncovered at first paint — and alarming on it makes the app shout on a healthy
+first paint and go quiet when the demo alert fires. Alarm on the other three only; show
+`pending_coverage` in a neutral register. Treat an **absent/unrecognised** `severity` as a fault: an
+underclaim is as dishonest as an overclaim.
+
+The `warning` string is still composed once on the backend and must be rendered **verbatim** — it now
+carries the correct remedy for the case ("no edit is needed" for a coverage gap; "correct the anchor id"
+plus the owning config file for a broken one).
+
+Consumers updated: `rail/watchSummary.ts` (faults only; also stops collapsing *scope lost* into the
+milder partial case), `panel/views/WatchView.tsx` (`AWAITING COVERAGE` block), `api/types.ts`
+(`AnchorSeverity`, `isAnchorFault`).
+
+## AH-3 — trigger reachability: an armed tripwire that CANNOT FIRE now says so (2026-07-27, `feat/observable-trigger-reachability`)
+
+**What changed (additive, non-breaking):**
+
+* `GET /config/observables` → `diagnostics.trigger_reachability`:
+  `{checked: bool, reason?: string, observables: ObservableReachability[]}`. Same rules as
+  `anchor_check`: `checked: false` must **never** render as a clean bill of health, and it is recomputed
+  live per read (a verdict clears itself the moment an ingest produces the missing type — no restart).
+* `ObservableReachability` = `{observable_id, status, can_fire: bool, gap_kind, missing[], candidate_count:
+  number|null, checked: bool, warning: string|null}`.
+  * `status`: `"reachable" | "no_coverage" | "never_fires" | "type_not_modelled" |
+    "attribute_not_covered" | "out_of_watch_scope"`.
+  * `gap_kind`: `"data" | "modelling" | "engine" | "scope" | null` — **this is the rendering dial**, see below.
+  * `missing`: `{kind: "edge_type"|"node_type"|"attribute"|"trigger_form"|"watch_scope", name: string}[]`
+    — the specific thing that is absent, structured so a chip/badge can be built without parsing prose.
+  * `warning`: a complete analyst-facing sentence — **render verbatim**, same rule as `anchor_warning`.
+* Unlike `anchor_check.unresolved` (problems only), this list is **complete — one entry per armed
+  observable**. A Watch card cannot honestly say "watching, and it could fire" unless the positive
+  verdict is carried too, so `status: "reachable"` is a real payload, not an omission.
+* `POST /config/observable` → the same verdicts appear in the existing `warnings: string[]` for any
+  tripwire that cannot fire. **200 with a warning, never a 422**: arming a wire ahead of coverage ("tell
+  me the day this becomes observable") is legitimate; being told nothing about it is not.
+* `explain()` (already piped to the ASK observable-proposal confirm screen via `ObservableProposal.
+  explanation`) gains `reachability` (the same object) and `reachability_warning`.
+
+**Why:** the anchor check answers *"can I see my target?"*. It never asked *"given that I can see
+everything, can the thing I am watching for occur here at all?"* — and measured on the booted app, two of
+the three shipped tripwires answered **no** and said nothing. One waits on a `replenishes` edge the view
+holds zero of (and zero `interceptor_stockpile` nodes for one to attach to) while advertising *"watching
+66 node(s)"*; the other compiles to arm-only and has no detector, so it can never alert however the graph
+changes. Both rendered as plain grey **armed**. That is an absence of alerts presented as an all-clear.
+
+**Rendering rule (load-bearing) — `gap_kind` decides the register, not `can_fire`:**
+
+* `"data"` (`no_coverage`, `attribute_not_covered`) — the type/attribute IS modelled and simply has no
+  coverage yet. **Self-healing**, and this is a normal state for a forward-armed wire. Render in the same
+  neutral register as `pending_coverage` anchors — *"waiting on coverage"*, not an alarm. It must still be
+  visible on the card: the analyst has to know this beat is **UNCOVERED**, not quiet.
+* `"modelling"` / `"engine"` (`type_not_modelled`, `never_fires`) — **no volume of new documents fixes
+  it**; a human must edit `config/ontology.yaml` or the trigger. These are faults: alarm on them.
+* `"scope"` (`out_of_watch_scope`) — candidates exist, none in scope. The remedy lives in `anchor_check`;
+  the `warning` quotes it, so do not render both complaints as two separate problems.
+* An **absent or unrecognised** `gap_kind` on `can_fire: false` is a fault (underclaim = overclaim).
+
+**Not yet consumed by the SPA.** Backend + API only in this branch — `api/types.ts` carries the types and
+`isReachabilityFault()`; `WatchView` / `watchSummary` still render the anchor half alone. Until a panel
+reads it, the verdict is on the wire but not on the screen.

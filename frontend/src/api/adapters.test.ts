@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import type { AskAnswer, GraphView, ProvenanceDrawer } from './types'
+import type { Alert, AskAnswer, EdgeView, GraphView, ProvenanceDrawer } from './types'
+import { isAnchorFault } from './types'
 import {
+  alertOriginContest,
   alertToFiring,
   askToAnswerModel,
   claimElementIndex,
   clusterAreaPins,
+  drawerIdentity,
+  identityGround,
+  identityReason,
   credibilityToDots,
   dateValueToString,
   displayNameOf,
@@ -13,6 +18,7 @@ import {
   evidenceToDrawerModel,
   formatCoord,
   formatRadius,
+  groupGaps,
   groupReviewQueue,
   hopLine,
   isAreaPin,
@@ -27,6 +33,7 @@ import {
   statusToGraphKind,
   supersededSites,
   supersedeHoldReasons,
+  viewToGaps,
   viewToGraph,
   viewToGraphEdges,
   viewToGraphNodes,
@@ -147,6 +154,26 @@ describe('statusToGraphKind', () => {
     expect(statusToGraphKind(VIEW.nodes[4])).toBe('gap')
   })
 
+  // The rung below probable is drawn in its own right. Folding it in rendered 58 weak leads
+  // byte-identically to 168 supported assertions — the same class of defect as drawing
+  // `confirmed` like `probable`, one rung further down the ladder.
+  it('maps possible → possible, NOT probable — a weak lead is not a supported one', () => {
+    const kind = statusToGraphKind({ id: 'x', type: 'unit', status: 'possible' })
+    expect(kind).toBe('possible')
+    expect(kind).not.toBe('probable')
+  })
+
+  it('still lets a candidate chokepoint outrank a possible status', () => {
+    expect(
+      statusToGraphKind({
+        id: 'x',
+        type: 'component',
+        status: 'possible',
+        materiality: { chokepoint_status: 'candidate' },
+      }),
+    ).toBe('chokepoint')
+  })
+
   it('maps contradicted → contradicted, NOT gap — disagreement is not absence', () => {
     const kind = statusToGraphKind({ id: 'x', type: 'unit', status: 'contradicted' })
     expect(kind).toBe('contradicted')
@@ -184,8 +211,28 @@ describe('edgeToKind', () => {
     expect(edgeToKind(VIEW.edges[5])).toBe('e-contradicted')
   })
 
-  it('gives a status-less same-as the neutral link kind, not a truth kind', () => {
-    expect(edgeToKind(VIEW.edges[6])).toBe('e-link')
+  it('gives a status-less same-as the PROPOSAL kind — not a truth kind, and not a wall', () => {
+    expect(edgeToKind(VIEW.edges[6])).toBe('e-merge-candidate')
+    expect(edgeToKind(VIEW.edges[6])).not.toBe('e-wall')
+  })
+
+  it('gives a distinct-from the WALL kind — a separation, not a connection', () => {
+    expect(edgeToKind({ id: 'w', type: 'distinct-from', source: 'a', target: 'b' })).toBe('e-wall')
+  })
+
+  // `coref-distinct-from` carries a real status (a source asserted it), so it used to fall through
+  // to the status branch and draw as an ordinary teal relationship line — a "these are NOT the same
+  // thing" edge rendered as a connection, on the picture where the co-location trap lives.
+  it('gives a source-asserted coref-distinct-from the WALL kind, never a truth kind', () => {
+    const e: EdgeView = {
+      id: 'c',
+      type: 'coref-distinct-from',
+      source: 'a',
+      target: 'b',
+      status: 'probable',
+    }
+    expect(edgeToKind(e)).toBe('e-wall')
+    expect(edgeToKind(e)).not.toBe('e-probable')
   })
 
   it('gives a status-less supersedes the "replaced by" kind, never a contradiction', () => {
@@ -351,24 +398,52 @@ describe('viewToGraphNodes', () => {
 
 describe('viewToGraphEdges', () => {
   it('maps id/source/target/kind/type for every edge', () => {
+    const u = undefined
     expect(viewToGraphEdges(VIEW)).toEqual([
-      { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed', type: 'based-at' },
-      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale', type: 'supplies-component' },
-      { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable', type: 'based-at' },
-      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale', type: 'based-at' },
-      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap', type: 'based-at' },
-      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted', type: 'based-at' },
-      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-link', type: 'same-as' },
-      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede', type: 'supersedes' },
+      { id: 'e1', source: 'karachi', target: 'paad', kind: 'e-confirmed', type: 'based-at', ground: u },
+      { id: 'e2', source: 'paad', target: 'ht233', kind: 'e-stale', type: 'supplies-component', ground: u },
+      { id: 'e3', source: 'ht233', target: 'gap_node', kind: 'e-probable', type: 'based-at', ground: u },
+      { id: 'e4', source: 'rahwali_stale', target: 'gap_node', kind: 'e-stale', type: 'based-at', ground: u },
+      { id: 'e5', source: 'gap_node', target: 'paad', kind: 'e-gap', type: 'based-at', ground: u },
+      { id: 'e6', source: 'gap_node', target: 'ht233', kind: 'e-contradicted', type: 'based-at', ground: u },
+      // an identity edge additionally carries WHO decided — see `identityGround`
+      { id: 'sa1', source: 'karachi', target: 'paad', kind: 'e-merge-candidate', type: 'same-as', ground: 'derived' },
+      { id: 'sup1', source: 'rahwali_stale', target: 'karachi', kind: 'e-supersede', type: 'supersedes', ground: u },
     ])
   })
 
   // The graph stage separates DOMAIN relationships from resolution BOOKKEEPING, which is
-  // only possible if the ontology type survives the collapse into a visual `kind`
-  // (`e-link` is both `same-as` and `distinct-from`).
+  // only possible if the ontology type survives the collapse into a visual `kind`.
   it('keeps the ontology type alongside the collapsed visual kind', () => {
     const sameAs = viewToGraphEdges(VIEW).find((e) => e.id === 'sa1')
-    expect(sameAs).toMatchObject({ kind: 'e-link', type: 'same-as' })
+    expect(sameAs).toMatchObject({ kind: 'e-merge-candidate', type: 'same-as' })
+  })
+
+  // A derived wall drawn like a curated one tells the analyst a person already ruled on the pair,
+  // which is exactly what would stop them checking a machine inference.
+  it('carries the authority behind a wall onto the canvas edge', () => {
+    const walled: GraphView = {
+      ...VIEW,
+      edges: [
+        {
+          id: 'w-curated',
+          type: 'distinct-from',
+          source: 'karachi',
+          target: 'paad',
+          attrs: { reason: 'explicit curated do-not-merge — this pair is written down …' },
+        },
+        {
+          id: 'w-derived',
+          type: 'distinct-from',
+          source: 'karachi',
+          target: 'ht233',
+          attrs: { reason: 'held apart by the curated place gazetteer: … DERIVED: …' },
+        },
+      ],
+    }
+    const out = viewToGraphEdges(walled)
+    expect(out.find((e) => e.id === 'w-curated')?.ground).toBe('curated')
+    expect(out.find((e) => e.id === 'w-derived')?.ground).toBe('derived')
   })
 })
 
@@ -1150,11 +1225,24 @@ describe('viewToTripwires / alertToFiring', () => {
     expect(decided[0].stateLabel).toBe('dismissed as noise')
   })
 
-  it('summarises before → after off the real snapshots', () => {
+  // The card used to read `subject · unit_hq9b` and `based-at: site_rahwali` while the map and the
+  // review queue rendered the same two things as "HQ-9B fire unit" and "Rahwali". Same app, two
+  // vocabularies, and only one of them was readable.
+  it('summarises before → after in the names the rest of the app uses, not raw ids', () => {
     expect(rows[0].firings[0].changed).toEqual({
-      from: 'based-at: site_rawalpindi',
-      to: 'based-at: site_rahwali',
+      from: 'based at: Rawalpindi',
+      to: 'based at: Rahwali',
     })
+    expect(rows[0].firings[0].subjectName).toBe('HQ-9B fire unit')
+    expect(rows[0].firings[0].subject).toBe('unit_hq9b') // the id survives as the technical handle
+  })
+
+  it('passes a value the graph does not know through untouched rather than renaming it', () => {
+    const odd = viewToTripwires({
+      ...AVIEW,
+      alerts: [{ ...AVIEW.alerts[0], after: { 'based-at': 'an unnamed dispersal site' } }],
+    })
+    expect(odd[0].firings[0].changed?.to).toBe('based at: an unnamed dispersal site')
   })
 
   it('splits provenance into before/after sides, each with its element ref + claim ids', () => {
@@ -1656,5 +1744,425 @@ describe('orderReviewQueue / groupReviewQueue', () => {
   it('puts a crisp two-record decision ahead of the systemic cluster', () => {
     const kinds = groups.map((g) => g.kind)
     expect(kinds.lastIndexOf('cluster')).toBe(kinds.length - 1)
+  })
+})
+
+// ─────────── identity decisions: a wall's ground, and an instruction we did not apply ───────────
+// The resolver's own ground is the whole content of a `distinct-from`: it carries no confidence, no
+// signal breakdown and no review card, so if these adapters drop it the analyst is left with a bare
+// line between two nodes — a machine inference rendered as an unexplained fact. And a `same-as` the
+// analyst already ruled on, which the resolver did not apply, must say so or the queue asks the same
+// question forever. Both are read off the view edge, so a dropped/renamed attr key is a silent loss.
+describe('identity decisions (wall ground · un-applied adjudication)', () => {
+  const WALL_REASON =
+    'held apart because the two records geocode to gazetteer anchors declared distinct-from each other'
+  const CANDIDATE_REASON =
+    'capped at possible: the co-location ceiling holds this pair below the auto-merge floor'
+  const UNAPPLIED_GROUND =
+    'the pair is still an open identity question on the resolver’s own grounds: the co-location cap holds'
+
+  const IVIEW: GraphView = {
+    nodes: [
+      { id: 'unit_a', type: 'unit', name: 'HQ-9/P battery (Rawalpindi)', status: 'probable' },
+      { id: 'unit_b', type: 'unit', name: 'HQ-9/P battery (Rahwali)', status: 'probable' },
+      { id: 'org_x', type: 'trading_org', name: 'Star Traders (Karachi)', status: 'possible' },
+      { id: 'org_y', type: 'trading_org', name: 'Star Traders (Lahore)', status: 'possible' },
+    ],
+    edges: [
+      {
+        id: 'distinct-from:unit_a|unit_b',
+        type: 'distinct-from',
+        source: 'unit_a',
+        target: 'unit_b',
+        status: null,
+        attrs: {
+          reason: WALL_REASON,
+          suppressed_candidate: {
+            merge_confidence: 0.62,
+            reason: 'both mentions normalise to one name and share a neighbourhood',
+            note: 'the wall overrules the proposal, so no merge is offered',
+          },
+        },
+      },
+      {
+        id: 'same-as:org_x|org_y',
+        type: 'same-as',
+        source: 'org_x',
+        target: 'org_y',
+        merge_confidence: 0.55,
+        attrs: {
+          reason: CANDIDATE_REASON,
+          breakdown: { name_similarity: 0.9, source_asserted: 0 },
+          adjudication_not_applied: {
+            decision: 'reject',
+            actor: 'analyst',
+            instruction: 'do not merge these two records',
+            applied: false,
+            ground: UNAPPLIED_GROUND,
+          },
+        },
+      },
+      { id: 'e-plain', type: 'based-at', source: 'unit_a', target: 'org_x', status: 'confirmed' },
+    ],
+    events: [],
+    known_gaps: [],
+    alerts: [],
+  }
+
+  it('returns the resolver ground VERBATIM off either kind of identity edge', () => {
+    expect(identityReason(IVIEW.edges[0])).toBe(WALL_REASON)
+    expect(identityReason(IVIEW.edges[1])).toBe(CANDIDATE_REASON)
+    // no ground recorded ⇒ null, never a stand-in sentence of ours
+    expect(identityReason(IVIEW.edges[2])).toBeNull()
+    expect(identityReason({ id: 'x', type: 'distinct-from', source: 'a', target: 'b' })).toBeNull()
+  })
+
+  it('builds the drawer identity block for a WALL, with named endpoints and the case it overruled', () => {
+    const wall = drawerIdentity(IVIEW, 'distinct-from:unit_a|unit_b')!
+    expect(wall.kind).toBe('wall')
+    expect(wall.reason).toBe(WALL_REASON)
+    expect(wall.leftName).toBe('HQ-9/P battery (Rawalpindi)')
+    expect(wall.rightName).toBe('HQ-9/P battery (Rahwali)')
+    // the analyst must learn there WAS a case for merging, and that this wall overrules it
+    expect(wall.suppressedCandidateReason).toContain('normalise to one name')
+    expect(wall.suppressedCandidateNote).toContain('no merge is offered')
+  })
+
+  it('builds it for a CANDIDATE too, and carries an instruction the resolver did not apply', () => {
+    const cand = drawerIdentity(IVIEW, 'same-as:org_x|org_y')!
+    expect(cand.kind).toBe('candidate')
+    expect(cand.reason).toBe(CANDIDATE_REASON)
+    expect(cand.unappliedDecision).toBe('reject')
+    expect(cand.unappliedGround).toBe(UNAPPLIED_GROUND)
+    expect(cand.suppressedCandidateReason).toBeNull()
+  })
+
+  it('is undefined for a non-identity edge, an unknown ref, or no view at all', () => {
+    expect(drawerIdentity(IVIEW, 'e-plain')).toBeUndefined()
+    expect(drawerIdentity(IVIEW, 'nope')).toBeUndefined()
+    expect(drawerIdentity(null, 'distinct-from:unit_a|unit_b')).toBeUndefined()
+  })
+
+  // A wall whose rail recorded no reason used to suppress the whole block, leaving the analyst with
+  // a line between two nodes and no statement of what it meant. It now renders — and, crucially,
+  // defaults to DERIVED: never claiming a person ruled where the backend named nobody.
+  it('still states a wall whose rail recorded no ground, and never calls it curated', () => {
+    const bare: GraphView = {
+      ...IVIEW,
+      edges: [{ id: 'w', type: 'distinct-from', source: 'unit_a', target: 'unit_b' }],
+    }
+    const model = drawerIdentity(bare, 'w')
+    expect(model?.kind).toBe('wall')
+    expect(model?.reason).toBeNull()
+    expect(model?.ground).toBe('derived')
+    expect(model?.claimBacked).toBe(false)
+  })
+
+  // A curated veto is CONFIGURATION, so GET /evidence returns an empty envelope for it. That is not
+  // missing data, and the drawer must be able to say which of the two it is looking at.
+  it('marks whether the decision has a document behind it', () => {
+    const view: GraphView = {
+      ...IVIEW,
+      edges: [
+        {
+          id: 'w-config',
+          type: 'distinct-from',
+          source: 'unit_a',
+          target: 'unit_b',
+          attrs: { reason: 'explicit curated do-not-merge — this pair is written down …' },
+        },
+        {
+          id: 'w-stated',
+          type: 'coref-distinct-from',
+          source: 'unit_a',
+          target: 'unit_b',
+          status: 'probable',
+          claim_ids: ['n04-tel-fleet-register-l18-4'],
+        },
+      ],
+    }
+    expect(drawerIdentity(view, 'w-config')).toMatchObject({
+      ground: 'curated',
+      claimBacked: false,
+    })
+    expect(drawerIdentity(view, 'w-stated')).toMatchObject({
+      kind: 'wall',
+      ground: 'sourced',
+      claimBacked: true,
+    })
+  })
+
+  it('reaches the drawer model — the block the LiveDrawer renders is on the model', () => {
+    const drawer: ProvenanceDrawer = {
+      subject_ref: 'distinct-from:unit_a|unit_b',
+      status: null,
+      claims: [],
+      clusters: [],
+    }
+    const model = evidenceToDrawerModel(drawer, IVIEW)
+    expect(model.identity?.kind).toBe('wall')
+    expect(model.identity?.reason).toBe(WALL_REASON)
+    // and no identity block on an element that is not an identity decision
+    expect(evidenceToDrawerModel({ ...drawer, subject_ref: 'unit_a' }, IVIEW).identity).toBeUndefined()
+  })
+
+  it('tells the merge card the analyst already answered — decision, ground and a badge', () => {
+    const merge = viewToReviewQueue(IVIEW).find((i) => i.reviewType === 'merge')!
+    expect(merge.context.merge?.alreadyDecided).toEqual({
+      decision: 'reject',
+      ground: UNAPPLIED_GROUND,
+    })
+    expect(merge.badges.some((b) => b.includes('reject') && b.includes('not applied'))).toBe(true)
+    // …and the wall is never offered as a merge question
+    expect(viewToReviewQueue(IVIEW).filter((i) => i.reviewType === 'merge')).toHaveLength(1)
+  })
+
+  it('never invents an un-applied adjudication from a half-recorded one', () => {
+    const half: GraphView = {
+      ...IVIEW,
+      edges: [
+        {
+          ...IVIEW.edges[1],
+          attrs: { ...IVIEW.edges[1].attrs, adjudication_not_applied: { decision: 'reject' } },
+        },
+      ],
+    }
+    const merge = viewToReviewQueue(half).find((i) => i.reviewType === 'merge')!
+    expect(merge.context.merge?.alreadyDecided).toBeNull()
+    expect(merge.badges.some((b) => b.includes('not applied'))).toBe(false)
+  })
+})
+
+// ─────────── anchor honesty: what counts as a FAULT (AH-2) ───────────
+// The rail and the Watch panel both render loudness from `severity`, never from the length of the
+// miss list: a declared entity awaiting coverage is this system's own boot state, and shouting about
+// it teaches the analyst to ignore the surface. An unknown/absent severity must still read as a
+// fault — an underclaim is as dishonest as an overclaim.
+describe('isAnchorFault', () => {
+  const base = { observable_id: 'obs', unresolved_anchors: ['site_x'], watched_node_count: 2, watching_nothing: false, warning: 'w' }
+
+  it('treats an anchor awaiting coverage as NOT a fault', () => {
+    expect(isAnchorFault({ ...base, severity: 'pending_coverage' })).toBe(false)
+  })
+
+  it('treats dangling / watching-nothing / unscoped as faults', () => {
+    expect(isAnchorFault({ ...base, severity: 'dangling' })).toBe(true)
+    expect(isAnchorFault({ ...base, severity: 'watching_nothing', watching_nothing: true })).toBe(true)
+    expect(isAnchorFault({ ...base, severity: 'unscoped', watched_node_count: null })).toBe(true)
+  })
+
+  it('defaults an unstated severity to a fault rather than quietly to fine', () => {
+    expect(isAnchorFault(base)).toBe(true)
+  })
+})
+
+// ─────────────────── identity ground: who decided, curated vs derived ───────────────────
+// Presenting an inference as a human ruling is a truthfulness defect, not a styling one: an
+// analyst who reads "a person decided this" has no reason left to check it. The classifier reads
+// the phrase each backend rail owns (chanakya.resolve) and DEFAULTS TO DERIVED — mistaking a human
+// ruling for a machine finding costs a redundant check; the opposite mistake costs the check itself.
+describe('identityGround', () => {
+  const wall = (reason?: string, claims?: string[]): EdgeView => ({
+    id: 'w',
+    type: 'distinct-from',
+    source: 'a',
+    target: 'b',
+    attrs: reason ? { reason } : {},
+    claim_ids: claims,
+  })
+
+  it('reads a curated do-not-merge as a human ruling', () => {
+    expect(identityGround(wall('explicit curated do-not-merge — this pair is written down …'))).toBe(
+      'curated',
+    )
+  })
+
+  it('reads an analyst adjudication as a human ruling', () => {
+    expect(identityGround(wall('an ANALYST adjudicated these apart — a proposed merge was rejected …'))).toBe(
+      'analyst',
+    )
+  })
+
+  it('reads a document that says "not that" as sourced', () => {
+    expect(identityGround(wall('a SOURCE states these are different — a document in evidence …'))).toBe(
+      'sourced',
+    )
+  })
+
+  it('reads the gazetteer and hard-identifier rails as DERIVED — nobody ruled on this pair', () => {
+    expect(
+      identityGround(wall('held apart by the curated place gazetteer: … DERIVED: the curated fact is …')),
+    ).toBe('derived')
+    expect(identityGround(wall('held apart by two DIFFERENT stated hard identifiers (X ≠ Y). …'))).toBe(
+      'derived',
+    )
+    expect(identityGround(wall('held apart by a stated critical-attribute contradiction on origin …'))).toBe(
+      'derived',
+    )
+  })
+
+  it('reads the rail-defect fallback as an unrecorded ground rather than as a decision', () => {
+    expect(
+      identityGround(wall('held apart by a hard do-not-merge wall whose ground was not recorded by …')),
+    ).toBe('unrecorded')
+  })
+
+  it('treats a claim-backed separation with no stated reason as sourced — the claim IS the ground', () => {
+    expect(identityGround(wall(undefined, ['n04-tel-fleet-register-l18-4']))).toBe('sourced')
+  })
+
+  it('defaults to derived, never to curated, when there is nothing to read', () => {
+    expect(identityGround(wall())).toBe('derived')
+    expect(identityGround(null)).toBe('derived')
+  })
+})
+
+// ─────────────────── a contested origin is reported, never resolved ───────────────────
+// The tripwire's `before` is whichever basing edge represented the group in the previous view —
+// with four un-adjudicated basings on one unit that representative is settled by an id sort, not by
+// adjudication — while `supersedes` records the assertion the new one actually overtook. When the
+// two disagree the honest render says so.
+describe('alertOriginContest', () => {
+  const AFTER = 'e:unit:based-at:rahwali'
+  const OVERTOOK = 'e:unit:based-at:rawalpindi'
+  const STATED = 'e:unit:based-at:karachi'
+  const OTHER = 'e:unit:based-at:sargodha'
+
+  const edges = new Map<string, EdgeView>([
+    [AFTER, { id: AFTER, type: 'based-at', source: 'unit', target: 'rahwali', supersedes: OVERTOOK }],
+    [OVERTOOK, { id: OVERTOOK, type: 'based-at', source: 'unit', target: 'rawalpindi', superseded_by: AFTER }],
+    [STATED, { id: STATED, type: 'based-at', source: 'unit', target: 'karachi', status: 'possible' }],
+    [OTHER, { id: OTHER, type: 'based-at', source: 'unit', target: 'sargodha', status: 'insufficient' }],
+  ])
+  const names: Record<string, string> = {
+    rahwali: 'Rahwali airfield',
+    rawalpindi: 'PAF Base Nur Khan',
+    karachi: 'Army Air Defence Centre, Karachi',
+    sargodha: 'Sargodha',
+  }
+  const resolve = (id: string) => names[id] ?? id
+  const alert = (beforeRef: string): Alert => ({
+    observable_id: 'obs-basing-relocation',
+    subject: 'unit',
+    provenance: { before_ref: beforeRef, after_ref: AFTER },
+  })
+
+  it('names BOTH origins when the alert and the supersession disagree', () => {
+    const c = alertOriginContest(alert(STATED), edges, resolve)!
+    expect(c.statedFrom).toBe('Army Air Defence Centre, Karachi')
+    expect(c.recordedFrom).toBe('PAF Base Nur Khan')
+    expect(c.statedFromRef).toBe(STATED)
+    expect(c.recordedFromRef).toBe(OVERTOOK)
+  })
+
+  it('names the other basings still on file that no supersession retired', () => {
+    const c = alertOriginContest(alert(STATED), edges, resolve)!
+    expect(c.otherBasings.map((b) => b.name)).toEqual(['Sargodha'])
+  })
+
+  it('reports NO contest when the alert names the very assertion that was overtaken', () => {
+    expect(alertOriginContest(alert(OVERTOOK), edges, resolve)).toBeNull()
+  })
+
+  it('reports no contest when the change records no supersession at all', () => {
+    const plain = new Map<string, EdgeView>([
+      [AFTER, { id: AFTER, type: 'based-at', source: 'unit', target: 'rahwali' }],
+      [STATED, edges.get(STATED)!],
+    ])
+    expect(alertOriginContest(alert(STATED), plain, resolve)).toBeNull()
+  })
+
+  it('rides the firing model, so both the Watch feed and the alert card see it', () => {
+    const firing = alertToFiring(alert(STATED), edges, resolve)
+    expect(firing.originContest?.recordedFrom).toBe('PAF Base Nur Khan')
+  })
+})
+
+// ─────────────────── the named absences, given a surface ───────────────────
+// Naming absence is what this system is FOR. The coverage sentence is the backend's own words —
+// including the honest "unscheduled", which a bare null date cannot say.
+describe('viewToGaps / groupGaps', () => {
+  const GVIEW: GraphView = {
+    nodes: [{ id: 'comp_ht233', type: 'component', name: 'HT-233 radar' }],
+    edges: [{ id: 'e:unit:based-at:site', type: 'based-at', source: 'unit', target: 'site' }],
+    events: [],
+    alerts: [],
+    known_gaps: [
+      {
+        id: 'gap:chokepoint:comp_ht233',
+        what_missing: 'confirmed sole-source supplier for HT-233',
+        observability_ceiling: 'probable-max',
+        related_ref: 'comp_ht233',
+        missing_slots: ['named_supplier'],
+        coverage_statement: 'unscheduled — no collection is tasked against this gap …',
+      },
+      {
+        id: 'gap:edge:basing',
+        what_missing: 'a second independent look at the basing',
+        observability_ceiling: 'confirmable',
+        related_ref: 'e:unit:based-at:site',
+        next_coverage_due: '2026-07-26',
+        coverage_statement: 'next commercial imagery revisit is due 2026-07-26.',
+      },
+      {
+        id: 'gap:dangling',
+        what_missing: 'establishment strength',
+        observability_ceiling: 'never-observable',
+        related_ref: 'a_node_this_view_does_not_carry',
+      },
+    ],
+  }
+  const rows = viewToGaps(GVIEW)
+
+  it('carries what is missing AND when coverage is next due, in the backend’s words', () => {
+    expect(rows[0].whatMissing).toBe('confirmed sole-source supplier for HT-233')
+    expect(rows[0].coverage).toBe('unscheduled — no collection is tasked against this gap …')
+    expect(rows[1].nextCoverageDue).toBe('2026-07-26')
+  })
+
+  // 22 of the 48 gaps on the booted corpus hang off EDGES. A gap the analyst cannot follow back to
+  // its element is a statement they can only agree with.
+  it('leads a gap back to the element it is about — node or edge', () => {
+    expect(rows[0]).toMatchObject({ aboutKind: 'node', aboutName: 'HT-233 radar' })
+    expect(rows[1].aboutKind).toBe('edge')
+  })
+
+  it('refuses to link a ref the view does not carry, and says so instead', () => {
+    expect(rows[2].aboutKind).toBeNull()
+    expect(rows[2].aboutRef).toBe('a_node_this_view_does_not_carry')
+  })
+
+  it('never invents a coverage schedule for a gap that carries none', () => {
+    expect(rows[2].coverage).toBe('')
+  })
+
+  it('keeps the three ceilings apart — a boundary is not an unmet task', () => {
+    const groups = groupGaps(rows)
+    expect(groups.map((g) => g.ceiling)).toEqual(['confirmable', 'probable-max', 'never-observable'])
+    expect(groups.every((g) => g.rows.length > 0)).toBe(true)
+  })
+
+  it('reads an absent view as unknown, not as “nothing missing”', () => {
+    expect(viewToGaps(null)).toEqual([])
+    expect(groupGaps([])).toEqual([])
+  })
+})
+
+describe('viewToGaps — slot-token absences', () => {
+  const V: GraphView = {
+    nodes: [],
+    edges: [],
+    events: [],
+    alerts: [],
+    known_gaps: [
+      { id: 'g1', what_missing: 'imagery_confirmation', observability_ceiling: 'confirmable' },
+      { id: 'g2', what_missing: 'no source states its site', observability_ceiling: 'confirmable' },
+    ],
+  }
+
+  it('renders a bare slot token readably, and leaves prose exactly as written', () => {
+    const rows = viewToGaps(V)
+    expect(rows[0].whatMissing).toBe('imagery confirmation')
+    expect(rows[1].whatMissing).toBe('no source states its site')
   })
 })

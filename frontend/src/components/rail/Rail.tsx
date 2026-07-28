@@ -7,9 +7,14 @@ import { useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { useWorkbench, type DocId } from '@/store/workbench'
 import { INGEST_DOCS, QUEUE_ITEMS, TRIPWIRES } from '@/demo/scenario'
-import { groupReviewQueue, viewToReviewQueue, type LiveReviewGroup } from '@/api/adapters'
+import {
+  groupReviewQueue,
+  viewToRecordedRefusals,
+  viewToReviewQueue,
+  type LiveReviewGroup,
+} from '@/api/adapters'
 import { useTripwires } from '@/api/viewmodel'
-import { useArmedObservables } from '@/api/hooks'
+import { useAnchorCheck, useArmedObservables, useReachabilityCheck } from '@/api/hooks'
 import { watchSummary } from './watchSummary'
 import { LiveIngest } from './LiveIngest'
 
@@ -131,6 +136,8 @@ export function Rail() {
   const openLiveCard = useWorkbench((s) => s.openLiveCard)
   const openWatch = useWorkbench((s) => s.openWatch)
   const openCred = useWorkbench((s) => s.openCred)
+  const openKnownGaps = useWorkbench((s) => s.openKnownGaps)
+  const openRefusals = useWorkbench((s) => s.openRefusals)
   const ingested = useWorkbench((s) => s.ingested)
   const ingestTrace = useWorkbench((s) => s.ingestTrace)
   const startIngest = useWorkbench((s) => s.startIngest)
@@ -145,6 +152,15 @@ export function Rail() {
   // LIVE: the derived queue, ordered by the triage rule and with connected identity proposals
   // collapsed into clusters. Nothing is dropped or auto-decided — `groups` is a permutation of
   // the undecided queue, so the count below is still the true escalation count.
+  // Refusals are counted off the same view the panel reads, so the badge can never disagree with it.
+  const refusalCount = useMemo(
+    () =>
+      liveView
+        ? viewToRecordedRefusals(liveView).reduce((n, g) => n + g.items.length, 0)
+        : 0,
+    [liveView],
+  )
+
   const groups: LiveReviewGroup[] = useMemo(() => {
     if (mode !== 'live') return []
     const queue = liveView ? viewToReviewQueue(liveView) : []
@@ -168,6 +184,10 @@ export function Rail() {
 
   const reviewCount =
     mode === 'live' ? groups.reduce((n, g) => n + g.items.length, 0) : demoRows.length
+
+  // The named absences, counted off the live view. A count of 0 with no view read is NOT the same
+  // statement as a count of 0 over a graph we have read, so the rail distinguishes them below.
+  const gapCount = liveView?.known_gaps?.length ?? 0
   const clusterCount = groups.filter((g) => g.kind === 'cluster').length
 
   // Clusters start collapsed — a run of connected proposals is ONE question until the analyst
@@ -180,11 +200,20 @@ export function Rail() {
   // and the FIRED feed (/view.alerts). Deriving both from the feed is what used to render
   // "Watching 0 — none fired" on a cold boot of a system watching three things. If the catalogue
   // can't be read we say so instead of printing 0 — see watchSummary(). Demo output is unchanged.
+  // Third source (AH-1): the live ANCHOR CHECK. Armed is not the same as watching — a tripwire whose
+  // anchors resolve to no node watches an empty set and can never fire, so counting it as coverage is
+  // the same class of lie as inferring the armed count from the fired feed.
+  // Fourth source (AH-3): the live TRIGGER-REACHABILITY check. Binding is not the same as being able
+  // to fire — a wire can resolve every anchor, watch dozens of nodes, and still filter on an edge
+  // type nothing in coverage produces. "3 armed · none fired" is exactly as false about that wire as
+  // it was about a blind one, and it is the line an analyst reads WITHOUT opening anything.
   const tripwires = useTripwires()
   const armed = useArmedObservables()
+  const anchors = useAnchorCheck()
+  const reach = useReachabilityCheck()
   const watch = useMemo(
-    () => watchSummary(armed, tripwires, TRIPWIRES.length),
-    [armed, tripwires],
+    () => watchSummary(armed, tripwires, TRIPWIRES.length, anchors, reach),
+    [armed, tripwires, anchors, reach],
   )
 
   // Drag payload backup — some browsers restrict dataTransfer.getData on dragover,
@@ -270,6 +299,54 @@ export function Rail() {
         </div>
         <div className="mt-[6px] text-[11.5px] text-text-faint">indicators &amp; warning — {watch.note}</div>
       </div>
+
+      {/* Known gaps — the named absences. This is the non-negotiable given a place of its own:
+          "insufficient evidence to assess" is an ANSWER this system produces on purpose, so what it
+          has named missing sits beside the review count rather than living only inside whichever
+          element happens to be open. Live only — the demo's absences are its authored refusal panel. */}
+      {/* Refused, recorded — identity the resolver disposed of WITHOUT an analyst. It sits next to
+          Review rather than inside it because the two are different acts: Review asks a human to
+          decide, this reports that the decision was already made for them. Merging the two put 114
+          unanswerable items beside 18 real ones, and a queue that asks unanswerable questions is how
+          the answerable ones stop being read. Still surfaced, never hidden — silence here would read
+          as an all-clear about identity, which it is not. */}
+      {mode === 'live' && (
+        <div
+          onClick={openRefusals}
+          className="cursor-pointer border-b border-hairline px-[18px] py-4 hover:bg-surface-raised"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-text">Refused, recorded</span>
+            <span className="inline-flex h-5 min-w-[22px] items-center justify-center rounded-[3px] border border-hairline-strong px-[7px] text-[12px] tabular-nums text-text-dim">
+              {liveView ? refusalCount : '—'}
+            </span>
+          </div>
+          <div className="mt-[6px] text-[11.5px] text-text-faint">
+            {liveView
+              ? 'declined with a stated ground — nothing to decide here'
+              : 'graph not read yet'}
+          </div>
+        </div>
+      )}
+
+      {mode === 'live' && (
+        <div
+          onClick={openKnownGaps}
+          className="cursor-pointer border-b border-hairline px-[18px] py-4 hover:bg-surface-raised"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-text">Known gaps</span>
+            <span className="inline-flex h-5 min-w-[22px] items-center justify-center rounded-[3px] border border-hairline-strong px-[7px] text-[12px] tabular-nums text-text-dim">
+              {liveView ? gapCount : '—'}
+            </span>
+          </div>
+          <div className="mt-[6px] text-[11.5px] text-text-faint">
+            {liveView
+              ? 'what is missing, and when coverage is next due'
+              : 'graph not read yet — unknown, not “nothing missing”'}
+          </div>
+        </div>
+      )}
 
       {/* Ingest — LIVE posts a keyless claim bundle to /ingest; DEMO runs the scripted
           trace (which renders on the stage, not here). */}

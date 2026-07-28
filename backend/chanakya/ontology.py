@@ -16,6 +16,7 @@ other stage that needs the canonical edge for an endpoint-typed pair can reuse i
 from __future__ import annotations
 
 import re
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
 from chanakya.schemas import CredibilityConfig, OntologyConfig
@@ -32,9 +33,61 @@ _DECAYING_CLASSES = frozenset({"perishable", "semi-durable", "force-revalidated"
 # components, so each object is its own instance). A FUNCTIONAL edge overrides this to `("from",)`.
 _DEFAULT_INSTANCE_KEY: tuple[str, ...] = (_FROM_END, _TO_END)
 
+# Per-edge declarations added by RK-LAYER (A2/A4/D12/R1.3) — plain YAML keys (ConfigModel extra="allow").
+_INSTANCE_KEY_TAG = "instance_key_tag"
+_MATERIALIZES = "materializes"
+_REQUIRES_STATED = "requires_stated_endpoints"
+
+
+def presence_citizen(ontology: OntologyConfig, declared: object) -> str | None:
+    """The instance citizen a split/materialization mints — ``declared``, else ``layer_routing.presence_type``.
+
+    **One name for one dial.** ``layer_routing.presence_type`` documents itself as "the instance citizen the
+    build materializes … nothing here is a code literal (G6)", and it was parsed into a field that nothing
+    ever read: the citizen came from the ``node_type: presence`` written out again on each ``instance_split``
+    and ``materializes`` declaration. So the value existed in four places, the one an operator would edit was
+    the one with no consumer, and editing it changed nothing — the same "two names for one dial in two
+    places, and the copy a reader edits is the copy that does not run" defect the three band ceilings already
+    cost this project a stage to find.
+
+    Resolved in the reader's favour rather than deleted, because the shared value genuinely belongs in one
+    place: the per-declaration ``node_type`` is now an override for a type that needs a *different* citizen,
+    and omitting it — which every shipped declaration now does — reads the one declared default. Delete
+    ``presence_type`` from config and the splits stop declaring a citizen, which is what makes it a dial.
+    """
+    if isinstance(declared, str) and declared.strip():
+        return declared
+    return LayerRouting.from_ontology(ontology).presence_type or None
+
+
+@dataclass(frozen=True)
+class Materialization:
+    """One edge's declared instance materialization (A4 / D-13.6 / spine/13 §5.3).
+
+    ``end`` — which endpoint (``from``/``to``) needs an *instance* even when the mention named only a
+    design; ``node_type`` — the instance citizen to materialize there (a **presence**); ``link`` — the
+    binding edge drawn from the materialized instance back to the shared design node (``instance-of``).
+
+    **Why this is declared rather than derived.** A2's rule that endpoint *layers* fall out of the declared
+    endpoint *types* is true but not sufficient here: ``observed-at``'s declared domain is ``variant`` /
+    ``component`` — design types, because that is what an extractor may legitimately emit — while its
+    semantics require an instance subject ("equipment was seen at a place" is a dated, located,
+    operator-scoped fact). Nothing in the endpoint types can express that gap, so the intent is declared.
+    Opt-in is also the fail-safe direction: an edge that declares nothing materializes nothing, so no edge
+    type can silently start minting instances.
+    """
+
+    end: str
+    node_type: str
+    link: str
+
 
 def build_edge_instance_key(
-    subject: str, predicate: str, obj: str, ends: tuple[str, ...] = _DEFAULT_INSTANCE_KEY
+    subject: str,
+    predicate: str,
+    obj: str,
+    ends: tuple[str, ...] = _DEFAULT_INSTANCE_KEY,
+    tag: str | None = None,
 ) -> str:
     """The single definition of the ``edge_instance`` grouping-key string (EVAL RCA §2.1 / D-P4.4).
 
@@ -46,6 +99,10 @@ def build_edge_instance_key(
     dead. Order is fixed ``edge:<subject>:<predicate>:<object>`` so the default is unchanged on the wire.
     Used by BOTH producers (``resolve.entities.base_ref`` and the ``view.pipeline`` fallback) via
     :meth:`EdgeLaneIndex.edge_instance_key`, so the two can never drift apart again.
+
+    ``tag`` (R1.3 / C1) appends a **sub-bucket** to a functional edge's key, so ``based-at`` is
+    single-valued per *(unit, site_type)* rather than per unit: a unit at a garrison and concurrently at a
+    forward site is two valid basings, not a relocation. ``None`` ⇒ the untagged key, byte-unchanged.
     """
     parts = ["edge"]
     if _FROM_END in ends:
@@ -53,6 +110,8 @@ def build_edge_instance_key(
     parts.append(predicate)
     if _TO_END in ends:
         parts.append(obj)
+    if tag is not None:
+        parts.append(tag)
     return ":".join(parts)
 
 
@@ -94,6 +153,9 @@ class EdgeLaneIndex:
         self._supplier_end: dict[str, str] = {}  # sustainment edge → which endpoint holds the supplier
         self._freshness_class: dict[str, str] = {}  # edge → its declared ontology freshness class
         self._instance_key: dict[str, tuple[str, ...]] = {}  # edge → endpoints that form its instance key
+        self._instance_key_tag: dict[str, str] = {}  # edge → node attr whose value tags the instance key
+        self._materializes: dict[str, Materialization] = {}  # edge → its declared instance materialization
+        self._requires_stated: dict[str, tuple[str, ...]] = {}  # edge → endpoints a source must have STATED
         seen: dict[tuple[str, str], list[str]] = {}
         for e in ontology.edge_types:
             if e.name not in self._names:
@@ -119,6 +181,30 @@ class EdgeLaneIndex:
                 ends = tuple(k for k in (_FROM_END, _TO_END) if k in ik)
                 if ends:
                     self._instance_key[e.name] = ends
+            # instance_key_tag (R1.3/C1): a node ATTRIBUTE on the endpoint the key drops, whose value tags
+            # the supersede bucket, so `based-at` is single-valued per (unit, site_type) rather than per
+            # unit. A plain YAML string (extra="allow"); absent ⇒ untagged (the pre-S2 key).
+            tag = getattr(e, _INSTANCE_KEY_TAG, None)
+            if isinstance(tag, str) and tag.strip():
+                self._instance_key_tag[e.name] = tag.strip()
+            # materializes (A4/D-13.6): this edge needs an INSTANCE endpoint the mention may only have
+            # named at the design level, so the build mints the instance rather than pointing the edge at
+            # the shared design node. Opt-in per edge — an edge declaring nothing mints nothing.
+            spec = getattr(e, _MATERIALIZES, None)
+            if isinstance(spec, dict):
+                end = str(spec.get("end") or _FROM_END)
+                node_type = presence_citizen(ontology, spec.get("node_type"))
+                link = spec.get("link")
+                if end in (_FROM_END, _TO_END) and isinstance(node_type, str) and isinstance(link, str):
+                    self._materializes[e.name] = Materialization(end=end, node_type=node_type, link=link)
+            # requires_stated_endpoints (D12): endpoints a SOURCE must have declared. An endpoint the build
+            # had to materialize does not satisfy it, and the edge is withheld with a named gap rather than
+            # asserting a relation no document states.
+            req = getattr(e, _REQUIRES_STATED, None)
+            if isinstance(req, (list, tuple)):
+                ends = tuple(k for k in (_FROM_END, _TO_END) if k in req)
+                if ends:
+                    self._requires_stated[e.name] = ends
             # domain/range is declared on every directional edge, extractor or not — RESOLVE types a
             # triple ENDPOINT from it (RES-1), which is a separate concern from the extraction enum.
             self._endpoints[e.name] = (e.from_types(), e.to_types())
@@ -207,12 +293,61 @@ class EdgeLaneIndex:
         """
         return self._instance_key.get(edge_type, _DEFAULT_INSTANCE_KEY)
 
-    def edge_instance_key(self, subject: str, predicate: str, obj: str) -> str:
+    def instance_key_tag(self, edge_type: str) -> str | None:
+        """The node **attribute** whose value sub-buckets this edge's instance key, or ``None`` (R1.3/C1).
+
+        Declared per-edge as ``instance_key_tag: site_type``. It names an attribute on the endpoint the
+        functional key *drops*, so ``based-at`` becomes single-valued per *(unit, site_type)*: a unit at a
+        garrison and concurrently at a forward field site is **two valid basings**, not a relocation's
+        before/after. The previous unit-only key rested explicitly on "the corpus has no such simultaneous
+        pair" — a corpus fact standing in for a design decision.
+        """
+        return self._instance_key_tag.get(edge_type)
+
+    def materializes(self, edge_type: str) -> Materialization | None:
+        """This edge's declared instance materialization, or ``None`` (A4/D-13.6). See
+        :class:`Materialization` for why it is declared rather than derived from the endpoint types."""
+        return self._materializes.get(edge_type)
+
+    def requires_stated_endpoints(self, edge_type: str) -> tuple[str, ...]:
+        """Endpoints of this edge a **source must have stated** — ``()`` for the default (D12).
+
+        An endpoint the build had to *materialize* (no entity-form claim ever declared it) does not satisfy
+        the requirement: the edge is withheld and a named gap raised, rather than asserting a relation no
+        document states. Declared on ``imported-by``, whose object is a receiving *unit* that no customs or
+        bill-of-lading document names.
+        """
+        return self._requires_stated.get(edge_type, ())
+
+    def endpoint_layers(
+        self, predicate: str, node_layer: Callable[[str], str | None]
+    ) -> tuple[set[str], set[str]]:
+        """``predicate → (from_layers, to_layers)`` — the edge's endpoint **layers** (A2).
+
+        Derived, never declared: an endpoint's layer is the layer of the node types the edge already names
+        in ``from``/``to``, looked up through ``node_layer`` (``NodeTypeIndex.node_layer``). A polymorphic
+        end can legitimately span both layers, hence sets rather than scalars; an end that declares no
+        types (a symmetric/structural edge) yields the empty set. This is the read that tells a *holding*
+        edge (both ends design) from a layer-*binding* edge — and it is why no edge in the ontology
+        declares a layer of its own.
+        """
+        f, t = self._endpoints.get(predicate, ([], []))
+        return (
+            {lay for lay in (node_layer(x) for x in f) if lay is not None},
+            {lay for lay in (node_layer(x) for x in t) if lay is not None},
+        )
+
+    def edge_instance_key(
+        self, subject: str, predicate: str, obj: str, tag: str | None = None
+    ) -> str:
         """Build the ``edge_instance`` grouping key for a triple, honouring the edge's declared
         :meth:`instance_key`. The ONE key-builder both producers call
         (``resolve.entities.base_ref`` and the ``view.pipeline`` assembly fallback), so a functional edge's
-        object is excluded identically on both paths and they can never diverge again (D-P4.4)."""
-        return build_edge_instance_key(subject, predicate, obj, self.instance_key(predicate))
+        object is excluded identically on both paths and they can never diverge again (D-P4.4).
+
+        ``tag`` carries the resolved :meth:`instance_key_tag` value when layer routing is on; ``None``
+        (the default, and always the case with routing off) reproduces the pre-S2 key byte-for-byte."""
+        return build_edge_instance_key(subject, predicate, obj, self.instance_key(predicate), tag)
 
     def unreachable_half_lives(self, credibility: CredibilityConfig) -> dict[str, str]:
         """Decaying edges with **no reachable half-life** → ``{edge: freshness_class}`` (a config error).
@@ -281,6 +416,8 @@ class EdgeLaneIndex:
 
 _IDENTITY = "identity"          # the per-node-type block these rules live in
 _REFINES = "refines"            # this type is a narrower reading of another type's endpoint role
+_INSTANCE_SPLIT = "instance_split"  # A2/D-13.5: the citizen + link a straddling mention splits into
+_DESIGN, _INSTANCE = "design", "instance"
 _HEAD_MARKERS = "name_head_markers"
 _NAMED_INSTANCES = "named_instances"
 _RELATIONAL = "relational"
@@ -342,7 +479,23 @@ class NodeTypeIndex:
         self._refinements: list[_Refinement] = []
         self._relational: dict[str, bool] = {}
         self._identifiers: dict[str, list[re.Pattern[str]]] = {}
+        self._layer: dict[str, str] = {}                       # node type → design | instance (A2)
+        self._attr_layer: dict[str, dict[str, str]] = {}       # node type → attr → design | instance (A2)
+        self._splits: dict[str, Materialization] = {}          # node type → its straddle-split citizen
         for t in ontology.node_types:
+            if isinstance(t.layer, str):
+                self._layer[t.name] = t.layer
+            per_attr = {a.name: a.layer for a in t.attrs if isinstance(a.layer, str)}
+            if per_attr:
+                self._attr_layer[t.name] = dict(per_attr)
+            split = getattr(t, _INSTANCE_SPLIT, None)
+            if isinstance(split, dict):
+                node_type = presence_citizen(ontology, split.get("node_type"))
+                link = split.get("link")
+                if isinstance(node_type, str) and isinstance(link, str):
+                    self._splits[t.name] = Materialization(
+                        end=_FROM_END, node_type=node_type, link=link
+                    )
             block = getattr(t, _IDENTITY, None)
             if not isinstance(block, dict):
                 block = {}
@@ -386,6 +539,61 @@ class NodeTypeIndex:
             return True
         return self._relational.get(node_type, True)
 
+    # ── the layer accessors (A2 / D-13.3) ────────────────────────────────────────────────────────
+
+    def node_layer(self, node_type: str | None) -> str | None:
+        """This node type's declared layer — ``"design"`` | ``"instance"`` | ``None`` (A2).
+
+        ``None`` means the type is **outside** the two-layer routing (nothing splits, nothing
+        materializes), never "design by default": a silent default would disarm the straddle trigger for
+        any type someone forgets to tag, which is exactly the failure the per-attribute tag exists to
+        prevent. Sits beside :meth:`refine` / :meth:`identifier` because all three are statements about the
+        world authored in ``config/ontology.yaml``, not facts about the code (gate G6).
+        """
+        if node_type is None:
+            return None
+        return self._layer.get(node_type)
+
+    def attr_layer(self, node_type: str | None, attr: str) -> str | None:
+        """The declared layer of one attribute **of one node type** (A2), or ``None`` if undeclared.
+
+        Per-*(type, attribute)* rather than global, because the same attribute name legitimately means
+        different things on different types. Layer is still uniform *per type* — a genuinely dual-natured
+        attribute is split into two attribute types (D-13.3), never resolved contextually here.
+        """
+        if node_type is None:
+            return None
+        return self._attr_layer.get(node_type, {}).get(attr)
+
+    def straddling_attrs(self, node_type: str | None, attrs: Iterable[str]) -> list[str]:
+        """The **instance**-layer attributes sitting on a **design**-layer node — the split trigger (A2).
+
+        This mismatch is the signal that one extracted mention lumped a design and one of its instances
+        together (spine/13 §5.1). Returned sorted, so the consequent split is deterministic (G2). Empty for
+        an instance-layer node, for an untagged node type, and for any attribute whose layer is undeclared
+        (absence reads *unknown* — it never masquerades as an instance fact, which would fabricate a split).
+        The reverse direction (a *design* attribute on an *instance* node) is deliberately **not** a
+        trigger: only instance-on-design hides an un-individuated instance; the reverse merely records a
+        shared upstream fact.
+        """
+        if self.node_layer(node_type) != _DESIGN:
+            return []
+        per_attr = self._attr_layer.get(node_type or "", {})
+        return sorted(a for a in attrs if per_attr.get(a) == _INSTANCE)
+
+    def instance_split(self, node_type: str | None) -> Materialization | None:
+        """The instance citizen + binding link a straddling mention of this type splits into, or ``None``.
+
+        Declared per node type (``instance_split: {node_type: presence, link: instance-of}``). ``None``
+        means this type has **no declared citizen for its instance-layer facts**, and the build then
+        *records* the unrouted straddle on the node instead of inventing a structure for it — the honest
+        outcome, and the reason a site's occupancy attrs do not mint a second presence beside the one its
+        sighting already materialized.
+        """
+        if node_type is None:
+            return None
+        return self._splits.get(node_type)
+
     def identifier(self, node_type: str | None, name: str | None) -> str | None:
         """The hard identifier carried by this instance's name, or ``None`` if it carries none.
 
@@ -398,3 +606,111 @@ class NodeTypeIndex:
             if pattern.fullmatch(name.strip()):
                 return name.strip()
         return None
+
+
+# ── layer routing: the type/instance split and its knobs (A2/A3/A4) ──────────────────────────────
+#
+# Read from ``config/ontology.yaml``'s top-level ``layer_routing`` block (a plain YAML mapping —
+# ``OntologyConfig`` is ``extra="allow"``, the same precedent the ``materiality`` block already sets). The
+# split runs **unconditionally**: the staging flag that gated it is deleted, because the pieces are one
+# change to what a node *is*, and a system that can be switched between two answers to that question has
+# two ontologies. Each mechanism is bounded by what these knobs — and the node/edge type declarations they
+# read — actually declare; nothing here is a code literal beyond the key names and the fail-safe fallbacks
+# (gate G6).
+
+_LAYER_ROUTING = "layer_routing"
+
+
+@dataclass(frozen=True)
+class LayerRouting:
+    """``config/ontology.yaml → layer_routing``, compiled. An absent block leaves every knob unset."""
+
+    presence_type: str = ""
+    design_link_edge: str = ""
+    provisional_prefix: str = "presence"
+    count_attrs: tuple[str, ...] = ()
+    #: The **closed vocabulary** an ``instance_key_tag`` value must normalise into (ruling L1 / C1 ⊂ C7).
+    #: The stated value is free text conflating several concepts, so the raw string is never the key.
+    site_type_vocabulary: tuple[str, ...] = ()
+    #: Raw stated value → vocabulary class, for genuine synonyms the fold cannot reach. Authored by the
+    #: data pass (ruling L1 step 4); an empty map is the honest starting state, not a defect.
+    site_type_aliases: tuple[tuple[str, str], ...] = ()
+    #: The bucket an **absent or unmappable** tag value collapses to. It is ONE shared bucket on purpose:
+    #: the evasion direction here is over-merge, and giving an unmappable value a bucket of its own would
+    #: let an unstated ``site_type`` buy a second concurrent basing for free. Note this is only the first
+    #: third of the third state — see :meth:`normalise_tag`.
+    absent_bucket: str = "unknown"
+    #: Bundle-filename suffixes the boot/seed loader **skips**, so a frozen derived conclusion cannot be
+    #: replayed alongside the live derivation of the same fact. Empty ⇒ the loader globs everything.
+    superseded_derived_bundle_suffixes: tuple[str, ...] = ()
+    #: ``derived_layer`` markers the **rebuild** declines to read as evidence — the backstop for a store
+    #: that already holds such claims, where the file-level skip above never ran.
+    superseded_derived_layers: tuple[str, ...] = ()
+
+    @classmethod
+    def from_ontology(cls, ontology: OntologyConfig) -> LayerRouting:
+        block = getattr(ontology, _LAYER_ROUTING, None)
+        if not isinstance(block, dict):
+            return cls()
+
+        def _strs(key: str) -> tuple[str, ...]:
+            raw = block.get(key)
+            return tuple(str(x) for x in raw) if isinstance(raw, (list, tuple)) else ()
+
+        aliases = block.get("site_type_aliases")
+        alias_pairs = (
+            tuple(sorted((str(k), str(v)) for k, v in aliases.items()))
+            if isinstance(aliases, dict) else ()
+        )
+        return cls(
+            presence_type=str(block.get("presence_type") or ""),
+            design_link_edge=str(block.get("design_link_edge") or ""),
+            provisional_prefix=str(block.get("provisional_prefix") or "presence"),
+            count_attrs=_strs("count_attrs"),
+            site_type_vocabulary=_strs("site_type_vocabulary"),
+            site_type_aliases=alias_pairs,
+            absent_bucket=str(block.get("absent_bucket") or "unknown"),
+            superseded_derived_bundle_suffixes=_strs("superseded_derived_bundle_suffixes"),
+            superseded_derived_layers=_strs("superseded_derived_layers"),
+        )
+
+    def retired_bundle_suffixes(self) -> tuple[str, ...]:
+        """Bundle suffixes a loader should skip — the declared list, read through one accessor.
+
+        Callers hand the result straight to ``ingest.seed.seed_store_from_bundles(skip_suffixes=…)``, so the
+        decision lives here rather than being re-derived at every seed call site. A frozen bundle whose
+        conclusion the rebuild now derives itself is stale *output*, not evidence: replaying it would
+        double-count the derivation and let a conclusion outlive its premises.
+        """
+        return self.superseded_derived_bundle_suffixes
+
+    def normalise_tag(self, value: object) -> tuple[str, bool]:
+        """A stated ``instance_key_tag`` value → ``(bucket, mapped)`` — C7's normalisation prerequisite.
+
+        Casefolds and collapses punctuation on both sides, consults the configured alias map, and matches
+        the **closed vocabulary**. ``mapped=True`` ⇒ the class is the bucket, and this basing instance is a
+        full citizen of the supersede comparison.
+
+        ``mapped=False`` — absent, or free text that does not map — is the **third state**, and the caller
+        owes all three parts of it (ruling L1 / C7):
+
+        1. **no de-confliction** — the bucket returned is :attr:`absent_bucket`, one shared bucket, never a
+           bucket of its own (the evasion direction is over-merge);
+        2. **no fusion** — the edge must be marked ineligible for supersede nomination, so an unresolved
+           site class can never manufacture a relocation;
+        3. **a named gap** — so a suppressed supersede is *visible*, never a silent non-event.
+
+        Returning ``(absent_bucket, False)`` gives the caller exactly what it needs for all three; taking
+        only part 1 and treating the value as usable is the failure mode this signature exists to prevent.
+        """
+        if not isinstance(value, str) or not value.strip():
+            return self.absent_bucket, False
+        folded = _fold(value).replace(" ", "_")
+        for raw, target in self.site_type_aliases:
+            if _fold(raw).replace(" ", "_") == folded:
+                folded = _fold(target).replace(" ", "_")
+                break
+        for allowed in self.site_type_vocabulary:
+            if _fold(allowed).replace(" ", "_") == folded:
+                return folded, True
+        return self.absent_bucket, False

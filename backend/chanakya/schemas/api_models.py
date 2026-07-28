@@ -12,9 +12,11 @@ from typing import Any, Literal
 
 from .base import Record
 from .claim import ClaimRecord, SourceRegistryEntry
+from .decision import Actor
 from .view import (
     ConfidenceBreakdown,
     Freshness,
+    GraphView,
     IndependenceGroup,
     KnownGap,
     Status,
@@ -154,7 +156,42 @@ class HitlDecision(Record):
     subject: str
     decision: str  # the chosen option
     rationale: str | None = None
-    actor: str = "analyst"
+    # Typed at the BOUNDARY, so an unknown actor is a clean 422 naming the three legal values rather than
+    # an unhandled ``pydantic.ValidationError`` raised deep in ``hitl/writeback.build_record`` and served
+    # as a 500 with a traceback. The log's ``DecisionRecord.actor`` was always this Literal; accepting a
+    # bare ``str`` here only moved the failure somewhere it could not be reported, which makes a REJECTED
+    # adjudication indistinguishable from a server fault — the same confusion class as a dropped decision.
+    actor: Actor = "analyst"
+
+
+class AdjudicationReceipt(Record):
+    """The acknowledgement an analyst gets back for a ``POST /hitl/*`` instruction (the escalate half).
+
+    A ``200`` and a rebuilt view used to be the whole response, so an instruction the resolver declined to
+    apply looked exactly like one it had applied. Every field here is derived by READING the rebuilt view
+    (:mod:`chanakya.hitl.receipt`), never by assuming the write succeeded.
+    """
+
+    event_id: str = ""
+    pair: list[str] = []  # the two ids the instruction was about, as the analyst clicked them
+    instruction: str = ""  # what the chosen option was asking the graph to do, in words
+    decision: str = ""  # the option chosen
+    actor: str = ""
+    rationale: str | None = None
+    recorded: bool = True  # the append-only log always keeps it, applied or not
+    applied: bool = False  # did the REBUILT view actually take it
+    ground: str = ""  # how it was applied, or — when it was not — on what ground
+    effect_ref: str | None = None  # the view element that now carries it (a wall), or the still-open edge
+
+
+class AdjudicationView(GraphView):
+    """``POST /hitl/*`` response: the rebuilt view **plus** the receipt for the instruction just given.
+
+    A strict superset of :class:`GraphView`, so a client that binds to the view is unaffected and a client
+    that reads the acknowledgement gets it in the same round-trip.
+    """
+
+    adjudication: AdjudicationReceipt | None = None
 
 
 # ── POST /ingest ───────────────────────────────────────────────────────────────────────────────
@@ -194,8 +231,22 @@ class ConfigWrite(Record):
 
 
 class ConfigWriteResult(Record):
+    """The result of a hot-config write — plus anything the write is *not* rejecting but must flag.
+
+    ``warnings`` carries non-fatal, analyst-facing problems detected against the **live** view right
+    after the write. Today's one producer is the observable anchor check (AH-1): an observable whose
+    ``watch_instances`` / lens anchors resolve to no node in the current view is watching nothing, and a
+    user who typo'd an instance id must learn that at write time rather than from months of silence.
+
+    It is deliberately a warning and **not** a 422. An anchor may legitimately be declared *before* the
+    entity exists (hot-config: arm the tripwire, then ingest the document that creates the node) — hard
+    rejection would break that workflow. The same check re-runs on every ``GET``, so the warning cannot
+    be dismissed by ignoring one response.
+    """
+
     section: str
     version: int  # the config store's new version after the write
+    warnings: list[str] = []
 
 
 class ConfigRead(Record):
@@ -207,11 +258,28 @@ class ConfigRead(Record):
 
     ``value`` is the stored pydantic model dumped as-is — no bespoke per-section DTO, so read and write
     speak exactly the same vocabulary by construction.
+
+    ``diagnostics`` is *derived* state about that value — never part of the round-trip, so a GET → edit →
+    POST is unaffected by it. For ``observables`` it carries the anchor check (AH-1): a tripwire whose
+    anchors bind to nothing is watching nothing, and the catalogue read is where the Watch panel learns
+    that. ``{}`` means no check applies to this section; ``{"anchor_check": {"checked": true,
+    "unresolved": []}}`` is the positive statement that every armed tripwire's anchors bind.
+
+    ``observables`` carries a second, independent diagnostic — ``trigger_reachability`` (AH-3). Anchors
+    binding is not the same as the watched condition being *possible*: a tripwire can resolve every
+    anchor, watch 66 nodes, and still be looking for an edge type no document in coverage produces. That
+    one is armed, quiet and structurally incapable of firing, and its quiet reads as an all-clear.
+    ``{"trigger_reachability": {"checked": true, "observables": [{"observable_id": …, "status":
+    "reachable" | "no_coverage" | "never_fires" | "type_not_modelled" | "attribute_not_covered" |
+    "out_of_watch_scope", "can_fire": bool, "gap_kind": "data" | "modelling" | "engine" | "scope" | null,
+    "missing": [{"kind": …, "name": …}], "candidate_count": int | null, "warning": str | null}, …]}}`` —
+    one entry per armed observable, so a card can state the positive verdict rather than imply it.
     """
 
     section: str  # the resolved (plural) section name, e.g. "observables"
     version: int  # the config store's version at read time — the read-modify-write handle
     value: dict[str, Any]
+    diagnostics: dict[str, Any] = {}
 
 
 # ── GET /health ────────────────────────────────────────────────────────────────────────────────

@@ -51,7 +51,19 @@ export const AOI = {
 // `contradicted` is its OWN kind, never folded into `gap`: "credible sources disagree"
 // (loud — solid coral) and "we do not know" (quiet — dashed grey, no fill) are opposite
 // facts, and drawing one as the other is a lie about the evidence.
-export type GraphKind = 'confirmed' | 'probable' | 'chokepoint' | 'stale' | 'gap' | 'contradicted'
+//
+// `possible` is the rung BELOW probable — one thin look. It is drawn in its own right
+// (dotted teal, matching --border-possible) rather than folded into `probable`: this
+// system's promise is that confirmed is STRUCTURALLY separated from probable, and a
+// ladder that draws two of its rungs byte-identically keeps only half of that promise.
+export type GraphKind =
+  | 'confirmed'
+  | 'probable'
+  | 'possible'
+  | 'chokepoint'
+  | 'stale'
+  | 'gap'
+  | 'contradicted'
 
 export interface GraphNodeDef {
   id: string
@@ -93,7 +105,15 @@ export const GRAPH_NODES: GraphNodeDef[] = [
  *  `e-supersede-candidate` is the same arrow, DASHED: an un-adjudicated supersession —
  *  "something moved, and we are not yet sure it is the same thing". THE ONE RULE decides
  *  it: promoted = settled = solid; pending/held = provisional = dashed. Like the dashed
- *  chokepoint halo, this makes "we're not sure" undrawable as certain. */
+ *  chokepoint halo, this makes "we're not sure" undrawable as certain.
+ *
+ *  `e-wall` and `e-merge-candidate` split what used to be one `e-link`. They are opposite
+ *  statements about our own records — "these are NOT the same thing" versus "these MIGHT be
+ *  the same thing" — and drawing them alike is the error that makes the order-of-battle trap
+ *  (two co-located positions wrongly fused into one unit's before-and-after) invisible on the
+ *  very picture where it lives. A wall is barred at both ends and reads as a separation; a
+ *  proposal is a faint dotted question. `e-link` is kept as the neutral fallback for any other
+ *  status-less relationship. */
 export type EdgeKind =
   | 'e-confirmed'
   | 'e-probable'
@@ -102,6 +122,8 @@ export type EdgeKind =
   | 'e-contradicted'
   | 'e-supersede'
   | 'e-supersede-candidate'
+  | 'e-wall'
+  | 'e-merge-candidate'
   | 'e-link'
 
 export interface GraphEdgeDef {
@@ -114,6 +136,10 @@ export interface GraphEdgeDef {
    *  resolution BOOKKEEPING (`same-as` / `distinct-from`), which is the difference between
    *  the knowledge layer and the identity overlay. Optional: the demo fixtures omit it. */
   type?: string
+  /** Identity edges only — the AUTHORITY behind the decision ('curated' | 'analyst' | 'sourced' |
+   *  'derived' | 'unrecorded'), so the canvas can say whether a human ruled or the machine
+   *  inferred. Carried as a plain string so the demo fixtures need not import the live union. */
+  ground?: string
 }
 
 export const GRAPH_EDGES: GraphEdgeDef[] = [

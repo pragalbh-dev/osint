@@ -1,0 +1,83 @@
+SOUTH ASIAN GROUND FORCES REGISTER
+Series 7 — Pakistan · Volume 3: Army Air Defence and Corps Troops
+
+Compiled reference extract. Subscriber distribution. Not for onward release.
+Compilation closing date: 31 March 2025.
+Conventions: (u) = unconfirmed at the closing date, carried forward without re-verification. Regimental
+numbers are allotted within arms and are given here qualified by arm and service. Garrison = permanent home
+station; deployed and exercise locations are not tracked at this level except where a note records a
+standing detachment.
+
+---
+
+SECTION 3.4 — AIR DEFENCE FORMATIONS, SOUTHERN AND CENTRAL SECTORS
+
+Stations in this section are given in the standardised form of the spelling note below; Pano Aqil
+Cantonment is in Sukkur District, Sindh.
+
+3 Air Defence Brigade
+  Headquarters: Karachi (Malir)
+    - 22 Air Defence Regiment
+        Garrison: Pano Aqil Cantonment
+        Arm/service: Pakistan Army, Air Defence
+        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family; the register records the class,
+          not the sub-variant)
+        Notes: Re-equipped from a legacy medium-range fit. One battery detached forward to the Ghotki
+          dispersal site since February 2025 and still so detached at the closing date; regimental
+          headquarters and the remaining batteries held at the Pano Aqil garrison throughout the same
+          period.
+    - 9 Air Defence Regiment (u)
+        Garrison: Hyderabad Cantonment, Sindh
+        Equipment: short-range/point defence, mixed legacy
+        Notes: Carried forward unverified. An earlier compilation places this regiment at Badin.
+
+11 Air Defence Brigade
+  Headquarters: Sukkur
+    - 47 Air Defence Regiment
+        Garrison: Pano Aqil Cantonment
+        Arm/service: Pakistan Army, Air Defence
+        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)
+        Notes: Raised or re-roled in the long-range air defence role in the early 2020s; the raising date is
+          given as 2021 in one source consulted and 2022 in another. Same station as 22 Air Defence
+          Regiment, under a separate brigade.
+    - 33 Air Defence Regiment (u)
+        Garrison: Panu Aqil (sic — see spelling note)
+        Equipment: not recorded
+        Notes: Retained from the 2019 compilation, not re-verified. May be a duplicate of an entry above
+          arising from the spelling variance.
+
+SPELLING NOTE. The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as
+"Pano Akil" in older gazetteer material. All are the same cantonment in Sukkur District. This register
+standardises on Pano Aqil in headings and reproduces the source spelling in carried-forward entries.
+
+---
+
+SECTION 3.7 — SUB-UNITS RECORDED WITHOUT ALLOCATION
+
+Sub-units held at a recorded station for which no source consulted gives a parent formation. Recorded on
+the same conventions as Section 3.4; not counted in Section 3.4.
+
+    - An air defence battery, unallocated
+        Garrison: Pano Aqil Cantonment
+        Arm/service: Pakistan Army, Air Defence
+        Echelon: battery
+        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)
+        Notes: The battery is based at Pano Aqil Cantonment. Sourced to
+          cantonment board correspondence of January 2025 and to two local press items, none of which
+          gives a regimental number. Both regiments at Section 3.4 hold batteries at this cantonment. The
+          compiler has not been able to allocate the battery to either of them and carries it here
+          unallocated.
+
+---
+
+SECTION 3.9 — CONSOLIDATED INDEX, AIR DEFENCE REGIMENTS (by number)
+
+  9  Air Defence Regiment ................. Hyderabad Cantonment (u)
+  22 Air Defence Regiment ................. Pano Aqil Cantonment
+  22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as
+                                            the preceding line; both renderings appear in source documents]
+  33 Air Defence Regiment ................. Panu Aqil (u)
+  47 Air Defence Regiment ................. Pano Aqil Cantonment
+  56 Air Defence Regiment ................. Multan Cantonment (u)
+
+Compilation team, 31/03/25. Corrections to the series editor.

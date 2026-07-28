@@ -1,0 +1,295 @@
+
+=== rk-01-alias-lowgrade-no-bind
+  PASS  count_equals referent_atoms[doc=d01]
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  equals referent_atoms[has=d01.m1].gate_results.grade
+  PASS  equals referent_atoms[has=d01.m1].gate_results.structural
+  PASS  distinct_instance ['d01.m1', 'd01.m2']
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
+  PASS  equals pair_verdicts[@d01.m1|@d01.m2].same_doc
+  ADV FAIL  contains pair_verdicts[@d01.m1|@d01.m2].reason -> ['no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: operator; weighted total 0.267.'] lacks 'also reported as the Barha air-defence battery'
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-02-alias-highgrade-binds
+  PASS  count_equals referent_atoms[doc=d01]
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  equals referent_atoms[has=d01.m1].category
+  PASS  equals referent_atoms[has=d01.m1].gate_results.structural
+  PASS  equals referent_atoms[has=d01.m1].gate_results.grade
+  PASS  equals referent_atoms[has=d01.m1].declined
+  PASS  contains referent_atoms[has=d01.m1].member_local_ids
+  PASS  same_instance ['d01.m1', 'd01.m2']
+  ADV PASS  count_equals instances
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-03-explicit-eq-quote-lacks-second-surface
+  PASS  equals referent_atoms[has=d01.m1].gate_results.structural
+  PASS  equals referent_atoms[has=d01.m1].gate_results.grade
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  count_equals referent_atoms[doc=d01]
+  PASS  distinct_instance ['d01.m1', 'd01.m2']
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-04-name-variant-is-raise-only
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  count_equals referent_atoms[doc=d01]
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
+  PASS  equals pair_verdicts[@d01.m1|@d01.m2].ceiling
+  PASS  present pair_verdicts[@d01.m1|@d01.m2].ceiling_reason
+  ADV PASS  distinct_instance ['d01.m1', 'd01.m2']
+  ADV FAIL  contains pair_verdicts[@d01.m1|@d01.m2].reason -> ['no durable confirm trigger, so fusion is unavailable regardless of score; agreeing discriminators: none; weighted total 0.1333; held at possible by name_alone.'] lacks 'elsewhere given as'
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-05-anaphor-type-unique-binds
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  equals referent_atoms[has=d01.m1].category
+  PASS  equals referent_atoms[has=d01.m1].gate_results.structural
+  PASS  equals referent_atoms[has=d01.m1].gate_results.grade
+  PASS  contains referent_atoms[has=d01.m1].member_local_ids
+  PASS  same_instance ['d01.m1', 'd01.m2']
+  ADV PASS  contains instances[@d01.m1].discriminators.designation
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-06-anaphor-two-antecedents-no-bind
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  equals referent_atoms[has=d01.m1].gate_results.structural
+  PASS  distinct_instance ['d01.m1', 'd01.m3']
+  PASS  distinct_instance ['d01.m2', 'd01.m3']
+  PASS  distinct_instance ['d01.m1', 'd01.m2']
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m3].verdict
+  PASS  not_equals pair_verdicts[@d01.m2|@d01.m3].verdict
+  ADV PASS  present gaps[about=@d01.m3]
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-07-referent-declines-on-discriminator-conflict
+  FAIL  equals referent_atoms[has=d01.m1].declined -> got [False], want True
+  FAIL  present referent_atoms[has=d01.m1].decline_reason -> [None]
+  PASS  distinct_instance ['d01.m1', 'd01.m3']
+  PASS  count_gte instances
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m3].verdict
+  PASS  atom_conservation 
+  ADV PASS  count_equals instances
+  ADV PASS  present gaps[about=@d01.m1]
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-08-referent-absent-attr-does-not-decline
+  PASS  equals referent_atoms[has=d01.m1].authoritative
+  PASS  equals referent_atoms[has=d01.m1].declined
+  PASS  absent referent_atoms[has=d01.m1].decline_reason
+  PASS  same_instance ['d01.m1', 'd01.m2']
+  PASS  contains instances[@d01.m1].discriminators.designation
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-09-contrast-enumeration-two-sites
+  PASS  distinct_instance ['d01.m1', 'd01.m2']
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
+  PASS  equals pair_verdicts[@d01.m1|@d01.m2].same_doc
+  PASS  count_equals derived_edges[kind=relocation,drawn=true]
+  PASS  any_of 
+  ADV FAIL  equals pair_verdicts[@d01.m1|@d01.m2].ceiling -> got [None], want 'probable'
+  ADV UNRESOLVED  equals instances[@d01.m1].discriminators.count -> selector 'instances[@d01.m1].discriminators.count' resolved to nothing
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-10-colocated-presence-no-contrast-merges
+  FAIL  same_instance ['d01.m1', 'd01.m2'] -> not fused (verdicts=['possible'])
+  FAIL  equals pair_verdicts[@d01.m1|@d01.m2].verdict -> got ['possible'], want 'confirmed'
+  FAIL  equals instances[@d01.m1].citizen -> got ['design'], want 'presence'
+  PASS  count_equals instances[citizen=formation]
+  PASS  count_equals derived_edges[kind=based-at,drawn=true]
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-11-colocated-presence-contrast-capped
+  PASS  distinct_instance ['d01.m1', 'd01.m2']
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
+  PASS  equals pair_verdicts[@d01.m1|@d01.m2].ceiling
+  PASS  present pair_verdicts[@d01.m1|@d01.m2].ceiling_reason
+  PASS  equals pair_verdicts[@d01.m1|@d01.m2].same_doc
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-12-contrast-lowgrade-still-capped
+  PASS  distinct_instance ['d01.m1', 'd01.m2']
+  PASS  not_equals pair_verdicts[@d01.m1|@d01.m2].verdict
+  PASS  equals pair_verdicts[@d01.m1|@d01.m2].ceiling
+  PASS  present pair_verdicts[@d01.m1|@d01.m2].ceiling_reason
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-13-ceiling-cannot-shatter-corroborated-cluster
+  PASS  same_instance ['d01.m1', 'd02.m1']
+  PASS  equals pair_verdicts[@d01.m1|@d02.m1].verdict
+  PASS  same_instance ['d01.m1', 'd03.m1']
+  PASS  distinct_instance ['d03.m1', 'd03.m2']
+  PASS  not_equals pair_verdicts[@d03.m1|@d03.m2].verdict
+  ADV PASS  equals pair_verdicts[@d01.m1|@d03.m1].same_doc
+  ADV PASS  equals pair_verdicts[@d01.m1|@d03.m1].ceiling
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-14-shared-designation-operator-differs-no-confirm
+  PASS  distinct_instance ['d01.m1', 'd02.m1']
+  PASS  not_equals pair_verdicts[@d01.m1|@d02.m1].verdict
+  FAIL  present pair_verdicts[@d01.m1|@d02.m1].walls -> [[]]
+  ADV FAIL  contains pair_verdicts[@d01.m1|@d02.m1].walls -> [[]] lacks 'operator'
+  ADV FAIL  equals pair_verdicts[@d01.m1|@d02.m1].verdict -> got ['possible'], want 'separate'
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-15-composite-operator-designation-confirms
+  PASS  same_instance ['d01.m1', 'd02.m1']
+  PASS  equals pair_verdicts[@d01.m1|@d02.m1].verdict
+  ADV PASS  absent pair_verdicts[@d01.m1|@d02.m1].walls
+  ADV PASS  equals pair_verdicts[@d01.m1|@d02.m1].ceiling
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-16-name-only-no-fuse-at-any-floor
+  PASS  not_equals pair_verdicts[@d01.m1|@d02.m1].verdict
+  PASS  equals pair_verdicts[@d01.m1|@d02.m1].ceiling
+  ADV PASS  distinct_instance ['d01.m1', 'd02.m1']
+  PASS  not_equals pair_verdicts[@d01.m2|@d02.m2].verdict
+  PASS  equals pair_verdicts[@d01.m2|@d02.m2].ceiling
+  PASS  distinct_instance ['d01.m2', 'd02.m2']
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-17-design-name-plus-one-signal-confirms
+  FAIL  equals pair_verdicts[@d01.m1|@d02.m1].verdict -> got ['possible'], want 'confirmed'
+  ADV FAIL  same_instance ['d01.m1', 'd02.m1'] -> not fused (verdicts=['possible'])
+  ADV PASS  equals pair_verdicts[@d01.m1|@d02.m1].ceiling
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-18-unnormalized-operator-no-false-wall
+  PASS  absent pair_verdicts[@d01.m1|@d02.m1].walls
+  FAIL  equals pair_verdicts[@d01.m1|@d02.m1].verdict -> got ['possible'], want 'confirmed'
+  FAIL  same_instance ['d01.m1', 'd02.m1'] -> not fused (verdicts=['possible'])
+  PASS  absent pair_verdicts[@d02.m1|@d03.m1].walls
+  PASS  equals pair_verdicts[@d02.m1|@d03.m1].verdict
+  ADV FAIL  same_instance ['d01.m1', 'd03.m1'] -> not fused (verdicts=['possible'])
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-19-thin-context-insufficient-evidence
+  FAIL  equals instances[@d01.m1].citizen -> got ['design'], want 'presence'
+  PASS  count_equals derived_edges[kind=based-at,drawn=true]
+  PASS  distinct_instance ['d01.m1', 'd02.m1']
+  UNRESOLVED  present gaps[about=@d01.m1] -> selector 'gaps[about=@d01.m1]' resolved to nothing
+  UNRESOLVED  present gaps[about=@d01.m1].missing -> selector 'gaps[about=@d01.m1].missing' resolved to nothing
+  UNRESOLVED  present gaps[about=@d01.m1].sentence -> selector 'gaps[about=@d01.m1].sentence' resolved to nothing
+  PASS  equals instances[@d01.m1].discriminators.designation
+  ADV UNRESOLVED  equals gaps[about=@d01.m1].kind -> selector 'gaps[about=@d01.m1].kind' resolved to nothing
+  ADV UNRESOLVED  contains gaps[about=@d01.m1].sentence -> selector 'gaps[about=@d01.m1].sentence' resolved to nothing
+  ADV UNRESOLVED  equals gaps[about=@d01.m1].ceiling -> selector 'gaps[about=@d01.m1].ceiling' resolved to nothing
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-20-colocation-no-fabricated-relocation
+  PASS  count_equals derived_edges[kind=relocation,drawn=true]
+  FAIL  same_instance ['d01.m1', 'd02.m1'] -> not fused (verdicts=['possible'])
+  PASS  distinct_instance ['d01.m1', 'd03.m1']
+  PASS  distinct_instance ['d01.m3', 'd02.m3']
+  PASS  distinct_instance ['d01.m3', 'd03.m3']
+  PASS  count_gte gaps[kind=formation-unresolved]
+  PASS  present gaps[kind=formation-unresolved].sentence
+  ADV PASS  equals pair_verdicts[@d01.m3|@d02.m3].ceiling
+  ADV PASS  present pair_verdicts[@d01.m3|@d02.m3].ceiling_reason
+  ADV PASS  present derived_edges[kind=relocation].withheld_reason
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-21-earned-relocation-is-drawn
+  PASS  same_instance ['d01.m1', 'd02.m1']
+  PASS  equals pair_verdicts[@d01.m1|@d02.m1].verdict
+  PASS  count_equals derived_edges[kind=relocation,drawn=true]
+  PASS  contains derived_edges[kind=relocation,drawn=true].from
+  PASS  contains derived_edges[kind=relocation,drawn=true].to
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-22-garrison-plus-forward-site-not-relocation
+  FAIL  count_equals derived_edges[kind=relocation,drawn=true] -> count 1 != 0
+  ADV PASS  same_instance ['d01.m1', 'd02.m1']
+  ADV PASS  absent pair_verdicts[@d01.m1|@d02.m1].walls
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+=== rk-23-two-candidate-formations-no-silent-pick
+  PASS  not_silently_dropped d01.m4
+  PASS  any_of 
+  PASS  distinct_instance ['d01.m3', 'd01.m4']
+  PASS  atom_conservation 
+  ADV PASS  present gaps[about=@d01.m4]
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => PASS
+
+=== rk-24-reprint-is-not-independent-corroboration
+  FAIL  not_equals pair_verdicts[@d01.m1|@d02.m1].verdict -> got ['confirmed'], must differ from 'confirmed'
+  FAIL  distinct_instance ['d01.m1', 'd02.m1'] -> fused but must not be
+  ADV FAIL  equals pair_verdicts[@d01.m1|@d02.m1].ceiling -> got [None], want 'probable'
+  ADV FAIL  contains pair_verdicts[@d01.m1|@d02.m1].reason -> ['durable confirm trigger(s): composite_unique_id_match, corroborated_designation; agreeing discriminators: designation, geography, operator, time, unique_id; weighted total 0.6762.'] lacks 'independen'
+  INV-OK    I1-atom-conservation
+  INV-OK    I2-no-fabricated-discriminator
+  INV-OK    I3-determinism
+  => FAIL
+
+========================================================================
+CASES: 15/24 pass · hard asserts passed: 99 · advisory not-met: 13
+FAILED: rk-07-referent-declines-on-discriminator-conflict, rk-10-colocated-presence-no-contrast-merges, rk-14-shared-designation-operator-differs-no-confirm, rk-17-design-name-plus-one-signal-confirms, rk-18-unnormalized-operator-no-false-wall, rk-19-thin-context-insufficient-evidence, rk-20-colocation-no-fabricated-relocation, rk-22-garrison-plus-forward-site-not-relocation, rk-24-reprint-is-not-independent-corroboration

@@ -12,12 +12,26 @@ by rewriting a claim's own ``resolved_ref``.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass, field
 from typing import Any
 
 from chanakya.ontology import EdgeLaneIndex, build_edge_instance_key
-from chanakya.schemas import ClaimRecord, ResolvedRef, canonical_iso_bounds
+from chanakya.schemas import ClaimRecord, DateValue, ResolvedRef, canonical_iso_bounds
+
+
+def fold_value(value: object) -> str:
+    """Casefold + collapse punctuation/whitespace — the one folding rule for a stated attribute value.
+
+    Lives here rather than in ``rconfig`` because :meth:`Entity.namespace` needs it with **no config in
+    hand**: the C7 normaliser is flag-gated, so an un-normalised namespace key must still fold, or the
+    same country spelled 'CHINA' in one document and 'China' in the next becomes two namespaces and
+    fabricates a distinction the sources never drew. ``ResolveConfig``'s normaliser folds through this
+    same function, so the flag cannot change what counts as the same spelling.
+    """
+    text = "" if value is None else str(value)
+    kept = [c.casefold() if c.isalnum() else " " for c in text]
+    return " ".join("".join(kept).split())
 
 
 def unordered_pairs[T](seq: list[T]) -> Iterator[tuple[T, T]]:
@@ -33,6 +47,20 @@ def as_pair(x: Iterable[str]) -> tuple[str, str]:
     return (a, b)
 
 
+def mint_entity_id(base_type: str, name: str) -> str:
+    """The ONE place an ``ent:<base type>:<name>`` entity id is spelled (RK-NAMECUT/N1).
+
+    An entity id is an **opaque handle**: it is minted from the base type a claim declared plus the
+    surface form it used, and from that moment nothing may *read* information back out of it. That rule
+    only holds if the mint has a single spelling — three literal f-strings in three modules are three
+    places a later re-key has to find, and the one it misses becomes a silent second id namespace. Every
+    reader that used to recover the type or the name by splitting this string now carries what it needs
+    explicitly (:attr:`Entity.base_type`, ``Partition.display_label``); this function is what BUILDS the
+    string, which is the only direction that stays legitimate.
+    """
+    return f"ent:{base_type}:{name}"
+
+
 def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedRef:
     """The per-claim identity ref (extractor's if set, else synthesised) — matches F0's stub exactly.
 
@@ -46,7 +74,7 @@ def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedR
         return claim.resolved_ref
     p = claim.payload
     if p.form == "entity":
-        return ResolvedRef(entity_id=f"ent:{p.entity_type}:{p.name}")
+        return ResolvedRef(entity_id=mint_entity_id(p.entity_type, p.name))
     if p.form == "triple":
         ei = (
             lane.edge_instance_key(p.subject, p.predicate, p.object)
@@ -55,6 +83,42 @@ def base_ref(claim: ClaimRecord, lane: EdgeLaneIndex | None = None) -> ResolvedR
         )
         return ResolvedRef(entity_id=f"ent:{p.subject}", edge_instance=ei)
     return ResolvedRef(entity_id=f"event:{p.event_type}:{claim.claim_id}")
+
+
+@dataclass(frozen=True)
+class AttrClaim:
+    """One asserted value for an ``Entity`` attribute, + the claim/time axes that asserted it.
+
+    Stage 3-prep: mirrors the view layer's ``AttrValueClaim`` (``schemas/view.py``, D7 §1B) one stage
+    earlier in the pipeline. ``Entity.attrs[k]`` stays the first-claim-wins scalar every existing resolve
+    reader depends on; ``Entity.attr_history[k]`` is the role-agnostic full time-ordered series of every
+    value any claim asserted for that attribute, so a later — possibly conflicting — value is retained,
+    not silently dropped. Pure data: no ordering/veto/scoring decision is taken here — that stays in
+    ``resolve/scoring.py`` (3A's credibility-gated walls, 3B's update/stale, consume this; they do not
+    populate it).
+    """
+
+    value: Any
+    claim_id: str
+    event_time: DateValue | None = None  # when true in the world (stated validity anchor)
+    report_time: DateValue | None = None  # when the source published
+    # The source that asserted this value. Load-bearing for the D5 credibility floor (Stage 3A): a stated
+    # critical-attribute conflict WALLS only when the conflicting value on each side is attested by a
+    # source graded at/above the floor; below it the pair is raised to the analyst rather than walled. So
+    # the wall must reach the *per-value* source, not just the entity-level union (``Entity.source_ids``).
+    source_id: str | None = None
+
+
+def _attr_history_sort_key(entry: AttrClaim) -> tuple[bool, str, str, str]:
+    """Deterministic oldest→newest order for a retained attribute series (mirrors ``view.pipeline``'s).
+
+    Ordered by ``event_time`` lower bound, then ``report_time`` lower bound, then ``claim_id`` (unique →
+    a total, hash-seed-independent order — G2). Undated entries sort last. Presentation/consumption
+    ordering only; makes no supersede/contradiction/winner decision (that is 3A/3B).
+    """
+    ev_lo, _ = canonical_iso_bounds(entry.event_time)
+    rep_lo, _ = canonical_iso_bounds(entry.report_time)
+    return (ev_lo is None, ev_lo or "", rep_lo or "", entry.claim_id)
 
 
 @dataclass
@@ -70,24 +134,86 @@ class Entity:
     # real claim resolves onto it, but when it does, its cluster adopts its id (see ``cluster._preferred``)
     # so the graph, the lenses and the oracle share one id namespace.
     registry: bool = False
+    # The base type this entity's id was MINTED under (RK-NAMECUT/N1), or ``None`` for an id that was not
+    # minted from a (type, name) pair at all — a registry stable id (``var_hq9p``), a synthesised id, an
+    # extractor-supplied ref.
+    #
+    # It exists because ``etype`` is mutated in place: ``resolve._refine_node_types`` re-types an entity to
+    # its ontology refinement (a province arriving as a ``basing_site`` becomes an ``area_of_operations``)
+    # and deliberately leaves the id alone, so after refinement the id string was the ONLY surviving record
+    # of the type the mint keyed under. ``_refined_rekey_pairs`` — the one place where a merge decision
+    # turns on it — used to recover it by splitting the id, which is a reader parsing an opaque handle and
+    # the exact coupling that makes the id format unchangeable. Recorded here at mint time instead, so the
+    # id may be re-keyed without moving a single identity decision. Do NOT re-derive it from the id.
+    base_type: str | None = None
+    # ADDITIVE (Stage 3-prep, mirrors view's ``attr_history`` — §1B one stage earlier). Role-agnostic: every
+    # claim-asserted value for an attribute is retained here, time-ordered, even one ``attrs[k]`` (first-
+    # claim-wins) drops. Empty for entities carrying no claim of their own (registry seeds, T3b mints).
+    attr_history: dict[str, list[AttrClaim]] = field(default_factory=dict)
+    # ADDITIVE (RK-COREF/S3, decision (b) + C9). The **documents** whose claims built this profile, read
+    # from each claim's ``doc_ref`` — the one boundary where the reference was previously dropped.
+    #
+    # Three consumers need it and none of them can derive it:
+    #   * **C9** — an authoritative coreference bind may instantiate ONLY over entity ids attested in the
+    #     contributing document. D-13.17 gates the bind on a document-scoped precondition, but the bind
+    #     instantiates through ``_matching_eids``' GLOBAL name/alias expansion, so without this the
+    #     precondition does not bound the effect;
+    #   * the **contrast channel** (D-13.19) — a doc-local stated contrast must not leak onto cross-doc
+    #     pairs through that same global expansion;
+    #   * **coverage** — the intra-document fragmentation tail is a different report from the cross-doc one.
+    #
+    # Deliberately NOT derived by parsing the claim-atom id prefix (``make_claim_id`` does encode the
+    # document, but that makes a load-bearing identity decision depend on an id *format* — precisely the
+    # coupling the re-key exists to remove), and deliberately NOT ``source_ids``: a ``source_id`` is the
+    # **publisher**, so two documents from one outlet would read as same-doc, which is exactly the input
+    # that triggers the too-strong failure mode. Pure data — no decision is taken here.
+    doc_ids: set[str] = field(default_factory=set)
 
-    def namespace(self) -> str | None:
-        """The 'country / domain namespace' blocking dimension, read from stated attrs (None ⇒ wildcard)."""
-        for key in ("country", "operator_branch", "service_branch", "domain"):
+    def namespace(self, normalise: NamespaceNormaliser | None = None) -> str | None:
+        """The 'country / domain namespace' blocking dimension, read from stated attrs (None ⇒ wildcard).
+
+        ``normalise`` (C7, RK-COREF/S3) folds the stated value into its declared equivalence class
+        **before** it becomes a namespace key. It has to happen here and not only at conflict time: the
+        namespace is derived from raw attrs, so normalising later would leave 'PAF' and 'Pakistan Air
+        Force' in two different namespaces — i.e. the wall would be fixed and the *blocking* still split.
+        Absent ⇒ the folded stated value (see :func:`fold_value`) — case and punctuation are never a
+        namespace difference, with the flag or without it.
+
+        ``origin_country`` is in the list because it is **the country attribute this corpus actually
+        states** — sources write it on manufacturers and trading organisations, and essentially never
+        write a bare ``country``. Omitting it made the China/Pakistan split unenforceable exactly where
+        supply-chain identity is decided: two same-named trading organisations, one stated CHINA and one
+        stated Pakistan, fused at ``confirmed`` on a coreference link, while the identical pair keyed on
+        ``country`` was refused. A namespace that keys on an attribute nobody writes blocks nothing.
+        ``config/resolution.yaml`` already lists it under ``normalization_required_attrs``, i.e. config
+        already treats it as namespace-bearing.
+
+        The namespace is read on every path that decides identity: the blocking key, the exact-name
+        bootstrap trigger, ``_name_containment``, ``_identity_pairs``, ``_coref_pairs`` **and** the
+        cross-namespace fusion refusal in :func:`~chanakya.resolve.cluster.fusion_blocked`. That last one
+        used to sit behind a stage flag that shipped off, so the shipped build had no cross-namespace wall on
+        the fusion path for any key at all; the flag is deleted.
+        """
+        for key in ("country", "origin_country", "operator_branch", "service_branch", "domain"):
             v = self.attrs.get(key)
             if v:
-                return str(v)
+                return fold_value(v) if normalise is None else normalise(key, v)
         return None
 
 
-def namespace_compatible(a: Entity, b: Entity) -> bool:
+#: ``(attr, value) -> canonical namespace key`` — C7's normaliser, supplied by the caller that holds the
+#: config. A callable rather than a config handle so ``entities`` stays free of ``rconfig`` (import order).
+NamespaceNormaliser = Callable[[str, Any], str]
+
+
+def namespace_compatible(a: Entity, b: Entity, normalise: NamespaceNormaliser | None = None) -> bool:
     """Same declared namespace, or at least one side unstated.
 
     Weaker than the exact-name bootstrap's ``==`` on purpose: an unstated namespace is a **wildcard**,
     not a conflict (most minted endpoint mentions carry no attrs at all), so a missing attribute never
     fabricates a difference. Two *stated* and different namespaces (China vs Pakistan) still block.
     """
-    na, nb = a.namespace(), b.namespace()
+    na, nb = a.namespace(normalise), b.namespace(normalise)
     return na is None or nb is None or na == nb
 
 
@@ -98,6 +224,16 @@ class Edge:
     object: str
     edge_instance: str | None
     latest_iso: str | None  # event_time upper bound (for relocation/temporal reasoning)
+    # ADDITIVE (RK-COREF/S3, G18). The wall asks whether two STATED relationships hold at **overlapping
+    # times**, which needs the interval, not just its upper bound — and whether the relationship was
+    # *stated* at all, because a rebuild-derived or proposer-inferred basing is not a source saying "this
+    # unit is there" and must never wall a merge on its own. Pure data; no decision is taken here.
+    earliest_iso: str | None = None  # event_time LOWER bound
+    kind: str = ""  # the claim's kind: "observation" (stated) | "inference" (derived) | …
+    # The DOCUMENTS this triple was stated in. C9 needs it on the edge, not only on the entity: an
+    # authoritative coreference bind may instantiate only over entity ids attested in the *contributing*
+    # document, and the contributing document is a property of the coref link itself.
+    doc_ids: frozenset[str] = frozenset()
     # The source that asserted this triple. Load-bearing for identity (D-2.5/D-P3.4): a ``same-as`` is an
     # ordinary evidence claim, so the weight its identity assertion carries in ``source_asserted_score``
     # is the *asserting source's* credibility grade — not a flat 1.0 for everyone.
@@ -137,28 +273,60 @@ def build(claims: list[ClaimRecord], lane: EdgeLaneIndex | None = None) -> Entit
     for c in claims:
         p = c.payload
         if p.form == "entity":
-            eid = base_ref(c, lane).entity_id or f"ent:{p.entity_type}:{p.name}"
+            minted_id = mint_entity_id(p.entity_type, p.name)
+            eid = base_ref(c, lane).entity_id or minted_id
             ent = entities.get(eid)
             if ent is None:
-                ent = Entity(eid=eid, etype=p.entity_type, name=p.name)
+                # ``base_type`` is recorded only where the id IS this mint's own key — an extractor-supplied
+                # ``resolved_ref`` may name a stable registry id (``var_hq9p``), which no (type, name) pair
+                # produced and which a refinement therefore cannot disagree with. Compared against the mint,
+                # never parsed back out of it: an empty name yields no key either way.
+                keyed = bool(p.entity_type) and bool(p.name) and eid == minted_id
+                ent = Entity(
+                    eid=eid, etype=p.entity_type, name=p.name,
+                    base_type=p.entity_type if keyed else None,
+                )
                 entities[eid] = ent
             if c.claim_id not in ent.claim_ids:
                 ent.claim_ids.append(c.claim_id)
             ent.source_ids.add(c.source_id)
+            # S3 decision (b)/C9: the DOCUMENT axis, captured at the one boundary where it was dropped.
+            ent.doc_ids.update(ref.file for ref in c.doc_refs() if ref.file)
             for k, v in p.attrs.items():
-                ent.attrs.setdefault(k, v)  # first claim wins (deterministic in replay order)
+                ent.attrs.setdefault(k, v)  # scalar contract UNCHANGED: first claim wins (replay order)
+                # ADDITIVE (Stage 3-prep): retain EVERY asserted value + its time axes, role-agnostic — a
+                # later/conflicting value is just another entry, never a silently-dropped one.
+                ent.attr_history.setdefault(k, []).append(
+                    AttrClaim(
+                        value=v,
+                        claim_id=c.claim_id,
+                        event_time=c.event_time,
+                        report_time=c.report_time,
+                        source_id=c.source_id,
+                    )
+                )
         elif p.form == "triple":
             rr = base_ref(c, lane)
+            lo, hi = canonical_iso_bounds(c.event_time)
             edges.append(
                 Edge(
                     subject=p.subject,
                     predicate=p.predicate,
                     object=p.object,
                     edge_instance=rr.edge_instance,
-                    latest_iso=canonical_iso_bounds(c.event_time)[1],
+                    latest_iso=hi,
                     source_id=c.source_id,
                     claim_id=c.claim_id,
                     attributes=c.attributes,
+                    earliest_iso=lo,
+                    kind=c.kind,
+                    doc_ids=frozenset(ref.file for ref in c.doc_refs() if ref.file),
                 )
             )
+
+    # Time-order each retained attribute series (oldest→newest). Deterministic; carries no decision.
+    for ent in entities.values():
+        for series in ent.attr_history.values():
+            series.sort(key=_attr_history_sort_key)
+
     return EntityGraph(entities=entities, edges=edges)
