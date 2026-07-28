@@ -150,6 +150,31 @@ identity_source_weight_default: 1.0  # weight for a source the registry has neve
 identity_raise_min_weight: 0.0       # min R for a same-as to be worth an analyst's time. 0.0 = surface them
                                      # all (recall-biased triage); raise it if the merge queue ever floods.
 
+# ── D-13.21 — a stated `same-as` is graded, not categorically demoted ────────────────────────────
+# In-document coreference could BOOTSTRAP a merge off an explicit statement of equivalence while the
+# extractor's `same-as` — the same evidence, often the same sentence — could never merge, whatever
+# asserted it and however many independent sources agreed. Identity was the one assertion in the system
+# exempt from the credibility machinery, and the cost was a graph fragmented by construction: a curated
+# register stating that two names are one design, with the design's reference fingerprint on one node and
+# a site's identification of that design on the other, and nothing permitted to act on it.
+#
+# `chanakya.resolve._identity_confirmations` now grades each asserted pair by the ORDINARY machinery —
+# score the asserting claims, pool them into independent looks, run the ordinary status machine — so a
+# pair fuses on exactly the terms any other fact reaches `confirmed` on (>= min_independent_groups looks
+# clearing the `confirmed` threshold in credibility.yaml) and on no others. NO NUMBER LIVES HERE: the
+# scale is R(source) from the rubric and the cutoffs are credibility.yaml's, never a second copy (G6).
+#
+# STRICTER than what it replaces, not looser. A single document of ANY grade fuses nothing — it lands at
+# `probable` and stays an open question on the analyst's desk, which is what keeps the co-located-battery
+# harm out of reach — whereas the curated `alias_table` above fuses on one editorial decision and no
+# evidence at all. Every downstream rail is inherited: a vetoed pair never enters (a stated do-not-merge
+# outranks any number of stated same-as) and the bootstrap runs its usual veto / transitive-veto /
+# cross-type fusion checks.
+#
+# Set false to restore propose-only identity — a legitimate choice on an unfamiliar or actively
+# adversarial corpus. Absent => ON, because OFF's failure mode (silent fragmentation) is the invisible one.
+confirmed_identity_may_fuse: true
+
 # D4 banked correction — a bare NAME match must never spend analyst attention. When true, a pair whose
 # ONLY nonzero identity signal is `attribute` (i.e. relational == 0 AND source_asserted == 0) may NOT reach
 # `probable`/HITL — it is capped at `possible` (the watch-list). `temporal_consistency` is a near-constant
