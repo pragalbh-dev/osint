@@ -5,17 +5,17 @@
       "posted_at": "2025-05-11 (~14:22 PKT)",
       "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
     },
-    "claim_id": "d13-reshare-b-l2",
+    "claim_id": "d13-reshare-b-l5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 2,
+      "line": 5,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        7,
+        127,
         349
       ]
     },
@@ -40,7 +40,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -59,6 +59,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -74,7 +75,7 @@
     "attributes": {
       "status_url": "https://x.com/FauziDefenceX/status/1921490033817612288"
     },
-    "claim_id": "d13-reshare-b-l5",
+    "claim_id": "d13-reshare-b-l5-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -109,7 +110,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -120,23 +121,30 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly engaged, site allegedly hit"
+        "activity": "engaged near / site allegedly hit in overnight strike"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
-        "proposed_alias": "near Lahore",
-        "raw": "near Lahore",
+        "proposed_alias": "Lahore",
+        "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HQ-9/P HIMADS battery",
-        "Indian jet"
+        "HQ-9/P HIMADS battery"
       ],
       "time_interval": {
         "approximate": false,
@@ -159,6 +167,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -175,17 +184,17 @@
       "posted_at": "2025-05-11 (~14:24 PKT)",
       "status_url": "https://x.com/Sherdil_Watch/status/1921490511028912128"
     },
-    "claim_id": "d13-reshare-b-l9",
+    "claim_id": "d13-reshare-b-l12",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 9,
+      "line": 12,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        358,
+        478,
         679
       ]
     },
@@ -210,7 +219,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -229,6 +238,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -244,7 +254,7 @@
     "attributes": {
       "status_url": "https://x.com/Sherdil_Watch/status/1921490511028912128"
     },
-    "claim_id": "d13-reshare-b-l12",
+    "claim_id": "d13-reshare-b-l12-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -279,7 +289,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -290,23 +300,30 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly struck"
+        "activity": "reportedly struck overnight by IAF jet"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "near Lahore",
         "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HQ-9/P HIMADS site",
-        "IAF jet"
+        "HQ-9/P HIMADS site"
       ],
       "time_interval": {
         "approximate": false,
@@ -329,6 +346,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -345,17 +363,17 @@
       "posted_at": "2025-05-11 (~14:26 PKT)",
       "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
     },
-    "claim_id": "d13-reshare-b-l16",
+    "claim_id": "d13-reshare-b-l19",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 16,
+      "line": 19,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        688,
+        812,
         1030
       ]
     },
@@ -380,7 +398,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -399,6 +417,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -414,7 +433,7 @@
     "attributes": {
       "status_url": "https://x.com/PakAirDefenceHQ/status/1921491002234331904"
     },
-    "claim_id": "d13-reshare-b-l19",
+    "claim_id": "d13-reshare-b-l19-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -449,7 +468,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -460,23 +479,30 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "engaged, site allegedly hit"
+        "activity": "engaged / site allegedly hit"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore sector",
         "raw": "Lahore sector",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HIMADS (HQ-9P) battery",
-        "IAF jet"
+        "HIMADS (HQ-9P) battery"
       ],
       "time_interval": {
         "approximate": false,
@@ -499,6 +525,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -515,17 +542,17 @@
       "posted_at": "2025-05-11 (~14:29 PKT)",
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l23",
+    "claim_id": "d13-reshare-b-l26",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 23,
+      "line": 26,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1039,
+        1171,
         1322
       ]
     },
@@ -550,7 +577,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -569,6 +596,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -584,7 +612,7 @@
     "attributes": {
       "status_url": "https://x.com/globaldefencewatch1/status/1921491789012345600"
     },
-    "claim_id": "d13-reshare-b-l26",
+    "claim_id": "d13-reshare-b-l26-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -619,7 +647,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -630,23 +658,30 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly hit, allegedly engaged"
+        "activity": "reportedly hit, jet allegedly engaged battery"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HQ-9/P site",
-        "jet"
+        "HQ-9/P site"
       ],
       "time_interval": {
         "approximate": false,
@@ -669,6 +704,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -685,17 +721,17 @@
       "posted_at": "2025-05-11 (~14:31 PKT)",
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l29",
+    "claim_id": "d13-reshare-b-l32",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 29,
+      "line": 32,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1331,
+        1455,
         1601
       ]
     },
@@ -720,7 +756,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -739,6 +775,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -754,7 +791,7 @@
     "attributes": {
       "status_url": "https://x.com/ArmchairShaheen/status/1921492301897543680"
     },
-    "claim_id": "d13-reshare-b-l32",
+    "claim_id": "d13-reshare-b-l32-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -789,7 +826,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -800,23 +837,30 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "allegedly struck, engaged"
+        "activity": "allegedly struck, jet engaged"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "near Lahore",
         "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HIMADS/HQ9P battery",
-        "jet"
+        "HIMADS/HQ9P battery"
       ],
       "time_interval": {
         "approximate": false,
@@ -839,6 +883,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -855,17 +900,17 @@
       "posted_at": "2025-05-11 (~14:33 PKT)",
       "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
     },
-    "claim_id": "d13-reshare-b-l35",
+    "claim_id": "d13-reshare-b-l38",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 35,
+      "line": 38,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1610,
+        1736,
         1933
       ]
     },
@@ -890,7 +935,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -909,6 +954,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -924,7 +970,7 @@
     "attributes": {
       "status_url": "https://x.com/DefenceUpdatesPK/status/1921492788213456896"
     },
-    "claim_id": "d13-reshare-b-l38",
+    "claim_id": "d13-reshare-b-l38-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -959,7 +1005,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -970,23 +1016,30 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "reportedly engaged/hit"
+        "activity": "reportedly engaged/hit overnight by IAF jet"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HQ-9/P HIMADS",
-        "IAF jet"
+        "HQ-9/P HIMADS"
       ],
       "time_interval": {
         "approximate": false,
@@ -1009,6 +1062,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1025,17 +1079,17 @@
       "posted_at": "2025-05-08 (~05:15 IST)",
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l43",
+    "claim_id": "d13-reshare-b-l46",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 43,
+      "line": 46,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1947,
+        2059,
         2263
       ]
     },
@@ -1060,7 +1114,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1079,6 +1133,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1094,7 +1149,7 @@
     "attributes": {
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46",
+    "claim_id": "d13-reshare-b-l46-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1129,7 +1184,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1140,7 +1195,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "shooting down"
+        "activity": "shooting down Pak drone & missile attacks"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -1155,7 +1210,7 @@
         "wgs84_lon": null
       },
       "participants": [
-        "Pak drone & missile attacks"
+        "air defence"
       ],
       "time_interval": {
         "approximate": false,
@@ -1178,6 +1233,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1193,7 +1249,7 @@
     "attributes": {
       "status_url": "https://x.com/ShivAroor/status/1920407122233176147"
     },
-    "claim_id": "d13-reshare-b-l46-2",
+    "claim_id": "d13-reshare-b-l46-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1203,8 +1259,8 @@
       "region": null,
       "row": null,
       "span": [
-        2209,
-        2261
+        2200,
+        2262
       ]
     },
     "event_time": {
@@ -1228,7 +1284,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1244,17 +1300,25 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "Pak's air defence"
+        "air defence"
       ],
       "time_interval": {
         "approximate": false,
@@ -1277,6 +1341,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1290,19 +1355,19 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "2025-05-08 (~05:20 IST)"
+      "posted_at": "2025-05-08 (~05:20 IST, exact timestamp via search only) [PARAPHRASED]"
     },
-    "claim_id": "d13-reshare-b-l49",
+    "claim_id": "d13-reshare-b-l52",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 49,
+      "line": 52,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2272,
+        2449,
         2631
       ]
     },
@@ -1327,7 +1392,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1346,6 +1411,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1359,7 +1425,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d13-reshare-b-l52",
+    "claim_id": "d13-reshare-b-l52-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
@@ -1394,7 +1460,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1410,17 +1476,25 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "near Lahore",
         "raw": "near Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "Pakistani air defence radar/SAM assets"
+        "air defence radar/SAM assets"
       ],
       "time_interval": {
         "approximate": false,
@@ -1443,76 +1517,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-11",
-      "kind": "exact",
-      "raw": "2025-05-11"
-    },
-    "resolved_ref": null,
-    "source_id": "d13_reshare_b",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": {
-      "posted_at": "2025-05-11 (~19:40 IST)",
-      "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
-    },
-    "claim_id": "d13-reshare-b-l55",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
-      "frame": null,
-      "line": 55,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2640,
-        2951
-      ]
-    },
-    "event_time": {
-      "approximate": false,
-      "as_of": null,
-      "end": null,
-      "kind": "period",
-      "period_type": "range",
-      "start": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "year",
-        "half": null,
-        "kind": "label",
-        "month": null,
-        "quarter": null,
-        "raw": "2025",
-        "year": 2025
-      }
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "source_type": "social"
-      },
-      "entity_type": "source",
-      "form": "entity",
-      "name": "@indiandefsource"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1539,19 +1544,19 @@
       "row": null,
       "span": [
         2764,
-        2908
+        2863
       ]
     },
     "event_time": {
       "boundary_source": "relative",
-      "iso_date": "2025-05-08",
+      "iso_date": "2025-05-10",
       "kind": "exact",
-      "raw": "May 8"
+      "raw": "yesterday"
     },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1562,32 +1567,41 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "strike"
+        "activity": "footage from yesterday resurfacing again today, some accounts claiming \"new\" strike"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
         "HQ9 site"
       ],
       "time_interval": {
         "boundary_source": "relative",
-        "iso_date": "2025-05-08",
+        "iso_date": "2025-05-10",
         "kind": "exact",
-        "raw": "May 8"
+        "raw": "yesterday"
       }
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1601,21 +1615,21 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "2025-05-11 (~19:52 IST)",
-      "status_url": "https://x.com/OSINT_Desi/status/1921570091234567890"
+      "posted_at": "2025-05-11 (~19:40 IST)",
+      "status_url": "https://x.com/indiandefsource/status/1921567234098765312"
     },
-    "claim_id": "d13-reshare-b-l61",
+    "claim_id": "d13-reshare-b-l58-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
       "frame": null,
-      "line": 61,
+      "line": 58,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2961,
-        3246
+        2764,
+        2951
       ]
     },
     "event_time": {
@@ -1639,7 +1653,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1654,10 +1668,11 @@
       },
       "entity_type": "source",
       "form": "entity",
-      "name": "@OSINT_Desi"
+      "name": "@indiandefsource"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1708,7 +1723,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1718,18 +1733,28 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "activity": "video again captioned as \"breaking\""
+      },
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
         "HIMADS"
@@ -1755,6 +1780,78 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-11",
+      "kind": "exact",
+      "raw": "2025-05-11"
+    },
+    "resolved_ref": null,
+    "source_id": "d13_reshare_b",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "2025-05-11 (~19:52 IST)",
+      "status_url": "https://x.com/OSINT_Desi/status/1921570091234567890"
+    },
+    "claim_id": "d13-reshare-b-l64-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d13_reshare_b.txt",
+      "frame": null,
+      "line": 64,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3075,
+        3246
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2025",
+        "year": 2025
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@OSINT_Desi"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",
@@ -1769,7 +1866,6 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "Ground-level view of heavy military transport vehicles in a parade on a city street.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
@@ -1777,7 +1873,7 @@
         "phash": "d5da98c72b1166c9",
         "sha256": "d51931db96679da6fbb25b17b3aa54593b6efd450fe20040b754ed1244959696"
       },
-      "media_type": "image/png"
+      "media_type": "image/jpeg"
     },
     "claim_id": "d13-reshare-b-full",
     "doc_ref": {
@@ -1792,14 +1888,14 @@
     },
     "event_time": {
       "boundary_source": "relative",
-      "iso_date": "2025-05-08",
+      "iso_date": "2025-05-10",
       "kind": "exact",
-      "raw": "May 8"
+      "raw": "yesterday"
     },
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1810,45 +1906,46 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": 4.0,
           "min": 3.0,
-          "unit": "large multi-axle military vehicles",
+          "unit": "heavy multi-axle vehicles carrying cylindrical containers",
           "value": null
         },
-        "description": "A ground-level photograph capturing a military parade along a wide, paved city street. Multiple green, multi-axle heavy transport trucks are driving in a column, with each vehicle carrying four large cylindrical canisters arranged horizontally in two tiers. In the foreground, a dense crowd of onlookers is shown from behind, many holding up smartphones to capture photos and videos of the event. Several soldiers in ceremonial uniforms are marching alongside or near the vehicles. The street is decorated with various flags on lamp posts and poles, and additional spectators are seated in stands in the background.",
-        "frame_kind": "ground-level",
+        "description": "Ground-level photograph depicting a parade on a wide asphalt street lined with crowds of spectators. Multiple large green-camouflaged multi-axle heavy vehicles, each carrying four parallel cylindrical canisters mounted on their rear beds, are traveling in formation. Uniformed personnel walk beside the vehicles, while spectators in the foreground hold up mobile phones and small flags. Flags and streetlights decorate the street against a backdrop of multi-story buildings.",
+        "frame_kind": "ground-level photograph",
         "geometry_tokens": [
-          "street",
           "road",
-          "urban"
+          "wheeled_vehicle",
+          "cylindrical_container",
+          "urban_area"
         ],
-        "gsd_note": "N/A (ground-level photograph)",
+        "gsd_note": "Ground-level horizontal photograph; overhead GSD not applicable.",
         "observed_features": [
           {
-            "arrangement": "column",
-            "feature": "multi-axle military vehicle",
-            "note": "Heavy trucks carrying large horizontal cylindrical canisters on their rear beds",
-            "shape": "rectangular chassis with multiple large wheels"
+            "arrangement": "column formation",
+            "feature": "heavy multi-axle vehicle",
+            "note": "large green dark-patterned chassis on multiple rubber wheels",
+            "shape": "rectangular body with forward cab"
           },
           {
-            "arrangement": "linear",
-            "feature": "paved road",
-            "note": "City street serving as a parade route",
-            "shape": "linear"
+            "arrangement": "grouped in four parallel cylinders per vehicle",
+            "feature": "cylindrical container",
+            "note": "mounted horizontally on vehicle rear bed",
+            "shape": "cylindrical"
           },
           {
-            "arrangement": "grouped",
-            "feature": "crowd",
-            "note": "Spectators lining the street and sitting in stands in the background"
+            "arrangement": "linear along road edge",
+            "feature": "spectators and sidewalk",
+            "note": "crowd holding recording devices and flags",
+            "shape": "linear density"
           }
         ],
-        "occupancy_state": "occupied",
+        "occupancy_state": "active / occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level photograph capturing a military parade along a wide, paved city street. Multiple green, multi-axle heavy transport trucks are driving in a column, with each vehicle carrying four large cylindrical canisters arranged horizontally in two tiers. In the foreground, a dense crowd of onlookers is shown from behind, many holding up smartphones to capture photos and videos of the event. Several soldiers in ceremonial uniforms are marching alongside or near the vehicles. The street is decorated with various flags on lamp posts and poles, and additional spectators are seated in stands in the background.",
+        "site_signature_geometry": "Ground-level photograph depicting a parade on a wide asphalt street lined with crowds of spectators. Multiple large green-camouflaged multi-axle heavy vehicles, each carrying four parallel cylindrical canisters mounted on their rear beds, are traveling in formation. Uniformed personnel walk beside the vehicles, while spectators in the foreground hold up mobile phones and small flags. Flags and streetlights decorate the street against a backdrop of multi-story buildings.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -1857,6 +1954,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-11",

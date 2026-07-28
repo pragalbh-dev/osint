@@ -12,15 +12,15 @@
       "region": null,
       "row": null,
       "span": [
-        352,
-        378
+        239,
+        344
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -31,29 +31,23 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "service_branch": "Air Force"
+        "source_type": "imagery analysis"
       },
-      "entity_type": "unit",
+      "entity_type": "source",
       "form": "entity",
-      "name": "Pakistan Air Force"
+      "name": "satellite-imagery analysts"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "equips",
-      "_object_mention": "d21-techdata-authority-l6",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d21-techdata-authority-l8-4",
-      "_undated_perishable": true,
-      "source_quote": "Pakistan Air Force's (PAF) HQ-9/P long-range surface-to-air missile battalions"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d21-techdata-authority-l6-2",
     "doc_ref": {
       "bbox": null,
@@ -64,15 +58,15 @@
       "region": null,
       "row": null,
       "span": [
-        352,
-        430
+        239,
+        344
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -82,29 +76,24 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Pakistan Air Force",
-      "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "source_type": "trade reporting"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "regional trade sources"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "based-at",
-      "_event_time_rung": "stated",
-      "_object_mention": "d21-techdata-authority-l6-5",
-      "_relane_reason": "'based-at'@(variant->basing_site) -> observed-at",
-      "_subject_mention": "d21-techdata-authority-l8-4",
-      "source_quote": "Pakistan Air Force's (PAF) HQ-9/P long-range surface-to-air missile battalions, first confirmed operational at bases in the Karachi and central Punjab air defence sectors in late 2021"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d21-techdata-authority-l6-3",
     "doc_ref": {
       "bbox": null,
@@ -116,24 +105,14 @@
       "row": null,
       "span": [
         352,
-        535
+        378
       ]
     },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "half",
-      "half": 2,
-      "kind": "label",
-      "month": null,
-      "quarter": null,
-      "raw": "late 2021",
-      "year": 2021
-    },
+    "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -143,29 +122,24 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "central Punjab air defence sector",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "based-at",
-      "_event_time_rung": "stated",
-      "_object_mention": "d21-techdata-authority-l6-6",
-      "_relane_reason": "'based-at'@(variant->basing_site) -> observed-at",
-      "_subject_mention": "d21-techdata-authority-l8-4",
-      "source_quote": "Pakistan Air Force's (PAF) HQ-9/P long-range surface-to-air missile battalions, first confirmed operational at bases in the Karachi and central Punjab air defence sectors in late 2021"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d21-techdata-authority-l6-4",
     "doc_ref": {
       "bbox": null,
@@ -177,24 +151,14 @@
       "row": null,
       "span": [
         352,
-        535
+        378
       ]
     },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "half",
-      "half": 2,
-      "kind": "label",
-      "month": null,
-      "quarter": null,
-      "raw": "late 2021",
-      "year": 2021
-    },
+    "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -204,22 +168,40 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Karachi air defence sector",
-      "object_value": null,
-      "predicate": "observed-at",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Air Force"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pakistan Air Force",
+        "PAF"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Pakistan Air Force's (PAF)"
+      ],
+      "_coref_referent": "ref:d21-techdata-authority-c2",
+      "_object_mention": "d21-techdata-authority-l6-3",
+      "_subject_mention": "d21-techdata-authority-l6-4",
+      "source_quote": "Pakistan Air Force's (PAF)"
+    },
     "claim_id": "d21-techdata-authority-l6-5",
     "doc_ref": {
       "bbox": null,
@@ -230,15 +212,15 @@
       "region": null,
       "row": null,
       "span": [
-        463,
-        535
+        352,
+        378
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -246,23 +228,31 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
-      "attrs": {},
-      "entity_type": "basing_site",
-      "form": "entity",
-      "name": "central Punjab air defence sector"
+      "form": "triple",
+      "object": "PAF",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pakistan Air Force"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "d21-techdata-authority-l6-4",
+      "d21-techdata-authority-l6-3"
+    ],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l6-3",
+      "_subject_mention": "d21-techdata-authority-l6-4"
+    },
     "claim_id": "d21-techdata-authority-l6-6",
     "doc_ref": {
       "bbox": null,
@@ -273,15 +263,15 @@
       "region": null,
       "row": null,
       "span": [
-        463,
-        535
+        352,
+        378
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -291,13 +281,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "basing_site",
-      "form": "entity",
-      "name": "Karachi air defence sector"
+      "form": "triple",
+      "object": "PAF",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Pakistan Air Force"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -316,15 +308,358 @@
       "region": null,
       "row": null,
       "span": [
-        597,
-        680
+        352,
+        419
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-9/P"
+        ],
+        "operator_branch": "Pakistan Air Force",
+        "range_km": {
+          "approx": true,
+          "count_state": null,
+          "max": 125.0,
+          "min": 100.0,
+          "unit": "km",
+          "value": null
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l6-7",
+      "_subject_mention": "d21-techdata-authority-l6-7"
+    },
+    "claim_id": "d21-techdata-authority-l6-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        352,
+        419
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        352,
+        430
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF long-range surface-to-air missile battalions"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_object_mention": "d21-techdata-authority-l6-4",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d21-techdata-authority-l6-7",
+      "_undated_perishable": true,
+      "source_quote": "Pakistan Air Force's (PAF) HQ-9/P long-range surface-to-air missile battalions"
+    },
+    "claim_id": "d21-techdata-authority-l6-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        352,
+        430
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Air Force",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        432,
+        535
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [
+            {
+              "confidence": 0.9,
+              "label": "Karachi (metropolitan area)",
+              "lat": 24.8607,
+              "lon": 67.0011,
+              "source": "gazetteer"
+            }
+          ],
+          "precision_class": null,
+          "proposed_alias": "Karachi",
+          "raw": "Karachi",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": 24.8607,
+          "wgs84_lon": 67.0011
+        },
+        "occupancy_state": "operational",
+        "site_type": "air defence base"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "bases in the Karachi air defence sector"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        432,
+        535
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [
+            {
+              "confidence": 0.9,
+              "label": "Punjab province, Pakistan",
+              "lat": 31.1471,
+              "lon": 72.7097,
+              "source": "gazetteer"
+            }
+          ],
+          "precision_class": null,
+          "proposed_alias": "central Punjab",
+          "raw": "central Punjab",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": 31.1471,
+          "wgs84_lon": 72.7097
+        },
+        "occupancy_state": "operational",
+        "site_type": "air defence base"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "bases in the central Punjab air defence sector"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        432,
+        535
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "half",
+      "half": 2,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "late 2021",
+      "year": 2021
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -335,12 +670,218 @@
     "kind": "observation",
     "payload": {
       "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9"
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": {
+        "geocode_candidates": [],
+        "precision_class": null,
+        "proposed_alias": "Karachi and central Punjab air defence sectors",
+        "raw": "Karachi and central Punjab air defence sectors",
+        "resolved_place_ref": null,
+        "surface_format": "toponym",
+        "wgs84_lat": null,
+        "wgs84_lon": null
+      },
+      "participants": [
+        "HQ-9/P",
+        "Pakistan Air Force",
+        "PAF long-range surface-to-air missile battalions"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "half",
+        "half": 2,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "late 2021",
+        "year": 2021
+      }
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "based-at",
+      "_event_time_rung": "stated",
+      "_object_mention": "d21-techdata-authority-l6-12",
+      "_relane_reason": "'based-at'@(variant->basing_site) -> observed-at",
+      "_subject_mention": "d21-techdata-authority-l6-7",
+      "source_quote": "first confirmed operational at bases in the Karachi and central Punjab air defence sectors in late 2021"
+    },
+    "claim_id": "d21-techdata-authority-l6-14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        432,
+        535
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "half",
+      "half": 2,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "late 2021",
+      "year": 2021
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "bases in the central Punjab air defence sector",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "based-at",
+      "_event_time_rung": "stated",
+      "_object_mention": "d21-techdata-authority-l6-11",
+      "_relane_reason": "'based-at'@(variant->basing_site) -> observed-at",
+      "_subject_mention": "d21-techdata-authority-l6-7",
+      "source_quote": "first confirmed operational at bases in the Karachi and central Punjab air defence sectors in late 2021"
+    },
+    "claim_id": "d21-techdata-authority-l6-15",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        432,
+        535
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "half",
+      "half": 2,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "late 2021",
+      "year": 2021
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "bases in the Karachi air defence sector",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "bases in the Karachi air defence sector",
+        "bases in the central Punjab air defence sector"
+      ],
+      "_object_mention": "d21-techdata-authority-l6-12",
+      "_subject_mention": "d21-techdata-authority-l6-11",
+      "source_quote": "bases in the Karachi and central Punjab air defence sectors"
+    },
+    "claim_id": "d21-techdata-authority-l6-16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        463,
+        522
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "bases in the central Punjab air defence sector",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "bases in the Karachi air defence sector"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d21-techdata-authority-l6-11",
+      "d21-techdata-authority-l6-12"
+    ],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -349,7 +890,151 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d21-techdata-authority-l6-8",
+    "claim_id": "d21-techdata-authority-l6-17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        597,
+        680
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-9"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l6-17",
+      "_subject_mention": "d21-techdata-authority-l6-21"
+    },
+    "claim_id": "d21-techdata-authority-l6-18",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        597,
+        680
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "manufactures",
+      "subject": "China Aerospace Science and Industry Corporation"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l6-17",
+      "_subject_mention": "d21-techdata-authority-l6-17"
+    },
+    "claim_id": "d21-techdata-authority-l6-19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        597,
+        680
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-20",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
@@ -367,7 +1052,54 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "developer"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-21",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        624,
+        680
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -387,6 +1119,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -395,9 +1128,23 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d21-techdata-authority-l6-8"
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "China Aerospace Science and Industry Corporation",
+        "CASIC"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "China Aerospace Science and Industry Corporation (CASIC)"
+      ],
+      "_coref_referent": "ref:d21-techdata-authority-c1",
+      "_object_mention": "d21-techdata-authority-l6-20",
+      "_subject_mention": "d21-techdata-authority-l6-21",
+      "source_quote": "China Aerospace Science and Industry Corporation (CASIC)"
     },
-    "claim_id": "d21-techdata-authority-l6-9",
+    "claim_id": "d21-techdata-authority-l6-22",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
@@ -415,7 +1162,57 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "CASIC",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "China Aerospace Science and Industry Corporation"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d21-techdata-authority-l6-21",
+      "d21-techdata-authority-l6-20"
+    ],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d21-techdata-authority-l6-21"
+    },
+    "claim_id": "d21-techdata-authority-l6-23",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        624,
+        680
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -433,6 +1230,105 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l6-24",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        682,
+        759
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF air defence squadrons"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "equips",
+      "_object_mention": "d21-techdata-authority-l6-24",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d21-techdata-authority-l6-7",
+      "_undated_perishable": true,
+      "source_quote": "reportedly equips at least two, and possibly three, PAF air defence squadrons"
+    },
+    "claim_id": "d21-techdata-authority-l6-25",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 6,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        682,
+        759
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAF air defence squadrons",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -442,10 +1338,10 @@
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "component-of",
-      "_object_mention": "d21-techdata-authority-l8-4",
+      "_object_mention": "d21-techdata-authority-l6-7",
       "_relane_reason": "'component-of'@(component->variant) -> equips",
-      "_subject_mention": "d21-techdata-authority-l8-3",
-      "source_quote": "the HQ-9/P battery as built around the HT-233 phased-array engagement radar"
+      "_subject_mention": "d21-techdata-authority-l8-4",
+      "source_quote": "describe the HQ-9/P battery as built around the HT-233 phased-array engagement radar"
     },
     "claim_id": "d21-techdata-authority-l8",
     "doc_ref": {
@@ -457,7 +1353,7 @@
       "region": null,
       "row": null,
       "span": [
-        859,
+        850,
         934
       ]
     },
@@ -465,7 +1361,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -483,6 +1379,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -491,7 +1388,21 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d21-techdata-authority-l8-3"
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HT-233 phased-array engagement radar",
+        "fire-control and guidance radar"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "HT-233 phased-array engagement radar (alternatively referenced in some Pakistani service literature simply as the \"fire-control and guidance radar\")"
+      ],
+      "_coref_referent": "ref:d21-techdata-authority-c3",
+      "_object_mention": "d21-techdata-authority-l8-6",
+      "_subject_mention": "d21-techdata-authority-l8-4",
+      "source_quote": "HT-233 phased-array engagement radar (alternatively referenced in some Pakistani service literature simply as the \"fire-control and guidance radar\")"
     },
     "claim_id": "d21-techdata-authority-l8-2",
     "doc_ref": {
@@ -511,7 +1422,58 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "fire-control and guidance radar",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HT-233 phased-array engagement radar"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d21-techdata-authority-l8-4",
+      "d21-techdata-authority-l8-6"
+    ],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l8-6",
+      "_subject_mention": "d21-techdata-authority-l8-4"
+    },
+    "claim_id": "d21-techdata-authority-l8-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        898,
+        1046
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -529,51 +1491,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d21_techdata_authority",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d21-techdata-authority-l8-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
-      "frame": null,
-      "line": 8,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        898,
-        1126
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "functional_role": "target tracking, missile uplink and terminal guidance functions"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "HT-233 phased-array engagement radar"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -592,15 +1510,15 @@
       "region": null,
       "row": null,
       "span": [
-        1245,
-        1349
+        898,
+        1126
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -611,22 +1529,306 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "family": "HQ-9",
+        "component_class": "phased-array engagement radar",
+        "functional_role": "target tracking, missile uplink and terminal guidance functions",
+        "model_designation": "HT-233"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233 phased-array engagement radar"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l8-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        936,
+        997
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "service literature"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Pakistani service literature"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l8-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        936,
+        1045
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "functional_role": "target tracking, missile uplink and terminal guidance"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "fire-control and guidance radar"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l8-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1175,
+        1243
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement radar",
+        "model_designation": "30N6E"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "30N6E"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l8-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1175,
+        1243
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "S-300PMU"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-300PMU"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l8-8",
+      "_subject_mention": "d21-techdata-authority-l8-8"
+    },
+    "claim_id": "d21-techdata-authority-l8-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1175,
+        1243
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "S-300PMU",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-300PMU"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l8-10",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 8,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1405,
+        1469
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
         "range_km": {
           "approx": false,
           "count_state": null,
-          "max": 125.0,
-          "min": 100.0,
+          "max": null,
+          "min": null,
           "unit": "km",
-          "value": null
+          "value": 200.0
         }
       },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9/P"
+      "name": "extended-range variant"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -645,15 +1847,15 @@
       "region": null,
       "row": null,
       "span": [
-        2069,
-        2109
+        1990,
+        2184
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -664,14 +1866,16 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "origin_country": "China"
+        "origin_country": "China",
+        "role": "retains configuration control over the underlying software baseline"
       },
       "entity_type": "manufacturer",
       "form": "entity",
-      "name": "CPMIEC"
+      "name": "Chinese state technical-data authority"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -690,15 +1894,15 @@
       "region": null,
       "row": null,
       "span": [
-        2273,
-        2292
+        2061,
+        2109
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -709,21 +1913,23 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "family": "HQ-9"
+        "origin_country": "China",
+        "role": "export administrative chain"
       },
-      "entity_type": "variant",
+      "entity_type": "manufacturer",
       "form": "entity",
-      "name": "FD-2000"
+      "name": "CPMIEC"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "d21-techdata-authority-l10-3",
     "doc_ref": {
@@ -736,14 +1942,14 @@
       "row": null,
       "span": [
         2273,
-        2292
+        2345
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -753,28 +1959,29 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "event_type": "TransferEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/FD-2000 family",
-        "China",
-        "Turkmenistan",
-        "Turkmenistan"
-      ],
-      "time_interval": null
+      "attrs": {
+        "designators": [
+          "FD-2000"
+        ]
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "FD-2000"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l10-3",
+      "_subject_mention": "d21-techdata-authority-l10-3"
+    },
     "claim_id": "d21-techdata-authority-l10-4",
     "doc_ref": {
       "bbox": null,
@@ -786,14 +1993,14 @@
       "row": null,
       "span": [
         2273,
-        2292
+        2345
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -803,19 +2010,15 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "event_type": "TransferEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/FD-2000 family",
-        "China",
-        "Uzbekistan"
-      ],
-      "time_interval": null
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "FD-2000"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",
@@ -834,7 +2037,7 @@
       "region": null,
       "row": null,
       "span": [
-        3301,
+        3305,
         3358
       ]
     },
@@ -854,12 +2057,22 @@
       },
       "kind": "period",
       "period_type": "range",
-      "start": null
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2019",
+        "year": 2019
+      }
     },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -875,6 +2088,7 @@
       "location": null,
       "participants": [
         "HQ-9/P",
+        "China",
         "Pakistan"
       ],
       "time_interval": {
@@ -893,11 +2107,268 @@
         },
         "kind": "period",
         "period_type": "range",
-        "start": null
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2019",
+          "year": 2019
+        }
       }
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3721,
+        3775
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "handbook"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "regional handbooks"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3948,
+        4002
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "ADGES"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d21-techdata-authority-l16-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3948,
+        4002
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "component",
+      "form": "entity",
+      "name": "Air Defence Ground Environment System"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d21-techdata-authority-l16",
+      "_subject_mention": "d21-techdata-authority-l16-2"
+    },
+    "claim_id": "d21-techdata-authority-l16-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3948,
+        4002
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ADGES",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Air Defence Ground Environment System"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d21_techdata_authority",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Air Defence Ground Environment System",
+        "ADGES"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Air Defence Ground Environment System (ADGES)"
+      ],
+      "_coref_referent": "ref:d21-techdata-authority-c4",
+      "_object_mention": "d21-techdata-authority-l16",
+      "_subject_mention": "d21-techdata-authority-l16-2",
+      "source_quote": "Air Defence Ground Environment System (ADGES)"
+    },
+    "claim_id": "d21-techdata-authority-l16-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d21_techdata_authority.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3957,
+        4002
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "ADGES",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Air Defence Ground Environment System"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d21-techdata-authority-l16-2",
+      "d21-techdata-authority-l16"
+    ],
+    "referent_id": "ref:chunk0-d21-techdata-authority-c4",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d21_techdata_authority",

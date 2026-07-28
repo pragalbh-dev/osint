@@ -1,9 +1,7 @@
 [
   {
     "asserts": "event",
-    "attributes": {
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
-    },
+    "attributes": null,
     "claim_id": "d12-reshare-a-l1",
     "doc_ref": {
       "bbox": null,
@@ -27,7 +25,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -43,14 +41,22 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "LAHORE SITE",
         "raw": "LAHORE SITE",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
         "HQ9/P"
@@ -64,6 +70,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -77,8 +84,7 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025",
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
+      "posted_at": "May 8, 2025"
     },
     "claim_id": "d12-reshare-a-l1-2",
     "doc_ref": {
@@ -91,7 +97,7 @@
       "row": null,
       "span": [
         0,
-        275
+        243
       ]
     },
     "event_time": {
@@ -103,7 +109,65 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "social"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "@BharatStrikeWatch"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "posted_at": "May 8, 2025"
+    },
+    "claim_id": "d12-reshare-a-l1-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 1,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        243
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -122,6 +186,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -134,23 +199,36 @@
   },
   {
     "asserts": "event",
-    "attributes": {
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
-    },
+    "attributes": null,
     "claim_id": "d12-reshare-a-l2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 2,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        178,
-        204
-      ]
-    },
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+        "frame": null,
+        "line": 2,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          61,
+          176
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+        "frame": null,
+        "line": 12,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          590,
+          693
+        ]
+      }
+    ],
     "event_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -160,7 +238,87 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "massive secondary explosion visible after IAF strike"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "radar cluster"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-08",
+        "kind": "exact",
+        "raw": "May 8, 2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l2-2",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+        "frame": null,
+        "line": 2,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          178,
+          204
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+        "frame": null,
+        "line": 12,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          695,
+          723
+        ]
+      }
+    ],
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "May 8, 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -188,6 +346,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -201,66 +360,7 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025",
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
-    },
-    "claim_id": "d12-reshare-a-l6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 6,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        277,
-        555
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "May 8, 2025"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "source_type": "social"
-      },
-      "entity_type": "source",
-      "form": "entity",
-      "name": "@BharatStrikeWatch"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "2025-05-08"
-    },
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": {
-      "posted_at": "May 8, 2025",
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
+      "posted_at": "May 8, 2025"
     },
     "claim_id": "d12-reshare-a-l11",
     "doc_ref": {
@@ -273,7 +373,7 @@
       "row": null,
       "span": [
         557,
-        857
+        824
       ]
     },
     "event_time": {
@@ -285,7 +385,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -304,72 +404,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "2025-05-08"
-    },
-    "resolved_ref": null,
-    "source_id": "d12_reshare_a",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": {
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
-    },
-    "claim_id": "d12-reshare-a-l12",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        695,
-        723
-      ]
-    },
-    "event_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-08",
-      "kind": "exact",
-      "raw": "May 8, 2025"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "activity": "neutralized!!"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HIMADS battery"
-      ],
-      "time_interval": {
-        "boundary_source": "explicit",
-        "iso_date": "2025-05-08",
-        "kind": "exact",
-        "raw": "May 8, 2025"
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -383,8 +418,7 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025",
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
+      "posted_at": "May 8, 2025"
     },
     "claim_id": "d12-reshare-a-l17",
     "doc_ref": {
@@ -397,7 +431,7 @@
       "row": null,
       "span": [
         859,
-        1175
+        1140
       ]
     },
     "event_time": {
@@ -409,7 +443,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -428,6 +462,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -440,9 +475,7 @@
   },
   {
     "asserts": "event",
-    "attributes": {
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
-    },
+    "attributes": null,
     "claim_id": "d12-reshare-a-l23",
     "doc_ref": {
       "bbox": null,
@@ -466,7 +499,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -482,14 +515,22 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore site",
         "raw": "Lahore site",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
         "HQ-9/P"
@@ -503,6 +544,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -516,8 +558,7 @@
   {
     "asserts": "entity",
     "attributes": {
-      "posted_at": "May 8, 2025",
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
+      "posted_at": "May 8, 2025"
     },
     "claim_id": "d12-reshare-a-l23-2",
     "doc_ref": {
@@ -530,7 +571,7 @@
       "row": null,
       "span": [
         1177,
-        1423
+        1387
       ]
     },
     "event_time": {
@@ -542,7 +583,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -561,6 +602,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -573,9 +615,7 @@
   },
   {
     "asserts": "event",
-    "attributes": {
-      "status_url": "pic.twitter.com/9xT4vLmz2q"
-    },
+    "attributes": null,
     "claim_id": "d12-reshare-a-l23-3",
     "doc_ref": {
       "bbox": null,
@@ -599,7 +639,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -610,7 +650,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "activity": "down!!"
+        "activity": "down"
       },
       "event_type": "SightingEvent",
       "form": "event",
@@ -627,6 +667,68 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "@Raj_DefenceEye",
+        "@IndoPacGuardian"
+      ],
+      "_object_mention": "d12-reshare-a-l11",
+      "_subject_mention": "d12-reshare-a-l1-3",
+      "source_quote": "can confirm what @Raj_DefenceEye and @IndoPacGuardian posted"
+    },
+    "claim_id": "d12-reshare-a-l27",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1425,
+        1485
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "@IndoPacGuardian",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "@Raj_DefenceEye"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d12-reshare-a-l1-3",
+      "d12-reshare-a-l11"
+    ],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -642,7 +744,7 @@
     "attributes": {
       "posted_at": "May 8, 2025"
     },
-    "claim_id": "d12-reshare-a-l27",
+    "claim_id": "d12-reshare-a-l27-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
@@ -653,7 +755,7 @@
       "row": null,
       "span": [
         1425,
-        1656
+        1622
       ]
     },
     "event_time": {
@@ -665,7 +767,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -684,6 +786,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -697,7 +800,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d12-reshare-a-l27-2",
+    "claim_id": "d12-reshare-a-l27-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
@@ -720,7 +823,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -736,17 +839,26 @@
       "event_type": "SightingEvent",
       "form": "event",
       "location": {
-        "geocode_candidates": [],
+        "geocode_candidates": [
+          {
+            "confidence": 0.9,
+            "label": "Lahore",
+            "lat": 31.5204,
+            "lon": 74.3587,
+            "source": "gazetteer"
+          }
+        ],
         "precision_class": null,
         "proposed_alias": "Lahore",
         "raw": "Lahore",
         "resolved_place_ref": null,
         "surface_format": "toponym",
-        "wgs84_lat": null,
-        "wgs84_lon": null
+        "wgs84_lat": 31.5204,
+        "wgs84_lon": 74.3587
       },
       "participants": [
-        "HQ9/P Lahore battery"
+        "HQ9/P",
+        "battery"
       ],
       "time_interval": {
         "boundary_source": "explicit",
@@ -757,6 +869,82 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-08",
+      "kind": "exact",
+      "raw": "2025-05-08"
+    },
+    "resolved_ref": null,
+    "source_id": "d12_reshare_a",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d12-reshare-a-l27-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d12_reshare_a.txt",
+      "frame": null,
+      "line": 27,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1513,
+        1601
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2023",
+      "year": 2023
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "secondary explosion in the frame"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "cluster"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2023",
+        "year": 2023
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -783,7 +971,7 @@
       "row": null,
       "span": [
         1663,
-        1951
+        1918
       ]
     },
     "event_time": {
@@ -795,7 +983,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -814,6 +1002,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -840,7 +1029,7 @@
       "row": null,
       "span": [
         1953,
-        2218
+        2185
       ]
     },
     "event_time": {
@@ -852,7 +1041,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -871,6 +1060,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -897,7 +1087,7 @@
       "row": null,
       "span": [
         2220,
-        2490
+        2458
       ]
     },
     "event_time": {
@@ -909,7 +1099,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -928,6 +1118,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -954,7 +1145,7 @@
       "row": null,
       "span": [
         2492,
-        2784
+        2727
       ]
     },
     "event_time": {
@@ -966,7 +1157,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -985,6 +1176,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",
@@ -999,7 +1191,6 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "Ground-level view of large multi-axle transport vehicles carrying cylindrical canister assemblies on a paved road during a parade.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "53ce84f61329ec5aca2d7365c0e3879ab6984a4fb0b30e5ca7eaf0f1cf0c01ad",
@@ -1007,7 +1198,7 @@
         "phash": "d5da98c72b1166c9",
         "sha256": "d51931db96679da6fbb25b17b3aa54593b6efd450fe20040b754ed1244959696"
       },
-      "media_type": "image/png"
+      "media_type": "image/jpeg"
     },
     "claim_id": "d12-reshare-a-full",
     "doc_ref": {
@@ -1029,7 +1220,7 @@
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1040,35 +1231,45 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "The image is a ground-level photograph rather than overhead satellite/aerial imagery.",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": 4.0,
           "min": 3.0,
-          "unit": "heavy multi-axle vehicles with cylindrical canisters",
+          "unit": "heavy multi-axle transport vehicles",
           "value": null
         },
-        "description": "A ground-level photograph showing several large green multi-axle military-style transport vehicles driving along a wide paved road. Each vehicle is configured with a rear-mounted assembly containing four large cylindrical canisters or tubes arranged horizontally in a group. The road is lined with spectators behind barriers, holding small flags and mobile devices. Several uniformed individuals are marching alongside the vehicles. Tall flagpoles displaying large flags are visible in the background and foreground.",
-        "frame_kind": "ground-level photograph",
-        "gsd_note": "Not applicable (ground-level perspective).",
+        "description": "Ground-level photograph depicting a procession on a wide paved urban street. Multiple heavy multi-axle wheeled vehicles are driving in formation down the street. Each vehicle carries a cluster of large cylindrical canister tubes mounted longitudinally on its rear bed. Uniformed personnel walk alongside the vehicles. Spectators line the foreground holding flags and cameras, while decorative flags and banners hang from light posts along the roadway.",
+        "frame_kind": "ground_level",
+        "geometry_tokens": [
+          "road",
+          "paved_street",
+          "urban_corridor"
+        ],
+        "gsd_note": "Ground-level photograph; not an overhead satellite or aerial view.",
         "observed_features": [
           {
-            "arrangement": "In a line/procession",
-            "feature": "large multi-axle vehicles with cylindrical canisters",
-            "note": "Each vehicle features a green camo pattern and carries four horizontal cylinders.",
-            "shape": "rectangular cab with cylindrical rear loads"
+            "arrangement": "column formation along street",
+            "feature": "heavy multi-axle vehicle",
+            "note": "large multi-wheel transport chassis with forward cab and rear cargo deck",
+            "shape": "rectangular chassis on large rubber tires"
           },
           {
-            "arrangement": "Linear along the roadside",
-            "feature": "crowd of spectators and flags",
-            "note": "Spectators are viewing the procession, holding small flags and mobile phones.",
-            "shape": "unstructured crowd"
+            "arrangement": "horizontal cluster on vehicle bed",
+            "feature": "cylindrical containers",
+            "note": "large diameter tubes mounted longitudinally",
+            "shape": "cylindrical / tubular"
+          },
+          {
+            "arrangement": "line along curb / sidewalk",
+            "feature": "spectator area and decor",
+            "note": "crowd viewing procession with flags and decorative banners overhead",
+            "shape": "linear corridor"
           }
         ],
         "occupancy_state": "occupied",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "A ground-level photograph showing several large green multi-axle military-style transport vehicles driving along a wide paved road. Each vehicle is configured with a rear-mounted assembly containing four large cylindrical canisters or tubes arranged horizontally in a group. The road is lined with spectators behind barriers, holding small flags and mobile devices. Several uniformed individuals are marching alongside the vehicles. Tall flagpoles displaying large flags are visible in the background and foreground.",
+        "site_signature_geometry": "Ground-level photograph depicting a procession on a wide paved urban street. Multiple heavy multi-axle wheeled vehicles are driving in formation down the street. Each vehicle carries a cluster of large cylindrical canister tubes mounted longitudinally on its rear bed. Uniformed personnel walk alongside the vehicles. Spectators line the foreground holding flags and cameras, while decorative flags and banners hang from light posts along the roadway.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -1077,6 +1278,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-08",

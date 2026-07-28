@@ -13,14 +13,14 @@
       "row": null,
       "span": [
         140,
-        319
+        267
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -42,6 +42,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -60,15 +61,15 @@
       "region": null,
       "row": null,
       "span": [
-        383,
-        405
+        219,
+        346
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -79,14 +80,271 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "service_branch": "PAF"
+        "family": "HQ-9"
       },
-      "entity_type": "unit",
+      "entity_type": "variant",
       "form": "entity",
-      "name": "Pakistan Air Force"
+      "name": "HQ-9 family"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l5-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        356,
+        447
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Army"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_object_mention": "d04-armyrec-ranges-l5-3",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d04-armyrec-ranges-l7-9",
+      "_undated_perishable": true,
+      "source_quote": "both the Pakistan Army and the Pakistan Air Force (PAF) continue to field distinct variants of the system under different program names."
+    },
+    "claim_id": "d04-armyrec-ranges-l5-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        356,
+        492
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Army",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l5-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        387,
+        411
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "PAF"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pakistan Air Force",
+        "PAF"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Pakistan Air Force (PAF)"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c2",
+      "_object_mention": "d04-armyrec-ranges-l5-5",
+      "_subject_mention": "d04-armyrec-ranges-l9",
+      "source_quote": "Pakistan Air Force (PAF)"
+    },
+    "claim_id": "d04-armyrec-ranges-l5-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        387,
+        411
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "PAF",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pakistan Air Force"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l9",
+      "d04-armyrec-ranges-l5-5"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d04-armyrec-ranges-l5-5",
+      "_subject_mention": "d04-armyrec-ranges-l9"
+    },
+    "claim_id": "d04-armyrec-ranges-l5-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 5,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        387,
+        411
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "PAF",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Pakistan Air Force"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -106,14 +364,14 @@
       "row": null,
       "span": [
         494,
-        533
+        598
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -124,6 +382,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "Air Defence Command",
         "service_branch": "Pakistan Army"
       },
       "entity_type": "unit",
@@ -132,6 +391,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -140,10 +400,10 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "equips",
+      "_as_stated_predicate": "operated-by",
       "_object_mention": "d04-armyrec-ranges-l7",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d04-armyrec-ranges-l7-5",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d04-armyrec-ranges-l7-9",
       "_undated_perishable": true,
       "source_quote": "The Pakistan Army's Air Defence Command operates a battery-level deployment reportedly designated HQ-9/P"
     },
@@ -165,7 +425,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -183,6 +443,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -191,7 +452,8 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d04-armyrec-ranges-l7-5"
+      "_object_mention": "d04-armyrec-ranges-l7-7",
+      "_subject_mention": "d04-armyrec-ranges-l7-9"
     },
     "claim_id": "d04-armyrec-ranges-l7-3",
     "doc_ref": [
@@ -204,7 +466,7 @@
         "region": null,
         "row": null,
         "span": [
-          592,
+          570,
           646
         ]
       },
@@ -226,7 +488,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -244,6 +506,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -252,7 +515,8 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d04-armyrec-ranges-l7-5"
+      "_object_mention": "d04-armyrec-ranges-l7-8",
+      "_subject_mention": "d04-armyrec-ranges-l7-9"
     },
     "claim_id": "d04-armyrec-ranges-l7-4",
     "doc_ref": [
@@ -265,8 +529,8 @@
         "region": null,
         "row": null,
         "span": [
-          592,
-          705
+          570,
+          724
         ]
       },
       {
@@ -287,7 +551,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -305,6 +569,135 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "FD-2000"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and equivalence marker 'export designation', and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c3",
+      "_object_mention": "d04-armyrec-ranges-l7-8",
+      "_subject_mention": "d04-armyrec-ranges-l7-9",
+      "source_quote": "HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+    },
+    "claim_id": "d04-armyrec-ranges-l7-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        592,
+        724
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l7-9",
+      "d04-armyrec-ranges-l7-8"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9P"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and equivalence marker 'export designation', and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c3",
+      "_object_mention": "d04-armyrec-ranges-l7-7",
+      "_subject_mention": "d04-armyrec-ranges-l7-9",
+      "source_quote": "HQ-9/P (some regional trade reporting still uses HQ-9P, and the export designation FD-2000 continues to circulate in older brochures"
+    },
+    "claim_id": "d04-armyrec-ranges-l7-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        592,
+        724
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l7-9",
+      "d04-armyrec-ranges-l7-7"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c3",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -313,7 +706,100 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l7-5",
+    "claim_id": "d04-armyrec-ranges-l7-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        600,
+        646
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9 family",
+        "operator_branch": "Pakistan Army"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l7-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        652,
+        724
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "HQ-9 family"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "FD-2000"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l7-9",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -331,7 +817,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -343,11 +829,11 @@
     "payload": {
       "attrs": {
         "designators": [
-          "HQ-9/P",
           "HQ-9P",
           "FD-2000"
         ],
-        "family": "HQ-9",
+        "family": "HQ-9 family",
+        "operator_branch": "Pakistan Army",
         "range_km": {
           "approx": false,
           "count_state": null,
@@ -363,18 +849,16 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c3",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d04-armyrec-ranges-l7-5",
-      "_subject_mention": "d04-armyrec-ranges-l7-5"
-    },
-    "claim_id": "d04-armyrec-ranges-l7-6",
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l7-10",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -384,15 +868,15 @@
       "region": null,
       "row": null,
       "span": [
-        792,
-        879
+        915,
+        923
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -402,29 +886,24 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "HQ-9/P",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
+      "attrs": {
+        "family": "S-300"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-300PMU"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "equips",
-      "_object_mention": "d04-armyrec-ranges-l5-2",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d04-armyrec-ranges-l9-2",
-      "_undated_perishable": true,
-      "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE."
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d04-armyrec-ranges-l9",
     "doc_ref": {
       "bbox": null,
@@ -436,14 +915,67 @@
       "row": null,
       "span": [
         1223,
-        1351
+        1350
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Pakistan Air Force"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "operated-by",
+      "_object_mention": "d04-armyrec-ranges-l9",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d04-armyrec-ranges-l9-3",
+      "_undated_perishable": true,
+      "source_quote": "the Pakistan Air Force is believed to operate a longer-ranged variant referred to in most recent trade literature as the HQ-9BE"
+    },
+    "claim_id": "d04-armyrec-ranges-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1223,
+        1350
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -461,6 +993,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -469,7 +1002,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l9-2",
+    "claim_id": "d04-armyrec-ranges-l9-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -479,15 +1012,15 @@
       "region": null,
       "row": null,
       "span": [
-        1344,
-        1583
+        1293,
+        1350
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -498,10 +1031,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "HQ-9BE"
-        ],
-        "family": "HQ-9",
+        "family": "HQ-9 family",
+        "operator_branch": "Pakistan Air Force",
         "range_km": {
           "approx": false,
           "count_state": null,
@@ -517,6 +1048,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -525,10 +1057,10 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_object_mention": "d04-armyrec-ranges-l9-2",
-      "_subject_mention": "d04-armyrec-ranges-l9-2"
+      "_object_mention": "d04-armyrec-ranges-l9-3",
+      "_subject_mention": "d04-armyrec-ranges-l17"
     },
-    "claim_id": "d04-armyrec-ranges-l9-3",
+    "claim_id": "d04-armyrec-ranges-l9-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -538,15 +1070,15 @@
       "region": null,
       "row": null,
       "span": [
-        1344,
-        1583
+        1784,
+        1931
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -559,11 +1091,12 @@
       "form": "triple",
       "object": "HQ-9BE",
       "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9BE"
+      "predicate": "manufactures",
+      "subject": "CASIC"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -572,7 +1105,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l9-4",
+    "claim_id": "d04-armyrec-ranges-l9-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -582,7 +1115,7 @@
       "region": null,
       "row": null,
       "span": [
-        1856,
+        1874,
         1930
       ]
     },
@@ -590,7 +1123,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -610,6 +1143,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -618,9 +1152,23 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d04-armyrec-ranges-l9-4"
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "China Aerospace Science and Industry Corporation",
+        "CASIC"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "China Aerospace Science and Industry Corporation (CASIC)"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c1",
+      "_object_mention": "d04-armyrec-ranges-l17",
+      "_subject_mention": "d04-armyrec-ranges-l9-5",
+      "source_quote": "China Aerospace Science and Industry Corporation (CASIC)"
     },
-    "claim_id": "d04-armyrec-ranges-l9-5",
+    "claim_id": "d04-armyrec-ranges-l9-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
@@ -630,7 +1178,7 @@
       "region": null,
       "row": null,
       "span": [
-        1856,
+        1874,
         1930
       ]
     },
@@ -638,7 +1186,57 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "CASIC",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "China Aerospace Science and Industry Corporation"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l9-5",
+      "d04-armyrec-ranges-l17"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d04-armyrec-ranges-l9-5"
+    },
+    "claim_id": "d04-armyrec-ranges-l9-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1874,
+        1930
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -656,6 +1254,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -664,54 +1263,8 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_object_mention": "d04-armyrec-ranges-l9-2"
-    },
-    "claim_id": "d04-armyrec-ranges-l9-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1924,
-        1929
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9BE",
-      "object_value": null,
-      "predicate": "manufactures",
-      "subject": "CASIC"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d04_armyrec_ranges",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d04-armyrec-ranges-l9-2",
-      "_subject_mention": "d04-armyrec-ranges-l7-5"
+      "_object_mention": "d04-armyrec-ranges-l9-3",
+      "_subject_mention": "d04-armyrec-ranges-l7-9"
     },
     "claim_id": "d04-armyrec-ranges-l11",
     "doc_ref": {
@@ -723,7 +1276,7 @@
       "region": null,
       "row": null,
       "span": [
-        1960,
+        1999,
         2115
       ]
     },
@@ -731,7 +1284,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -749,6 +1302,101 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l11-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2144,
+        2182
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement radar"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "engagement radars"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l11-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2258,
+        2343
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "fire control",
+        "functional_role": "fire control"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "fire-control architectures"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -767,15 +1415,15 @@
       "region": null,
       "row": null,
       "span": [
-        2665,
-        2751
+        2611,
+        2676
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -787,7 +1435,6 @@
     "payload": {
       "attrs": {
         "designators": [
-          "FT-2000",
           "FT-2000A"
         ]
       },
@@ -797,6 +1444,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c4",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -806,7 +1454,7 @@
     "asserts": "relationship",
     "attributes": {
       "_object_mention": "d04-armyrec-ranges-l13",
-      "_subject_mention": "d04-armyrec-ranges-l13"
+      "_subject_mention": "d04-armyrec-ranges-l17"
     },
     "claim_id": "d04-armyrec-ranges-l13-2",
     "doc_ref": {
@@ -818,15 +1466,15 @@
       "region": null,
       "row": null,
       "span": [
-        2665,
-        2751
+        2611,
+        2676
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -839,11 +1487,12 @@
       "form": "triple",
       "object": "FT-2000",
       "object_value": null,
-      "predicate": "same-as",
-      "subject": "FT-2000"
+      "predicate": "manufactures",
+      "subject": "CASIC"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -865,8 +1514,8 @@
         "region": null,
         "row": null,
         "span": [
-          2665,
-          2751
+          2611,
+          2676
         ]
       },
       {
@@ -878,7 +1527,7 @@
         "region": null,
         "row": null,
         "span": [
-          2669,
+          2665,
           2706
         ]
       }
@@ -887,7 +1536,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -905,6 +1554,71 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "FT-2000",
+        "FT-2000A"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "FT-2000 (sometimes rendered FT-2000A)"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c4",
+      "_object_mention": "d04-armyrec-ranges-l13-5",
+      "_subject_mention": "d04-armyrec-ranges-l13",
+      "source_quote": "FT-2000 (sometimes rendered FT-2000A)"
+    },
+    "claim_id": "d04-armyrec-ranges-l13-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2669,
+        2706
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "FT-2000A",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "FT-2000"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l13",
+      "d04-armyrec-ranges-l13-5"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c4",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -913,25 +1627,69 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d04-armyrec-ranges-l15",
+    "claim_id": "d04-armyrec-ranges-l13-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
       "frame": null,
-      "line": 15,
+      "line": 13,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        3493,
-        3612
+        2678,
+        2705
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "FT-2000A"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l13-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2715,
+        2792
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -942,18 +1700,63 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "designators": [
-          "S-400 Triumf",
-          "Triumph",
-          "SA-21"
-        ]
+        "component_class": "seeker",
+        "functional_role": "passive anti-radiation homing"
       },
-      "entity_type": "variant",
+      "entity_type": "component",
       "form": "entity",
-      "name": "S-400 Triumf"
+      "name": "passive anti-radiation seeker"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l13-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2768,
+        2827
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "seeker",
+        "functional_role": "semi-active radar homing"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "semi-active radar homing"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -962,9 +1765,69 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_object_mention": "d04-armyrec-ranges-l15",
-      "_subject_mention": "d04-armyrec-ranges-l15"
+      "_object_mention": "d04-armyrec-ranges-l15-6",
+      "_subject_mention": "d04-armyrec-ranges-l15-2"
     },
+    "claim_id": "d04-armyrec-ranges-l15",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3493,
+          3571
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+        "frame": null,
+        "line": 15,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          3493,
+          3612
+        ]
+      }
+    ],
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Triumph",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d04-armyrec-ranges-l15-2",
     "doc_ref": {
       "bbox": null,
@@ -983,7 +1846,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -993,14 +1856,21 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "S-400 Triumf",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "S-400 Triumf"
+      "attrs": {
+        "designators": [
+          "Triumph",
+          "SA-21"
+        ],
+        "family": "S-400",
+        "operator_branch": "India"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-400 Triumf"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c5",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -1009,7 +1879,7 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d04-armyrec-ranges-l15"
+      "_subject_mention": "d04-armyrec-ranges-l15-2"
     },
     "claim_id": "d04-armyrec-ranges-l15-3",
     "doc_ref": [
@@ -1036,7 +1906,7 @@
         "row": null,
         "span": [
           3501,
-          3612
+          3513
         ]
       }
     ],
@@ -1044,7 +1914,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1062,6 +1932,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",
@@ -1070,42 +1941,297 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d04-armyrec-ranges-l15"
+      "_coref_cluster": "c5",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "S-400 Triumf",
+        "SA-21"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c5",
+      "_object_mention": "d04-armyrec-ranges-l15-7",
+      "_subject_mention": "d04-armyrec-ranges-l15-2",
+      "source_quote": "S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
     },
     "claim_id": "d04-armyrec-ranges-l15-4",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-        "frame": null,
-        "line": 15,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          3493,
-          3612
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
-        "frame": null,
-        "line": 15,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          3501,
-          3571
-        ]
-      }
-    ],
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3501,
+        3612
+      ]
+    },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "SA-21",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l15-2",
+      "d04-armyrec-ranges-l15-7"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c5",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "S-400 Triumf",
+        "Triumph"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+      ],
+      "_coref_referent": "ref:d04-armyrec-ranges-c5",
+      "_object_mention": "d04-armyrec-ranges-l15-6",
+      "_subject_mention": "d04-armyrec-ranges-l15-2",
+      "source_quote": "S-400 Triumf (referred to in some Indian press as the \"Triumph\" system, and carrying the NATO designator SA-21)"
+    },
+    "claim_id": "d04-armyrec-ranges-l15-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3501,
+        3612
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Triumph",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "S-400 Triumf"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l15-2",
+      "d04-armyrec-ranges-l15-6"
+    ],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l15-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3515,
+        3571
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "S-400",
+        "operator_branch": "India"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "Triumph"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l15-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3577,
+        3611
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "family": "S-400",
+        "operator_branch": "India"
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "SA-21"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c5",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d04-armyrec-ranges-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4219,
+        4285
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "China",
+        "role": "manufacturer"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d04-armyrec-ranges-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d04-armyrec-ranges-l9-5",
+      "_subject_mention": "d04-armyrec-ranges-l17"
+    },
+    "claim_id": "d04-armyrec-ranges-l17-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4219,
+        4285
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1116,13 +2242,70 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "Triumph",
+      "object": "China Aerospace Science and Industry Corporation",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "S-400 Triumf"
+      "subject": "CASIC"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d04_armyrec_ranges",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9BE"
+      ],
+      "_object_mention": "d04-armyrec-ranges-l9-3",
+      "_subject_mention": "d04-armyrec-ranges-l7-9",
+      "source_quote": "125 km for the Army's HQ-9/P and an estimated 260 km for the PAF's HQ-9BE"
+    },
+    "claim_id": "d04-armyrec-ranges-l19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d04_armyrec_ranges.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4607,
+        4680
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d04-armyrec-ranges-l7-9",
+      "d04-armyrec-ranges-l9-3"
+    ],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d04_armyrec_ranges",

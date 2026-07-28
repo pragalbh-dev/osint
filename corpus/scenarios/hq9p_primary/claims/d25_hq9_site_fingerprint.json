@@ -2,207 +2,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d25-hq9-site-fingerprint-p1",
+    "claim_id": "d25-hq9-site-fingerprint-l1",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 1,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        255,
-        313
+        0,
+        4
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "manufacturer",
-      "form": "entity",
-      "name": "CASIC"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d25_hq9_site_fingerprint",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d25-hq9-site-fingerprint-p1-5",
-      "_subject_mention": "d25-hq9-site-fingerprint-p1"
-    },
-    "claim_id": "d25-hq9-site-fingerprint-p1-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
-      "frame": null,
-      "line": null,
-      "page": 1,
-      "region": null,
-      "row": null,
-      "span": [
-        255,
-        313
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9",
-      "object_value": null,
-      "predicate": "manufactures",
-      "subject": "CASIC"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d25_hq9_site_fingerprint",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d25-hq9-site-fingerprint-p1-5"
-    },
-    "claim_id": "d25-hq9-site-fingerprint-p1-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
-      "frame": null,
-      "line": null,
-      "page": 1,
-      "region": null,
-      "row": null,
-      "span": [
-        276,
-        312
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9/P"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d25_hq9_site_fingerprint",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "d25-hq9-site-fingerprint-p1-5"
-    },
-    "claim_id": "d25-hq9-site-fingerprint-p1-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
-      "frame": null,
-      "line": null,
-      "page": 1,
-      "region": null,
-      "row": null,
-      "span": [
-        276,
-        312
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "HQ-9",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "HQ-9BE"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d25_hq9_site_fingerprint",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d25-hq9-site-fingerprint-p1-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
-      "frame": null,
-      "line": null,
-      "page": 1,
-      "region": null,
-      "row": null,
-      "span": [
-        619,
-        1230
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -214,12 +32,9 @@
     "payload": {
       "attrs": {
         "designators": [
-          "HQ-9",
-          "HQ-9/P",
-          "HQ-9BE"
+          "HQ-9/P"
         ],
-        "family": "HQ-9",
-        "site_signature_geometry": "prepared \"petal\" or \"flower\" pad: a roughly circular graded area, approximately 90-110 m in diameter, enclosed by an unpaved perimeter access road (~6 m width). Arranged radially around a central hub are approximately six (6) transporter-erector-launcher (TEL) revetments - open-topped earthen berms ~2-3 m high, oriented outward from the centre to give blast separation between launchers and the central engagement position. At the pad centre sits a raised circular hardstand, ~15-20 m in diameter, prepared for the engagement / fire-control radar (HT-233 or derivative)."
+        "site_signature_geometry": "circular petal pad enclosed by a perimeter access road; ~6 TEL revetments in a radial fan; central engagement-radar (HT-233) hardstand."
       },
       "entity_type": "variant",
       "form": "entity",
@@ -227,52 +42,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d25_hq9_site_fingerprint",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d25-hq9-site-fingerprint-p1-6",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
-      "frame": null,
-      "line": null,
-      "page": 1,
-      "region": null,
-      "row": null,
-      "span": [
-        619,
-        1230
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "family": "HQ-9",
-        "site_signature_geometry": "prepared \"petal\" or \"flower\" pad: a roughly circular graded area, approximately 90-110 m in diameter, enclosed by an unpaved perimeter access road (~6 m width). Arranged radially around a central hub are approximately six (6) transporter-erector-launcher (TEL) revetments - open-topped earthen berms ~2-3 m high, oriented outward from the centre to give blast separation between launchers and the central engagement position. At the pad centre sits a raised circular hardstand, ~15-20 m in diameter, prepared for the engagement / fire-control radar (HT-233 or derivative)."
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9B"
-    },
-    "polarity": "positive",
-    "premises": [],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -281,28 +51,40 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_object_mention": "d25-hq9-site-fingerprint-p1-5",
-      "_subject_mention": "d25-hq9-site-fingerprint-p1-5"
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9",
+        "HQ-9/P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "HQ-9 / HQ-9B (CASIC; export designators HQ-9/P and HQ-9BE)"
+      ],
+      "_coref_referent": "ref:d25-hq9-site-fingerprint-c1",
+      "_subject_mention": "d25-hq9-site-fingerprint-l1",
+      "source_quote": "HQ-9 / HQ-9B (CASIC; export designators HQ-9/P and HQ-9BE)"
     },
-    "claim_id": "d25-hq9-site-fingerprint-p1-7",
+    "claim_id": "d25-hq9-site-fingerprint-l1-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 1,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        619,
-        1230
+        0,
+        4
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -310,16 +92,19 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
       "form": "triple",
-      "object": "HQ-9",
+      "object": "HQ-9/P",
       "object_value": null,
-      "predicate": "same-as",
+      "predicate": "coref-same-as",
       "subject": "HQ-9"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "d25-hq9-site-fingerprint-l1"
+    ],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -328,27 +113,27 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d25-hq9-site-fingerprint-p1-5"
+      "_subject_mention": "d25-hq9-site-fingerprint-l1"
     },
-    "claim_id": "d25-hq9-site-fingerprint-p1-8",
+    "claim_id": "d25-hq9-site-fingerprint-l1-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 1,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        619,
-        1230
+        0,
+        4
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -366,6 +151,100 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l1-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 1,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        0,
+        64
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "source",
+      "form": "entity",
+      "name": "published air-defence battery-layout studies"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l1-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 1,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        7,
+        12
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-9BE"
+        ],
+        "site_signature_geometry": "circular petal pad enclosed by a perimeter access road; ~6 TEL revetments in a radial fan; central engagement-radar (HT-233) hardstand."
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -374,27 +253,89 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "d25-hq9-site-fingerprint-p1-5"
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9B",
+        "HQ-9BE"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "HQ-9 / HQ-9B (CASIC; export designators HQ-9/P and HQ-9BE)"
+      ],
+      "_coref_referent": "ref:d25-hq9-site-fingerprint-c2",
+      "_subject_mention": "d25-hq9-site-fingerprint-l1-5",
+      "source_quote": "HQ-9 / HQ-9B (CASIC; export designators HQ-9/P and HQ-9BE)"
     },
-    "claim_id": "d25-hq9-site-fingerprint-p1-9",
+    "claim_id": "d25-hq9-site-fingerprint-l1-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 1,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        619,
-        1230
+        7,
+        12
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9BE",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9B"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d25-hq9-site-fingerprint-l1-5"
+    ],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d25-hq9-site-fingerprint-l1-5"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l1-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 1,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        7,
+        12
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -408,10 +349,262 @@
       "object": "HQ-9BE",
       "object_value": null,
       "predicate": "same-as",
-      "subject": "HQ-9"
+      "subject": "HQ-9B"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 3,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        269,
+        274
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "CASIC"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 9,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        884,
+        912
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "launcher",
+        "functional_role": "transporter-erector-launcher"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "transporter-erector-launcher"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c3",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "TEL",
+        "transporter-erector-launcher"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "transporter-erector-launcher (TEL)"
+      ],
+      "_coref_referent": "ref:d25-hq9-site-fingerprint-c3",
+      "_object_mention": "d25-hq9-site-fingerprint-l9",
+      "_subject_mention": "d25-hq9-site-fingerprint-l27",
+      "source_quote": "transporter-erector-launcher (TEL)"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l9-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 9,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        884,
+        918
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "transporter-erector-launcher",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "TEL"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d25-hq9-site-fingerprint-l27",
+      "d25-hq9-site-fingerprint-l9"
+    ],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c3",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d25-hq9-site-fingerprint-l27",
+      "_subject_mention": "d25-hq9-site-fingerprint-l9"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l9-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 9,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        884,
+        918
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "TEL",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "transporter-erector-launcher"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l12",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 12,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        1158,
+        1230
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement / fire-control radar",
+        "model_designation": "HT-233"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -421,30 +614,132 @@
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "component-of",
-      "_object_mention": "d25-hq9-site-fingerprint-p1-5",
+      "_object_mention": "d25-hq9-site-fingerprint-l1",
       "_relane_reason": "'component-of'@(component->variant) -> equips",
-      "_subject_mention": "d25-hq9-site-fingerprint-p1-11",
-      "source_quote": "prepared for the engagement / fire-control radar (HT-233 or derivative)"
+      "_subject_mention": "d25-hq9-site-fingerprint-l27",
+      "source_quote": "~6 TEL revetments in a radial fan"
     },
-    "claim_id": "d25-hq9-site-fingerprint-p1-10",
+    "claim_id": "d25-hq9-site-fingerprint-l21",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 21,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        1158,
-        1229
+        1675,
+        1708
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d25-hq9-site-fingerprint-l1-5",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d25-hq9-site-fingerprint-l27",
+      "source_quote": "~6 TEL revetments in a radial fan"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l21-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 21,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        1675,
+        1708
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9B",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "TEL"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d25-hq9-site-fingerprint-l1",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d25-hq9-site-fingerprint-l12",
+      "source_quote": "central engagement-radar (HT-233) hardstand."
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l21-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 21,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        1710,
+        1754
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -462,6 +757,58 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d25-hq9-site-fingerprint-l1-5",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d25-hq9-site-fingerprint-l12",
+      "source_quote": "central engagement-radar (HT-233) hardstand."
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l21-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 21,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        1710,
+        1754
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9B",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -470,25 +817,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d25-hq9-site-fingerprint-p1-11",
+    "claim_id": "d25-hq9-site-fingerprint-l27",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 27,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        1175,
-        1229
+        2235,
+        2298
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -499,15 +846,16 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "engagement radar",
-        "functional_role": "engagement / fire-control radar"
+        "component_class": "launcher",
+        "functional_role": "transporter-erector-launcher"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "HT-233"
+      "name": "TEL"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c3",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -516,25 +864,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d25-hq9-site-fingerprint-p1-12",
+    "claim_id": "d25-hq9-site-fingerprint-l27-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 27,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        2266,
-        2340
+        2306,
+        2311
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -547,10 +895,123 @@
       "attrs": {},
       "entity_type": "manufacturer",
       "form": "entity",
-      "name": "Taian (Wanshan)"
+      "name": "Taian"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c4",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Taian",
+        "Wanshan"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Taian (Wanshan)"
+      ],
+      "_coref_referent": "ref:d25-hq9-site-fingerprint-c4",
+      "_object_mention": "d25-hq9-site-fingerprint-l27-5",
+      "_subject_mention": "d25-hq9-site-fingerprint-l27-2",
+      "source_quote": "Taian (Wanshan)"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l27-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 27,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2306,
+        2321
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Wanshan",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Taian"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d25-hq9-site-fingerprint-l27-2",
+      "d25-hq9-site-fingerprint-l27-5"
+    ],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d25-hq9-site-fingerprint-l27-5",
+      "_subject_mention": "d25-hq9-site-fingerprint-l27-2"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l27-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 27,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2306,
+        2321
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Wanshan",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Taian"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",
@@ -559,25 +1020,69 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d25-hq9-site-fingerprint-p1-13",
+    "claim_id": "d25-hq9-site-fingerprint-l27-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
       "frame": null,
-      "line": null,
+      "line": 27,
       "page": 1,
       "region": null,
       "row": null,
       "span": [
-        2934,
-        3079
+        2313,
+        2320
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "Wanshan"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d25-hq9-site-fingerprint-c4",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l28",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 28,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2322,
+        2331
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -588,14 +1093,197 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "source_type": "open-source imagery-analysis literature"
+        "component_class": "chassis",
+        "functional_role": "heavy 8×8 special wheeled chassis",
+        "model_designation": "WS-series"
       },
-      "entity_type": "source",
+      "entity_type": "component",
       "form": "entity",
-      "name": "OSINT SAM-site site-analysis references and published air-defence battery-layout studies"
+      "name": "WS-series"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "d25-hq9-site-fingerprint-l27",
+      "_subject_mention": "d25-hq9-site-fingerprint-l28"
+    },
+    "claim_id": "d25-hq9-site-fingerprint-l28-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 28,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2322,
+        2331
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "TEL",
+      "object_value": null,
+      "predicate": "component-of",
+      "subject": "WS-series"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l29",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 29,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2430,
+        2513
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-300"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l29-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 29,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2430,
+        2513
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "S-400"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d25_hq9_site_fingerprint",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d25-hq9-site-fingerprint-l34",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d25_hq9_site_fingerprint.pdf",
+      "frame": null,
+      "line": 34,
+      "page": 1,
+      "region": null,
+      "row": null,
+      "span": [
+        2988,
+        3027
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "source",
+      "form": "entity",
+      "name": "OSINT SAM-site site-analysis references"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d25_hq9_site_fingerprint",

@@ -2,85 +2,25 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l11",
+    "claim_id": "d10-sat-cloud-gap-l1",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
       "frame": null,
-      "line": 11,
+      "line": 1,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        447,
-        513
+        0,
+        21
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "coordinates": {
-          "geocode_candidates": [],
-          "precision_class": null,
-          "proposed_alias": "Punjab Province, Pakistan",
-          "raw": "Punjab Province, Pakistan",
-          "resolved_place_ref": null,
-          "surface_format": "toponym",
-          "wgs84_lat": null,
-          "wgs84_lon": null
-        },
-        "site_type": "air defense node"
-      },
-      "entity_type": "basing_site",
-      "form": "entity",
-      "name": "air defense node in vicinity of a known PAF forward operating base"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-05-10",
-      "kind": "exact",
-      "raw": "2025-05-10"
-    },
-    "resolved_ref": null,
-    "source_id": "d10_sat_cloud_gap",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l14",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
-      "frame": null,
-      "line": 14,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        994,
-        1030
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -92,15 +32,16 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "transporter-erector-launchers (TELs)"
+          "transporter-erector-launchers (TELs) count and status"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "transporter-erector-launchers (TELs)"
+      "name": "transporter-erector-launchers (TELs) count and status"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -114,7 +55,211 @@
   {
     "asserts": "entity",
     "attributes": null,
+    "claim_id": "d10-sat-cloud-gap-l11",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        396,
+        604
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [
+            {
+              "confidence": 0.9,
+              "label": "Punjab province, Pakistan",
+              "lat": 31.1471,
+              "lon": 72.7097,
+              "source": "gazetteer"
+            }
+          ],
+          "precision_class": null,
+          "proposed_alias": "Punjab Province, Pakistan",
+          "raw": "Punjab Province, Pakistan",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": 31.1471,
+          "wgs84_lon": 72.7097
+        },
+        "site_type": "air defense node"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "air defense node in vicinity of a known PAF forward operating base"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d10-sat-cloud-gap-l14",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 14,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        942,
+        1186
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": 8.0,
+          "min": 6.0,
+          "unit": null,
+          "value": null
+        },
+        "object_type": "transporter-erector-launchers (TELs)"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "transporter-erector-launchers (TELs)"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-05-10",
+        "kind": "exact",
+        "raw": "2025-05-10"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_event_time_rung": "stated",
+      "_object_mention": "d10-sat-cloud-gap-l19",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d10-sat-cloud-gap-l16-2",
+      "source_quote": "Partial imagery does show what is assessed with moderate confidence to be a HT-233 (H-200) engagement radar array"
+    },
     "claim_id": "d10-sat-cloud-gap-l16",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 16,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1188,
+        1301
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9/P",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233 (H-200) engagement radar array"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d10-sat-cloud-gap-l16-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -132,7 +277,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -144,7 +289,8 @@
     "payload": {
       "attrs": {
         "component_class": "radar",
-        "functional_role": "engagement radar array"
+        "functional_role": "engagement radar",
+        "model_designation": "HT-233"
       },
       "entity_type": "component",
       "form": "entity",
@@ -152,6 +298,84 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "HT-233 (H-200) engagement radar array",
+        "source_quote": "Partial imagery does show what is assessed with moderate confidence to be a HT-233 (H-200) engagement radar array, oriented on its habitual azimuth"
+      }
+    },
+    "claim_id": "d10-sat-cloud-gap-l16-3",
+    "doc_ref": [
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+        "frame": null,
+        "line": 16,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1188,
+          1335
+        ]
+      },
+      {
+        "bbox": null,
+        "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+        "frame": null,
+        "line": 16,
+        "page": null,
+        "region": null,
+        "row": null,
+        "span": [
+          1341,
+          1420
+        ]
+      }
+    ],
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-05-10",
+        "occupancy_state": "observed"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "air defense node in vicinity of a known PAF forward operating base"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -165,7 +389,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l16-2",
+    "claim_id": "d10-sat-cloud-gap-l16-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -188,7 +412,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -199,6 +423,14 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 1.0
+        },
         "object_type": "HT-233 (H-200) engagement radar array"
       },
       "event_type": "SightingEvent",
@@ -216,6 +448,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -231,9 +464,9 @@
     "attributes": {
       "_event_time_rung": "stated",
       "_object_mention": "d10-sat-cloud-gap-l11",
-      "_subject_mention": "d10-sat-cloud-gap-l16"
+      "_subject_mention": "d10-sat-cloud-gap-l16-2"
     },
-    "claim_id": "d10-sat-cloud-gap-l16-3",
+    "claim_id": "d10-sat-cloud-gap-l16-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -256,7 +489,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -274,6 +507,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -287,7 +521,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l16-4",
+    "claim_id": "d10-sat-cloud-gap-l16-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -305,7 +539,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -316,8 +550,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "vehicle",
-        "functional_role": "support"
+        "component_class": "vehicle"
       },
       "entity_type": "component",
       "form": "entity",
@@ -325,6 +558,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -338,7 +572,7 @@
   {
     "asserts": "event",
     "attributes": null,
-    "claim_id": "d10-sat-cloud-gap-l16-5",
+    "claim_id": "d10-sat-cloud-gap-l16-7",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -361,7 +595,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -374,7 +608,7 @@
       "attrs": {
         "count": {
           "approx": false,
-          "count_state": "fielded",
+          "count_state": null,
           "max": null,
           "min": null,
           "unit": null,
@@ -397,6 +631,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -412,9 +647,9 @@
     "attributes": {
       "_event_time_rung": "stated",
       "_object_mention": "d10-sat-cloud-gap-l11",
-      "_subject_mention": "d10-sat-cloud-gap-l16-4"
+      "_subject_mention": "d10-sat-cloud-gap-l16-6"
     },
-    "claim_id": "d10-sat-cloud-gap-l16-6",
+    "claim_id": "d10-sat-cloud-gap-l16-8",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
@@ -437,7 +672,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -455,6 +690,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -479,14 +715,14 @@
       "row": null,
       "span": [
         1526,
-        1793
+        1670
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -497,8 +733,9 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "confidence_language": "believed to be an active HQ-9/P (export variant, reportedly designated FD-2000 in open marketing literature) long-range SAM position",
-        "family": "HQ-9"
+        "confidence_language": "suspected",
+        "family": "HQ-9",
+        "operator_branch": "Pakistan Air Force"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -506,6 +743,128 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_observed_absence": {
+        "observed": "HQ-9/P",
+        "source_quote": "The site is believed to be an active HQ-9/P (export variant, reportedly designated FD-2000 in open marketing literature) long-range SAM position"
+      }
+    },
+    "claim_id": "d10-sat-cloud-gap-l19-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1526,
+        1670
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "occupancy_observed_date": "2025-05-10",
+        "occupancy_state": "assessed"
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "air defense node in vicinity of a known PAF forward operating base"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "resolved_ref": null,
+    "source_id": "d10_sat_cloud_gap",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "d10-sat-cloud-gap-l11",
+      "_subject_mention": "d10-sat-cloud-gap-l19"
+    },
+    "claim_id": "d10-sat-cloud-gap-l19-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d10_sat_cloud_gap.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1526,
+        1670
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-05-10",
+      "kind": "exact",
+      "raw": "2025-05-10"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "air defense node in vicinity of a known PAF forward operating base",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -529,7 +888,7 @@
       "region": null,
       "row": null,
       "span": [
-        2092,
+        2096,
         2200
       ]
     },
@@ -537,7 +896,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -547,13 +906,16 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "service_branch": "Pakistan Air Force"
+      },
       "entity_type": "unit",
       "form": "entity",
       "name": "Pakistan Air Force"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -567,9 +929,12 @@
   {
     "asserts": "relationship",
     "attributes": {
+      "_as_stated_predicate": "imported-by",
       "_event_time_rung": "stated",
       "_object_mention": "d10-sat-cloud-gap-l21",
-      "_subject_mention": "d10-sat-cloud-gap-l19"
+      "_relane_reason": "'imported-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d10-sat-cloud-gap-l19",
+      "source_quote": "HQ-9/P system associated with this site was reportedly first delivered to the Pakistan Air Force in 2021"
     },
     "claim_id": "d10-sat-cloud-gap-l21-2",
     "doc_ref": {
@@ -581,7 +946,7 @@
       "region": null,
       "row": null,
       "span": [
-        2092,
+        2096,
         2200
       ]
     },
@@ -599,7 +964,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -617,6 +982,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",
@@ -631,7 +997,7 @@
     "asserts": "entity",
     "attributes": {
       "_event_time_rung": "sibling-document-observation",
-      "caption_text": "High-altitude satellite view of a highly dense urban area, airfield runway, and agricultural fields.",
+      "caption_text": "Wide-area overhead view of a dense built-up urban area adjacent to a paved linear strip, agricultural fields, and open terrain.",
       "image_fingerprint": {
         "exif": {},
         "pdq_hash": "25b5126aa28ddcd548561db166736eb8cd586e0b9116bb3f8aa6558c544f9b36",
@@ -661,7 +1027,7 @@
     "extraction": {
       "method": "vlm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -672,51 +1038,54 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "caption_vs_image_consistency": "Consistent",
+        "caption_vs_image_consistency": "consistent",
         "count": {
           "approx": true,
           "count_state": "fielded",
           "max": null,
           "min": null,
-          "unit": null,
+          "unit": "individual structures and vehicles",
           "value": null
         },
-        "description": "This high-altitude satellite view shows an expansive, highly dense urban area characterized by closely packed grey and light-colored structures with a complex street network. On the mid-left side, a paved runway, taxiway, and airfield infrastructure are clearly visible amidst open dirt ground. To the northeast (top right), there is a large, organized rectangular grid layout consisting of multiple parallel rows of plots or small structures. The southeast (bottom right) portion features green agricultural fields of irregular and rectangular shapes interspersed with smaller settlements. Major roads and possible railway lines segment the urban density.",
-        "frame_kind": "satellite",
+        "description": "A wide-area overhead frame displaying a mixed landscape dominated by a dense, grid-like built-up urban area in the center and lower portions. On the mid-left side, a paved linear strip with connected turnouts/taxiway segments is positioned along unpaved open ground. The lower-right portion features clustered rectangular agricultural plots of varying green and brown tones. Curvilinear primary roads and secondary access routes intersect and border the built-up sectors throughout the frame.",
+        "frame_kind": "satellite_overhead",
         "geometry_tokens": [
-          "runway",
-          "urban",
-          "grid",
-          "fields"
+          "linear_paved_strip",
+          "dense_urban_grid",
+          "rectangular_plots",
+          "curvilinear_road_network",
+          "unpaved_open_terrain"
         ],
+        "gsd_note": "Medium-to-coarse ground sampling distance allowing identification of major urban zones, transport lines, and terrain features, but insufficient to individually resolve small discrete objects or vehicles.",
         "observed_features": [
           {
-            "arrangement": "isolated",
-            "feature": "runway",
-            "note": "Paved runway and taxiway system visible on the left side of the frame.",
+            "arrangement": "isolated along the western edge",
+            "feature": "paved linear strip",
+            "note": "Linear paved surface with connected auxiliary paved paths adjacent to open unpaved ground.",
             "shape": "linear"
           },
           {
-            "arrangement": "dense",
-            "feature": "urban area",
-            "note": "Extremely dense, greyish residential/commercial urban matrix.",
-            "shape": "irregular"
+            "arrangement": "contiguous central block",
+            "feature": "built-up settlement",
+            "note": "High-density urban grid comprising small closely packed structures separated by narrow corridors.",
+            "shape": "grid-like network"
           },
           {
-            "arrangement": "grid",
-            "feature": "structured plots",
-            "note": "A large organized grid of rows and plots in the upper right quadrant.",
-            "shape": "rectangular"
-          },
-          {
-            "arrangement": "clustered",
+            "arrangement": "clustered in the southeastern area",
             "feature": "agricultural fields",
-            "note": "Green agricultural patches in the lower-right area.",
-            "shape": "rectangular"
+            "note": "Rectangular parcels exhibiting varying vegetation and soil tones.",
+            "shape": "rectangular plots"
+          },
+          {
+            "arrangement": "traversing across sectors",
+            "feature": "road corridor network",
+            "note": "Linear and curvilinear transport routes dividing and connecting built-up areas and open terrain.",
+            "shape": "curvilinear and linear"
           }
         ],
+        "occupancy_state": "developed_built_up",
         "resolution_sufficiency": "sufficient",
-        "site_signature_geometry": "This high-altitude satellite view shows an expansive, highly dense urban area characterized by closely packed grey and light-colored structures with a complex street network. On the mid-left side, a paved runway, taxiway, and airfield infrastructure are clearly visible amidst open dirt ground. To the northeast (top right), there is a large, organized rectangular grid layout consisting of multiple parallel rows of plots or small structures. The southeast (bottom right) portion features green agricultural fields of irregular and rectangular shapes interspersed with smaller settlements. Major roads and possible railway lines segment the urban density.",
+        "site_signature_geometry": "A wide-area overhead frame displaying a mixed landscape dominated by a dense, grid-like built-up urban area in the center and lower portions. On the mid-left side, a paved linear strip with connected turnouts/taxiway segments is positioned along unpaved open ground. The lower-right portion features clustered rectangular agricultural plots of varying green and brown tones. Curvilinear primary roads and secondary access routes intersect and border the built-up sectors throughout the frame.",
         "site_type": "observed-imagery-site"
       },
       "entity_type": "basing_site",
@@ -725,6 +1094,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-05-10",

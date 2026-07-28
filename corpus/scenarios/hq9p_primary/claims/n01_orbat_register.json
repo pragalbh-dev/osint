@@ -20,7 +20,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -30,10 +30,7 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "occupancy_state": "one battery detached forward since February 2025 and still so detached at the closing date",
-        "site_type": "dispersal site"
-      },
+      "attrs": {},
       "entity_type": "basing_site",
       "form": "entity",
       "name": "Ghotki dispersal site"
@@ -52,65 +49,7 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_event_time_rung": "report_time",
-      "_object_mention": "n01-orbat-register-l1"
-    },
-    "claim_id": "n01-orbat-register-l1-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
-      "frame": null,
-      "line": 1,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        0,
-        34
-      ]
-    },
-    "event_time": {
-      "boundary_source": "relative",
-      "iso_date": "2025-03-31",
-      "kind": "exact",
-      "raw": "2025-03-31"
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Ghotki dispersal site",
-      "object_value": null,
-      "predicate": "based-at",
-      "subject": "one battery"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-03-31",
-      "kind": "exact",
-      "raw": "2025-03-31"
-    },
-    "resolved_ref": null,
-    "source_id": "n01_orbat_register",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "n01-orbat-register-l15",
     "doc_ref": {
@@ -130,7 +69,70 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Sukkur District",
+          "raw": "Sukkur District",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        }
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n01-orbat-register-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n01-orbat-register-l49",
+      "_subject_mention": "n01-orbat-register-l15"
+    },
+    "claim_id": "n01-orbat-register-l15-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 15,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        716,
+        725
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -161,8 +163,11 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "n01-orbat-register-l15-2",
+    "attributes": {
+      "_object_mention": "n01-orbat-register-l50",
+      "_subject_mention": "n01-orbat-register-l15"
+    },
+    "claim_id": "n01-orbat-register-l15-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -180,7 +185,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -211,8 +216,11 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "n01-orbat-register-l15-3",
+    "attributes": {
+      "_object_mention": "n01-orbat-register-l44",
+      "_subject_mention": "n01-orbat-register-l15"
+    },
+    "claim_id": "n01-orbat-register-l15-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -230,7 +238,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -280,7 +288,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -291,6 +299,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "3 Air Defence Brigade",
         "echelon": "brigade",
         "home_garrison": "Karachi (Malir)"
       },
@@ -314,13 +323,129 @@
   {
     "asserts": "relationship",
     "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l19",
+      "_subject_mention": "n01-orbat-register-l18"
+    },
+    "claim_id": "n01-orbat-register-l18-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 18,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        768,
+        821
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Karachi (Malir)",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "3 Air Defence Brigade"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l19",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 19,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        792,
+        821
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Karachi (Malir)"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
       "_coref_forms": [
         "22 Air Defence Regiment",
-        "47 Air Defence Regiment"
+        "22 Air Defence Regt"
       ],
-      "_object_mention": "n01-orbat-register-l36-2",
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
+      "_coref_quotes": [
+        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
+      ],
+      "_coref_referent": "ref:n01-orbat-register-c1",
+      "_object_mention": "n01-orbat-register-l77",
       "_subject_mention": "n01-orbat-register-l20-5",
-      "source_quote": "Same station as 22 Air Defence Regiment, under a separate brigade."
+      "source_quote": "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
     },
     "claim_id": "n01-orbat-register-l20",
     "doc_ref": {
@@ -340,7 +465,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -351,17 +476,17 @@
     "kind": "inference",
     "payload": {
       "form": "triple",
-      "object": "47 Air Defence Regiment",
+      "object": "22 Air Defence Regt",
       "object_value": null,
-      "predicate": "coref-distinct-from",
+      "predicate": "coref-same-as",
       "subject": "22 Air Defence Regiment"
     },
     "polarity": "positive",
     "premises": [
       "n01-orbat-register-l20-5",
-      "n01-orbat-register-l36-2"
+      "n01-orbat-register-l77"
     ],
-    "referent_id": null,
+    "referent_id": "ref:chunk0-n01-orbat-register-c1",
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-03-31",
@@ -375,7 +500,13 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_subject_mention": "n01-orbat-register-l20-5"
+      "_coref_forms": [
+        "22 Air Defence Regiment",
+        "47 Air Defence Regiment"
+      ],
+      "_object_mention": "n01-orbat-register-l36-3",
+      "_subject_mention": "n01-orbat-register-l20-5",
+      "source_quote": "Same station as 22 Air Defence Regiment, under a separate brigade."
     },
     "claim_id": "n01-orbat-register-l20-2",
     "doc_ref": {
@@ -395,7 +526,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -403,16 +534,19 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
       "form": "triple",
-      "object": "22 Air Defence Regt",
+      "object": "47 Air Defence Regiment",
       "object_value": null,
-      "predicate": "same-as",
+      "predicate": "coref-distinct-from",
       "subject": "22 Air Defence Regiment"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "n01-orbat-register-l20-5",
+      "n01-orbat-register-l36-3"
+    ],
     "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
@@ -427,7 +561,7 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_object_mention": "n01-orbat-register-l36-2",
+      "_object_mention": "n01-orbat-register-l77",
       "_subject_mention": "n01-orbat-register-l20-5"
     },
     "claim_id": "n01-orbat-register-l20-3",
@@ -448,7 +582,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -459,9 +593,9 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "47 Air Defence Regiment",
+      "object": "22 Air Defence Regt",
       "object_value": null,
-      "predicate": "distinct-from",
+      "predicate": "same-as",
       "subject": "22 Air Defence Regiment"
     },
     "polarity": "positive",
@@ -507,7 +641,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -557,7 +691,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -568,6 +702,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "22 Air Defence Regiment",
         "echelon": "regiment",
         "home_garrison": "Pano Aqil Cantonment",
         "service_branch": "Pakistan Army, Air Defence"
@@ -610,7 +745,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -630,8 +765,7 @@
           "surface_format": "toponym",
           "wgs84_lat": null,
           "wgs84_lon": null
-        },
-        "site_type": "cantonment"
+        }
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -662,9 +796,11 @@
       "_coref_gate": "FAIL",
       "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
       "_coref_quotes": [
-        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
+        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District.",
+        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
       ],
       "_coref_referent": "ref:n01-orbat-register-c2",
+      "_object_mention": "n01-orbat-register-l49",
       "_subject_mention": "n01-orbat-register-l21",
       "source_quote": "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
     },
@@ -686,7 +822,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -704,7 +840,8 @@
     },
     "polarity": "positive",
     "premises": [
-      "n01-orbat-register-l21"
+      "n01-orbat-register-l21",
+      "n01-orbat-register-l49"
     ],
     "referent_id": "ref:chunk0-n01-orbat-register-c2",
     "report_time": {
@@ -729,9 +866,11 @@
       "_coref_gate": "FAIL",
       "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
       "_coref_quotes": [
-        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
+        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District.",
+        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
       ],
       "_coref_referent": "ref:n01-orbat-register-c2",
+      "_object_mention": "n01-orbat-register-l50",
       "_subject_mention": "n01-orbat-register-l21",
       "source_quote": "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
     },
@@ -753,7 +892,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -771,7 +910,78 @@
     },
     "polarity": "positive",
     "premises": [
-      "n01-orbat-register-l21"
+      "n01-orbat-register-l21",
+      "n01-orbat-register-l50"
+    ],
+    "referent_id": "ref:chunk0-n01-orbat-register-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pano Aqil Cantonment",
+        "Pano Aqil Cantt."
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
+      "_coref_quotes": [
+        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District.",
+        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
+      ],
+      "_coref_referent": "ref:n01-orbat-register-c2",
+      "_object_mention": "n01-orbat-register-l77-2",
+      "_subject_mention": "n01-orbat-register-l21",
+      "source_quote": "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
+    },
+    "claim_id": "n01-orbat-register-l21-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 21,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        870,
+        890
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantt.",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pano Aqil Cantonment"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n01-orbat-register-l21",
+      "n01-orbat-register-l77-2"
     ],
     "referent_id": "ref:chunk0-n01-orbat-register-c2",
     "report_time": {
@@ -796,13 +1006,15 @@
       "_coref_gate": "FAIL",
       "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
       "_coref_quotes": [
-        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
+        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District.",
+        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
       ],
       "_coref_referent": "ref:n01-orbat-register-c2",
+      "_object_mention": "n01-orbat-register-l15",
       "_subject_mention": "n01-orbat-register-l21",
       "source_quote": "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
     },
-    "claim_id": "n01-orbat-register-l21-4",
+    "claim_id": "n01-orbat-register-l21-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -820,7 +1032,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -838,7 +1050,8 @@
     },
     "polarity": "positive",
     "premises": [
-      "n01-orbat-register-l21"
+      "n01-orbat-register-l21",
+      "n01-orbat-register-l15"
     ],
     "referent_id": "ref:chunk0-n01-orbat-register-c2",
     "report_time": {
@@ -863,13 +1076,15 @@
       "_coref_gate": "FAIL",
       "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
       "_coref_quotes": [
-        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
+        "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District.",
+        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as the preceding line; both renderings appear in source documents]"
       ],
       "_coref_referent": "ref:n01-orbat-register-c2",
+      "_object_mention": "n01-orbat-register-l44",
       "_subject_mention": "n01-orbat-register-l21",
       "source_quote": "The cantonment appears in open sources as Pano Aqil, Panu Aqil and Pannu Aqil, and as \"Pano Akil\" in older gazetteer material. All are the same cantonment in Sukkur District."
     },
-    "claim_id": "n01-orbat-register-l21-5",
+    "claim_id": "n01-orbat-register-l21-6",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -887,7 +1102,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -905,7 +1120,8 @@
     },
     "polarity": "positive",
     "premises": [
-      "n01-orbat-register-l21"
+      "n01-orbat-register-l21",
+      "n01-orbat-register-l44"
     ],
     "referent_id": "ref:chunk0-n01-orbat-register-c2",
     "report_time": {
@@ -939,7 +1155,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -950,8 +1166,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "family": "HQ-9",
-        "operator_branch": "Pakistan Army, Air Defence"
+        "family": "HQ-9"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -978,7 +1193,7 @@
       "_object_mention": "n01-orbat-register-l20-5",
       "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
       "_subject_mention": "n01-orbat-register-l23",
-      "source_quote": "Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family; the register records the class, not the sub-variant)"
+      "source_quote": "22 Air Defence Regiment\n        Garrison: Pano Aqil Cantonment\n        Arm/service: Pakistan Army, Air Defence\n        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family; the register records the class, not the sub-variant)"
     },
     "claim_id": "n01-orbat-register-l23-2",
     "doc_ref": {
@@ -1003,7 +1218,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1018,6 +1233,184 @@
       "object_value": null,
       "predicate": "inducted-into",
       "subject": "HQ-9 family"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l25",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 25,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1136,
+        1147
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "echelon": "battery"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "One battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": {
+      "_rejected_relation": {
+        "object": "22 Air Defence Regiment",
+        "predicate": "operated-by",
+        "reason": "no edge for (unit->unit)",
+        "source_quote": "22 Air Defence Regiment\n        Garrison: Pano Aqil Cantonment\n        Arm/service: Pakistan Army, Air Defence\n        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family; the register records the class, not the sub-variant)\n        Notes: Re-equipped from a legacy medium-range fit. One battery detached forward to the Ghotki dispersal site since February 2025"
+      }
+    },
+    "claim_id": "n01-orbat-register-l25-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 25,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1136,
+        1147
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "One battery"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "n01-orbat-register-l1",
+      "_subject_mention": "n01-orbat-register-l25"
+    },
+    "claim_id": "n01-orbat-register-l25-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 25,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1136,
+        1147
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 2,
+        "quarter": null,
+        "raw": "February 2025",
+        "year": 2025
+      },
+      "end": null,
+      "kind": "period",
+      "period_type": "as_of",
+      "start": null
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Ghotki dispersal site",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "One battery"
     },
     "polarity": "positive",
     "premises": [],
@@ -1053,7 +1446,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1064,6 +1457,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "9 Air Defence Regiment",
         "echelon": "regiment",
         "home_garrison": "Hyderabad Cantonment, Sindh"
       },
@@ -1088,6 +1482,7 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l30",
       "_subject_mention": "n01-orbat-register-l29"
     },
     "claim_id": "n01-orbat-register-l29-2",
@@ -1113,7 +1508,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1163,7 +1558,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1191,12 +1586,11 @@
           "surface_format": "toponym",
           "wgs84_lat": 25.8943,
           "wgs84_lon": 68.5247
-        },
-        "site_type": "cantonment"
+        }
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Hyderabad Cantonment"
+      "name": "Hyderabad Cantonment, Sindh"
     },
     "polarity": "positive",
     "premises": [],
@@ -1232,7 +1626,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1242,12 +1636,69 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "site_type": "station"
-      },
+      "attrs": {},
       "entity_type": "basing_site",
       "form": "entity",
       "name": "Badin"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l32",
+      "_subject_mention": "n01-orbat-register-l29"
+    },
+    "claim_id": "n01-orbat-register-l32-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 32,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1579,
+        1632
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Badin",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "9 Air Defence Regiment"
     },
     "polarity": "positive",
     "premises": [],
@@ -1283,7 +1734,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1294,6 +1745,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "11 Air Defence Brigade",
         "echelon": "brigade",
         "home_garrison": "Sukkur"
       },
@@ -1318,10 +1770,191 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "report_time",
-      "_object_mention": "n01-orbat-register-l21",
-      "_subject_mention": "n01-orbat-register-l36-2"
+      "_object_mention": "n01-orbat-register-l35",
+      "_subject_mention": "n01-orbat-register-l34"
     },
+    "claim_id": "n01-orbat-register-l34-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 34,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1634,
+        1679
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Sukkur",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "11 Air Defence Brigade"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l35",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 35,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1659,
+        1679
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Sukkur"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
     "claim_id": "n01-orbat-register-l36",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 36,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1686,
+        1709
+      ]
+    },
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2021",
+      "year": 2021
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "event_type": "InductionEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "47 Air Defence Regiment"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2021",
+        "year": 2021
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l21",
+      "_subject_mention": "n01-orbat-register-l36-3"
+    },
+    "claim_id": "n01-orbat-register-l36-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -1344,7 +1977,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1376,7 +2009,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "n01-orbat-register-l36-2",
+    "claim_id": "n01-orbat-register-l36-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -1394,7 +2027,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1405,6 +2038,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "47 Air Defence Regiment",
         "echelon": "regiment",
         "home_garrison": "Pano Aqil Cantonment",
         "service_branch": "Pakistan Army, Air Defence"
@@ -1431,22 +2065,22 @@
     "attributes": {
       "_as_stated_predicate": "equips",
       "_event_time_rung": "report_time",
-      "_object_mention": "n01-orbat-register-l36-2",
+      "_object_mention": "n01-orbat-register-l36-3",
       "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
       "_subject_mention": "n01-orbat-register-l23",
-      "source_quote": "Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)"
+      "source_quote": "47 Air Defence Regiment\n        Garrison: Pano Aqil Cantonment\n        Arm/service: Pakistan Army, Air Defence\n        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)"
     },
-    "claim_id": "n01-orbat-register-l39",
+    "claim_id": "n01-orbat-register-l36-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
       "frame": null,
-      "line": 39,
+      "line": 36,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1805,
+        1686,
         1871
       ]
     },
@@ -1459,7 +2093,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1489,89 +2123,37 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "equips",
-      "_event_time_rung": "report_time",
-      "_object_mention": "n01-orbat-register-l60-2",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "n01-orbat-register-l23",
-      "source_quote": "Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)"
-    },
-    "claim_id": "n01-orbat-register-l39-2",
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l41",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
       "frame": null,
-      "line": 39,
+      "line": 41,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1805,
-        1871
+        2029,
+        2049
       ]
     },
     "event_time": {
-      "boundary_source": "relative",
-      "iso_date": "2025-03-31",
-      "kind": "exact",
-      "raw": "2025-03-31"
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "year",
+      "half": null,
+      "kind": "label",
+      "month": null,
+      "quarter": null,
+      "raw": "2022",
+      "year": 2022
     },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "An air defence battery, unallocated",
-      "object_value": null,
-      "predicate": "inducted-into",
-      "subject": "HQ-9 family"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-03-31",
-      "kind": "exact",
-      "raw": "2025-03-31"
-    },
-    "resolved_ref": null,
-    "source_id": "n01_orbat_register",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "n01-orbat-register-l40",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
-      "frame": null,
-      "line": 40,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1913,
-        1940
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1586,74 +2168,22 @@
       "form": "event",
       "location": null,
       "participants": [
-        "long-range air defence role",
         "47 Air Defence Regiment"
       ],
-      "time_interval": null
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2022",
+        "year": 2022
+      }
     },
     "polarity": "positive",
     "premises": [],
-    "referent_id": null,
-    "report_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2025-03-31",
-      "kind": "exact",
-      "raw": "2025-03-31"
-    },
-    "resolved_ref": null,
-    "source_id": "n01_orbat_register",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "3 Air Defence Brigade",
-        "11 Air Defence Brigade"
-      ],
-      "_object_mention": "n01-orbat-register-l34",
-      "_subject_mention": "n01-orbat-register-l18",
-      "source_quote": "under a separate brigade"
-    },
-    "claim_id": "n01-orbat-register-l42",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
-      "frame": null,
-      "line": 42,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2101,
-        2125
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "inference",
-    "payload": {
-      "form": "triple",
-      "object": "11 Air Defence Brigade",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "3 Air Defence Brigade"
-    },
-    "polarity": "positive",
-    "premises": [
-      "n01-orbat-register-l18",
-      "n01-orbat-register-l34"
-    ],
     "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
@@ -1679,14 +2209,14 @@
       "row": null,
       "span": [
         2133,
-        2214
+        2188
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1697,6 +2227,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "33 Air Defence Regiment",
         "echelon": "regiment",
         "home_garrison": "Panu Aqil"
       },
@@ -1721,6 +2252,7 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l44",
       "_subject_mention": "n01-orbat-register-l43"
     },
     "claim_id": "n01-orbat-register-l43-2",
@@ -1746,7 +2278,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1776,34 +2308,27 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "An air defence battery, unallocated",
-        "one battery"
-      ],
-      "_subject_mention": "n01-orbat-register-l60-2",
-      "source_quote": "The compiler has not been able to allocate the battery to either of them and carries it here\n          unallocated."
-    },
-    "claim_id": "n01-orbat-register-l60",
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l44",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
       "frame": null,
-      "line": 60,
+      "line": 44,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2940,
-        2975
+        2169,
+        2214
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1811,18 +2336,66 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "inference",
+    "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "one battery",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "An air defence battery, unallocated"
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Panu Aqil"
     },
     "polarity": "positive",
-    "premises": [
-      "n01-orbat-register-l60-2"
-    ],
+    "premises": [],
+    "referent_id": "ref:chunk0-n01-orbat-register-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l46",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 46,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2262,
+        2314
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "compilation"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "2019 compilation"
+    },
+    "polarity": "positive",
+    "premises": [],
     "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
@@ -1837,7 +2410,156 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "n01-orbat-register-l60-2",
+    "claim_id": "n01-orbat-register-l49",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 49,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2414,
+        2491
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pannu Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n01-orbat-register-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l50",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 50,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2501,
+        2510
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Akil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n01-orbat-register-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l50-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 50,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2515,
+        2539
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "gazetteer"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "older gazetteer material"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l60",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
@@ -1847,7 +2569,7 @@
       "region": null,
       "row": null,
       "span": [
-        2940,
+        2938,
         3087
       ]
     },
@@ -1855,7 +2577,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1890,9 +2612,71 @@
   {
     "asserts": "relationship",
     "attributes": {
+      "_as_stated_predicate": "equips",
+      "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l60",
+      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
+      "_subject_mention": "n01-orbat-register-l23",
+      "source_quote": "- An air defence battery, unallocated\n        Garrison: Pano Aqil Cantonment\n        Arm/service: Pakistan Army, Air Defence\n        Echelon: battery\n        Equipment: long-range surface-to-air, Chinese-origin (HQ-9 family)"
+    },
+    "claim_id": "n01-orbat-register-l60-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 60,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2938,
+        3162
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "An air defence battery, unallocated",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9 family"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
       "_event_time_rung": "report_time",
       "_object_mention": "n01-orbat-register-l21",
-      "_subject_mention": "n01-orbat-register-l60-2"
+      "_subject_mention": "n01-orbat-register-l60"
     },
     "claim_id": "n01-orbat-register-l65",
     "doc_ref": {
@@ -1917,7 +2701,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1947,58 +2731,27 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_cluster": "c1",
-      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
-      "_coref_forms": [
-        "22 Air Defence Regiment",
-        "22 Air Defence Regt"
-      ],
-      "_coref_gate": "FAIL",
-      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
-      "_coref_quotes": [
-        "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as",
-        "the preceding line; both renderings appear in source documents]"
-      ],
-      "_coref_referent": "ref:n01-orbat-register-c1",
-      "_subject_mention": "n01-orbat-register-l20-5",
-      "source_quote": "22 Air Defence Regt ..................... Pano Aqil Cantt.        [index duplicate — same formation as"
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l66",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3245,
+        3276
+      ]
     },
-    "claim_id": "n01-orbat-register-l77",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
-        "frame": null,
-        "line": 77,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          3776,
-          3878
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
-        "frame": null,
-        "line": 78,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          3923,
-          3986
-        ]
-      }
-    ],
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -2006,19 +2759,229 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "inference",
+    "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "22 Air Defence Regt",
-      "object_value": null,
-      "predicate": "coref-same-as",
-      "subject": "22 Air Defence Regiment"
+      "attrs": {
+        "source_type": "correspondence"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "cantonment board correspondence"
     },
     "polarity": "positive",
-    "premises": [
-      "n01-orbat-register-l20-5"
-    ],
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l66-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 66,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3293,
+        3321
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "press"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "local press items"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l77",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 77,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3776,
+        3834
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designator": "22 Air Defence Regt",
+        "home_garrison": "Pano Aqil Cantt."
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "22 Air Defence Regt"
+    },
+    "polarity": "positive",
+    "premises": [],
     "referent_id": "ref:chunk0-n01-orbat-register-c1",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n01-orbat-register-l77-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 77,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3776,
+        3834
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil Cantt."
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n01-orbat-register-c2",
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l77-2",
+      "_subject_mention": "n01-orbat-register-l77"
+    },
+    "claim_id": "n01-orbat-register-l77-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 77,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3776,
+        3834
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantt.",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "22 Air Defence Regt"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": {
       "boundary_source": "explicit",
       "iso_date": "2025-03-31",
@@ -2050,7 +3013,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -2061,6 +3024,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "designator": "56 Air Defence Regiment",
         "echelon": "regiment",
         "home_garrison": "Multan Cantonment"
       },
@@ -2102,7 +3066,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -2112,12 +3076,69 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "site_type": "cantonment"
-      },
+      "attrs": {},
       "entity_type": "basing_site",
       "form": "entity",
       "name": "Multan Cantonment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "resolved_ref": null,
+    "source_id": "n01_orbat_register",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "report_time",
+      "_object_mention": "n01-orbat-register-l81-2",
+      "_subject_mention": "n01-orbat-register-l81"
+    },
+    "claim_id": "n01-orbat-register-l81-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n01_orbat_register.txt",
+      "frame": null,
+      "line": 81,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        4112,
+        4175
+      ]
+    },
+    "event_time": {
+      "boundary_source": "relative",
+      "iso_date": "2025-03-31",
+      "kind": "exact",
+      "raw": "2025-03-31"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Multan Cantonment",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "56 Air Defence Regiment"
     },
     "polarity": "positive",
     "premises": [],

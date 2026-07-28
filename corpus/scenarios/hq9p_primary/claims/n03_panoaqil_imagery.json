@@ -20,7 +20,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -32,12 +32,12 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "unit/formation identification"
+          "unit marking / vehicle registration / formation caption"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "unit/formation identification"
+      "name": "unit marking / vehicle registration / formation caption"
     },
     "polarity": "positive",
     "premises": [],
@@ -48,14 +48,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "Six elongated canister-type objects; HQ-9-family launchers; HT-233-type radar",
-        "Four elongated canister-type objects; one rectangular-planform radar-type object"
-      ],
-      "source_quote": "One radar-type object of a different planform: rectangular rather than octagonal, on a lower mount, approximately 210 m north of the launcher arc. Not the same class of object as the radar at the north position."
-    },
+    "asserts": "event",
+    "attributes": null,
     "claim_id": "n03-panoaqil-imagery-l1-2",
     "doc_ref": {
       "bbox": null,
@@ -70,11 +64,21 @@
         54
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "month",
+      "half": null,
+      "kind": "label",
+      "month": 11,
+      "quarter": null,
+      "raw": "Nov 2023",
+      "year": 2023
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -84,11 +88,33 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Four elongated canister-type objects; one rectangular-planform radar-type object",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "Six elongated canister-type objects; HQ-9-family launchers; HT-233-type radar"
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 0.0
+        }
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "Pano Aqil Cantonment"
+      ],
+      "time_interval": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "month",
+        "half": null,
+        "kind": "label",
+        "month": 11,
+        "quarter": null,
+        "raw": "Nov 2023",
+        "year": 2023
+      }
     },
     "polarity": "positive",
     "premises": [],
@@ -111,7 +137,7 @@
       "region": null,
       "row": null,
       "span": [
-        110,
+        146,
         213
       ]
     },
@@ -119,7 +145,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -140,11 +166,12 @@
           "wgs84_lat": null,
           "wgs84_lon": null
         },
-        "site_type": "Long-range SAM positions"
+        "occupancy_state": "occupied",
+        "site_type": "Cantonment"
       },
       "entity_type": "basing_site",
       "form": "entity",
-      "name": "Pano Aqil Cantonment and environs"
+      "name": "Pano Aqil Cantonment"
     },
     "polarity": "positive",
     "premises": [],
@@ -155,33 +182,32 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "North position, Pano Aqil Cantonment",
-        "South-east position, Pano Aqil Cantonment"
-      ],
-      "source_quote": "Separation from the north position, centre to centre: 5.6 km."
-    },
-    "claim_id": "n03-panoaqil-imagery-l18",
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l39",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
       "frame": null,
-      "line": 18,
+      "line": 39,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        761,
-        822
+        1728,
+        1759
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-11",
+      "kind": "exact",
+      "raw": "11 Mar 2025"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -191,90 +217,33 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "South-east position, Pano Aqil Cantonment",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "North position, Pano Aqil Cantonment"
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 4.0
+        },
+        "object_type": "elongated canister-type objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "elongated canister-type objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-11",
+        "kind": "exact",
+        "raw": "11 Mar 2025"
+      }
     },
     "polarity": "positive",
     "premises": [],
     "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n03_panoaqil_imagery",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_cluster": "c1",
-      "_coref_evidence": "UNAMBIGUOUS_ANAPHOR",
-      "_coref_forms": [
-        "Six elongated canister-type objects; HQ-9-family launchers; HT-233-type radar",
-        "six-object fan"
-      ],
-      "_coref_gate": "FAIL",
-      "_coref_gate_detail": "the antecedent is undeclared — no entity claim asserts it, so nothing in the document states what the anaphor is being resolved TO",
-      "_coref_quotes": [
-        "Six elongated canister-type objects in a fan around a central hardstand",
-        "the north position is present and occupied with the same six-object fan"
-      ],
-      "_coref_referent": "ref:n03-panoaqil-imagery-c1",
-      "source_quote": "Six elongated canister-type objects in a fan around a central hardstand"
-    },
-    "claim_id": "n03-panoaqil-imagery-l39",
-    "doc_ref": [
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-        "frame": null,
-        "line": 39,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          1724,
-          1795
-        ]
-      },
-      {
-        "bbox": null,
-        "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-        "frame": null,
-        "line": 65,
-        "page": null,
-        "region": null,
-        "row": null,
-        "span": [
-          3401,
-          3472
-        ]
-      }
-    ],
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "six-object fan",
-      "object_value": null,
-      "predicate": "coref-same-as",
-      "subject": "Six elongated canister-type objects; HQ-9-family launchers; HT-233-type radar"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": "ref:chunk0-n03-panoaqil-imagery-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "n03_panoaqil_imagery",
@@ -297,11 +266,16 @@
         1759
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-11",
+      "kind": "exact",
+      "raw": "11 Mar 2025"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -318,9 +292,8 @@
           "max": null,
           "min": null,
           "unit": null,
-          "value": 4.0
+          "value": 6.0
         },
-        "dimensions": "same object dimensions as at the north position within measurement error",
         "object_type": "elongated canister-type objects"
       },
       "event_type": "SightingEvent",
@@ -329,7 +302,12 @@
       "participants": [
         "elongated canister-type objects"
       ],
-      "time_interval": null
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-11",
+        "kind": "exact",
+        "raw": "11 Mar 2025"
+      }
     },
     "polarity": "positive",
     "premises": [],
@@ -352,15 +330,20 @@
       "region": null,
       "row": null,
       "span": [
-        1728,
+        1738,
         1759
       ]
     },
-    "event_time": null,
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-11",
+      "kind": "exact",
+      "raw": "11 Mar 2025"
+    },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -377,18 +360,22 @@
           "max": null,
           "min": null,
           "unit": null,
-          "value": 6.0
+          "value": 4.0
         },
-        "dimensions": "spacing and dimensions consistent with published HQ-9-family transporter-erector-launcher geometry",
-        "object_type": "elongated canister-type objects"
+        "object_type": "canister-type objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "elongated canister-type objects"
+        "canister-type objects"
       ],
-      "time_interval": null
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-11",
+        "kind": "exact",
+        "raw": "11 Mar 2025"
+      }
     },
     "polarity": "positive",
     "premises": [],
@@ -419,7 +406,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -430,8 +417,9 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "confidence_language": "spacing and dimensions consistent with published HQ-9-family transporter-erector-launcher geometry",
-        "family": "HQ-9"
+        "confidence_language": "consistent with",
+        "family": "HQ-9",
+        "site_signature_geometry": "published HQ-9-family transporter-erector-launcher geometry"
       },
       "entity_type": "variant",
       "form": "entity",
@@ -446,27 +434,88 @@
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l41",
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "n03-panoaqil-imagery-l5",
+      "_subject_mention": "n03-panoaqil-imagery-l40"
+    },
+    "claim_id": "n03-panoaqil-imagery-l40-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
       "frame": null,
-      "line": 41,
+      "line": 40,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        1915,
-        1951
+        1850,
+        1861
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-11",
+        "kind": "exact",
+        "raw": "11 Mar 2025, 2025"
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Aqil Cantonment",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "HQ-9-family"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l40-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 40,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1850,
+        1890
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -477,23 +526,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "count": {
-          "approx": false,
-          "count_state": "fielded",
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 1.0
-        },
-        "object_type": "octagonal-planform radar-type object"
+        "component_class": "launcher",
+        "functional_role": "transporter-erector-launcher"
       },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "octagonal-planform radar-type object"
-      ],
-      "time_interval": null
+      "entity_type": "component",
+      "form": "entity",
+      "name": "HQ-9-family transporter-erector-launcher"
     },
     "polarity": "positive",
     "premises": [],
@@ -517,14 +555,14 @@
       "row": null,
       "span": [
         2083,
-        2094
+        2111
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -535,12 +573,13 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "engagement radar",
-        "functional_role": "engagement radar"
+        "component_class": "radar",
+        "functional_role": "engagement radar",
+        "model_designation": "HT-233"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "HT-233-type"
+      "name": "HT-233-type engagement radar"
     },
     "polarity": "positive",
     "premises": [],
@@ -551,8 +590,16 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "HT-233-type engagement radar",
+        "rectangular radar-type object"
+      ],
+      "_object_mention": "n03-panoaqil-imagery-l50",
+      "_subject_mention": "n03-panoaqil-imagery-l42",
+      "source_quote": "Not the same class of object as the radar at the north position."
+    },
     "claim_id": "n03-panoaqil-imagery-l42-2",
     "doc_ref": {
       "bbox": null,
@@ -571,7 +618,61 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "rectangular radar-type object",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "HT-233-type engagement radar"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n03-panoaqil-imagery-l42",
+      "n03-panoaqil-imagery-l50"
+    ],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "n03-panoaqil-imagery-l40",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "n03-panoaqil-imagery-l42",
+      "source_quote": "HT-233-type engagement radar associated with this family."
+    },
+    "claim_id": "n03-panoaqil-imagery-l42-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 42,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2083,
+        2111
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -581,12 +682,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "confidence_language": "Planform and mount geometry consistent with the HT-233-type engagement radar associated with this family. Identification is by planform comparison only."
-      },
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HT-233-type engagement radar"
+      "form": "triple",
+      "object": "HQ-9-family",
+      "object_value": null,
+      "predicate": "equips",
+      "subject": "HT-233-type engagement radar"
     },
     "polarity": "positive",
     "premises": [],
@@ -597,7 +697,7 @@
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "n03-panoaqil-imagery-l44",
     "doc_ref": {
@@ -610,14 +710,160 @@
       "row": null,
       "span": [
         2196,
-        2292
+        2226
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "vehicle",
+        "functional_role": "utility vehicle"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "soft-skin utility vehicles"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l44-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 44,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2228,
+        2271
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "shelter",
+        "functional_role": "command/communications shelter"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "command/communications shelter"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l44-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 44,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2273,
+        2291
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "component_class": "power supply",
+        "functional_role": "generator trailer"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "generator trailers"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l45",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2326
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-19",
+      "kind": "exact",
+      "raw": "2025-03-19"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -630,21 +876,230 @@
       "attrs": {
         "count": {
           "approx": false,
-          "count_state": "fielded",
+          "count_state": null,
           "max": null,
           "min": null,
           "unit": null,
-          "value": 1.0
+          "value": 4.0
         },
-        "object_type": "soft-skin utility vehicles, command/communications shelter, generator trailers"
+        "object_type": "canister-type objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "soft-skin utility vehicles, command/communications shelter, generator trailers"
+        "canister-type objects"
       ],
-      "time_interval": null
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-19",
+        "kind": "exact",
+        "raw": "2025-03-19"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l45-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2326
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-27",
+      "kind": "exact",
+      "raw": "27/03/2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 4.0
+        },
+        "object_type": "canister-type objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "canister-type objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-27",
+        "kind": "exact",
+        "raw": "27/03/2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l45-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2371
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-19",
+      "kind": "exact",
+      "raw": "2025-03-19"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 6.0
+        },
+        "object_type": "elongated canister-type objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "elongated canister-type objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-19",
+        "kind": "exact",
+        "raw": "2025-03-19"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l45-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 45,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2297,
+        2371
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-27",
+      "kind": "exact",
+      "raw": "27/03/2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 6.0
+        },
+        "object_type": "elongated canister-type objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "elongated canister-type objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-27",
+        "kind": "exact",
+        "raw": "27/03/2025"
+      }
     },
     "polarity": "positive",
     "premises": [],
@@ -658,9 +1113,9 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "stated",
-      "occupancy_state": "Occupied on all three passes. Object count stable at six across all three."
+      "occupancy_state": "occupied"
     },
-    "claim_id": "n03-panoaqil-imagery-l45",
+    "claim_id": "n03-panoaqil-imagery-l45-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
@@ -690,7 +1145,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -701,10 +1156,10 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "North position, Pano Aqil Cantonment",
+      "object": "North position",
       "object_value": null,
       "predicate": "observed-at",
-      "subject": "Six elongated canister-type objects; HQ-9-family launchers; HT-233-type radar"
+      "subject": "Six elongated canister-type objects, HT-233-type engagement radar, command/communications shelter, generator trailers, soft-skin utility vehicles"
     },
     "polarity": "positive",
     "premises": [],
@@ -715,27 +1170,27 @@
     "targets": null
   },
   {
-    "asserts": "event",
+    "asserts": "entity",
     "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l55",
+    "claim_id": "n03-panoaqil-imagery-l50",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
       "frame": null,
-      "line": 55,
+      "line": 50,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2999,
-        3037
+        2536,
+        2634
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -746,23 +1201,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "count": {
-          "approx": false,
-          "count_state": "fielded",
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 1.0
-        },
-        "object_type": "large vehicle, function not determined"
+        "component_class": "radar",
+        "functional_role": "engagement/acquisition radar"
       },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "large vehicle, function not determined"
-      ],
-      "time_interval": null
+      "entity_type": "component",
+      "form": "entity",
+      "name": "rectangular radar-type object"
     },
     "polarity": "positive",
     "premises": [],
@@ -776,9 +1220,198 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "stated",
-      "occupancy_state": "Occupied on all three passes. Object count stable at four across all three."
+      "occupancy_state": "occupied"
     },
+    "claim_id": "n03-panoaqil-imagery-l55",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 55,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2984,
+        3012
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-11",
+      "kind": "exact",
+      "raw": "11 Mar 2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "South-east position",
+      "object_value": null,
+      "predicate": "observed-at",
+      "subject": "One additional large vehicle"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
     "claim_id": "n03-panoaqil-imagery-l57",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 57,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3103,
+        3178
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-19",
+      "kind": "exact",
+      "raw": "2025-03-19"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 4.0
+        },
+        "object_type": "elongated canister-type objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "elongated canister-type objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-19",
+        "kind": "exact",
+        "raw": "2025-03-19"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l57-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 57,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3103,
+        3178
+      ]
+    },
+    "event_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2025-03-27",
+      "kind": "exact",
+      "raw": "27/03/2025"
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "count": {
+          "approx": false,
+          "count_state": null,
+          "max": null,
+          "min": null,
+          "unit": null,
+          "value": 4.0
+        },
+        "object_type": "elongated canister-type objects"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "elongated canister-type objects"
+      ],
+      "time_interval": {
+        "boundary_source": "explicit",
+        "iso_date": "2025-03-27",
+        "kind": "exact",
+        "raw": "27/03/2025"
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "occupancy_state": "occupied"
+    },
+    "claim_id": "n03-panoaqil-imagery-l57-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
@@ -808,7 +1441,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -819,68 +1452,10 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "South-east position, Pano Aqil Cantonment",
+      "object": "South-east position",
       "object_value": null,
       "predicate": "observed-at",
-      "subject": "Four elongated canister-type objects; one rectangular-planform radar-type object"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n03_panoaqil_imagery",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l60",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-      "frame": null,
-      "line": 60,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3200,
-        3295
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "count": {
-          "approx": false,
-          "count_state": "fielded",
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 1.0
-        },
-        "object_type": "canister-type objects, rectangular-planform radar-type object, soft-skin vehicles"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "canister-type objects, rectangular-planform radar-type object, soft-skin vehicles"
-      ],
-      "time_interval": null
+      "subject": "Four elongated canister-type objects, rectangular radar-type object"
     },
     "polarity": "positive",
     "premises": [],
@@ -894,9 +1469,9 @@
     "asserts": "relationship",
     "attributes": {
       "_event_time_rung": "stated",
-      "occupancy_state": "Occupied on all three passes."
+      "occupancy_state": "occupied"
     },
-    "claim_id": "n03-panoaqil-imagery-l60-2",
+    "claim_id": "n03-panoaqil-imagery-l60",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
@@ -907,7 +1482,7 @@
       "row": null,
       "span": [
         3200,
-        3329
+        3294
       ]
     },
     "event_time": {
@@ -926,7 +1501,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -941,64 +1516,6 @@
       "object_value": null,
       "predicate": "observed-at",
       "subject": "Four canister-type objects, one rectangular-planform radar-type object, two soft-skin vehicles"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n03_panoaqil_imagery",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l60-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-      "frame": null,
-      "line": 60,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3232,
-        3270
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "count": {
-          "approx": false,
-          "count_state": "fielded",
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 1.0
-        },
-        "object_type": "rectangular-planform radar-type object"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "rectangular-planform radar-type object"
-      ],
-      "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
@@ -1039,7 +1556,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1052,19 +1569,19 @@
       "attrs": {
         "count": {
           "approx": false,
-          "count_state": "fielded",
+          "count_state": null,
           "max": null,
           "min": null,
           "unit": null,
           "value": 6.0
         },
-        "object_type": "six-object fan"
+        "object_type": "elongated canister-type objects"
       },
       "event_type": "SightingEvent",
       "form": "event",
       "location": null,
       "participants": [
-        "six-object fan"
+        "elongated canister-type objects"
       ],
       "time_interval": {
         "boundary_source": "derived_from_label",
@@ -1120,7 +1637,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1135,146 +1652,6 @@
       "object_value": null,
       "predicate": "observed-at",
       "subject": "six-object fan"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n03_panoaqil_imagery",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l66",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-      "frame": null,
-      "line": 66,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3512,
-        3525
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 11,
-      "quarter": null,
-      "raw": "Nov 2023",
-      "year": 2023
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "object_type": "graded ground"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "graded ground"
-      ],
-      "time_interval": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "month",
-        "half": null,
-        "kind": "label",
-        "month": 11,
-        "quarter": null,
-        "raw": "Nov 2023",
-        "year": 2023
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n03_panoaqil_imagery",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l66-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-      "frame": null,
-      "line": 66,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3512,
-        3541
-      ]
-    },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 11,
-      "quarter": null,
-      "raw": "Nov 2023",
-      "year": 2023
-    },
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "object_type": "graded ground with revetments"
-      },
-      "event_type": "SightingEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "graded ground with revetments"
-      ],
-      "time_interval": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "month",
-        "half": null,
-        "kind": "label",
-        "month": 11,
-        "quarter": null,
-        "raw": "Nov 2023",
-        "year": 2023
-      }
     },
     "polarity": "positive",
     "premises": [],
@@ -1305,7 +1682,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1323,6 +1700,54 @@
       "entity_type": "known_gap",
       "form": "entity",
       "name": "imagery coverage between Nov 2023 and Mar 2025"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n03_panoaqil_imagery",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n03-panoaqil-imagery-l73",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
+      "frame": null,
+      "line": 73,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3919,
+        3990
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "missing_slots": [
+          "unoccupied baseline frame for cantonment positions"
+        ]
+      },
+      "entity_type": "known_gap",
+      "form": "entity",
+      "name": "unoccupied baseline frame for cantonment positions"
     },
     "polarity": "positive",
     "premises": [],
@@ -1353,7 +1778,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1365,60 +1790,12 @@
     "payload": {
       "attrs": {
         "missing_slots": [
-          "SAR / RF / SIGINT"
+          "SAR imagery / RF/SIGINT correlation"
         ]
       },
       "entity_type": "known_gap",
       "form": "entity",
-      "name": "SAR / RF / SIGINT"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n03_panoaqil_imagery",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "n03-panoaqil-imagery-l75",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n03_panoaqil_imagery.txt",
-      "frame": null,
-      "line": 75,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        4066,
-        4135
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "missing_slots": [
-          "radar type confirmation"
-        ]
-      },
-      "entity_type": "known_gap",
-      "form": "entity",
-      "name": "radar type confirmation"
+      "name": "SAR imagery / RF/SIGINT correlation"
     },
     "polarity": "positive",
     "premises": [],

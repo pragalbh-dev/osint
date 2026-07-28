@@ -4,18 +4,18 @@
     "attributes": {
       "posted_at": "May 2025"
     },
-    "claim_id": "d16-adversary-denial-l3",
+    "claim_id": "d16-adversary-denial-l2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
       "frame": null,
-      "line": 3,
+      "line": 2,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        149,
-        164
+        54,
+        203
       ]
     },
     "event_time": {
@@ -32,7 +32,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -51,6 +51,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d16_adversary_denial",
@@ -87,7 +88,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -104,7 +105,7 @@
       "form": "event",
       "location": null,
       "participants": [
-        "HQ-9/P batteries",
+        "HQ-9/P",
         "Army Air Defence Command"
       ],
       "time_interval": {
@@ -121,6 +122,91 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d16_adversary_denial",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d16-adversary-denial-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d16_adversary_denial.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2469,
+        2751
+      ]
+    },
+    "event_time": {
+      "approximate": false,
+      "as_of": null,
+      "end": null,
+      "kind": "period",
+      "period_type": "range",
+      "start": {
+        "boundary_source": "derived_from_label",
+        "day": null,
+        "granularity": "year",
+        "half": null,
+        "kind": "label",
+        "month": null,
+        "quarter": null,
+        "raw": "2017",
+        "year": 2017
+      }
+    },
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "activity": "periodic Chinese technician visits"
+      },
+      "event_type": "SightingEvent",
+      "form": "event",
+      "location": null,
+      "participants": [
+        "S-band engagement radar and the associated missile-guidance uplink"
+      ],
+      "time_interval": {
+        "approximate": false,
+        "as_of": null,
+        "end": null,
+        "kind": "period",
+        "period_type": "range",
+        "start": {
+          "boundary_source": "derived_from_label",
+          "day": null,
+          "granularity": "year",
+          "half": null,
+          "kind": "label",
+          "month": null,
+          "quarter": null,
+          "raw": "2017",
+          "year": 2017
+        }
+      }
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d16_adversary_denial",
@@ -157,7 +243,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -190,6 +276,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d16_adversary_denial",
@@ -216,7 +303,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -235,6 +322,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d16_adversary_denial",
@@ -261,7 +349,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -280,6 +368,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d16_adversary_denial",
@@ -306,7 +395,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -325,6 +414,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d16_adversary_denial",

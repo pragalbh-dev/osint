@@ -1,7 +1,11 @@
 [
   {
-    "asserts": "event",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_event_time_rung": "stated",
+      "_object_mention": "n05-regiment-lineage-note-l12-6",
+      "_subject_mention": "n05-regiment-lineage-note-l9-2"
+    },
     "claim_id": "n05-regiment-lineage-note-l9",
     "doc_ref": {
       "bbox": null,
@@ -17,266 +21,20 @@
       ]
     },
     "event_time": {
-      "approximate": false,
-      "as_of": {
-        "boundary_source": "derived_from_label",
-        "day": null,
-        "granularity": "month",
-        "half": null,
-        "kind": "label",
-        "month": 2,
-        "quarter": null,
-        "raw": "February 2025",
-        "year": 2025
-      },
-      "end": null,
-      "kind": "period",
-      "period_type": "as_of",
-      "start": null
+      "boundary_source": "derived_from_label",
+      "day": null,
+      "granularity": "month",
+      "half": null,
+      "kind": "label",
+      "month": 3,
+      "quarter": null,
+      "raw": "March 2025",
+      "year": 2025
     },
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "quantity": {
-          "approx": false,
-          "count_state": null,
-          "max": null,
-          "min": null,
-          "unit": null,
-          "value": 1.0
-        }
-      },
-      "event_type": "TransferEvent",
-      "form": "event",
-      "location": {
-        "geocode_candidates": [
-          {
-            "confidence": 0.9,
-            "label": "Pano Aqil Cantonment",
-            "lat": 27.8578,
-            "lon": 69.1096,
-            "source": "gazetteer"
-          }
-        ],
-        "precision_class": null,
-        "proposed_alias": "Pano Aqil Cantonment",
-        "raw": "Pano Aqil Cantonment",
-        "resolved_place_ref": null,
-        "surface_format": "toponym",
-        "wgs84_lat": 27.8578,
-        "wgs84_lon": 69.1096
-      },
-      "participants": [
-        "22 Air Defence Regiment"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "month",
-          "half": null,
-          "kind": "label",
-          "month": 2,
-          "quarter": null,
-          "raw": "February 2025",
-          "year": 2025
-        },
-        "end": null,
-        "kind": "period",
-        "period_type": "as_of",
-        "start": null
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "n05-regiment-lineage-note-l36",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6"
-    },
-    "claim_id": "n05-regiment-lineage-note-l9-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        413,
-        436
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "22 Air Defence Squadron",
-      "object_value": null,
-      "predicate": "distinct-from",
-      "subject": "22 Air Defence Regiment"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "n05-regiment-lineage-note-l30-2",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6"
-    },
-    "claim_id": "n05-regiment-lineage-note-l9-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        413,
-        436
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "22 Medium Regiment (Artillery)",
-      "object_value": null,
-      "predicate": "distinct-from",
-      "subject": "22 Air Defence Regiment"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "n05-regiment-lineage-note-l43-2",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6"
-    },
-    "claim_id": "n05-regiment-lineage-note-l9-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        413,
-        436
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "47 Air Defence Regiment",
-      "object_value": null,
-      "predicate": "distinct-from",
-      "subject": "22 Air Defence Regiment"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "n05-regiment-lineage-note-l12-5",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6",
-      "_undated_perishable": true
-    },
-    "claim_id": "n05-regiment-lineage-note-l9-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        413,
-        436
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -303,7 +61,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l9-6",
+    "claim_id": "n05-regiment-lineage-note-l9-2",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
@@ -314,14 +72,14 @@
       "row": null,
       "span": [
         413,
-        655
+        610
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -332,9 +90,9 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "echelon": "Regiment",
+        "designator": "22 Air Defence Regiment",
         "home_garrison": "Pano Aqil Cantonment",
-        "service_branch": "Pakistan Army, Air Defence"
+        "service_branch": "Pakistan Army"
       },
       "entity_type": "unit",
       "form": "entity",
@@ -360,13 +118,13 @@
       "_coref_gate": "PASS",
       "_coref_gate_detail": "the licensing evidence contains both surface forms across 2 verbatim spans and equivalence marker 'also known as', and the two forms differ by more than a mark",
       "_coref_quotes": [
-        "22 Air Defence Regiment, also known as the Indus Gunners",
-        "22 Air Defence Regiment, formerly 22 Light Anti-Aircraft Regiment"
+        "Designation        : 22 Air Defence Regiment, also known as the Indus Gunners",
+        "22 Air Defence Regiment, formerly 22 Light Anti-Aircraft Regiment."
       ],
       "_coref_referent": "ref:n05-regiment-lineage-note-c1",
       "_object_mention": "n05-regiment-lineage-note-l21",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6",
-      "source_quote": "22 Air Defence Regiment, also known as the Indus Gunners"
+      "_subject_mention": "n05-regiment-lineage-note-l9-2",
+      "source_quote": "Designation        : 22 Air Defence Regiment, also known as the Indus Gunners"
     },
     "claim_id": "n05-regiment-lineage-note-l11",
     "doc_ref": [
@@ -379,7 +137,7 @@
         "region": null,
         "row": null,
         "span": [
-          510,
+          489,
           566
         ]
       },
@@ -393,7 +151,7 @@
         "row": null,
         "span": [
           1059,
-          1124
+          1125
         ]
       }
     ],
@@ -401,7 +159,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -419,7 +177,7 @@
     },
     "polarity": "positive",
     "premises": [
-      "n05-regiment-lineage-note-l9-6",
+      "n05-regiment-lineage-note-l9-2",
       "n05-regiment-lineage-note-l21"
     ],
     "referent_id": "ref:chunk0-n05-regiment-lineage-note-c1",
@@ -435,17 +193,18 @@
       "_coref_evidence": "EXPLICIT_EQUIVALENCE",
       "_coref_forms": [
         "22 Air Defence Regiment",
-        "the Indus Gunners"
+        "Indus Gunners"
       ],
       "_coref_gate": "PASS",
       "_coref_gate_detail": "the licensing evidence contains both surface forms across 2 verbatim spans and equivalence marker 'also known as', and the two forms differ by more than a mark",
       "_coref_quotes": [
-        "22 Air Defence Regiment, also known as the Indus Gunners",
-        "22 Air Defence Regiment, formerly 22 Light Anti-Aircraft Regiment"
+        "Designation        : 22 Air Defence Regiment, also known as the Indus Gunners",
+        "22 Air Defence Regiment, formerly 22 Light Anti-Aircraft Regiment."
       ],
       "_coref_referent": "ref:n05-regiment-lineage-note-c1",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6",
-      "source_quote": "22 Air Defence Regiment, also known as the Indus Gunners"
+      "_object_mention": "n05-regiment-lineage-note-l11-3",
+      "_subject_mention": "n05-regiment-lineage-note-l9-2",
+      "source_quote": "Designation        : 22 Air Defence Regiment, also known as the Indus Gunners"
     },
     "claim_id": "n05-regiment-lineage-note-l11-2",
     "doc_ref": [
@@ -458,7 +217,7 @@
         "region": null,
         "row": null,
         "span": [
-          510,
+          489,
           566
         ]
       },
@@ -472,7 +231,7 @@
         "row": null,
         "span": [
           1059,
-          1124
+          1125
         ]
       }
     ],
@@ -480,7 +239,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -491,14 +250,15 @@
     "kind": "inference",
     "payload": {
       "form": "triple",
-      "object": "the Indus Gunners",
+      "object": "Indus Gunners",
       "object_value": null,
       "predicate": "coref-same-as",
       "subject": "22 Air Defence Regiment"
     },
     "polarity": "positive",
     "premises": [
-      "n05-regiment-lineage-note-l9-6"
+      "n05-regiment-lineage-note-l9-2",
+      "n05-regiment-lineage-note-l11-3"
     ],
     "referent_id": "ref:chunk0-n05-regiment-lineage-note-c1",
     "report_time": null,
@@ -507,10 +267,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "n05-regiment-lineage-note-l9-6"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "n05-regiment-lineage-note-l11-3",
     "doc_ref": {
       "bbox": null,
@@ -529,7 +287,56 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "Indus Gunners"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n05-regiment-lineage-note-l11-3",
+      "_subject_mention": "n05-regiment-lineage-note-l9-2"
+    },
+    "claim_id": "n05-regiment-lineage-note-l11-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 11,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        510,
+        566
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -540,7 +347,7 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "the Indus Gunners",
+      "object": "Indus Gunners",
       "object_value": null,
       "predicate": "same-as",
       "subject": "22 Air Defence Regiment"
@@ -554,22 +361,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_cluster": "c2",
-      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
-      "_coref_forms": [
-        "Pano Aqil",
-        "Pannu Aqil"
-      ],
-      "_coref_gate": "FAIL",
-      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
-      "_coref_quotes": [
-        "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\""
-      ],
-      "_coref_referent": "ref:n05-regiment-lineage-note-c2",
-      "source_quote": "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\""
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "n05-regiment-lineage-note-l12",
     "doc_ref": {
       "bbox": null,
@@ -588,215 +381,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Pannu Aqil",
-      "object_value": null,
-      "predicate": "coref-same-as",
-      "subject": "Pano Aqil"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_cluster": "c2",
-      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
-      "_coref_forms": [
-        "Pano Aqil",
-        "Pano Akil"
-      ],
-      "_coref_gate": "FAIL",
-      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
-      "_coref_quotes": [
-        "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\""
-      ],
-      "_coref_referent": "ref:n05-regiment-lineage-note-c2",
-      "source_quote": "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\""
-    },
-    "claim_id": "n05-regiment-lineage-note-l12-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        590,
-        599
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Pano Akil",
-      "object_value": null,
-      "predicate": "coref-same-as",
-      "subject": "Pano Aqil"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l12-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        590,
-        599
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Pano Akil",
-      "object_value": null,
-      "predicate": "same-as",
-      "subject": "Pano Aqil"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_cluster": "c2",
-      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
-      "_coref_forms": [
-        "Pano Aqil",
-        "Panu Aqil"
-      ],
-      "_coref_gate": "FAIL",
-      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
-      "_coref_quotes": [
-        "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\""
-      ],
-      "_coref_referent": "ref:n05-regiment-lineage-note-c2",
-      "source_quote": "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\""
-    },
-    "claim_id": "n05-regiment-lineage-note-l12-4",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        590,
-        599
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "form": "triple",
-      "object": "Panu Aqil",
-      "object_value": null,
-      "predicate": "coref-same-as",
-      "subject": "Pano Aqil"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l12-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 12,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        590,
-        610
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -816,12 +401,353 @@
           "surface_format": "toponym",
           "wgs84_lat": null,
           "wgs84_lon": null
-        },
-        "site_type": "Cantonment"
+        }
+      },
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pano Aqil",
+        "Pannu Aqil"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\"."
+      ],
+      "_coref_referent": "ref:n05-regiment-lineage-note-c2",
+      "_object_mention": "n05-regiment-lineage-note-l54",
+      "_subject_mention": "n05-regiment-lineage-note-l12",
+      "source_quote": "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\"."
+    },
+    "claim_id": "n05-regiment-lineage-note-l12-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        590,
+        599
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Pannu Aqil",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n05-regiment-lineage-note-l12",
+      "n05-regiment-lineage-note-l54"
+    ],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pano Aqil",
+        "Pano Akil"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\"."
+      ],
+      "_coref_referent": "ref:n05-regiment-lineage-note-c2",
+      "_object_mention": "n05-regiment-lineage-note-l55",
+      "_subject_mention": "n05-regiment-lineage-note-l12",
+      "source_quote": "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\"."
+    },
+    "claim_id": "n05-regiment-lineage-note-l12-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        590,
+        599
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Akil",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n05-regiment-lineage-note-l12",
+      "n05-regiment-lineage-note-l55"
+    ],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Pano Aqil",
+        "Panu Aqil"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans name both forms but carry no declared equivalence marker and no parenthetical wrapping either form — co-occurrence is not a stated equivalence",
+      "_coref_quotes": [
+        "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\"."
+      ],
+      "_coref_referent": "ref:n05-regiment-lineage-note-c2",
+      "_object_mention": "n05-regiment-lineage-note-l54-2",
+      "_subject_mention": "n05-regiment-lineage-note-l12",
+      "source_quote": "Pano Aqil, Panu Aqil and Pannu Aqil are the same cantonment; older gazetteer material also uses \"Pano Akil\"."
+    },
+    "claim_id": "n05-regiment-lineage-note-l12-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        590,
+        599
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "Panu Aqil",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [
+      "n05-regiment-lineage-note-l12",
+      "n05-regiment-lineage-note-l54-2"
+    ],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n05-regiment-lineage-note-l55",
+      "_subject_mention": "n05-regiment-lineage-note-l12"
+    },
+    "claim_id": "n05-regiment-lineage-note-l12-5",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        590,
+        599
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pano Akil",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Pano Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n05-regiment-lineage-note-l12-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 12,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        590,
+        610
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "coordinates": {
+          "geocode_candidates": [],
+          "precision_class": null,
+          "proposed_alias": "Sukkur District, Sindh",
+          "raw": "Sukkur District, Sindh",
+          "resolved_place_ref": null,
+          "surface_format": "toponym",
+          "wgs84_lat": null,
+          "wgs84_lon": null
+        }
       },
       "entity_type": "basing_site",
       "form": "entity",
       "name": "Pano Aqil Cantonment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n05-regiment-lineage-note-l13",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 13,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        613,
+        655
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designator": "3 Air Defence Brigade",
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "3 Air Defence Brigade"
     },
     "polarity": "positive",
     "premises": [],
@@ -844,15 +770,15 @@
       "region": null,
       "row": null,
       "span": [
-        679,
-        729
+        658,
+        730
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -862,9 +788,7 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "family": "surface-to-air"
-      },
+      "attrs": {},
       "entity_type": "variant",
       "form": "entity",
       "name": "long-range surface-to-air system of Chinese origin"
@@ -881,11 +805,11 @@
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "equips",
-      "_object_mention": "n05-regiment-lineage-note-l9-6",
+      "_object_mention": "n05-regiment-lineage-note-l9-2",
       "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
       "_subject_mention": "n05-regiment-lineage-note-l14",
       "_undated_perishable": true,
-      "source_quote": "Equipment            : long-range surface-to-air system of Chinese origin."
+      "source_quote": "Equipment          : long-range surface-to-air system of Chinese origin."
     },
     "claim_id": "n05-regiment-lineage-note-l14-2",
     "doc_ref": {
@@ -897,15 +821,15 @@
       "region": null,
       "row": null,
       "span": [
-        679,
-        729
+        658,
+        730
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -950,7 +874,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -961,8 +885,8 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "echelon": "Regiment",
-        "service_branch": "Pakistan Army, Air Defence"
+        "designator": "22 Light Anti-Aircraft Regiment",
+        "service_branch": "Pakistan Army"
       },
       "entity_type": "unit",
       "form": "entity",
@@ -980,7 +904,7 @@
     "asserts": "relationship",
     "attributes": {
       "_object_mention": "n05-regiment-lineage-note-l21",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6"
+      "_subject_mention": "n05-regiment-lineage-note-l9-2"
     },
     "claim_id": "n05-regiment-lineage-note-l21-2",
     "doc_ref": {
@@ -1000,7 +924,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1025,67 +949,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "22 Air Defence Regiment",
-        "22 Medium Regiment (Artillery)"
-      ],
-      "_object_mention": "n05-regiment-lineage-note-l30-2",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6",
-      "source_quote": "OTHER FORMATIONS BEARING THE NUMBER 22"
-    },
-    "claim_id": "n05-regiment-lineage-note-l25",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 25,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1347,
-        1385
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "inference",
-    "payload": {
-      "form": "triple",
-      "object": "22 Medium Regiment (Artillery)",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "22 Air Defence Regiment"
-    },
-    "polarity": "positive",
-    "premises": [
-      "n05-regiment-lineage-note-l9-6",
-      "n05-regiment-lineage-note-l30-2"
-    ],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_subject_mention": "n05-regiment-lineage-note-l30-2",
-      "_undated_perishable": true
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "n05-regiment-lineage-note-l30",
     "doc_ref": {
       "bbox": null,
@@ -1097,14 +962,14 @@
       "row": null,
       "span": [
         1540,
-        1570
+        1655
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1114,11 +979,14 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "Okara Cantonment, Punjab",
-      "object_value": null,
-      "predicate": "based-at",
-      "subject": "22 Medium Regiment (Artillery)"
+      "attrs": {
+        "designator": "22 Medium Regiment (Artillery)",
+        "home_garrison": "Okara Cantonment, Punjab",
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "22 Medium Regiment (Artillery)"
     },
     "polarity": "positive",
     "premises": [],
@@ -1129,8 +997,12 @@
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n05-regiment-lineage-note-l32",
+      "_subject_mention": "n05-regiment-lineage-note-l30",
+      "_undated_perishable": true
+    },
     "claim_id": "n05-regiment-lineage-note-l30-2",
     "doc_ref": {
       "bbox": null,
@@ -1149,7 +1021,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1159,14 +1031,11 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {
-        "echelon": "Regiment",
-        "home_garrison": "Okara Cantonment, Punjab",
-        "service_branch": "Pakistan Army"
-      },
-      "entity_type": "unit",
-      "form": "entity",
-      "name": "22 Medium Regiment (Artillery)"
+      "form": "triple",
+      "object": "Okara Cantonment",
+      "object_value": null,
+      "predicate": "based-at",
+      "subject": "22 Medium Regiment (Artillery)"
     },
     "polarity": "positive",
     "premises": [],
@@ -1189,15 +1058,15 @@
       "region": null,
       "row": null,
       "span": [
-        1631,
-        1647
+        1610,
+        1655
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1225,8 +1094,7 @@
           "surface_format": "toponym",
           "wgs84_lat": 31.1471,
           "wgs84_lon": 72.7097
-        },
-        "site_type": "Cantonment"
+        }
       },
       "entity_type": "basing_site",
       "form": "entity",
@@ -1234,69 +1102,7 @@
     },
     "polarity": "positive",
     "premises": [],
-    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c3",
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_cluster": "c3",
-      "_coref_evidence": "NAME_VARIANT",
-      "_coref_forms": [
-        "Okara Cantonment",
-        "Okara Cantonment, Punjab"
-      ],
-      "_coref_gate": "FAIL",
-      "_coref_gate_detail": "'NAME_VARIANT' has no deterministic gate and is raise-only by policy: an authoritative bind bypasses banding, so authorising a bare name variant would rebuild the exact-name auto-merge lane on another predicate — immune to the very cap that replaced it",
-      "_coref_quotes": [
-        "Okara Cantonment, Punjab"
-      ],
-      "_coref_referent": "ref:n05-regiment-lineage-note-c3",
-      "_subject_mention": "n05-regiment-lineage-note-l32",
-      "source_quote": "Okara Cantonment, Punjab"
-    },
-    "claim_id": "n05-regiment-lineage-note-l32-2",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 32,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1631,
-        1655
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "inference",
-    "payload": {
-      "form": "triple",
-      "object": "Okara Cantonment, Punjab",
-      "object_value": null,
-      "predicate": "coref-same-as",
-      "subject": "Okara Cantonment"
-    },
-    "polarity": "positive",
-    "premises": [
-      "n05-regiment-lineage-note-l32"
-    ],
-    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c3",
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "n05_regiment_lineage_note",
@@ -1316,14 +1122,14 @@
       "row": null,
       "span": [
         1824,
-        1981
+        1889
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1334,7 +1140,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "echelon": "Squadron",
+        "designator": "22 Air Defence Squadron",
         "service_branch": "Pakistan Air Force"
       },
       "entity_type": "unit",
@@ -1350,124 +1156,8 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "22 Air Defence Regiment",
-        "22 Air Defence Squadron"
-      ],
-      "_object_mention": "n05-regiment-lineage-note-l36",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6",
-      "source_quote": "the Pakistan Air Force operates its own numbered air defence series"
-    },
-    "claim_id": "n05-regiment-lineage-note-l38",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 38,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1913,
-        1980
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "inference",
-    "payload": {
-      "form": "triple",
-      "object": "22 Air Defence Squadron",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "22 Air Defence Regiment"
-    },
-    "polarity": "positive",
-    "premises": [
-      "n05-regiment-lineage-note-l9-6",
-      "n05-regiment-lineage-note-l36"
-    ],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_coref_forms": [
-        "22 Air Defence Regiment",
-        "47 Air Defence Regiment"
-      ],
-      "_object_mention": "n05-regiment-lineage-note-l43-2",
-      "_subject_mention": "n05-regiment-lineage-note-l9-6",
-      "source_quote": "RELATED ENTRY, SAME STATION"
-    },
-    "claim_id": "n05-regiment-lineage-note-l41",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 41,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2074,
-        2101
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "inference",
-    "payload": {
-      "form": "triple",
-      "object": "47 Air Defence Regiment",
-      "object_value": null,
-      "predicate": "coref-distinct-from",
-      "subject": "22 Air Defence Regiment"
-    },
-    "polarity": "positive",
-    "premises": [
-      "n05-regiment-lineage-note-l9-6",
-      "n05-regiment-lineage-note-l43-2"
-    ],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "relationship",
-    "attributes": {
-      "_object_mention": "n05-regiment-lineage-note-l12-5",
-      "_subject_mention": "n05-regiment-lineage-note-l43-2",
-      "_undated_perishable": true
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "n05-regiment-lineage-note-l43",
     "doc_ref": {
       "bbox": null,
@@ -1479,14 +1169,66 @@
       "row": null,
       "span": [
         2105,
-        2128
+        2222
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designator": "47 Air Defence Regiment",
+        "home_garrison": "Pano Aqil Cantonment",
+        "service_branch": "Pakistan Army"
+      },
+      "entity_type": "unit",
+      "form": "entity",
+      "name": "47 Air Defence Regiment"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n05-regiment-lineage-note-l12-6",
+      "_subject_mention": "n05-regiment-lineage-note-l43",
+      "_undated_perishable": true
+    },
+    "claim_id": "n05-regiment-lineage-note-l43-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 43,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2105,
+        2222
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1513,17 +1255,17 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l43-2",
+    "claim_id": "n05-regiment-lineage-note-l46",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
       "frame": null,
-      "line": 43,
+      "line": 46,
       "page": null,
       "region": null,
       "row": null,
       "span": [
-        2105,
+        2225,
         2268
       ]
     },
@@ -1531,7 +1273,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1542,13 +1284,12 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "echelon": "Regiment",
-        "home_garrison": "Pano Aqil Cantonment",
-        "service_branch": "Pakistan Army, Air Defence"
+        "designator": "11 Air Defence Brigade",
+        "service_branch": "Pakistan Army"
       },
       "entity_type": "unit",
       "form": "entity",
-      "name": "47 Air Defence Regiment"
+      "name": "11 Air Defence Brigade"
     },
     "polarity": "positive",
     "premises": [],
@@ -1559,7 +1300,7 @@
     "targets": null
   },
   {
-    "asserts": "relationship",
+    "asserts": "entity",
     "attributes": null,
     "claim_id": "n05-regiment-lineage-note-l54",
     "doc_ref": {
@@ -1579,7 +1320,98 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pannu Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n05-regiment-lineage-note-l54-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 54,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2629,
+        2688
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Panu Aqil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_object_mention": "n05-regiment-lineage-note-l54",
+      "_subject_mention": "n05-regiment-lineage-note-l12"
+    },
+    "claim_id": "n05-regiment-lineage-note-l54-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 54,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2629,
+        2688
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1605,8 +1437,11 @@
   },
   {
     "asserts": "relationship",
-    "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l54-2",
+    "attributes": {
+      "_object_mention": "n05-regiment-lineage-note-l54-2",
+      "_subject_mention": "n05-regiment-lineage-note-l12"
+    },
+    "claim_id": "n05-regiment-lineage-note-l54-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
@@ -1624,7 +1459,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1651,6 +1486,50 @@
   {
     "asserts": "entity",
     "attributes": null,
+    "claim_id": "n05-regiment-lineage-note-l55",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 55,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2728,
+        2737
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {},
+      "entity_type": "basing_site",
+      "form": "entity",
+      "name": "Pano Akil"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-n05-regiment-lineage-note-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "n05-regiment-lineage-note-l59",
     "doc_ref": {
       "bbox": null,
@@ -1669,7 +1548,53 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "source_type": "regimental association material"
+      },
+      "entity_type": "source",
+      "form": "entity",
+      "name": "Regimental association material"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "n05_regiment_lineage_note",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "n05-regiment-lineage-note-l59-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
+      "frame": null,
+      "line": 59,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        2869,
+        2887
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1697,7 +1622,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l59-2",
+    "claim_id": "n05-regiment-lineage-note-l59-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
@@ -1707,15 +1632,15 @@
       "region": null,
       "row": null,
       "span": [
-        2836,
-        2919
+        2894,
+        2918
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "claude-opus-4-8"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -1731,52 +1656,6 @@
       "entity_type": "source",
       "form": "entity",
       "name": "2019 lineage compilation"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "referent_id": null,
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "n05_regiment_lineage_note",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "n05-regiment-lineage-note-l59-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/n05_regiment_lineage_note.txt",
-      "frame": null,
-      "line": 59,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        2836,
-        2919
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "claude-opus-4-8"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {
-        "source_type": "regimental association material"
-      },
-      "entity_type": "source",
-      "form": "entity",
-      "name": "Regimental association material"
     },
     "polarity": "positive",
     "premises": [],

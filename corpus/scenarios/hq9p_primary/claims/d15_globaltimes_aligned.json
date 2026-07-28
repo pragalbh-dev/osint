@@ -20,7 +20,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -30,13 +30,128 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
-      "entity_type": "source",
+      "attrs": {
+        "origin_country": "Pakistan",
+        "role": "directorate"
+      },
+      "entity_type": "manufacturer",
       "form": "entity",
       "name": "Inter-Services Public Relations"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": "ref:chunk0-d15-globaltimes-aligned-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c1",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "Inter-Services Public Relations",
+        "ISPR"
+      ],
+      "_coref_gate": "PASS",
+      "_coref_gate_detail": "the licensing evidence contains both surface forms and a parenthetical wrapping one form, and the two forms differ by more than a mark",
+      "_coref_quotes": [
+        "Pakistan's Inter-Services Public Relations (ISPR) directorate"
+      ],
+      "_coref_referent": "ref:d15-globaltimes-aligned-c1",
+      "_object_mention": "d15-globaltimes-aligned-l7-9",
+      "_subject_mention": "d15-globaltimes-aligned-l7",
+      "source_quote": "Pakistan's Inter-Services Public Relations (ISPR) directorate"
+    },
+    "claim_id": "d15-globaltimes-aligned-l7-2",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        225,
+        286
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "ISPR",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "Inter-Services Public Relations"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d15-globaltimes-aligned-l7",
+      "d15-globaltimes-aligned-l7-9"
+    ],
+    "referent_id": "ref:chunk0-d15-globaltimes-aligned-c1",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d15-globaltimes-aligned-l7"
+    },
+    "claim_id": "d15-globaltimes-aligned-l7-3",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        225,
+        286
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "ISPR",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "Inter-Services Public Relations"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -45,7 +160,7 @@
   {
     "asserts": "entity",
     "attributes": null,
-    "claim_id": "d15-globaltimes-aligned-l7-2",
+    "claim_id": "d15-globaltimes-aligned-l7-4",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
@@ -63,7 +178,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -74,7 +189,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "service_branch": "Air Force"
+        "service_branch": "Pakistan Air Force"
       },
       "entity_type": "unit",
       "form": "entity",
@@ -82,6 +197,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -90,14 +206,14 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "equips",
-      "_event_time_rung": "stated",
-      "_object_mention": "d15-globaltimes-aligned-l7-2",
-      "_relane_reason": "'equips'@(variant->unit) -> inducted-into",
-      "_subject_mention": "d15-globaltimes-aligned-l9",
-      "source_quote": "the Pakistan Air Force's HQ-9/P long-range surface-to-air missile system has achieved what it termed \"complete operational readiness\""
+      "_as_stated_predicate": "operated-by",
+      "_object_mention": "d15-globaltimes-aligned-l7-4",
+      "_relane_reason": "'operated-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d15-globaltimes-aligned-l7-6",
+      "_undated_perishable": true,
+      "source_quote": "the Pakistan Air Force's HQ-9/P long-range surface-to-air missile system"
     },
-    "claim_id": "d15-globaltimes-aligned-l7-3",
+    "claim_id": "d15-globaltimes-aligned-l7-5",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
@@ -108,24 +224,14 @@
       "row": null,
       "span": [
         366,
-        499
+        438
       ]
     },
-    "event_time": {
-      "boundary_source": "derived_from_label",
-      "day": null,
-      "granularity": "month",
-      "half": null,
-      "kind": "label",
-      "month": 11,
-      "quarter": null,
-      "raw": "November 2021",
-      "year": 2021
-    },
+    "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -143,6 +249,206 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d15-globaltimes-aligned-l7-6",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        366,
+        536
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "designators": [
+          "HQ-9P",
+          "FD-2000"
+        ],
+        "family": "HQ-9",
+        "operator_branch": "Pakistan Air Force",
+        "range_km": {
+          "approx": true,
+          "count_state": null,
+          "max": 125.0,
+          "min": 100.0,
+          "unit": "km",
+          "value": null
+        }
+      },
+      "entity_type": "variant",
+      "form": "entity",
+      "name": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d15-globaltimes-aligned-c2",
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d15-globaltimes-aligned-l7-6"
+    },
+    "claim_id": "d15-globaltimes-aligned-l7-7",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        366,
+        536
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_subject_mention": "d15-globaltimes-aligned-l7-6"
+    },
+    "claim_id": "d15-globaltimes-aligned-l7-8",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        366,
+        536
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "HQ-9P",
+      "object_value": null,
+      "predicate": "same-as",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "entity",
+    "attributes": null,
+    "claim_id": "d15-globaltimes-aligned-l7-9",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 7,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        849,
+        890
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "attrs": {
+        "origin_country": "Pakistan"
+      },
+      "entity_type": "manufacturer",
+      "form": "entity",
+      "name": "ISPR"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": "ref:chunk0-d15-globaltimes-aligned-c1",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -169,7 +475,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -184,10 +490,11 @@
       },
       "entity_type": "variant",
       "form": "entity",
-      "name": "HQ-9/P"
+      "name": "HQ-9"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -206,49 +513,6 @@
       "region": null,
       "row": null,
       "span": [
-        957,
-        984
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "variant",
-      "form": "entity",
-      "name": "HQ-9"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d15_globaltimes_aligned",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d15-globaltimes-aligned-l9-3",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
         1058,
         1078
       ]
@@ -257,7 +521,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -267,22 +531,32 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "family": "S-300"
+      },
       "entity_type": "variant",
       "form": "entity",
       "name": "S-300"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
     "targets": null
   },
   {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d15-globaltimes-aligned-l9-4",
+    "asserts": "relationship",
+    "attributes": {
+      "_as_stated_predicate": "imported-by",
+      "_event_time_rung": "stated",
+      "_object_mention": "d15-globaltimes-aligned-l7-4",
+      "_relane_reason": "'imported-by'@(variant->unit) -> inducted-into",
+      "_subject_mention": "d15-globaltimes-aligned-l7-6",
+      "source_quote": "Pakistan's acquisition of the system was first reported around 2017-2018"
+    },
+    "claim_id": "d15-globaltimes-aligned-l9-3",
     "doc_ref": {
       "bbox": null,
       "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
@@ -317,7 +591,52 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "observation",
+    "payload": {
+      "form": "triple",
+      "object": "Pakistan Air Force",
+      "object_value": null,
+      "predicate": "inducted-into",
+      "subject": "HQ-9/P"
+    },
+    "polarity": "positive",
+    "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "event",
+    "attributes": null,
+    "claim_id": "d15-globaltimes-aligned-l9-4",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 9,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        1218,
+        1393
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -333,77 +652,14 @@
       "location": null,
       "participants": [
         "HQ-9/P",
-        "Pakistan"
-      ],
-      "time_interval": {
-        "approximate": false,
-        "as_of": null,
-        "end": {
-          "boundary_source": "derived_from_label",
-          "day": null,
-          "granularity": "year",
-          "half": null,
-          "kind": "label",
-          "month": null,
-          "quarter": null,
-          "raw": "2018",
-          "year": 2018
-        },
-        "kind": "period",
-        "period_type": "range",
-        "start": null
-      }
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d15_globaltimes_aligned",
-    "targets": null
-  },
-  {
-    "asserts": "event",
-    "attributes": null,
-    "claim_id": "d15-globaltimes-aligned-l9-5",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
-      "frame": null,
-      "line": 9,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        1297,
-        1393
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "event_type": "InductionEvent",
-      "form": "event",
-      "location": null,
-      "participants": [
-        "HQ-9/P",
-        "Pakistan"
+        "China",
+        "Pakistan Air Force"
       ],
       "time_interval": null
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -430,7 +686,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -440,21 +696,39 @@
     },
     "kind": "observation",
     "payload": {
-      "attrs": {},
+      "attrs": {
+        "source_type": "state-run news outlet"
+      },
       "entity_type": "source",
       "form": "entity",
       "name": "Global Times"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
     "targets": null
   },
   {
-    "asserts": "entity",
-    "attributes": null,
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "FD-2000"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
+      "_coref_quotes": [
+        "the reported range of the system's FD-2000/HQ-9P interceptor"
+      ],
+      "_coref_referent": "ref:d15-globaltimes-aligned-c2",
+      "_subject_mention": "d15-globaltimes-aligned-l7-6",
+      "source_quote": "the reported range of the system's FD-2000/HQ-9P interceptor"
+    },
     "claim_id": "d15-globaltimes-aligned-l13",
     "doc_ref": {
       "bbox": null,
@@ -466,14 +740,14 @@
       "row": null,
       "span": [
         2693,
-        2849
+        2753
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -481,17 +755,19 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
-      "attrs": {
-        "functional_role": "interceptor"
-      },
-      "entity_type": "component",
-      "form": "entity",
-      "name": "FD-2000/HQ-9P interceptor"
+      "form": "triple",
+      "object": "FD-2000",
+      "object_value": null,
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "d15-globaltimes-aligned-l7-6"
+    ],
+    "referent_id": "ref:chunk0-d15-globaltimes-aligned-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -500,11 +776,20 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "component-of",
-      "_object_mention": "d15-globaltimes-aligned-l9",
-      "_relane_reason": "'component-of'@(component->variant) -> equips",
-      "_subject_mention": "d15-globaltimes-aligned-l13",
-      "source_quote": "the system's FD-2000/HQ-9P interceptor"
+      "_coref_cluster": "c2",
+      "_coref_evidence": "EXPLICIT_EQUIVALENCE",
+      "_coref_forms": [
+        "HQ-9/P",
+        "HQ-9P"
+      ],
+      "_coref_gate": "FAIL",
+      "_coref_gate_detail": "the licensing spans do not, between them, contain both members' surface forms — a bind whose own evidence does not name both sides cannot be re-derived by any reader",
+      "_coref_quotes": [
+        "the reported range of the system's FD-2000/HQ-9P interceptor"
+      ],
+      "_coref_referent": "ref:d15-globaltimes-aligned-c2",
+      "_subject_mention": "d15-globaltimes-aligned-l7-6",
+      "source_quote": "the reported range of the system's FD-2000/HQ-9P interceptor"
     },
     "claim_id": "d15-globaltimes-aligned-l13-2",
     "doc_ref": {
@@ -516,7 +801,7 @@
       "region": null,
       "row": null,
       "span": [
-        2715,
+        2693,
         2753
       ]
     },
@@ -524,7 +809,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -532,16 +817,19 @@
       "kind": "exact",
       "raw": "frozen-seed-baseline"
     },
-    "kind": "observation",
+    "kind": "inference",
     "payload": {
       "form": "triple",
-      "object": "HQ-9/P",
+      "object": "HQ-9P",
       "object_value": null,
-      "predicate": "equips",
-      "subject": "FD-2000/HQ-9P interceptor"
+      "predicate": "coref-same-as",
+      "subject": "HQ-9/P"
     },
     "polarity": "positive",
-    "premises": [],
+    "premises": [
+      "d15-globaltimes-aligned-l7-6"
+    ],
+    "referent_id": "ref:chunk0-d15-globaltimes-aligned-c2",
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -568,7 +856,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -579,6 +867,7 @@
     "kind": "observation",
     "payload": {
       "attrs": {
+        "origin_country": "China",
         "role": "developed the HQ-9 family"
       },
       "entity_type": "manufacturer",
@@ -587,6 +876,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -595,11 +885,8 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_as_stated_predicate": "design-authority-for",
-      "_object_mention": "d15-globaltimes-aligned-l9-2",
-      "_relane_reason": "'design-authority-for'@(manufacturer->variant) -> manufactures",
-      "_subject_mention": "d15-globaltimes-aligned-l15",
-      "source_quote": "CASIC, the state-owned defense conglomerate that developed the HQ-9 family"
+      "_object_mention": "d15-globaltimes-aligned-l9",
+      "_subject_mention": "d15-globaltimes-aligned-l15"
     },
     "claim_id": "d15-globaltimes-aligned-l15-2",
     "doc_ref": {
@@ -619,7 +906,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -637,6 +924,7 @@
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -656,57 +944,14 @@
       "row": null,
       "span": [
         3243,
-        3284
+        3361
       ]
     },
     "event_time": null,
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
-    },
-    "ingest_time": {
-      "boundary_source": "explicit",
-      "iso_date": "2026-07-19",
-      "kind": "exact",
-      "raw": "frozen-seed-baseline"
-    },
-    "kind": "observation",
-    "payload": {
-      "attrs": {},
-      "entity_type": "source",
-      "form": "entity",
-      "name": "Ministry of Defence Production"
-    },
-    "polarity": "positive",
-    "premises": [],
-    "report_time": null,
-    "resolved_ref": null,
-    "source_id": "d15_globaltimes_aligned",
-    "targets": null
-  },
-  {
-    "asserts": "entity",
-    "attributes": null,
-    "claim_id": "d15-globaltimes-aligned-l17",
-    "doc_ref": {
-      "bbox": null,
-      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
-      "frame": null,
-      "line": 17,
-      "page": null,
-      "region": null,
-      "row": null,
-      "span": [
-        3625,
-        3724
-      ]
-    },
-    "event_time": null,
-    "extraction": {
-      "method": "llm",
-      "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -717,15 +962,71 @@
     "kind": "observation",
     "payload": {
       "attrs": {
-        "component_class": "radar",
-        "functional_role": "engagement radar"
+        "origin_country": "Pakistan"
       },
-      "entity_type": "component",
+      "entity_type": "manufacturer",
       "form": "entity",
-      "name": "HT-233"
+      "name": "Ministry of Defence Production"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
+    "report_time": null,
+    "resolved_ref": null,
+    "source_id": "d15_globaltimes_aligned",
+    "targets": null
+  },
+  {
+    "asserts": "relationship",
+    "attributes": {
+      "_coref_forms": [
+        "Type 120",
+        "HT-233"
+      ],
+      "_object_mention": "d15-globaltimes-aligned-l17-2",
+      "_subject_mention": "d15-globaltimes-aligned-l17-3",
+      "source_quote": "radar variants (the associated engagement radar has been referred to in various reports as both Type 120 and HT-233)"
+    },
+    "claim_id": "d15-globaltimes-aligned-l17",
+    "doc_ref": {
+      "bbox": null,
+      "file": "corpus/scenarios/hq9p_primary/docs/d15_globaltimes_aligned.txt",
+      "frame": null,
+      "line": 17,
+      "page": null,
+      "region": null,
+      "row": null,
+      "span": [
+        3609,
+        3725
+      ]
+    },
+    "event_time": null,
+    "extraction": {
+      "method": "llm",
+      "model_conf": 1.0,
+      "version": "gemini-3.6-flash"
+    },
+    "ingest_time": {
+      "boundary_source": "explicit",
+      "iso_date": "2026-07-19",
+      "kind": "exact",
+      "raw": "frozen-seed-baseline"
+    },
+    "kind": "inference",
+    "payload": {
+      "form": "triple",
+      "object": "HT-233",
+      "object_value": null,
+      "predicate": "coref-distinct-from",
+      "subject": "Type 120"
+    },
+    "polarity": "positive",
+    "premises": [
+      "d15-globaltimes-aligned-l17-3",
+      "d15-globaltimes-aligned-l17-2"
+    ],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -752,7 +1053,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -764,28 +1065,24 @@
     "payload": {
       "attrs": {
         "component_class": "radar",
-        "functional_role": "engagement radar"
+        "functional_role": "engagement radar",
+        "model_designation": "HT-233"
       },
       "entity_type": "component",
       "form": "entity",
-      "name": "Type 120"
+      "name": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
     "targets": null
   },
   {
-    "asserts": "relationship",
-    "attributes": {
-      "_as_stated_predicate": "component-of",
-      "_object_mention": "d15-globaltimes-aligned-l9",
-      "_relane_reason": "'component-of'@(component->variant) -> equips",
-      "_subject_mention": "d15-globaltimes-aligned-l17",
-      "source_quote": "the associated engagement radar has been referred to in various reports as both Type 120 and HT-233"
-    },
+    "asserts": "entity",
+    "attributes": null,
     "claim_id": "d15-globaltimes-aligned-l17-3",
     "doc_ref": {
       "bbox": null,
@@ -804,7 +1101,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -814,14 +1111,18 @@
     },
     "kind": "observation",
     "payload": {
-      "form": "triple",
-      "object": "HQ-9/P",
-      "object_value": null,
-      "predicate": "equips",
-      "subject": "HT-233"
+      "attrs": {
+        "component_class": "radar",
+        "functional_role": "engagement radar",
+        "model_designation": "Type 120"
+      },
+      "entity_type": "component",
+      "form": "entity",
+      "name": "Type 120"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -831,7 +1132,7 @@
     "asserts": "relationship",
     "attributes": {
       "_as_stated_predicate": "component-of",
-      "_object_mention": "d15-globaltimes-aligned-l9",
+      "_object_mention": "d15-globaltimes-aligned-l7-6",
       "_relane_reason": "'component-of'@(component->variant) -> equips",
       "_subject_mention": "d15-globaltimes-aligned-l17-2",
       "source_quote": "the associated engagement radar has been referred to in various reports as both Type 120 and HT-233"
@@ -854,7 +1155,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -868,10 +1169,11 @@
       "object": "HQ-9/P",
       "object_value": null,
       "predicate": "equips",
-      "subject": "Type 120"
+      "subject": "HT-233"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
@@ -880,8 +1182,11 @@
   {
     "asserts": "relationship",
     "attributes": {
-      "_object_mention": "d15-globaltimes-aligned-l17",
-      "_subject_mention": "d15-globaltimes-aligned-l17-2"
+      "_as_stated_predicate": "component-of",
+      "_object_mention": "d15-globaltimes-aligned-l7-6",
+      "_relane_reason": "'component-of'@(component->variant) -> equips",
+      "_subject_mention": "d15-globaltimes-aligned-l17-3",
+      "source_quote": "the associated engagement radar has been referred to in various reports as both Type 120 and HT-233"
     },
     "claim_id": "d15-globaltimes-aligned-l17-5",
     "doc_ref": {
@@ -901,7 +1206,7 @@
     "extraction": {
       "method": "llm",
       "model_conf": 1.0,
-      "version": "gemini-flash-latest"
+      "version": "gemini-3.6-flash"
     },
     "ingest_time": {
       "boundary_source": "explicit",
@@ -912,13 +1217,14 @@
     "kind": "observation",
     "payload": {
       "form": "triple",
-      "object": "HT-233",
+      "object": "HQ-9/P",
       "object_value": null,
-      "predicate": "same-as",
+      "predicate": "equips",
       "subject": "Type 120"
     },
     "polarity": "positive",
     "premises": [],
+    "referent_id": null,
     "report_time": null,
     "resolved_ref": null,
     "source_id": "d15_globaltimes_aligned",
