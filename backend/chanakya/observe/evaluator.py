@@ -294,17 +294,33 @@ def _alert(obs: ObservableDef, ct: CompiledTrigger, subject: str, before: Any, a
 
 # ── per-mode detectors ─────────────────────────────────────────────────────────────────────────
 
+def _superseded_prior(el: Element, prev_by_id: dict[str, EdgeView]) -> EdgeView | None:
+    """The assertion this element **records** having overtaken, if that edge was in the prior view.
+
+    ``_active_edges`` derives a subject's prior state by ranking its live edges (locatable, then recent).
+    That is a *heuristic for* the question ``supersedes`` already answers exactly: rebuild() ordered this
+    instance's edges in time, inside one site-class bucket, and named the one being retired. Where that
+    link exists it is strictly better evidence than any re-derivation, and using it also keeps the alert's
+    ``before`` and the graph's own supersession arrow from telling an analyst two different stories about
+    the same movement. The rank stays underneath for the ordinary case: most crossings retire nothing, and
+    a subject with several concurrent live assertions still needs its prior state chosen somehow.
+    """
+    superseded = el.supersedes if isinstance(el, EdgeView) else None
+    return prev_by_id.get(superseded) if superseded else None
+
+
 def _crossing(obs: ObservableDef, ct: CompiledTrigger, prev: GraphView, new: GraphView,
               scope: set[str] | None, classes: frozenset[str]) -> list[Alert]:
     prev_active = _candidates(prev, ct, classes)
     new_active = _candidates(new, ct, classes)
+    prev_by_id = {e.id: e for e in prev.edges}
 
     out: list[Alert] = []
     for key, el in new_active.items():
         watched = _watched(el)
         if not _in_scope(watched, scope) or not _geo_ok(el, ct):
             continue
-        prev_el = prev_active.get(key)
+        prev_el = _superseded_prior(el, prev_by_id) or prev_active.get(key)
         new_state = _state_value(el, ct)
         prev_state = _state_value(prev_el, ct)
         # A crossing needs a *known prior state* that differs — first-appearance is `new_edge`, not a
