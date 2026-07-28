@@ -52,7 +52,11 @@ export const EVIDENCE_NODE_TYPES = new Set(['source'])
 /** Supply-chain / order-of-battle role order, left → right. This IS the analytic story
  *  C is built to tell (manufacturer → component → import → variant → unit → basing), so
  *  the x-axis carries meaning rather than being wherever a force layout happened to stop.
- *  Unknown types fall to the end, before the gap/evidence columns. */
+ *
+ *  EVERY ontology type is listed. A type left off this list is not merely un-positioned — the banding
+ *  below re-keys it to `unknown` and it is drawn under the heading "unresolved type", asserting that the
+ *  system could not type something it typed perfectly well. Adding a node type to the ontology means
+ *  adding it here. Genuinely untyped nodes fall to the end, before the gap/evidence columns. */
 export const ROLE_ORDER: string[] = [
   'manufacturer',
   'trading_org',
@@ -60,7 +64,10 @@ export const ROLE_ORDER: string[] = [
   'contract_import_event',
   'variant',
   'unit',
+  'operator',
+  'presence',
   'basing_site',
+  'area_of_operations',
   'known_gap',
   'source',
 ]
@@ -76,6 +83,9 @@ export const ROLE_LABEL: Record<string, string> = {
   basing_site: 'basing site',
   known_gap: 'known gap',
   source: 'source',
+  operator: 'operator',
+  presence: 'presence',
+  area_of_operations: 'area of ops',
   unknown: 'unresolved type',
 }
 
@@ -260,6 +270,11 @@ export function planGraph(
   // ── positions: role columns, hubs first within a column ──────────────────────────
   const bands = new Map<string, GraphNodeDef[]>()
   for (const n of nodes) {
+    // A type with no declared column used to be re-keyed to 'unknown' and drawn under the heading
+    // "unresolved type" — so `presence`, `area_of_operations` and `operator` (28 of the 39 nodes in
+    // that column on the booted corpus) were rendered as things the ontology could not type, which
+    // they emphatically are not. Every type the ontology declares now owns a column; the fallback
+    // remains for a type nobody has banded yet, and it is the ONLY thing that heading now covers.
     const key = ROLE_ORDER.includes(n.type ?? '') ? (n.type as string) : 'unknown'
     const band = bands.get(key)
     if (band) band.push(n)
