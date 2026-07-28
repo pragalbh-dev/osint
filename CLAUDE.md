@@ -78,8 +78,8 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 
 | Path | What it is |
 |---|---|
-| `artifacts/*.pdf`, `artifacts/chat.txt` | Original source files (untouched) |
-| `artifacts/md/00-index.md` … `04-claude-chat.md` | Cleaned source material: brief, agent chats, planning notes |
+| `artifacts/chat.txt` | Original source file (untouched) |
+| `artifacts/md/00-index.md` … `04-claude-chat.md` | Cleaned source material: agent chats, planning notes |
 | `artifacts/md/05-data-scoping-C.md` | **Real-world data catalogue for C** — sources, access, alias tables, corpus + 6 graded scenarios |
 | `artifacts/md/06-preflight-audit.md` | **Pre-implementation audit** — prioritized gaps (doc↔data drift, buildability, demo/timeline risk) + the ordered "close before writing code" checklist. Read before starting the build |
 | `artifacts/md/07-stack.md` | **Stack (DECIDED) + deploy plan** — one choice per layer, EC2 + Cloudflare Tunnel hosting, both reviewer-deploy paths, clean-deploy strategy, build-stage sequencing |
@@ -102,7 +102,6 @@ a cop-out. Full real-data catalogue, alias tables, and the six graded scenarios:
 | `artifacts/C/00-overview.md` | C scope, chosen subject, target queries, depth ladder, gates |
 | `artifacts/C/01-materiality-ontology.md` | What's *material*; C's concrete node/edge schema (HQ-9/P) |
 | `artifacts/C/02-demo-thread.md` | The one end-to-end worked thread + the demo flexes |
-| `artifacts/product/00-ux-brief.md` | **Product/UX brief** for the design collaborator — functional inventory (screens/panels), the trust-status visual-language problem, the hero demo flow, and open design questions. Non-technical, domain-explained |
 | **`artifacts/plan/HANDOFF-REPLUMB.md`** | **START HERE for the identity re-key / type-instance replumb (PR #63).** Where the four stages stand, the build sequence and why it is that order, the reference map, the findings that bite, the five recurring failure patterns, and the open items needing the user. Read before `plan/01-replumb-implementation-plan.md`. |
 | `DECISIONS.md` | Guiding principles, locked-decisions ledger, open decisions, gates |
 | `artifacts/plan/00-master-plan.md` (+ `sessions/`, `PROGRESS.md`) | **Backend implementation plan** — 12 worktree/PR sessions (everything except frontend), the frozen inter-module contracts, the 12 executable abstraction gates, waves + conflict-free file-ownership. Read before implementing any backend module. Code lives in `backend/`. |
