@@ -450,7 +450,12 @@ _ALIASES_DESC = (
 _DISTINCTIONS_DESC = (
     "The OPPOSITE field to `aliases`: pairs this document states are NOT the same thing — 'not related to', "
     "'distinct from', 'no interoperability with'. Only when the document asserts the separation. The two "
-    "fields say opposite things; never file a pair in the wrong one."
+    "fields say opposite things; never file a pair in the wrong one. "
+    "A remark about NAMING is not a separation: a document noting that sources are inconsistent, that a "
+    "designator is 'sometimes rendered' another way, or that one label 'maps to A versus B', is describing "
+    "confusion about what to CALL a thing, not asserting that two different things exist. Leave that pair "
+    "out of both fields unless the document says the two are the same (→ `aliases`) or says outright they "
+    "are different things (→ here). Two names contrasted in one sentence is not, by itself, a distinction."
 )
 
 

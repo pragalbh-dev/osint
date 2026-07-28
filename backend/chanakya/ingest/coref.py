@@ -236,7 +236,14 @@ ALSO report CONTRASTS: pairs of mentions this document itself sets apart in its 
 enumeration that names both as separate things ("the 8th AD Bn and the separate 12th AD Bn"), a "not to be
 confused with", "a second battery", "unlike". Give the two mention ids and the exact verbatim quote. Report
 a contrast ONLY where the document's own words do the distinguishing; if the document is merely silent
-about whether two mentions are the same, report NOTHING — silence is not a contrast.\
+about whether two mentions are the same, report NOTHING — silence is not a contrast.
+
+A remark about NAMING is not a contrast. When a document says sources are inconsistent about what to call
+something, that one designator is "sometimes rendered" another way, or that a label "maps to A versus B",
+it is describing confusion over the NAME, not asserting that two different things exist — and a document
+that then adopts one of the two labels for its own use is telling you they are interchangeable, not
+separate. Two names merely held up against each other in one sentence are neither a merge nor a contrast:
+report nothing for that pair and let a human settle it.\
 """
 
 
