@@ -777,10 +777,28 @@ earned_identity:
       "People's Liberation Army Air Force": ["PLAAF", "PLA Air Force"]
       "People's Liberation Army": ["PLA", "PLAGF", "PLA Ground Force"]
     operator_branch:
-      "Pakistan Air Force": ["PAF", "Air Force", "P.A.F."]
-      "Pakistan Army": ["Army", "PA", "PAAD", "Pakistan Army Air Defence"]
+      # The "…Command" forms and the bare "Army Air Defence" were MISSING here while `service_branch`
+      # above already carried them, so the same words read on a unit and were unreadable on a variant.
+      # That asymmetry only became visible when the extractor started stating `operator_branch` on
+      # variants at all: this wall shipped verified "additive-and-inert — no variant STATES
+      # operator_branch" (see the attribute_roles note), and an inert wall's vocabulary is never
+      # exercised. Once the slot was populated, ten surface forms arrived and the closed vocabulary read
+      # almost none of them, so `normalization_required_attrs` took its third state — no wall, no fusion —
+      # on pairs a register and seven other documents assert are one design. A designation is not made
+      # a different service by the word "Command".
+      "Pakistan Air Force": ["PAF", "Air Force", "P.A.F.", "PAF Air Defence"]
+      "Pakistan Army": ["Army", "PA", "PAAD", "Pakistan Army Air Defence", "Army Air Defence",
+                        "Pakistan Army Air Defence Command", "Army Air Defence Command",
+                        "Pakistan Army Air Defence Corps"]
       "People's Liberation Army Air Force": ["PLAAF", "PLA Air Force"]
       "People's Liberation Army": ["PLA", "PLAGF"]
+      # DELIBERATELY NOT MAPPED, though all three are stated on the corpus and each would "fix" a
+      # refusal if mapped. `Air Defence` names a function both services field; `Pakistani service` names
+      # a country and declines to say which arm; `PAF/Army Air Defence Command` states BOTH, which is the
+      # one case where guessing either way manufactures the operator that decides whether two co-located
+      # batteries are one unit — the D1 harm exactly. These stay unreadable so the pair is refused on
+      # stated grounds and reaches an analyst, which is the third state doing its job rather than failing.
+      # Nothing is mapped here to make a merge happen; rows are added only where the words are synonyms.
     origin_country:
       "China": ["CHINA", "PRC", "People's Republic of China", "CN"]
       "Pakistan": ["PAKISTAN", "PK", "Islamic Republic of Pakistan"]
