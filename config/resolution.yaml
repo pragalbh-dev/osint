@@ -424,11 +424,28 @@ attribute_roles:
   variant:
     # TAXONOMIC as well as critical: a stated branch DIFFERENCE is a wall, but two designs both stated
     # 'PLAAF' are not thereby one design — an operator's inventory is a set, not an identity.
-    operator_branch: {role: critical, time_role: durable, taxonomic: true}
-                                                            # D5: a PLA HQ-9 and the Pakistan export HQ-9 line
-                                                            # cannot be one entity — a stated branch difference
-                                                            # is a wall. Durable: a design's operator lineage
-                                                            # does not change; a different one is another line.
+    # LAYER CORRECTION (2026-07-28). Was `critical` — a design-layer WALL — on the rationale that "a design's
+    # operator lineage does not change; a different one is another line." That sentence conflates two facts
+    # this ontology deliberately keeps on different layers. PLA-domestic HQ-9B vs export HQ-9BE is a
+    # DESIGN-lineage distinction and belongs here; PAF vs Army is WHO FIELDS A DEPLOYMENT, which is an
+    # INSTANCE-layer fact, and one design can be fielded by two services. Operator is not lineage.
+    #
+    # The corpus settles it: `HQ-9/P` is stated as Pakistan Air Force by seven documents (SIPRI, the spares
+    # tender, Global Times, the technical-data authority) and as Pakistan Army by four (ISPR, Quwa, the army
+    # recruitment page, CPMIEC) — one designation, both operators, independent sources, and contested in the
+    # real open-source record too. As a critical design wall that made a name conflict with itself: every
+    # merge touching HQ-9/P refused, so the design layer could not collapse two spellings of one missile
+    # because the services disagree about whose missile it is. Those are different questions and the wall
+    # was answering the wrong one.
+    #
+    # NOTHING IS LOST BY DEMOTING IT. The PLA/Pakistan design traps are held apart by
+    # `config/entities.yaml` `distinct_from` (this file already said so), and the design layer's genuine
+    # individuating attribute is `export_designator` below — FD-2000 IS the HQ-9/P export line, HQ-9BE the
+    # HQ-9B one. The instance layer keeps its own operator discrimination: `unit.service_branch` stays
+    # critical, which is where "whose battery is this" is asked and is the D1 co-location rail. So designs
+    # fuse on naming and lineage; formations stay separated by operator. Kept `taxonomic` — two designs both
+    # stated 'PLAAF' are still not thereby one design — so this can inform a score without walling.
+    operator_branch: {role: supporting, time_role: durable, taxonomic: true}
     # THE MEASURED CASE. `family: HQ-9` is stated on HQ-9, HQ-9A, HQ-9B and HQ-9BE alike — that is what the
     # family means. Counted as an agreeing discriminator it lifted the name cap and put HQ-9 ↔ HQ-9A,
     # HQ-9 ↔ HQ-9B, HQ-9A ↔ HQ-9B and HQ-9A ↔ HQ-9BE on the fusion path: the costliest over-merge in this
