@@ -1906,6 +1906,11 @@ export function viewToReviewQueue(view: GraphView): LiveReviewItem[] {
   //    names both candidates; the card carries the resolver's own per-signal case.
   for (const edge of view.edges) {
     if (edge.type !== 'same-as') continue
+    // A candidate the resolver RAISED below the analyst band is not an open question — it was already
+    // disposed of, and the ground rides the edge. Those belong on the refusals surface, not here. The
+    // backend makes the call (`attrs.triage`) because it is the side that knows the band; re-deriving it
+    // from the score in the SPA would be a second opinion about what a candidate is.
+    if (edge.attrs?.triage === 'recorded') continue
     const leftNode = nodeIndex.get(edge.source)
     const rightNode = nodeIndex.get(edge.target)
     const left = reviewSide(edge.source, leftNode)
@@ -2242,4 +2247,69 @@ export function groupReviewQueue(items: LiveReviewItem[]): LiveReviewGroup[] {
     if (ac !== bc) return bc - ac
     return a.key.localeCompare(b.key)
   })
+}
+
+
+/* ── Refused, recorded — the surface for identity the resolver already disposed of ───────────────
+ *
+ *  These are pairs it declined to fuse and said why: a value the closed vocabulary cannot read, a cap
+ *  that holds co-location short of identity, a source that already distinguished the two, a cross-type
+ *  pair that can never merge at all. Every one must stay VISIBLE — "a gap that does not bind the fusion
+ *  path is decoration" — but visible is not the same as actionable, and routing them into the decision
+ *  queue put 114 unanswerable items in front of an analyst alongside 18 real ones. A queue that asks
+ *  questions nobody can answer is how the answerable ones stop being read.
+ *
+ *  Grouped by GROUND, because the ground is what an analyst would act on if they acted at all: an
+ *  unreadable site class is a coverage task ("go read the source"), a cross-type pair is a modelling
+ *  fact, and a source-stated distinction is a finding. Counts are honest — nothing is truncated
+ *  silently; a capped group says how many it is not showing. */
+export interface RecordedRefusal {
+  id: string
+  leftLabel: string
+  rightLabel: string
+  confidence: number | null
+  reason: string
+}
+
+export interface RecordedRefusalGroup {
+  ground: string
+  items: RecordedRefusal[]
+}
+
+/** The leading clause of the resolver's own reason — its rails each open with a stable phrase, and the
+ *  remainder is the per-pair detail. Never a re-worded summary: the grouping label is the resolver's
+ *  words, so a rail that changes its mind cannot leave this surface asserting the old one. */
+function refusalGround(reason: string): string {
+  const head = reason.split('—')[0].split(/\(/)[0].trim()
+  return head.length > 0 ? head : 'ground not recorded by the rail that raised it'
+}
+
+export function viewToRecordedRefusals(view: GraphView): RecordedRefusalGroup[] {
+  const nodeIndex = new Map(view.nodes.map((n) => [n.id, n]))
+  const label = (id: string): string => {
+    const n = nodeIndex.get(id)
+    return n ? nodeDisplayName(n) : id
+  }
+  const byGround = new Map<string, RecordedRefusal[]>()
+  for (const edge of view.edges) {
+    if (edge.type !== 'same-as' || edge.attrs?.triage !== 'recorded') continue
+    const reason = typeof edge.attrs?.reason === 'string' ? edge.attrs.reason : ''
+    const ground = refusalGround(reason)
+    const row: RecordedRefusal = {
+      id: edge.id,
+      leftLabel: label(edge.source),
+      rightLabel: label(edge.target),
+      confidence: edge.merge_confidence ?? null,
+      reason,
+    }
+    const bucket = byGround.get(ground)
+    if (bucket) bucket.push(row)
+    else byGround.set(ground, [row])
+  }
+  return [...byGround.entries()]
+    .map(([ground, items]) => ({
+      ground,
+      items: items.sort((a, b) => (b.confidence ?? 0) - (a.confidence ?? 0) || a.id.localeCompare(b.id)),
+    }))
+    .sort((a, b) => b.items.length - a.items.length || a.ground.localeCompare(b.ground))
 }

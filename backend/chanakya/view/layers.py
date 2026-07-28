@@ -154,16 +154,22 @@ def retag_instances(
       relocation. **A named gap**, so the withheld supersede is a visible refusal rather than a non-event.
       Never one without the other two.
 
-    **The third state is scoped to the unknown bucket, not to the whole subject.** It used to withdraw every
-    nomination the subject had the moment *one* of its basings had an unreadable class — and that is not a
-    refusal, it is a veto by an unrelated edge. A busy subject accumulates vague basings ("air defense node",
-    "long-range SAM battery position", a site with no stated class at all), so under the old rule no subject
-    with a single vague sighting anywhere in its history could ever show a relocation, however cleanly the
-    two ends of that relocation were classed. Suppressing per bucket keeps the guarantee that matters — an
-    unresolved class still fuses nothing, and still says so in a gap — while letting two basings whose
-    classes are *both* known and equal order against each other, which is the case C1 was built to judge.
-    The residual cost is a MISSED intermediate (an unknown-class stop between two known ends), and it is
-    named in the gap rather than silent; the manufactured-relocation direction is unchanged.
+    **The third state is whole-subject by default, and narrows to the unknown bucket in exactly one case.**
+    Splitting an unknown class away from a known one *is* de-confliction — we do not know the two are
+    incomparable, only that one is unreadable — so it stays forbidden. But the rule used to withdraw every
+    nomination a subject had the moment *one* of its basings was unreadable, and on a busy subject that is a
+    veto cast by a bystander: ``unit_hq9b`` carries seven basings, one of them a site with no stated class
+    at all, and that one edge alone made the flagship relocation between two cleanly-classed **airfields**
+    structurally unable to fire, however much evidence arrived.
+
+    So the split is licensed by one condition: **some known class holds two or more of this subject's
+    basings.** Only then is the untagged key demonstrably blocking an ordering between two basings whose
+    classes are both known, and only then do the unknowns move to their own shared bucket (still fusing
+    nothing, still named in a gap). Where no known class holds a pair, splitting would decide nothing and
+    would cost the shared slot for free, so the whole-group third state stands exactly as it did.
+
+    The residual cost is a MISSED intermediate — an unknown-class stop between two known ends — named in
+    the gap rather than silent. The manufactured-relocation direction is unchanged.
 
     A group with a single member is a special case of "nothing to fuse": its class is applied if known, and
     if unknown it simply keeps the untagged key with no suppression and no gap — a "cannot assess a
@@ -187,15 +193,30 @@ def retag_instances(
         unresolved = [edge for edge, _b, _r, mapped in resolved if not mapped]
         if unresolved and len(group) == 1:
             continue  # a lone basing has nothing to fuse: leave its key untagged, unsuppressed, un-gapped
+        # Every unresolved class normalises to the SAME `absent_bucket`, so the unknowns are one bucket.
+        unknown_bucket = next((bucket for _e, bucket, _r, mapped in resolved if not mapped), None)
+        prelim: dict[str, list[EdgeView]] = {}
+        for edge, bucket, _raw, _mapped in resolved:
+            prelim.setdefault(bucket, []).append(edge)
+        # Separating an unknown class from a known one IS de-confliction, which the third state forbids —
+        # we do not know that they are incomparable, only that we cannot read one of them. So the split is
+        # licensed by ONE condition: some KNOWN class holds two or more of this subject's basings. Then the
+        # untagged key is demonstrably blocking an ordering between two basings whose classes BOTH are
+        # known, and refusing on account of an unrelated third is a veto cast by a bystander, not a
+        # refusal. Where no known class holds a pair, splitting would decide nothing and cost the shared
+        # slot, so the whole-group third state stands exactly as before.
+        known_pair_blocked = any(b != unknown_bucket and len(e) > 1 for b, e in prelim.items())
+        if unresolved and not known_pair_blocked:
+            for edge in group:
+                clear_supersede_nomination(edge)
+                edge.attrs[SUPERSEDE_SUPPRESSED] = "instance-key-tag-unmappable"
+            raw = next((r for _e, _b, r, m in resolved if r and not m), None)
+            gaps.append(unmapped_tag_gap(group[0].edge_instance or subject, predicate, attr, raw))
+            continue
         by_bucket: dict[str, list[EdgeView]] = {}
         for edge, bucket, _raw, _mapped in resolved:
             edge.edge_instance = lane.edge_instance_key(subject, predicate, edge.target, bucket)
             by_bucket.setdefault(bucket, []).append(edge)
-        # Every unresolved class normalises to the SAME `absent_bucket`, so this is exactly one bucket and
-        # the unknowns stay together — nothing is separated from an unknown by tagging the rest.
-        unknown_bucket = next(
-            (bucket for edge, bucket, _r, mapped in resolved if not mapped), None
-        )
         if len(by_bucket) > 1:
             # The classes genuinely separated this subject's basings, so the ordering the untagged key
             # produced spanned instances that are not comparable. Clear it and re-order within each.

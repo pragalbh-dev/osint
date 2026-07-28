@@ -29,6 +29,7 @@ export type PanelView =
   | 'card'
   | 'cred'
   | 'watch'
+  | 'refusals'
   | 'answer'
 export type DocId = 'd18' | 'd19' | 'd20'
 export type Mode = 'demo' | 'live'
@@ -89,6 +90,7 @@ interface WorkbenchState {
   openCred: () => void
   openWatch: () => void
   openKnownGaps: () => void
+  openRefusals: () => void
 
   // live ask
   setAskQuestion: (q: string) => void
@@ -182,6 +184,7 @@ export const useWorkbench = create<WorkbenchState>((set, get) => ({
   openCred: () => set({ panelView: 'cred' }),
   openWatch: () => set({ panelView: 'watch' }),
   openKnownGaps: () => set({ panelView: 'knowngaps' }),
+  openRefusals: () => set({ panelView: 'refusals' }),
 
   // LIVE only — POST /ask and append the structured answer (or refusal) to the running
   // chat thread. Guarded to live mode so the demo never fetches; the forming answer IS the

@@ -7,7 +7,12 @@ import { useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { useWorkbench, type DocId } from '@/store/workbench'
 import { INGEST_DOCS, QUEUE_ITEMS, TRIPWIRES } from '@/demo/scenario'
-import { groupReviewQueue, viewToReviewQueue, type LiveReviewGroup } from '@/api/adapters'
+import {
+  groupReviewQueue,
+  viewToRecordedRefusals,
+  viewToReviewQueue,
+  type LiveReviewGroup,
+} from '@/api/adapters'
 import { useTripwires } from '@/api/viewmodel'
 import { useAnchorCheck, useArmedObservables, useReachabilityCheck } from '@/api/hooks'
 import { watchSummary } from './watchSummary'
@@ -132,6 +137,7 @@ export function Rail() {
   const openWatch = useWorkbench((s) => s.openWatch)
   const openCred = useWorkbench((s) => s.openCred)
   const openKnownGaps = useWorkbench((s) => s.openKnownGaps)
+  const openRefusals = useWorkbench((s) => s.openRefusals)
   const ingested = useWorkbench((s) => s.ingested)
   const ingestTrace = useWorkbench((s) => s.ingestTrace)
   const startIngest = useWorkbench((s) => s.startIngest)
@@ -146,6 +152,15 @@ export function Rail() {
   // LIVE: the derived queue, ordered by the triage rule and with connected identity proposals
   // collapsed into clusters. Nothing is dropped or auto-decided — `groups` is a permutation of
   // the undecided queue, so the count below is still the true escalation count.
+  // Refusals are counted off the same view the panel reads, so the badge can never disagree with it.
+  const refusalCount = useMemo(
+    () =>
+      liveView
+        ? viewToRecordedRefusals(liveView).reduce((n, g) => n + g.items.length, 0)
+        : 0,
+    [liveView],
+  )
+
   const groups: LiveReviewGroup[] = useMemo(() => {
     if (mode !== 'live') return []
     const queue = liveView ? viewToReviewQueue(liveView) : []
@@ -289,6 +304,31 @@ export function Rail() {
           "insufficient evidence to assess" is an ANSWER this system produces on purpose, so what it
           has named missing sits beside the review count rather than living only inside whichever
           element happens to be open. Live only — the demo's absences are its authored refusal panel. */}
+      {/* Refused, recorded — identity the resolver disposed of WITHOUT an analyst. It sits next to
+          Review rather than inside it because the two are different acts: Review asks a human to
+          decide, this reports that the decision was already made for them. Merging the two put 114
+          unanswerable items beside 18 real ones, and a queue that asks unanswerable questions is how
+          the answerable ones stop being read. Still surfaced, never hidden — silence here would read
+          as an all-clear about identity, which it is not. */}
+      {mode === 'live' && (
+        <div
+          onClick={openRefusals}
+          className="cursor-pointer border-b border-hairline px-[18px] py-4 hover:bg-surface-raised"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[13px] text-text">Refused, recorded</span>
+            <span className="inline-flex h-5 min-w-[22px] items-center justify-center rounded-[3px] border border-hairline-strong px-[7px] text-[12px] tabular-nums text-text-dim">
+              {liveView ? refusalCount : '—'}
+            </span>
+          </div>
+          <div className="mt-[6px] text-[11.5px] text-text-faint">
+            {liveView
+              ? 'declined with a stated ground — nothing to decide here'
+              : 'graph not read yet'}
+          </div>
+        </div>
+      )}
+
       {mode === 'live' && (
         <div
           onClick={openKnownGaps}

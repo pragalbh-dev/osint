@@ -267,7 +267,23 @@ def _collapse_restatements(gaps: list[KnownGap]) -> list[KnownGap]:
     return out
 
 
-def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView]:
+#: Which surface a drawn candidate belongs on. A pair that SCORED into the analyst band is an open
+#: identity question. A pair that never reached the band and is drawn because a *rail raised it* has, by
+#: construction, already been disposed of — the resolver refused to fuse and recorded why. Both must stay
+#: visible ("a gap that does not bind the fusion path is decoration"), but they are not the same act: one
+#: asks the analyst to decide, the other reports that the decision was already made for them.
+#:
+#: Measured on the booted corpus, collapsing the two put **160 of 196** queue items in front of a human
+#: who could not act on any of them — 107 blocked on a value the closed vocabulary cannot read, 23 capped
+#: by the co-location rule, 19 where a source had already said the two are different, and 9 cross-type
+#: pairs that can never merge however anyone answers. A queue that asks unanswerable questions is how the
+#: answerable ones stop being read.
+TRIAGE = "triage"
+TRIAGE_DECIDE = "decide"      # scored into [hitl_low, auto_merge) — a real open question
+TRIAGE_RECORDED = "recorded"  # raised by a rail below the band — refused, with its ground, nothing to decide
+
+
+def _resolution_edges(node_ids: set[str], partition: Partition, hitl_low: float) -> list[EdgeView]:
     """Render the resolver's *undecided* + *veto* decisions: candidate ``same-as`` + ``distinct-from`` edges.
 
     These cite a merge decision, not a claim, so they are G4-exempt and are **never scored** (added
@@ -323,7 +339,15 @@ def _resolution_edges(node_ids: set[str], partition: Partition) -> list[EdgeView
         breakdown = partition.merge_breakdown.get(best, {})
         # D4 Stage 2 — the merge-corroboration ledger, ADDITIVELY beside ``breakdown`` (kept intact):
         # which independent identity signals corroborated this candidate. Only when a signal fired.
-        attrs: dict[str, Any] = {"merge_band": "candidate", "breakdown": breakdown}
+        # Scored into the band ⇒ a question. Below it ⇒ a rail raised it, so the refusal IS the outcome.
+        # Read off the score rather than the reason text: the ground is generated prose and string-matching
+        # it would put the routing of the analyst's queue at the mercy of a wording change.
+        score = partition.merge_confidence.get(best)
+        attrs: dict[str, Any] = {
+            "merge_band": "candidate",
+            "breakdown": breakdown,
+            TRIAGE: TRIAGE_DECIDE if score is not None and score >= hitl_low else TRIAGE_RECORDED,
+        }
         ledger = identity_ledger(breakdown)
         if ledger:
             attrs["identity_ledger"] = ledger
@@ -1227,7 +1251,15 @@ def rebuild(evidence: object, decision: object, config: ConfigBundle, prev_view:
 
     # 8b. render the resolver's decisions as edges — candidate same-as (HITL band) + distinct-from
     #     traps. Added AFTER scoring so they're never assigned a truth status (G5); G4-exempt.
-    view.edges.extend(_resolution_edges({n.id for n in view.nodes}, partition))
+    # The band comes from config, never a literal here (gate G6) — the same `hitl_low` the resolver
+    # banded against, so the queue can never disagree with the scorer about what a candidate is.
+    view.edges.extend(
+        _resolution_edges(
+            {n.id for n in view.nodes},
+            partition,
+            float(config.resolution.bands.get("hitl_low", 0.0)),
+        )
+    )
 
     # 8c. …and where an analyst already ruled on one of those pairs and the resolver did NOT apply it, say
     #     so ON THE EDGE. The receipt in the POST response is transient — a page reload loses it, and the

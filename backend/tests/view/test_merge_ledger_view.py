@@ -11,6 +11,10 @@ from __future__ import annotations
 from chanakya.schemas import NodeView, Partition, pair_key
 from chanakya.view.pipeline import _merge_provenance, _resolution_edges
 
+# The shipped `resolution.bands.hitl_low`. Pinned here rather than read from config so a band change
+# is a deliberate test edit, not a silent re-interpretation of what these fixtures are asserting.
+HITL_LOW = 0.45
+
 
 def test_candidate_edge_carries_the_ledger_beside_the_breakdown() -> None:
     ck = pair_key("x", "y")
@@ -19,7 +23,7 @@ def test_candidate_edge_carries_the_ledger_beside_the_breakdown() -> None:
         merge_confidence={ck: 0.72},
         merge_breakdown={ck: {"attribute": 0.9, "relational": 0.1, "temporal_consistency": 1.0, "source_asserted": 0.0, "total": 0.72}},
     )
-    (edge,) = _resolution_edges({"x", "y"}, part)
+    (edge,) = _resolution_edges({"x", "y"}, part, HITL_LOW)
     assert edge.attrs["breakdown"]["total"] == 0.72  # existing field kept
     ledger = edge.attrs["identity_ledger"]
     assert [e["signal"] for e in ledger] == ["attribute", "relational", "temporal_consistency"]
