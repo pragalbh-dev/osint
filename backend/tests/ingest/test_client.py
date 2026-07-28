@@ -21,6 +21,7 @@ import httpx
 import pytest
 import respx
 
+import chanakya.ingest.client as client_mod
 from chanakya.ingest.client import (
     DEFAULT_OPENAI_MODEL,
     MAX_TOKENS,
@@ -101,7 +102,10 @@ def test_build_client_prefers_gemini(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-anthropic")
     client = build_extraction_client()
     assert isinstance(client, GeminiExtractionClient)
-    assert client.model_id == "gemini-flash-latest"
+    # Assert against the CONSTANT, not a copy of its value: what this test is for is that the builder
+    # honours the declared default, and a literal here re-asserts the pin in a second place that has to be
+    # edited in lockstep. The pin's own justification (keyless == live) lives on the constant.
+    assert client.model_id == client_mod.DEFAULT_GEMINI_MODEL
 
 
 def test_build_client_falls_back_to_anthropic(monkeypatch: pytest.MonkeyPatch) -> None:

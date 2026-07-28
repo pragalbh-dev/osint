@@ -23,6 +23,7 @@ from .normalize import name_similarity, normalize
 from .rconfig import (
     ATTRIBUTE,
     DISCRIMINATOR,
+    IDENTITY_LAYERS,
     NAME,
     RELATIONAL,
     SIGNALS,
@@ -563,9 +564,35 @@ def attribute_signals(
         # what the name cap withholds (see ``cluster._name_trigger``).
         return _clamp(w_name), 0.0
     name = name_similarity(a.name, b.name, cfg.transliteration)
-    present, agreeing = _discriminator_agreement(a, b, cfg, durable_only)
+    # Score the layer that OWNS identity for this type: a design's merges turn on design evidence, an
+    # instance's on operator/basing/time. With no `layer:` declared anywhere ``identity_layer_of`` returns
+    # ``design`` and every attribute defaults to ``design``, so this is the pooled ratio byte-for-byte (G2).
+    owning = cfg.identity_layer_of(a.etype) if a.etype == b.etype else None
+    present, agreeing = _discriminator_agreement(a, b, cfg, durable_only, layer=owning)
     discriminator = (agreeing / present) if present else 0.0
     return _clamp(w_name * name * penalty), _clamp(w_disc * discriminator * penalty)
+
+
+def layer_discriminators(
+    a: Entity, b: Entity, cfg: ResolveConfig, durable_only: bool = False
+) -> dict[str, float]:
+    """The agreement ratio per identity LAYER — the two findings a single fused number cannot carry.
+
+    Reported beside the scored terms rather than instead of them: the total is untouched, and what an
+    analyst gains is the ability to read "these name the same design (1.0) but their operators disagree
+    (0.0)" off the breakdown. That pair of numbers is the actual state of the evidence for HQ-9/P, and it
+    is the difference between an unexplained refusal and a stated one. A layer no attribute of this type
+    declares is omitted rather than reported as 0.0 — nothing measured is not the same as measured-and-zero,
+    which is this system's whole discipline about absence.
+    """
+    if a.etype != b.etype:
+        return {}
+    out: dict[str, float] = {}
+    for layer in IDENTITY_LAYERS:
+        present, agreeing = _discriminator_agreement(a, b, cfg, durable_only, layer=layer)
+        if present:
+            out[layer] = _clamp(agreeing / present)
+    return out
 
 
 def attribute_score(
@@ -594,9 +621,15 @@ def attribute_score(
 
 
 def _discriminator_agreement(
-    a: Entity, b: Entity, cfg: ResolveConfig, durable_only: bool = False
+    a: Entity, b: Entity, cfg: ResolveConfig, durable_only: bool = False, layer: str | None = None
 ) -> tuple[int, int]:
     """``(present, agreeing)`` over the identity-bearing attributes both sides state (Stage 3B-iii).
+
+    ``layer`` restricts the ratio to attributes declared on ONE level of the bi-level model
+    (:meth:`ResolveConfig.attribute_layer`). ``None`` pools every layer, which is the historic behaviour and
+    what an unconfigured deployment still gets. Scoring one layer at a time is what lets a pair report
+    "the designs agree, the operators do not" as two findings instead of one averaged number in which each
+    silently cancels the other.
 
     The agreeing set is the union of the legacy ``identity`` list and the declared identity-bearing roles
     (critical ∪ supporting, D6) — every attribute whose agreement is positive identity evidence. An
@@ -622,6 +655,8 @@ def _discriminator_agreement(
         if k in seen_id:
             continue
         seen_id.add(k)
+        if layer is not None and cfg.attribute_layer(a.etype, k) != layer:
+            continue  # scoring ONE layer: an attribute of the other layer is not evidence about this one
         if a.attrs.get(k) is None or b.attrs.get(k) is None:
             continue  # not stated on both sides ⇒ not part of the agreement ratio (absence ≠ evidence)
         if cfg.attribute_is_taxonomic(a.etype, k):
@@ -905,7 +940,12 @@ def merge_score(
     # need. ``SIGNALS`` is deliberately NOT extended — ``identity_ledger`` iterates it, and a sub-signal is a
     # decomposition of one line of evidence, not a second independent one, so counting it twice would
     # over-claim.
-    return {**parts, "total": _clamp(total), NAME: name, DISCRIMINATOR: discriminator}
+    # The per-layer ratios ride alongside, prefixed so they can never be mistaken for a scored SIGNAL:
+    # ``SIGNALS`` is not extended and the total is unchanged, because a layer is a decomposition of the one
+    # attribute line of evidence, not a second independent one — counting it again would over-claim
+    # corroboration, the same reasoning that keeps NAME/DISCRIMINATOR out of ``SIGNALS``.
+    layers = {f"{DISCRIMINATOR}.{k}": v for k, v in layer_discriminators(a, b, cfg, durable_only).items()}
+    return {**parts, "total": _clamp(total), NAME: name, DISCRIMINATOR: discriminator, **layers}
 
 
 def _clamp(x: float) -> float:

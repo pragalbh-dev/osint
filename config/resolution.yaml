@@ -420,6 +420,31 @@ place_bind_on_curated_toponym: true
 # attribute is excluded from the positive identity signals ONLY (the discriminator ratio, durable support);
 # every negative consequence is untouched — a critical taxonomic disagreement is still a hard wall, a
 # supporting one still a soft penalty. Omitted ⇒ identity-bearing, the safe direction to forget.
+# ── THE IDENTITY LAYER OF EACH NODE TYPE (2026-07-28) ────────────────────────────────────────────
+# The bi-level model separates what a thing IS from WHICH ONE of them this is, and identity evidence
+# divides the same way. Pooled into a single agreement ratio the two cancel: `HQ-9/P` is stated as
+# Pakistan Air Force by seven documents and as Pakistan Army by four, so an operator disagreement
+# suppressed a DESIGN ratio that eight sources agreed on — and one number cannot report "same missile,
+# contested operator", because that is two findings, not an average of one.
+#
+# So each attribute declares its `layer:` (see attribute_roles below) and each node type declares which
+# layer OWNS its identity — whose ratio is load-bearing for ITS merges. A design merges on design
+# evidence; an operator dispute is a fact about its deployments. A formation merges on operator, basing
+# and time, which is where "whose battery is this" is asked and is the D1 co-location rail.
+#
+# BOTH ratios are always computed and BOTH are reported in the merge breakdown (`discriminator.design`
+# / `discriminator.instance`), so an analyst reads the split rather than a blended number. Only the
+# owning layer feeds the score. A type not listed here, and an attribute with no `layer:`, both default
+# to `design`, which pools everything exactly as before — so an unconfigured deployment is byte-unchanged
+# (gate G2).
+identity_layer_by_type:
+  variant: design            # a design: two spellings of one designation are one design
+  component: design          # likewise a part TYPE, not a particular part
+  unit: instance             # a formation: operator/branch is exactly what individuates it
+  presence: instance         # one deployment of a design at a place at a time
+  basing_site: instance      # a particular place
+  contract_import_event: instance   # a particular transaction
+
 attribute_roles:
   variant:
     # TAXONOMIC as well as critical: a stated branch DIFFERENCE is a wall, but two designs both stated
@@ -445,19 +470,19 @@ attribute_roles:
     # critical, which is where "whose battery is this" is asked and is the D1 co-location rail. So designs
     # fuse on naming and lineage; formations stay separated by operator. Kept `taxonomic` — two designs both
     # stated 'PLAAF' are still not thereby one design — so this can inform a score without walling.
-    operator_branch: {role: supporting, time_role: durable, taxonomic: true}
+    operator_branch: {role: supporting, time_role: durable, taxonomic: true, layer: instance}
     # THE MEASURED CASE. `family: HQ-9` is stated on HQ-9, HQ-9A, HQ-9B and HQ-9BE alike — that is what the
     # family means. Counted as an agreeing discriminator it lifted the name cap and put HQ-9 ↔ HQ-9A,
     # HQ-9 ↔ HQ-9B, HQ-9A ↔ HQ-9B and HQ-9A ↔ HQ-9BE on the fusion path: the costliest over-merge in this
     # ORBAT, proposed on nothing but two similar names and the family they share by definition.
-    family:          {role: supporting, time_role: durable, taxonomic: true}
-    range_class:     {role: supporting, time_role: durable, taxonomic: true}
+    family:          {role: supporting, time_role: durable, taxonomic: true, layer: design}
+    range_class:     {role: supporting, time_role: durable, taxonomic: true, layer: design}
     # …and the design layer's one IDENTITY-BEARING attribute, which it needs or D-13.10's permissive half
     # ("design collapses readily … one more trivially-available signal clears the name cap") has nothing left
     # to stand on: every other declared variant attribute names a class. An EXPORT DESIGNATOR names one
     # production line and one customer — FD-2000 is the HQ-9/P export, HQ-9BE the HQ-9B export — so two
     # mentions stating the same one really are one design. Individuating, therefore NOT taxonomic.
-    export_designator: {role: supporting, time_role: durable}
+    export_designator: {role: supporting, time_role: durable, layer: design}
     # …and THE SAME FACT UNDER THE NAME THE EXTRACTOR ACTUALLY WRITES IT. `export_designator` is real —
     # the seeded baseline, the answer key and config/ontology.yaml all carry it — but nothing in the LIVE
     # extraction path emits it: a document says "HQ-9/P, marketed as FD-2000" and that lands in a LIST of
@@ -476,7 +501,7 @@ attribute_roles:
     # half that matters, since ["HQ-9"] against ["HQ-9A"] must stay two designs. Declaring it does not open a
     # new fusion lane: the extractor ALREADY emits a same-as assertion per stated designator, so this makes
     # evidence that was being asserted anyway comparable as an attribute instead of only as an edge.
-    designators:       {role: supporting, time_role: durable}
+    designators:       {role: supporting, time_role: durable, layer: design}
   unit:
     # CRITICAL. It was `supporting` — i.e. inert — only because the corpus states it unnormalised
     # ('Air Force' / 'PAF' / 'Pakistan Air Force'), and an exact-match wall on those "SHATTERS legitimate

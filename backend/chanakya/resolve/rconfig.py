@@ -79,6 +79,17 @@ _TIME_ROLE_KEY = "time_role"
 # critical taxonomic attribute is still a hard wall, and on a supporting one still a soft penalty. Absence of
 # the key ⇒ identity-bearing, which is the direction an author can safely forget.
 _TAXONOMIC_KEY = "taxonomic"
+#: The FOURTH axis (``layer:``) — which level of the bi-level model an attribute's agreement speaks to.
+#: ``design`` = "these records name the same design" (a designator, an export line, a family). ``instance``
+#: = "these records are the same deployment" (an operator, a basing, an occupancy time). Pooled into one
+#: agreement ratio the two CANCEL, which is measurable on this corpus: ``HQ-9/P`` is stated as Pakistan Air
+#: Force by seven documents and Pakistan Army by four, so an operator disagreement suppressed a design ratio
+#: eight sources agreed on — and a single number cannot say "same missile, contested operator", because that
+#: is two findings. Undeclared ⇒ ``design``, which pools everything exactly as before (gate G2).
+_LAYER_KEY = "layer"
+_LAYER_DESIGN = "design"
+_LAYER_INSTANCE = "instance"
+IDENTITY_LAYERS = (_LAYER_DESIGN, _LAYER_INSTANCE)
 #: The two retired STAGE MARKERS. ``requires: earned_identity`` gated a row on the S3 staging flag and
 #: ``earned_role:`` overrode a row's ``role`` while that flag was on. The flag is gone — the machinery is
 #: unconditional — so a row carrying either marker is a row whose author still believes there are two
@@ -963,6 +974,48 @@ class ResolveConfig:
             a for a, spec in roles.items()
             if isinstance(spec, dict) and spec.get(_TAXONOMIC_KEY) is True
         )
+
+    def attribute_layer(self, entity_type: str, attr: str) -> str:
+        """Which LAYER of identity this attribute speaks to — ``design`` or ``instance`` (the fourth axis).
+
+        The bi-level model separates *what a thing is* from *which one of them this is*, and identity
+        evidence divides the same way. A design designator, an export line, a family: those say two records
+        name the same DESIGN. An operator, a basing, a time of occupancy: those say two records are the same
+        DEPLOYMENT. Pooled into one agreement ratio the two cancel — measured on the corpus, ``HQ-9/P`` is
+        stated as Pakistan Air Force by seven documents and Pakistan Army by four, so an operator
+        disagreement dragged down a design ratio that eight sources agreed on, and one number could not say
+        "same missile, contested operator" because that is two facts.
+
+        Undeclared ⇒ **the type's own owning layer**, not a fixed default. That choice is load-bearing and
+        was got wrong once: defaulting to ``design`` meant declaring a type instance-owned silently ZEROED
+        its discriminator, because every untagged attribute landed in the layer nobody was scoring — measured
+        as ``design=0.0, instance=None`` on every ``basing_site`` pair. Inheriting the type's layer makes the
+        two declarations independent: naming a type's layer never moves a score by itself, and an attribute
+        only leaves the pool when someone says it belongs elsewhere. With no ``layer:`` declared anywhere the
+        ratio is byte-identical to the pooled one (gate G2).
+        """
+        spec = self.attribute_roles(entity_type).get(attr)
+        if isinstance(spec, dict):
+            declared = spec.get(_LAYER_KEY)
+            if declared in IDENTITY_LAYERS:
+                return str(declared)
+        return self.identity_layer_of(entity_type)
+
+    def identity_layer_of(self, entity_type: str) -> str:
+        """The layer that OWNS identity for a node type — whose ratio decides its merges.
+
+        A ``variant`` is a design: its merges turn on design evidence, and an operator disagreement is a
+        fact about its deployments, not about which design it is. A ``unit`` / ``presence`` / ``basing_site``
+        is an instance: its merges turn on operator, basing and time, which is where "whose battery is this"
+        is asked and where the co-location harm lives. Both ratios are always computed and both are reported;
+        this only says which one is load-bearing for THIS type's fusion.
+
+        Read from ``identity_layer_by_type``. Unlisted ⇒ :data:`_LAYER_DESIGN`, so an undeclared type keeps
+        the single pooled ratio it has today.
+        """
+        by_type = self._extra("identity_layer_by_type", None) or {}
+        declared = by_type.get(entity_type)
+        return str(declared) if declared in IDENTITY_LAYERS else _LAYER_DESIGN
 
     def attribute_time_role(self, entity_type: str, attr: str) -> str | None:
         """The declared ``time_role`` of an attribute (C6) — one of :data:`TIME_ROLES`, or ``None``.
