@@ -42,3 +42,8 @@ tmp/qa/**/*.png
 **/screenshots/
 corpus/scenarios/hq9p_sandbox/
 tmp/spike-rk/proto/__pycache__/
+
+# Assignment source material — kept locally, never published to the remote.
+artifacts/*.pdf
+artifacts/md/01-assignment.md
+artifacts/product/
