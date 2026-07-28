@@ -109,9 +109,32 @@ export interface GraphLayers {
   proposals: boolean
   /** show the `source` nodes of the evidence layer */
   evidence: boolean
+  /** show nodes the ontology could not TYPE. Off by default, and the count is on the chip either way.
+   *
+   *  These are not mistyped entities — they are imagery laydowns the extractor emitted as things
+   *  ("Six elongated canister-type objects, HT-233-type engagement radar, command/communications
+   *  shelter…", "six-object fan", "light vehicles"). A bag of objects seen in one frame is an
+   *  observation, and the ontology has no type for it because it is not an entity. Drawn among real
+   *  entities they read as peers of the units and radars around them, which is the one thing they are
+   *  not; hidden with no trace they would be a silent omission. So: off, counted, one click away — the
+   *  system says how many things it declined to type rather than either asserting or concealing them. */
+  unresolved: boolean
 }
 
-export const DEFAULT_LAYERS: GraphLayers = { separations: true, proposals: false, evidence: false }
+/** The ontology's own label for "no type could be established" — never a UI-side synonym. */
+export const UNRESOLVED_NODE_TYPE = 'unknown'
+
+export const DEFAULT_LAYERS: GraphLayers = {
+  separations: true,
+  proposals: false,
+  evidence: false,
+  unresolved: false,
+}
+
+/** How many nodes the ontology could not type. Stated on the chip whether the layer is on or off. */
+export function countUnresolved(nodes: GraphNodeDef[]): number {
+  return nodes.filter((n) => (n.type ?? '') === UNRESOLVED_NODE_TYPE).length
+}
 
 export interface GraphPlan {
   /** id → position for EVERY node, canvas or not (stable across layer toggles) */
@@ -136,6 +159,7 @@ export interface GraphPlan {
 
 function nodeInLayers(node: GraphNodeDef, layers: GraphLayers): boolean {
   if (EVIDENCE_NODE_TYPES.has(node.type ?? '')) return layers.evidence
+  if ((node.type ?? '') === UNRESOLVED_NODE_TYPE) return layers.unresolved
   return true
 }
 

@@ -13,7 +13,7 @@ import {
 } from './graphLayout'
 
 /** Knowledge only — both identity layers off. */
-const NO_IDENTITY = { separations: false, proposals: false, evidence: false }
+const NO_IDENTITY = { separations: false, proposals: false, evidence: false, unresolved: false }
 
 // A miniature of the real cold-boot shape: a domain chain, an entity reachable ONLY via a
 // same-as link, a pair of orphans, a Known Gap, and two evidence-layer source records.
@@ -124,7 +124,7 @@ describe('planGraph — separations (on by default)', () => {
   // canvas would empty the "no asserted relationship" tray — a collection FINDING — with something
   // that is not knowledge about the world at all.
   it('never promotes an entity onto the canvas on the strength of an identity edge alone', () => {
-    const both = planGraph(NODES, EDGES, { separations: true, proposals: true, evidence: false })
+    const both = planGraph(NODES, EDGES, { separations: true, proposals: true, evidence: false, unresolved: false })
     expect(both.canvasNodes.has('alias_ft2000')).toBe(false)
     expect(both.canvasNodes.has('orphan_a')).toBe(false)
     expect(both.unconnected.map((n) => n.id).sort()).toEqual([
@@ -139,7 +139,7 @@ describe('planGraph — separations (on by default)', () => {
   // whose endpoint is off-canvas), but they stay in the focus adjacency, so focusing either
   // endpoint draws them. A wall the analyst can never reach is a judgement that reached nobody.
   it('counts — never silently drops — the identity decisions the whole-graph view holds back', () => {
-    const both = planGraph(NODES, EDGES, { separations: true, proposals: true, evidence: false })
+    const both = planGraph(NODES, EDGES, { separations: true, proposals: true, evidence: false, unresolved: false })
     expect(both.undrawableIdentity).toBe(2)
     expect(both.adjacency.get('alias_ft2000')).toContain('hq9p')
     expect(both.adjacency.get('orphan_a')).toContain('alias_ft2000')

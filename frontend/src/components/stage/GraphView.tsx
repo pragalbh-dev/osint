@@ -41,6 +41,7 @@ import {
   ROLE_LABEL,
   ROW_H,
   countProposals,
+  countUnresolved,
   countSeparations,
   egoNodes,
   groupByType,
@@ -447,6 +448,7 @@ export function GraphView() {
     () => graph.nodes.filter((n) => EVIDENCE_NODE_TYPES.has(n.type ?? '')).length,
     [graph],
   )
+  const unresolvedCount = useMemo(() => countUnresolved(graph.nodes), [graph])
   // An edge selection focuses the pair it joins, so "focused" has to accept an edge id too.
   const selectedEdgeDef = useMemo(
     () => (selected == null ? undefined : graph.edges.find((e) => e.id === selected)),
@@ -555,6 +557,8 @@ export function GraphView() {
             // sources carry claims, not relationships, so turning the evidence layer on
             // lands them in the tray rather than on the canvas — open it, or the chip
             // looks like it did nothing.
+            unresolvedCount={unresolvedCount}
+            toggleUnresolved={() => setLayers((l) => ({ ...l, unresolved: !l.unresolved }))}
             toggleEvidence={() =>
               setLayers((l) => {
                 const on = !l.evidence
@@ -693,9 +697,11 @@ interface LayerBarProps {
   toggleSeparations: () => void
   toggleProposals: () => void
   toggleEvidence: () => void
+  toggleUnresolved: () => void
   separationCount: number
   proposalCount: number
   evidenceCount: number
+  unresolvedCount: number
   undrawableIdentity: number
   shown: number
   total: number
@@ -754,6 +760,16 @@ function LayerBar(p: LayerBarProps) {
         >
           sources · {p.evidenceCount}
         </button>
+        {p.unresolvedCount > 0 && (
+          <button
+            type="button"
+            style={chipStyle(p.layers.unresolved)}
+            title="nodes the ontology could not type — imagery laydowns the extractor emitted as things (“six-object fan”, “light vehicles”). Not mistyped entities: a bag of objects seen in one frame is an observation, and there is no entity type for it. Off by default so they do not read as peers of the real entities; counted here either way."
+            onClick={p.toggleUnresolved}
+          >
+            unresolved type · {p.unresolvedCount}
+          </button>
+        )}
         <button type="button" style={CHIP} title="scroll to zoom · drag to pan" onClick={p.refit}>
           fit
         </button>
