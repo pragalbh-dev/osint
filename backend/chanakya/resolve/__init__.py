@@ -22,8 +22,17 @@ from itertools import product
 from typing import Any
 
 from chanakya import coref_gate
+
+# resolve -> credibility is an established dependency (``rconfig`` already imports ``reliability``); the
+# layering rule this respects is the OTHER one — resolve must never import ``ingest``, which reaches the
+# LLM client. Identity is graded here by exactly the machinery every other assertion is graded by, so
+# there is no second, divergent scale to keep in step (gate G6).
+from chanakya.credibility import group_by_independence
+from chanakya.credibility.scoring import score_claims
+from chanakya.credibility.status import assign_status
 from chanakya.ontology import EdgeLaneIndex
 from chanakya.schemas import (
+    AssertionInput,
     ClaimRecord,
     ConfigBundle,
     DecisionRecord,
@@ -75,6 +84,11 @@ from .scoring import (
     has_hard_conflict,
     identity_ledger,
 )
+
+#: The one status that licenses a fusion. Named rather than inlined so the rule reads as "identity
+#: fuses exactly when the ordinary status machine confirms it" — and so that no threshold is copied
+#: into this module (gate G6: every number stays in config).
+_IDENTITY_CONFIRMED = "confirmed"
 
 __all__ = [
     "resolve",
@@ -231,15 +245,25 @@ def _resolve(
     # replayed from the decision log). It outranks every derived rail — an override is not a finding (G12).
     wall_grounds.update({p: _analyst_wall_reason() for p in analyst_walls})
 
-    # The raise-only proposal channels: the offline LLM's frozen proposals and the corpus's own
-    # ``same-as`` assertions (D-2.5). Neither can auto-merge; both can put a pair in front of an analyst.
-    # In-document coreference is the one signal that may also *bootstrap* — and only for the evidence
-    # categories an operator opted in, uncontradicted (see :func:`_coref_pairs`); everything it cannot
-    # justify falls back into the same raise-only queue.
+    # The proposal channels. The offline LLM's frozen proposals never auto-merge — a model's guess about
+    # identity is not evidence. In-document coreference may *bootstrap* for the evidence categories an
+    # operator opted in, uncontradicted (see :func:`_coref_pairs`), and otherwise falls back to raising.
+    #
+    # A source-stated ``same-as`` is now graded rather than categorically demoted: it merges when — and only
+    # when — the ORDINARY status machine confirms it on the ordinary corroboration terms
+    # (:func:`_identity_confirmations`), and raises in every weaker case, which is still the common one.
+    # This removes the split that had coreference bootstrapping off an explicit statement of equivalence
+    # while the extractor's ``same-as`` — the same evidence, often the same sentence — could never merge
+    # however many sources agreed. Confirmed pairs are subtracted from the raise-only set: a pair the
+    # machine has adjudicated must not also sit on the analyst's desk as an open question.
     coref_authoritative, coref_raise, coref_declined, coref_walled = _coref_pairs(
         graph, cfg, alias_idx, veto, lane, place_of
     )
     asserted_raise, asserted_walled = _identity_pairs(graph, cfg, alias_idx, veto)
+    asserted_confirmed, asserted_confidence = _identity_confirmations(
+        claims, config, graph, cfg, alias_idx, veto
+    )
+    asserted_raise -= asserted_confirmed
     raise_only = (
         _llm_pairs(graph, cfg, alias_idx, decisions)
         | asserted_raise
@@ -293,7 +317,7 @@ def _resolve(
     raise_only |= {frozenset(p) for p in place_hitl}
 
     result = resolve_entities(
-        graph, cfg, alias_idx, veto, raise_only, coref_authoritative,
+        graph, cfg, alias_idx, veto, raise_only, coref_authoritative | asserted_confirmed,
         raise_walls=crit_raises, raise_ceilings=raise_ceilings,
         place_identity=place_authoritative,
         rekey_identity=_refined_rekey_pairs(graph),
@@ -1257,6 +1281,86 @@ def _asserted_pairs(
             if a != b and a in graph.entities and b in graph.entities:
                 out.add(frozenset((a, b)))
     return out
+
+
+def _identity_claim_ids(graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex,
+                        pair: Pair) -> list[str]:
+    """Every claim asserting this pair's identity, by claim id (stable order; deduplicated)."""
+    a, b = sorted(pair)
+    out: list[str] = []
+    for e in graph.edges:
+        if e.predicate not in IDENTITY_PREDICATES or e.claim_id is None or e.claim_id in out:
+            continue
+        left = _matching_eids(e.subject, graph, cfg, alias_idx)
+        right = _matching_eids(e.object, graph, cfg, alias_idx)
+        if (a in left and b in right) or (b in left and a in right):
+            out.append(e.claim_id)
+    return sorted(out)
+
+
+def _identity_confirmations(
+    claims: list[ClaimRecord], config: ConfigBundle, graph: EntityGraph,
+    cfg: ResolveConfig, alias_idx: AliasIndex, veto: set[Pair],
+) -> tuple[set[Pair], dict[Pair, float]]:
+    """Stated ``same-as`` pairs the ORDINARY confirmed rule confirms — the one assertion channel that fuses.
+
+    **The inconsistency this removes.** In-document coreference could bootstrap a merge off an explicit
+    statement of equivalence; the extractor's ``same-as`` — the same evidence, frequently the same sentence
+    — was structurally raise-only and could never merge whatever asserted it or however many sources agreed.
+    Two mechanisms built at different times, treating one kind of evidence two ways. The consequence was a
+    graph fragmented by construction: the reference fingerprint for a design landing on one node and the
+    site identification of that same design on another, with a curated register stating outright that the
+    two names are one thing, and nothing permitted to act on it.
+
+    **Why this is not a loosening.** Identity stops being the one assertion in the system exempt from the
+    credibility machinery and starts being graded by it: the pair's asserting claims are scored
+    (``R(source) × integrity × freshness``), pooled into independent looks by the ordinary
+    :func:`group_by_independence`, and run through the ordinary :func:`assign_status`. So a pair fuses on
+    exactly the terms any other fact reaches *confirmed* on — ``≥ min_independent_groups`` independent looks
+    clearing the ``confirmed`` threshold — and on no others. A single document, of any grade, cannot fuse
+    anything: it lands at ``probable`` and stays an open question in front of the analyst, which is what
+    keeps the co-located-battery harm out of reach. A curated register and a trade publication agreeing is
+    what confirms, and that is a stronger warrant than the curated alias table this replaces, which merges
+    on one editorial decision and no evidence at all.
+
+    Every rail downstream is inherited, not re-implemented: a vetoed pair never enters (a stated
+    do-not-merge still outranks any number of stated same-as), and ``cluster``'s bootstrap runs the same
+    veto, transitive-veto and cross-type fusion checks over this channel as over coreference's.
+
+    Returns ``(confirmed_pairs, confidence_by_pair)``; the confidences are the analyst-facing rationale.
+    """
+    if not cfg.confirmed_identity_may_fuse:
+        return set(), {}
+    pairs = {p for p in _asserted_pairs(graph, cfg, alias_idx, IDENTITY_PREDICATES) if p not in veto}
+    if not pairs:
+        return set(), {}
+    sources = config.sources.as_map()
+    credibility = score_claims(claims, sources, config)
+    claims_by_id = {c.claim_id: c for c in claims}
+
+    ordered = sorted(pairs, key=lambda p: sorted(p))  # stable → gate G2 (deterministic rebuild)
+    keyed = {pair_key(*sorted(p)): p for p in ordered}
+    inputs: list[AssertionInput] = []
+    for p in ordered:
+        cids = _identity_claim_ids(graph, cfg, alias_idx, p)
+        if not cids:
+            continue
+        inputs.append(AssertionInput(
+            element_id=pair_key(*sorted(p)),
+            element_kind="edge",
+            per_claim_credibility={c: credibility[c] for c in cids if c in credibility},
+            groups=group_by_independence(cids, claims_by_id, sources, config),
+        ))
+    if not inputs:
+        return set(), {}
+    confirmed: set[Pair] = set()
+    confidence: dict[Pair, float] = {}
+    for eid, assessment in assign_status(inputs, config).items():
+        pair = keyed.get(eid)
+        if pair is not None and assessment.status == _IDENTITY_CONFIRMED:
+            confirmed.add(pair)
+            confidence[pair] = assessment.assertion_confidence or 0.0
+    return confirmed, confidence
 
 
 def _claim_distinct_pairs(graph: EntityGraph, cfg: ResolveConfig, alias_idx: AliasIndex) -> set[Pair]:

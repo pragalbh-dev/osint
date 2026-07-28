@@ -586,6 +586,24 @@ class ResolveConfig:
         return int(v) if v is not None else None
 
     @property
+    def confirmed_identity_may_fuse(self) -> bool:
+        """May a stated ``same-as`` the ORDINARY status machine confirms actually merge the pair?
+
+        The policy switch for :func:`chanakya.resolve._identity_confirmations`. A real operator control
+        rather than a feature flag: turning it OFF restores the older rule — identity read from the claim
+        stream may only ever propose — which an operator working an unfamiliar or actively adversarial
+        corpus might legitimately want. It can lower no bar when ON: the pair must still reach ``confirmed``
+        on the ordinary corroboration terms (``>= min_independent_groups`` independent looks clearing the
+        ``confirmed`` threshold), so one document fuses nothing at any setting.
+
+        Defaults ON when unset. OFF is the setting that silently fragments the graph — a design fingerprint
+        and the site identification of that design sitting on two nodes with a register stating they are one
+        thing — and a default whose failure mode is invisible is the wrong default.
+        """
+        v = self._extra("confirmed_identity_may_fuse", None)
+        return True if v is None else bool(v)
+
+    @property
     def scorable(self) -> bool:
         """True only if bands are configured — otherwise the resolver stays inert (identity)."""
         return self._r.bands.get("auto_merge") is not None and self._r.bands.get("hitl_low") is not None

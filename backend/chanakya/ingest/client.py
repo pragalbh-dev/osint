@@ -70,10 +70,14 @@ from chanakya.toolargs import validate_tool_arguments
 # complete concrete id — the Anthropic scheme carries no date suffix on a current model and appending one
 # 404s — and it is not a floating alias: it names Opus 5 and nothing else.
 MODEL = "claude-opus-5"
-# PRIMARY extractor: native function-calling + multimodal, fast, keyed. The floating ``-latest`` alias
-# tracks the current Gemini flash so a pinned id going "no longer available to new users" (which is what
-# happened to gemini-2.5-flash) never dead-ends live extraction; overridable via ``build_extraction_client``.
-DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
+# PRIMARY extractor: native function-calling + multimodal, fast, keyed. PINNED, for the same reason
+# ``DEFAULT_OPENAI_MODEL`` is: this is the model that froze the seed bundles, so a floating ``-latest``
+# would let live extraction silently drift off what keyless boot replays and break ``keyless_equals_live``
+# without changing a line of code. The alias used to sit here to survive a pinned id being retired (which
+# is what happened to gemini-2.5-flash); that risk is real but it is a *loud* failure — live extraction
+# stops, and the fix is one constant — whereas alias drift is a *silent* one that invalidates the seed.
+# Overridable per call via ``build_extraction_client(model_id=...)`` / ``ingest extract --model``.
+DEFAULT_GEMINI_MODEL = "gemini-3.6-flash"
 # Third provider. PINNED, and deliberately not an alias: the OpenAI models endpoint exposes no dated
 # snapshot for the 5.6 family, so this IS the concrete id. There is no ``-latest`` fallback here on
 # purpose — a floating id would let the frozen seed silently stop equalling what live produces.
